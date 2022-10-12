@@ -1,0 +1,222 @@
+\NeedsTeXFormat{LaTeX2e}
+\def\packagename{osgbeamerlanguage}
+\ProvidesPackage{\packagename}[2022/08/25 v0.2]
+\RequirePackage{luacode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Die gewählte Sprache (Deutsch oder Englisch) wird entweder per Packageoption (de,en)
+%%% oder über das Macro \selectedbeamerlanguage übergeben.
+%%% Dabei hat das Macro Vorrang.
+%%% Wenn keine Sprache gewählt wird, erzeugt das Package eine Warnung.
+
+\DeclareOption{de}{
+  \providecommand{\selectedbeamerlanguage}{de}
+}
+\DeclareOption{en}{
+  \providecommand{\selectedbeamerlanguage}{en}
+}
+\ProcessOptions\relax
+
+\ifundef{\selectedbeamerlanguage}{
+      \PackageWarningNoLine{\packagename}{No language specified, assume English (en)}
+      \providecommand{\selectedbeamerlanguage}{en}
+    }{}
+\ifdefstring{\selectedbeamerlanguage}{de}{%
+  \RequirePackage[main=ngerman,english]{babel}
+}{
+  \RequirePackage[main=english, ngerman]{babel}
+}
+%%% Trennung und Quotes
+%\RequirePackage[ngerman,english]{babel}
+\RequirePackage[babel=true]{csquotes}
+\typeout{********** After CSquotes}
+% Shorthands sollen für beide Sprachen gelten, nicht nur für Deutsch
+\useshorthands{"}
+\defineshorthand{"`}{\openautoquote}
+\defineshorthand{"'}{\closeautoquote}
+\addto\extrasenglish{\languageshorthands{ngerman}}
+\DeclareQuoteStyle{english}%
+    {\textquotedblleft}
+    {\textquotedblright}
+    {\textquoteleft}
+    {\textquoteright}
+\DeclareQuoteStyle{ngerman}%
+    {\glqq}
+    {\grqq}
+    {\glq}
+    {\grq}
+%%% Ordinalzahlen
+\RequirePackage[super]{nth} % definiert \ordinal für englische Zahlen
+\let\ordinalen=\ordinal
+\newcommand{\ordinalde}[1]{\arabic{#1}.}
+\ifdefstring{\selectedbeamerlanguage}{de}{%
+      \AtBeginDocument{
+        \selectlanguage{ngerman}
+      }
+    }{
+      \AtBeginDocument{
+        \selectlanguage{english}
+      }
+    }
+% \eng und \germ werden (typischerweise) innerhalb der jeweils andern
+% Spache eingesetzt, um das andersprachliche Wort zu markieren
+\newcommand{\eng}[1]{\foreignlanguage{english}{\emph{#1}}}
+\newcommand{\germ}[1]{\foreignlanguage{ngerman}{\emph{#1}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%% Zähler und Schalter für Sprachen
+% Ein Zähler lastlang<lang><name> dienen dazu, den Zählerstand <name> in der
+% Sprache <lang> zwischenzuspeichern, um diese anschließend wieder zurückzusetzen. 
+\newcounter{langlastdeframe}
+\newcounter{langlastenframe}
+\newcounter{langlastdetheorem}
+\newcounter{langlastentheorem}
+\newcounter{langlastdeeq}
+\newcounter{langlasteneq}
+\newif\iflangineng\langinengfalse
+\newif\iflanginde\langindefalse
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%
+%% Sprachversionen
+%%
+\gdef\langall{\beamer@inlecturetrue%
+  \iflangineng%
+  \setcounter{framenumber}{\value{langlastdeframe}}%
+  \setcounter{theorem}{\value{langlastdetheorem}}%
+  \setcounter{equation}{\value{langlastdeeq}}%
+  \else%
+  \setcounter{framenumber}{\value{langlastenframe}}%
+  \setcounter{theorem}{\value{langlastentheorem}}%
+  \setcounter{equation}{\value{langlasteneq}}%
+  \fi%
+}
+
+\ifcsstring{selectedbeamerlanguage}{de}
+{%%% Deutsch
+  \let\ordinal=\ordinalde
+  \newcommand{\len}[1]{}
+  \newcommand{\lde}[1]{#1}
+  \newenvironment{en}{\begin{onlyenv}<article:0|presentation:0>}{\end{onlyenv}}
+  \newenvironment{de}{}{}
+  \gdef\langen{%
+    \beamer@inlecturefalse%
+    \iflangineng%
+    \else%
+    \setcounter{langlastdeframe}{\value{framenumber}}%
+    \setcounter{langlastdetheorem}{\value{theorem}}%
+    \setcounter{langlastdeeq}{\value{equation}}%
+    \fi%
+    \langinengtrue%
+    \langindefalse%
+  }
+  \gdef\langde{%
+    \beamer@inlecturetrue%
+    \iflangineng%
+    \setcounter{framenumber}{\value{langlastdeframe}}%
+    \setcounter{theorem}{\value{langlastdetheorem}}%
+    \setcounter{equation}{\value{langlastdeeq}}%
+    \fi%
+    \langindetrue%
+    \langinengfalse%
+  }
+  \newrobustcmd{\ldeen}[2]{\ifstrequal{#1}{}{#2}{#1}}
+  \newcommand{\ldeenr}[2]{#1} % robust version
+  \newcommand{\xdeen}[2]{%
+    \luadirect{
+      oex_deenargs={}
+      oex_deenargcnt=0
+      oex_deenstr=\luastringN{#1}
+    }%
+    \oex@xchecknextarg
+  }      
+  \newcommand<>{\lframetitle}[2]{
+    \frametitle#3{#1}
+  }
+  \gdef\langall{\beamer@inlecturetrue%
+    \iflangineng%
+    \setcounter{framenumber}{\value{langlastdeframe}}%
+    \setcounter{theorem}{\value{langlastdetheorem}}%
+    \setcounter{equation}{\value{langlastdeeq}}%
+    \fi%
+    \langindefalse%
+    \langinengfalse%
+  }
+  \pdfstringdefDisableCommands{%
+    \def\ldeen#1#2{#1}
+  }
+}{%%%% sonst: Englisch
+  \let\ordinal=\ordinalen
+  \newcommand{\len}[1]{#1}
+  \newcommand{\lde}[1]{}
+  \newenvironment{de}{\begin{onlyenv}<article:0|presentation:0>}{\end{onlyenv}}
+  \newenvironment{en}{}{}
+  \gdef\langde{%
+    \beamer@inlecturefalse%
+    \iflanginde%
+    \else%
+    \setcounter{langlastenframe}{\value{framenumber}}%
+    \setcounter{langlastentheorem}{\value{theorem}}%
+    \setcounter{langlasteneq}{\value{equation}}%
+    \fi%
+    \langindetrue%
+    \langinengfalse%
+  }
+  \gdef\langen{%
+    \beamer@inlecturetrue%
+    \iflanginde%
+    \setcounter{framenumber}{\value{langlastenframe}}%
+    \setcounter{theorem}{\value{langlastentheorem}}%
+    \setcounter{equation}{\value{langlasteneq}}%
+    \fi%
+    \langinengtrue%
+    \langindefalse%
+  }
+  \newrobustcmd{\ldeen}[2]{\ifstrequal{#2}{}{#1}{#2}}
+  \newcommand{\ldeenr}[2]{#2} % robust version
+  \newcommand{\xdeen}[2]{%
+    \luadirect{
+      oex_deenargs={}
+      oex_deenargcnt=0
+      oex_deenstr=\luastringN{#2}
+    }%
+    \oex@xchecknextarg
+  }      
+  \newcommand<>{\lframetitle}[2]{\ifx\empty#2\empty\frametitle#3{#1}\else\frametitle#3{#2}\fi}
+  \gdef\langall{\beamer@inlecturetrue%
+    \iflanginde%
+    \setcounter{framenumber}{\value{langlastenframe}}%
+    \setcounter{theorem}{\value{langlastentheorem}}%
+    \setcounter{equation}{\value{langlasteneq}}%
+    \fi%
+    \langindefalse%
+    \langinengfalse%
+  }
+  \pdfstringdefDisableCommands{%
+    \def\ldeen#1#2{#2}
+  }
+}
+%%%%%%%%%%%%%% Convenience %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\llecture}[3]{\lecture{\lde{#1}\len{#2}}{#3}}
+\newcommand{\oex@xchecknextarg}{%
+  \@ifnextchar\bgroup{\osx@consumnextarg}{\oex@process@xdeen}
+}
+\newcommand{\osx@consumnextarg}[1]{%
+  \luadirect{
+    oex_deenargcnt=oex_deenargcnt+1
+    oex_deenargs[oex_deenargcnt]=\luastringN{#1}
+  }%
+  \@ifnextchar\bgroup{\osx@consumnextarg}{\oex@process@xdeen} 
+}
+\def\oex@process@xdeen{
+  \luadirect{
+    for i=1, oex_deenargcnt do
+      oex_deenpat='@'.. tostring(i)
+      oex_deenstr , _ = string.gsub(oex_deenstr, oex_deenpat, oex_deenargs[i])
+    end
+    tex.print(oex_deenstr)
+  }
+}
+
+\AtBeginDocument{
+  \setbeamertemplate{frametitle continuation}{(\ldeen{Forts.}{cont.})}
+}

@@ -1,0 +1,20 @@
+% 2022-09-30 M.Werner Adopt to LuaLaTeX
+\NeedsTeXFormat{LaTeX2e}
+\def\packagename{osgsvg}
+\ProvidesPackage{\packagename}[2016/09/01]
+\RequirePackage{currfile-abspath}
+\RequirePackage{pdftexcmds}
+\newcommand{\executeiffilenewer}[3]{%
+ \ifnum\pdf@strcmp{\pdf@filemoddate{#1}}%
+ {\pdf@filemoddate{#2}}>0%
+ {\immediate\write18{#3}}\fi%
+}
+
+\newcommand{\includesvg}[2][\columnwidth]{%
+%\newcommand{\includesvg}[2][.9\textwidth]{%
+ %\message{**** OSG SVG called, #1 #2 ***}
+ \def\svgwidth{#1}%
+  \getabspath{#2.svg}%
+  \executeiffilenewer{\theabsdir#2.svg}{\theabsdir#2.pdf}{/Applications/Inkscape.app/Contents/Resources/bin/inkscape -z -D --file=\theabsdir#2.svg  --export-pdf=\theabsdir#2.pdf --export-latex}%
+ \input{#2.pdf_tex}%
+}

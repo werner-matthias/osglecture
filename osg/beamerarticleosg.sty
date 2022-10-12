@@ -1,0 +1,266 @@
+\mode<article>
+\RequirePackage{beamerarticletuc2019}
+
+% Es wird im Skript nicht vollständig auf das TUC-CI gewechelt,
+% Roboto ist für längere Texte nicht günstig.
+\usepackage{unicode-math}
+\setmathfont{texgyrepagella-math.otf}
+
+\RequirePackage[colorlinks=true,linkcolor=black,anchorcolor=black,citecolor=black,filecolor=black,menucolor=black,runcolor=black,urlcolor=teal]{hyperref}
+\RequirePackage{enumitem}
+
+\setcounter{tocdepth}{1}   % Inhaltsverzeichnis
+\newcommand{\osg@lecture}[3][]{%
+  \ifstrempty{#1}{%
+    \chapter{#2}
+    \markleft{\thechapter. #2}
+  }{%
+    \chapter[#1]{#2}
+    \markleft{\thechapter. #1}
+  }
+  \zref@label{osglecture}%
+  \gdef\beamer@currentlecturelabel{#3} % Steht damit auch im article-Mode zur
+                                % Verfügung, nicht nur in beamer 
+}
+\renewcommand{\lecture}[3][]{
+  \AddToHook{begindocument}{\osg@lecture[#1]{#2}{#3}}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Seiten-Layout
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\RequirePackage[]{scrlayer-scrpage}
+\clearpairofpagestyles
+\setkomafont{pageheadfoot}{\sffamily\footnotesize}
+\setkomafont{pagenumber}{\sffamily\bfseries\color{white}}
+\addtokomafont{dictum}{\small<all>\em}
+\setkomafont{chapterprefix}{\Huge\color{black}\bfseries}
+% Der Markierungsstreifen ist dunkler
+\setkomafont{chapter}{\color{tuccolor!75!black}\huge}
+\addtolength{\headsep}{17mm}
+\DeclareNewLayer[
+  background,
+  topmargin,
+  addheight=\headheight+3mm,
+  mode=picture,
+  contents=\putLL{\textcolor{tuccolor!35}{\rule{\layerwidth}{\layerheight}}}
+]{swatch.bg}
+\DeclareNewLayer[
+  clone=swatch.bg,
+  addheight=\headheight+3mm,
+  contents=\putLL{\textcolor{tuccolor}{\rule{\layerwidth}{\layerheight}}}
+]{swatch-title.bg}
+\DeclareNewLayer[
+  clone=swatch.bg,
+  oddpage,
+  outermargin,
+  addhoffset=2mm,
+  width=18mm,
+  % height=\dimexpr1in+\voffset+\topmargin+\headheight\relax,
+  height=\dimexpr1in+\voffset+\topmargin+\headheight+3mm\relax,
+  contents={
+    \putLL{%
+      \textcolor{white}{\rule{1.5mm}{\layerheight}}%
+      \textcolor{tuccolor}{\rule{15mm}{\layerheight}}%
+      \textcolor{white}{\rule{1.5mm}{\layerheight}}%
+    }
+    \putC{\makebox(0,0){\pagemark}}
+  }
+]{swatch.odd}
+\DeclareNewLayer[
+  clone=swatch.odd,
+  evenpage,
+  addhoffset=\dimexpr1in+\hoffset+\evensidemargin-4mm-18mm\relax
+  ]{swatch.even}
+  \DeclareNewLayer[
+  background,
+  mode=picture,
+  bottommargin,
+  align=b,
+  addvoffset=18mm,
+  contents={
+    \putLL{
+      \textcolor{tuccolor!75!black}{\rule{\layerwidth}{1pt}}
+    }
+  }
+]{swatch.bottom}  
+% Layer aktivieren:
+\AddLayersAtBeginOfPageStyle{scrheadings}{swatch.odd,swatch.even,swatch.bg, swatch.bottom}
+% Kapitelstart hat leeren Balken
+\AddLayersAtBeginOfPageStyle{plain.scrheadings}{swatch.bg}
+\newcommand{\osg@pagehead}{
+  \lehead{{\sffamily\scshape\osgshortauthor}: \osgshorttitle}
+  \rohead{\leftmark\ $\blacktriangleright$ \rightmark}
+}
+\AtBeginDocument{
+  \osg@pagehead
+}
+\AtEndDocument{
+  \cleardoublepage
+}
+
+% Dictum
+\renewcommand*{\dictumwidth}{.45\textwidth}
+\renewcommand*{\dictumrule}{}
+\renewcommand*{\dictumauthorformat}[1]{---~\rmfamily#1\medskip}
+
+% Frametitle werden zu Subsubsections
+\defbeamertemplate<article>{frametitle}{osg}{%
+  \ifdefstring{\insertframetitle}{}{}{%
+    \subsubsection*{\insertframetitle}%
+  }%
+}
+\setbeamertemplate{frametitle}[osg]
+
+% Subtitle werden zu Paragraphs
+\renewcommand{\framesubtitle}[1]{\paragraph*{#1}}%
+\setkomafont{paragraph}{\rmfamily\bfseries}
+
+% Im Script wird \contframetitle übergangen
+  \newcommand{\contframetitle}[1][]{}
+ 
+%\newbool{@osg@inkoma}
+% \pretocmd{\usekomafont}{\booltrue{@osg@inkoma}}{\typeout{Patching of
+%     KOMA \string\usekomafont\ succeed}}{\typeout{Can't
+%     patching KOMA \string\usekomafont}}
+% \apptocmd{\usekomafont}{\boolfalse{@osg@inkoma}}{\typeout{Patching of
+%     KOMA \string\usekomafont\ succeed}}{\typeout{Can't
+%     patching KOMA \string\usekomafont}}
+
+\RequirePackage{tcolorbox}
+
+\setbeamertemplate{block begin}{
+  \begin{tcolorbox}[%
+    %colback=structure!10!white,
+    colback=tuccolor!10!white,
+    colframe=tuccolor!75!black,
+    arc=0mm,
+    enhanced,
+    code={
+      \ifcsstring{insertblocktitle}{}{
+        \tcbset{detach title}
+      }{
+        \tcbset{attach boxed title to top
+          left={yshift=-2mm,xshift=-5pt},
+          title=\insertblocktitle
+        }
+      }
+    },
+    colbacktitle= tuccolor!75!black,
+    coltitle= white,
+    fonttitle=\bfseries,
+  ]
+}
+\setbeamertemplate{block end}{
+  \end{tcolorbox}
+} 
+\setbeamertemplate{block alerted begin}{
+  \begin{tcolorbox}[%
+    colback=tuccolor@warning!10!white,
+    colframe=tuccolor@warning!75!black,
+    arc=0mm,
+    enhanced,
+   code={
+      \ifcsstring{insertblocktitle}{}{
+        \tcbset{detach title}
+      }{
+        \tcbset{attach boxed title to top
+          left={yshift=-2mm,xshift=-5pt},
+          title=\insertblocktitle
+        }
+      }
+    },
+    colbacktitle= black!25!tucwarning,
+    coltitle= white,
+    fonttitle=\bfseries,
+  ]
+}
+\setbeamertemplate{block alerted end}{
+  \end{tcolorbox}
+}
+\setbeamertemplate{block example begin}{
+  \begin{tcolorbox}[%
+    colback=tuccolor@info!5!white,
+    colframe=tuccolor@info,
+    arc=0mm,
+    title=\insertblocktitle,
+    colbacktitle=white,
+    coltitle=black,
+    fonttitle=\bfseries,
+    detach title,
+    before upper={\tcbtitle\par\smallskip}
+  ]
+}
+\setbeamertemplate{block example end}{
+  \end{tcolorbox}
+}
+
+% \setbeamertemplate{theorem begin}{
+% }
+
+% \setbeamertemplate{theorem end}{
+% }
+  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Columns
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Um auch im Article-Mode columns zuzulassen, ist der Boilerplate-Code
+% größtenteils aus Beamer kopiert.
+
+\define@key{beamer@col}{onlytextwidth}[true]{%
+  \def\beamer@colentrycode{\hbox to\textwidth\bgroup\ignorespaces}%
+  \def\beamer@colexitcode{\unskip\egroup}}
+\define@key{beamer@col}{totalwidth}{%
+  \def\beamer@colentrycode{\hbox to#1\bgroup\ignorespaces}%
+  \def\beamer@colexitcode{\unskip\egroup}}
+\define@key{beamer@col}{c}[true]{\def\beamer@colmode{c}\def\beamer@colalign{c}\def\beamer@colheadskip{}}
+\define@key{beamer@col}{t}[true]{\def\beamer@colmode{t}\def\beamer@colalign{t}\def\beamer@colheadskip{}}
+\define@key{beamer@col}{T}[true]{\def\beamer@colmode{T}\def\beamer@colalign{t}\def\beamer@colheadskip{\vskip-1ex\nointerlineskip}}
+\define@key{beamer@col}{b}[true]{\def\beamer@colmode{b}\def\beamer@colalign{b}\def\beamer@colheadskip{}}
+
+\newenvironment<>{osg@beamer@columnenv}[2][\beamer@colmode]{%
+  \beamer@colclose\def\beamer@colclose{}%
+  \begin{actionenv}#3%
+      \setkeys{beamer@col}{#1}%
+      \begin{minipage}[\beamer@colalign]{#2}%
+          \leavevmode\raggedright\beamer@colheadskip\ignorespaces}
+        {\end{minipage}\hfill\end{actionenv}\@ignoretrue}
+\let\endcolumn\endbeamer@columnenv
+
+\newcommand<>\osg@beamer@columncom[2][\beamer@colmode]{%
+  \beamer@colclose%
+  \def\beamer@colclose{\end{minipage}\hfill\end{actionenv}\ignorespaces}%
+  \begin{actionenv}#3%
+      \setkeys{beamer@col}{#1}%
+      \begin{minipage}[\beamer@colalign]{#2}%
+          \leavevmode\raggedright\beamer@colheadskip\ignorespaces
+  }
+      
+\let\osg@orig@beamer@columncom=\beamer@columncom
+\let\osg@beamer@columnenv=\beamer@columnenv
+\let\endosg@beamer@columnenv=\endbeamer@columnenv
+
+% Um die Kompatibilität mit Beamer zu erhöhen, wird ohne
+% Mode-Spezifikation die columns-Umgebung im Article-Mode igoniert.
+% Damit sie beachtet wird, muss <all> (oder <article>) angegeben
+% werden. 
+\renewenvironment<>{columns}[1][c]{%
+  \def\beamer@colclose{}
+  \ifstrempty{#2}{}{%
+    \only#2{%
+      \setkeys{beamer@col}{#1}%
+      \let\beamer@columncom=\osg@beamer@columncom
+      \let\beamer@columnenv=\osg@beamer@columnenv
+      \let\endbeamer@columnenv=\endosg@beamer@columnenv
+    }
+  }
+}{
+  \beamer@colclose
+  \let\beamer@columncom=\osg@orig@beamer@columncom
+  \let\beamer@columnenv=\osg@orig@beamer@columnenv
+  \let\endbeamer@columnenv=\endosg@orig@beamer@columnenv
+}
+
+
+
+\mode<all>

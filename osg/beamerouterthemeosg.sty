@@ -1,0 +1,190 @@
+\mode<presentation>
+
+% Titleseite
+\mode<presentation>
+\AtBeginLecture{
+  \ifdefstring{\insertshortlecture}{}{
+    \title{\insertlecture}
+  }{
+    \title[\insertshortlecture]{\insertlecture}
+  }
+  \zlabel{osglecture}
+  \tucthreeheadlines
+  \tucnarrowframe
+  \begingroup
+    \ifcsdef{osg@logo}{
+      \logo{\includegraphics[width=\hsize]{\osg@logo}}
+    }{}
+    \setbeamertemplate{tuc3 headline 1}{\insertsubtitle}
+    \setbeamertemplate{tuc3 headline 2}{\insertdate}
+    \setbeamertemplate{tuc3 headline 3}{}
+    \setbeamertemplate{navigation symbols}{}
+    \setbeamertemplate{footline}{}
+    \begin{frame}[c]
+        \vbox{}
+        {\usebeamerfont{subtitle}{\insertsubtitle}}\par\vskip2em
+        \usebeamerfont{subtitle}\usebeamercolor[fg]{title}{\osgchapterprefix}\par\vskip0.25em
+        {\usebeamerfont{title}\usebeamercolor[fg]{title}{\inserttitle}}\par\vskip2em
+        \usebeamerfont{author}\insertauthor\par\vskip0.5em
+        \usebeamerfont{institute}\insertinstitute
+        \vfill
+    \end{frame}
+  \endgroup
+  \tuctwoheadlines
+  \tucwideframe
+  \setbeamertemplate{tuc2 headline 1}{\insertsubtitle~--~\insertshorttitle}
+  \setbeamertemplate{tuc2 headline 2}{\osginsertshortsection}
+  \setbeamertemplate{footline}[osg]
+  \osg@aftertitle
+}
+
+
+\setbeamerfont{framesubtitle}{size=\large}
+%% Automatische Titel bei Abschnittsanfang
+\newtoggle{newsec}
+\newtoggle{newsubsec}
+\newcommand{\osg@insertsection}{\thesection\ \insertsection}
+\newcommand{\osg@insertsectionstar}{\insertsection}
+\newcommand{\osg@insertsubsection}{\thesubsection\ \insertsubsection}
+\newcommand{\osg@insertsubsectionstar}{\insertsubsection}
+% \newcommand{\osg@insertshortsection}{\thesection\ \secname} 
+% \newcommand{\osg@insertshortsection}{\thesection\ \insertshortsection} % /insertshortsectionhead?
+\newcommand{\osg@insertshortsection}{\thesection\ \insertsectionhead}
+\newcommand{\osg@insertshortsectionstar}{\insertsectionhead}
+\newcommand{\osg@insertshortsubsection}{\thesubsection\ \insertshortsubsection}
+\newcommand{\osg@insertshortsubsectionstar}{\insertshortsubsection}
+\let\osginsertsection=\osg@insertsection
+\let\osginsertsubsection=\osg@insertsubsection
+\let\osginsertshortsection=\osg@insertshortsection
+\let\osginsertshortsubsection=\osg@insertshortsubsection
+\togglefalse{newsec}
+\togglefalse{newsubsec}
+\AtBeginSection[%
+\let\osginsertsection=\osg@insertsectionstar
+\let\osginsertshortsection=\osg@insertshortsectionstar
+\toggletrue{newsec}
+]{%
+  \let\osginsertsection=\osg@insertsection
+  \let\osginsertshortsection=\osg@insertshortsection
+  \toggletrue{newsec}
+}
+
+\AtBeginSubsection[
+\let\osginsertsubsection=\osg@insertsubsectionstar
+\let\osginsertsubshortsection=\osg@insertshortsubsectionstar
+\toggletrue{newsubsec}
+]{
+  \let\osginsertsubsection=\osg@insertsubsection
+  \let\osginsertshortsubsection=\osg@insertshortsubsection
+  \toggletrue{newsubsec}
+}
+% \renewcommand{\section}{\toggletrue{newsec}\kernsection}
+% \renewcommand{\subsection}{\toggletrue{newsubsec}\kernsubsection}
+% 
+\long\def\beamer@@frametitle[#1]#2{%
+  \iftoggle{newsec}{% Neue Section
+    \iftoggle{newsubsec}{% Neue Section + neue Subsection
+      \gdef\insertframetitle{{\osginsertsection\ifnum\beamer@autobreakcount>0\relax{}\space\usebeamertemplate*{frametitle continuation}\fi}}%
+      \gdef\beamer@frametitle{\osginsertsection}%
+      \gdef\beamer@shortframetitle{\#1}%
+      \gdef\insertframesubtitle{\osginsertsubsection}
+      \gdef\@lastframetitle{\osginsertsubsection}
+      % Trotzdem Titel angegeben? => Warnung
+      \beamer@ifempty{#2}{}{%
+        \GenericWarning{OSGBeamer}{title will be lost after section and subsection command}
+      }
+    }{ % Neue Section, ohne Subsection
+      \beamer@ifempty{#2}{% Kein explizit gesetzter Titel
+        \gdef\insertframetitle{{\osginsertsection\ifnum\beamer@autobreakcount>0\relax{}\space\usebeamertemplate*{frametitle continuation}\fi}}%
+        \gdef\beamer@frametitle{\osginsertsection}%
+        \gdef\beamer@shortframetitle{\osginsertshortsection}%
+        \gdef\insertframesubtitle{}
+        \gdef\@lastframetitle{\insertsection}
+      }{% Titel gegeben, wird zum Subtitel
+        \gdef\insertframetitle{{\osginsertsection\ifnum\beamer@autobreakcount>0\relax{}\space\usebeamertemplate*{frametitle continuation}\fi}}%
+        \gdef\beamer@frametitle{\osginsertsection}%
+        \gdef\beamer@shortframetitle{#1}%
+        \gdef\insertframesubtitle{#2}
+        \gdef\@lastframetitle{#2}
+      }
+    }
+  }{% Keine neue Section
+    \iftoggle{newsubsec}{% Neue Subsection
+      \gdef\insertframetitle{{\osginsertsubsection\ifnum\beamer@autobreakcount>0\relax{}\space\usebeamertemplate*{frametitle continuation}\fi}}%
+      \gdef\beamer@frametitle{\osginsertsubsection}%
+      \gdef\beamer@shortframetitle{\osginsertshortsubsection}%
+      \beamer@ifempty{#2}{
+        \gdef\@lastframetitle{\osginsertsubsection}
+      }{
+        \gdef\insertframesubtitle{#2}
+        \gdef\@lastframetitle{#2}
+      }
+    }{% Standard
+      \beamer@ifempty{#2}{}{%
+        \gdef\insertframetitle{{#2\ifnum\beamer@autobreakcount>0\relax{}\space\usebeamertemplate*{frametitle continuation}\fi}}%
+        \gdef\beamer@frametitle{#2}%
+        \gdef\beamer@shortframetitle{#1}%
+        \gdef\@lastframetitle{#2}
+      }%
+    }%
+  }%
+  \ifnumequal{\insertpagenumber}{\insertframeendpage}{%
+    \global\togglefalse{newsec}%
+    \global\togglefalse{newsubsec}%
+  }{} 
+}
+
+  % Mit \contframetitle wird der letzte Titel wiederholt mit der
+% Ergänzung "(Forts.)" (bzw. wie frametitle continuation gesetzt ist)
+\mode<presentation>{
+  \newcommand{\contframetitle}[1][\@lastframetitle]{
+    \gdef\insertframetitle{#1\space\usebeamertemplate*{frametitle continuation}}
+    \gdef\beamer@frametitle{#1}%
+  }
+}
+\typeout{********** Outer Theme 3}
+
+% Fußzeile
+\newcommand{\inserttinyosglogo}{%
+  \ifcsdef{osg@tinylogo}{\raisebox{-1pt}{\includegraphics[height=2ex]{\osg@tinylogo}}}{}%
+}
+
+\defbeamertemplate{pagenumber}{roman}{
+{\Roman{chapter}}\hspace{1pt}--\hspace{1pt}\insertframenumber\ {\emph{\ldeen{von}{of}}}\ \inserttotalframenumber
+}
+\defbeamertemplate{pagenumber}{n of m}{\insertframenumber\ / \inserttotalframenumber}
+\defbeamertemplate{pagenumber}{single}{\insertframenumber}
+
+\defbeamertemplate*{footline}{osg}
+{
+  \begin{beamercolorbox}[colsep=0.25pt]{separation line}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\paperwidth,ht=8pt,dp=3pt]{fg=black,bg=white}%
+      \leavevmode%
+      \fontsize{7pt}{9pt}\selectfont%
+      \hspace*{0.04994\paperheight}%
+      \rlap{%
+        \@tempswafalse%
+        \expandafter\beamer@ifempty\expandafter{\inserttinyosglogo}{}{\inserttinyosglogo\@tempswatrue}%
+        \expandafter\beamer@ifempty\expandafter{\beamer@shortdate}{}{\if@tempswa~~\fi\insertshortdate\@tempswatrue}%
+        \expandafter\beamer@ifempty\expandafter{\beamer@shortauthor}{}{\if@tempswa~$\cdot$~\fi\insertshortauthor\@tempswatrue}%
+      }\hfill%
+        \usebeamertemplate{pagenumber}
+      \hfill%
+      \llap{\insertshorttucurl}%
+      \hspace*{0.04994\paperheight}%
+  \end{beamercolorbox}%
+}
+
+% Im Standalone-Modus wird die Kapiteldarstellung unterdrückt, da dort nicht von
+% einer forlaufenden Sequenz ausgegangen wird.
+\IfBool{osgoptionstandalone}{
+  \newcommand{\osgchapterprefix}{}
+  \setbeamertemplate{pagenumber}[n of m]
+}{
+  \newcommand{\osgchapterprefix}{\ordinal{chapter} \ldeen{Kapitel}{Chapter}}
+  \setbeamertemplate{pagenumber}[roman]
+}
+
+\typeout{********** End Outer Theme}
+\mode<all>

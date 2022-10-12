@@ -1,0 +1,29 @@
+\mode<presentation>
+\iftuc@robotoheader
+% Ist bei Option 'latexfontbody' aktiv. Im tuc2019-Theme wird *kein* Roboto-Font deklariert, was
+% entsprechend zu einem Fehler führt. Das Roboto-Package würde zu einer Redefinition des
+% Mainfonts führen, daher wird hier minimal-inversiv Roboto mit den Grundshapes deklariert.
+\providefontfamily\roboto{Roboto}[
+  NFSSFamily     = rob,
+  Extension      = .otf,
+  UprightFont    = *-Regular,
+  BoldFont       = *-Bold,
+  ItalicFont     = *-Italic,
+  BoldItalicFont = *-BoldItalic
+  ]
+  % Beseitige einen Bug, der durch eine Bug-Beseitigung in den TUC-Beamer-Themes 2019 entstanden
+  % ist.
+  \def\mdseries@sf{m}
+\fi
+\iftuc@roboto\relax\else
+  \usefonttheme{professionalfonts}
+  \setmainfont{TeX Gyre Pagella} % 
+  \setsansfont{Source Sans Pro}[
+    UprightFont    = *-Regular,
+    BoldFont       = *-Semibold,
+    ItalicFont     = *-Italic,
+    BoldItalicFont = *-SemiboldIt
+  ]
+\fi
+\mode<all>
+

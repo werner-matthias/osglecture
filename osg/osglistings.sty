@@ -1,0 +1,189 @@
+% 2016-08-09 M. Werner: erste Version
+% 2018-08-15 M. Werner: Externalisierung für tearout ausschalten
+\NeedsTeXFormat{LaTeX2e}
+\edef\packagename{osglistings}
+\ProvidesPackage{\packagename}[2016/08/15]
+%\RequirePackage[framemethod=1]{mdframed}
+\RequirePackage{tikz}
+\usetikzlibrary{positioning,fit,shapes.geometric,shapes.callouts,arrows,shadows,decorations,decorations.pathreplacing,decorations.pathmorphing,decorations.shapes,decorations.markings, decorations.text, calc}
+\RequirePackage{etoolbox}
+\RequirePackage{tcolorbox}
+\tcbuselibrary{most}
+
+\newtoggle{simpleframe}
+\togglefalse{simpleframe}
+
+\DeclareOption{simple}{
+  \toggletrue{simpleframe}
+}
+\ProcessOptions
+\RequirePackage{scrhack}
+
+%\toggletrue{simpleframe}
+\providecommand{\ctearoutbg}{yellow!15}
+\providecommand{\ctearoutframe}{yellow!15}
+\providecommand{\clstkeyword}{darkgreen!80!black}
+\providecommand{\clstdirective}{magenta!60!black}
+\providecommand{\clstemph}{orange!80!black}
+\providecommand{\clstnumber}{orange}
+\providecommand{\clststr}{blue!50!black}
+\providecommand{\clstcom}{cyan!50!black}
+% Wenn Externalisierung genutzt wird, *muss* die Bibliothek *vor* "osglisting"
+% eingebunden werden!
+\providecommand{\tikzexternaldisable}{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Listings
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\RequirePackage{listings}
+
+\newcommand{\termfamily}{\ttfamily}
+\newcommand{\comstyle}{\itshape\color{\clstcom}}
+
+\newcommand{\lstresetc}{%
+  \lstset{language=C,
+    morekeywords={_Bool,_Complex,_Imaginary,restrict},
+    %basicstyle=\fontencoding{T1}\fontfamily{fvm}\selectfont\scriptsize<presentation>,
+    basicstyle=\termfamily\scriptsize<presentation>,
+    commentstyle=\comstyle,
+    showstringspaces=false,
+    xleftmargin=2pt,
+    xrightmargin=2pt,
+    columns=flexible,
+    morecomment=[s][\fontsize{0.1}{0}\selectfont]{/**}{*/},  % really dirty hack 
+    rangeprefix=/**\ ,rangesuffix=\ */,includerangemarker=false,
+    %% 
+  frame=none,aboveskip=2pt,belowskip=2pt}
+}
+\newcommand{\lstresetbash}{%
+  \lstset{language=bash,
+    basicstyle=\termfamily\color{\cterminalfg}\scriptsize<presentation>,
+    showstringspaces=false,breaklines,numbers=none,
+    xleftmargin=2pt,
+    xrightmargin=2pt,
+    %columns=fixed,
+    frame=none,aboveskip=0pt,belowskip=0pt}
+}
+
+\newcommand{\lstresetpy}{%
+  \lstset{language=Python,
+    basicstyle=\termfamily\cscriptsize,
+    showstringspaces=false,
+    rangeprefix=\#\#\ ,rangesuffix=\ \#,includerangemarker=false,
+    xleftmargin=2pt,
+    xrightmargin=2pt,
+    frame=none,aboveskip=2pt,belowskip=2pt}
+}
+\newcommand{\lstcoloron}{\lstset{keywordstyle=\color{\clstkeyword},emphstyle=\color{\clstnumber},stringstyle=\color{\clststr}}\lstnumberson}
+\newcommand{\lstcoloroff}{\lstset{keywordstyle=\color{black},emphstyle=\color{black},stringstyle=\color{black},commentstyle=\color{black}}}
+\mode<presentation>{
+  \newcommand{\lstnumberson}{\lstset{numbers=left,numberstyle=\comstyle\fontsize{4pt}{4.5pt}\selectfont\color{\clstnumber}\sffamily,numbersep=3pt,xleftmargin=4pt}}
+}
+\mode<article>{
+  \newcommand{\lstnumberson}{\lstset{numbers=left,numberstyle=\comstyle\fontsize{4pt}{4.5pt}\selectfont\color{\clstnumber}\sffamily,numbersep=4pt,xleftmargin=4pt}}
+}
+\newcommand{\lstnumbersoff}{\lstset{numbers=none}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Tearout
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\NewTColorBox{tearout}{o}{
+  colback=\ctearoutbg,
+  before skip balanced = \baselineskip,
+  after skip balanced  = \baselineskip,
+  top=0pt,
+  bottom=0pt,
+  left=1.25em,
+  right=1em,
+  enhanced,
+  notitle,
+  frame code ={\pgfmathsetseed{13}
+    \fill[very thin,\ctearoutbg, draw=yellow, decoration={random steps,segment length=3pt,amplitude=1pt,raise=2pt,
+      pre=lineto,post=lineto,pre length=2pt, post length=2pt,},decorate] (interior.north west)  -- ++ (0,2pt) -| (interior.north east);
+   \fill[very thin,\ctearoutbg, draw=yellow, decoration={random steps,segment length=3pt,amplitude=1pt,raise=-2pt,
+      pre=lineto,post=lineto,pre length=2pt, post length=2pt,},decorate] (interior.south west)  -- ++ (0,-2pt) -|
+    (interior.south east);
+    \draw[thin,yellow, drop shadow] (interior.north west) -- (interior.south west) (interior.north east) -- (interior.south
+    east);
+  },
+  overlay={
+    \edef\tmpa{#1}\edef\tmpb{leporello}
+    \ifx\tmpa\tmpb\relax
+        \draw decorate [decoration={markings,  raise=5pt, mark=between positions 1.2pt and 1 step 12pt
+          with {\node[circle,fill=white, draw=white, inner sep=1.8pt]{};}
+        }] { (interior.north west) -- ($(interior.south west) + (0,-5pt)$) };
+        \draw decorate [decoration={markings, reset marks, raise=-5pt, mark=between positions 1.2pt and 1 step 12pt
+          with {\node[circle,fill=white, draw=white, inner sep=1.8pt]{};}
+        }] { (interior.north east) -- ($(interior.south east)+ (0,-5pt)$) };
+    \fi
+  }
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Terminal
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\definecolor{AppleRed}{RGB}{255,95,86}
+\definecolor{AppleYellow}{RGB}{255,189,46}
+\definecolor{AppleGreen}{RGB}{39,201,63}
+\definecolor{AppleGray}{HTML}{D8D6D9}
+\newcommand{\cterminalbg}{black!5!white}
+\newcommand{\cterminalfg}{blue!30!black}
+
+\NewTColorBox{terminal}{}{
+  title=Terminal,
+  coltitle=black!65,
+  skin=enhanced,%
+  halign title=center,%
+  skin=bicolor,%
+  boxrule=0.5mm,%
+  breakable,%
+  top=0pt,
+  bottom=0pt,
+  left=1em,
+  right=1em,
+  frame style={%
+    draw=AppleGray,%
+    left color=AppleGray,%
+    right color=AppleGray%
+  },%
+  overlay first = {%
+     \node[inner sep=0pt,anchor=north west,yshift=-4pt,xshift=10pt,text=white,font=\tiny]
+     at (frame.north west) {\textcolor{AppleRed}{\faCircle}$\,$
+       \textcolor{AppleYellow}{\faCircle}$\,$
+       \textcolor{AppleGreen}{\faCircle}};
+   },%
+  overlay unbroken = {%
+     \node[inner sep=0pt,anchor=north west,yshift=-4pt,xshift=10pt,text=white,font=\tiny]
+     at (frame.north west) {\textcolor{AppleRed}{\faCircle}$\,$
+       \textcolor{AppleYellow}{\faCircle}$\,$
+       \textcolor{AppleGreen}{\faCircle}};
+   },%
+  fonttitle=\sffamily\cscriptsize,%\bfseries,%
+  fontupper=\ttfamily\cfootnotesize\color{\cterminalfg}
+}
+
+% \newenvironment{terminal}{\par
+%   \colorlet{shadecolor}{\cterminalbg}
+%   \begin{mdframed}[innerleftmargin=10pt,innerrightmargin=10pt,
+%     skipabove=1.5ex plus 1ex minus .5ex,%
+%     outerlinewidth=1pt,outerlinecolor=gray,%
+%     middlelinewidth=.5pt,middlelinecolor=gray!80,%
+%     innerlinewidth=.25pt,innerlinecolor=gray!50!black,%
+%     backgroundcolor=\cterminalbg,
+%     fontcolor=\cterminalfg,%
+%     frametitle=,
+%     % fontcolor=white,%
+%     roundcorner=2pt%
+%     ]
+%     \makeselectable{\\}
+%     % \begin{fshaded}
+%     %   \color{\cterminalfg}
+%     %\catcode`\<=12
+%     %\catcode`\>=12
+%     \ttfamily\cfootnotesize
+%   }{
+%     % \catcode`<=1\catcode`>=1
+%   \end{mdframed}
+%   % \end{fshaded}
+% }

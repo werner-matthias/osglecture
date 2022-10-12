@@ -1,0 +1,372 @@
+\NeedsTeXFormat{LaTeX2e}
+\edef\packagename{osgbeamerref}
+\ProvidesPackage{\packagename}[2022/06/16 v0.5.0]
+\RequirePackage{luacode}
+\RequirePackage{varsfromjobname}
+\RequirePackage[user,xr,lastpage,%runs,
+hyperref
+]{zref}
+
+\providebool{osgoptionstandalone}
+\providebool{osgscript}
+\DeclareKeys[osgbeamer]{
+  standalone.code = {
+    \booltrue{osgoptionstandalone}
+    \boolfalse{osgscript}
+  }
+}
+% Erweiterter LaTeX3-Syntax, vgl. Kommentar in osgbeamer.cls
+\ExplSyntaxOn
+\cs_generate_variant:Nn \keys_set:nn { nx }
+\let\SetKeyEx=\keys_set:nx
+% 'continuation' legt fest, ob die Seiten/Slides kapitelübergreifend
+% numeriert werden.
+% \addtocounter ist bei Slides nicht notwendig, da dort ein
+% \refstepcount erfolgt.
+\keys_define:nn {osgbeamerref}{
+  continuation .choice: ,
+  continuation/beamer .code:n = {
+    \DeclareDocumentCommand{\omrsetcont}{m}{
+      \ifcsstring{omr@doctypecode}{b}{
+         \setcounter{framenumber}{##1}
+       }{}
+    }
+    \DeclareDocumentCommand{\omrcontwarn}{}{
+      \ifcsstring{omr@doctypecode}{b}{
+            \omr@continuationwarning
+      }{}
+    }
+  },
+  continuation/article . code:n = {
+    \DeclareDocumentCommand{\omrsetcont}{m}{
+      \ifcsstring{omr@doctypecode}{a}{
+        \setcounter{page}{##1}
+        \addtocounter{page}{1} 
+      }{}
+    }
+    \DeclareDocumentCommand{\omrcontwarn}{}{
+      \ifcsstring{omr@doctypecode}{a}{
+            \omr@continuationwarning
+      }{}
+    }
+  },
+  continuation/both . code:n = {
+    \DeclareDocumentCommand{\omrsetcont}{m}{
+      \ifcsstring{omr@doctypecode}{a}{
+        \setcounter{page}{##1}
+        \addtocounter{page}{1}
+      }{
+        \setcounter{framenumber}{##1}
+      }
+   }
+    \DeclareDocumentCommand{\omrcontwarn}{}{
+      \omr@continuationwarning
+    }
+  },
+  continuation/none. code:n = {
+    \DeclareDocumentCommand{\omrsetcont}{m}{}
+    \DeclareDocumentCommand{\omrcontwarn}{}{}
+  },
+  standalone .code:n={
+    \booltrue{osgoptionstandalone}
+  }
+} 
+\ExplSyntaxOff
+
+\SetKeys[osgbeamerref]{continuation = article}
+\ProcessKeyOptions[osgbeamerref]
+
+\ifbool{osgoptionstandalone}{
+  % Im standalone-Mode wird "normal" referenziert. Warnung, wenn
+  % explizit eine externe Referenz gerufen wird.
+  \PackageWarningNoLine{\packagename}{standalone mode activated, chrossreferencing disabled}
+  \NewDocumentCommand{\xref}{O{} m}{\ifstrempty{#1}{\ref{#2}}{\emph{no external references in standalone mode}}}
+  \NewDocumentCommand{\xrefchap}{m}{\emph{no external references in standalone mode}}
+}{
+  % Properties für zref: chapter und frame.
+  % Lezteres macht im article-Mode nicht wirklich Sinn (frames werden zwar mitgeführt, aber
+  % nicht dargestellt), stehen aber in beiden Varianten zur Verfügung.
+  \zref@newprop{beamer@frame}{\theframenumber}
+  \zref@newprop{chapter}{\thechapter}
+  \zref@addprop{main}{beamer@frame}
+  \zref@addprop{main}{chapter}
+
+  % Im OLLM werden einige Information über den Jobnamen übertragen. Der Jobname hat das Format
+  % <lectureprefix>-<number>-<doctype>-<language>-<topic>
+  % 
+  \xdef\omr@generalprefix{\getfromjobname{1}}
+  \setcounter{chapter}{\getfromjobname{2}}
+  % Da der chapter-Counter zu Kapitelbeginn einem \refstepcounter
+  % unterliegt, muss für den korrekten Wert *im* Kapitel hier 1
+  % abgezogen werden
+  \addtocounter{chapter}{-1}
+  \xdef\omr@doctype{\getfromjobname{3}}
+  \xdef\omr@currenttopic{\getfromjobname{5}}
+  \xdef\currenttopic{\getfromjobname{5}} % Auch als User-Macro, kann z.B. zur Einbindung von Quelltexten
+                                         % oder anderen Source, die den Themenbaum nachbilden, genutzt werden.
+  % Kürzel für den Doctype: a - article (script), b - beamer (alles andere)
+  \ifdefstring{\omr@doctype}{script}{\gdef\omr@doctypecode{a}}{\gdef\omr@doctypecode{b}}
+      % <doctype-prefix>-<lang>-<chaplabel>
+  \NewExpandableDocumentCommand\omr@fullprefix{O{\omr@doctypecode} m}{#1-\selectedbeamerlanguage-#2}
+  \def\omrshortenprefix#1-#2-#3{#3}
+  \luaexec{
+    required_ex_refs={}
+  }
+ 
+  \newcommand{\addtolistcs}[2]{%
+    \ifinlistcs{#2}{#1}{}{%
+      \listcsgadd{#1}{#2}
+    }
+  }
+
+  \NewDocumentCommand\omrexternaldocument{m m}{%
+    % Ruft lediglich \zexternaldocument auf.
+    % Wurde eingeführt, falls auf xr statt zref-xr umgestellt werden
+    % soll.
+    \zexternaldocument[#1:]{#2}
+  }
+  \NewDocumentCommand\omr@ref{O{} o m O{default}}{%
+    \ifstrempty{#1}{% lokale Referenz
+      \zref@extract{#3}{#4}%
+    }{%
+      \ifcsstring{beamer@currentlecturelabel}{#1}{% ebenfalls lokal
+        \zref@extract{#3}{#4}%
+      }{%
+        % Protokolliere, welches Kapitel nachgefragt wurde.
+        % Dessen aux-Datei wird (so eine vorliegt) im nächsten
+        % Durchlauf über \ [z]externaldocument geladen.
+        % Sammlung erfolgt über die (interne) Liste osg@externrefs
+        \IfNoValueTF{#2}{
+          \write\@mainaux{\string\addtolistcs{osg@externrefs}{\omr@fullprefix{#1}}}%
+          \zref@extract{\omr@fullprefix{#1}:#3}{#4}%
+        }{
+          \write\@mainaux{\string\addtolistcs{osg@externrefs}{\omr@fullprefix[#2]{#1}}}%
+          \zref@extract{\omr@fullprefix[#2]{#1}:#3}{#4}%
+        }
+      }%
+    }%
+  }%
+  \NewDocumentCommand{\xref}{O{} m}{%
+    \omr@ref[#1]{#2}[default]%
+  }
+  \NewDocumentCommand{\xrefchap}{m}{%
+    \ifstrempty{#1}{(\omr@ref[\beamer@currentlecturelabel]{osglecture})}{\omr@ref[#1]{osglecture}}%
+  }
+  \NewDocumentCommand{\xrefsmart}{O{} m}{%
+    \alt<article>{%
+      \ldeen{Seite}{page}~\omr@ref[#1]{#2}[page]%
+    }{%
+      \ldeen{Folie}{slide}~\omr@ref[#1]{#2}%
+    }%
+  }
+  \NewDocumentCommand\xarticleref{O{} m}{
+    \omr@ref[#1][a]{#2}[default]%
+  }
+  \NewDocumentCommand\xpresentationref{O{} m}{
+    \omr@ref[#1][b]{#2}[default]%
+  }
+
+
+  % \OsgShareDataPath wird von OLLM-latexmkrc übergeben
+  \xdef\omr@pathtoref{\OsgShareDataPath/\omr@generalprefix.gref} 
+  
+  \luaexec{
+     require("util-jsn")
+     allrefs = {}
+     % 
+     % getexternal(file,reflist) - Liest externe Referenzen (und die letzte Seiten-/Framenummer) ein
+     % 
+     % File:    json-Datei mit den externen Referenzen
+     % Reflist: Array mit den Suchprefixes als Schlüssel.
+     getexternal = function(file,reflist)
+        for key, info in pairs(reflist) do
+           tex.print("\\typeout{*********** IN REFLIST: ".. key .. "} ")
+        end
+        local f=io.open(file,"r")
+        local foundcont = 0
+        if (f == nil) then
+                 tex.print("\\PackageWarningNoLine{osgbeamerref}{General reference file not found}")       
+        else
+           local json = f:read( "*a" )
+           if (json ~= "") then
+              allrefs = utilities.json.tolua(json)
+              if (allrefs ~= nil) then
+                 for key, info in pairs(allrefs) do
+                    %tex.print("\\typeout{*********** BEFORE IMPORT KEY ".. info['prefix'] .. " PATH:"  .. info['path'] .."} ")                    
+                       % Überprüfe, ob es sich um den Vorgänger in der OLLM-Sequenz handelt. Wenn ja,
+                       % übernehme die Information für die letzte Seite.   
+                    if ((tonumber(info['number'])+1 == \arabic{chapter}) and ('\omr@doctypecode' == string.sub(info['prefix'],1,1))) then
+                       tex.print("\\omrsetcont{" .. info['lastpage'] .. "}")
+                       foundcont = 1
+                    end
+                    %tex.print("\\typeout{*********** TEST For PREFIX ".. info['prefix'] .. "} ")
+                    if (reflist[info['prefix']] ~= nil) then
+                          % Keine extra Warnung, wenn die Datei nicht existiert/lesbar ist, das übernimmt zref.
+                          %tex.print("\\typeout{*********** WANT IMPORT WITH PREFIX ".. info['prefix'] .. " PATH:"  .. info['path'] .."} ")
+                       tex.print("\\omrexternaldocument{" .. info['prefix'] .. "}{" .. info['path'] .. "}")
+                          % Sucheintrag wird aus der Referenzliste gestrichen
+                       reflist[info['prefix']] = nil
+                    end
+                 end
+                    % Gebe für nichtgefundene (in reflist verbliebene) externe aux-Dateien Warnungen aus
+                 for key, val in pairs(reflist) do
+                    tex.print("\\PackageWarningNoLine{osgbeamerref}{Don't know aux file for lecture label '\\omrshortenprefix "..key.."'.\\MessageBreak "..
+                              "Please tex the corresponding lecture}")
+                 end
+                    % Warnung bei fehlendem Anschluss
+                 if ((foundcont == 0) and (\arabic{chapter} ~= \OsgFirstChapter)) then
+                    tex.print("\\omrcontwarn")
+                 end
+              else
+                 tex.print("\\PackageWarningNoLine{osgbeamerref}{General reference file invalid, reinitiate}")
+                 allrefs = {}
+              end
+           end
+           f:close()
+        end
+     end
+     %
+     % updateref(file, label, lang, typecode, path, lastpage) - Schreibt bei Bedarf die gref-Datei
+     % 
+     % File:     json-Datei mit den externen Referenzen
+     % Label:    Label des Kapitels
+     % Lang:     Sprache, de|en
+     % Type:     a|s (doctypecode)
+     % Path:     Pfad zum Verzeichnis mit der aux-Datei
+     % Lastpage: Nummer der letzten Seite
+     updateref = function(file, label, lang, typecode, path, lastpage)
+        local prefix
+        prefix = typecode .. '-' .. lang  .. '-' .. label 
+        local info = {}
+        local ndx = '\arabic{chapter}'
+        %tex.print("\\typeout{************ prefix == "..prefix..",
+        %  chapter = "..ndx.."}")
+        info['prefix'] = prefix
+        local jobpath =  path .. '/' .. \luastring{\jobname}
+        info['path'] = jobpath;
+        info['lastpage'] = lastpage
+        info['number'] = ndx
+        if ((allrefs == {}) or (allrefs[ndx] == nil) or (allrefs[ndx]['lastpage'] == -1) or (allrefs[ndx]['lastpage'] ~= lastpage)) then
+           allrefs[ndx] =info
+           table.sort(allrefs) 
+           local f=io.open(file,"w")
+           if (f) then
+              local json = utilities.json.tostring(allrefs)
+              f:write(json)
+              f:close()
+           end
+        end
+     end
+   }
+   
+   \newrobustcmd{\omr@readref}{
+     %\typeout{*********** Read external}
+     \luaexec{
+       ltreflist={}
+     }
+     % Die etoolbox-Liste mit den benötigten Referenzen wird in eine
+     % Lua-Tabelle gewandelt.
+     % Anmerkung: Dieses Umkopieren ist sicher nicht sehr elegant,
+     % hilft aber bei der Separation von LaTeX- und Lua-Code.
+     \providecommand{\osg@externrefs}{} % Vermeide Error, wenn die
+                                        % Liste noch nicht eingelesen
+                                        % wurde (1. Run)
+     \renewcommand*{\do}[1]{
+       \luaexec{
+         %tex.print("\\typeout{******** Add to lua ##1}")
+         ltreflist[\luastring{##1}]=1
+       }
+     }
+     \dolistloop{\osg@externrefs} % Ausführung der Schleife
+     % In getexternal() werden (bereits bekannte) externe aux-Dateien eingelesen.
+     \luaexec{
+        getexternal(\luastring{\omr@pathtoref}, ltreflist)     
+     }
+   }
+
+   \newrobustcmd{\omr@writeref}[1]{
+     % Bei Beamer-Documenten zählen die Frames, im Scriptkapitel die
+     % Seiten
+     \ifcsstring{omr@doctypecode}{a}{
+       \edef\tempa{page}
+     }{
+       \edef\tempa{beamer@frame}
+     }
+     % Falls noch keine Lastpage ermittelt wurde, wird sie auf 0 gesetzt
+     \zref@def@extractdefault{\tlp}{LastPage}{\tempa}{0}
+     \luaexec{
+       updateref(
+       \luastring{\omr@pathtoref},
+       \luastring{#1},
+       '\selectedbeamerlanguage',
+       \luastring{\omr@doctypecode},
+       \luastring{\OsgCurrentDir},
+       \luastring{\tlp}
+       )
+      }
+   }
+
+   \RenewDocumentCommand{\label}{m}{\beamer@savemode\zref@label{#1}\beamer@resumemode}
+   \AddToHook{begindocument}{
+     % Da zref genutzt wird, werden \label und \ref auf die entsprechenden
+     % zref-Pendants gesetzt.
+     % ACHTUNG: das kann (in anderen Paketen) zu Inkompatibilitäten
+     % führen
+     \let\ref=\zref
+     % Zu diesem Zeitpunkt ist die aux-Datei schon eingelesen.
+     % Für die Crossreferenzierung müssen auch die anderen
+     % (referenzierten) aux-Dateien gelesen werden.
+     % Die Pfade der
+     \omr@readref
+   }
+   \AddToHook{enddocument/afteraux}{
+     % ggf. muss die gref-Datei angepasst werden.
+     % Da darin auch die Nummer der letzten Seite/Folie übergeben wird, erfolgt dies
+     % erst zu Ende der Dokumentverarbeitung
+     \omr@writeref{\beamer@currentlecturelabel}
+   }
+
+  \NewDocumentCommand\omr@continuationwarning{}{
+    \PackageWarningNoLine{osgbeamerref}{
+      No lecture continuation found, I start\MessageBreak
+      with default value.\MessageBreak
+      Please tex the previous lecture.
+    }
+  }
+
+  \mode<presentation>{
+    % Wir wollen auch im presentation-Mode auf Abschnitte etc. referenzieren
+    % können. Jedoch verhindert Beamer, dass das \label-Macro "wahrgenommen" wird.
+    % Deshalb wird beamer@treat aus beamerbasemodes.sty überschrieben, um Abschnittslabel
+    % für Slides/Handouts zu ermöglichen
+  \def\beamer@treat{%
+    \ifx\beamer@nexttoken\frame\let\next=\beamer@stopoutsidemode\fi%
+    \ifx\beamer@nexttoken\lecture\let\next=\beamer@stopoutsidemode\fi%
+    \ifx\beamer@nexttoken\note\let\next=\beamer@stopoutsidemode\fi%
+    \ifx\beamer@nexttoken\appendix\let\next=\beamer@stopoutsidemode\fi%
+    %\ifx\beamer@nexttoken\lde\let\next=\beamer@stopoutsidemode\fi%
+    %\ifx\beamer@nexttoken\len\let\next=\beamer@stopoutsidemode\fi%
+    %\ifx\beamer@nexttoken\langall\let\next=\beamer@stopoutsidemode\fi%
+    \ifx\beamer@nexttoken\againframe\let\next=\beamer@stopoutsidemode\fi%
+    \ifx\beamer@nexttoken\section\let\next=\beamer@stopoutsidemode\fi%
+    \ifx\beamer@nexttoken\subsection\let\next=\beamer@stopoutsidemode\fi%
+    \ifx\beamer@nexttoken\subsubsection\let\next=\beamer@stopoutsidemode\fi%
+    \ifx\beamer@nexttoken\part\let\next=\beamer@stopoutsidemode\fi%
+    \ifx\beamer@nexttoken\article\let\next=\beamer@stopoutsidemode\fi%
+    \ifx\beamer@nexttoken\mode\let\next=\beamer@stopoutsidemode\fi%
+    \ifx\beamer@nexttoken\common\let\next=\beamer@stopoutsidemode\fi%
+    \ifx\beamer@nexttoken\label\let\next=\beamer@stopoutsidemode\fi% neu!
+    \ifx\beamer@nexttoken\presentation\let\next=\beamer@stopoutsidemode\fi%
+    %\ifx\beamer@nexttoken\markcategory\let\next=\beamer@stopoutsidemode\fi% neu!
+    \ifx\beamer@nexttoken\begin\let\next=\beamer@checkbeginframe\fi%
+    \ifx\beamer@nexttoken\end\let\next=\beamer@checkenddoc\fi%
+    \next}
+
+  }
+
+  \IfBool{osglegacy}{
+    \NewCSDeprecatedCommand{osgexternaldocumentforce}{m m}{}[use\MessageBreak
+    '\string\xarticleref' or '\string\xpresentationref', respectively,] 
+  }  
+} % Ende if standalone/OLLM
+
