@@ -1,0 +1,12 @@
+Alte Vorlesungen an osgbeamer anpassen:
+
+- LaTeX: osgbeamer setzt LuaLaTeX in der TeX-Version von 1.6.2022 oder später voraus, ggf. updaten.
+- Buildsystem:
+  - Makefiles werden nicht mehr genutzt. Sie können gelöscht werden
+  - Die Rolle der Makefiles wird vollständig von latexmkrc übernommen. Es gibt eine config.pl-Datei, in der Einstellungen (insbesondere Pfade) vorgenommen werden können und die als default im Wurzelverzeichnis der Vorlesung liegt.
+
+- \grave wird neuerdings in AMS-Packet definiert, die bisherige Nutzung ergibt einen Fehler. Wurde durch \stress ersetzt.
+- \lectdates:
+  - \setaspectration und \enforceaspectration entfallen
+  - \SetGlobalClassOptions und \EnforceGlobalClassOptions
+
