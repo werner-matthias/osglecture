@@ -19,6 +19,8 @@ use 5.30.3;
 use warnings;
 use feature 'signatures','lexical_subs','switch';
 no warnings 'experimental::signatures','experimental::smartmatch';
+use Getopt::Long;
+use Pod::Usage;
 
 use Cwd qw(cwd getcwd);
 use File::Basename;
@@ -53,7 +55,7 @@ $lualatex = 'lualatex --synctex=1 %O %P';
 $pre_tex_code = '';
 $silent = 1;
 $recorder=1;
-$cleanup_mode=3; # aux-Dateien werden nicht gelöscht
+#$cleanup_mode=3; # aux-Dateien werden nicht gelöscht
 $clean_ext="bbl ext nav snm vrb lbr fls log fdb_latexmk";
 $compiling_cmd="tput setaf 4; echo \"Start TeXing %B...\";  tput init";
 
@@ -64,7 +66,7 @@ sub is_ollmtree {
     # Returns true (1) if the current directory has the form
     # of a lecture-topic directury, else false (0)
     my $dir = basename(getcwd());
-    if ($dir =~ /^[0-9][0-9][0-9][as]?-.*/) {1} else {0}
+    if ($dir =~ /^[0-9][0-9][0-9][abs]?-.*/) {1} else {0}
 }
 
 sub doc_dirs ($type) {

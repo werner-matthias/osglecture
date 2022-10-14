@@ -36,7 +36,7 @@
  }{Use this class with LuaLaTex.}
 \fi
 \RequirePackage{etoolbox}
-% Die nächsten beiden Zeilen diesen nur dafür, dass mein Editor die
+% Die nächsten beiden Zeilen dienen nur dafür, dass mein Editor die
 % etoolbox-if nicht dauernd mit TeX-if verwechselt.
 \let\IfBool=\ifbool 
 \let\IfToggle=\iftoggle
@@ -90,14 +90,6 @@
 % werden (so sie nicht vor der ersten Seitenserstellung gebraucht werden).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \DeclareKeys{
-  % Eine Standalone-Präsentation ist nicht Teil einer Serie
-  standalone.code={
-    \undef{\ollm}
-    \boolfalse{osgllm}
-    \booltrue{osgoptionstandalone}
-    \PassOptionsToPackage{standalone}{osgbeamerref}
-    \ClassInfo{\classname}{OLLM disabled or not detected, deactivate OLLM features}
-  },
   % Soll die Kompatibilität zur alten osgbeamer-Klasse erhöhen (z.Z. nicht genutzt)
   legacy.code={
     \GenericWarning{\classname}{Legacy mode activated}
@@ -146,6 +138,20 @@
 \cs_generate_variant:Nn \keys_set:nn { nx } % SetKey mit Expansion der Werteargumente
 \let\SetKeyEx=\keys_set:nx                  % Alias mit LaTeX2e-Syntax
 \keys_define:nn {osgbeamer}{
+  % Eine Standalone-Präsentation ist nicht Teil einer Serie
+  standalone .choice:,
+  standalone/lecture .code={
+    \PassOptionsToPackage{continuation=none}{osgbeamerref}
+    \booltrue{osgoptionstandalone}
+  },
+  standalone/nolecture .code={
+    \undef{\ollm}
+    \boolfalse{osgllm}
+    \booltrue{osgoptionstandalone}
+    \PassOptionsToPackage{standalone}{osgbeamerref}
+    \ClassInfo{\classname}{OLLM disabled or not detected, deactivate OLLM features}
+  },
+  %standalone .default = {nolecture},
   % Doctype
   % =======
   %

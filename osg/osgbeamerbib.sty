@@ -139,23 +139,31 @@
   \def\lb@error#1{\PackageWarning{librarian}{#1}}
 
   \newtoggle{obb@firstauthor}
-  \newbool{obb@abbreviatefirstname}
-  % Das Original-\AbbreviateFirstname von Librarian Hängt bei Namen mit nur
-  % einem Wort. Daher wird der Mechanismus "nachempfunden".
-  \RenewDocumentCommand\AbbreviateFirstname{}{
-    \booltrue{obb@abbreviatefirstname}
+  % Das Original-\AbbreviateFirstname von Librarian hängt bei Namen mit nur
+  % einem Wort.
+  \AbbreviateFirstname
+  % Siehe https://tex.stackexchange.com/questions/661363/abbreviatefirstname-in-librarian-makes-compilation-hang
+  \def\lb@@loopovernames#1#2#3#4{%
+    \iflb@abbreviate
+      \def\Firstname{}%
+      \ifblank{#1}{}{\lb@abbreviate#1 lb@end }% add test for emptyness
+    \else
+       \def\Firstname{#1}%
+    \fi
+    \def\Von{#2}\def\Lastname{#3}\def\Junior{#4}%
+    \lb@makerefname
   }
+  % \newbool{obb@abbreviatefirstname}
+  % \RenewDocumentCommand\AbbreviateFirstname{}{
+  %   \booltrue{obb@abbreviatefirstname}
+  % }
   \NewDocumentCommand\formatFirstName{o m}{
-    \IfEmptyTF{#2}{}% Wenn es keinen Vornamen gibt, gib gar nichts aus
-    {
-      \IfNoValue{#1}{}{#1\ }
-      \IfBool{obb@abbreviatefirstname}{%
-        \stringrg{m}{1}{1}.%
-      }{#2}%
+    \IfBlankTF{#2}{}% Wenn es keinen Vornamen gibt, gib gar nichts aus
+    {\IfNoValueTF{#1}{}{#1\ }{#2}%
     }%
   }%
   
-  \AbbreviateFirstname % ToDo: Als Option verfügbar machen?
+  %\AbbreviateFirstname % ToDo: Als Option verfügbar machen?
   \NewDocumentCommand\MakeCitation{m}{%
     % Erstellt das Zitatkürzel. Es wird derzeit nur ein Stil unterstützt:
     % Abgekürzte Autorennamen+Jahr. Bei Uneindeutigkeiten wird ein Buchstabe als
