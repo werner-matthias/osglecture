@@ -619,10 +619,11 @@
       \footnote[#1]{#2}%
     }[use \string\footnote<article>]
   }
-  \mode<beamer>{
+  \mode<presentation>{
     \NewCSDeprecatedCommand{afootnote}{O{}m}{}[use \string\footnote<article>]
   }
-}{}
+}{
+}
 
 % In Beamer werden beim presentation-Mode nur die Fußnoten ausgeblendet, nicht
 % die Fußnotenzeichen. Die OSG-Version stellt das IHMO konsistente
