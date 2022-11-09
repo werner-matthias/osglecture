@@ -119,6 +119,7 @@ hyperref
     }
   }
 
+  
   \NewDocumentCommand\omrexternaldocument{m m}{%
     % Ruft lediglich \zexternaldocument auf.
     % Wurde eingeführt, falls auf xr statt zref-xr umgestellt werden
@@ -288,7 +289,7 @@ hyperref
      % Bei Beamer-Documenten zählen die Frames, im Scriptkapitel die
      % Seiten
      \ifcsstring{omr@doctypecode}{a}{
-       \edef\tempa{page}
+           \edef\tempa{page}
      }{
        \edef\tempa{beamer@frame}
      }
@@ -303,20 +304,35 @@ hyperref
        \luastring{\OsgCurrentDir},
        \luastring{\tlp}
        )
-      }
+     }
    }
+    
+   % \RenewDocumentCommand{\label}{m}{\beamer@savemode\zref@label{#1}\beamer@resumemode}
+   
+   % Verschiedene Pakete (insbesondere hyperref und amsmath) definieren \label
+   % um. Daher wird nicht hier nicht \label ersetzt, sondern \ltx@label, das von
+   % diesem Paketen gerufen wird.
+   \RenewDocumentCommand{\ltx@label}{m}{%
+     % \let\osg@original@label=\ltx@label
+     % \renewcommand{\ltx@label}[1]{%
+     % \typeout{******** LL CALLED: #1, current: \@currentlabel}%
+     \zlabel{#1}%
+   }
+   
 
-   \RenewDocumentCommand{\label}{m}{\beamer@savemode\zref@label{#1}\beamer@resumemode}
+   
    \AddToHook{begindocument}{
-     % Da zref genutzt wird, werden \label und \ref auf die entsprechenden
-     % zref-Pendants gesetzt.
-     % ACHTUNG: das kann (in anderen Paketen) zu Inkompatibilitäten
-     % führen
-     \let\ref=\zref
+     % % Da zref genutzt wird, werden \label und \ref auf die entsprechenden
+     % % zref-Pendants gesetzt.
+     % % ACHTUNG: das kann (in anderen Paketen) zu Inkompatibilitäten
+     % % führen
+     % \let\ref=\zref
+     % \let\label=\zlabel
+     % %\let\newlabel=\zref@newlabel
+     % \typeout{******** REDIRECT LABEL}
      % Zu diesem Zeitpunkt ist die aux-Datei schon eingelesen.
      % Für die Crossreferenzierung müssen auch die anderen
      % (referenzierten) aux-Dateien gelesen werden.
-     % Die Pfade der
      \omr@readref
    }
    \AddToHook{enddocument/afteraux}{
