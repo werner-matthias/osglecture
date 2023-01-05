@@ -4,9 +4,7 @@
 # 
 # An extension for latexmk to support 
 # osgbeamer.cls
-#################################################
-my $ollm_version='0.9.1';
-#################################################
+#
 # REMARK:
 # This is my first piece of Perl code I've
 # ever written. 
@@ -14,8 +12,20 @@ my $ollm_version='0.9.1';
 # quite unelegant.
 # However, it seems to work.
 #################################################
-use strict;
+my $ollm_version='0.9.1';
+my $progname = 'ollm';use strict;
+use File::Basename;
 use 5.30.3;
+#####################################
+# Determine way of calling,         #
+# restart if needed                 #
+#####################################
+if (basename($0) eq $progname) {
+    # not called as rc file, restart
+    my $execstr = "latexmk -r ".$0." ".join(' ',@ARGV);
+    exec $execstr;
+}
+
 use warnings;
 use feature 'signatures','lexical_subs','switch';
 no warnings 'experimental::signatures','experimental::smartmatch';
@@ -23,7 +33,6 @@ use Getopt::Long;
 use Pod::Usage;
 
 use Cwd qw(cwd getcwd);
-use File::Basename;
 use List::MoreUtils qw(firstidx);
 use Data::Dumper qw(Dumper);    # nur zum Debuggen
 # The following variables belong to latexmk. We reimport
@@ -34,7 +43,6 @@ $compiling_cmd, $silent, $recorder,  $aux);
 sub is_ollmtree;
 sub doc_dirs;
 sub lect_descr;
-
 #####################################
 # Config-Variablen und Defaults     #
 #####################################
