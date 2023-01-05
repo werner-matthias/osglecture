@@ -3,6 +3,7 @@
 \ProvidesPackage{\packagename}[2022/06/16 v0.5.0]
 \RequirePackage{luacode}
 \RequirePackage{varsfromjobname}
+\RequirePackage{warning}
 \RequirePackage[user,xr,lastpage,%runs,
 hyperref
 ]{zref}
@@ -73,6 +74,7 @@ hyperref
 } 
 \ExplSyntaxOff
 
+% Als Vorgabe wird die Continuation nur im Article (Script) genutzt
 \SetKeys[osgbeamerref]{continuation = article}
 \ProcessKeyOptions[osgbeamerref]
 
@@ -109,17 +111,18 @@ hyperref
       % <doctype-prefix>-<lang>-<chaplabel>
   \NewExpandableDocumentCommand\omr@fullprefix{O{\omr@doctypecode} m}{#1-\selectedbeamerlanguage-#2}
   \def\omrshortenprefix#1-#2-#3{#3}
+  % (Lua-)Liste der benötigten externen Referenzen. Dazu zählen auch die
+  % Intertyp-Referenzen (Script vs. Beamer)
   \luaexec{
     required_ex_refs={}
   }
- 
   \newcommand{\addtolistcs}[2]{%
+    % Fügt Element zur etool-Liste, falls es noch nicht enthalten ist.
     \ifinlistcs{#2}{#1}{}{%
       \listcsgadd{#1}{#2}
     }
   }
 
-  
   \NewDocumentCommand\omrexternaldocument{m m}{%
     % Ruft lediglich \zexternaldocument auf.
     % Wurde eingeführt, falls auf xr statt zref-xr umgestellt werden
@@ -127,32 +130,42 @@ hyperref
     \zexternaldocument[#1:]{#2}
   }
   \NewDocumentCommand\omr@ref{O{} o m O{default}}{%
-    \ifstrempty{#1}{% lokale Referenz
+    % Generischer Referenzbefehl, wird von den User-Referenzbefehlen genutzt.
+    % Parameter:
+    % #1: Kapitellabel (falls leer: aktuelles Kapitel)
+    % #2: Typmarker [a]rticle/[b]eamer (falls nicht angegeben: aktueller Typ durch \omr@fullprefix)
+    % #3: Label
+    % #4: Property
+    \ifstrempty{#1}{% lokale Referenz, wenn nichts angegeben
       \zref@extract{#3}{#4}%
-    }{%
-      \ifcsstring{beamer@currentlecturelabel}{#1}{% ebenfalls lokal
-        \zref@extract{#3}{#4}%
-      }{%
-        % Protokolliere, welches Kapitel nachgefragt wurde.
-        % Dessen aux-Datei wird (so eine vorliegt) im nächsten
-        % Durchlauf über \ [z]externaldocument geladen.
-        % Sammlung erfolgt über die (interne) Liste osg@externrefs
-        \IfNoValueTF{#2}{
-          \write\@mainaux{\string\addtolistcs{osg@externrefs}{\omr@fullprefix{#1}}}%
-          \zref@extract{\omr@fullprefix{#1}:#3}{#4}%
-        }{
-          \write\@mainaux{\string\addtolistcs{osg@externrefs}{\omr@fullprefix[#2]{#1}}}%
-          \zref@extract{\omr@fullprefix[#2]{#1}:#3}{#4}%
-        }
+    }{% Angabe eines Kapitellabels
+      \IfNoValueTF{#2}{%
+        \ifcsstring{beamer@currentlecturelabel}{#1}{% entspricht eigenem Label, ebenfalls lokal
+              \zref@extract{#3}{#4}%
+        }{% Protokolliere, welches Kapitel nachgefragt wurde.
+          % Dessen aux-Datei wird (so eine vorliegt) im nächsten
+          % Durchlauf über \omrexternaldocument geladen.
+          % Sammlung erfolgt über die (interne) Liste osg@externrefs
+        \write\@mainaux{\string\addtolistcs{osg@externrefs}{\omr@fullprefix{#1}}}%
+        \zref@extract{\omr@fullprefix{#1}:#3}{#4}%
+         }%
+      }{% Bei Intertyp-Referenzen muss Kapitel ebenfalls protokolliert werden
+        \write\@mainaux{\string\addtolistcs{osg@externrefs}{\omr@fullprefix[#2]{#1}}}%
+        \zref@extract{\omr@fullprefix[#2]{#1}:#3}{#4}%
       }%
     }%
   }%
+  % Erlaubt \omr@ref als User-Macro
+  \let\omrref\omr@ref
+  % Referenzbefehl, ersetzt \ref
   \NewDocumentCommand{\xref}{O{} m}{%
     \omr@ref[#1]{#2}[default]%
   }
+  % Referenziert ein Kapitel
   \NewDocumentCommand{\xrefchap}{m}{%
     \ifstrempty{#1}{(\omr@ref[\beamer@currentlecturelabel]{osglecture})}{\omr@ref[#1]{osglecture}}%
   }
+  % Referenziert in Beamer das Frame, im Script die Seite des Labels
   \NewDocumentCommand{\xrefsmart}{O{} m}{%
     \alt<article>{%
       \ldeen{Seite}{page}~\omr@ref[#1]{#2}[page]%
@@ -160,29 +173,31 @@ hyperref
       \ldeen{Folie}{slide}~\omr@ref[#1]{#2}%
     }%
   }
+  % Erzwingt die Referenz auf das Artikel-Label (für Crosstype-Referenz)
   \NewDocumentCommand\xarticleref{O{} m}{
     \omr@ref[#1][a]{#2}[default]%
   }
+  % Erzwingt die Referenz auf das Beamer-Label (für Crosstype-Referenz)
   \NewDocumentCommand\xpresentationref{O{} m}{
     \omr@ref[#1][b]{#2}[default]%
   }
 
-
+  % Name der JSON-Datei mit den Referenzpfaden 
   % \OsgShareDataPath wird von OLLM-latexmkrc übergeben
   \xdef\omr@pathtoref{\OsgShareDataPath/\omr@generalprefix.gref} 
   
   \luaexec{
-     require("util-jsn")
+     require("util-jsn") % JSON-Lib
      allrefs = {}
      % 
-     % getexternal(file,reflist) - Liest externe Referenzen (und die letzte Seiten-/Framenummer) ein
+     % getexternal(file,reflist) - liest externe Referenzen (und die letzte Seiten-/Framenummer) ein
      % 
      % File:    json-Datei mit den externen Referenzen
      % Reflist: Array mit den Suchprefixes als Schlüssel.
      getexternal = function(file,reflist)
-        for key, info in pairs(reflist) do
-           tex.print("\\typeout{*********** IN REFLIST: ".. key .. "} ")
-        end
+        %for key, info in pairs(reflist) do
+        %   tex.print("\\typeout{*********** IN REFLIST: ".. key .. "} ")
+        %end
         local f=io.open(file,"r")
         local foundcont = 0
         if (f == nil) then
@@ -194,8 +209,8 @@ hyperref
               if (allrefs ~= nil) then
                  for key, info in pairs(allrefs) do
                     %tex.print("\\typeout{*********** BEFORE IMPORT KEY ".. info['prefix'] .. " PATH:"  .. info['path'] .."} ")                    
-                       % Überprüfe, ob es sich um den Vorgänger in der OLLM-Sequenz handelt. Wenn ja,
-                       % übernehme die Information für die letzte Seite.   
+                    % Überprüfe, ob es sich um den Vorgänger in der OLLM-Sequenz handelt. Wenn ja,
+                    % übernehme die Information für die letzte Seite.   
                     if ((tonumber(info['number'])+1 == \arabic{chapter}) and ('\omr@doctypecode' == string.sub(info['prefix'],1,1))) then
                        tex.print("\\omrsetcont{" .. info['lastpage'] .. "}")
                        foundcont = 1
@@ -205,7 +220,7 @@ hyperref
                           % Keine extra Warnung, wenn die Datei nicht existiert/lesbar ist, das übernimmt zref.
                           %tex.print("\\typeout{*********** WANT IMPORT WITH PREFIX ".. info['prefix'] .. " PATH:"  .. info['path'] .."} ")
                        tex.print("\\omrexternaldocument{" .. info['prefix'] .. "}{" .. info['path'] .. "}")
-                          % Sucheintrag wird aus der Referenzliste gestrichen
+                       % Sucheintrag wird aus der Referenzliste gestrichen
                        reflist[info['prefix']] = nil
                     end
                  end
@@ -214,7 +229,7 @@ hyperref
                     tex.print("\\PackageWarningNoLine{osgbeamerref}{Don't know aux file for lecture label '\\omrshortenprefix "..key.."'.\\MessageBreak "..
                               "Please tex the corresponding lecture}")
                  end
-                    % Warnung bei fehlendem Anschluss
+                 % Warnung bei fehlendem Anschluss
                  if ((foundcont == 0) and (\arabic{chapter} ~= \OsgFirstChapter)) then
                     tex.print("\\omrcontwarn")
                  end
@@ -232,21 +247,22 @@ hyperref
      % File:     json-Datei mit den externen Referenzen
      % Label:    Label des Kapitels
      % Lang:     Sprache, de|en
-     % Type:     a|s (doctypecode)
+     % Typecode: a|b (doctypecode)
      % Path:     Pfad zum Verzeichnis mit der aux-Datei
      % Lastpage: Nummer der letzten Seite
      updateref = function(file, label, lang, typecode, path, lastpage)
         local prefix
         prefix = typecode .. '-' .. lang  .. '-' .. label 
         local info = {}
-        local ndx = '\arabic{chapter}'
+        local cnt = '\arabic{chapter}'
+        local ndx = cnt .. '-' .. typecode
         %tex.print("\\typeout{************ prefix == "..prefix..",
         %  chapter = "..ndx.."}")
         info['prefix'] = prefix
         local jobpath =  path .. '/' .. \luastring{\jobname}
         info['path'] = jobpath;
         info['lastpage'] = lastpage
-        info['number'] = ndx
+        info['number'] = cnt
         if ((allrefs == {}) or (allrefs[ndx] == nil) or (allrefs[ndx]['lastpage'] == -1) or (allrefs[ndx]['lastpage'] ~= lastpage)) then
            allrefs[ndx] =info
            table.sort(allrefs) 
@@ -261,7 +277,6 @@ hyperref
    }
    
    \newrobustcmd{\omr@readref}{
-     %\typeout{*********** Read external}
      \luaexec{
        ltreflist={}
      }
@@ -289,7 +304,7 @@ hyperref
      % Bei Beamer-Documenten zählen die Frames, im Scriptkapitel die
      % Seiten
      \ifcsstring{omr@doctypecode}{a}{
-           \edef\tempa{page}
+       \edef\tempa{page}
      }{
        \edef\tempa{beamer@frame}
      }
@@ -306,30 +321,25 @@ hyperref
        )
      }
    }
-    
-   % \RenewDocumentCommand{\label}{m}{\beamer@savemode\zref@label{#1}\beamer@resumemode}
-   
-   % Verschiedene Pakete (insbesondere hyperref und amsmath) definieren \label
-   % um. Daher wird nicht hier nicht \label ersetzt, sondern \ltx@label, das von
-   % diesem Paketen gerufen wird.
-   \RenewDocumentCommand{\ltx@label}{m}{%
-     % \let\osg@original@label=\ltx@label
-     % \renewcommand{\ltx@label}[1]{%
-     % \typeout{******** LL CALLED: #1, current: \@currentlabel}%
-     \zlabel{#1}%
-   }
-   
 
+
+   % osglabel ist 
+   \newcommand<>{\osglabel}[1]{\only#2{\zref@label{#1}}}
+   % % \RenewDocumentCommand{\label}{m}{\beamer@savemode\zref@label{#1}\beamer@resumemode}
    
    \AddToHook{begindocument}{
-     % % Da zref genutzt wird, werden \label und \ref auf die entsprechenden
-     % % zref-Pendants gesetzt.
-     % % ACHTUNG: das kann (in anderen Paketen) zu Inkompatibilitäten
-     % % führen
-     % \let\ref=\zref
-     % \let\label=\zlabel
-     % %\let\newlabel=\zref@newlabel
-     % \typeout{******** REDIRECT LABEL}
+     % \label und \ref werden auf die entsprechenden Pendants gesetzt, die zref
+     % benutzen. 
+     % ACHTUNG: das kann (in anderen Paketen) zu Inkompatibilitäten
+     % führen
+     \let\ref=\xref
+     \let\label=\osglabel
+     % Verschiedene Pakete (insbesondere hyperref und amsmath) definieren \label
+     % um. Daher wird nicht hier auch \ltx@label ersetzt, das von
+     % diesem Paketen gerufen wird.
+     \RenewDocumentCommand{\ltx@label}{m}{%
+       \beamer@savemode\zref@label{#1}\beamer@resumemode
+     }
      % Zu diesem Zeitpunkt ist die aux-Datei schon eingelesen.
      % Für die Crossreferenzierung müssen auch die anderen
      % (referenzierten) aux-Dateien gelesen werden.
