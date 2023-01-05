@@ -12,10 +12,16 @@
 # quite unelegant.
 # However, it seems to work.
 #################################################
-my $ollm_version='0.9.1';
-my $progname = 'ollm';use strict;
+my $ollm_version='0.9.2';
+my $progname = 'ollm';
+use strict;
 use File::Basename;
 use 5.30.3;
+
+sub greeting {
+  print("OLLM - OSG LaTeX Lecture Maker $ollm_version: an extension for latexmk to support osgbeamer.cls\n\n");
+}
+
 #####################################
 # Determine way of calling,         #
 # restart if needed                 #
@@ -25,6 +31,7 @@ if (basename($0) eq $progname) {
     my $execstr = "latexmk -r ".$0." ".join(' ',@ARGV);
     exec $execstr;
 }
+greeting();
 
 use warnings;
 use feature 'signatures','lexical_subs','switch';
@@ -68,6 +75,7 @@ $clean_ext="bbl ext nav snm vrb lbr fls log fdb_latexmk";
 $compiling_cmd="tput setaf 4; echo \"Start TeXing %B...\";  tput init";
 
 
+
 sub is_ollmtree {
     # is_ollmtree()
     #
@@ -104,7 +112,6 @@ sub doc_dirs ($type) {
 
 sub ollm_print_help {
     print 
-	"OLLM - OSG LaTeX Lecture Maker $ollm_version: an extension for latexmk to support osgbeamer.cls\n\n",
 	"Usage: \n",
         " Generate documents:\n",
 	"  latexmk [<ollm options>] [<doctype>] [<latexmk options>] [<file>]\n",
@@ -116,8 +123,9 @@ sub ollm_print_help {
 	"   ollmconfig=<file>: reads configuration from <file> (default: '../config.pl')\n\n",
 	"  <latexmk options>: see 'latexmk -h'\n\n",
 	"  <file> LaTeX file (default: 'main.tex'), *must* use osgbeamer class.\n\n",
-	" Deploy documents:\n",
-        " latexmk [lang=de|en|all] publish-slides | publish-script | publish-handout \n";
+	#" Deploy documents:\n",
+        #"  latexmk [lang=de|en|all] publish-slides | publish-script | publish-handout \n"
+	;
     exit;
 }
 
@@ -177,7 +185,8 @@ sub process_options(@options) {
 	}
     }
     if ((!is_ollmtree()) && ($standalone == 0)) {
-	die' No proper directory structure. Try \'standalone\'';
+      print("No proper directory structure. Try \'standalone\'.\n");
+      exit(0);
     }
     if ($standalone == 0) { #&& ( -e $config_file)) {
       unless ( -e  $config_file) {
@@ -229,6 +238,10 @@ sub process_options(@options) {
     }
 }
 
+#####################################
+# MAIN                              #
+#####################################
+
 # Script options that can be used by OLLM.
 # All other will be passed to latexmk.
 my $commandregex = qr/slides|script|handout|standalone|debug|verbose|lang|ollmconfig|help|-h|--h|-help|--help/;
@@ -238,11 +251,6 @@ my @ollmOptions = grep (/$commandregex/, @ARGV);
 
 process_options(@ollmOptions);
 
-#sub mylatex {
-#my @args = @_;
-# Possible preprocessing here
-#return system 'pdflatex', @args;
-#}
 
 
 #$pdflatex="pdflatex -shell-escape -file-line-error -synctex=1 %O %P";
