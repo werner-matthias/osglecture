@@ -2,13 +2,13 @@
 
 * Grundlage auf modernen Paketen (aktuelles KOMA, evtl. LaTeX3)
 * Script/Handout/standalone als First-Class-Citicens (Screen streichen?)
-    * Verbesserte Integtation => Referenzen, Links, Kapitel
+    * Verbesserte Integration => Referenzen, Links, Kapitel
 * Vereinfachte Tool-Chain
 * Separierte, unabhängige Pakete
 * Kompatibilitäs-Layer?
 
 # Tool-Chain
-* Verzicht auf Makefiles
+* [] Verzicht auf Makefiles
 * latexmk, arara, scons?
 * Komandozeilenorientierung
 * Flexible Configuration
