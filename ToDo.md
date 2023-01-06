@@ -8,12 +8,12 @@
 * Kompatibilitäs-Layer?
 
 # Tool-Chain
-* [] Verzicht auf Makefiles
-* latexmk, arara, scons?
-* Komandozeilenorientierung
-* Flexible Configuration
-* Orthogonalisierung
-* einfaches Deployment
+* [x] Verzicht auf Makefiles
+* [x] latexmk, --arara, scons?--
+* [ ] Komandozeilenorientierung
+* [ ] Flexible Configuration
+* [ ] Orthogonalisierung
+* [ ] einfaches Deployment
 
 # Script
 * Kapitelweise Übersetzung
