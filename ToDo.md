@@ -9,7 +9,7 @@
 
 # Tool-Chain
 * [x] Verzicht auf Makefiles
-* [x] latexmk, --arara--, --scons?--
+* [x] latexmk, ~~arara, scons?
 * [ ] Komandozeilenorientierung
 * [ ] Flexible Configuration
 * [ ] Orthogonalisierung
