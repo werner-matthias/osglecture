@@ -27,9 +27,9 @@ sub greeting {
 # restart if needed                 #
 #####################################
 if (basename($0) eq $progname) {
-    # not called as rc file, restart
-    my $execstr = "latexmk -r ".$0." ".join(' ',@ARGV);
-    exec $execstr;
+  # not called as rc file, restart
+  my $execstr = "latexmk -r ".$0." ".join(' ',@ARGV);
+  exec $execstr;
 }
 greeting();
 
@@ -45,8 +45,8 @@ use Data::Dumper qw(Dumper);    # nur zum Debuggen
 # The following variables belong to latexmk. We reimport
 # them to avoid warnings.
 our (@default_files, $pdf_mode, $pdflatex, $lualatex,
-$biber, $jobname, $pre_tex_code, $clean_ext, 
-$compiling_cmd, $silent, $recorder,  $aux);
+     $biber, $jobname, $pre_tex_code, $clean_ext, 
+     $compiling_cmd, $silent, $recorder,  $aux);
 sub is_ollmtree;
 sub doc_dirs;
 sub lect_descr;
@@ -74,168 +74,199 @@ $recorder=1;
 $clean_ext="bbl ext nav snm vrb lbr fls log fdb_latexmk";
 $compiling_cmd="tput setaf 4; echo \"Start TeXing %B...\";  tput init";
 
+sub is_beamer_dir {
+  # Returns true (1) if the current directory has the form
+  # of a lecture-topic beamer directury, else false (0)
+  my $dir = basename(getcwd());
+  if ($dir =~ /^[0-9][0-9][0-9][b]?-.*/) {
+    1;
+  } else {
+    0;
+  }
+}
 
+sub is_article_dir {
+  # Returns true (1) if the current directory has the form
+  # of a lecture-topic article (script) directury, else false (0)
+  my $dir = basename(getcwd());
+  if ($dir =~ /^[0-9][0-9][0-9][as]?-.*/) {
+    1;
+  } else {
+    0;
+  }
+}
 
 sub is_ollmtree {
-    # is_ollmtree()
-    #
-    # Returns true (1) if the current directory has the form
-    # of a lecture-topic directury, else false (0)
-    my $dir = basename(getcwd());
-    if ($dir =~ /^[0-9][0-9][0-9][abs]?-.*/) {1} else {0}
+  # Returns true (1) if the current directory has the form
+  # of a lecture-topic directury, else false (0)
+  if (( is_beamer_dir() == 1 ) or ( is_article_dir() == 1 )) {
+    1;
+  } else {
+    0;
+  }
 }
 
 sub doc_dirs ($type) {
-    # doc_dirs(type)
-    #
-    # type: string (slides|script|article|lang)
-    #
-    # Returns all topic directories of the given type, that
-    # are neighbors of the currenct one, in order.
-    if (!is_ollmtree()) {
-	my @empty = ();
-	return @empty;
-    }
-    my @dirs=glob ('../[0-9][0-9][0-9]-*');              # common directories
-    if ($type eq 'slides'){                              # type-specific directories
-	@dirs= (@dirs,glob ( '../[0-9][0-9][0-9]s-*'));
-    }
-    elsif (($type eq 'script') or ($type eq 'article')) {
-	@dirs= (@dirs,glob ( '../[0-9][0-9][0-9]a-*'));
-    }
-    foreach my $d ( @dirs ) {                            # cut prefix path
-	$d = basename($d);
-    }
-    @dirs = sort @dirs;
-    @dirs;
+  # doc_dirs(type)
+  #
+  # type: string (slides|script|article|lang)
+  #
+  # Returns all topic directories of the given type, that
+  # are neighbors of the currenct one, in order.
+  if (!is_ollmtree()) {
+    my @empty = ();
+    return @empty;
+  }
+  my @dirs=glob ('../[0-9][0-9][0-9]-*'); # common directories
+  if ($type eq 'slides') {		  # type-specific directories
+    @dirs= (@dirs,glob ( '../[0-9][0-9][0-9]s-*'));
+  } elsif (($type eq 'script') or ($type eq 'article')) {
+    @dirs= (@dirs,glob ( '../[0-9][0-9][0-9]a-*'));
+  }
+  foreach my $d ( @dirs ) {	# cut prefix path
+    $d = basename($d);
+  }
+  @dirs = sort @dirs;
+  @dirs;
 }
 
 sub ollm_print_help {
-    print 
-	"Usage: \n",
-        " Generate documents:\n",
-	"  latexmk [<ollm options>] [<doctype>] [<latexmk options>] [<file>]\n",
-	"  <doctype>: 'slides'|'handout'|'article' (default: 'slides')\n\n",
-	"  <ollm options> (without a dash!):\n",
-	"   standalone: disable most features of OLLM\n",
-	"   debug|verbose: additional information\n",
-        "   lang=[de|en]: select language\n",
-	"   ollmconfig=<file>: reads configuration from <file> (default: '../config.pl')\n\n",
-	"  <latexmk options>: see 'latexmk -h'\n\n",
-	"  <file> LaTeX file (default: 'main.tex'), *must* use osgbeamer class.\n\n",
-	#" Deploy documents:\n",
-        #"  latexmk [lang=de|en|all] publish-slides | publish-script | publish-handout \n"
-	;
-    exit;
+  print 
+    "Usage: \n",
+    " Generate documents:\n",
+    "  latexmk [<ollm options>] [<doctype>] [<latexmk options>] [<file>]\n",
+    "  <doctype>: 'slides'|'handout'|'article' (default: 'slides')\n\n",
+    "  <ollm options> (without a dash!):\n",
+    "   standalone: disable most features of OLLM\n",
+    "   debug|verbose: additional information\n",
+    "   lang=[de|en]: select language\n",
+    "   ollmconfig=<file>: reads configuration from <file> (default: '../config.pl')\n\n",
+    "  <latexmk options>: see 'latexmk -h'\n\n",
+    "  <file> LaTeX file (default: 'main.tex'), *must* use osgbeamer class.\n\n",
+    #" Deploy documents:\n",
+    #"  latexmk [lang=de|en|all] publish-slides | publish-script | publish-handout \n"
+    ;
+  exit;
 }
 
 sub lect_descr($type) {
-    # lect_descr(type)
-    #
-    # type: string (slides|script|article)
-    #
-    # Returns for current topic directory the 
-    # sequence number (index) and the topic. The first index is 0.
-    if (!is_ollmtree()) {
-	my $empty = undef;
-	return $empty;
-    } 
-    my $topic_dir = basename(getcwd());
-    my @all_dirs = doc_dirs($type);
-    my $index = firstidx { /$topic_dir/ } @all_dirs;
-    my ( $topic ) = $topic_dir=~ /[0-9][0-9][0-9][as]?\-(.*)\s*$/;
-    return ( $index,  $topic);
+  # lect_descr(type)
+  #
+  # type: string (slides|script|article)
+  #
+  # Returns for current topic directory the 
+  # sequence number (index) and the topic. The first index is 0.
+  if (!is_ollmtree()) {
+    my $empty = undef;
+    return $empty;
+  } 
+  my $topic_dir = basename(getcwd());
+  my @all_dirs = doc_dirs($type);
+  my $index = firstidx { /$topic_dir/ } @all_dirs;
+  my ( $topic ) = $topic_dir=~ /[0-9][0-9][0-9][asb]?\-(.*)\s*$/;
+  return ( $index,  $topic);
 }
 
 sub tex_path($path){
-    ensure_path( 'TEXINPUTS',$path);
+  ensure_path( 'TEXINPUTS',$path);
 }
 
 sub process_options(@options) {
-    # Process the options.
-    # Here, the real work is done.
-    my $number;
-    my $topic;
-    my $current_first_chapter;
-    my $standalone;
-    my $config_file = '../config.pl';
-    $standalone = 0;
-    foreach (@options) {
-	given($_){
-	    when($_ eq 'slides') { $doctype = 'slides'; }
-	    when($_ ~~ ['article','script']) { $doctype = 'script'; }
-	    when($_ eq 'handout') { $doctype = 'handout'; }
-	    when($_ eq 'standalone') { $standalone = 1; }
-	    when($_ eq 'lang=de') { $lang = 'de'; }
-	    when($_ eq 'lang=en') { $lang = 'en'; }
-	    when(index($_,'ollmconfig') == 0) {
-	    	my $pos = index($_,'=')+1;
-		$config_file = substr($_,$pos);
-	    }
-	    # 'verbose' and 'debug' is the same.
-	    # $silence is a latexmk variable
-	    when($_ eq 'verbose') { $silent = 0; }	
-	    when($_ eq 'debug')   { $silent = 0; }
-	    when($_ eq 'help')    {
-		ollm_print_help(); 
-	    }
-	    # print_help() belongs to latexmk
-	    when($_ ~~ ['-h','--h','-help','--help']) { print_help(); exit; } 
-	    # ToDo: Befehle für Veröffentlichung
+  # Process the options.
+  # Here, the real work is done.
+  my $number;
+  my $topic;
+  my $current_first_chapter;
+  my $standalone;
+  my $config_file = '../config.pl';
+  $standalone = 0;
+  foreach (@options) {
+    given($_){
+      when($_ eq 'slides') {
+	$doctype = 'slides';
+	if (is_beamer_dir() == 0) {
+	  die "Warning: Directory is not intended for beamer document!\n";
 	}
-    }
-    if ((!is_ollmtree()) && ($standalone == 0)) {
-      print("No proper directory structure. Try \'standalone\'.\n");
-      exit(0);
-    }
-    if ($standalone == 0) { #&& ( -e $config_file)) {
-      unless ( -e  $config_file) {
-	die" Can't find config file '".$config_file."'";
       }
-      print "\nRead '$config_file'\n";
-      my $return;
-      unless ($return = do $config_file) {
-	warn "can't parse $config_file: $@" if $@;
-	warn "can't do $config_file: $!"    unless defined $return;
-	warn "can't run $config_file"       unless $return;
-      }
-      if ($osgbeamer_dir ne '') { tex_path($osgbeamer_dir); }
-      tex_path($shared_source_dir);
-    }
-    if ($lang eq ''){
-      $lang = $defaultlanguage;
-    }
-    if ($standalone == 0) {
-	# In case of a lecture series, we have to provide suitable information to ensure 
-	# continuation.
-	# While doctype, language and (absolute) number is provided via jobname, the
-	# \ollm macro holds:
-	# - \OsgShareDataPath: path to common shared data
-	# - \OsgCurrentDir:    own directory (ToDo: still needed?)
-	# - \OsgFirstChapter:  number of the first chapter (to avoid errors/warnings due to missing lastpage
-	#
-	# 
-	($number,$topic) = lect_descr($doctype);
-	if (defined($first_chapter_number)) {
-	    $current_first_chapter = $first_chapter_number;
-	} elsif (defined($first_chapter_number[0])) {
-	    if ($doctype eq 'script') {
-		$current_first_chapter =  $first_chapter_number[1];
-	    } else {
-		$current_first_chapter =  $first_chapter_number[0];
-	    }
-	} else {
-	    $current_first_chapter =  1;
+      when($_ ~~ ['article','script']) {
+	if (is_article_dir() == 0) {
+	  die "Warning: Directory is not intended for article/script document!\n";
 	}
-	$number = $number + $current_first_chapter;	    
-	$number=sprintf("%02d", $number);
-	# 
-	$pre_tex_code='\gdef\ollm{\gdef\OsgShareDataPath{'.$shared_data_dir.'}\gdef\OsgLectConfig{'.$lectconfig.'}\gdef\OsgCurrentDir{../'.basename(getcwd()).'}\gdef\OsgFirstChapter{'.$current_first_chapter.'}}';
-	# <lectureprefix>-<number>-<doctype>-<language>-<topic>
-	$jobname = $lectureprefix.'-'.$number.'-'.$doctype.'-'.$lang.'-'.$topic;
-    } else { # standalone, nothing is done
-	# ToDo: should there be a doctype mechanism to allow handouts? Probably yes.
+	$doctype = 'script';
+      }
+      when($_ eq 'handout') { $doctype = 'handout'; }
+      when($_ eq 'standalone') { $standalone = 1; }
+      when($_ eq 'lang=de') { $lang = 'de'; }
+      when($_ eq 'lang=en') { $lang = 'en'; }
+      when(index($_,'ollmconfig') == 0) {
+	my $pos = index($_,'=')+1;
+	$config_file = substr($_,$pos);
+      }
+      # 'verbose' and 'debug' is the same.
+      # $silence is a latexmk variable
+      when($_ eq 'verbose') { $silent = 0; }	
+      when($_ eq 'debug')   { $silent = 0; }
+      when($_ eq 'help')    {
+	ollm_print_help(); 
+      }
+      # print_help() belongs to latexmk
+      when($_ ~~ ['-h','--h','-help','--help']) { print_help(); exit; } 
+      # ToDo: Befehle für Veröffentlichung
     }
+  }
+  if ((!is_ollmtree()) && ($standalone == 0)) {
+    print("Error: No proper directory structure. Try \'standalone\'.\n");
+    exit(0);
+  }
+  if ($standalone == 0) {	#&& ( -e $config_file)) {
+    unless ( -e  $config_file) {
+      die"Error: Can't find config file '".$config_file."'\n";
+    }
+    print "\nRead '$config_file'\n";
+    my $return;
+    unless ($return = do $config_file) {
+      warn "can't parse $config_file: $@" if $@;
+      warn "can't do $config_file: $!"    unless defined $return;
+      warn "can't run $config_file"       unless $return;
+    }
+    if ($osgbeamer_dir ne '') {
+      tex_path($osgbeamer_dir);
+    }
+    tex_path($shared_source_dir);
+  }
+  if ($lang eq '') {
+    $lang = $defaultlanguage;
+  }
+  if ($standalone == 0) {
+    # In case of a lecture series, we have to provide suitable information to ensure 
+    # continuation.
+    # While doctype, language and (absolute) number is provided via jobname, the
+    # \ollm macro holds:
+    # - \OsgShareDataPath: path to common shared data
+    # - \OsgCurrentDir:    own directory (ToDo: still needed?)
+    # - \OsgFirstChapter:  number of the first chapter (to avoid errors/warnings due to missing lastpage
+    #
+    ($number,$topic) = lect_descr($doctype);
+    if (defined($first_chapter_number)) {
+      $current_first_chapter = $first_chapter_number;
+    } elsif (defined($first_chapter_number[0])) {
+      if ($doctype eq 'script') {
+	$current_first_chapter =  $first_chapter_number[1];
+      } else {
+	$current_first_chapter =  $first_chapter_number[0];
+      }
+    } else {
+      $current_first_chapter =  1;
+    }
+    $number = $number + $current_first_chapter;	    
+    $number=sprintf("%02d", $number);
+    # 
+    $pre_tex_code='\gdef\ollm{\gdef\OsgShareDataPath{'.$shared_data_dir.'}\gdef\OsgLectConfig{'.$lectconfig.'}\gdef\OsgCurrentDir{../'.basename(getcwd()).'}\gdef\OsgFirstChapter{'.$current_first_chapter.'}}';
+    # <lectureprefix>-<number>-<doctype>-<language>-<topic>
+    $jobname = $lectureprefix.'-'.$number.'-'.$doctype.'-'.$lang.'-'.$topic;
+  } else {			# standalone, nothing is done
+    # ToDo: should there be a doctype mechanism to allow handouts? Probably yes.
+  }
 }
 
 #####################################
@@ -262,24 +293,24 @@ process_options(@ollmOptions);
 
 add_cus_dep('eps','pdf',0,'eps2pdf');
 sub eps2pdf{
-    system("epspdf \"$_[0].eps\"" );
+  system("epspdf \"$_[0].eps\"" );
 }
 add_cus_dep('jpg','pdf',0,'jpg2pdf');
 sub jpg2pdf{
-    system("convert \"$_[0].jpg\" \"$_[0].pdf\"" );
+  system("convert \"$_[0].jpg\" \"$_[0].pdf\"" );
 }
 
 add_cus_dep('jpeg','pdf',0,'jpeg2pdf');
 sub jpeg2pdf{
-    system("convert \"$_[0].jpeg\" \"$_[0].pdf\"" );
+  system("convert \"$_[0].jpeg\" \"$_[0].pdf\"" );
 }
 
 add_cus_dep('gif','pdf',0,'gif2pdf');
 sub gif2pdf{
-    system("convert \"$_[0].gif\" \"$_[0].pdf\"" );
+  system("convert \"$_[0].gif\" \"$_[0].pdf\"" );
 }
 sub rail{
-    system("rail \"$_[0]\"" );
+  system("rail \"$_[0]\"" );
 }
 # Einkommentieren, um den Index zu bauen (Rekursion nicht vergessen)
 #$makeindex='texindy -M lang/german/duden-utf8 -M base/ff-ranges -M base/latin-lettergroups -M ../Include/localidx';
