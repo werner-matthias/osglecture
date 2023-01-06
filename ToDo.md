@@ -16,9 +16,9 @@
 * [ ] einfaches Deployment
 
 # Script
-* Kapitelweise Übersetzung
-* Übergreifende Links
-* Querreferenzen zu Folien
+* [ ] Kapitelweise Übersetzung
+* [x] Übergreifende Links
+* [x] Querreferenzen zwischen Folien und Script
 * 
 
 # Features
