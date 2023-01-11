@@ -275,7 +275,7 @@ sub process_options(@options) {
 
 # Script options that can be used by OLLM.
 # All other will be passed to latexmk.
-my $commandregex = qr/slides|script|handout|standalone|debug|verbose|lang|ollmconfig|help|-h|--h|-help|--help/;
+my $commandregex = qr/slides|script|article|handout|standalone|debug|verbose|lang|ollmconfig|help|-h|--h|-help|--help/;
 
 my @ollmOptions = grep (/$commandregex/, @ARGV);
 @ARGV =  grep (!/$commandregex/, @ARGV);
