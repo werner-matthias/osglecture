@@ -16,7 +16,7 @@ my $ollm_version='0.9.2';
 my $progname = 'ollm';
 use strict;
 use File::Basename;
-use 5.30;
+use 5.30.0;
 
 sub greeting {
   print("OLLM - OSG LaTeX Lecture Maker $ollm_version: an extension for latexmk to support osgbeamer.cls\n\n");
@@ -59,6 +59,7 @@ our $lectconfig='lectdates';
 our $lectureprefix="lecture";
 our $defaultlanguage='de';
 our $osgbeamer_dir = '';
+our $do_publish = 0;
 our $first_chapter_number = undef;
 our @first_chapter_number = undef;
 our $shared_source_dir ='../Include';
@@ -171,6 +172,19 @@ sub tex_path($path){
   ensure_path( 'TEXINPUTS',$path);
 }
 
+sub publish($type){
+  $my pubdir;
+  given($type){
+    when($_ eq 'slides') {
+      $pubdir = $prepath;
+    }
+    when($_ ~~ ['article','script']) {
+      $pubdir = $webpath;
+    }
+  }
+  # Initiate post-build action
+}
+
 sub process_options(@options) {
   # Process the options.
   # Here, the real work is done.
@@ -202,6 +216,7 @@ sub process_options(@options) {
 	my $pos = index($_,'=')+1;
 	$config_file = substr($_,$pos);
       }
+      when($_ eq 'publish') { $do_publish = 1; } 
       # 'verbose' and 'debug' is the same.
       # $silence is a latexmk variable
       when($_ eq 'verbose') { $silent = 0; }	
@@ -261,6 +276,9 @@ sub process_options(@options) {
     $number = $number + $current_first_chapter;	    
     $number=sprintf("%02d", $number);
     # 
+    if ($publish == 1) {
+    }
+    #
     $pre_tex_code='\DocumentMetadata{pdfversion=1.7,lang=en-UK, uncompress}\gdef\ollm{\gdef\OsgShareDataPath{'.$shared_data_dir.'}\gdef\OsgLectConfig{'.$lectconfig.'}\gdef\OsgCurrentDir{../'.basename(getcwd()).'}\gdef\OsgFirstChapter{'.$current_first_chapter.'}}';
     # <lectureprefix>-<number>-<doctype>-<language>-<topic>
     $jobname = $lectureprefix.'-'.$number.'-'.$doctype.'-'.$lang.'-'.$topic;
