@@ -110,19 +110,25 @@ hyperref
   \ifdefstring{\omr@doctype}{script}{\gdef\omr@doctypecode{a}}{\gdef\omr@doctypecode{b}}
       % <doctype-prefix>-<lang>-<chaplabel>
   \NewExpandableDocumentCommand\omr@fullprefix{O{\omr@doctypecode} m}{#1-\selectedbeamerlanguage-#2}
+  % Gibt das Kapitellabel (ohne Doctyp und Sprache) eines erweiterten Labels zurück
   \def\omrshortenprefix#1-#2-#3{#3}
+  % Gibt den Doctype zurück
+  \def\omrlongtypefromlabel#1-#2-#3{%
+    \ifstrequal{#1}{a}{script}{}%
+    \ifstrequal{#1}{b}{beamer}{}%
+  }
   % (Lua-)Liste der benötigten externen Referenzen. Dazu zählen auch die
   % Intertyp-Referenzen (Script vs. Beamer)
   \luaexec{
     required_ex_refs={}
   }
+  % Fügt Element zur etool-Liste, falls es noch nicht enthalten ist.
   \newcommand{\addtolistcs}[2]{%
-    % Fügt Element zur etool-Liste, falls es noch nicht enthalten ist.
     \ifinlistcs{#2}{#1}{}{%
       \listcsgadd{#1}{#2}
     }
   }
-
+  % Registriert extern zu referenzierendes Dokument
   \NewDocumentCommand\omrexternaldocument{m m}{%
     % Ruft lediglich \zexternaldocument auf.
     % Wurde eingeführt, falls auf xr statt zref-xr umgestellt werden
@@ -224,17 +230,18 @@ hyperref
                        reflist[info['prefix']] = nil
                     end
                  end
-                    % Gebe für nichtgefundene (in reflist verbliebene) externe aux-Dateien Warnungen aus
+                 % Gebe für nichtgefundene (in reflist verbliebene) externe aux-Dateien Warnungen aus
                  for key, val in pairs(reflist) do
-                    tex.print("\\PackageWarningNoLine{osgbeamerref}{Don't know aux file for lecture label '\\omrshortenprefix "..key.."'.\\MessageBreak "..
-                              "Please tex the corresponding lecture}")
+                    tex.print("\\addglobalwarning{\\PackageWarningNoLine{osgbeamerref}{Don't know aux file for \\omrlongtypefromlabel"
+                        ..key.." lecture label '\\omrshortenprefix "
+                        ..key.."'.\\MessageBreak ".."Please tex the corresponding lecture}}")
                  end
                  % Warnung bei fehlendem Anschluss
                  if ((foundcont == 0) and (\arabic{chapter} ~= \OsgFirstChapter)) then
                     tex.print("\\omrcontwarn")
                  end
               else
-                 tex.print("\\PackageWarningNoLine{osgbeamerref}{General reference file invalid, reinitiate}")
+                 tex.print("\\PackageWarningNoLine{osgbeamerref}{Global reference file is invalid, reinitiate}")
                  allrefs = {}
               end
            end
@@ -322,10 +329,10 @@ hyperref
      }
    }
 
-
    % osglabel ist 
    \newcommand<>{\osglabel}[1]{\only#2{\zref@label{#1}}}
    % % \RenewDocumentCommand{\label}{m}{\beamer@savemode\zref@label{#1}\beamer@resumemode}
+
    
    \AddToHook{begindocument}{
      % \label und \ref werden auf die entsprechenden Pendants gesetzt, die zref
