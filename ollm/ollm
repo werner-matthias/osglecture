@@ -64,6 +64,8 @@ our $first_chapter_number = undef;
 our @first_chapter_number = undef;
 our $shared_source_dir ='../Include';
 our $shared_data_dir='../Ref';
+our $webpath;
+our $prepath;
 
 @default_files=("main.tex");
 $pdf_mode=4;
@@ -173,7 +175,7 @@ sub tex_path($path){
 }
 
 sub publish($type){
-  $my pubdir;
+  my $pubdir;
   given($type){
     when($_ eq 'slides') {
       $pubdir = $prepath;
@@ -276,7 +278,7 @@ sub process_options(@options) {
     $number = $number + $current_first_chapter;	    
     $number=sprintf("%02d", $number);
     # 
-    if ($publish == 1) {
+    if ($do_publish == 1) {
     }
     #
     $pre_tex_code='\DocumentMetadata{pdfversion=1.7,lang=en-UK, uncompress}\gdef\ollm{\gdef\OsgShareDataPath{'.$shared_data_dir.'}\gdef\OsgLectConfig{'.$lectconfig.'}\gdef\OsgCurrentDir{../'.basename(getcwd()).'}\gdef\OsgFirstChapter{'.$current_first_chapter.'}}';
