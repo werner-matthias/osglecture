@@ -16,7 +16,7 @@ my $ollm_version='0.9.2';
 my $progname = 'ollm';
 use strict;
 use File::Basename;
-use 5.30.3;
+use 5.30;
 
 sub greeting {
   print("OLLM - OSG LaTeX Lecture Maker $ollm_version: an extension for latexmk to support osgbeamer.cls\n\n");
@@ -261,7 +261,7 @@ sub process_options(@options) {
     $number = $number + $current_first_chapter;	    
     $number=sprintf("%02d", $number);
     # 
-    $pre_tex_code='\gdef\ollm{\gdef\OsgShareDataPath{'.$shared_data_dir.'}\gdef\OsgLectConfig{'.$lectconfig.'}\gdef\OsgCurrentDir{../'.basename(getcwd()).'}\gdef\OsgFirstChapter{'.$current_first_chapter.'}}';
+    $pre_tex_code='\DocumentMetadata{pdfversion=1.7,lang=en-UK, uncompress}\gdef\ollm{\gdef\OsgShareDataPath{'.$shared_data_dir.'}\gdef\OsgLectConfig{'.$lectconfig.'}\gdef\OsgCurrentDir{../'.basename(getcwd()).'}\gdef\OsgFirstChapter{'.$current_first_chapter.'}}';
     # <lectureprefix>-<number>-<doctype>-<language>-<topic>
     $jobname = $lectureprefix.'-'.$number.'-'.$doctype.'-'.$lang.'-'.$topic;
   } else {			# standalone, nothing is done
