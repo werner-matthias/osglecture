@@ -17,6 +17,7 @@ my $progname = 'ollm';
 use strict;
 use File::Basename;
 use 5.30.0;
+use Data::Dumper qw(Dumper);    # nur zum Debuggen
 
 sub greeting {
   print("OLLM - OSG LaTeX Lecture Maker $ollm_version: an extension for latexmk to support osgbeamer.cls\n\n");
@@ -28,8 +29,8 @@ sub greeting {
 #####################################
 if (basename($0) eq $progname) {
   # not called as rc file, restart
-  my $execstr = "latexmk -r ".$0." ".join(' ',@ARGV);
-  exec $execstr;
+  my @execarray = ("latexmk","-r",$0,@ARGV);
+  exec @execarray;
 }
 greeting();
 
@@ -41,7 +42,6 @@ use Pod::Usage;
 
 use Cwd qw(cwd getcwd);
 use List::MoreUtils qw(firstidx);
-use Data::Dumper qw(Dumper);    # nur zum Debuggen
 # The following variables belong to latexmk. We reimport
 # them to avoid warnings.
 our (@default_files, $pdf_mode, $pdflatex, $lualatex,
@@ -301,8 +301,6 @@ my @ollmOptions = grep (/$commandregex/, @ARGV);
 @ARGV =  grep (!/$commandregex/, @ARGV);
 
 process_options(@ollmOptions);
-
-
 
 #$pdflatex="pdflatex -shell-escape -file-line-error -synctex=1 %O %P";
 
