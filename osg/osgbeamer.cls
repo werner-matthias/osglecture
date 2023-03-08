@@ -261,7 +261,7 @@
 %      Optionen gelten für *alle* Kapitel.
 %   2. Als 'normale' Klassenoption. Die so gesetzten Optionen gelten
 %      nur in dem Kapitel und überschreiben die Optionen von 1.
-%   3. Mit \EntforceGlobalClassOptions in lectdatex.tex. Die hier gesetzten
+%   3. Mit \EnforceGlobalClassOptions in lectdatex.tex. Die hier gesetzten
 %      Optionen gelten für *alle* Kapitel und überschreiben Optionen
 %      von 1. und 2.
 %
@@ -319,7 +319,7 @@
     }
   }
 }
-% Setze Macoro auf die alte Definition zurück oder (wenn vorher nicht definiert) lösche es.
+% Setze Macro auf die alte Definition zurück oder (wenn vorher nicht definiert) lösche es.
 \NewDocumentCommand{\osg@restoredelayed}{m}{
   \ifcsvoid{original@#1}{\csundef{#1}}{\ExpandArgs{cc}\DeclareCommandCopy{#1}{original@#1}}
 }
@@ -745,7 +745,7 @@
 }{}
 \RequirePackage{lua-ul}
 \let\uline=\underLine
-% \outline unterscheidet sich im den Modi: In der Presentation ist es
+% \outline unterscheidet sich in den Modi: In der Presentation ist es
 % Textmarker, im Article unterstrichen
 \mode<article>{
   \newunderlinetype\beginUnderWavy[\number\dimexpr1ex]{\cleaders\hbox{%
