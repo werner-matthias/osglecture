@@ -1,0 +1,3098 @@
+%\iffalse
+% osgbeamer.dtx generated using makedtx version 1.2 (c) Nicola Talbot
+% Command line args:
+%   -dir "../osg"
+%   -src "(.+)\.(.+)=>\1.\2"
+%   -doc "../doc/upgrade.tex"
+%   osgbeamer
+% Created on 2022/10/28 8:51
+%\fi
+%\iffalse
+%<*package>
+%% \CharacterTable
+%%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%%   Digits        \0\1\2\3\4\5\6\7\8\9
+%%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%%   Dollar        \$     Percent       \%     Ampersand     \&
+%%   Acute accent  \'     Left paren    \(     Right paren   \)
+%%   Asterisk      \*     Plus          \+     Comma         \,
+%%   Minus         \-     Point         \.     Solidus       \/
+%%   Colon         \:     Semicolon     \;     Less than     \<
+%%   Equals        \=     Greater than  \>     Question mark \?
+%%   Commercial at \@     Left bracket  \[     Backslash     \\
+%%   Right bracket \]     Circumflex    \^     Underscore    \_
+%%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%%   Right brace   \}     Tilde         \~}
+%</package>
+%\fi
+% \iffalse
+% Doc-Source file to use with LaTeX2e
+% Copyright (C) 2022 Matthias Werner, all rights reserved.
+% \fi
+% \iffalse
+%<*driver>
+Alte Vorlesungen an osgbeamer anpassen:
+
+- LaTeX: osgbeamer setzt LuaLaTeX in der TeX-Version von 1.6.2022 oder später voraus, ggf. updaten.
+- Buildsystem:
+  - Makefiles werden nicht mehr genutzt. Sie können gelöscht werden
+  - Die Rolle der Makefiles wird vollständig von latexmkrc übernommen. Es gibt eine config.pl-Datei, in der Einstellungen (insbesondere Pfade) vorgenommen werden können und die als default im Wurzelverzeichnis der Vorlesung liegt.
+
+- \grave wird neuerdings in AMS-Packet definiert, die bisherige Nutzung ergibt einen Fehler. Wurde durch \stress ersetzt.
+- \lectdates:
+  - \setaspectration und \enforceaspectration entfallen
+  - \SetGlobalClassOptions und \EnforceGlobalClassOptions
+
+\DocInput{osgbeamer.dtx}
+\end{document}
+%</driver>
+%\fi
+%
+%\StopEventually{}
+%\section{The Code}
+%\iffalse
+%    \begin{macrocode}
+%<*beamerarticleosg.sty>
+%    \end{macrocode}
+%\fi
+\mode<article>
+\RequirePackage{beamerarticletuc2019}
+
+% Es wird im Skript nicht vollständig auf das TUC-CI gewechelt,
+% Roboto ist für längere Texte nicht günstig.
+\usepackage{unicode-math}
+\setmathfont{texgyrepagella-math.otf}
+
+\RequirePackage[colorlinks=true,linkcolor=black,anchorcolor=black,citecolor=black,filecolor=black,menucolor=black,runcolor=black,urlcolor=teal]{hyperref}
+\RequirePackage{enumitem}
+
+\setcounter{tocdepth}{1}   % Inhaltsverzeichnis
+\newcommand{\osg@lecture}[3][]{%
+  \ifstrempty{#1}{%
+    \chapter{#2}
+    \markleft{\thechapter. #2}
+  }{%
+    \chapter[#1]{#2}
+    \markleft{\thechapter. #1}
+  }
+  \zref@label{osglecture}%
+  \gdef\beamer@currentlecturelabel{#3} % Steht damit auch im article-Mode zur
+                                % Verfügung, nicht nur in beamer 
+}
+\renewcommand{\lecture}[3][]{
+  \AddToHook{begindocument}{\osg@lecture[#1]{#2}{#3}}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Seiten-Layout
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\RequirePackage[]{scrlayer-scrpage}
+\clearpairofpagestyles
+\setkomafont{pageheadfoot}{\sffamily\footnotesize}
+\setkomafont{pagenumber}{\sffamily\bfseries\color{white}}
+\addtokomafont{dictum}{\small<all>\em}
+\setkomafont{chapterprefix}{\Huge\color{black}\bfseries}
+% Der Markierungsstreifen ist dunkler
+\setkomafont{chapter}{\color{tuccolor!75!black}\huge}
+\addtolength{\headsep}{17mm}
+\DeclareNewLayer[
+  background,
+  topmargin,
+  addheight=\headheight+3mm,
+  mode=picture,
+  contents=\putLL{\textcolor{tuccolor!35}{\rule{\layerwidth}{\layerheight}}}
+]{swatch.bg}
+\DeclareNewLayer[
+  clone=swatch.bg,
+  addheight=\headheight+3mm,
+  contents=\putLL{\textcolor{tuccolor}{\rule{\layerwidth}{\layerheight}}}
+]{swatch-title.bg}
+\DeclareNewLayer[
+  clone=swatch.bg,
+  oddpage,
+  outermargin,
+  addhoffset=2mm,
+  width=18mm,
+  % height=\dimexpr1in+\voffset+\topmargin+\headheight\relax,
+  height=\dimexpr1in+\voffset+\topmargin+\headheight+3mm\relax,
+  contents={
+    \putLL{%
+      \textcolor{white}{\rule{1.5mm}{\layerheight}}%
+      \textcolor{tuccolor}{\rule{15mm}{\layerheight}}%
+      \textcolor{white}{\rule{1.5mm}{\layerheight}}%
+    }
+    \putC{\makebox(0,0){\pagemark}}
+  }
+]{swatch.odd}
+\DeclareNewLayer[
+  clone=swatch.odd,
+  evenpage,
+  addhoffset=\dimexpr1in+\hoffset+\evensidemargin-4mm-18mm\relax
+  ]{swatch.even}
+  \DeclareNewLayer[
+  background,
+  mode=picture,
+  bottommargin,
+  align=b,
+  addvoffset=18mm,
+  contents={
+    \putLL{
+      \textcolor{tuccolor!75!black}{\rule{\layerwidth}{1pt}}
+    }
+  }
+]{swatch.bottom}  
+% Layer aktivieren:
+\AddLayersAtBeginOfPageStyle{scrheadings}{swatch.odd,swatch.even,swatch.bg, swatch.bottom}
+% Kapitelstart hat leeren Balken
+\AddLayersAtBeginOfPageStyle{plain.scrheadings}{swatch.bg}
+\newcommand{\osg@pagehead}{
+  \lehead{{\sffamily\scshape\osgshortauthor}: \osgshorttitle}
+  \rohead{\leftmark\ $\blacktriangleright$ \rightmark}
+}
+\AtBeginDocument{
+  \osg@pagehead
+}
+\AtEndDocument{
+  \cleardoublepage
+}
+
+% Dictum
+\renewcommand*{\dictumwidth}{.45\textwidth}
+\renewcommand*{\dictumrule}{}
+\renewcommand*{\dictumauthorformat}[1]{---~\rmfamily#1\medskip}
+
+% Frametitle werden zu Subsubsections
+\defbeamertemplate<article>{frametitle}{osg}{%
+  \ifdefstring{\insertframetitle}{}{}{%
+    \subsubsection*{\insertframetitle}%
+  }%
+}
+\setbeamertemplate{frametitle}[osg]
+
+% Subtitle werden zu Paragraphs
+\renewcommand{\framesubtitle}[1]{\paragraph*{#1}}%
+\setkomafont{paragraph}{\rmfamily\bfseries}
+
+% Im Script wird \contframetitle übergangen
+  \newcommand{\contframetitle}[1][]{}
+ 
+%\newbool{@osg@inkoma}
+% \pretocmd{\usekomafont}{\booltrue{@osg@inkoma}}{\typeout{Patching of
+%     KOMA \string\usekomafont\ succeed}}{\typeout{Can't
+%     patching KOMA \string\usekomafont}}
+% \apptocmd{\usekomafont}{\boolfalse{@osg@inkoma}}{\typeout{Patching of
+%     KOMA \string\usekomafont\ succeed}}{\typeout{Can't
+%     patching KOMA \string\usekomafont}}
+
+\RequirePackage{tcolorbox}
+
+\setbeamertemplate{block begin}{
+  \begin{tcolorbox}[%
+    %colback=structure!10!white,
+    colback=tuccolor!10!white,
+    colframe=tuccolor!75!black,
+    arc=0mm,
+    enhanced,
+    code={
+      \ifcsstring{insertblocktitle}{}{
+        \tcbset{detach title}
+      }{
+        \tcbset{attach boxed title to top
+          left={yshift=-2mm,xshift=-5pt},
+          title=\insertblocktitle
+        }
+      }
+    },
+    colbacktitle= tuccolor!75!black,
+    coltitle= white,
+    fonttitle=\bfseries,
+  ]
+}
+\setbeamertemplate{block end}{
+  \end{tcolorbox}
+} 
+\setbeamertemplate{block alerted begin}{
+  \begin{tcolorbox}[%
+    colback=tuccolor@warning!10!white,
+    colframe=tuccolor@warning!75!black,
+    arc=0mm,
+    enhanced,
+   code={
+      \ifcsstring{insertblocktitle}{}{
+        \tcbset{detach title}
+      }{
+        \tcbset{attach boxed title to top
+          left={yshift=-2mm,xshift=-5pt},
+          title=\insertblocktitle
+        }
+      }
+    },
+    colbacktitle= black!25!tucwarning,
+    coltitle= white,
+    fonttitle=\bfseries,
+  ]
+}
+\setbeamertemplate{block alerted end}{
+  \end{tcolorbox}
+}
+\setbeamertemplate{block example begin}{
+  \begin{tcolorbox}[%
+    colback=tuccolor@info!5!white,
+    colframe=tuccolor@info,
+    arc=0mm,
+    title=\insertblocktitle,
+    colbacktitle=white,
+    coltitle=black,
+    fonttitle=\bfseries,
+    detach title,
+    before upper={\tcbtitle\par\smallskip}
+  ]
+}
+\setbeamertemplate{block example end}{
+  \end{tcolorbox}
+}
+
+% \setbeamertemplate{theorem begin}{
+% }
+
+% \setbeamertemplate{theorem end}{
+% }
+  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Columns
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Um auch im Article-Mode columns zuzulassen, ist der Boilerplate-Code
+% größtenteils aus Beamer kopiert.
+
+\define@key{beamer@col}{onlytextwidth}[true]{%
+  \def\beamer@colentrycode{\hbox to\textwidth\bgroup\ignorespaces}%
+  \def\beamer@colexitcode{\unskip\egroup}}
+\define@key{beamer@col}{totalwidth}{%
+  \def\beamer@colentrycode{\hbox to#1\bgroup\ignorespaces}%
+  \def\beamer@colexitcode{\unskip\egroup}}
+\define@key{beamer@col}{c}[true]{\def\beamer@colmode{c}\def\beamer@colalign{c}\def\beamer@colheadskip{}}
+\define@key{beamer@col}{t}[true]{\def\beamer@colmode{t}\def\beamer@colalign{t}\def\beamer@colheadskip{}}
+\define@key{beamer@col}{T}[true]{\def\beamer@colmode{T}\def\beamer@colalign{t}\def\beamer@colheadskip{\vskip-1ex\nointerlineskip}}
+\define@key{beamer@col}{b}[true]{\def\beamer@colmode{b}\def\beamer@colalign{b}\def\beamer@colheadskip{}}
+
+\newenvironment<>{osg@beamer@columnenv}[2][\beamer@colmode]{%
+  \beamer@colclose\def\beamer@colclose{}%
+  \begin{actionenv}#3%
+      \setkeys{beamer@col}{#1}%
+      \begin{minipage}[\beamer@colalign]{#2}%
+          \leavevmode\raggedright\beamer@colheadskip\ignorespaces}
+        {\end{minipage}\hfill\end{actionenv}\@ignoretrue}
+\let\endcolumn\endbeamer@columnenv
+
+\newcommand<>\osg@beamer@columncom[2][\beamer@colmode]{%
+  \beamer@colclose%
+  \def\beamer@colclose{\end{minipage}\hfill\end{actionenv}\ignorespaces}%
+  \begin{actionenv}#3%
+      \setkeys{beamer@col}{#1}%
+      \begin{minipage}[\beamer@colalign]{#2}%
+          \leavevmode\raggedright\beamer@colheadskip\ignorespaces
+  }
+      
+\let\osg@orig@beamer@columncom=\beamer@columncom
+\let\osg@beamer@columnenv=\beamer@columnenv
+\let\endosg@beamer@columnenv=\endbeamer@columnenv
+
+% Um die Kompatibilität mit Beamer zu erhöhen, wird ohne
+% Mode-Spezifikation die columns-Umgebung im Article-Mode igoniert.
+% Damit sie beachtet wird, muss <all> (oder <article>) angegeben
+% werden. 
+\renewenvironment<>{columns}[1][c]{%
+  \def\beamer@colclose{}
+  \ifstrempty{#2}{}{%
+    \only#2{%
+      \setkeys{beamer@col}{#1}%
+      \let\beamer@columncom=\osg@beamer@columncom
+      \let\beamer@columnenv=\osg@beamer@columnenv
+      \let\endbeamer@columnenv=\endosg@beamer@columnenv
+    }
+  }
+}{
+  \beamer@colclose
+  \let\beamer@columncom=\osg@orig@beamer@columncom
+  \let\beamer@columnenv=\osg@orig@beamer@columnenv
+  \let\endbeamer@columnenv=\endosg@orig@beamer@columnenv
+}
+
+
+
+\mode<all>%\iffalse
+%    \begin{macrocode}
+%</beamerarticleosg.sty>
+%    \end{macrocode}
+%\fi
+%\iffalse
+%    \begin{macrocode}
+%<*beamercolorthemeosg.sty>
+%    \end{macrocode}
+%\fi
+\mode<presentation>
+
+% ToDo: Warning und Info für verschiedene fakcolors anpassen
+\mode<all>%\iffalse
+%    \begin{macrocode}
+%</beamercolorthemeosg.sty>
+%    \end{macrocode}
+%\fi
+%\iffalse
+%    \begin{macrocode}
+%<*beamerfontthemeosg.sty>
+%    \end{macrocode}
+%\fi
+\mode<presentation>
+\iftuc@robotoheader
+% Ist bei Option 'latexfontbody' aktiv. Im tuc2019-Theme wird *kein* Roboto-Font deklariert, was
+% entsprechend zu einem Fehler führt. Das Roboto-Package würde zu einer Redefinition des
+% Mainfonts führen, daher wird hier minimal-inversiv Roboto mit den Grundshapes deklariert.
+\providefontfamily\roboto{Roboto}[
+  NFSSFamily     = rob,
+  Extension      = .otf,
+  UprightFont    = *-Regular,
+  BoldFont       = *-Bold,
+  ItalicFont     = *-Italic,
+  BoldItalicFont = *-BoldItalic
+  ]
+  % Beseitige einen Bug, der durch eine Bug-Beseitigung in den TUC-Beamer-Themes 2019 entstanden
+  % ist.
+  \def\mdseries@sf{m}
+\fi
+\iftuc@roboto\relax\else
+  \usefonttheme{professionalfonts}
+  \setmainfont{TeX Gyre Pagella} % 
+  \setsansfont{Source Sans Pro}[
+    UprightFont    = *-Regular,
+    BoldFont       = *-Semibold,
+    ItalicFont     = *-Italic,
+    BoldItalicFont = *-SemiboldIt
+  ]
+\fi
+\mode<all>
+
+%\iffalse
+%    \begin{macrocode}
+%</beamerfontthemeosg.sty>
+%    \end{macrocode}
+%\fi
+%\iffalse
+%    \begin{macrocode}
+%<*beamerinnerthemeosg.sty>
+%    \end{macrocode}
+%\fi
+\mode<presentation>
+
+\setbeamercovered{invisible}
+\setbeamertemplate{theorem}[ams style]
+\setbeamertemplate{theorems}[numbered]
+\setbeamerfont{block title}{size=\normalsize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Einfache Listen
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+\RequirePackage{enumitem}
+
+\setlist[itemize]{label=\usebeamerfont*{itemize item}%
+  \usebeamercolor[fg]{itemize item}
+  \usebeamertemplate{itemize item}}
+% \setlist[itemize,1]{leftmargin=*}
+\setlist[enumerate]{%
+  label=\protect\usebeamerfont{enumerate item}%
+  \protect\usebeamercolor[fg]{enumerate item}%
+  \insertenumlabel.}
+\setlist[description]{font=\protect\usebeamercolor[fg]{structure}} %
+% label=%\protect\usebeamerfont{description item}%
+% \protect\usebeamercolor[fg]{description item}%
+% \protect\usebeamercolor[fg]{structure}%
+% \insertdescriptionitem}
+
+\mode<all>%\iffalse
+%    \begin{macrocode}
+%</beamerinnerthemeosg.sty>
+%    \end{macrocode}
+%\fi
+%\iffalse
+%    \begin{macrocode}
+%<*beamerouterthemeosg.sty>
+%    \end{macrocode}
+%\fi
+\mode<presentation>
+
+% Titleseite
+\mode<presentation>
+\AtBeginLecture{
+  \ifdefstring{\insertshortlecture}{}{
+    \title{\insertlecture}
+  }{
+    \title[\insertshortlecture]{\insertlecture}
+  }
+  \zlabel{osglecture}
+  \tucthreeheadlines
+  \tucnarrowframe
+  \begingroup
+    \ifcsdef{osg@logo}{
+      \logo{\includegraphics[width=\hsize]{\osg@logo}}
+    }{}
+    \setbeamertemplate{tuc3 headline 1}{\insertsubtitle}
+    \setbeamertemplate{tuc3 headline 2}{\insertdate}
+    \setbeamertemplate{tuc3 headline 3}{}
+    \setbeamertemplate{navigation symbols}{}
+    \setbeamertemplate{footline}{}
+    \begin{frame}[c]
+        \vbox{}
+        {\usebeamerfont{subtitle}{\insertsubtitle}}\par\vskip2em
+        \usebeamerfont{subtitle}\usebeamercolor[fg]{title}{\osgchapterprefix}\par\vskip0.25em
+        {\usebeamerfont{title}\usebeamercolor[fg]{title}{\inserttitle}}\par\vskip2em
+        \usebeamerfont{author}\insertauthor\par\vskip0.5em
+        \usebeamerfont{institute}\insertinstitute
+        \vfill
+    \end{frame}
+  \endgroup
+  \tuctwoheadlines
+  \tucwideframe
+  \setbeamertemplate{tuc2 headline 1}{\insertsubtitle~--~\insertshorttitle}
+  \setbeamertemplate{tuc2 headline 2}{\osginsertshortsection}
+  \setbeamertemplate{footline}[osg]
+  \osg@aftertitle
+}
+
+
+\setbeamerfont{framesubtitle}{size=\large}
+%% Automatische Titel bei Abschnittsanfang
+\newtoggle{newsec}
+\newtoggle{newsubsec}
+\newcommand{\osg@insertsection}{\thesection\ \insertsection}
+\newcommand{\osg@insertsectionstar}{\insertsection}
+\newcommand{\osg@insertsubsection}{\thesubsection\ \insertsubsection}
+\newcommand{\osg@insertsubsectionstar}{\insertsubsection}
+% \newcommand{\osg@insertshortsection}{\thesection\ \secname} 
+% \newcommand{\osg@insertshortsection}{\thesection\ \insertshortsection} % /insertshortsectionhead?
+\newcommand{\osg@insertshortsection}{\thesection\ \insertsectionhead}
+\newcommand{\osg@insertshortsectionstar}{\insertsectionhead}
+\newcommand{\osg@insertshortsubsection}{\thesubsection\ \insertshortsubsection}
+\newcommand{\osg@insertshortsubsectionstar}{\insertshortsubsection}
+\let\osginsertsection=\osg@insertsection
+\let\osginsertsubsection=\osg@insertsubsection
+\let\osginsertshortsection=\osg@insertshortsection
+\let\osginsertshortsubsection=\osg@insertshortsubsection
+\togglefalse{newsec}
+\togglefalse{newsubsec}
+\AtBeginSection[%
+\let\osginsertsection=\osg@insertsectionstar
+\let\osginsertshortsection=\osg@insertshortsectionstar
+\toggletrue{newsec}
+]{%
+  \let\osginsertsection=\osg@insertsection
+  \let\osginsertshortsection=\osg@insertshortsection
+  \toggletrue{newsec}
+}
+
+\AtBeginSubsection[
+\let\osginsertsubsection=\osg@insertsubsectionstar
+\let\osginsertsubshortsection=\osg@insertshortsubsectionstar
+\toggletrue{newsubsec}
+]{
+  \let\osginsertsubsection=\osg@insertsubsection
+  \let\osginsertshortsubsection=\osg@insertshortsubsection
+  \toggletrue{newsubsec}
+}
+% \renewcommand{\section}{\toggletrue{newsec}\kernsection}
+% \renewcommand{\subsection}{\toggletrue{newsubsec}\kernsubsection}
+% 
+\long\def\beamer@@frametitle[#1]#2{%
+  \iftoggle{newsec}{% Neue Section
+    \iftoggle{newsubsec}{% Neue Section + neue Subsection
+      \gdef\insertframetitle{{\osginsertsection\ifnum\beamer@autobreakcount>0\relax{}\space\usebeamertemplate*{frametitle continuation}\fi}}%
+      \gdef\beamer@frametitle{\osginsertsection}%
+      \gdef\beamer@shortframetitle{\#1}%
+      \gdef\insertframesubtitle{\osginsertsubsection}
+      \gdef\@lastframetitle{\osginsertsubsection}
+      % Trotzdem Titel angegeben? => Warnung
+      \beamer@ifempty{#2}{}{%
+        \GenericWarning{OSGBeamer}{title will be lost after section and subsection command}
+      }
+    }{ % Neue Section, ohne Subsection
+      \beamer@ifempty{#2}{% Kein explizit gesetzter Titel
+        \gdef\insertframetitle{{\osginsertsection\ifnum\beamer@autobreakcount>0\relax{}\space\usebeamertemplate*{frametitle continuation}\fi}}%
+        \gdef\beamer@frametitle{\osginsertsection}%
+        \gdef\beamer@shortframetitle{\osginsertshortsection}%
+        \gdef\insertframesubtitle{}
+        \gdef\@lastframetitle{\insertsection}
+      }{% Titel gegeben, wird zum Subtitel
+        \gdef\insertframetitle{{\osginsertsection\ifnum\beamer@autobreakcount>0\relax{}\space\usebeamertemplate*{frametitle continuation}\fi}}%
+        \gdef\beamer@frametitle{\osginsertsection}%
+        \gdef\beamer@shortframetitle{#1}%
+        \gdef\insertframesubtitle{#2}
+        \gdef\@lastframetitle{#2}
+      }
+    }
+  }{% Keine neue Section
+    \iftoggle{newsubsec}{% Neue Subsection
+      \gdef\insertframetitle{{\osginsertsubsection\ifnum\beamer@autobreakcount>0\relax{}\space\usebeamertemplate*{frametitle continuation}\fi}}%
+      \gdef\beamer@frametitle{\osginsertsubsection}%
+      \gdef\beamer@shortframetitle{\osginsertshortsubsection}%
+      \beamer@ifempty{#2}{
+        \gdef\@lastframetitle{\osginsertsubsection}
+      }{
+        \gdef\insertframesubtitle{#2}
+        \gdef\@lastframetitle{#2}
+      }
+    }{% Standard
+      \beamer@ifempty{#2}{}{%
+        \gdef\insertframetitle{{#2\ifnum\beamer@autobreakcount>0\relax{}\space\usebeamertemplate*{frametitle continuation}\fi}}%
+        \gdef\beamer@frametitle{#2}%
+        \gdef\beamer@shortframetitle{#1}%
+        \gdef\@lastframetitle{#2}
+      }%
+    }%
+  }%
+  \ifnumequal{\insertpagenumber}{\insertframeendpage}{%
+    \global\togglefalse{newsec}%
+    \global\togglefalse{newsubsec}%
+  }{} 
+}
+
+  % Mit \contframetitle wird der letzte Titel wiederholt mit der
+% Ergänzung "(Forts.)" (bzw. wie frametitle continuation gesetzt ist)
+\mode<presentation>{
+  \newcommand{\contframetitle}[1][\@lastframetitle]{
+    \gdef\insertframetitle{#1\space\usebeamertemplate*{frametitle continuation}}
+    \gdef\beamer@frametitle{#1}%
+  }
+}
+\typeout{********** Outer Theme 3}
+
+% Fußzeile
+\newcommand{\inserttinyosglogo}{%
+  \ifcsdef{osg@tinylogo}{\raisebox{-1pt}{\includegraphics[height=2ex]{\osg@tinylogo}}}{}%
+}
+
+\defbeamertemplate{pagenumber}{roman}{
+{\Roman{chapter}}\hspace{1pt}--\hspace{1pt}\insertframenumber\ {\emph{\ldeen{von}{of}}}\ \inserttotalframenumber
+}
+\defbeamertemplate{pagenumber}{n of m}{\insertframenumber\ / \inserttotalframenumber}
+\defbeamertemplate{pagenumber}{single}{\insertframenumber}
+
+\defbeamertemplate*{footline}{osg}
+{
+  \begin{beamercolorbox}[colsep=0.25pt]{separation line}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\paperwidth,ht=8pt,dp=3pt]{fg=black,bg=white}%
+      \leavevmode%
+      \fontsize{7pt}{9pt}\selectfont%
+      \hspace*{0.04994\paperheight}%
+      \rlap{%
+        \@tempswafalse%
+        \expandafter\beamer@ifempty\expandafter{\inserttinyosglogo}{}{\inserttinyosglogo\@tempswatrue}%
+        \expandafter\beamer@ifempty\expandafter{\beamer@shortdate}{}{\if@tempswa~~\fi\insertshortdate\@tempswatrue}%
+        \expandafter\beamer@ifempty\expandafter{\beamer@shortauthor}{}{\if@tempswa~$\cdot$~\fi\insertshortauthor\@tempswatrue}%
+      }\hfill%
+        \usebeamertemplate{pagenumber}
+      \hfill%
+      \llap{\insertshorttucurl}%
+      \hspace*{0.04994\paperheight}%
+  \end{beamercolorbox}%
+}
+
+% Im Standalone-Modus wird die Kapiteldarstellung unterdrückt, da dort nicht von
+% einer forlaufenden Sequenz ausgegangen wird.
+\IfBool{osgoptionstandalone}{
+  \newcommand{\osgchapterprefix}{}
+  \setbeamertemplate{pagenumber}[n of m]
+}{
+  \newcommand{\osgchapterprefix}{\ordinal{chapter} \ldeen{Kapitel}{Chapter}}
+  \setbeamertemplate{pagenumber}[roman]
+}
+
+\typeout{********** End Outer Theme}
+\mode<all>%\iffalse
+%    \begin{macrocode}
+%</beamerouterthemeosg.sty>
+%    \end{macrocode}
+%\fi
+%\iffalse
+%    \begin{macrocode}
+%<*beamerthemeosg.sty>
+%    \end{macrocode}
+%\fi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Beamer-Theme für die osgbeamer-Klasse.
+% Baut auf dem TUC2019-Theme auf.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+\mode<presentation>
+\usetheme{tuc2019}
+\usefonttheme{osg}
+\useinnertheme{osg}
+\useoutertheme{osg}
+\usecolortheme{osg}
+\mode<all>
+
+
+%\iffalse
+%    \begin{macrocode}
+%</beamerthemeosg.sty>
+%    \end{macrocode}
+%\fi
+%\iffalse
+%    \begin{macrocode}
+%<*osgbeamer.cls>
+%    \end{macrocode}
+%\fi
+\NeedsTeXFormat{LaTeX2e}[2022/06/01]
+\def\classname{osgbeamer}
+\ProvidesClass{\classname}[2022/08/17 v0.9.0d]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Beamer- und Script-Template für die Professur Betriebssysteme an
+% der TU Chemnitz
+%
+% (c) Matthias Werner (matthias.werner@informatik.tu-chemnitz.de), 2022
+%
+% Dieses Material steht unter der Creative-Commons-Lizenz CC BY-SA 4.0
+% (Namensnennung - Weitergabe unter gleichen Bedingungen).
+% Um eine Kopie dieser Lizenz zu sehen, besuchen Sie                                        
+% http://creativecommons.org/licenses/by-sa/4.0/deed.de.                      
+%
+% Hinweis:
+% Obwohl diese Klasse eigenständig genutzt werden kann, ist sie primär
+% für den Einsatz in Vorlesungsreihen im Kombination mit dem
+% OSG LaTeX Lecture Maker (einem rc-Script für latexmk) gedacht.
+%
+\IfFormatAtLeastTF{2022/06/01}{}{
+\ClassError{\classname}{\MessageBreak
+************************************************\MessageBreak
+* This class requires at least the TeX format \MessageBreak
+* from 2022/06. \MessageBreak
+************************************************
+ }{Update your LaTeX.}
+}
+\RequirePackage{iftex}               % für Test auf Lua(La)TeX
+\ifLuaTeX\else
+\ClassError{\classname}{\MessageBreak
+************************************************\MessageBreak
+* LuaLaTeX is required to use this class. \MessageBreak
+* Sorry! \MessageBreak
+************************************************
+ }{Use this class with LuaLaTex.}
+\fi
+\RequirePackage{etoolbox}
+% Die nächsten beiden Zeilen dienen nur dafür, dass mein Editor die
+% etoolbox-if nicht dauernd mit TeX-if verwechselt.
+\let\IfBool=\ifbool 
+\let\IfToggle=\iftoggle
+% \if's verwechselt...
+
+\RequirePackage{varsfromjobname}
+\RequirePackage{luacode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% OSG LaTeX Lecture Maker
+% =======================
+% 
+% Das OSG LaTeX lecture maker system (OLLM system) steht teilweise über den
+% Klassenoptionen. Im OLLM System werden an die Klasse durch den Jobnamen und 
+% durch vordefinierte Macros Informationen übergeben. Macros und Jobnamen werden
+% durch das `latexmkrc` aufgearbeitet.
+% Der Jobname ist wie folgt aufgebaut und wird ausgewertet, wenn das Macro
+% `ollm` definiert ist.
+%
+% <lectureprefix>-<number>-<doctype>-<language>-<topic>
+%
+% * <lectureprefix>: wahlfreies Kürzel für die Vorlesungsreihe
+% * <number>       : zweistellig Nummer des Kapitels
+% * <doctype>      : Ausgabeformat (siehe unten)
+% * <language>     : de oder en (für deutsch oder englisch)
+% * <topic>        : wahlfreie Bezeichnung für das Kapitelthema
+%
+% Ob das OLLM System aktiv ist, wird anhand des Vorhandenseins des Macro '\ollm'
+% festgestellt und im Flag 'osgllm' gespeichert. Dann wird davon ausgegangen,
+% dass ein korrektes Verzeichnis-Layout existiert.
+\newbool{osgllm}\boolfalse{osgllm}
+\ifdef{\ollm}{
+  \booltrue{osgllm}
+}{
+  \boolfalse{osgllm}
+}
+\newtoggle{osgscript}         % Wird bis zum Laden von Beamer als Unterscheidung
+                              % von presentation- und article-Mode genutzt
+
+\newbool{osgoptionstandalone} % Zeigt die Nutzung der Klasse außerhalb einer
+                              % Lecture-Serie an
+
+\newbool{osglegacy}           % Zeigt die Nutzung des "Kompatibilitätsmodus" an
+\boolfalse{osglegacy}         
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Klassenoptionen
+%
+% Durch das neue Key-Value-interface von LaTeX ab Juni 2022 können (wie in
+% pgfkeys oder Koma-Script Klassenoptionen ggf. auch noch später gesetzt
+% werden (so sie nicht vor der ersten Seitenserstellung gebraucht werden).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\DeclareKeys{
+  % Soll die Kompatibilität zur alten osgbeamer-Klasse erhöhen (z.Z. nicht genutzt)
+  legacy.code={
+    \GenericWarning{\classname}{Legacy mode activated}
+    \booltrue{osglegacy}
+  },
+  % Optionen, die an die beamer-Klasse weitergeleitet werden.
+  beamer.code = {
+    \PassOptionsToClass{#1}{beamer}
+  },
+  % Da 'aspectratio' vermutlich häufiger als andere Optionen abweicht, erhält es
+  % eine eigene Option
+  aspectratio.code={
+    \PassOptionsToClass{aspectratio=#1}{beamer}
+  },
+  % Optionen, die an die scrbook-Klasse weitergeleitet werden.
+  article.code = {
+    \PassOptionsToClass{#1}{scrbook}
+  },
+  % Optionen, die an das tucbeamer-Package weitergeleitet werden.
+  tuc.code={
+    \PassOptionsToPackage{#1}{beamerthemetuc2019}
+    %\PassOptionsToPackage{#1}{beamerarticletuc2019}
+  },
+  % Optionen für Umgang mit Literaturreferenzen
+  bib.code = {
+    \PassOptionsToPackage{#1}{osgbeamerbib}
+  },
+  % Werden Seiten Kapitelübergreifend numeriert?
+  continuation.code={
+    \PassOptionsToClass{continuation=#1}{osgbeamerref}
+  },
+  % Optionen, die sinnvolle Einstellungen für die OSG zusammenfassen
+  osgdefaults.code = {
+    \PassOptionsToPackage{fakcolor=if,latexfonts}{beamerthemetuc2019}
+    \PassOptionsToPackage{fakcolor=if,latexfonts}{beamerarticletuc2019}
+    \SetLogo{OSG-Logo}
+    \PassOptionsToClass{professionalfonts}{beamer}
+  }
+}
+% Da Choice-Keys benötigt werden, die noch nicht nach LaTeX2e
+% zurückportiert wurden, wird LaTeX3 benötigt. Daher wird auf die
+% alternative Syntax umgestellt. Ein explizites Laden eines
+% LaTeX3-Pakets ist nicht nötig, da die aktuelle LaTeX-Version auf
+% LaTeX3 beruht.
+\ExplSyntaxOn
+\cs_generate_variant:Nn \keys_set:nn { nx } % SetKey mit Expansion der Werteargumente
+\let\SetKeyEx=\keys_set:nx                  % Alias mit LaTeX2e-Syntax
+\keys_define:nn {osgbeamer}{
+  % Eine Standalone-Präsentation ist nicht Teil einer Serie
+  standalone .choice:,
+  standalone/lecture .code={
+    \PassOptionsToPackage{continuation=none}{osgbeamerref}
+    \booltrue{osgoptionstandalone}
+  },
+  standalone/nolecture .code={
+    \undef{\ollm}
+    \boolfalse{osgllm}
+    \booltrue{osgoptionstandalone}
+    \PassOptionsToPackage{standalone}{osgbeamerref}
+    \ClassInfo{\classname}{OLLM disabled or not detected, deactivate OLLM features}
+  },
+  %standalone .default = {nolecture},
+  % Doctype
+  % =======
+  %
+  % Es können mehrere Arten von Ausgabeformaten (Doctypes) erzeugt werden:
+  % * slides  => Foliensatz,
+  % * handout => 4 Slides auf einem Blatt,
+  % * screen  => Slides mit Kommentaren und Vorschau für die
+  %              Vorführung (z.Z. nicht richtig unterstützt)
+  % * script  => Kapitel eines Scripts
+  %
+  % In der Regel sollte diese Option unter OLLM nicht per Hand gesetzt werden.
+  doctype .choice: ,
+  doctype/slides .code:n={
+    \gdef\osgparentclass{beamer}
+    \togglefalse{osgscript}
+  },
+  doctype/handout .code:n={
+    \PassOptionsToClass{handout}{beamer}
+    \togglefalse{osgscript}
+  },
+  doctype/script .code:n={
+    \toggletrue{osgscript}
+  },
+  doctype/screen .code:n={
+    \PassOptionsToClass{second}{beamer}
+    \togglefalse{osgscript}
+  },
+  % Die Sprache _kann_ explizit mit der Option lang=<lang> gesetzt werden, jedoch
+  % sollte dies primär im 'standalone'-Mode genutzt werden
+  % Im OLLM wird die entsprechende Sprache i.d.R. über den Jobnamen
+  % gesetzt (siehe osgbeamerlanguage.sty)
+  lang .choice:,
+  lang/de .code:n = {
+    \providecommand\selectedbeamerlanguage{de}
+    \PassOptionsToPackage{de}{osgbeamerlanguage}
+  },
+  lang/en .code:n = {
+    \providecommand\selectedbeamerlanguage{en}
+    \PassOptionsToPackage{en}{osgbeamerlanguage}
+  },
+  
+  % Mit der Option 'handout format' kann angegeben werden, wieviel Folien
+  % auf einer A4 Seite dargestellt werden.
+  % Es gibt die Auswahl zwischen '2 on 1', '4 on 1' und '6 on 1'
+  handout~format.choice:,
+  handout~format/2~on~1 .code ={
+    \gdef\osg@pgfpageoptions{{2~on~1}[a4paper, border~shrink=2mm]}
+  },
+  handout~format/4~on~1 .code ={
+    \gdef\osg@pgfpageoptions{{4~on~1}[a4paper, landscape, border~shrink=2mm]}
+  },
+  handout~format/6~on~1 .code ={
+    \gdef\osg@pgfpageoptions{{6~on~1}[a4paper, border~shrink=2mm]}
+  },
+}
+\ExplSyntaxOff
+
+% In \ollm werden die Pfade zum Verzeichnis für gemeinsame Daten (für vorlesungsübergreifende
+% Referenzierung), der eigene Verzeichnisname sowie die erste logische Kapitelnummer
+% (i.d.R. 0 oder 1) übergeben.
+\IfBool{osgllm}{
+  \ClassInfo{\classname}{Acivate OLLM}  
+  \ollm % Definiert \OsgShareDataPath, \OsgCurrentDir und \OsgFirstChapter
+}{
+  \boolfalse{osgllm}
+  % Ohne OLLM ist das Dokument alleinstehend (standalone), auch
+  % wenn dies nicht explizit als Option angegeben wurde.
+  \SetKeys{standalone=true} 
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Default-Einstellungen:
+%
+% Hier werden (aus Sicht des Klassenautoren) sinnvolle
+% Voreinstellungen getroffen.
+%
+\SetKeys{
+  aspectratio=1610,
+  tuc={
+    fakcolor=if,
+  },
+  beamer={
+    ignorenonframetext,
+    10pt,
+    unknownkeysallowed %,notheorems
+  },
+  article={
+    chapterprefix=true,
+    twoside,
+    open=right,
+    cleardoublepage=current,
+    parskip=half,
+    DIV=9,
+    fontsize=10pt
+  },
+  handout format=4 on 1,
+}
+\SetKeyEx{osgbeamer}{
+  bib={file = \getonefromjobname,
+    off}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Es gibt drei Möglichkeiten, wie spezifische Klassenoptionen gesetzt
+% werden können:
+%   1. Mit \SetGlobalClassOptions in lectdatex.tex. Die hier gesetzten
+%      Optionen gelten für *alle* Kapitel.
+%   2. Als 'normale' Klassenoption. Die so gesetzten Optionen gelten
+%      nur in dem Kapitel und überschreiben die Optionen von 1.
+%   3. Mit \EntforceGlobalClassOptions in lectdatex.tex. Die hier gesetzten
+%      Optionen gelten für *alle* Kapitel und überschreiben Optionen
+%      von 1. und 2.
+%
+% Frühe Optionen
+% ==============
+% 
+% Um Klassen-Optionen für *alle* Kapitel/Lectures gemeinsam setzen zu können,
+% soll die 'lectdate.tex' bereits jetzt eingelesen werden.
+% Dort werden die Macros \SetGlobalClassOption und
+% \EnforceGlobalClassOptions zur Verfügung gestellt.
+\let\SetGlobalClassOptions=\SetKeys
+\NewDocumentCommand{\EnforceGlobalClassOptions}{m}{
+  \gappto{\osg@forceoptionhook}{\SetKeys{#1}}}
+
+% Allerdings sind zu diesem Zeitpunkt die meisten Titelbefehle noch
+% nicht bekannt oder noch nicht von Beamer umdefiniert.
+% Daher werden sie hier temporär definiert und ihre eigentliche
+% Ausführung auf später verschoben.
+\gdef\osg@titlematterhook{}            % Hook für Titelbefehle
+\gdef\osg@forceoptionhook{}            % Hook für Options
+
+% Bereite die Befehle auf ihre spätere Ausführung vor
+% 
+% Anmerkung: Praktisch alle Titelmacros werden durch Beamer, Koma oder OSG-Beamer
+% überschrieben. Da jedoch (vermutlich) häufig auf die Kernel-Definition zurückgegriffen
+% wird, ist es sinnvoll, diese zu erhalten.
+% 
+% In der Stern-Variante definiert \osg@makedelayed das Ersatzmacro mit einem optionalen
+% Argument, so wie es später auch durch Beamer und co. definiert wird.
+% 
+% Alle Titlemacros sind gewahr (wie übersetzt man 'aware'?) der Beamer-Modes, es lassen
+% sich also mode-spezifische Titel (z.B. \title<article>{Foo}) spezifizieren. Dies wird
+% *nicht* im Macro selbst verankert, sondern über eine \mode-Umgebung zur verzögerten
+% Ausführung realisiert; entsprechend stehen die Modes außerhalb von 'lectdates.tex' nicht
+% zur Verfügung (auch nicht in von 'lectdates.tex' includierten Dateien).
+\NewDocumentCommand{\osg@makedelayed}{s m}{
+  % Wenn das Macro schom (durch den Kernel) definiert ist, speichere es unter einem anderen
+  % Namen, sonst setzte es auf \relax.
+  \ifcsdef{#2}{\ExpandArgs{cc}\NewCommandCopy{original@#2}{#2}}{\cslet{original@#2}{\relax}}
+  \IfBooleanTF{#1}{ % Stern => mit optionalem Argument
+     \ExpandArgs{c}\DeclareDocumentCommand{#2}{d<> O{} m}{ % Definiere Ersatzmacro
+      \IfNoValueTF{##1}{
+        \gappto{\osg@titlematterhook}{\csuse{#2}[##2]{##3}}
+      }{
+        \gappto{\osg@titlematterhook}{\mode<##1>{\csuse{#2}[##2]{##3}}}
+      }
+    }
+  }{ % kein Stern => ohne optionales Argument
+    \ExpandArgs{c}\DeclareDocumentCommand{#2}{d<> m}{      
+      \IfNoValueTF{##1}{
+        \gappto{\osg@titlematterhook}{\csuse{#2}{##2}}
+      }{
+        \gappto{\osg@titlematterhook}{\mode<##1>{\csuse{#2}{##2}}}
+      }
+    }
+  }
+}
+% Setze Macoro auf die alte Definition zurück oder (wenn vorher nicht definiert) lösche es.
+\NewDocumentCommand{\osg@restoredelayed}{m}{
+  \ifcsvoid{original@#1}{\csundef{#1}}{\ExpandArgs{cc}\DeclareCommandCopy{#1}{original@#1}}
+}
+% Da \logo schon anderweitig von Beamer belegt, von der Logik aber in eine Reihe
+% wie \author,\date etc. passt, wird für lectdates.tex \logo auf \SetLogo umgelenkt
+\NewDocumentCommand{\SetLogo}{O{#2} m}{
+  \gdef\osg@logo{#2}
+  \gdef\osg@tinylogo{#1}
+}
+\let\logo=\SetLogo
+
+\IfBool{osgllm}{ % Zu diesem Zeitpunkt sind die Klassenoptionen noch nicht
+  % ausgewertet. lectdates.tex wird also auch geladen, wenn OLLM korrekte
+  % Verzeichnisstrukturen vorfindet und der Nutzer nicht 'standalone' nicht
+  % als OLLM-Option übergibt, sondern nur als Klassenoption
+  \expandafter\InputIfFileExists{\OsgLectConfig}{
+    \osg@makedelayed*{author}
+    \osg@makedelayed*{date}
+    \osg@makedelayed*{course}
+    \osg@makedelayed*{event}
+    \osg@makedelayed*{lehrveranstaltung}
+    \osg@makedelayed*{institute}
+    \osg@makedelayed*{tucurl}
+    \osg@makedelayed{input}
+    \let\SetGlobalClassOptions=\SetKeys
+  }{}
+  \expandafter\IfFileExists{\OsgLectConfig}{
+    \osg@restoredelayed{author}
+    \osg@restoredelayed{date}
+    \osg@restoredelayed{course}
+    \osg@restoredelayed{event}
+    \osg@restoredelayed{lehrveranstaltung}
+    \osg@restoredelayed{institute}
+    \osg@restoredelayed{tucurl}
+    \osg@restoredelayed{input}
+  }{}
+}{}
+\undef\logo          % \logo wird wieder freigegeben, so dass Beamer es neu
+                     % definieren kann,
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Verarbeite Optionen
+\ProcessKeyOptions   % Klassenoptionen können die Keys von \SetGlobalClassOptions
+                     % überschreiben... 
+\osg@forceoptionhook % ... die wiederum durch \EnforceGlobalClassOptions überschrieben
+                     % werden können, da im Hook \osg@forceoptionhook Key-Settings
+                     % gesammelt worden, und hier *nach* \Processoptions ausgeführt werden.
+\IfBool{osgllm}{
+  % Bei OLLM werden Sprache und Dokumentart aus dem Jobnamen geholt.
+  % ACHTUNG: ggf. gesetzte Klassenoptionen für Sprache/Dokumentart werden überschrieben.
+  \SetKeyEx{osgbeamer}{lang=\getfourfromjobname,doctype=\getthreefromjobname}
+}{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Basisklasse
+%
+% Je nach Dokumentmodus wird entweder beamer.cls oder scrbook.cls (zusammen mit
+% beamerarticle.sty) geladen.
+\IfToggle{osgscript}{
+  % Script-Mode 
+  \LoadClass[twoside]{scrbook}
+  \RequirePackage{beamerarticle}
+  \RequirePackage{beamerarticleosg}
+  %\RequirePackage{scrhack}
+}{
+  \LoadClass{beamer}
+  %%% Handout
+  \mode<handout>{
+    \RequirePackage{pgfpages}
+    \expandafter\pgfpagesuselayout\osg@pgfpageoptions
+  }
+}
+% Die Basisklasse (+ggf. beamerarticle) ist geladen.
+% Ab jetzt enspricht osgscript = true dem article-Mode,
+% false dem presentation-Mode.
+% Im Prinzip würde jetzt in das Beamer-Theme einerseits und in
+% beamerarticle.sty andererseits verzweigt werden. Jedoch sind einige
+% Einstellungen in allen Modi gemeinsam, daher erfolgen 
+% sie hier in der Klasse und nicht im Theme/beamerarticle
+
+% Jetzt werden erst mal ein paar Standard-Packages geladen
+\RequirePackage{fontspec}
+\RequirePackage{xcolor}
+\RequirePackage{luacolor}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Legacy Code
+% ===========
+%
+% Mit der 'legacy'-Option wird die Klasse kompatibler zu den Dokumenten der
+% alten OSGBeamer-Klasse gemacht, jedoch fehleranfälliger, da z.T. das erwartete
+% Standardverhalten unter LaTeX ausgehebelt wird. Alte Dokumente sollten daher
+% so schnell wie möglich angepasst und auf das Setzen der 'legacy'-Option
+% verzichtet werden.
+%
+% In der alten OSGBeamer-Klasse gab es einige Macros und Konstrukte,
+% die mittelfristig wegfallen sollen. Mit Hilfe der 'legacy'-Option
+% werden einige davon aktiviert, um die Kompatibilität zu erhöhen.
+% Beim Einsatz dieser Macros wird eine Warnung gegeben.
+\IfBool{osglegacy}{
+  \NewDocumentCommand{\DeprecationWarning}{m o}{%
+    \IfNoValueTF{#2}{\def\@suf{}}{\def\@suf{, #2}}%
+    \ClassWarning{osgbeamer}{Use of '\expandafter\@firstoftwo\string\@#1' is deprecated\@suf}%
+  }
+  % 
+  \NewDocumentCommand\NewCSDeprecatedCommand{m m m O{}}{%
+    \ExpandArgs{c}\NewDocumentCommand{#1}{#2}{#3\DeprecationWarning{#1}[#4]}
+  }
+  \NewDocumentCommand\RenewCSDeprecatedCommand{m m m O{}}{%
+    \ExpandArgs{c}\RenewDocumentCommand{#1}{#2}{#3\DeprecationWarning{#1}[#4]}
+  }
+  % Mit scrlfile (aus dem KOMA-Packet) können unter LuaLaTex und OSGBeamer
+  % überflüssige oder störende Pakete gezielt unterdrückt oder angepasst werden.
+  \RequirePackage{scrlfile}
+  \PreventPackageFromLoading*[
+  \ClassWarning{\classname}{Package 'fontenc' is not needed for LuaLaTeX.\MessageBreak
+   Please remove \string\usepackage[...]{fontenc}\MessageBreak}
+  ]{fontenc}
+  \PreventPackageFromLoading*[
+  \ClassWarning{\classname}{Package 'inputenc' is not needed for LuaLaTeX.\MessageBreak
+   Please remove \string\usepackage[...]{inputenc}\MessageBreak}
+  ]{inputenc}
+}{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Umgang mit Beamer-Modi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Hilfsbefehl \makeselectable: Redefiniert ein Macro für die
+% Verwendung mit beamer-Aktionen. Optionaler Parameter gibt den
+% Default-Mode (*mit* spitzen Klammern) 
+% % TODO: Behandlung von optionalen Parametern
+\NewDocumentCommand\makeselectable{m o}{
+  \expandafter\let\csname\detokenize{#1}@osg@orig\endcsname=#1%
+  \renewcommand<>{#1}{%
+    \only##1{\csname\detokenize{#1}@osg@orig\endcsname}}%
+  \IfNoValueTF{#2}{%
+    \renewcommand<>{#1}{\only##1{\csname\detokenize{#1}@osg@orig\endcsname}}%
+  }{%
+    \renewcommand<>{#1}{\IfBlankTF{##1}{%
+        \only#2{\csname\detokenize{#1}@osg@orig\endcsname}%
+      }{%
+        \only##1{\csname\detokenize{#1}@osg@orig\endcsname}%
+      }%
+    }%
+  } %
+}  
+
+\makeselectable{\smallskip}[<presentation>]
+\makeselectable{\medskip}[<presentation>]
+\makeselectable{\bigskip}[<presentation>]
+\makeselectable{\TINY}
+\makeselectable{\Tiny}
+\makeselectable{\tiny}
+\makeselectable{\scriptsize}
+\makeselectable{\footnotesize}
+\makeselectable{\small}
+\makeselectable{\normalsize}
+\makeselectable{\large}
+\makeselectable{\Large} 
+\makeselectable{\LARGE}
+
+% \vspace kann wegen der Stern-Variante nicht direkt selektierbar
+% gemacht werden. Dafür werden die unterliegenden Macros \@vspacer und
+% \@vspace gepatcht.
+\let\osg@original@@vspacer=\@vspacer
+\let\osg@original@@vspace=\@vspace
+\renewcommand<>{\@vspacer}{\alt#1{\osg@original@@vspacer}{\@gobble}}
+\renewcommand<>{\@vspace}{\alt#1{\osg@original@@vspace}{\@gobble}}
+
+% Newline (\\) ist schon durch Beamer selectierbar gemacht. Allerdings
+% definieren einige Umgebungen das Macro neu. Wenn innerhalb einer
+% solchen Umgebung die Beamer-Variante gebraucht wird, kann sie mit
+% \activateSelDS und \deactivateSelDS aktiviert bzw. wieder
+% deaktiviert werden.
+\let\beameroriginal@dsl=\\
+\let\temp@dsl=\relax
+\NewDocumentCommand\activateSelDS{}{
+  \temp@dsl=\\%
+  \let\\=\beameroriginal@dsl%
+}
+\NewDocumentCommand\deactivateSelDS{}{
+  \let\\=\temp@dsl
+}
+
+% \osgpresart erhält zwei Argumente: das erste wird im
+% presentation-Mode verwendet, das zweite im article-Mode. Das jeweils
+% andere wird verschluckt.
+\NewDocumentCommand\osgpresart{+m +m}{%
+  \only<presentation>{#1}\only<article>{#2}%
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Gliederung
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Im Original geht Beamer nur von Parts und Sections aus.
+% Bei osgbeamer entspricht jede Lecture einem Kapitel.
+% Entsprechend werden die Zähler zusammengelegt.
+\RequirePackage{aliascnt}
+\mode<article>{\newaliascnt{lecture}{chapter}}
+\mode<presentation>{\newaliascnt{chapter}{lecture}}
+% Die Zähleranzeige der Sections etc. enthält das Kapitel, außer bei 'standalone'
+\IfBool{osgoptionstandalone}{%
+  \renewcommand{\thesection}{\arabic{section}}
+  \renewcommand{\thesubsection}{\arabic{section}.\arabic{subsection}}
+  \renewcommand*{\thedefinition}{\arabic{chapter}.\arabic{definition}}
+  \renewcommand*{\theexample}{\arabic{chapter}.\arabic{example}}
+}{
+  \renewcommand{\thesection}{%
+    \thechapter.\arabic{section}%
+  }
+  \renewcommand{\thesubsection}{
+    \thesection.\arabic{subsection}
+  }  %% TODO: Appendix
+}
+
+% Hook zum Ausführen nach dem Titel
+\RequirePackage{apptools}
+\gdef\osg@aftertitle{}
+\newrobustcmd{\AfterTitle}[1]{
+  \gappto{\osg@aftertitle}{#1}
+}
+
+\RequirePackage{osgbeamerref}      % (Entfernte) Referenzierung 
+\RequirePackage{osgbeamerlanguage} % Sprachbehandlung
+\IfBool{osglegacy}{
+  % Babel sollte nicht nochmal geladen werden, um einen Optionsclash zu
+  % vermeiden
+  \ExpandArgs{cc}\NewCommandCopy{osg@original@ver@babel.sty}{ver@babel.sty}
+  % Behauptet, dass babel nie geladen wurde. \PreventPackageFromLoading
+  % verhindert zwar Laden, aber kein *erneutes* Laden 
+  \csundef{ver@babel.sty}
+  % Allerdings muss 'csquotes' von 'babel' wissen, und zwar am Ende der Preamble 
+  \AddToHook{begindocument/before}[osgbeamer/csq]{\csletcs{ver@babel.sty}{osg@original@ver@babel.sty}}
+  \DeclareHookRule{begindocument/before}{osgbeamer/csq}{before}{csquotes}
+  % Jetzt wird das Laden von babel durch den Nutzer verhindert
+  \PreventPackageFromLoading*[
+  \ClassWarning{\classname}{To avoid an option clash, repeated use of package
+    'babel' is skipped. Please remove \string\usepackage[...]{babel}}
+  ]{babel}
+}{}
+\RequirePackage{osgbeamerbib}      % Literaturreferenzen
+
+% Jetzt wird das OSG-Beamertheme geladen, das wiederum auf dem TUC-Theme aufbaut
+\usetheme{osg}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Fonts
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\RequirePackage{fontawesome5}
+% LuaLaTeX kann Openface-Fonts, und liefert davon einige mit. Darunter
+% auch einige Handschriften-Fonts,so dass eine Installation des
+% nonfree Emerald-Packets nicht mehr notwendig ist.
+% Allerdings sind die Abstände etwas anders. Es sollte daher bei alten
+% Folien/Kapiteln eine Sichtprüfung vorgenommen werden.
+\newfontfamily{\scriptfamily}{QTSanDiego}[Scale=1.15]
+\DeclareTextFontCommand{\textscript}{\scriptfamily}
+\IfBool{osglegacy}{
+  \NewCSDeprecatedCommand{ECFJD}{}{\scriptfamily}[use \string\scriptfamily{} or emerald package ]
+}{}
+
+% Als Teletype-Schriftart wird in allen Modi DejaVuSansMono gewählt
+\mode<presentation>{\setmonofont{DejaVuSansMono}[Scale=MatchLowercase]}
+\mode<article>{\setmonofont{DejaVuSansMono}[Scale=MatchLowercase]}
+%\newfontfamily\Bera{BeraSansMono}[Scale=0.85]
+%\mode<presentation>{\setmonofont{lmmonolt10}[
+  % Extension      = .otf,
+  % UprightFont    = *-regular,
+  % BoldFont       = *-bold,
+  % ItalicFont     = *-oblique,
+  % BoldItalicFont = *-boldoblique,
+  % Scale=MatchLowercase]}
+%\usepackage[scaled]{beramono}
+%\setmonofont{BeraSansMono}[Scale=MatchLowercase]
+%\renewcommand{\ttdefault}{fvm}
+% Urls werden in tt-Schrift dargestellt.
+\RequirePackage{url}
+\def\UrlFont{\ttfamily\upshape}
+\Urlmuskip = 0mu plus 1mu
+
+%% aus dem pifont-Paket:
+\newcommand{\Pifont}[1]{\fontfamily{#1}\fontencoding{U}\fontseries{m}\fontshape{n}\selectfont}
+\newcommand{\Pisymbol}[2]{{\Pifont{#1}\char#2}}
+\newcommand{\ding}{\Pisymbol{pzd}}
+%%% Farbiger "daraus folgt"-Pfeil
+\RequirePackage{xspace}
+\newcommand{\follows}{{\usebeamercolor[fg]{structure}\ding{225}}\xspace}
+\newcommand{\lfollows}{{\usebeamercolor[fg]{structure}\rotatebox[origin=c]{180}{\ding{225}}}\xspace}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Fußnoten
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \afootnote hat nur im Article eine Fußnote gesetzt.
+% Das Macro ist nun abgekündigt.
+\IfBool{osglegacy}{
+  \mode<article>{
+    \NewCSDeprecatedCommand{afootnote}{O{}m}{%
+      \footnote[#1]{#2}%
+    }[use \string\footnote<article>]
+  }
+  \mode<presentation>{
+    \NewCSDeprecatedCommand{afootnote}{O{}m}{}[use \string\footnote<article>]
+  }
+}{
+}
+
+% In Beamer werden beim presentation-Mode nur die Fußnoten ausgeblendet, nicht
+% die Fußnotenzeichen. Die OSG-Version stellt das IHMO konsistente
+% Verhalten her.
+% Außerdem sollen Fußnoten *immer* unten in einem Frame erscheinen,
+% nicht am Ende von Blöcken. Die aktuelle Beamer-Variante scheint dies
+% (entgegen der Doku) zwar per Default zu machen, zur Sicherheit wird
+% aber stets die entsprechende Option übergeben. Ein evtl. doppeltes
+% Vorkommen von 'frame' ist unkritisch, so dass das Argument nicht
+% untersucht werden muss. 
+\NewCommandCopy{\original@footnote}{\footnote}
+\RenewDocumentCommand{\footnote}{D<>{all} O{} +m}{%
+  \only<#1>{\original@footnote[frame,#2]{#3}}%
+}
+
+%\RequirePackage{microtype}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Farben
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\colorlet{infgreen}{tuccolor@if}
+\colorlet{tucgreen}{tuccolor@tuc}
+\colorlet{tucwarning}{tuccolor@warning}
+\colorlet{tucinfo}{tuccolor@info}
+\definecolor{lightgreen}{rgb}{0.824,0.878,0.804}
+\definecolor{lightgreen2}{rgb}{0.844,0.918,0.834}
+\definecolor{darkgreen}{rgb}{0,0.5,0}
+\setbeamercolor{outline}{bg=yellow,fg=black}
+
+%% TODO: Farben von Beamer übernehmen
+% \mdfdefinestyle{block}{style=basicblock,backgroundcolor=tuccolor@if!10!white,linecolor=tuccolor@if!80!black,frametitlebackgroundcolor=tuccolor@if!90!white,
+%   frametitlefont=\sffamily\color{white}}
+% \mdfdefinestyle{alertblock}{style=basicblock,backgroundcolor=tuccolor@warning!20!white,linecolor=tuccolor@warning!80!black,frametitlebackgroundcolor=tuccolor@warning!80!white,
+%   frametitlefont=\sffamily}
+% \mdfdefinestyle{exampleblock}{style=basicblock,backgroundcolor=black!5!white,linecolor=darkgray,frametitlebackgroundcolor=black!65,
+%   frametitlefont=\sffamily\color{white}}
+
+% \IfToggle{osgscript}{
+% %   \renewenvironment<>{block}[1]{%
+% %     \begin{actionenv}#2\parshape0\osg@footnote@init%
+% %     \tikzexternaldisable%
+% %     \begin{mdframed}[style=block,frametitle=#1]\makeselectable{\\}
+% %     }{\end{mdframed}\osg@footnote@do\end{actionenv}}
+  
+% % \renewenvironment<>{alertblock}[1]{%
+% %   \begin{actionenv}#2\parshape0\osg@footnote@init%
+% %     \tikzexternaldisable%
+% %     \begin{mdframed}[style=alertblock,frametitle=#1]\makeselectable{\\}
+% %     }{\end{mdframed}\osg@footnote@do\end{actionenv}
+% % }
+
+% % \renewenvironment<>{exampleblock}[1]{%
+% %   \begin{actionenv}#2\parshape0\osg@footnote@init%
+% %     \tikzexternaldisable%
+% %     \begin{mdframed}[style=exampleblock,frametitle=#1]\makeselectable{\\}
+% %     }{\end{mdframed}\osg@footnote@do\end{actionenv}
+% % }
+
+% %    \mdtheorem[style=block]{osgdefinition}{Definition}[chapter]
+% %    \mdtheorem[style=block]{osgtheorem}{Theorem}[chapter]
+
+% %    %%% TODO: Fußnotenmechanismus anpassen
+% %    \renewenvironment{definition}[1][]{%
+% %      \parshape0%
+% %      \osg@footnote@init%
+% %      \tikzexternaldisable%
+% %      \begin{osgdefinition}[#1]\makeselectable{\\}
+% %      }{\end{osgdefinition}\osg@footnote@do
+% %    }
+% %    \renewenvironment{theorem}[1][]{%
+% %      \parshape0%
+% %      \osg@footnote@init%
+% %      \tikzexternaldisable%
+% %      \begin{osgtheorem}[#1]\makeselectable{\\}
+% %      }{\end{osgtheorem}\osg@footnote@do
+% %    }
+% %    \newcounter{example}[chapter]
+% %    \renewenvironment{example}[1][]{%
+% %      \refstepcounter{example}%
+% %      \parshape0% 
+% %      \osg@footnote@init%
+% %      \ifstrempty{#1}{\def\extitle{}}{\def\extitle{: #1}}
+% %      \begin{exampleblock}{Beispiel \theexample\extitle}\makeselectable{\\}
+% %      }{\end{exampleblock}\osg@footnote@do
+% %    }
+%  }{
+%    %\newtheorem{definition}{Definition}[chapter]
+%    %\newtheorem{theorem}{Theorem}[chapter]
+%    %\newtheorem{lemma}{Lemma}[chapter]
+%    \def\th@osgexamplestyle{
+%      \def\inserttheoremblockenv{exampleblock}
+%    }
+%    \def\th@osgblockstyle{ 
+%      \def\inserttheoremblockenv{block}
+%    }
+%    %\theoremstyle{osgexamplestyle}
+%    %\newtheorem{example}{Beispiel}[chapter]
+%    %\setbeamertemplate{example begin}{}
+%    %\setbeamertemplate{example end}{}
+% }
+
+\IfBool{osglegacy}{
+  \NewCSDeprecatedCommand{tikzanchor}{m m}{%
+    \tikz[baseline=(#2.base),remember picture]{\node[outer sep=0,inner sep=0pt](#2){#1};}\xspace%
+  }[ use \string\markword]
+}{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Textauszeichnungen
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\NewDocumentCommand{\sbf}{D<>{all} +m}{\structure<#1>{\textbf{#2}}}
+\NewDocumentCommand{\newdef}{D<>{all} +m}{\structure<#1>{\textbf{#2}}}
+\IfBool{osglegacy}{
+  \NewCSDeprecatedCommand{ctiny}{D<>{presentation}}{\only<#1>{\tiny}}[use mode spezification]
+  \NewCSDeprecatedCommand{cfootnotesize}{D<>{presentation}}{\only<#1>{\footnotesize}}[use mode spezification]
+  \NewCSDeprecatedCommand{cscriptsize}{D<>{presentation}}{\only<#1>{\scriptsize}}[use mode spezification]
+  \NewCSDeprecatedCommand{csmall}{D<>{presentation}}{\only<#1>{\small}}[use mode spezification]
+  \NewCSDeprecatedCommand{cnormalsize}{D<>{presentation}}{\only<#1>{\normalsize}}[use mode spezification]
+}{}
+\RequirePackage{lua-ul}
+\let\uline=\underLine
+% \outline unterscheidet sich im den Modi: In der Presentation ist es
+% Textmarker, im Article unterstrichen
+\mode<article>{
+  \newunderlinetype\beginUnderWavy[\number\dimexpr1ex]{\cleaders\hbox{%
+      \setlength\unitlength{.3ex}%
+      \begin{picture}(4,0)(0,1)
+          \thicklines
+          % \color{red}%
+          \qbezier(0,0)(1,1)(2,0)
+          \qbezier(2,0)(3,-1)(4,0)
+      \end{picture}%
+    }}
+  \NewDocumentCommand\outline{D<>{all}+m}{\alt<#1>{\underline{#2}}{#2}}
+}
+\mode<presentation>{
+  \NewDocumentCommand\outline{D<>{all}+m}{\alt<#1>{\highLight{#2}}{\highLight[white]{#2}}} % Die white-Version sorgt für
+  % identische Abstände.
+  % ToDo: \highLight anpassen, dass der Durchschuss nicht geändert wird.
+}
+% Auch \stess (war: \grave) ist modespezifisch (ToDo: Soll das so bleiben?)
+\mode<presentation>{\NewDocumentCommand\stress{D<>{all} m}{{\only<#1>{\color{structure}}{#2}}}}
+\mode<article>{\NewDocumentCommand\stress{D<>{all} m}{\emph<#1>{#2}}}
+% \grave wird jetzt durch amsmath als mathematischer Akzent definiert.
+% Mit legacy-Option wird dies überschrieben
+\IfBool{osglegacy}{
+  \AddToHook{begindocument}{
+    \RenewCSDeprecatedCommand{grave}{d<>m}{%
+      \IfNoValueTF{#1}{%
+        \textcolor{structure}{#2}%
+      }{%
+        \only<#1>{\textcolor{structure}}{#2}%
+      }}[use \string\stress]
+  }
+}{}
+\RequirePackage{calc}
+\NewDocumentCommand\sourceref{O{\ldeen{Quelle}{Source}} m}{%
+  \begin{description}[style=sameline]\fontsize{6pt}{2pt}\selectfont
+  \item[\textbf{#1:}] \stress{#2}
+  \end{description}}
+  %\par{\fontsize{6pt}{2pt}\selectfont\textbf{#1}:: \stress{#2}}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Columns
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Vereinfachtes Spaltenmanagement für zwei Spalten:
+%% twocolumns nimmt zwei optionale Argumente (Reihenfolge egal):
+%% - vertikale Ausrichtung {c|b|t|T}
+%% - Anteil, den die erste Spalte einnimmt. 
+
+\newlength{\osgleftcolwid}
+\newlength{\osgrightcolwid}
+
+\ExplSyntaxOn
+
+\NewDocumentCommand{\IfNumberTF}{mmm}
+ {
+  % regex from https://stackoverflow.com/a/23872060/923955
+  % with modifications for expl3 and for adding a unit
+  \regex_match:nnTF
+   { \A [+\-]? ((\d+(\.\d*)?)|(\.\d+)) \Z} % regex
+   { #1 } % test string
+   { #2 } % true text
+   { #3 } % false text
+ }
+
+\ExplSyntaxOff
+
+\NewDocumentCommand{\twocolparam}{>{\SplitList{,}} m}{
+  \def\osgtcfcwid{0.5}%    Falls keine Länge angegeben wird
+  \def\osgtcalignparam{c}% Falls kein Alignmentparameter angegeben wird
+  \def\parseandsetarguments##1{%
+    \IfNumberTF{##1}{%
+      \def\osgtcfcwid{##1}%
+    }{%
+      \def\osgtcalignparam{##1}%
+    }%
+  }%
+  \ProcessList{#1}{\parseandsetarguments}% W
+}
+
+ \newenvironment<>{twocolumns}[1][t,0.475]{
+  \twocolparam{#1} 
+  \setlength{\osgleftcolwid}{\fpeval{\osgtcfcwid*0.95}\textwidth}
+  \setlength{\osgrightcolwid}{0.95\textwidth}
+  \addtolength{\osgrightcolwid}{-\osgtcfcwid\textwidth}
+  \alt#2{\def\nextcolumn{\column{\osgrightcolwid}}}{\def\nextcolumn{\par}}
+  \begin{columns}#2[\osgtcalignparam]\column{\osgleftcolwid}
+  }{
+  \end{columns}%\undef{\osgleftcolwid}\undef{\osgrightcolwid}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Deko
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\RequirePackage{twemojis}
+\newcommand{\makesmiley}[2]{\csgdef{osgsmiley#1}{\raisebox{-.2ex}{\texttwemoji{#2}}}}
+\makesmiley{:-)}{1f60a} % happy 
+\makesmiley{:-D}{1f600} % laugh
+\makesmiley{:-|}{1f62c}% angry
+\makesmiley{:-()}{1f615}% sad 
+\makesmiley{:-P}{1f61b} % tongue
+\makesmiley{;-)}{1f609} % wink 
+\makesmiley{:-o}{1f62e} % astonished
+\makesmiley{B-)}{1f60e} % cool
+\newcommand{\smiley}[1]{\csuse{osgsmiley#1}}
+%\let\osgsmiley=\smiley
+
+% Erstellt einen tikz-Anker (Name ist erster Parameter) um den
+% gegebenen Text (2. Parameter), auf den später referenziert werden
+% kann.
+\newif\ifosgmarkmm%
+\newcommand{\markword}[2]{%
+  \relax\ifmmode% Ist die Markierung im Mathe-Modus?
+  \osgmarkmmtrue\else\osgmarkmmfalse\fi%
+  \ifdef{\tikzexternalize}{\tikzset{external/export next=false}}{}% deaktiviere tikz-Externalisierung
+  \tikz[remember picture, baseline]\node[anchor=text,inner sep=0pt](#1){\ifosgmarkmm$#2$\else#2\fi};}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Grafiken
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+\RequirePackage{pgf}
+% Horizontal zentriertes Bild. Der optionale Parameter enthält die
+% Breite (default: 0.9\textwidth). Es können zwei durch Komma
+% getrennte Werte angegeben werden: Der erste gilt dann für
+% den presentation-Mode, der zweite für den article-Mode.
+\newcommand{\osg@centerpic}[2][]{
+  \def\parsewidth##1,##2,{\dimdef{\pw}{##1}\dimdef\aw{##2}}
+  \edef\x{\noexpand\in@{,}{#1}}\x
+  \ifin@
+    \parsewidth#1,\relax
+  \else
+    \dimdef\pw{#1}
+    \dimdef\aw{#1}
+   \fi
+  \only<presentation>{\centerline{\includegraphics[width=\pw]{#2}}}
+  \only<article>{\centerline{\includegraphics[width=\aw]{#2}}}
+}
+\NewDocumentCommand\centerpic{D<>{all} O{0.9\textwidth} m}{%
+  \only<#1>{\osg@centerpic[#2]{#3}}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Anhang
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Anhang gibt es in zwei "Geschmacksrichtungen". Zum einen kann eine einzelne
+% Vorlesung einen Anhang haben, zum anderen können ganze Vorlesungen zum
+% Anhang erklärt werden, was i.d.R. nur im Zusammenhang mit Skripten sinnvoll
+% ist.
+% Um beide Varianten zu unterscheiden wird geprüft, ob die \appendix-Anweisung
+% in der Preamble oder im Dokument steht.
+\AtAppendix{%
+  \ifx\@onlypreamble\@notprerr
+   \renewcommand{\thesection}{\appendixname~\Alph{section}:}
+   \renewcommand{\thesubsection}{\thesection.\arabic{subsection}}
+    \setcounter{section}{0}
+  \else
+    \renewcommand{\thesection}{\thechapter.\arabic{section}}
+   \renewcommand{\thesubsection}{\thesection.\arabic{subsection}}
+  \fi
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Anmerkungen
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\mode<article>{\def\Note#1{}}
+\mode<presentation>{\def\Note#1{\beamer@inframenote[item]{#1}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Titeldaten
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\mode<article>{
+  % Erlaube optionale Argumente für \author und \date
+  \global\let\@osg@original@author=\author
+  \global\let\@osg@original@title=\title
+ 
+  \RenewDocumentCommand\author{O{#2} m}{
+    \gdef\osgshortauthor{#1}
+    \gdef\osgauthor{#2}
+    \gdef\@author{#2}
+  }
+  \RenewDocumentCommand\title{O{#2} m}{
+    \gdef\osgshorttitle{#1}
+    \gdef\osgtitle{#2}
+    \gdef\@title{#2}
+  }
+  \gdef\lehrveranstaltung{\title}
+  \RenewDocumentCommand\date{O{#2} m}{
+    \gdef\@date{#2}
+    \gdef\osgdate{#2}
+    \gdef\osgshortdate{#1}
+  }
+  \gdef\lehrveranstaltung{\title}
+}
+\mode<presentation>{
+  \gdef\lehrveranstaltung{\subtitle}
+}
+
+\let\event=\lehrveranstaltung
+\let\course=\lehrveranstaltung
+
+\osg@titlematterhook
+
+\let\osg@origina@Roman=\Roman
+\renewcommand{\Roman}[1]{%
+  \ifnum\value{#1}=0\relax0\else\osg@origina@Roman{#1}\fi}
+
+\NewDocumentCommand\DebugFont{}{Family: \f@family\  with size: \f@size.}
+% %%% Local Variables:
+% %%% mode: latex
+% %%% End:
+%\iffalse
+%    \begin{macrocode}
+%</osgbeamer.cls>
+%    \end{macrocode}
+%\fi
+%\iffalse
+%    \begin{macrocode}
+%<*osgbeamerbib.sty>
+%    \end{macrocode}
+%\fi
+\NeedsTeXFormat{LaTeX2e}
+\def\packagename{osgbeamerbib}
+\ProvidesPackage{\packagename}[2022/09/20 v0.1]
+\RequirePackage{etoolbox}
+\RequirePackage{luacode}
+
+\newbool{osgusebib}\boolfalse{osgusebib}
+\newbool{osgbibglobal}\boolfalse{osgbibglobal}
+\RequirePackage{enumitem}
+
+\ExplSyntaxOn
+\keys_define:nn {osgbeamerbib}{
+  % Dateiname vom Bib-File. I.d.R. ist in Lehrveranstaltungen ein
+  % Setzen als globale Klassenoption (in lectdates) sinnvoll, auch
+  % wenn nicht in allen Kapiteln Literaturreferenzen vorkommen: Wenn
+  % durch die in den lokalen Optionen die Nutzung des
+  % Literatur-Referenzsystems ganz ausgeschaltet
+  % (z.B. bib={article=off}) ist, wird die Option 'file' ignoriert.  
+  file .store = \obb@bibfile,
+  % Sowohl für den presentation- als auch für den article-Mode gibt es jeweils
+  % drei Optionen, mit denen man das Verhalten von Literaturreferenzen steuern kann:
+  % - off|disabled: keine Literaturreferenzen; die Nutzung von \cite etc. führt
+  %                 zu einer Warnung
+  % - local:        Literaturreferenzen werden nur dokumentintern
+  %                 aufgelöst. Innerhalb einer Vorlesungsreihe können
+  %                 verschiedene Referenzen (bei gleichen Autorenkürzeln und
+  %                 Jahr) den gleichen Label erhalten.
+  % - global:       Referenzen werden über alle Vorlesungen
+  %                 abgeglichen. Erfordert mindestens zwei sequentielle(!)
+  %                 Durchläufe für alle Vorlesungen (mit Referenzen)
+  %
+  % Ohne Angabe des Modes (d.h. z.B. 'local' statt 'article=local') werden beide
+  % Modes gesetzt.
+  article .choice:,
+  article .default:n = global,
+  article/off .code:n = {
+    \only<article>{\boolfalse{osgusebib}}
+  },
+  article/disable .meta:n = { article=off },
+  article/local .code:n = {
+    \only<article>{
+      \booltrue{osgusebib}
+      \boolfalse{osgbibglobal}
+    }
+  },
+  article/global .code:n = {
+    \only<article>{
+      \booltrue{osgusebib}
+      \booltrue{osgbibglobal}
+    }
+  },
+  script .meta:n = { article={#1}},
+  slides .choice:,
+  slides .default:n = global,
+  slides/off .code:n = {
+     \only<presentation>{\boolfalse{osgusebib}}
+  },
+  slides/disable .meta:n = { article=off },
+  slides/local   .code:n = {
+    \only<presentation>{
+      \booltrue{osgusebib}
+      \boolfalse{osgbibglobal}
+    }
+  },
+  slides/global .code:n = {
+    \only<presentation>{
+      \booltrue{osgusebib}
+      \booltrue{osgbibglobal}
+    }
+  },
+  local  .meta:n = { article=local,  slides=local},
+  global .meta:n = { article=global, slides=global},
+  off    .meta:n = { article=off,    slides=off},
+  disable.meta:n = { article=off,    slides=off}
+}
+
+
+\ExplSyntaxOff
+
+\ProcessKeyOptions[osgbeamerbib]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\ExplSyntaxOn
+% Importiere ein Substring-Macro von LaTeX3 in 2e
+\cs_generate_variant:Nn \str_range_ignore_spaces:nnn { Vnn }
+\NewDocumentCommand\stringrg{ m m m}{%
+  \str_range_ignore_spaces:Vnn{#1}{#2}{#3}%
+}
+\ExplSyntaxOff
+
+\IfBool{osgusebib}{
+  \IfBool{osgbibglobal}{
+    % Zwei ganz schmutzige Hacks:
+    % 1. librarian nutzt immer \jobname.lbr als Sammeldatei. Daher wird
+    % '\jobname' temporär umdefiniert.
+    \let\osg@originaljobname=\jobname
+    \xdef\obb@jobname{\OsgShareDataPath/\omr@generalprefix}
+    \let\jobname=\obb@jobname
+    %
+    % 2. LuaLaTex erlaubt im (als Default eingestellten) Paranoid-Modus kein
+    % TeX-Fileschreiben außerhalb des eigenen Verzeichnis (inklusive
+    % Unterverzeichnisse). Dies funktioniert aber auf Lua-Ebene (warum
+    % eigentlich?) Da das Anlegen des Files global erfolgt, kann nicht einfach
+    % nur ein Macro gepatcht werden, da vorher mit Error abgebrochen werden
+    % würde. Stattdessen wird \newwrite temporär umgelenkt und damit das Lesen
+    % von librarian.sty an der kritischen Stelle beendet.  
+    \let\osg@original@newwrite=\newwrite
+    \let\lb@write=\endinput%
+    \let\newwrite=\endinput
+    
+    \RequirePackage{librarian}
+    % \jobname und \newwrite werden wieder hergestellt.
+    \let\jobname=\osg@originaljobname
+    \let\newwrite=\osg@original@newwrite
+    % Nun kann gepatcht werden. Statt [\immediate]\write werden die
+    % Lua-Filefunktionen genutzt
+    \RenewDocumentCommand\WriteInfo{+m}{%
+      \AtEndDocument{%
+        \WriteImmediateInfo{#1}%
+      }%
+    }
+    \RenewDocumentCommand\WriteImmediateInfo{+m}{%
+      \luaexec{
+        if (bibfile) then
+            bibfile:write(\luastring{#1})
+         end
+       }
+     }
+     % Zum Schluss werden die letzten Zeilen von `librarian.sty`(die wegen
+     % \endinput nicht mehr ausgeführt worden) "nachempfunden". 
+     \luaexec{
+       bibfile = io.open("\obb@jobname.lbr","w")
+     }
+     \lb@dolbr
+  }{
+    \RequirePackage{librarian}
+  }
+  \def\lb@error#1{\PackageWarning{librarian}{#1}}
+
+  \newtoggle{obb@firstauthor}
+  % Das Original-\AbbreviateFirstname von Librarian hängt bei Namen mit nur
+  % einem Wort.
+  \AbbreviateFirstname
+  % Siehe https://tex.stackexchange.com/questions/661363/abbreviatefirstname-in-librarian-makes-compilation-hang
+  \def\lb@@loopovernames#1#2#3#4{%
+    \iflb@abbreviate
+      \def\Firstname{}%
+      \ifblank{#1}{}{\lb@abbreviate#1 lb@end }% add test for emptyness
+    \else
+       \def\Firstname{#1}%
+    \fi
+    \def\Von{#2}\def\Lastname{#3}\def\Junior{#4}%
+    \lb@makerefname
+  }
+  % \newbool{obb@abbreviatefirstname}
+  % \RenewDocumentCommand\AbbreviateFirstname{}{
+  %   \booltrue{obb@abbreviatefirstname}
+  % }
+  \NewDocumentCommand\formatFirstName{o m}{
+    \IfBlankTF{#2}{}% Wenn es keinen Vornamen gibt, gib gar nichts aus
+    {\IfNoValueTF{#1}{}{#1\ }{#2}%
+    }%
+  }%
+  
+  %\AbbreviateFirstname % ToDo: Als Option verfügbar machen?
+  \NewDocumentCommand\MakeCitation{m}{%
+    % Erstellt das Zitatkürzel. Es wird derzeit nur ein Stil unterstützt:
+    % Abgekürzte Autorennamen+Jahr. Bei Uneindeutigkeiten wird ein Buchstabe als
+    % Suffix angehangen.
+    \RetrieveFieldInFor{key}{#1}{\tempkey}%
+    \ifdefempty{\tempkey}{%
+       % Wenn kein Key gegeben ist, müssen wir uns diesen konstruieren.
+       \RetrieveFieldIn{namenumber}\tempcount%
+       \ifnum\tempcount>3%
+           \ReadNamesFor{#1}{%
+             \ifnum\NameCount=1%
+                 \stringrg{\Lastname}{1}{3}%
+             \fi%
+           }%
+           +% für et al.
+       \else%
+           \ifcase\tempcount % 0 solte nicht vorkommen, Warnung?
+               \or% 1
+                   \ReadNamesFor{#1}{\stringrg{\Lastname}{1}{3}}%
+               \or% 2
+                   \ReadNamesFor{#1}{\stringrg{\Lastname}{1}{2}}%
+               \or% 3
+                   \ReadNamesFor{#1}{\stringrg{\Lastname}{1}{1}}%
+           \fi%
+       \fi%
+       \RetrieveFieldInFor{year}{#1}{\temp@year}%
+       \stringrg{\temp@year}{-2}{-1}\csname\EntryKey @suffix\endcsname%
+     }{%
+       \tempkey%   
+     }%
+   }
+ 
+   \newcount\sameentrycount
+   \def\compareentries{%
+     \ifequalentry
+         \advance\sameentrycount1
+         \WriteImmediateInfo{%
+           \noexpand\expandafter\def\noexpand\csname\EntryKey @suffix\noexpand\endcsname{\toletter}%
+         }%
+     \else
+         \sameentrycount=0
+     \fi
+   }
+   \def\toletter{%
+     \ifcase\sameentrycount
+     \or a\or b\or c\or d\or e\or f\or g\or h%
+     \or i\or j\or k\or l\or m\or n\or o\or p%
+     \or q\or r\or s\or t\or u\or v\or w\or x%
+     \or y\or z\fi
+   }
+   
+   \glet\MakeReference=\compareentries
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+   % Layout Literaturliste
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   \RequirePackage{needspace}
+   \newlength\osg@widestlit
+   \global\setlength\osg@widestlit{7em}%
+   \newlist{osgliteraturelist}{description}{1}
+   \setlist[osgliteraturelist]{font=\mdseries,
+     leftmargin=\dimexpr\osg@widestlit+0.5em\relax,
+     labelindent=0pt,
+     labelwidth=\osg@widestlit}
+
+  \NewDocumentEnvironment{literaturelist}{o}{
+    \begin{osgliteraturelist}
+      }{
+    \end{osgliteraturelist}
+  }
+
+   \mode<article>{
+     \NewDocumentCommand{\bibitemlabel}{m}{
+       [\MakeCitation{#1}]
+     }
+   }
+   \RequirePackage{fontawesome5}
+   \newcommand{\papericon}{\textcolor{structure}{\faLeanpub}}
+   \newcommand{\bookicon}{\textcolor{structure}{\faBook}}
+   \newcommand{\webicon}{\textcolor{structure}{\faGlobeAmericas}}
+   
+   \mode<presentation>{
+     
+     \NewDocumentCommand{\bibitemlabel}{m}{
+       \RetrieveFieldInFor{entrytype}{#1}{\temp@type}
+       \ifdefstring{\temp@type}{book}{\bookicon}{%
+          \ifdefstring{\temp@type}{online}{\webicon}{%
+                \papericon}%
+          }%
+          ~[\MakeCitation{#1}]
+     }
+   }
+   \RenewDocumentCommand{\bibitem}{O{} m}{%
+     \Cite{#2}{main}{%
+     \item[\bibitemlabel{#2}] \MakeReferenceItem}{\item[#2] \emph{#2}}%
+     \IfBlankF{#1}{, #1}
+   }
+
+  \newcommand{\bibcomment}[2][\ldeen{Anm:}{rem:}]{%\vspace{-1.2ex}
+  \item[\hfill\stress{#1}] {\rmfamily \em #2\par}
+  }
+  \newcommand{\bibprolog}[1]{
+    \vspace{.5ex plus .5ex}
+    \protect\needspace{3\baselineskip} 
+  \item[]\sbf{#1}
+  }
+   
+  \NewDocumentCommand\PrintBibliography{o}{
+  }
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+  % Zitatreferenzen
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+  \NewDocumentCommand\citex{m}{%
+    \iftoggle{obb@firstauthor}{}{, }%
+    \Cite{#1}{main}{\MakeCitation{#1}}{??}%
+    \togglefalse{obb@firstauthor}%    
+  }
+
+  \RenewDocumentCommand\cite{o >{\SplitList{,}}m}{%
+    \toggletrue{obb@firstauthor}    
+    [\ProcessList{#2}\citex%
+    \IfNoValueF{#1}{~#1}]
+   }
+
+   \RenewDocumentCommand\nocite{m}{%
+      \Cite{#1}{main}{}{}%
+   }
+   
+   \NewDocumentCommand\fullcite{o m}{
+     \Cite{#2}{main}{\MakeReferenceItem}{\emph{#2}}
+   }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+  \IfBool{osglegacy}{
+    \NewCSDeprecatedCommand{paperitem}{O{} m}{\bibitem[#1]{#2}}[use \string\bibitem]
+    \NewCSDeprecatedCommand{bookitem}{O{} m}{\bibitem[#1]{#2}}[use \string\bibitem]
+    \NewCSDeprecatedCommand{webitem}{O{} m}{\bibitem[#1]{#2}}[use \string\bibitem]
+  }{}
+  \AtEndDocument{
+    \shorthandoff{"}
+    \BibFile{\obb@bibfile}
+    \SortingOrder{name,year}{}
+    \SortList{main}
+    \ReadList{main}
+    \shorthandon{"}
+  }
+
+   \def\italics#1{{\itshape#1}}
+   \chardef\namelimit=3
+   \def\leftcitemark{(}
+   \def\rightcitemark{)}
+   \def\etalii{\italics{ et al}}
+ 
+   \CreateField{url}
+   
+   \def\othersname{others}
+   \def\makecitename{%
+     \ifx\Lastname\othersname
+         \etalii
+     \else
+         \ifnum\tempcount>\namelimit
+             \ifnum\NameCount=1
+                 \unless\ifx\Von\empty \Von~\fi
+                 \Lastname\etalii
+             \fi
+         \else
+             \unless\ifnum\NameCount=1
+                 \ifnum\NameCount=\tempcount\relax \space and \else, \fi
+             \fi
+             \unless\ifx\Von\empty \Von~\fi
+             \Lastname
+         \fi
+     \fi
+   }%
+
+   
+   \def\editor{editor}
+   \parindent0pt
+   \sfcode`\.=\numexpr(\the\sfcode`\.+1)
+   \def\conditionalstop{%
+     \unless\ifnum\spacefactor=\sfcode`\.
+         .%
+     \fi
+   }
+   
+   %%% Typesetting entries.
+   \def\MakeReferenceItem{%
+     \par\noindent
+     \RetrieveFieldIn{namenumber}\tempcount%
+     \stress<presentation>{\ReadName\makerefname}%
+     \RetrieveFieldIn{nametype}\temp%
+     \ifx\temp\editor%
+         \RetrieveFieldIn{namenumber}\temp%
+         \ifnum\temp>1%
+             \space \stress<presentation>{(\ldeen{Hrsg.}{eds.})}%
+         \else%
+             \space \stress<presentation>{ (\ldeen{Hrsg.}{ed.})}%
+         \fi%
+     \fi%
+     \stress<presentation>{:}\space
+     \compareentries%
+     \RetrieveFieldIn{entrytype}\temp%
+     \typesetref\temp%\conditionalstop
+   }
+   %%% These are for names in the bibliography.
+   \def\makerefname{%
+     \ifx\Lastname\othersname
+         \etalii
+     \else
+         \ifnum\NameCount=1
+             \unless\ifx\Von\empty \Von\space \fi
+             \Lastname\formatFirstName[,]{\Firstname}
+             \unless\ifx\Junior\empty, \Junior \fi
+         \else
+             \ifnum\NameCount=\tempcount\relax \space \ldeen{und}{and} \else , \fi
+             \formatFirstName{\Firstname}
+             \unless\ifx\Von\empty \space\Von \fi
+             \space\Lastname
+             \unless\ifx\Junior\empty , \Junior \fi
+         \fi
+     \fi
+   }
+   \def\makeedname{%
+     \ifx\Lastname\othersname
+         \etalii
+     \else
+         \unless\ifnum\NameCount=1
+             \ifnum\NameCount=\tempcount\relax \space and \else , \fi
+         \fi
+         \Firstname
+         \unless\ifx\Von\empty \space\Von \fi
+         \space\Lastname
+         \unless\ifx\Junior\empty , \Junior \fi
+     \fi
+   }
+   
+   %%% Here entries are defined.
+   \def\typesetref#1{%
+     \ifcsname#1@entrytype\endcsname
+         \csname#1@entrytype\endcsname
+     \else
+         \errmessage{Unknown entry type: `#1'}%
+     \fi
+   }
+   \def\createtype#1{%
+     \expandafter\def\csname#1@entrytype\endcsname
+   }
+   \def\booktitle#1{\setbooktitle{\RetrieveField{#1}}}
+   \def\setbooktitle#1{\italics{#1}}
+   \def\articletitle#1{\setarticletitle{\RetrieveField{#1}}}%
+   \def\setarticletitle#1{\enquote{#1}}
+   \def\addjournal#1{\addstop{{\setbooktitle{#1}}}}
+   \def\addurl#1{\addcomma{\textcolor{structure}{\url{#1}}}}
+   \def\addcomma#1{, #1}
+   \def\addcolon#1{: #1}
+   \def\addpar#1{(#1)}
+   \def\addspace#1{\ #1}
+   \def\addstop#1{. #1}
+   \def\addimmediate#1{#1}
+   \def\addbook#1{, in \setbooktitle{#1}}
+   \def\addeditor#1{%
+     \RetrieveFieldIn{editornumber}\tempcount
+     , edited by \ReadEditor\makeedname}
+   \def\inbook#1{%
+     , chapter #1%
+   }
+   \def\crossref#1{%
+     ,  in \cite{#1}%
+     \WriteImmediateInfo{\noexpand\Cite{#1}{main}{}{}}%
+   }
+   
+   %%% The following do not pretend to show how entries
+   %%% should be typeset.
+   \createtype{book}{%
+     \booktitle{title}%
+     \TypesetField{publisher}\addstop{}%
+     \TypesetField{address}\addcomma{}%
+     \TypesetField{year}\addcomma{}%
+   }%
+   \createtype{article}{%
+     \articletitle{title}%
+     \TypesetField{journal}\addjournal{}%
+     \TypesetField{volume}\addcomma{}%
+     \TypesetField{number}\addpar{}%
+     \TypesetField{year}\addimmediate{}%
+     \TypesetField{pages}\addcomma{}%
+   }
+   \createtype{inbook}{%
+     \booktitle{title}%
+     \TypesetField{chapter}\inbook{%
+       \TypesetField{pages}\addcomma{}%
+     }%
+     \TypesetField{publisher}\addcomma{}%
+     \TypesetField{address}\addcolon{}%
+   }%
+   \createtype{incollection}{%
+     \articletitle{title}%
+     \TypesetField{crossref}\crossref{%
+       \TypesetField{booktitle}\addbook{}%
+       \TypesetField{editor}\addeditor{}%
+       \TypesetField{pages}\addcomma{}%
+       \TypesetField{publisher}\addcomma{}%
+       \TypesetField{address}\addcolon{}%  
+     }%
+   }
+   \createtype{inproceedings}{%
+     \articletitle{title}%
+     \TypesetField{booktitle}\addbook{}%
+     \TypesetField{editor}\addeditor{}%
+     \TypesetField{pages}\addcomma{}%
+     \TypesetField{address}\addcomma{}%
+   }
+   \createtype{conference}{%
+     \articletitle{title}%
+     \TypesetField{booktitle}\addbook{}%
+     \TypesetField{editor}\addeditor{}%
+     \TypesetField{pages}\addcomma{}%
+     \TypesetField{address}\addcomma{}%
+   }
+   \createtype{mastersthesis}{%
+     \booktitle{title}%
+     , Master's thesis%
+     \TypesetField{organization}\addcomma{}{}%
+   }
+   \createtype{phdthesis}{%
+     \booktitle{title}%
+     , PhD dissertation%
+     \TypesetField{organization}\addcomma{}{}%
+   }
+   \createtype{proceedings}{%
+     \booktitle{title}%
+     \TypesetField{publisher}\addcomma{%
+       \TypesetField{organisation}\addcomma{}%
+     }%
+     \TypesetField{address}\addcolon{}%
+   }
+   \createtype{techreport}{%
+     \booktitle{title}%
+     , technical report%
+     \TypesetField{institution}\addcomma{}%
+   }
+   \createtype{booklet}{%
+     \booktitle{title}%
+     \TypesetField{howpublished}\addcomma{}%
+   }
+   \createtype{manual}{%
+     \booktitle{title}%
+     \TypesetField{organization}\addcomma{}%
+   }
+   \createtype{misc}{%
+     \booktitle{title}%
+     \TypesetField{howpublished}\addcomma{}%
+   }
+   \createtype{online}{%
+     \booktitle{title}%
+     \TypesetField{url}\addurl{}%
+   }
+   \SortingOrder{name,year}{}%{lfvj}
+ }{% Literaturreferenzen werden deaktiviert
+   \NewDocumentCommand\obb@disabled@warning{}{
+     \PackageInfo{osgbeamerbib}{Bibliographic referencing
+       disabled.\MessageBreak
+       Set package option to activate.\MessageBreak
+       Current option may result in \MessageBreak
+       an unresolved reference}
+   }
+   \RenewDocumentCommand{\cite}{o m}{[\textbf{?}]%
+     \obb@disabled@warning
+   }
+   \RenewDocumentCommand{\nocite}{m}{%
+     \obb@disabled@warning
+   }
+   \ProvideDocumentCommand{\fullcite}{m}{[\textbf{?}]%
+     \obb@disabled@warning
+   }
+ }%\iffalse
+%    \begin{macrocode}
+%</osgbeamerbib.sty>
+%    \end{macrocode}
+%\fi
+%\iffalse
+%    \begin{macrocode}
+%<*osgbeamerdummybabel.sty>
+%    \end{macrocode}
+%\fi
+% Dummy package without content, called instead of a repeated inclusion of 'babel'%\iffalse
+%    \begin{macrocode}
+%</osgbeamerdummybabel.sty>
+%    \end{macrocode}
+%\fi
+%\iffalse
+%    \begin{macrocode}
+%<*osgbeamerlanguage.sty>
+%    \end{macrocode}
+%\fi
+\NeedsTeXFormat{LaTeX2e}
+\def\packagename{osgbeamerlanguage}
+\ProvidesPackage{\packagename}[2022/08/25 v0.2]
+\RequirePackage{luacode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Die gewählte Sprache (Deutsch oder Englisch) wird entweder per Packageoption (de,en)
+%%% oder über das Macro \selectedbeamerlanguage übergeben.
+%%% Dabei hat das Macro Vorrang.
+%%% Wenn keine Sprache gewählt wird, erzeugt das Package eine Warnung.
+
+\DeclareOption{de}{
+  \providecommand{\selectedbeamerlanguage}{de}
+}
+\DeclareOption{en}{
+  \providecommand{\selectedbeamerlanguage}{en}
+}
+\ProcessOptions\relax
+
+\ifundef{\selectedbeamerlanguage}{
+      \PackageWarningNoLine{\packagename}{No language specified, assume English (en)}
+      \providecommand{\selectedbeamerlanguage}{en}
+    }{}
+\ifdefstring{\selectedbeamerlanguage}{de}{%
+  \RequirePackage[main=ngerman,english]{babel}
+}{
+  \RequirePackage[main=english, ngerman]{babel}
+}
+%%% Trennung und Quotes
+%\RequirePackage[ngerman,english]{babel}
+\RequirePackage[babel=true]{csquotes}
+\typeout{********** After CSquotes}
+% Shorthands sollen für beide Sprachen gelten, nicht nur für Deutsch
+\useshorthands{"}
+\defineshorthand{"`}{\openautoquote}
+\defineshorthand{"'}{\closeautoquote}
+\addto\extrasenglish{\languageshorthands{ngerman}}
+\DeclareQuoteStyle{english}%
+    {\textquotedblleft}
+    {\textquotedblright}
+    {\textquoteleft}
+    {\textquoteright}
+\DeclareQuoteStyle{ngerman}%
+    {\glqq}
+    {\grqq}
+    {\glq}
+    {\grq}
+%%% Ordinalzahlen
+\RequirePackage[super]{nth} % definiert \ordinal für englische Zahlen
+\let\ordinalen=\ordinal
+\newcommand{\ordinalde}[1]{\arabic{#1}.}
+\ifdefstring{\selectedbeamerlanguage}{de}{%
+      \AtBeginDocument{
+        \selectlanguage{ngerman}
+      }
+    }{
+      \AtBeginDocument{
+        \selectlanguage{english}
+      }
+    }
+% \eng und \germ werden (typischerweise) innerhalb der jeweils andern
+% Spache eingesetzt, um das andersprachliche Wort zu markieren
+\newcommand{\eng}[1]{\foreignlanguage{english}{\emph{#1}}}
+\newcommand{\germ}[1]{\foreignlanguage{ngerman}{\emph{#1}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%% Zähler und Schalter für Sprachen
+% Ein Zähler lastlang<lang><name> dienen dazu, den Zählerstand <name> in der
+% Sprache <lang> zwischenzuspeichern, um diese anschließend wieder zurückzusetzen. 
+\newcounter{langlastdeframe}
+\newcounter{langlastenframe}
+\newcounter{langlastdetheorem}
+\newcounter{langlastentheorem}
+\newcounter{langlastdeeq}
+\newcounter{langlasteneq}
+\newif\iflangineng\langinengfalse
+\newif\iflanginde\langindefalse
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%
+%% Sprachversionen
+%%
+\gdef\langall{\beamer@inlecturetrue%
+  \iflangineng%
+  \setcounter{framenumber}{\value{langlastdeframe}}%
+  \setcounter{theorem}{\value{langlastdetheorem}}%
+  \setcounter{equation}{\value{langlastdeeq}}%
+  \else%
+  \setcounter{framenumber}{\value{langlastenframe}}%
+  \setcounter{theorem}{\value{langlastentheorem}}%
+  \setcounter{equation}{\value{langlasteneq}}%
+  \fi%
+}
+
+\ifcsstring{selectedbeamerlanguage}{de}
+{%%% Deutsch
+  \let\ordinal=\ordinalde
+  \newcommand{\len}[1]{}
+  \newcommand{\lde}[1]{#1}
+  \newenvironment{en}{\begin{onlyenv}<article:0|presentation:0>}{\end{onlyenv}}
+  \newenvironment{de}{}{}
+  \gdef\langen{%
+    \beamer@inlecturefalse%
+    \iflangineng%
+    \else%
+    \setcounter{langlastdeframe}{\value{framenumber}}%
+    \setcounter{langlastdetheorem}{\value{theorem}}%
+    \setcounter{langlastdeeq}{\value{equation}}%
+    \fi%
+    \langinengtrue%
+    \langindefalse%
+  }
+  \gdef\langde{%
+    \beamer@inlecturetrue%
+    \iflangineng%
+    \setcounter{framenumber}{\value{langlastdeframe}}%
+    \setcounter{theorem}{\value{langlastdetheorem}}%
+    \setcounter{equation}{\value{langlastdeeq}}%
+    \fi%
+    \langindetrue%
+    \langinengfalse%
+  }
+  \newrobustcmd{\ldeen}[2]{\ifstrequal{#1}{}{#2}{#1}}
+  \newcommand{\ldeenr}[2]{#1} % robust version
+  \newcommand{\xdeen}[2]{%
+    \luadirect{
+      oex_deenargs={}
+      oex_deenargcnt=0
+      oex_deenstr=\luastringN{#1}
+    }%
+    \oex@xchecknextarg
+  }      
+  \newcommand<>{\lframetitle}[2]{
+    \frametitle#3{#1}
+  }
+  \gdef\langall{\beamer@inlecturetrue%
+    \iflangineng%
+    \setcounter{framenumber}{\value{langlastdeframe}}%
+    \setcounter{theorem}{\value{langlastdetheorem}}%
+    \setcounter{equation}{\value{langlastdeeq}}%
+    \fi%
+    \langindefalse%
+    \langinengfalse%
+  }
+  \pdfstringdefDisableCommands{%
+    \def\ldeen#1#2{#1}
+  }
+}{%%%% sonst: Englisch
+  \let\ordinal=\ordinalen
+  \newcommand{\len}[1]{#1}
+  \newcommand{\lde}[1]{}
+  \newenvironment{de}{\begin{onlyenv}<article:0|presentation:0>}{\end{onlyenv}}
+  \newenvironment{en}{}{}
+  \gdef\langde{%
+    \beamer@inlecturefalse%
+    \iflanginde%
+    \else%
+    \setcounter{langlastenframe}{\value{framenumber}}%
+    \setcounter{langlastentheorem}{\value{theorem}}%
+    \setcounter{langlasteneq}{\value{equation}}%
+    \fi%
+    \langindetrue%
+    \langinengfalse%
+  }
+  \gdef\langen{%
+    \beamer@inlecturetrue%
+    \iflanginde%
+    \setcounter{framenumber}{\value{langlastenframe}}%
+    \setcounter{theorem}{\value{langlastentheorem}}%
+    \setcounter{equation}{\value{langlasteneq}}%
+    \fi%
+    \langinengtrue%
+    \langindefalse%
+  }
+  \newrobustcmd{\ldeen}[2]{\ifstrequal{#2}{}{#1}{#2}}
+  \newcommand{\ldeenr}[2]{#2} % robust version
+  \newcommand{\xdeen}[2]{%
+    \luadirect{
+      oex_deenargs={}
+      oex_deenargcnt=0
+      oex_deenstr=\luastringN{#2}
+    }%
+    \oex@xchecknextarg
+  }      
+  \newcommand<>{\lframetitle}[2]{\ifx\empty#2\empty\frametitle#3{#1}\else\frametitle#3{#2}\fi}
+  \gdef\langall{\beamer@inlecturetrue%
+    \iflanginde%
+    \setcounter{framenumber}{\value{langlastenframe}}%
+    \setcounter{theorem}{\value{langlastentheorem}}%
+    \setcounter{equation}{\value{langlasteneq}}%
+    \fi%
+    \langindefalse%
+    \langinengfalse%
+  }
+  \pdfstringdefDisableCommands{%
+    \def\ldeen#1#2{#2}
+  }
+}
+%%%%%%%%%%%%%% Convenience %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\llecture}[3]{\lecture{\lde{#1}\len{#2}}{#3}}
+\newcommand{\oex@xchecknextarg}{%
+  \@ifnextchar\bgroup{\osx@consumnextarg}{\oex@process@xdeen}
+}
+\newcommand{\osx@consumnextarg}[1]{%
+  \luadirect{
+    oex_deenargcnt=oex_deenargcnt+1
+    oex_deenargs[oex_deenargcnt]=\luastringN{#1}
+  }%
+  \@ifnextchar\bgroup{\osx@consumnextarg}{\oex@process@xdeen} 
+}
+\def\oex@process@xdeen{
+  \luadirect{
+    for i=1, oex_deenargcnt do
+      oex_deenpat='@'.. tostring(i)
+      oex_deenstr , _ = string.gsub(oex_deenstr, oex_deenpat, oex_deenargs[i])
+    end
+    tex.print(oex_deenstr)
+  }
+}
+
+\AtBeginDocument{
+  \setbeamertemplate{frametitle continuation}{(\ldeen{Forts.}{cont.})}
+}
+%\iffalse
+%    \begin{macrocode}
+%</osgbeamerlanguage.sty>
+%    \end{macrocode}
+%\fi
+%\iffalse
+%    \begin{macrocode}
+%<*osgbeamerref.sty>
+%    \end{macrocode}
+%\fi
+\NeedsTeXFormat{LaTeX2e}
+\edef\packagename{osgbeamerref}
+\ProvidesPackage{\packagename}[2022/06/16 v0.5.0]
+\RequirePackage{luacode}
+\RequirePackage{varsfromjobname}
+\RequirePackage[user,xr,lastpage,%runs,
+hyperref
+]{zref}
+
+\providebool{osgoptionstandalone}
+\providebool{osgscript}
+\DeclareKeys[osgbeamer]{
+  standalone.code = {
+    \booltrue{osgoptionstandalone}
+    \boolfalse{osgscript}
+  }
+}
+% Erweiterter LaTeX3-Syntax, vgl. Kommentar in osgbeamer.cls
+\ExplSyntaxOn
+\cs_generate_variant:Nn \keys_set:nn { nx }
+\let\SetKeyEx=\keys_set:nx
+% 'continuation' legt fest, ob die Seiten/Slides kapitelübergreifend
+% numeriert werden.
+% \addtocounter ist bei Slides nicht notwendig, da dort ein
+% \refstepcount erfolgt.
+\keys_define:nn {osgbeamerref}{
+  continuation .choice: ,
+  continuation/beamer .code:n = {
+    \DeclareDocumentCommand{\omrsetcont}{m}{
+      \ifcsstring{omr@doctypecode}{b}{
+         \setcounter{framenumber}{##1}
+       }{}
+    }
+    \DeclareDocumentCommand{\omrcontwarn}{}{
+      \ifcsstring{omr@doctypecode}{b}{
+            \omr@continuationwarning
+      }{}
+    }
+  },
+  continuation/article . code:n = {
+    \DeclareDocumentCommand{\omrsetcont}{m}{
+      \ifcsstring{omr@doctypecode}{a}{
+        \setcounter{page}{##1}
+        \addtocounter{page}{1} 
+      }{}
+    }
+    \DeclareDocumentCommand{\omrcontwarn}{}{
+      \ifcsstring{omr@doctypecode}{a}{
+            \omr@continuationwarning
+      }{}
+    }
+  },
+  continuation/both . code:n = {
+    \DeclareDocumentCommand{\omrsetcont}{m}{
+      \ifcsstring{omr@doctypecode}{a}{
+        \setcounter{page}{##1}
+        \addtocounter{page}{1}
+      }{
+        \setcounter{framenumber}{##1}
+      }
+   }
+    \DeclareDocumentCommand{\omrcontwarn}{}{
+      \omr@continuationwarning
+    }
+  },
+  continuation/none. code:n = {
+    \DeclareDocumentCommand{\omrsetcont}{m}{}
+    \DeclareDocumentCommand{\omrcontwarn}{}{}
+  },
+  standalone .code:n={
+    \booltrue{osgoptionstandalone}
+  }
+} 
+\ExplSyntaxOff
+
+\SetKeys[osgbeamerref]{continuation = article}
+\ProcessKeyOptions[osgbeamerref]
+
+\ifbool{osgoptionstandalone}{
+  % Im standalone-Mode wird "normal" referenziert. Warnung, wenn
+  % explizit eine externe Referenz gerufen wird.
+  \PackageWarningNoLine{\packagename}{standalone mode activated, chrossreferencing disabled}
+  \NewDocumentCommand{\xref}{O{} m}{\ifstrempty{#1}{\ref{#2}}{\emph{no external references in standalone mode}}}
+  \NewDocumentCommand{\xrefchap}{m}{\emph{no external references in standalone mode}}
+}{
+  % Properties für zref: chapter und frame.
+  % Lezteres macht im article-Mode nicht wirklich Sinn (frames werden zwar mitgeführt, aber
+  % nicht dargestellt), stehen aber in beiden Varianten zur Verfügung.
+  \zref@newprop{beamer@frame}{\theframenumber}
+  \zref@newprop{chapter}{\thechapter}
+  \zref@addprop{main}{beamer@frame}
+  \zref@addprop{main}{chapter}
+
+  % Im OLLM werden einige Information über den Jobnamen übertragen. Der Jobname hat das Format
+  % <lectureprefix>-<number>-<doctype>-<language>-<topic>
+  % 
+  \xdef\omr@generalprefix{\getfromjobname{1}}
+  \setcounter{chapter}{\getfromjobname{2}}
+  % Da der chapter-Counter zu Kapitelbeginn einem \refstepcounter
+  % unterliegt, muss für den korrekten Wert *im* Kapitel hier 1
+  % abgezogen werden
+  \addtocounter{chapter}{-1}
+  \xdef\omr@doctype{\getfromjobname{3}}
+  \xdef\omr@currenttopic{\getfromjobname{5}}
+  \xdef\currenttopic{\getfromjobname{5}} % Auch als User-Macro, kann z.B. zur Einbindung von Quelltexten
+                                         % oder anderen Source, die den Themenbaum nachbilden, genutzt werden.
+  % Kürzel für den Doctype: a - article (script), b - beamer (alles andere)
+  \ifdefstring{\omr@doctype}{script}{\gdef\omr@doctypecode{a}}{\gdef\omr@doctypecode{b}}
+      % <doctype-prefix>-<lang>-<chaplabel>
+  \NewExpandableDocumentCommand\omr@fullprefix{O{\omr@doctypecode} m}{#1-\selectedbeamerlanguage-#2}
+  \def\omrshortenprefix#1-#2-#3{#3}
+  \luaexec{
+    required_ex_refs={}
+  }
+ 
+  \newcommand{\addtolistcs}[2]{%
+    \ifinlistcs{#2}{#1}{}{%
+      \listcsgadd{#1}{#2}
+    }
+  }
+
+  \NewDocumentCommand\omrexternaldocument{m m}{%
+    % Ruft lediglich \zexternaldocument auf.
+    % Wurde eingeführt, falls auf xr statt zref-xr umgestellt werden
+    % soll.
+    \zexternaldocument[#1:]{#2}
+  }
+  \NewDocumentCommand\omr@ref{O{} o m O{default}}{%
+    \ifstrempty{#1}{% lokale Referenz
+      \zref@extract{#3}{#4}%
+    }{%
+      \ifcsstring{beamer@currentlecturelabel}{#1}{% ebenfalls lokal
+        \zref@extract{#3}{#4}%
+      }{%
+        % Protokolliere, welches Kapitel nachgefragt wurde.
+        % Dessen aux-Datei wird (so eine vorliegt) im nächsten
+        % Durchlauf über \ [z]externaldocument geladen.
+        % Sammlung erfolgt über die (interne) Liste osg@externrefs
+        \IfNoValueTF{#2}{
+          \write\@mainaux{\string\addtolistcs{osg@externrefs}{\omr@fullprefix{#1}}}%
+          \zref@extract{\omr@fullprefix{#1}:#3}{#4}%
+        }{
+          \write\@mainaux{\string\addtolistcs{osg@externrefs}{\omr@fullprefix[#2]{#1}}}%
+          \zref@extract{\omr@fullprefix[#2]{#1}:#3}{#4}%
+        }
+      }%
+    }%
+  }%
+  \NewDocumentCommand{\xref}{O{} m}{%
+    \omr@ref[#1]{#2}[default]%
+  }
+  \NewDocumentCommand{\xrefchap}{m}{%
+    \ifstrempty{#1}{(\omr@ref[\beamer@currentlecturelabel]{osglecture})}{\omr@ref[#1]{osglecture}}%
+  }
+  \NewDocumentCommand{\xrefsmart}{O{} m}{%
+    \alt<article>{%
+      \ldeen{Seite}{page}~\omr@ref[#1]{#2}[page]%
+    }{%
+      \ldeen{Folie}{slide}~\omr@ref[#1]{#2}%
+    }%
+  }
+  \NewDocumentCommand\xarticleref{O{} m}{
+    \omr@ref[#1][a]{#2}[default]%
+  }
+  \NewDocumentCommand\xpresentationref{O{} m}{
+    \omr@ref[#1][b]{#2}[default]%
+  }
+
+
+  % \OsgShareDataPath wird von OLLM-latexmkrc übergeben
+  \xdef\omr@pathtoref{\OsgShareDataPath/\omr@generalprefix.gref} 
+  
+  \luaexec{
+     require("util-jsn")
+     allrefs = {}
+     % 
+     % getexternal(file,reflist) - Liest externe Referenzen (und die letzte Seiten-/Framenummer) ein
+     % 
+     % File:    json-Datei mit den externen Referenzen
+     % Reflist: Array mit den Suchprefixes als Schlüssel.
+     getexternal = function(file,reflist)
+        for key, info in pairs(reflist) do
+           tex.print("\\typeout{*********** IN REFLIST: ".. key .. "} ")
+        end
+        local f=io.open(file,"r")
+        local foundcont = 0
+        if (f == nil) then
+                 tex.print("\\PackageWarningNoLine{osgbeamerref}{General reference file not found}")       
+        else
+           local json = f:read( "*a" )
+           if (json ~= "") then
+              allrefs = utilities.json.tolua(json)
+              if (allrefs ~= nil) then
+                 for key, info in pairs(allrefs) do
+                    %tex.print("\\typeout{*********** BEFORE IMPORT KEY ".. info['prefix'] .. " PATH:"  .. info['path'] .."} ")                    
+                       % Überprüfe, ob es sich um den Vorgänger in der OLLM-Sequenz handelt. Wenn ja,
+                       % übernehme die Information für die letzte Seite.   
+                    if ((tonumber(info['number'])+1 == \arabic{chapter}) and ('\omr@doctypecode' == string.sub(info['prefix'],1,1))) then
+                       tex.print("\\omrsetcont{" .. info['lastpage'] .. "}")
+                       foundcont = 1
+                    end
+                    %tex.print("\\typeout{*********** TEST For PREFIX ".. info['prefix'] .. "} ")
+                    if (reflist[info['prefix']] ~= nil) then
+                          % Keine extra Warnung, wenn die Datei nicht existiert/lesbar ist, das übernimmt zref.
+                          %tex.print("\\typeout{*********** WANT IMPORT WITH PREFIX ".. info['prefix'] .. " PATH:"  .. info['path'] .."} ")
+                       tex.print("\\omrexternaldocument{" .. info['prefix'] .. "}{" .. info['path'] .. "}")
+                          % Sucheintrag wird aus der Referenzliste gestrichen
+                       reflist[info['prefix']] = nil
+                    end
+                 end
+                    % Gebe für nichtgefundene (in reflist verbliebene) externe aux-Dateien Warnungen aus
+                 for key, val in pairs(reflist) do
+                    tex.print("\\PackageWarningNoLine{osgbeamerref}{Don't know aux file for lecture label '\\omrshortenprefix "..key.."'.\\MessageBreak "..
+                              "Please tex the corresponding lecture}")
+                 end
+                    % Warnung bei fehlendem Anschluss
+                 if ((foundcont == 0) and (\arabic{chapter} ~= \OsgFirstChapter)) then
+                    tex.print("\\omrcontwarn")
+                 end
+              else
+                 tex.print("\\PackageWarningNoLine{osgbeamerref}{General reference file invalid, reinitiate}")
+                 allrefs = {}
+              end
+           end
+           f:close()
+        end
+     end
+     %
+     % updateref(file, label, lang, typecode, path, lastpage) - Schreibt bei Bedarf die gref-Datei
+     % 
+     % File:     json-Datei mit den externen Referenzen
+     % Label:    Label des Kapitels
+     % Lang:     Sprache, de|en
+     % Type:     a|s (doctypecode)
+     % Path:     Pfad zum Verzeichnis mit der aux-Datei
+     % Lastpage: Nummer der letzten Seite
+     updateref = function(file, label, lang, typecode, path, lastpage)
+        local prefix
+        prefix = typecode .. '-' .. lang  .. '-' .. label 
+        local info = {}
+        local ndx = '\arabic{chapter}'
+        %tex.print("\\typeout{************ prefix == "..prefix..",
+        %  chapter = "..ndx.."}")
+        info['prefix'] = prefix
+        local jobpath =  path .. '/' .. \luastring{\jobname}
+        info['path'] = jobpath;
+        info['lastpage'] = lastpage
+        info['number'] = ndx
+        if ((allrefs == {}) or (allrefs[ndx] == nil) or (allrefs[ndx]['lastpage'] == -1) or (allrefs[ndx]['lastpage'] ~= lastpage)) then
+           allrefs[ndx] =info
+           table.sort(allrefs) 
+           local f=io.open(file,"w")
+           if (f) then
+              local json = utilities.json.tostring(allrefs)
+              f:write(json)
+              f:close()
+           end
+        end
+     end
+   }
+   
+   \newrobustcmd{\omr@readref}{
+     %\typeout{*********** Read external}
+     \luaexec{
+       ltreflist={}
+     }
+     % Die etoolbox-Liste mit den benötigten Referenzen wird in eine
+     % Lua-Tabelle gewandelt.
+     % Anmerkung: Dieses Umkopieren ist sicher nicht sehr elegant,
+     % hilft aber bei der Separation von LaTeX- und Lua-Code.
+     \providecommand{\osg@externrefs}{} % Vermeide Error, wenn die
+                                        % Liste noch nicht eingelesen
+                                        % wurde (1. Run)
+     \renewcommand*{\do}[1]{
+       \luaexec{
+         %tex.print("\\typeout{******** Add to lua ##1}")
+         ltreflist[\luastring{##1}]=1
+       }
+     }
+     \dolistloop{\osg@externrefs} % Ausführung der Schleife
+     % In getexternal() werden (bereits bekannte) externe aux-Dateien eingelesen.
+     \luaexec{
+        getexternal(\luastring{\omr@pathtoref}, ltreflist)     
+     }
+   }
+
+   \newrobustcmd{\omr@writeref}[1]{
+     % Bei Beamer-Documenten zählen die Frames, im Scriptkapitel die
+     % Seiten
+     \ifcsstring{omr@doctypecode}{a}{
+       \edef\tempa{page}
+     }{
+       \edef\tempa{beamer@frame}
+     }
+     % Falls noch keine Lastpage ermittelt wurde, wird sie auf 0 gesetzt
+     \zref@def@extractdefault{\tlp}{LastPage}{\tempa}{0}
+     \luaexec{
+       updateref(
+       \luastring{\omr@pathtoref},
+       \luastring{#1},
+       '\selectedbeamerlanguage',
+       \luastring{\omr@doctypecode},
+       \luastring{\OsgCurrentDir},
+       \luastring{\tlp}
+       )
+      }
+   }
+
+   \RenewDocumentCommand{\label}{m}{\beamer@savemode\zref@label{#1}\beamer@resumemode}
+   \AddToHook{begindocument}{
+     % Da zref genutzt wird, werden \label und \ref auf die entsprechenden
+     % zref-Pendants gesetzt.
+     % ACHTUNG: das kann (in anderen Paketen) zu Inkompatibilitäten
+     % führen
+     \let\ref=\zref
+     % Zu diesem Zeitpunkt ist die aux-Datei schon eingelesen.
+     % Für die Crossreferenzierung müssen auch die anderen
+     % (referenzierten) aux-Dateien gelesen werden.
+     % Die Pfade der
+     \omr@readref
+   }
+   \AddToHook{enddocument/afteraux}{
+     % ggf. muss die gref-Datei angepasst werden.
+     % Da darin auch die Nummer der letzten Seite/Folie übergeben wird, erfolgt dies
+     % erst zu Ende der Dokumentverarbeitung
+     \omr@writeref{\beamer@currentlecturelabel}
+   }
+
+  \NewDocumentCommand\omr@continuationwarning{}{
+    \PackageWarningNoLine{osgbeamerref}{
+      No lecture continuation found, I start\MessageBreak
+      with default value.\MessageBreak
+      Please tex the previous lecture.
+    }
+  }
+
+  \mode<presentation>{
+    % Wir wollen auch im presentation-Mode auf Abschnitte etc. referenzieren
+    % können. Jedoch verhindert Beamer, dass das \label-Macro "wahrgenommen" wird.
+    % Deshalb wird beamer@treat aus beamerbasemodes.sty überschrieben, um Abschnittslabel
+    % für Slides/Handouts zu ermöglichen
+  \def\beamer@treat{%
+    \ifx\beamer@nexttoken\frame\let\next=\beamer@stopoutsidemode\fi%
+    \ifx\beamer@nexttoken\lecture\let\next=\beamer@stopoutsidemode\fi%
+    \ifx\beamer@nexttoken\note\let\next=\beamer@stopoutsidemode\fi%
+    \ifx\beamer@nexttoken\appendix\let\next=\beamer@stopoutsidemode\fi%
+    %\ifx\beamer@nexttoken\lde\let\next=\beamer@stopoutsidemode\fi%
+    %\ifx\beamer@nexttoken\len\let\next=\beamer@stopoutsidemode\fi%
+    %\ifx\beamer@nexttoken\langall\let\next=\beamer@stopoutsidemode\fi%
+    \ifx\beamer@nexttoken\againframe\let\next=\beamer@stopoutsidemode\fi%
+    \ifx\beamer@nexttoken\section\let\next=\beamer@stopoutsidemode\fi%
+    \ifx\beamer@nexttoken\subsection\let\next=\beamer@stopoutsidemode\fi%
+    \ifx\beamer@nexttoken\subsubsection\let\next=\beamer@stopoutsidemode\fi%
+    \ifx\beamer@nexttoken\part\let\next=\beamer@stopoutsidemode\fi%
+    \ifx\beamer@nexttoken\article\let\next=\beamer@stopoutsidemode\fi%
+    \ifx\beamer@nexttoken\mode\let\next=\beamer@stopoutsidemode\fi%
+    \ifx\beamer@nexttoken\common\let\next=\beamer@stopoutsidemode\fi%
+    \ifx\beamer@nexttoken\label\let\next=\beamer@stopoutsidemode\fi% neu!
+    \ifx\beamer@nexttoken\presentation\let\next=\beamer@stopoutsidemode\fi%
+    %\ifx\beamer@nexttoken\markcategory\let\next=\beamer@stopoutsidemode\fi% neu!
+    \ifx\beamer@nexttoken\begin\let\next=\beamer@checkbeginframe\fi%
+    \ifx\beamer@nexttoken\end\let\next=\beamer@checkenddoc\fi%
+    \next}
+
+  }
+
+  \IfBool{osglegacy}{
+    \NewCSDeprecatedCommand{osgexternaldocumentforce}{m m}{}[use\MessageBreak
+    '\string\xarticleref' or '\string\xpresentationref', respectively,] 
+  }  
+} % Ende if standalone/OLLM
+
+%\iffalse
+%    \begin{macrocode}
+%</osgbeamerref.sty>
+%    \end{macrocode}
+%\fi
+%\iffalse
+%    \begin{macrocode}
+%<*osgcombinescript.sty>
+%    \end{macrocode}
+%\fi
+\NeedsTeXFormat{LaTeX2e}
+\def\packagename{osgcombinescript}
+\ProvidesPackage{\packagename}[2016/08/19]
+\RequirePackage{scrlfile}
+\RequirePackage{pdfpages}
+\RequirePackage{graphicx}
+\RequirePackage{auxhook}
+
+\def\@osg@chapterlist{}
+\def\@osg@appendixlist{}
+\newcommand{\chapterskipped}{
+  \thispagestyle{empty}
+  \centering
+  \Large\textcolor{lightgray}{\textsf{Dieses Kapitel wurde ausgelassen}}
+  \cleardoublepage
+}
+
+%% TODO: \addonlychapter
+
+\newcommand{\addscriptpart}[3]{
+  \IfFileExists{#2/\jobname.pdf} {%
+    \listgadd{#3}{#2}
+    \IfFileExists{#2/\jobname.aux}{
+      \AddLineBeginMainAux{\noexpand\input{#2/\jobname.aux}}
+    }{
+      \PackageWarning{\packagename}{No file #2/\jobname.aux, references may be
+        outdated.}
+    }
+  }{
+    \listgadd{#3}{CHAPERSKIPPED}
+    \PackageWarning{\packagename}{Can't find #1/\jobname.pdf, skipped.}
+  }
+  \IfFileExists{#2/\jobname.tin}{%
+    \ifnum0\pdffilesize{#2/\jobname.tin}>0%
+       \addbibresource{#2/\jobname.tin}%
+    \fi%
+  }{
+    \PackageWarning{\packagename}{Can't find #1/\jobname.tin, skipped.}
+  }
+  \IfFileExists{#2/\jobname.idx}{%
+    \ifnum0\pdffilesize{#2/\jobname.idx}>0%
+    \AtEndDocument{\immediate\write18{cat #2/\jobname.idx >> \jobname.idx }}
+    \fi%
+  }{
+    \PackageWarning{\packagename}{Can't find #1/\jobname.idx, skipped.}
+  }
+}
+\newcommand{\addchapter}[2][]{%
+  \addscriptpart{#1}{#2}{\@osg@chapterlist}
+}
+\newcommand{\addappendix}[2][]{%
+  \addscriptpart{#1}{#2}{\@osg@appendixlist}
+}
+\@onlypreamble{\addchapter}
+\@onlypreamble{\addappendix}
+
+
+\newcommand{\processchapters}{
+    \renewcommand*{\do}[1]{
+    \ifstrequal{##1}{CHAPERSKIPPED}{
+      \chapterskipped
+    }{
+      %\input{##1/\jobname.aux}
+      \includepdf[pages=-,noautoscale]{##1/\jobname.pdf}
+    }
+  }
+  \dolistloop{\@osg@chapterlist}
+}
+
+\newcommand{\processappendices}{
+    \renewcommand*{\do}[1]{
+    \ifstrequal{##1}{CHAPERSKIPPED}{
+    }{
+      \includepdf[pages=-,noautoscale]{##1/\jobname.pdf}
+    }
+  }
+  \dolistloop{\@osg@appendixlist}
+}%\iffalse
+%    \begin{macrocode}
+%</osgcombinescript.sty>
+%    \end{macrocode}
+%\fi
+%\iffalse
+%    \begin{macrocode}
+%<*osglistings.sty>
+%    \end{macrocode}
+%\fi
+% 2016-08-09 M. Werner: erste Version
+% 2018-08-15 M. Werner: Externalisierung für tearout ausschalten
+\NeedsTeXFormat{LaTeX2e}
+\edef\packagename{osglistings}
+\ProvidesPackage{\packagename}[2016/08/15]
+%\RequirePackage[framemethod=1]{mdframed}
+\RequirePackage{tikz}
+\usetikzlibrary{positioning,fit,shapes.geometric,shapes.callouts,arrows,shadows,decorations,decorations.pathreplacing,decorations.pathmorphing,decorations.shapes,decorations.markings, decorations.text, calc}
+\RequirePackage{etoolbox}
+\RequirePackage{tcolorbox}
+\tcbuselibrary{most}
+
+\newtoggle{simpleframe}
+\togglefalse{simpleframe}
+
+\DeclareOption{simple}{
+  \toggletrue{simpleframe}
+}
+\ProcessOptions
+\RequirePackage{scrhack}
+
+%\toggletrue{simpleframe}
+\providecommand{\ctearoutbg}{yellow!15}
+\providecommand{\ctearoutframe}{yellow!15}
+\providecommand{\clstkeyword}{darkgreen!80!black}
+\providecommand{\clstdirective}{magenta!60!black}
+\providecommand{\clstemph}{orange!80!black}
+\providecommand{\clstnumber}{orange}
+\providecommand{\clststr}{blue!50!black}
+\providecommand{\clstcom}{cyan!50!black}
+% Wenn Externalisierung genutzt wird, *muss* die Bibliothek *vor* "osglisting"
+% eingebunden werden!
+\providecommand{\tikzexternaldisable}{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Listings
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\RequirePackage{listings}
+
+\newcommand{\termfamily}{\ttfamily}
+\newcommand{\comstyle}{\itshape\color{\clstcom}}
+
+\newcommand{\lstresetc}{%
+  \lstset{language=C,
+    morekeywords={_Bool,_Complex,_Imaginary,restrict},
+    %basicstyle=\fontencoding{T1}\fontfamily{fvm}\selectfont\scriptsize<presentation>,
+    basicstyle=\termfamily\scriptsize<presentation>,
+    commentstyle=\comstyle,
+    showstringspaces=false,
+    xleftmargin=2pt,
+    xrightmargin=2pt,
+    columns=flexible,
+    morecomment=[s][\fontsize{0.1}{0}\selectfont]{/**}{*/},  % really dirty hack 
+    rangeprefix=/**\ ,rangesuffix=\ */,includerangemarker=false,
+    %% 
+  frame=none,aboveskip=2pt,belowskip=2pt}
+}
+\newcommand{\lstresetbash}{%
+  \lstset{language=bash,
+    basicstyle=\termfamily\color{\cterminalfg}\scriptsize<presentation>,
+    showstringspaces=false,breaklines,numbers=none,
+    xleftmargin=2pt,
+    xrightmargin=2pt,
+    %columns=fixed,
+    frame=none,aboveskip=0pt,belowskip=0pt}
+}
+
+\newcommand{\lstresetpy}{%
+  \lstset{language=Python,
+    basicstyle=\termfamily\cscriptsize,
+    showstringspaces=false,
+    rangeprefix=\#\#\ ,rangesuffix=\ \#,includerangemarker=false,
+    xleftmargin=2pt,
+    xrightmargin=2pt,
+    frame=none,aboveskip=2pt,belowskip=2pt}
+}
+\newcommand{\lstcoloron}{\lstset{keywordstyle=\color{\clstkeyword},emphstyle=\color{\clstnumber},stringstyle=\color{\clststr}}\lstnumberson}
+\newcommand{\lstcoloroff}{\lstset{keywordstyle=\color{black},emphstyle=\color{black},stringstyle=\color{black},commentstyle=\color{black}}}
+\mode<presentation>{
+  \newcommand{\lstnumberson}{\lstset{numbers=left,numberstyle=\comstyle\fontsize{4pt}{4.5pt}\selectfont\color{\clstnumber}\sffamily,numbersep=3pt,xleftmargin=4pt}}
+}
+\mode<article>{
+  \newcommand{\lstnumberson}{\lstset{numbers=left,numberstyle=\comstyle\fontsize{4pt}{4.5pt}\selectfont\color{\clstnumber}\sffamily,numbersep=4pt,xleftmargin=4pt}}
+}
+\newcommand{\lstnumbersoff}{\lstset{numbers=none}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Tearout
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\NewTColorBox{tearout}{o}{
+  colback=\ctearoutbg,
+  before skip balanced = \baselineskip,
+  after skip balanced  = \baselineskip,
+  top=0pt,
+  bottom=0pt,
+  left=1.25em,
+  right=1em,
+  enhanced,
+  notitle,
+  frame code ={\pgfmathsetseed{13}
+    \fill[very thin,\ctearoutbg, draw=yellow, decoration={random steps,segment length=3pt,amplitude=1pt,raise=2pt,
+      pre=lineto,post=lineto,pre length=2pt, post length=2pt,},decorate] (interior.north west)  -- ++ (0,2pt) -| (interior.north east);
+   \fill[very thin,\ctearoutbg, draw=yellow, decoration={random steps,segment length=3pt,amplitude=1pt,raise=-2pt,
+      pre=lineto,post=lineto,pre length=2pt, post length=2pt,},decorate] (interior.south west)  -- ++ (0,-2pt) -|
+    (interior.south east);
+    \draw[thin,yellow, drop shadow] (interior.north west) -- (interior.south west) (interior.north east) -- (interior.south
+    east);
+  },
+  overlay={
+    \edef\tmpa{#1}\edef\tmpb{leporello}
+    \ifx\tmpa\tmpb\relax
+        \draw decorate [decoration={markings,  raise=5pt, mark=between positions 1.2pt and 1 step 12pt
+          with {\node[circle,fill=white, draw=white, inner sep=1.8pt]{};}
+        }] { (interior.north west) -- ($(interior.south west) + (0,-5pt)$) };
+        \draw decorate [decoration={markings, reset marks, raise=-5pt, mark=between positions 1.2pt and 1 step 12pt
+          with {\node[circle,fill=white, draw=white, inner sep=1.8pt]{};}
+        }] { (interior.north east) -- ($(interior.south east)+ (0,-5pt)$) };
+    \fi
+  }
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Terminal
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\definecolor{AppleRed}{RGB}{255,95,86}
+\definecolor{AppleYellow}{RGB}{255,189,46}
+\definecolor{AppleGreen}{RGB}{39,201,63}
+\definecolor{AppleGray}{HTML}{D8D6D9}
+\newcommand{\cterminalbg}{black!5!white}
+\newcommand{\cterminalfg}{blue!30!black}
+
+\NewTColorBox{terminal}{}{
+  title=Terminal,
+  coltitle=black!65,
+  skin=enhanced,%
+  halign title=center,%
+  skin=bicolor,%
+  boxrule=0.5mm,%
+  breakable,%
+  top=0pt,
+  bottom=0pt,
+  left=1em,
+  right=1em,
+  frame style={%
+    draw=AppleGray,%
+    left color=AppleGray,%
+    right color=AppleGray%
+  },%
+  overlay first = {%
+     \node[inner sep=0pt,anchor=north west,yshift=-4pt,xshift=10pt,text=white,font=\tiny]
+     at (frame.north west) {\textcolor{AppleRed}{\faCircle}$\,$
+       \textcolor{AppleYellow}{\faCircle}$\,$
+       \textcolor{AppleGreen}{\faCircle}};
+   },%
+  overlay unbroken = {%
+     \node[inner sep=0pt,anchor=north west,yshift=-4pt,xshift=10pt,text=white,font=\tiny]
+     at (frame.north west) {\textcolor{AppleRed}{\faCircle}$\,$
+       \textcolor{AppleYellow}{\faCircle}$\,$
+       \textcolor{AppleGreen}{\faCircle}};
+   },%
+  fonttitle=\sffamily\cscriptsize,%\bfseries,%
+  fontupper=\ttfamily\cfootnotesize\color{\cterminalfg}
+}
+
+% \newenvironment{terminal}{\par
+%   \colorlet{shadecolor}{\cterminalbg}
+%   \begin{mdframed}[innerleftmargin=10pt,innerrightmargin=10pt,
+%     skipabove=1.5ex plus 1ex minus .5ex,%
+%     outerlinewidth=1pt,outerlinecolor=gray,%
+%     middlelinewidth=.5pt,middlelinecolor=gray!80,%
+%     innerlinewidth=.25pt,innerlinecolor=gray!50!black,%
+%     backgroundcolor=\cterminalbg,
+%     fontcolor=\cterminalfg,%
+%     frametitle=,
+%     % fontcolor=white,%
+%     roundcorner=2pt%
+%     ]
+%     \makeselectable{\\}
+%     % \begin{fshaded}
+%     %   \color{\cterminalfg}
+%     %\catcode`\<=12
+%     %\catcode`\>=12
+%     \ttfamily\cfootnotesize
+%   }{
+%     % \catcode`<=1\catcode`>=1
+%   \end{mdframed}
+%   % \end{fshaded}
+% }
+%\iffalse
+%    \begin{macrocode}
+%</osglistings.sty>
+%    \end{macrocode}
+%\fi
+%\iffalse
+%    \begin{macrocode}
+%<*osgsvg.sty>
+%    \end{macrocode}
+%\fi
+% 2022-09-30 M.Werner Adopt to LuaLaTeX
+\NeedsTeXFormat{LaTeX2e}
+\def\packagename{osgsvg}
+\ProvidesPackage{\packagename}[2016/09/01]
+\RequirePackage{currfile-abspath}
+\RequirePackage{pdftexcmds}
+\newcommand{\executeiffilenewer}[3]{%
+ \ifnum\pdf@strcmp{\pdf@filemoddate{#1}}%
+ {\pdf@filemoddate{#2}}>0%
+ {\immediate\write18{#3}}\fi%
+}
+
+\newcommand{\includesvg}[2][\columnwidth]{%
+%\newcommand{\includesvg}[2][.9\textwidth]{%
+ %\message{**** OSG SVG called, #1 #2 ***}
+ \def\svgwidth{#1}%
+  \getabspath{#2.svg}%
+  \executeiffilenewer{\theabsdir#2.svg}{\theabsdir#2.pdf}{/Applications/Inkscape.app/Contents/Resources/bin/inkscape -z -D --file=\theabsdir#2.svg  --export-pdf=\theabsdir#2.pdf --export-latex}%
+ \input{#2.pdf_tex}%
+}%\iffalse
+%    \begin{macrocode}
+%</osgsvg.sty>
+%    \end{macrocode}
+%\fi
+%\Finale
+\endinput
