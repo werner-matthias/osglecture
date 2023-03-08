@@ -1,4 +1,4 @@
-#!perl
+#!/usr/bin/perl
 #################################################
 # OLLM - OSG LaTeX Lecture Maker
 # 
@@ -8,40 +8,106 @@
 # REMARK:
 # This is my first piece of Perl code I've
 # ever written. 
-# Thus, it probably is in a bad style and it is 
+# Thus, probably, it shows bad style and it is 
 # quite unelegant.
 # However, it seems to work.
 #################################################
 my $ollm_version='0.9.2';
 my $progname = 'ollm';
 use strict;
+use warnings;
 use File::Basename;
-use 5.30.0;
 use Data::Dumper qw(Dumper);    # nur zum Debuggen
+use 5.30.0;
 
-sub greeting {
-  print("OLLM - OSG LaTeX Lecture Maker $ollm_version: an extension for latexmk to support osgbeamer.cls\n\n");
-}
-
-#####################################
-# Determine way of calling,         #
-# restart if needed                 #
-#####################################
+# Determine way of calling,         
+# restart if needed                 
 if (basename($0) eq $progname) {
   # not called as rc file, restart
   my @execarray = ("latexmk","-r",$0,@ARGV);
   exec @execarray;
 }
-greeting();
 
-use warnings;
+# Now the script is called as a rc of latexmk
+
 use feature 'signatures','lexical_subs','switch';
 no warnings 'experimental::signatures','experimental::smartmatch';
-use Getopt::Long;
-use Pod::Usage;
 
+package ollm;
+use Data::Dumper qw(Dumper);
+use Getopt::Long qw(GetOptions);
+use Pod::Usage;
 use Cwd qw(cwd getcwd);
 use List::MoreUtils qw(firstidx);
+
+#####################################
+# Config-Variablen und Defaults     #
+#####################################
+my $doctype="slides";
+my $lang='';
+my $lectconfig='lectdates';
+my $lectureprefix="lecture";
+my $defaultlanguage='de';
+my $osgbeamer_dir = '';
+my $do_publish = 0;
+my $first_chapter_number = undef;
+my @first_chapter_number = undef;
+my $shared_source_dir ='../Include';
+my $shared_data_dir='../Ref';
+my $standalone=0;
+my $config_file = '../config.pl';
+
+my $webpath;
+my $prepath;
+
+#####################################
+# MAIN                              #
+#####################################
+
+my %options=();
+Getopt::Long::Configure("pass_through"); # alle unbekannten Optionen werden durchgereicht
+Getopt::Long::Configure("prefix=+");     # ollm-Optionen starten mit '+'
+foreach ( @ARGV ) {
+  if ($_ eq '--') {last;}
+  # Script options that can be used by OLLM.
+  # All other will be passed to latexmk.
+  $_ = '+'.$_ if $_ =~ /^(doctype|slides|script|article|handout|standalone|publish|debug|lang)/;
+}
+# First, only standalone option is evaluated
+GetOptions(
+	   'standalone' => \$standalone,
+	   'h|help|?' => \&ollm_print_help
+	  );
+if ($standalone) {
+  return;
+}
+# From now on, an ollm processing is assumed
+
+GetOptions(
+	   'lang=s' => \$lang,
+	   'doctype=s' => \$doctype,
+	   'beamer|slides' => sub { $doctype='beamer'; },
+	   'article|script' => sub { $doctype='article'; },
+	   'handout' => sub { $doctype='handout'; },
+	   'publish' => \&do_publish,
+	  );
+
+
+#print Dumper(%options); #->{subcommand};
+print "doctype=".$doctype."\n";
+print "lang=".$lang."\n"; #->{subcommand};
+say Dumper(@ARGV);
+die;
+
+#my $commandregex = qr/slides|script|article|handout|standalone|debug|verbose|lang|ollmconfig|help|-h|--h|-help|--help/;
+
+#my @ollmOptions = grep (/$commandregex/, @ARGV);
+#@ARGV =  grep (!/$commandregex/, @ARGV);
+
+#process_options(@ollmOptions);
+
+
+
 # The following variables belong to latexmk. We reimport
 # them to avoid warnings.
 our (@default_files, $pdf_mode, $pdflatex, $lualatex,
@@ -50,22 +116,6 @@ our (@default_files, $pdf_mode, $pdflatex, $lualatex,
 sub is_ollmtree;
 sub doc_dirs;
 sub lect_descr;
-#####################################
-# Config-Variablen und Defaults     #
-#####################################
-our $doctype="slides";
-our $lang='';
-our $lectconfig='lectdates';
-our $lectureprefix="lecture";
-our $defaultlanguage='de';
-our $osgbeamer_dir = '';
-our $do_publish = 0;
-our $first_chapter_number = undef;
-our @first_chapter_number = undef;
-our $shared_source_dir ='../Include';
-our $shared_data_dir='../Ref';
-our $webpath;
-our $prepath;
 
 @default_files=("main.tex");
 $pdf_mode=4;
@@ -137,17 +187,17 @@ sub ollm_print_help {
   print 
     "Usage: \n",
     " Generate documents:\n",
-    "  latexmk [<ollm options>] [<doctype>] [<latexmk options>] [<file>]\n",
+    "  latexmk [<ollm options>] [[process=]<doctype>] [<latexmk options>] [<file>]\n",
     "  <doctype>: 'slides'|'handout'|'article' (default: 'slides')\n\n",
-    "  <ollm options> (without a dash!):\n",
-    "   standalone: disable most features of OLLM\n",
-    "   debug|verbose: additional information\n",
-    "   lang=[de|en]: select language\n",
-    "   ollmconfig=<file>: reads configuration from <file> (default: '../config.pl')\n\n",
-    "  <latexmk options>: see 'latexmk -h'\n\n",
+    "  <ollm options> (:\n",
+    "   +standalone: disable most features of OLLM\n",
+    "   +debug|verbose: additional information\n",
+    "   +lang=[de|en]: select language\n",
+    "   +ollmconfig=<file>: reads configuration from <file> (default: '../config.pl')\n\n",
     "  <file> LaTeX file (default: 'main.tex'), *must* use osgbeamer class.\n\n",
-    #" Deploy documents:\n",
-    #"  latexmk [lang=de|en|all] publish-slides | publish-script | publish-handout \n"
+    " Deploy documents:\n",
+    "  latexmk [lang=de|en|all] +publish=<doctype>\n",
+    "  <latexmk options>: see 'latexmk -h'\n"
     ;
   exit;
 }
@@ -289,18 +339,9 @@ sub process_options(@options) {
   }
 }
 
-#####################################
-# MAIN                              #
-#####################################
-
-# Script options that can be used by OLLM.
-# All other will be passed to latexmk.
-my $commandregex = qr/slides|script|article|handout|standalone|debug|verbose|lang|ollmconfig|help|-h|--h|-help|--help/;
-
-my @ollmOptions = grep (/$commandregex/, @ARGV);
-@ARGV =  grep (!/$commandregex/, @ARGV);
-
-process_options(@ollmOptions);
+sub greeting {
+  print("OLLM - OSG LaTeX Lecture Maker $ollm_version: an extension for latexmk to support osgbeamer.cls\n\n");
+}
 
 #$pdflatex="pdflatex -shell-escape -file-line-error -synctex=1 %O %P";
 
