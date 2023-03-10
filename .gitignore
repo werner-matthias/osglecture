@@ -1,3 +1,7 @@
 .#*
 .DS_Store
 rail.sty
+test/standalone/main.aux
+*.fdb_latexmk
+*.log
+*.fls
