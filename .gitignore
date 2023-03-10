@@ -10,3 +10,4 @@ test/standalone/main.out
 test/standalone/main.pdf
 test/standalone/main.snm
 test/standalone/main.toc
+test/standalone/main.synctex.gz
