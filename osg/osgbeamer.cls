@@ -121,6 +121,14 @@
   continuation.code={
     \PassOptionsToClass{continuation=#1}{osgbeamerref}
   },
+  % Eine Standalone-Präsentation ist nicht Teil einer Serie
+  standalone.code = {
+    \undef{\ollm}
+    \boolfalse{osgllm}
+    \booltrue{osgoptionstandalone}
+    \PassOptionsToPackage{standalone}{osgbeamerref}
+    \ClassInfo{\classname}{OLLM disabled or not detected, deactivate OLLM features}
+  },
   % Optionen, die sinnvolle Einstellungen für die OSG zusammenfassen
   osgdefaults.code = {
     \PassOptionsToPackage{fakcolor=if,latexfonts}{beamerthemetuc2019}
@@ -138,20 +146,6 @@
 \cs_generate_variant:Nn \keys_set:nn { nx } % SetKey mit Expansion der Werteargumente
 \let\SetKeyEx=\keys_set:nx                  % Alias mit LaTeX2e-Syntax
 \keys_define:nn {osgbeamer}{
-  % Eine Standalone-Präsentation ist nicht Teil einer Serie
-  standalone .choice:,
-  standalone/lecture .code={
-    \PassOptionsToPackage{continuation=none}{osgbeamerref}
-    \booltrue{osgoptionstandalone}
-  },
-  standalone/nolecture .code={
-    \undef{\ollm}
-    \boolfalse{osgllm}
-    \booltrue{osgoptionstandalone}
-    \PassOptionsToPackage{standalone}{osgbeamerref}
-    \ClassInfo{\classname}{OLLM disabled or not detected, deactivate OLLM features}
-  },
-  %standalone .default = {nolecture},
   % Doctype
   % =======
   %
@@ -221,7 +215,6 @@
   % wenn dies nicht explizit als Option angegeben wurde.
   \SetKeys{standalone=true} 
 }
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Default-Einstellungen:
 %
