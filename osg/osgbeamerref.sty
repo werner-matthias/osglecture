@@ -113,9 +113,9 @@ hyperref
   % Gibt das Kapitellabel (ohne Doctyp und Sprache) eines erweiterten Labels zurück
   \def\omrshortenprefix#1-#2-#3{#3}
   % Gibt den Doctype zurück
-  \def\omrlongtypefromlabel#1-#2-#3{%
-    \ifstrequal{#1}{a}{script}{}%
-    \ifstrequal{#1}{b}{beamer}{}%
+  \def\omrlongtypefromlabel#1-#2-#3|{%
+    \ifx#1a script\fi%
+    \ifx#1b beamer\fi%
   }
   % (Lua-)Liste der benötigten externen Referenzen. Dazu zählen auch die
   % Intertyp-Referenzen (Script vs. Beamer)
@@ -232,8 +232,8 @@ hyperref
                  end
                  % Gebe für nichtgefundene (in reflist verbliebene) externe aux-Dateien Warnungen aus
                  for key, val in pairs(reflist) do
-                    tex.print("\\addglobalwarning{\\PackageWarningNoLine{osgbeamerref}{Don't know aux file for \\omrlongtypefromlabel"
-                        ..key.." lecture label '\\omrshortenprefix "
+                    tex.print("\\addglobalwarning{\\PackageWarningNoLine{osgbeamerref}{Don't know \\omrlongtypefromlabel "
+                        ..key.."| aux file\\MessageBreak for lecture label '\\omrshortenprefix "
                         ..key.."'.\\MessageBreak ".."Please tex the corresponding lecture}}")
                  end
                  % Warnung bei fehlendem Anschluss
