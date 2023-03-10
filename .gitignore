@@ -5,3 +5,8 @@ test/standalone/main.aux
 *.fdb_latexmk
 *.log
 *.fls
+test/standalone/main.nav
+test/standalone/main.out
+test/standalone/main.pdf
+test/standalone/main.snm
+test/standalone/main.toc
