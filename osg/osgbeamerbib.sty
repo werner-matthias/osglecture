@@ -312,24 +312,23 @@
   }{}
   \NewDocumentCommand{\obb@endmatter}{m}{%
     \shorthandoff{"}
-      \BibFile{#1}
-      \SortingOrder{name,year}{}
-      \SortList{main}
-      \ReadList{main}
-      \shorthandon{"}
-    }
+    \typeout{BIB Reading #1}
+    \BibFile{#1}
+    \SortingOrder{name,year}{}
+    \SortList{main}
+    \ReadList{main}
+    \shorthandon{"}
+  }
   \AtEndDocument{
-    \IfFileExists{\obb@bibfile}{\obb@endmatter{\obb@bibfile}
+    \filename@parse{\obb@bibfile}
+    \IfFileExists{\filename@base.bib}{\obb@endmatter{\filename@base}
     }{%
-      \IfFileExists{\obb@bibfile.bib}{\obb@endmatte{\obb@bibfile.bib}
-        }{%
-          \PackageWarning{osgbeamerbib}{Can't find file bib file
-            '\obb@bibfile'.\MessageBreak
-            Provide file or set option 'bib={file=<FILE>}' \MessageBreak
-          }
-        }
+      \PackageWarning{osgbeamerbib}{Can't find file bib file
+        '\obb@bibfile'.\MessageBreak
+        Provide file or set option 'bib={file=<FILE>}' \MessageBreak
       }
     }
+  }
 
    \def\italics#1{{\itshape#1}}
    \chardef\namelimit=3
