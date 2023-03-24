@@ -127,6 +127,7 @@
     \boolfalse{osgllm}
     \booltrue{osgoptionstandalone}
     \PassOptionsToPackage{standalone}{osgbeamerref}
+    \PassOptionsToPackage{standalone}{osgbeamerbib}
     \ClassInfo{\classname}{OLLM disabled or not detected, deactivate OLLM features}
   },
   % Optionen, die sinnvolle Einstellungen für die OSG zusammenfassen
