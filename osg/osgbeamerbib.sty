@@ -18,14 +18,15 @@
   % (z.B. bib={article=off}) ist, wird die Option 'file' ignoriert.  
   file .store = \obb@bibfile,
   % Sowohl für den presentation- als auch für den article-Mode gibt es jeweils
-  % drei Optionen, mit denen man das Verhalten von Literaturreferenzen steuern kann:
+  % vier Optionen, mit denen man das Verhalten von Literaturreferenzen steuern kann:
+  % - standalone:
   % - off|disabled: keine Literaturreferenzen; die Nutzung von \cite etc. führt
   %                 zu einer Warnung
-  % - local:        Literaturreferenzen werden nur dokumentintern
+  % - local:        Nur im OLLM-Mode: Literaturreferenzen werden nur dokumentintern
   %                 aufgelöst. Innerhalb einer Vorlesungsreihe können
   %                 verschiedene Referenzen (bei gleichen Autorenkürzeln und
   %                 Jahr) den gleichen Label erhalten.
-  % - global:       Referenzen werden über alle Vorlesungen
+  % - global:       Nur im OLLM-Mode: Referenzen werden über alle Vorlesungen
   %                 abgeglichen. Erfordert mindestens zwei sequentielle(!)
   %                 Durchläufe für alle Vorlesungen (mit Referenzen)
   %
@@ -71,7 +72,11 @@
   local  .meta:n = { article=local,  slides=local},
   global .meta:n = { article=global, slides=global},
   off    .meta:n = { article=off,    slides=off},
-  disable.meta:n = { article=off,    slides=off}
+  disable.meta:n = { article=off,    slides=off},
+  standalone .code = {
+    \booltrue{osgusebib}
+    \boolfalse{osgbibglobal}
+  }
 }
 
 
@@ -89,8 +94,11 @@
 }
 \ExplSyntaxOff
 
+\typeout{******** In BIB}
 \IfBool{osgusebib}{
+  \typeout{******** use BIB}
   \IfBool{osgbibglobal}{
+    \typeout{******** global BIB}
     % Zwei ganz schmutzige Hacks:
     % 1. librarian nutzt immer \jobname.lbr als Sammeldatei. Daher wird
     % '\jobname' temporär umdefiniert.
@@ -133,9 +141,11 @@
        bibfile = io.open("\obb@jobname.lbr","w")
      }
      \lb@dolbr
-  }{
-    \RequirePackage{librarian}
-  }
+   }{
+     \typeout{******** local BIB}
+     \RequirePackage{librarian}
+     \lb@dolbr
+   }
   \def\lb@error#1{\PackageWarning{librarian}{#1}}
 
   \newtoggle{obb@firstauthor}
