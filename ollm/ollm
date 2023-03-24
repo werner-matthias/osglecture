@@ -15,6 +15,7 @@
 my $ollm_version='0.9.3';
 my $progname = 'ollm';
 use strict;
+use 5.30.0;
 use warnings;
 use File::Basename;
 
@@ -22,12 +23,11 @@ use File::Basename;
 # restart if needed
 if (basename($0) eq $progname) {
   # not called as rc file, restart
-  my @execarray = ("latexmk","-r",$0,@ARGV);
+  my @execarray = ("latexmk","-norc","-r",$0,@ARGV);
   exec @execarray;
 }
 
 # Now the script is called as a rc of latexmk
-
 #####################################
 # MAIN                              #
 #####################################
@@ -90,17 +90,23 @@ foreach ( @ARGV ) {
   if ($_ eq '--') {last;}
   # Script options that can be used by OLLM.
   # All other will be passed to latexmk.
-  $_ = '+'.$_ if $_ =~ /^(doctype|slides|script|article|handout|standalone|publish|debug|lang)/;
+  $_ = '+'.$_ if $_ =~ /^(doctype|slides|script|article|handout|standalone|publish|debug|verbose|lang|classpath)/;
 }
-# First, only standalone options are evaluated
+# First, only standalone-relevant options are evaluated
 GetOptions(
 	   'standalone' => \$standalone,
+	   'classpath=s' => \$osgbeamer_dir,
+	   'verbose|debug' => sub { $main::silent=0; },
 	   'h|help|?' => \&ollm_print_help
 	  );
 if ($standalone) {
   # return to latexmk to proceed in the 'normal' way
+  if ($osgbeamer_dir ne '') {
+    tex_path($osgbeamer_dir);
+  }
   return 1; 
 }
+
 # From now on, an ollm processing is assumed.
 # First, check tree
 if (!is_ollmtree()) {
@@ -132,7 +138,6 @@ GetOptions(
 	       die "Warning: Directory is not intended for beamer document!\n";
 	     }
 	   },
-	   'verbose|debug' => sub { $main::silent=0; },
 	   'publish' => \$do_publish,
 	  );
 
@@ -324,16 +329,16 @@ sub ollm_print_help {
   print 
     "Usage: \n",
     " ", colored("Generate documents:\n","faint"),
-    "  latexmk [<ollm options>] [[process=]<doctype>] [<latexmk options>] [<file>]\n",
-    "  <doctype>: 'slides'|'handout'|'article' (default: 'slides')\n\n",
-    "  <ollm options> (:\n",
+    "  latexmk [<ollm options>] [<doctype>] [<latexmk options>] [<file>]\n",
+    "  <doctype>: 'slides'|'beamer'|'handout'|'script'|'article' (default: 'slides')\n\n",
+    "  <ollm options> (prefix '+' may be skipped)\n",
     "   +standalone: disable most features of OLLM\n",
     "   +debug|verbose: additional information\n",
     "   +lang=[de|en]: select language\n",
     "   +ollmconfig=<file>: reads configuration from <file> (default: '../config.pl')\n\n",
     "  <file> LaTeX file (default: 'main.tex'), *must* use osgbeamer class.\n\n",
-    " Deploy documents:\n",
-    "  latexmk [lang=de|en|all] +publish=<doctype>\n",
+    " ",colored("Deploy documents:\n","faint"),
+    "  latexmk [lang=de|en|all] +publish <doctype>\n",
     "  <latexmk options>: see 'latexmk -h'\n"
     ;
   exit;
