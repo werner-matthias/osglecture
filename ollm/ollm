@@ -119,23 +119,26 @@ GetOptions(
 	   # 
 	   'ollmconfig=s' => \$config_file,
 	   'lang=s' => \$lang,
-	   'doctype=s' => \$doctype,
+	   #'doctype=s' => \$doctype,
 	   'slides|beamer' => sub {
 	     $doctype='slides';
 	     if (is_beamer_dir() == 0) {
-	       die "Warning: Directory is not intended for beamer document!\n";
+	       say "Error: Directory is not intended for beamer document!\n";
+	       exit(-1);
 	     }
 	   },
 	   'script|article' => sub {
 	     if (is_article_dir() == 0) {
-	       die "Warning: Directory is not intended for article document!\n";
+	       say "Error: Directory is not intended for article document!\n";
+	       exit(-1);
 	     }
 	     $doctype='script';
 	   },
 	   'handout' => sub {
 	     $doctype='handout';
 	     if (is_beamer_dir() == 0) {
-	       die "Warning: Directory is not intended for beamer document!\n";
+	       say "Error: Directory is not intended for beamer document!\n";
+	       exit(-1);
 	     }
 	   },
 	   'publish' => \$do_publish,
@@ -280,7 +283,7 @@ sub is_article_dir {
   # Returns true (1) if the current directory has the form
   # of a lecture-topic article (script) directury, else false (0)
   my $dir = basename(getcwd());
-  if ($dir =~ /^[0-9][0-9][0-9][as]?-.*/) {
+  if ($dir =~ /^[0-9][0-9][0-9][a]?-.*/) {
     1;
   } else {
     0;
@@ -308,9 +311,9 @@ sub doc_dirs ($type) {
     my @empty = ();
     return @empty;
   }
-  my @dirs=glob ('../[0-9][0-9][0-9]-*'); # common directories
-  if ($type eq 'slides') {		  # type-specific directories
-    @dirs= (@dirs,glob ( '../[0-9][0-9][0-9]s-*'));
+  my @dirs=glob ('../[0-9][0-9][0-9]-*');           # common directories
+  if (($type eq 'slides') or ($type eq 'handout')){ # type-specific directories
+    @dirs= (@dirs,glob ( '../[0-9][0-9][0-9]b-*'));
   } elsif (($type eq 'script') or ($type eq 'article')) {
     @dirs= (@dirs,glob ( '../[0-9][0-9][0-9]a-*'));
   }
@@ -358,7 +361,7 @@ sub lect_descr($type) {
   my $topic_dir = basename(getcwd());
   my @all_dirs = doc_dirs($type);
   my $index = firstidx { /$topic_dir/ } @all_dirs;
-  my ( $topic ) = $topic_dir=~ /[0-9][0-9][0-9][asb]?\-(.*)\s*$/;
+  my ( $topic ) = $topic_dir=~ /[0-9][0-9][0-9][ab]?\-(.*)\s*$/;
   return ( $index,  $topic);
 }
 
