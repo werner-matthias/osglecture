@@ -249,12 +249,13 @@ sub publish(){
     my $source_pdffile_name = $lectureprefix.'-'.$num.'-'.$doctype.'-'.$l.'-'.$topic.'.pdf';
     if (-e "$source_pdffile_name") {
       for my $p  (@{ $patharrayref}) {
+	my $lang = $l;
 	my $deploy_file_name;
 	my $evalstr;
 	$evalstr = "\$deploy_file_name= \"$deploy_file{$doctype}.pdf\"";
 	eval $evalstr;
-	
 	say "Copy \'$source_pdffile_name\' to \'$p$deploy_file_name\'";
+	copy($source_pdffile_name,$p.$deploy_file_name);
       }
     } else {
       say "Can't find file '$source_pdffile_name', skipping.";
