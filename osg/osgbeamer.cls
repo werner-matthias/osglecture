@@ -843,7 +843,7 @@
 \makesmiley{:-o}{1f62e} % astonished
 \makesmiley{B-)}{1f60e} % cool
 \newcommand{\smiley}[1]{\csuse{osgsmiley#1}}
-%\let\osgsmiley=\smiley
+\let\osgsmiley=\smiley
 
 % Erstellt einen tikz-Anker (Name ist erster Parameter) um den
 % gegebenen Text (2. Parameter), auf den später referenziert werden
