@@ -843,7 +843,7 @@
 \makesmiley{:-o}{1f62e} % astonished
 \makesmiley{B-)}{1f60e} % cool
 \newcommand{\smiley}[1]{\csuse{osgsmiley#1}}
-%\let\osgsmiley=\smiley
+\let\osgsmiley=\smiley
 
 % Erstellt einen tikz-Anker (Name ist erster Parameter) um den
 % gegebenen Text (2. Parameter), auf den später referenziert werden
@@ -913,21 +913,33 @@
   \global\let\@osg@original@author=\author
   \global\let\@osg@original@title=\title
  
-  \RenewDocumentCommand\author{O{#2} m}{
-    \gdef\osgshortauthor{#1}
+  \RenewDocumentCommand\author{o m}{
+    \IfBlankTF{#1}{
+      \gdef\osgshortauthor{#2}
+    }{
+      \gdef\osgshortauthor{#1}
+    }    
     \gdef\osgauthor{#2}
     \gdef\@author{#2}
   }
-  \RenewDocumentCommand\title{O{#2} m}{
-    \gdef\osgshorttitle{#1}
+  \RenewDocumentCommand\title{o m}{
+    \IfBlankTF{#1}{
+      \gdef\osgshorttitle{#2}
+    }{
+      \gdef\osgshorttitle{#1}
+    }
     \gdef\osgtitle{#2}
     \gdef\@title{#2}
   }
   \gdef\lehrveranstaltung{\title}
-  \RenewDocumentCommand\date{O{#2} m}{
+  \RenewDocumentCommand\date{o m}{
+    \IfBlankTF{#1}{
+      \gdef\osgshortdate{#2}
+    }{
+      \gdef\osgshortdate{#1}
+    }
     \gdef\@date{#2}
     \gdef\osgdate{#2}
-    \gdef\osgshortdate{#1}
   }
   \gdef\lehrveranstaltung{\title}
 }
