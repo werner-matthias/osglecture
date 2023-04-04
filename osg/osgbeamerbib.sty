@@ -8,6 +8,8 @@
 \newbool{osgbibglobal}\boolfalse{osgbibglobal}
 \RequirePackage{enumitem}
 
+\NewDocumentCommand\MakeCitation{m}{\MakeCitationAlpha{#1}}
+%\RenewDocumentCommand\MakeCitation{m}{\MakeCitationPlain{#1}}
 \ExplSyntaxOn
 \keys_define:nn {osgbeamerbib}{
   % Dateiname vom Bib-File. I.d.R. ist in Lehrveranstaltungen ein
@@ -19,7 +21,7 @@
   file .store = \obb@bibfile,
   % Sowohl für den presentation- als auch für den article-Mode gibt es jeweils
   % vier Optionen, mit denen man das Verhalten von Literaturreferenzen steuern kann:
-  % - standalone:
+  % - standalone:   kein Teil einer Vorlesungsserie
   % - off|disabled: keine Literaturreferenzen; die Nutzung von \cite etc. führt
   %                 zu einer Warnung
   % - local:        Nur im OLLM-Mode: Literaturreferenzen werden nur dokumentintern
@@ -76,6 +78,16 @@
   standalone .code = {
     \booltrue{osgusebib}
     \boolfalse{osgbibglobal}
+  },
+  citestyle .choice:,
+  citestyle.default:n = alpha,
+  citestyle/plain.code = {
+    \PackageInfo{\packagename}{selected cite style: plain}
+    \RenewDocumentCommand\MakeCitation{m}{\MakeCitationPlain{##1}}
+  },
+  citestyle/alpha.code = {
+    \PackageInfo{\packagename}{selected cite style: alpha}
+    \RenewDocumentCommand\MakeCitation{m}{\MakeCitationAlpha{##1}}
   }
 }
 
@@ -95,10 +107,14 @@
 \ExplSyntaxOff
 
 \IfBool{osgusebib}{
+  % Im global-Mode werden alle Referenzen einer Vortragsreihe
+  % (Vorlesung) in einer Datei
+  % \OsgShareDataPath/\omr@generalprefix.lbr gesammelt, bei
+  % lokal/standalone in \jobname.lbr.
   \IfBool{osgbibglobal}{
-    % Zwei ganz schmutzige Hacks:
-    % 1. librarian nutzt immer \jobname.lbr als Sammeldatei. Daher wird
-    % '\jobname' temporär umdefiniert.
+    % Da in librarian der Name der lbr-Datei fest verdrahtet ist,
+    % brauchen wir zwei ganz schmutzige Hacks:
+    % 1. '\jobname' wird temporär umdefiniert.
     \let\osg@originaljobname=\jobname
     \xdef\obb@jobname{\OsgShareDataPath/\omr@generalprefix}
     \let\jobname=\obb@jobname
@@ -139,7 +155,7 @@
      }
      \lb@dolbr
    }{
-     % Im localen wie im Standalone-Fall wird das Librarian-Package in
+     % Im lokalen wie im Standalone-Fall wird das Librarian-Package in
      % entsprechend der Originalvorgehensweise eingesetzt.
      \RequirePackage{librarian}
      \lb@dolbr
@@ -171,9 +187,18 @@
     }%
   }%
   
-  %\AbbreviateFirstname % ToDo: Als Option verfügbar machen?
-  \NewDocumentCommand\MakeCitation{m}{%
-    % Erstellt das Zitatkürzel. Es wird derzeit nur ein Stil unterstützt:
+  % \newcount\bibnum
+  % \typeout{****** BIB new bibnum} 
+  % \bibnum=0
+
+  \NewDocumentCommand\MakeCitationPlain{m}{%
+    \EntryNumberInFor{#1}{main}{\bibnum}%
+    \ifdef{\bibnum}{\bibnum}{?}%
+  }
+  
+  % \AbbreviateFirstname % ToDo: Als Option verfügbar machen?
+  
+  \NewDocumentCommand\MakeCitationAlpha{m}{%
     % Abgekürzte Autorennamen+Jahr. Bei Uneindeutigkeiten wird ein Buchstabe als
     % Suffix angehangen.
     \RetrieveFieldInFor{key}{#1}{\tempkey}%
@@ -290,7 +315,7 @@
   }
 
   \RenewDocumentCommand\cite{o >{\SplitList{,}}m}{%
-    \toggletrue{obb@firstauthor}    
+    \toggletrue{obb@firstauthor}%    
     [\ProcessList{#2}\citex%
     \IfNoValueF{#1}{~#1}]
    }
@@ -299,7 +324,7 @@
       \Cite{#1}{main}{}{}%
    }
    
-   \NewDocumentCommand\fullcite{o m}{
+   \NewDocumentCommand\fullcite{o m}{%
      \Cite{#2}{main}{\MakeReferenceItem}{\emph{#2}}
    }
 
@@ -314,8 +339,8 @@
     \shorthandoff{"}
     \typeout{BIB Reading #1}
     \BibFile{#1}
-    \SortingOrder{name,year}{}
-    \SortList{main}
+    %\SortingOrder{name,year}{}
+    %\SortList{main}
     \ReadList{main}
     \shorthandon{"}
   }
@@ -337,6 +362,7 @@
    \def\etalii{\italics{ et al}}
  
    \CreateField{url}
+   \CreateField{currnum}
    
    \def\othersname{others}
    \def\makecitename{%
