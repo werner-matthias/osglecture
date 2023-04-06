@@ -1,0 +1,34 @@
+\documentclass[10pt]{scrreprt}
+
+\usepackage[utf8]{inputenc}
+\usepackage[ngerman]{babel}
+\usepackage{xspace}
+
+\author{Matthias Werner}
+\title{Die \LaTeX-Klasse \texttt{osgbeamer}}
+\subject{Dokumentation}
+
+\newcommand{\osg}{\texttt{osgbeamer}\xspace}
+\date{}
+\begin{document}
+\maketitle
+
+\chapter{Einführung}
+Die \LaTeX-Klasse \osg dient dazu, verschiedene verschiedensprachliche Unterstützungsmaterialien für
+Lehrveranstaltungen an der Professur Betriebssysteme der TU~Chemnitz aus dem
+gleichen \LaTeX-Quellfile zu generieren.
+Konkret können folgende Materialien erzeugt werden:
+\begin{itemize}
+  \item Vorlesungsfolien
+  \item Handouts (d.h. die Folien im 2$\times$2-Format)
+  \item Skript-Kapitel
+  \item Präsentationen mit (nur für den Präsentierenden sichtbaren)
+  Anmerkungen\footnote{derzeit nicht implementiert}
+\end{itemize}
+Es können deutsche und englische Dokumente erstellt werden; andere Sprachen
+sind derzeit nicht vorgesehen.
+
+\section{Voraussetzungen}
+\osg wurde für eine aktuelle \TeX Live Installation auf macOS entwickelt und
+ist möglicherweise auch auf anderen \TeX-Distributionen lauffähig. 
+\end{document}
