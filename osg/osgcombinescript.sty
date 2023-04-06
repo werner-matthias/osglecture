@@ -1,78 +1,110 @@
 \NeedsTeXFormat{LaTeX2e}
-\def\packagename{osgcombinescript}
-\ProvidesPackage{\packagename}[2016/08/19]
+\edef\packagename{osgcombinescript}
+\ProvidesPackage{\packagename}[2023/04/02 v0.5.0]
+\RequirePackage{luacode}
 \RequirePackage{scrlfile}
 \RequirePackage{pdfpages}
-\RequirePackage{graphicx}
+%\RequirePackage{graphicx}
 \RequirePackage{auxhook}
+\RequirePackage{osgbeamerref}
 
-\def\@osg@chapterlist{}
-\def\@osg@appendixlist{}
-\newcommand{\chapterskipped}{
-  \thispagestyle{empty}
-  \centering
-  \Large\textcolor{lightgray}{\textsf{Dieses Kapitel wurde ausgelassen}}
-  \cleardoublepage
-}
-
-%% TODO: \addonlychapter
-
-\newcommand{\addscriptpart}[3]{
-  \IfFileExists{#2/\jobname.pdf} {%
-    \listgadd{#3}{#2}
-    \IfFileExists{#2/\jobname.aux}{
-      \AddLineBeginMainAux{\noexpand\input{#2/\jobname.aux}}
-    }{
-      \PackageWarning{\packagename}{No file #2/\jobname.aux, references may be
-        outdated.}
-    }
+% Das Paket verlässt sich auf osgbeamer...
+\@ifclassloaded{osgbeamer}{
+  % ...und macht unter 'standalone' keinen Sinn
+  \IfBool{osgoptionstandalone}{\PackageError{osgcombinescript}{Option
+      'standalone' activated.}{Use the package within an ollm directory
+      structure and without 'standalone' option}
+    \endinput
   }{
-    \listgadd{#3}{CHAPERSKIPPED}
-    \PackageWarning{\packagename}{Can't find #1/\jobname.pdf, skipped.}
-  }
-  \IfFileExists{#2/\jobname.tin}{%
-    \ifnum0\pdffilesize{#2/\jobname.tin}>0%
-       \addbibresource{#2/\jobname.tin}%
-    \fi%
-  }{
-    \PackageWarning{\packagename}{Can't find #1/\jobname.tin, skipped.}
-  }
-  \IfFileExists{#2/\jobname.idx}{%
-    \ifnum0\pdffilesize{#2/\jobname.idx}>0%
-    \AtEndDocument{\immediate\write18{cat #2/\jobname.idx >> \jobname.idx }}
-    \fi%
-  }{
-    \PackageWarning{\packagename}{Can't find #1/\jobname.idx, skipped.}
-  }
-}
-\newcommand{\addchapter}[2][]{%
-  \addscriptpart{#1}{#2}{\@osg@chapterlist}
-}
-\newcommand{\addappendix}[2][]{%
-  \addscriptpart{#1}{#2}{\@osg@appendixlist}
-}
-\@onlypreamble{\addchapter}
-\@onlypreamble{\addappendix}
-
-
-\newcommand{\processchapters}{
-    \renewcommand*{\do}[1]{
-    \ifstrequal{##1}{CHAPERSKIPPED}{
-      \chapterskipped
-    }{
-      %\input{##1/\jobname.aux}
-      \includepdf[pages=-,noautoscale]{##1/\jobname.pdf}
+    \luaexec{
+      chap_modules={}
     }
-  }
-  \dolistloop{\@osg@chapterlist}
+    \NewCommand\addpart{m}{\addtolistcs{@osg@chapterlist}{\omr@fullprefix{#1}}}
+
+
+
+
+
+      
+    }
+}{
+  \PackageError{osgcombinescript}{This package can only be used together\MessageBreak
+    with the osgbeamer class}{}
+  \endinput
 }
 
-\newcommand{\processappendices}{
-    \renewcommand*{\do}[1]{
-    \ifstrequal{##1}{CHAPERSKIPPED}{
-    }{
-      \includepdf[pages=-,noautoscale]{##1/\jobname.pdf}
-    }
-  }
-  \dolistloop{\@osg@appendixlist}
-}
+% \def\@osg@chapterlist{}
+% \def\@osg@appendixlist{}
+% \newcommand{\chapterskipped}{
+%   \thispagestyle{empty}
+%   \centering
+%   \Large\textcolor{lightgray}{\textsf{Dieses Kapitel wurde ausgelassen}}
+%   \cleardoublepage
+% }
+
+
+% %% TODO: \addonlychapter
+
+% \NewDocumentCommand{\osgaddpart}{m}{
+  
+% }
+
+% \newcommand{\addscriptpart}[3]{
+%   \IfFileExists{#2/\jobname.pdf} {%
+%     \listgadd{#3}{#2}
+%     \IfFileExists{#2.aux}{
+%       \AddLineBeginMainAux{\noexpand\input{#2.aux}}
+%     }{
+%       \PackageWarning{\packagename}{No file #2.aux, references may be
+%         outdated.}
+%     }
+%   }{
+%     \listgadd{#3}{CHAPERSKIPPED}
+%     \PackageWarning{\packagename}{Can't find #1/\jobname.pdf, skipped.}
+%   }
+%   \IfFileExists{#2/\jobname.tin}{%
+%     \ifnum0\pdffilesize{#2/\jobname.tin}>0%
+%        \addbibresource{#2/\jobname.tin}%
+%     \fi%
+%   }{
+%     \PackageWarning{\packagename}{Can't find #1/\jobname.tin, skipped.}
+%   }
+%   \IfFileExists{#2/\jobname.idx}{%
+%     \ifnum0\pdffilesize{#2/\jobname.idx}>0%
+%     \AtEndDocument{\immediate\write18{cat #2/\jobname.idx >> \jobname.idx }}
+%     \fi%
+%   }{
+%     \PackageWarning{\packagename}{Can't find #1/\jobname.idx, skipped.}
+%   }
+% }
+% \newcommand{\addchapter}[2][]{%
+%   \addscriptpart{#1}{#2}{\@osg@chapterlist}
+% }
+% \newcommand{\addappendix}[2][]{%
+%   \addscriptpart{#1}{#2}{\@osg@appendixlist}
+% }
+% \@onlypreamble{\addchapter}
+% \@onlypreamble{\addappendix}
+
+
+% \newcommand{\processchapters}{
+%     \renewcommand*{\do}[1]{
+%     \ifstrequal{##1}{CHAPERSKIPPED}{
+%       \chapterskipped
+%     }{
+%       %\input{##1/\jobname.aux}
+%       \includepdf[pages=-,noautoscale]{##1/\jobname.pdf}
+%     }
+%   }
+%   \dolistloop{\@osg@chapterlist}
+% }
+
+% \newcommand{\processappendices}{
+%     \renewcommand*{\do}[1]{
+%     \ifstrequal{##1}{CHAPERSKIPPED}{
+%     }{
+%       \includepdf[pages=-,noautoscale]{##1/\jobname.pdf}
+%     }
+%   }
+%   \dolistloop{\@osg@appendixlist}
+% }
