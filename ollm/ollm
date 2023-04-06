@@ -87,6 +87,11 @@ greeting();
 Getopt::Long::Configure("pass_through"); # alle unbekannten Optionen werden durchgereicht
 Getopt::Long::Configure("prefix=+");     # ollm-Optionen starten mit '+'
 foreach ( @ARGV ) {
+  if ($_ eq '--help') {
+    &main::print_help;
+    say colored("\nFor help on ollm call:",'bold')," 'ollm help|+h'";
+    exit;
+  }
   if ($_ eq '--') {last;}
   # Script options that can be used by OLLM.
   # All other will be passed to latexmk.
@@ -343,7 +348,7 @@ sub ollm_print_help {
     "  <file> LaTeX file (default: 'main.tex'), *must* use osgbeamer class.\n\n",
     " ",colored("Deploy documents:\n","faint"),
     "  latexmk [lang=de|en|all] +publish <doctype>\n",
-    "  <latexmk options>: see 'latexmk -h'\n"
+    "  <latexmk options>: see 'latexmk --help'\n"
     ;
   exit;
 }
