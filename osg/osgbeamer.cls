@@ -35,7 +35,7 @@
 ************************************************
  }{Use this class with LuaLaTex.}
 \fi
-\RequirePackage{etoolbox}
+\RequirePackage{etoolbox,auxhook}
 % Die nächsten beiden Zeilen dienen nur dafür, dass mein Editor die
 % etoolbox-if nicht dauernd mit TeX-if verwechselt.
 \let\IfBool=\ifbool 
