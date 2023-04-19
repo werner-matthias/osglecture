@@ -26,7 +26,6 @@ if (basename($0) eq $progname) {
   my @execarray = ("latexmk","-norc","-r",$0,@ARGV);
   exec @execarray;
 }
-
 # Now the script is called as a rc of latexmk
 #####################################
 # MAIN                              #
@@ -384,7 +383,7 @@ sub curr_number($n) {
   if (defined($first_chapter_number)) {
     $current_first_chapter = $first_chapter_number;
   } elsif (defined($first_chapter_number[0])) {
-    if ($doctype eq 'article') {
+    if ($doctype eq 'script') {
       $current_first_chapter =  $first_chapter_number[1];
     } else { # presentation or handout
       $current_first_chapter =  $first_chapter_number[0];
