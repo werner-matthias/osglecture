@@ -92,11 +92,11 @@ foreach ( @ARGV ) {
     exit;
   }
   if ($_ eq '--') {last;}
-  # Script options that can be used by OLLM.
-  # All other will be passed to latexmk.
+  # Optionen die durch OLLM genutzt werden.
+  # Alle anderen werden an latexmk weitergeleitet.
   $_ = '+'.$_ if $_ =~ /^(doctype|slides|script|article|handout|standalone|publish|debug|verbose|lang|classpath)/;
 }
-# First, only standalone-relevant options are evaluated
+# Zunächst werden die Optionen ausgewertet, die für den 'standalone'-Modus relevant sind.
 GetOptions(
 	   'standalone' => \$standalone,
 	   'classpath=s' => \$osgbeamer_dir,
@@ -104,26 +104,27 @@ GetOptions(
 	   'h|help|?' => \&ollm_print_help
 	  );
 if ($standalone) {
-  # return to latexmk to proceed in the 'normal' way
+  # Bei 'standalone' wird zurück nach latexmk gesprungen und 'normal' weitergemacht
   if ($osgbeamer_dir ne '') {
     tex_path($osgbeamer_dir);
   }
   return 1; 
 }
 
-# From now on, an ollm processing is assumed.
-# First, check tree
+# Ab hier wird Ollm-Verarbeitung angenommen
+# Erstens: Verzeichnisstruktur überprüfen
 if (!is_ollmtree()) {
   print colored("Error: No proper directory structure. Try option \'standalone\'.\n",'red');
-  exit(-1); # exit bypass latexmk, i.e. ends execution
+  exit(-1); # exit() kehrt vollständig zurück, nicht über latexmk
 }
 
-# Evaluate ollm options
+# Ollm-Optionen
 GetOptions(
 	   # 
 	   'ollmconfig=s' => \$config_file,
 	   'lang=s' => \$lang,
-	   #'doctype=s' => \$doctype,
+	   # Es sind gleichwertig 'slides' und 'beamer' als Option möglich,
+	   # intern wird beides auf den Dokumententyp 'slides' abgebildet.
 	   'slides|beamer' => sub {
 	     $doctype='slides';
 	     if (is_beamer_dir() == 0) {
@@ -131,6 +132,8 @@ GetOptions(
 	       exit(-1);
 	     }
 	   },
+	   # Es sind gleichwertig 'script' und 'article' als Option möglich,
+	   # intern wird beides auf den Dokumententyp 'script' abgebildet.
 	   'script|article' => sub {
 	     if (is_article_dir() == 0) {
 	       say "Error: Directory is not intended for article document!\n";
@@ -148,17 +151,16 @@ GetOptions(
 	   'publish' => \$do_publish,
 	  );
 
-## Read and process config file
-
+## Lesen und Verarbeiten der Konfigurationsdatei
 unless ( -e  $config_file) {
   die"Error: Can't find config file '".$config_file."'\n";
 }
 
-# localizing @ARGV and saving $config_file as the first element of @ARGV.
-# The empty diamond operator <> automatically opens a filehandle to the first
-# element of @ARGV
+# Mache @ARGV lokal und speichere $config_file als erstes Element von @ARGV.
+# Der leere Diamandoperator <> öffnet automatisch eine Datei entsprechend des
+# ersten elements von @ARGV.
 my $confcode = do{local(@ARGV,$/)=$config_file;<>};
-# execute content of $config_file
+# Werte den Inhalt der Konfigurationsdateiaus.
 eval $confcode;
 print color('reset');
 if ($@) {
@@ -172,9 +174,11 @@ if ($osgbeamer_dir ne '') {
 }
 tex_path($shared_source_dir);
 
-# ollm has two main functions:
-#  1. prepare latexmk for document generation in a lecture tree
-#  2. publish generated documents
+# Ollm hat zwei Hauptfunktionalitäten:
+#  1. Bereite latexmk für die Dokumenterzeugung in einer Vorlesungsverzeichnisstruktur vor
+#  2. Veröffentliche (kopieren/umbenennen) erzeugte Dokumente
+#
+# TODO: Ggf. kommen künftig weitere Funktionen hinzu
 if ($do_publish) {
   publish();
 } else {
@@ -183,6 +187,9 @@ if ($do_publish) {
 }
 return 1;
 
+##
+## Ende der Verarbeitung auf dem Top-Level
+##
 sub make_document {
   my $number;
   my $current_first_chapter;
@@ -191,35 +198,37 @@ sub make_document {
   if ($lang eq '') {
     $lang = $defaultlanguage;
   }
-  # Determine number of directory (starting with 0)
+  # Ermittle die Nummer des aktuellen Verzeichnisses (beginnend mit 0)
   ($number,$topic) = lect_descr($doctype);
   ($number,$current_first_chapter) = curr_number($number);
-  # Now we need to prepare TeX code that is executed *before* the actual document
-  # '\DocumentMetadata' is needed for tagged PDF
+  # Wir brauchen TeX-Code der *vor* dem eigentlichen Dokument ausgeführt wird
+  # '\DocumentMetadata' wird für PDF-Tagging benötigt
   if ($lang eq "en") {
     $main::pre_tex_code='\DocumentMetadata{pdfversion=1.7,lang=en-US, uncompress}';
   } else { # $lang should be 'de'
     $main::pre_tex_code='\DocumentMetadata{pdfversion=1.7,lang=de-DE, uncompress}';
   }
-  # Tell osgbeamer class about...
+  # Informiere die osgbeamer-Klasse über
   $main::pre_tex_code=$main::pre_tex_code.
-    '\gdef\ollm{\gdef\OsgShareDataPath{'.$shared_data_dir.'}'. # path of shared data
-    '\gdef\OsgLectConfig{'.$lectconfig.'}'.                    # name of config file 
-    '\gdef\OsgCurrentDir{../'.basename(getcwd()).'}'.          # it own directory (deprecated)
-    '\gdef\OsgFirstChapter{'.$current_first_chapter.'}'.       # number of the first chapter              
+    '\gdef\ollm{\gdef\OsgShareDataPath{'.$shared_data_dir.'}'. # Pfad zu (vorlesungs-)gemeinsamen Daten
+    '\gdef\OsgLectConfig{'.$lectconfig.'}'.                    # Namen der globalen Vorlesungskonfigurationsdatei
+    '\gdef\OsgCurrentDir{../'.basename(getcwd()).'}'.          # das eigene Verzeichnis (deprecated)
+    '\gdef\OsgFirstChapter{'.$current_first_chapter.'}'.       # die Kapitelnummer für das erste Verzeichnis
     '}';
-  # The remaining information are coded in the job name:
+  # Die verbleibenden Informationen sind im Jobnamen codiert:
   #  <lectureprefix>-<number>-<doctype>-<language>-<topic>
   $main::jobname = $lectureprefix.'-'.$number.'-'.$doctype.'-'.$lang.'-'.$topic;
 }
  
 sub publish(){
-  # variable names as used in config file
+  # Variablennamen, wie sie in der Konfigurationsdatei genutzt werden
   my $num;
   my $topic;
   my $prefix=$lectureprefix;;
-  # language array in case we want to publish both language versions at the same time
+  # Sprache(n) als Array für den Fall, dass beide Sprachversionen gleichzeitig veröffentlicht werden sollen.
   my @langs;
+  # Da article/script und slides/beamer jeweils synonym genutzt werden können, werden die
+  # 
   if (exists($deploy_path{'article'})) { $deploy_path{'script'} = $deploy_path{'article'}};
   if (exists($deploy_path{'beamer'})) { $deploy_path{'slides'} = $deploy_path{'beamer'}};
   if (!exists($deploy_path{$doctype}) and !exists($deploy_path{'all'})) {
@@ -245,7 +254,7 @@ sub publish(){
   } else {
     @langs = $lang;
   }
-  # In case of more than one path, we use an array of paths
+  # Für den Fall dass es mehr als ein Pfad gibt, nutzen wir ein Array von Pfaden
   my $patharrayref = $deploy_path{$doctype};
   # Single elements are converted to an array reference
   $patharrayref = [ $patharrayref ] if ref $patharrayref eq '';
@@ -270,12 +279,12 @@ sub publish(){
 }
 
 #####################################
-# Helper functions
+# Hilfsfunktionen
 #####################################
 
 sub is_beamer_dir {
-  # Returns true (1) if the current directory has the form
-  # of a lecture-topic beamer directury, else false (0)
+  # Gibt true (1) zurück, aktuelles Verzeichnis für slides/beamer
+  # vorgesehen ist, sonst false (0)
   my $dir = basename(getcwd());
   if ($dir =~ /^[0-9][0-9][0-9][b]?-.*/) {
     1;
@@ -285,8 +294,8 @@ sub is_beamer_dir {
 }
 
 sub is_article_dir {
-  # Returns true (1) if the current directory has the form
-  # of a lecture-topic article (script) directury, else false (0)
+  # Gibt true (1) zurück, aktuelles Verzeichnis für article/script
+  # vorgesehen ist, sonst false (0)
   my $dir = basename(getcwd());
   if ($dir =~ /^[0-9][0-9][0-9][a]?-.*/) {
     1;
@@ -296,8 +305,8 @@ sub is_article_dir {
 }
 
 sub is_ollmtree {
-  # Returns true (1) if the current directory has the form
-  # of a lecture-topic directury, else false (0)
+  # Gibt true (1) zurück, aktuelles Verzeichnis für ollm
+  # vorgesehen ist, sonst false (0)
   if (( is_beamer_dir() == 1 ) or ( is_article_dir() == 1 )) {
     1;
   } else {
@@ -310,19 +319,19 @@ sub doc_dirs ($type) {
   #
   # type: string (slides|script|article|lang)
   #
-  # Returns all topic directories of the given type, that
-  # are neighbors of the currenct one, in order.
+  # Gibt eine geordnete Liste mit allen OLLM-Verzeichnisse des angegebenen Typs, die im gleichen
+  # Elternverzeichnis stehen wie das aktuelle Verzeichnis
   if (!is_ollmtree()) {
     my @empty = ();
     return @empty;
   }
-  my @dirs=glob ('../[0-9][0-9][0-9]-*');           # common directories
-  if (($type eq 'slides') or ($type eq 'handout')){ # type-specific directories
+  my @dirs=glob ('../[0-9][0-9][0-9]-*');           # gemeinsame Verzeichnisse
+  if (($type eq 'slides') or ($type eq 'handout')){ # typenspezifische Verzeichnisse
     @dirs= (@dirs,glob ( '../[0-9][0-9][0-9]b-*'));
   } elsif (($type eq 'script') or ($type eq 'article')) {
     @dirs= (@dirs,glob ( '../[0-9][0-9][0-9]a-*'));
   }
-  foreach my $d ( @dirs ) {	# cut prefix path
+  foreach my $d ( @dirs ) {	# Prefixpfad wird abgeschnitten
     $d = basename($d);
   }
   @dirs = sort @dirs;
@@ -357,8 +366,9 @@ sub lect_descr($type) {
   #
   # type: string (slides|script|article)
   #
-  # Returns for current topic directory the 
-  # sequence number (index) and the topic. The first index is 0.
+  # Gibt die Index (Position in der Reihenfolge der Verzeichnisse) und die
+  # Themenbeschreibung des aktuellen Verzeichnisses zurück.
+  # Dabei ist der erste Index 0-
   if (!is_ollmtree()) {
     my $empty = undef;
     return $empty;
@@ -375,21 +385,21 @@ sub curr_number($n) {
   #
   # number: uncorrected number
   #
-  # Returns the adopted number for the actual document type
+  # Gibt die angepasste Kapitelnummer für den gegebenen Dokumententyp zurück
   my $number;
   my $current_first_chapter;
-  # For the first chapter's number exists a scalar (= same for presentation and script)
-  # or an array ([0]: presentation, [1]: article)
+  # Für die Kapitelnummer des ersten Verzeichnisses gibt es entweder einen Skalar
+  # (ist gleich für Präsentation und Skript) oder ein Array ([0]: Präsentation, [1]: Skript)
   if (defined($first_chapter_number)) {
     $current_first_chapter = $first_chapter_number;
   } elsif (defined($first_chapter_number[0])) {
     if ($doctype eq 'script') {
       $current_first_chapter =  $first_chapter_number[1];
-    } else { # presentation or handout
+    } else { # Präsentation oder Handout
       $current_first_chapter =  $first_chapter_number[0];
     }
   } else {
-    # default: we start with 1
+    # default: wir beginnen mit 1
     $current_first_chapter =  1;
   }
   $number = $n + $current_first_chapter;	    
@@ -398,7 +408,7 @@ sub curr_number($n) {
 }
 
 sub tex_path($path){
-  # Add path to TeX search path
+  # Füge $path zum TeX-Suchpfad hinzu
   main::ensure_path( 'TEXINPUTS',$path);
 }
 
