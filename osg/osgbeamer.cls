@@ -80,6 +80,8 @@
 
 \newbool{osglegacy}           % Zeigt die Nutzung des "Kompatibilitätsmodus" an
 \boolfalse{osglegacy}         
+\newbool{osgforcetoc}         % Legt eine Inhaltsverzeichnisdatei an, ohne ein 
+\booltrue{osgforcetoc}        % entsprechendes Verzeichnis zu generieren 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -92,7 +94,7 @@
 \DeclareKeys{
   % Soll die Kompatibilität zur alten osgbeamer-Klasse erhöhen (z.Z. nicht genutzt)
   legacy.code={
-    \GenericWarning{\classname}{Legacy mode activated}
+    \ClassWarning{\classname}{Legacy mode activated}
     \booltrue{osglegacy}
   },
   % Optionen, die an die beamer-Klasse weitergeleitet werden.
@@ -136,6 +138,9 @@
     \PassOptionsToPackage{fakcolor=if,latexfonts}{beamerarticletuc2019}
     \SetLogo{OSG-Logo}
     \PassOptionsToClass{professionalfonts}{beamer}
+  },
+  noforcetoc.code = {
+    \boolfalse{osgforcetoc}
   }
 }
 % Da Choice-Keys benötigt werden, die noch nicht nach LaTeX2e
@@ -374,9 +379,12 @@
 \IfToggle{osgscript}{
   % Script-Mode 
   \LoadClass[twoside]{scrbook}
+  %\PreventPackageFromLoading{bookmark}
+  %\RequirePackage{hyperref}
   \RequirePackage{beamerarticle}
   \RequirePackage{beamerarticleosg}
-  %\RequirePackage{scrhack}
+  \RequirePackage{scrhack}
+  % 
 }{
   \LoadClass{beamer}
   %%% Handout

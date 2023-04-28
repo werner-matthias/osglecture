@@ -3,8 +3,7 @@
 \ProvidesPackage{\packagename}[2022/06/16 v0.5.0]
 \RequirePackage{luacode}
 \RequirePackage{varsfromjobname}
-\RequirePackage{warning}
-\RequirePackage[user,xr,lastpage,%runs,
+\RequirePackage[user,xr,lastpage,abspage,%runs,
 hyperref
 ]{zref}
 
@@ -92,7 +91,17 @@ hyperref
   \zref@newprop{chapter}{\thechapter}
   \zref@addprop{main}{beamer@frame}
   \zref@addprop{main}{chapter}
-
+  \IfBool{osgforcetoc}{%
+    % Für das Script muss explizit das Anlegen eines Inhaltsverzeichnis
+    % erzwungen werden, auch wenn es *hier* nicht eingelesen wird.
+    %
+      \AddToHook{begindocument}{
+        % aus \@starttoc, aber ohne Wiedereinlesen
+        \newwrite\tf@toc
+        \immediate\openout\tf@toc\jobname.toc\relax
+      }
+      % TODO: bessere Steuerung und Name
+  }{}
   % Im OLLM werden einige Information über den Jobnamen übertragen. Der Jobname hat das Format
   % <lectureprefix>-<number>-<doctype>-<language>-<topic>
   % 
@@ -165,6 +174,9 @@ hyperref
   \let\omrref\omr@ref
   % Referenzbefehl, ersetzt \ref
   \NewDocumentCommand{\xref}{O{} m}{%
+    % #1: Kapitellabel (definiert in \lecture)
+    % #2: Referenzlabel
+    % #3: Property (default = laufende Nummer entsprechend \refstepcounter o.ä.)
     \omr@ref[#1]{#2}[default]%
   }
   % Referenziert ein Kapitel
@@ -187,7 +199,63 @@ hyperref
   \NewDocumentCommand\xpresentationref{O{} m}{
     \omr@ref[#1][b]{#2}[default]%
   }
-
+  %%
+  %% Try to hack hyperref
+  %%
+  \def\addcontentsline#1#2#3{% toc extension, type, tag
+    \begingroup
+      \let\label\@gobble
+      \ifx\@currentHref\@empty
+        \Hy@Warning{%
+          No destination for bookmark of \string\addcontentsline,%
+          \MessageBreak destination is added%
+        }%
+        \phantomsection
+      \fi
+      \expandafter\ifx\csname toclevel@#2\endcsname\relax
+        \begingroup
+          \def\Hy@tempa{#1}%
+          \ifx\Hy@tempa\Hy@bookmarkstype
+            \Hy@WarningNoLine{%
+              bookmark level for unknown #2 defaults to 0%
+            }%
+          \else
+            \Hy@Info{bookmark level for unknown #2 defaults to 0}%
+          \fi
+        \endgroup
+        \expandafter\gdef\csname toclevel@#2\endcsname{0}%
+      \fi
+      \edef\Hy@toclevel{\csname toclevel@#2\endcsname}%
+      \Hy@writebookmark{\csname the#2\endcsname}%
+        {#3}%
+        {\@currentHref}%
+        {\Hy@toclevel}%
+        {#1}%
+      \ifHy@verbose
+        \begingroup
+          \def\Hy@tempa{#3}%
+          \@onelevel@sanitize\Hy@tempa
+          \let\temp@online\on@line
+          \let\on@line\@empty
+          \Hy@Info{%
+            bookmark\temp@online:\MessageBreak
+            thecounter {\csname the#2\endcsname}\MessageBreak
+            text {\Hy@tempa}\MessageBreak
+            reference {\@currentHref}\MessageBreak
+            toclevel {\Hy@toclevel}\MessageBreak
+            type {#1}%
+          }%
+        \endgroup
+      \fi
+      \stepcounter{abspage}%
+      \addtocontents{#1}{%
+        % \protect\contentsline{#2}{#3}{\thepage}{\@currentHref.2}\protected@file@percent
+        \protect\contentsline{#2}{#3}{\thepage}{chapter.\thechapter.\theabspage}\protected@file@percent
+      }%
+      \addtocounter{abspage}{-1}%
+    \endgroup
+  }
+  %%
   % Name der JSON-Datei mit den Referenzpfaden 
   % \OsgShareDataPath wird von OLLM-latexmkrc übergeben
   \xdef\omr@pathtoref{\OsgShareDataPath/\omr@generalprefix.gref} 
@@ -232,7 +300,7 @@ hyperref
                  end
                  % Gebe für nichtgefundene (in reflist verbliebene) externe aux-Dateien Warnungen aus
                  for key, val in pairs(reflist) do
-                    tex.print("\\addglobalwarning{\\PackageWarningNoLine{osgbeamerref}{Don't know \\omrlongtypefromlabel "
+                    tex.print("\\AddToHook{enddocument/info}{\\PackageWarningNoLine{osgbeamerref}{Don't know \\omrlongtypefromlabel "
                         ..key.."| aux file\\MessageBreak for lecture label '\\omrshortenprefix "
                         ..key.."'.\\MessageBreak ".."Please tex the corresponding lecture}}")
                  end
@@ -281,6 +349,38 @@ hyperref
            end
         end
      end
+     %
+     % getpathforchapternumber(nr) - Gibt Pfad für Kapitelnummer
+     %
+     % nr: Kapitelnummer
+     getpathforchapternumber = function(nr)
+       if (allrefs ~= nil) then
+          local ndx = tostring(tonumber(nr)-1)..'-'..\luastring{\omr@doctypecode}
+          if allrefs[ndx] ~= nil then
+            %tex.print(allrefs[ndx]['path'])
+            tex.print("\\xdef\\omrcpath{"..allrefs[ndx]['path'].."}")
+          else
+            tex.print("\\AddToHook{enddocument/info}{\\PackageWarningNoLine{osgbeamerref}{Unknown path for chapter"..nr.."}}")
+         end
+       end
+     end    
+     %
+     % getpathforlabel(label) - Gibt Pfad für Kapitellabel
+     %
+     % label: Kapitellabel
+     getpathforchapternumber = function(label)
+       if (allrefs ~= nil) then
+          local fulllabel = \luastring{\omr@doctypecode}.."-\selectedbeamerlanguage-"..label
+     %         for key, info in pairs(allrefs) do
+     %            if info["prefix"] == fulllabel then
+     %               tex.print("\\xdef\\omrcpath{"..info['path'].."}")
+     %               break
+     %            end
+     %         end
+     %      end
+     %      tex.print("\\AddToHook{enddocument/info}{\\PackageWarningNoLine{osgbeamerref}{Unknown path for label '"..label.."'}}")
+       end
+     end    
    }
    
    \newrobustcmd{\omr@readref}{
@@ -329,11 +429,22 @@ hyperref
      }
    }
 
-   % osglabel ist 
    \newcommand<>{\osglabel}[1]{\only#2{\zref@label{#1}}}
-   % % \RenewDocumentCommand{\label}{m}{\beamer@savemode\zref@label{#1}\beamer@resumemode}
+   \RenewDocumentCommand{\label}{m}{\beamer@savemode\zref@label{#1}\beamer@resumemode}
 
-   
+   % Definiere \omrcpath als den Dateienpfad (ohne Extension) für das angegebene Kapitel
+   \newrobustcmd\getPathForChapter[1]{%
+     \directlua{
+       getpathforchapternumber(\luastring{#1})
+     }%
+   }
+
+   \newrobustcmd\getPathForLabel[1]{%
+     \directlua{
+       getpathforchapternumber(\luastring{#1})
+     }%
+   }
+
    \AddToHook{begindocument}{
      % \label und \ref werden auf die entsprechenden Pendants gesetzt, die zref
      % benutzen. 
@@ -342,7 +453,7 @@ hyperref
      \let\ref=\xref
      \let\label=\osglabel
      % Verschiedene Pakete (insbesondere hyperref und amsmath) definieren \label
-     % um. Daher wird nicht hier auch \ltx@label ersetzt, das von
+     % um. Daher wird hier auch \ltx@label ersetzt, das von
      % diesem Paketen gerufen wird.
      \RenewDocumentCommand{\ltx@label}{m}{%
        \beamer@savemode\zref@label{#1}\beamer@resumemode
@@ -363,7 +474,8 @@ hyperref
     \PackageWarningNoLine{osgbeamerref}{
       No lecture continuation found, I start\MessageBreak
       with default value.\MessageBreak
-      Please tex the previous lecture.
+      If this isn't the first lecture, please\MessageBreak
+      tex the previous one.
     }
   }
 
@@ -401,5 +513,5 @@ hyperref
     \NewCSDeprecatedCommand{osgexternaldocumentforce}{m m}{}[use\MessageBreak
     '\string\xarticleref' or '\string\xpresentationref', respectively,] 
   }  
-} % Ende if standalone/OLLM
+} % Ende für OLLM (und nicht 'standalone')
 
