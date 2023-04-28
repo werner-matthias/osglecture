@@ -52,7 +52,7 @@ no warnings 'experimental::signatures';
 {
   # For semantics, see latexmk manual
   no warnings 'once';
-  @main::default_files=("main.tex");
+  @main::default_files=("./main.tex");
   $main::pdf_mode=4;
   $main::lualatex = 'lualatex --synctex=1 %O %P';
   $main::pre_tex_code = '';
@@ -62,6 +62,8 @@ no warnings 'experimental::signatures';
   $main::cleanup_mode=3; # aux files won't be deleted
   $main::clean_ext="bbl ext nav snm vrb lbr fls log fdb_latexmk";
   $main::compiling_cmd="tput setaf 4; echo \"Start TeXing %B...\";  tput init";
+  $main::aux_dir="";
+  $main::emulate_aux=0;
 }
 
 my $doctype="slides";
@@ -94,7 +96,7 @@ foreach ( @ARGV ) {
   if ($_ eq '--') {last;}
   # Optionen die durch OLLM genutzt werden.
   # Alle anderen werden an latexmk weitergeleitet.
-  $_ = '+'.$_ if $_ =~ /^(doctype|slides|script|article|handout|standalone|publish|debug|verbose|lang|classpath)/;
+  $_ = '+'.$_ if $_ =~ /^(slides|beamer|presentation|script|article|handout|standalone|publish|debug|verbose|lang|classpath)/;
 }
 # Zunächst werden die Optionen ausgewertet, die für den 'standalone'-Modus relevant sind.
 GetOptions(
@@ -123,9 +125,10 @@ GetOptions(
 	   # 
 	   'ollmconfig=s' => \$config_file,
 	   'lang=s' => \$lang,
-	   # Es sind gleichwertig 'slides' und 'beamer' als Option möglich,
-	   # intern wird beides auf den Dokumententyp 'slides' abgebildet.
-	   'slides|beamer' => sub {
+	   # Es sind gleichwertig 'slides', 'beamer' und 'presentation'
+	   # als Option möglich, intern wird beides auf den Dokumententyp
+	   # 'slides' abgebildet.
+	   'slides|beamer|presentation' => sub {
 	     $doctype='slides';
 	     if (is_beamer_dir() == 0) {
 	       say "Error: Directory is not intended for beamer document!\n";
@@ -215,6 +218,9 @@ sub make_document {
     '\gdef\OsgCurrentDir{../'.basename(getcwd()).'}'.          # das eigene Verzeichnis (deprecated)
     '\gdef\OsgFirstChapter{'.$current_first_chapter.'}'.       # die Kapitelnummer für das erste Verzeichnis
     '}';
+  # Sammle 
+  $main::aux_dir=$shared_data_dir;
+  $main::emulate_aux=1;
   # Die verbleibenden Informationen sind im Jobnamen codiert:
   #  <lectureprefix>-<number>-<doctype>-<language>-<topic>
   $main::jobname = $lectureprefix.'-'.$number.'-'.$doctype.'-'.$lang.'-'.$topic;
@@ -227,10 +233,11 @@ sub publish(){
   my $prefix=$lectureprefix;;
   # Sprache(n) als Array für den Fall, dass beide Sprachversionen gleichzeitig veröffentlicht werden sollen.
   my @langs;
-  # Da article/script und slides/beamer jeweils synonym genutzt werden können, werden die
+  # Da article/script und slides/beamer/presentation jeweils synonym genutzt werden können, werden die
   # 
   if (exists($deploy_path{'article'})) { $deploy_path{'script'} = $deploy_path{'article'}};
   if (exists($deploy_path{'beamer'})) { $deploy_path{'slides'} = $deploy_path{'beamer'}};
+  if (exists($deploy_path{'presentation'})) { $deploy_path{'slides'} = $deploy_path{'presentation'}};
   if (!exists($deploy_path{$doctype}) and !exists($deploy_path{'all'})) {
     die "No path for publishing given for document type $doctype.";
   }
@@ -238,6 +245,7 @@ sub publish(){
 
   if (exists($deploy_file{'article'})) { $deploy_file{'script'} = $deploy_file{'article'}};
   if (exists($deploy_file{'beamer'})) { $deploy_file{'slides'} = $deploy_file{'beamer'}};
+  if (exists($deploy_file{'presentation'})) { $deploy_file{'slides'} = $deploy_file{'presentation'}};
   if (!exists($deploy_file{$doctype}) and !exists($deploy_file{'all'})) {
     # Should never happen since a $deploy_file{'all'} is set be default
     die "No path for publishing given for document type $doctype.";
