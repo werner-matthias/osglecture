@@ -119,17 +119,22 @@
   bib.code = {
     \PassOptionsToPackage{#1}{osgbeamerbib}
   },
-  % Werden Seiten Kapitelübergreifend numeriert?
+  % Werden Seiten kapitelübergreifend numeriert?
   continuation.code={
     \PassOptionsToClass{continuation=#1}{osgbeamerref}
   },
   % Eine Standalone-Präsentation ist nicht Teil einer Serie
   standalone.code = {
-    \undef{\ollm}
-    \boolfalse{osgllm}
     \booltrue{osgoptionstandalone}
     \PassOptionsToPackage{standalone}{osgbeamerref}
     \PassOptionsToPackage{standalone}{osgbeamerbib}
+  },
+  % Die ggf. durch OLLM gegeben Konfigurationen werden
+  % ignoriert. Erzwingt den Standalone-Modus
+  noollm.code = {
+    \booltrue{osgoptionstandalone}
+    \undef{\ollm}
+    \boolfalse{osgllm}
     \ClassInfo{\classname}{OLLM disabled or not detected, deactivate OLLM features}
   },
   % Optionen, die sinnvolle Einstellungen für die OSG zusammenfassen
@@ -157,10 +162,11 @@
   %
   % Es können mehrere Arten von Ausgabeformaten (Doctypes) erzeugt werden:
   % * slides  => Foliensatz,
-  % * handout => 4 Slides auf einem Blatt,
+  % * handout => mehrere (Standard:4) Slides auf einem Blatt,
   % * screen  => Slides mit Kommentaren und Vorschau für die
   %              Vorführung (z.Z. nicht richtig unterstützt)
   % * script  => Kapitel eines Scripts
+  % * web     => Scriptkapitel in HTML
   %
   % In der Regel sollte diese Option unter OLLM nicht per Hand gesetzt werden.
   doctype .choice: ,
@@ -178,6 +184,11 @@
   doctype/screen .code:n={
     \PassOptionsToClass{second}{beamer}
     \togglefalse{osgscript}
+  },
+  doctype/web .code:n={
+    %\PassOptionsToClass{second}{beamer}
+    \toggletrue{osgscript}
+    \toggletrue{osgweb}
   },
   % Die Sprache _kann_ explizit mit der Option lang=<lang> gesetzt werden, jedoch
   % sollte dies primär im 'standalone'-Mode genutzt werden
@@ -209,9 +220,9 @@
 }
 \ExplSyntaxOff
 
-% In \ollm werden die Pfade zum Verzeichnis für gemeinsame Daten (für vorlesungsübergreifende
-% Referenzierung), der eigene Verzeichnisname sowie die erste logische Kapitelnummer
-% (i.d.R. 0 oder 1) übergeben.
+% In \ollm werden die Pfade zum Verzeichnis für gemeinsame Daten (für
+% vorlesungsübergreifende Referenzierung), der eigene Verzeichnisname
+% sowie die erste logische Kapitelnummer (i.d.R. 0 oder 1) übergeben.
 \IfBool{osgllm}{
   \ClassInfo{\classname}{Acivate OLLM}  
   \ollm % Definiert \OsgShareDataPath, \OsgCurrentDir und \OsgFirstChapter
@@ -332,7 +343,7 @@
 
 \IfBool{osgllm}{ % Zu diesem Zeitpunkt sind die Klassenoptionen noch nicht
   % ausgewertet. lectdates.tex wird also auch geladen, wenn OLLM korrekte
-  % Verzeichnisstrukturen vorfindet und der Nutzer nicht 'standalone' nicht
+  % Verzeichnisstrukturen vorfindet und der Nutzer nicht 'standalone' 
   % als OLLM-Option übergibt, sondern nur als Klassenoption
   \expandafter\InputIfFileExists{\OsgLectConfig}{
     \osg@makedelayed*{author}
@@ -749,23 +760,23 @@
 \let\uline=\underLine
 % \outline unterscheidet sich in den Modi: In der Presentation ist es
 % Textmarker, im Article unterstrichen
-\mode<article>{
-  \newunderlinetype\beginUnderWavy[\number\dimexpr1ex]{\cleaders\hbox{%
-      \setlength\unitlength{.3ex}%
-      \begin{picture}(4,0)(0,1)
-          \thicklines
-          % \color{red}%
-          \qbezier(0,0)(1,1)(2,0)
-          \qbezier(2,0)(3,-1)(4,0)
-      \end{picture}%
-    }}
-  \NewDocumentCommand\outline{D<>{all}+m}{\alt<#1>{\underline{#2}}{#2}}
-}
-\mode<presentation>{
+%\mode<article>{
+%   \newunderlinetype\beginUnderWavy[\number\dimexpr1ex]{\cleaders\hbox{%
+%       \setlength\unitlength{.3ex}%
+%       \begin{picture}(4,0)(0,1)
+%           \thicklines
+%           % \color{red}%
+%           \qbezier(0,0)(1,1)(2,0)
+%           \qbezier(2,0)(3,-1)(4,0)
+%       \end{picture}%
+%     }}
+%   \NewDocumentCommand\outline{D<>{all}+m}{\alt<#1>{\underline{#2}}{#2}}
+% }
+%\mode<presentation>{
   \NewDocumentCommand\outline{D<>{all}+m}{\alt<#1>{\highLight{#2}}{\highLight[white]{#2}}} % Die white-Version sorgt für
   % identische Abstände.
   % ToDo: \highLight anpassen, dass der Durchschuss nicht geändert wird.
-}
+%}
 % Auch \stess (war: \grave) ist modespezifisch (ToDo: Soll das so bleiben?)
 \mode<presentation>{\NewDocumentCommand\stress{D<>{all} m}{{\only<#1>{\color{structure}}{#2}}}}
 \mode<article>{\NewDocumentCommand\stress{D<>{all} m}{\emph<#1>{#2}}}
@@ -782,10 +793,14 @@
   }
 }{}
 \RequirePackage{calc}
-\NewDocumentCommand\sourceref{O{\ldeen{Quelle}{Source}} m}{%
-  \begin{description}[style=sameline]\fontsize{6pt}{2pt}\selectfont
-  \item[\textbf{#1:}] \stress{#2}
-  \end{description}}
+\NewDocumentCommand\sourceref{sO{\ldeen{Quelle}{Source}} m O{style=sameline}}{%
+  \IfBooleanTF{#1}{\par
+    \fontsize{6pt}{2pt}\selectfont\textbf{#2:}\ \stress{#3}
+  }{
+    \begin{description}[#4]\fontsize{6pt}{2pt}\selectfont
+      \item[\textbf{#2:}] \stress{#3}
+    \end{description}}
+  }
   %\par{\fontsize{6pt}{2pt}\selectfont\textbf{#1}:: \stress{#2}}}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Columns
@@ -801,7 +816,7 @@
 \ExplSyntaxOn
 
 \NewDocumentCommand{\IfNumberTF}{mmm}
- {
+ {%
   % regex from https://stackoverflow.com/a/23872060/923955
   % with modifications for expl3 and for adding a unit
   \regex_match:nnTF
@@ -813,7 +828,7 @@
 
 \ExplSyntaxOff
 
-\NewDocumentCommand{\twocolparam}{>{\SplitList{,}} m}{
+\NewDocumentCommand{\twocolparam}{>{\SplitList{,}} m}{%
   \def\osgtcfcwid{0.5}%    Falls keine Länge angegeben wird
   \def\osgtcalignparam{c}% Falls kein Alignmentparameter angegeben wird
   \def\parseandsetarguments##1{%
@@ -826,13 +841,14 @@
   \ProcessList{#1}{\parseandsetarguments}% W
 }
 
- \newenvironment<>{twocolumns}[1][t,0.475]{
-  \twocolparam{#1} 
-  \setlength{\osgleftcolwid}{\fpeval{\osgtcfcwid*0.95}\textwidth}
-  \setlength{\osgrightcolwid}{0.95\textwidth}
-  \addtolength{\osgrightcolwid}{-\osgtcfcwid\textwidth}
-  \alt#2{\def\nextcolumn{\column{\osgrightcolwid}}}{\def\nextcolumn{\par}}
-  \begin{columns}#2[\osgtcalignparam]\column{\osgleftcolwid}
+
+ \newenvironment<>{twocolumns}[1][t,0.475]{%
+  \twocolparam{#1}% 
+  \setlength{\osgleftcolwid}{\fpeval{\osgtcfcwid*0.95}\textwidth}%
+  \setlength{\osgrightcolwid}{0.95\textwidth}%
+  \addtolength{\osgrightcolwid}{-\osgtcfcwid\textwidth}%
+  \alt#2{\def\nextcolumn{\column{\osgrightcolwid}}}{\def\nextcolumn{\par}}%
+  \begin{columns}#2[\osgtcalignparam]\column{\osgleftcolwid}%
   }{
   \end{columns}%\undef{\osgleftcolwid}\undef{\osgrightcolwid}
 }
@@ -910,8 +926,82 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Anmerkungen
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\ExplSyntaxOn
+\NewDocumentEnvironment{specialitemize}{ O{} +b }
+ {
+  % do the setup
+  \keys_set:nn { werner/itemize } { #1 }
+  % split the contents at \item
+  \seq_set_split:Nnn \l_werner_itemize_input_seq { \item } { #2 }
+  % remove the first (empty) item
+  \seq_pop_left:NN \l_werner_itemize_input_seq \l_tmpa_tl
+  % issue the preamble
+  \tl_use:N \l_werner_itemize_pre_tl
+  % adorn the items
+  \seq_set_map:NNn
+    \l_werner_itemize_output_seq
+    \l_werner_itemize_input_seq
+    { \__werner_itemize_do:n { ##1 } }
+  % output the items, separated by the chosen separator
+  \seq_use:NV \l_werner_itemize_output_seq \l_werner_itemize_sep_tl
+  % issue the postamble
+  \tl_use:N \l_werner_itemize_post_tl
+ }
+ {}
+
+\seq_new:N \l_werner_itemize_input_seq
+\seq_new:N \l_werner_itemize_output_seq
+\cs_generate_variant:Nn \seq_use:Nn { NV }
+
+\keys_define:nn { werner/itemize }
+ {
+  pre    .tl_set:N  = \l_werner_itemize_pre_tl,
+  post   .tl_set:N  = \l_werner_itemize_post_tl,
+  sep    .tl_set:N  = \l_werner_itemize_sep_tl,
+  action .code:n    = \cs_set_eq:NN \__werner_itemize_do:n #1,
+  action .initial:n = \use:n,
+}
+
+\ProvideDocumentCommand \NewEnvironmentCopy {mm} {
+    \expandafter \NewCommandCopy \csname#1\expandafter\endcsname \csname#2\endcsname
+    \expandafter \NewCommandCopy \csname end#1\expandafter\endcsname \csname end#2\endcsname
+}
+
+\ProvideDocumentCommand \RenewEnvironmentCopy {mm} {
+    \expandafter \RenewCommandCopy \csname#1\expandafter\endcsname \csname#2\endcsname
+    \expandafter \RenewCommandCopy \csname end#1\expandafter\endcsname \csname end#2\endcsname
+}
+\ExplSyntaxOff
+
+\NewDocumentCommand{\spacesaveitem}{m}{%
+  \textbullet\ \detokenize{#1}\par%
+}
+\NewDocumentCommand{\quotepar}{m}{%
+  ``#1''\par
+}
+%\RequirePackage[luatex,space=true]{accsupp}
 \mode<article>{\def\Note#1{}}
-\mode<presentation>{\def\Note#1{\beamer@inframenote[item]{#1}}}
+\mode<presentation>{
+  
+   \let\osg@original@note=\note
+  % \let\osg@original@beginitem=\beginitem
+
+  \NewDocumentEnvironment{noteitemize}{}
+  {
+    \begin{specialitemize}[action=\spacesaveitem]
+      }{
+    \end{specialitemize}
+  } 
+  \NewEnvironmentCopy{originalitemize}{itemize}
+  \RenewDocumentCommand{\note}{m}{
+    \osg@original@note{
+     \RenewEnvironmentCopy{itemize}{noteitemize}
+     #1
+     \RenewEnvironmentCopy{itemize}{originalitemize}
+     }
+   }
+  % \def\Note#1{\beamer@inframenote[item]{#1}}
+}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Titeldaten
