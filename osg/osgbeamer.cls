@@ -618,8 +618,8 @@
 \newcommand{\ding}{\Pisymbol{pzd}}
 %%% Farbiger "daraus folgt"-Pfeil
 \RequirePackage{xspace}
-\newcommand{\follows}{{\usebeamercolor[fg]{structure}\ding{225}}\xspace}
-\newcommand{\lfollows}{{\usebeamercolor[fg]{structure}\rotatebox[origin=c]{180}{\ding{225}}}\xspace}
+\newcommand<>{\follows}{\only#1{{\usebeamercolor[fg]{structure}\ding{225}}\xspace}}
+\newcommand<>{\lfollows}{\only#1{\usebeamercolor[fg]{structure}\rotatebox[origin=c]{180}{\ding{225}}\xspace}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Fußnoten
@@ -798,9 +798,10 @@
     \fontsize{6pt}{2pt}\selectfont\textbf{#2:}\ \stress{#3}
   }{
     \begin{description}[#4]\fontsize{6pt}{2pt}\selectfont
-      \item[\textbf{#2:}] \stress{#3}
-    \end{description}}
+     \item[\textbf{#2:}] \stress{#3}
+    \end{description}
   }
+}
   %\par{\fontsize{6pt}{2pt}\selectfont\textbf{#1}:: \stress{#2}}}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Columns
