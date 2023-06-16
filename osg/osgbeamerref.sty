@@ -429,8 +429,7 @@ hyperref
      }
    }
 
-   \newcommand<>{\osglabel}[1]{\only#2{\zref@label{#1}}}
-   \RenewDocumentCommand{\label}{m}{\beamer@savemode\zref@label{#1}\beamer@resumemode}
+   \newcommand<>{\osglabel}[1]{\beamer@savemode\only#2{\zref@label{#1}}\beamer@resumemode}
 
    % Definiere \omrcpath als den Dateienpfad (ohne Extension) für das angegebene Kapitel
    \newrobustcmd\getPathForChapter[1]{%
@@ -506,7 +505,6 @@ hyperref
     \ifx\beamer@nexttoken\begin\let\next=\beamer@checkbeginframe\fi%
     \ifx\beamer@nexttoken\end\let\next=\beamer@checkenddoc\fi%
     \next}
-
   }
 
   \IfBool{osglegacy}{
