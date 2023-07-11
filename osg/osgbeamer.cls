@@ -619,7 +619,7 @@
 %%% Farbiger "daraus folgt"-Pfeil
 \RequirePackage{xspace}
 \newcommand<>{\follows}{\only#1{{\usebeamercolor[fg]{structure}\ding{225}}\xspace}}
-\newcommand<>{\lfollows}{\only#1{\usebeamercolor[fg]{structure}\rotatebox[origin=c]{180}{\ding{225}}\xspace}}
+\newcommand<>{\lfollows}{\only#1{{\usebeamercolor[fg]{structure}\rotatebox[origin=c]{180}{\ding{225}}\xspace}}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Fußnoten
@@ -794,7 +794,7 @@
 }{}
 \RequirePackage{calc}
 \NewDocumentCommand\sourceref{sO{\ldeen{Quelle}{Source}} m O{style=sameline}}{%
-  \IfBooleanTF{#1}{\par
+  \IfBooleanTF{#1}{\par\raggedleft
     \fontsize{6pt}{2pt}\selectfont\textbf{#2:}\ \stress{#3}
   }{
     \begin{description}[#4]\fontsize{6pt}{2pt}\selectfont
@@ -850,7 +850,7 @@
   \addtolength{\osgrightcolwid}{-\osgtcfcwid\textwidth}%
   \alt#2{\def\nextcolumn{\column{\osgrightcolwid}}}{\def\nextcolumn{\par}}%
   \begin{columns}#2[\osgtcalignparam]\column{\osgleftcolwid}%
-  }{
+  }{%
   \end{columns}%\undef{\osgleftcolwid}\undef{\osgrightcolwid}
 }
 
