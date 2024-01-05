@@ -191,6 +191,16 @@ hyperref
       \ldeen{Folie}{slide}~\omr@ref[#1]{#2}[beamer@frame]%
     }%
   }
+  % Überprüft, ob Label #1 auf der selben Seite steht, wie dieser
+  % Befehl.
+  % Falls nicht, wird der Text #2 gefolgt von der Seitennummer von #1 ausgegeben.
+  \NewDocumentCommand{\xrefdist}{m m}{%
+    \only<article>{%
+      \edef\tmpr{\zref@extract{#1}{page}}%
+      \edef\tmpp{\thepage}%
+      \ifdefstrequal{\tmpp}{\tmpr}{}{#2\ \zref@extract{#1}{page}}%
+      }%
+  }%
   % Erzwingt die Referenz auf das Artikel-Label (für Crosstype-Referenz)
   \NewDocumentCommand\xarticleref{O{} m}{
     \omr@ref[#1][a]{#2}[default]%
