@@ -1,0 +1,187 @@
+% 2023-07-12 M. Werner: erste Version
+% Warnung: Dieses Paket ist sehr experimentell. Die Befehle und ihre Bedeutung
+% können sich jeder Zeit ändern.
+\NeedsTeXFormat{LaTeX2e}
+\edef\packagename{osggists}
+\ProvidesPackage{\packagename}[2023/07/12]
+\RequirePackage{pdftexcmds}
+
+\newbool{osggistshesc}
+\ifcase\pdf@shellescape % Kein Shell-Escape aktiviert
+    \PackageWarning{\packagename}{No shell escape.\MessageBreak To get gists
+      correct, activate shell escape}
+    \boolfalse{osggistshesc}
+  \or
+    \booltrue{osggistshesc}
+  \or
+    \PackageWarning{\packagename}{Restricted shell escape only.\MessageBreak To get gists
+      correct, activate \MessageBreak full shell escape}
+    \boolfalse{osggistshesc}
+\fi
+
+\IfBool{osggistshesc}{    
+\RequirePackage{etoolbox}
+\RequirePackage{luapackageloader}
+\RequirePackage{luacode}
+
+\luaexec{
+      % Voraussetzung: Lua-Modul http.request muss installiert sein, z.B. via LuaRocks.
+      % Das ist allerdings hochgradig unportable.
+      % Ggf. müssen die folgenden Zeilen angepasst werden, ja nach der lokalen Installation
+      % TODO: Module local in osg-Tree übernehmen, dann ist wenigstens die Portabilität zwischen
+      %       MacOS-Rechnern möglich.
+      %
+  package.path = package.path..';/opt/local/share/luarocks/share/lua/5.3/?.lua'
+  package.cpath = package.cpath..';/opt/local/share/luarocks/lib/lua/5.3/?.so' 
+  require("util-jsn") % JSON - Lib
+  local http = require "http.request"
+  %
+  % Tabelle von Gist-Collections, wobei jede durch ihren Eigentümer
+  % identifiziert wird.
+  osgallgists = {}
+  % 
+  function resetgists()
+     osgallgists = {}
+  end
+  %
+  % Registriere einen GitHub-Nutzer, auf dessen Gists zugegriffen werden soll. 
+  % Dazu muss der Nutzer und das korrespondierende Zugriffs-Token angegeben werden.
+  function addgistowner(owner,tok)
+     local uri='https://api.github.com/users/'..owner..'/gists'
+     local req = http.new_from_uri(uri)
+     if ( tok ~= nil) then
+        req.headers:upsert("authorization", "Bearer "..tok)
+     end
+     %for k, v in req.headers: each () do
+     %  print (k, v)
+     %end
+     local headers, stream = assert(req:go())
+     %print("============\\n")
+     %for k, v in headers: each () do
+     %  print (k, v)
+     %end
+     local body = assert(stream:get_body_as_string())
+     if headers:get ":status" ~= "200" then
+        error(body)
+     end
+     local gists = utilities.json.tolua(body)
+     if (gists ~= nil) then
+        osgallgists[owner] = gists
+     end
+     %print(body)   
+  end     
+  %
+  % Gibt die ID eines Gists für einem gegebenen <filename> aus der Sammlung von <owner>.
+  % Enthält die Sammlung mehr als einen Gist mit dem gleichen Namen, wird
+  % lediglich die ID des ersten gefundenen Gists zurückgegeben.
+  function getgistid(owner,filename)
+     if ((osgallgists == {}) or osgallgists[owner]==nil ) then
+        tex.print("\\PackageError{\\packagename}{No gist for owner '"..owner.."' exists}{use \\string\\NewGist}")
+     else
+        for key, gist in pairs(osgallgists[owner]) do
+           for _, f in pairs(gist['files']) do
+              if (f['filename'] == filename) then
+                 return gist['id']
+              end
+           end
+        end
+     end
+     return '0'
+  end
+  % Speichert die Datei <filename> aus den Gists von <owner> im Verzeichnis
+  % <path> ab. <tok> ist das Zugriffstoken, 
+  function savegist(owner,filename,path,tok)
+     local sf=io.open(path..'/'..filename,"w+")
+     for key, gist in pairs(osgallgists[owner]) do
+        for _, f in pairs(gist['files']) do
+           if (f['filename'] == filename) then
+              local uri = f['raw_url']
+              local headers, stream = assert(http.new_from_uri(uri):go())
+              if ( tok ~= nil) then
+                 req.headers:upsert("authorization", "Bearer "..tok)
+              end
+              local body = assert(stream:get_body_as_string())
+              if headers:get ":status" ~= "200" then
+                 error(body)
+              end
+              sf:write(body)
+              sf:close()
+              return
+           end
+        end
+     end
+  end
+ }
+
+% Wrapper für addgistowner()
+% Das Zugriffstoken wird in einem Macro \osggist:<owner> gespeichert. 
+% \NewGist[<token>]{owner}
+\NewDocumentCommand{\NewGist}{o m}{%
+  \IfNoValueTF{#1}{%
+    \csgdef{osggist:#2}{nil}
+    \luadirect{
+      addgistowner(\luastring{#2,nil})
+    }%
+  }{%
+    \csgdef{osggist:#2}{#1}
+    \luadirect{
+      addgistowner(\luastring{#2}, \luastring{#1})
+    }%
+  }%
+}
+
+% Wenn eine Datei noch nicht im lokalen Cache vorliegt,
+% wird sie aus dem Gist geladen
+% \gistsave{<owner>{<filename>}{<local cache path>}
+\NewDocumentCommand{\gistsave}{m m m}{
+  \IfFileExists{#3/#2}{}{%
+    \luadirect{
+      savegist(\luastring{#1},\luastring{#2},\luastring{#3},\csuse{osggist:#1})
+    }%
+  }%
+}
+
+% Formatiert eine Datei aus dem lokalen Cache als Listing.
+% Falls diese nicht im Cache ist, wird versucht, sie zuerst aus dem Gist zu
+% holen
+% \gist[<lst-Options]{<owner>}{<filename>}{<local cache path>}
+\NewDocumentCommand{\gist}{O{} m m m}{
+  \IfFileExists{#4/#3}{}{%
+    \luadirect{
+      savegist(\luastring{#2},\luastring{#3},\luastring{#4},\csuse{osggist:#2})
+    }%
+  }%
+  \lstinputlisting[#1]{#4/#3}
+}
+
+% Wrapper für getgistid
+% \gistid{<owner>}{<token>}
+\NewExpandableDocumentCommand{\gistid}{m m}{%
+  \luadirect{%
+    tex.print(getgistid(\luastring{#1},\luastring{#2}))
+  }%
+}
+
+\NewExpandableDocumentCommand{\gistraw}{m m}{%
+  https://gist.github.com/#1/\gistid{#1}{#2}/raw%
+}
+
+
+}{  % Kein Shell-Escape
+\NewDocumentCommand{\NewGist}{o m}{}
+\NewDocumentCommand{\gistsave}{m m m}{
+  \IfFileExists{#4/#3}{}{%
+    \PackageWarning{\packagename}{No file #3/#2 found.}%
+  }%
+}
+
+\NewDocumentCommand{\gist}{O{} m m m}{
+  \IfFileExists{#4/#3}{%
+    \lstinputlisting[#1]{#4/#3}}{
+    \textcolor{red}{\texttt{Can't access gist}}\par
+  }
+}
+
+\NewExpandableDocumentCommand{\gistid}{m m}{0}
+\NewExpandableDocumentCommand{\gistraw}{m m}{}
+}
