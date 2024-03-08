@@ -3,9 +3,17 @@
 \ProvidesPackage{\packagename}[2022/06/16 v0.5.0]
 \RequirePackage{luacode}
 \RequirePackage{varsfromjobname}
-\RequirePackage[user,xr,lastpage,abspage,%runs,
+\RequirePackage[user,xr,lastpage,abspage,perpage,%runs,
 hyperref
 ]{zref}
+
+\newcommand{\ifstreq}[4]{%
+  \ifnum\pdf@strcmp{#1}{#2}=0%
+  #3%
+  \else%
+  #4%
+  \fi%
+}
 
 \providebool{osgoptionstandalone}
 \providebool{osgscript}
@@ -194,12 +202,15 @@ hyperref
   % Überprüft, ob Label #1 auf der selben Seite steht, wie dieser
   % Befehl.
   % Falls nicht, wird der Text #2 gefolgt von der Seitennummer von #1 ausgegeben.
-  \NewDocumentCommand{\xrefdist}{m m}{%
-    \only<article>{%
-      \edef\tmpr{\zref@extract{#1}{page}}%
-      \edef\tmpp{\thepage}%
-      \ifdefstrequal{\tmpp}{\tmpr}{}{#2\ \zref@extract{#1}{page}}%
-      }%
+  \NewDocumentCommand{\xrefdist}{O{} m m}{%
+     \only<article>{%
+       \edef\tmpr{\zref@extractdefault{#2}{page}{??}}%
+       % Annahme: \distref wird pro Referenz nur EINMAL genutzt
+       % Sollte sich das ändern, muss der Suffix "-ref" durch einen Zähler
+       % ersetzt/ergänzt werden.
+       \edef\tmpp{\zref@extractdefault{#2-ref}{page}{??}}\zlabel{#2-ref}%
+       \ifstreq{\tmpp}{\tmpr}{#1}{#3\ \tmpr}%
+       }%
   }%
   % Erzwingt die Referenz auf das Artikel-Label (für Crosstype-Referenz)
   \NewDocumentCommand\xarticleref{O{} m}{
