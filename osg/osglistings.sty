@@ -25,7 +25,7 @@
 \providecommand{\clstkeyword}{darkgreen!80!black}
 \providecommand{\clstdirective}{magenta!60!black}
 \providecommand{\clstemph}{orange!80!black}
-\providecommand{\clstnumber}{orange}
+\providecommand{\clstnumber}{gray}
 \providecommand{\clststr}{blue!50!black}
 \providecommand{\clstcom}{cyan!50!black}
 % Wenn Externalisierung genutzt wird, *muss* die Bibliothek *vor* "osglisting"
@@ -36,6 +36,7 @@
 % Listings
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \RequirePackage{listings}
+\RequirePackage{lstautogobble}
 
 \newcommand{\termfamily}{\ttfamily}
 \newcommand{\comstyle}{\itshape\color{\clstcom}}
@@ -53,15 +54,31 @@
     morecomment=[s][\fontsize{0.1}{0}\selectfont]{/**}{*/},  % really dirty hack 
     rangeprefix=/**\ ,rangesuffix=\ */,includerangemarker=false,
     %% 
-  frame=none,aboveskip=2pt,belowskip=2pt}
+  frame=none}
 }
+\lstdefinestyle{general}{
+  basicstyle=\termfamily\scriptsize<presentation>\small<article>,
+  commentstyle=\comstyle,
+  showstringspaces=false,
+  %xleftmargin=2pt,
+  %xrightmargin=2pt,
+  columns=flexible,
+  morecomment=[s][\fontsize{0.1}{0}\selectfont]{/**}{*/},  % really dirty hack 
+  rangeprefix=/**\ ,rangesuffix=\ */,includerangemarker=false,
+    %% 
+  frame=none,aboveskip=2pt,belowskip=2pt,
+  autogobble=true,
+  breaklines,breakatwhitespace,
+  linewidth=.98\linewidth
+}
+
 \newcommand{\lstresetbash}{%
   \lstset{language=bash,
     basicstyle=\termfamily\color{\cterminalfg}\scriptsize<presentation>,
     showstringspaces=false,breaklines,numbers=none,
     xleftmargin=2pt,
     xrightmargin=2pt,
-    %columns=fixed,
+    columns=fixed,
     frame=none,aboveskip=0pt,belowskip=0pt}
 }
 
@@ -74,16 +91,51 @@
     xrightmargin=2pt,
     frame=none,aboveskip=2pt,belowskip=2pt}
 }
+
+\lstdefinestyle{colors}{keywordstyle=\color{\clstkeyword},emphstyle=\color{\clstnumber},stringstyle=\color{\clststr}}
+\lstdefinestyle{nocolors}{keywordstyle=\color{black},emphstyle=\color{black},stringstyle=\color{black},commentstyle=\color{black}}
+
 \newcommand{\lstcoloron}{\lstset{keywordstyle=\color{\clstkeyword},emphstyle=\color{\clstnumber},stringstyle=\color{\clststr}}\lstnumberson}
 \newcommand{\lstcoloroff}{\lstset{keywordstyle=\color{black},emphstyle=\color{black},stringstyle=\color{black},commentstyle=\color{black}}}
+
 \mode<presentation>{
   \newcommand{\lstnumberson}{\lstset{numbers=left,numberstyle=\comstyle\fontsize{4pt}{4.5pt}\selectfont\color{\clstnumber}\sffamily,numbersep=3pt,xleftmargin=4pt}}
+  \lstdefinestyle{numbers}{numbers=left,numberstyle=\comstyle\fontsize{4pt}{4.5pt}\selectfont\color{\clstnumber}\sffamily,numbersep=3pt,xleftmargin=4pt}
+
 }
 \mode<article>{
-  \newcommand{\lstnumberson}{\lstset{numbers=left,numberstyle=\comstyle\fontsize{4pt}{4.5pt}\selectfont\color{\clstnumber}\sffamily,numbersep=4pt,xleftmargin=4pt}}
+  \newcommand{\lstnumberson}{\lstset{numbers=left,numberstyle=\comstyle\fontsize{4pt}{4.5pt}\selectfont\color{\clstnumber}\sffamily,numbersep=1pt,xleftmargin=4pt}}
+  \lstdefinestyle{numbers}{numbers=left,numberstyle=\tiny\color{\clstnumber}\sffamily,numbersep=5pt,xleftmargin=1pt}
+
 }
 \newcommand{\lstnumbersoff}{\lstset{numbers=none}}
-
+\lstdefinestyle{nonumbers}{numbers=none}
+\lstdefinestyle{tearout}{backgroundcolor=\ctearoutbg}
+\lstdefinestyle{c-plain}{
+  style=general,
+  language=C
+}
+\RequirePackage{listings-rust}
+\lstdefinestyle{rustplain}{
+  style=general,
+  language=Rust,
+  style=nocolors,
+  style=nonumbers
+}
+\lstdefinestyle{rust}{
+  style=general,
+  language=Rust,
+  style=colors,
+  style=numbers
+}
+\lstdefinestyle{bash}{
+  style=general,
+  language=bash,
+  style=nocolors,
+  columns=fixed,
+  breaklines,breakatwhitespace,
+  linewidth=.9\linewidth
+}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Tearout
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -119,7 +171,6 @@
   }
 }
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Terminal
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -140,6 +191,8 @@
   breakable,%
   top=0pt,
   bottom=0pt,
+  boxsep=.5ex,
+  %show bounding box,
   left=1em,
   right=1em,
   frame style={%
@@ -163,6 +216,25 @@
   fontupper=\ttfamily\footnotesize<presentation>\color{\cterminalfg}
 }
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Editor
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\RequirePackage{fontawesome5}
+\NewTColorBox{codeeditor}{O{title=Code} m}{
+  enhanced,
+  coltitle     = black,
+  colbacktitle = black!10!white,
+  colback      = blue!2!white,
+  center title,
+  fonttitle=\scriptsize\ttfamily,
+  #1,
+  overlay={%
+    \begin{tcbclipframe}
+        \node[anchor=north west,inner ysep=2pt, font=\scriptsize] at (frame.north west){\faRust};
+        \ifstrempty{#2}{}{\node[anchor=north east,inner ysep=2pt,font=\scriptsize] at (frame.north east){\href{#2}{\faClone[regular]}}};
+    \end{tcbclipframe}
+  }
+}
 % \newenvironment{terminal}{\par
 %   \colorlet{shadecolor}{\cterminalbg}
 %   \begin{mdframed}[innerleftmargin=10pt,innerrightmargin=10pt,
