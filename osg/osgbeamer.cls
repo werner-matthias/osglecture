@@ -280,7 +280,7 @@
 % 
 % Um Klassen-Optionen für *alle* Kapitel/Lectures gemeinsam setzen zu können,
 % soll die 'lectdate.tex' bereits jetzt eingelesen werden.
-% Dort werden die Macros \SetGlobalClassOption und
+% Dort werden die Macros \SetGlobalClassOptions und
 % \EnforceGlobalClassOptions zur Verfügung gestellt.
 \let\SetGlobalClassOptions=\SetKeys
 \NewDocumentCommand{\EnforceGlobalClassOptions}{m}{
@@ -302,7 +302,7 @@
 % In der Stern-Variante definiert \osg@makedelayed das Ersatzmacro mit einem optionalen
 % Argument, so wie es später auch durch Beamer und co. definiert wird.
 % 
-% Alle Titlemacros sind gewahr (wie übersetzt man 'aware'?) der Beamer-Modes, es lassen
+% Alle Titlemacros sind gewahr (wie übersetzt man 'aware'?) der Beamer-Modi, es lassen
 % sich also mode-spezifische Titel (z.B. \title<article>{Foo}) spezifizieren. Dies wird
 % *nicht* im Macro selbst verankert, sondern über eine \mode-Umgebung zur verzögerten
 % Ausführung realisiert; entsprechend stehen die Modes außerhalb von 'lectdates.tex' nicht
@@ -416,7 +416,20 @@
 \RequirePackage{fontspec}
 \RequirePackage{xcolor}
 \RequirePackage{luacolor}
-
+% Zum Laden von package-lokalen Lua-Modulen wird der Pfad benötigt
+\luadirect{
+  function osggetpath(type)
+    local pkgpath = file.pathpart(file.collapsepath(status.filename, true))
+    local allpaths ={
+      ['lua']  = file.collapsepath(file.join(pkgpath,'../lua')),
+      ['clua'] = file.collapsepath(file.join(pkgpath,'../lua/lib')),
+      ['pkg']  = pkgpath
+    }
+    return allpaths[type]
+  end    
+  token.set_macro('osgpkgpath', osggetpath('pkg'))
+  token.set_macro('osgluapath', osggetpath('lua'))
+}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Legacy Code
 % ===========
@@ -747,8 +760,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Textauszeichnungen
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\NewDocumentCommand{\sbf}{D<>{all} +m}{\structure<#1>{\textbf{#2}}}
-\NewDocumentCommand{\newdef}{D<>{all} +m}{\structure<#1>{\textbf{#2}}}
+\NewDocumentCommand{\sbf}{D<>{all} +m}{\structure<#1>{\textbf<#1>{#2}}}
+\NewDocumentCommand{\newdef}{D<>{all} +m}{\structure<#1>{\textbf<#1>{#2}}}
 \IfBool{osglegacy}{
   \NewCSDeprecatedCommand{ctiny}{D<>{presentation}}{\only<#1>{\tiny}}[use mode spezification]
   \NewCSDeprecatedCommand{cfootnotesize}{D<>{presentation}}{\only<#1>{\footnotesize}}[use mode spezification]
@@ -843,14 +856,14 @@
 }
 
 
- \newenvironment<>{twocolumns}[1][t,0.475]{%
+\newenvironment<>{twocolumns}[1][t,0.475]{%
   \twocolparam{#1}% 
   \setlength{\osgleftcolwid}{\fpeval{\osgtcfcwid*0.95}\textwidth}%
   \setlength{\osgrightcolwid}{0.95\textwidth}%
   \addtolength{\osgrightcolwid}{-\osgtcfcwid\textwidth}%
   \alt#2{\def\nextcolumn{\column{\osgrightcolwid}}}{\def\nextcolumn{\par}}%
   \begin{columns}#2[\osgtcalignparam]\column{\osgleftcolwid}%
-  }{%
+    }{%
   \end{columns}%\undef{\osgleftcolwid}\undef{\osgrightcolwid}
 }
 
