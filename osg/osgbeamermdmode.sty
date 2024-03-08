@@ -1,0 +1,46 @@
+\NeedsTeXFormat{LaTeX2e}
+\edef\packagename{osgbeamermdmode}
+\ProvidesPackage{\packagename}[2023/05/19 v0.1.0]
+
+\def\beamer@mdbookmode{mdbook}
+
+\def\beamer@decodefind#1:#2:{%
+  \def\beamer@ovmode{#1}%
+  \beamer@decodeaction{#2}%
+  \expandafter\futurelet\expandafter\next\expandafter
+    \beamer@checkcat\beamer@spec:%
+  \expandafter\beamer@decodeplus\beamer@spec+:%
+  \expandafter\beamer@decodedot\beamer@spec.:%
+  \ifx\beamer@ovmode\beamer@ovmodestop
+    \expandafter\beamer@@decode\beamer@decodefound,!%
+    \let\beamer@next=\relax
+    \ifbeamer@plusencountered\stepcounter{beamerpauses}\fi
+  \else
+    \ifx\beamer@ovmode\beamer@currentmode
+      \beamer@@decodefound
+    \else
+      \ifx\beamer@ovmode\beamer@modeall
+        \beamer@@decodefound
+      \else
+        \ifx\beamer@ovmode\beamer@presentationmode
+          \ifx\beamer@currentmode\beamer@articlemode
+          %% Neu: teste für md-Mode
+          \else
+             \ifx\beamer@currentmode\beamer@mdbookmode
+             \else
+                \beamer@@decodefound
+             \fi
+            %% Ende Patch
+          \fi
+        \else
+          \ifx\beamer@ovmode\beamer@beamermode
+            \ifx\beamer@currentmode\beamer@secondmode
+              \beamer@@decodefound
+            \fi
+          \fi
+        \fi
+      \fi
+    \fi
+    \let\beamer@next=\beamer@@decodefind
+  \fi
+ \beamer@next}
