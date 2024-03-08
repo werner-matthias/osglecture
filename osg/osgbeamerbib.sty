@@ -281,8 +281,8 @@
      
      \NewDocumentCommand{\bibitemlabel}{m}{
        \RetrieveFieldInFor{entrytype}{#1}{\temp@type}
-       \ifdefstring{\temp@type}{book}{\bookicon}{%
-          \ifdefstring{\temp@type}{online}{\webicon}{%
+       \ifdefstrequal{\temp@type}{book}{\bookicon}{%
+          \ifcsstring{temp@type}{online}{\webicon}{%
                 \papericon}%
           }%
           ~[\MakeCitation{#1}]
