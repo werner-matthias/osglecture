@@ -12,3 +12,4 @@ test/standalone/main.snm
 test/standalone/main.toc
 test/standalone/main.synctex.gz
 *.safe
+*.so
