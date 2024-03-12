@@ -118,7 +118,7 @@
     \langinengfalse%
   }
   \newrobustcmd{\ldeen}[2]{\ifstrequal{#1}{}{#2}{#1}}
-  \newcommand{\ldeenr}[2]{#1} % robust version
+  \newcommand{\ldeenr}[2]{#1} % Robuste Version, aber ohne Fallback
   \newcommand{\xdeen}[2]{%
     \luadirect{
       oex_deenargs={}
@@ -213,8 +213,16 @@
       oex_deenstr , _ = string.gsub(oex_deenstr, oex_deenpat, oex_deenargs[i])
     end
     tex.print(oex_deenstr)
-  }
+  }%
 }
+\newcommand{\dMo}{\ldeen{Montag}{Monday}}
+\newcommand{\dTu}{\ldeen{Dienstag}{Tuesday}}
+\newcommand{\dWe}{\ldeen{Mittwoch}{Wednesday}}
+\newcommand{\dTh}{\ldeen{Donnerstag}{Wednesday}}
+\newcommand{\dFr}{\ldeen{Freitag}{Friday}}
+% Der Vollständigkeit halber auch das Wochenende
+\newcommand{\dSa}{\ldeen{Sonnabend}{Saturday}}
+\newcommand{\dSu}{\ldeen{Sonntag}{Sunday}}
 
 \AtBeginDocument{
   \setbeamertemplate{frametitle continuation}{(\ldeen{Forts.}{cont.})}
