@@ -63,13 +63,67 @@
 % * <language>     : de oder en (für deutsch oder englisch)
 % * <topic>        : wahlfreie Bezeichnung für das Kapitelthema
 %
-% Ob das OLLM System aktiv ist, wird anhand des Vorhandenseins des Macro '\ollm'
-% festgestellt und im Flag 'osgllm' gespeichert. Dann wird davon ausgegangen,
-% dass ein korrektes Verzeichnis-Layout existiert.
+% Ob das OLLM System aktiv ist, wird anhand des Vorhandenseins des der Datei
+% 'ollmconfig.pl' im Elternverzeichnis festgestellt und im Flag 'osgllm'
+% gespeichert. Dann wird davon ausgegangen, dass ein korrektes
+% Verzeichnis-Layout existiert.
 \newbool{osgllm}\boolfalse{osgllm}
+\begin{luacode*}
+  -- lfs wird für currentdir() benötigt
+  require("lfs")
+  -- Teste auf das Vorhandensein einer Konfigurationsdatei.
+  -- Nur wenn die Datei existiert, lässt sie sich öffnen
+  f = io.open("../ollmconfig.pl","r")
+  if f ~= nil then
+      io.close(f)
+      -- Wenn Datei gefunden, wird osgllm-Flag gesetzt 
+      tex.print("\\booltrue{osgllm}")
+      -- Defaultwerte für OLLM
+      sh_path = "../Include"
+      cfg_file = "lectdates"
+      fst_chap_a = "1"
+      fst_chap_b = "1"
+      -- curr_dir hat keinen Defaultwert, wird direkt gesetzt
+      cur_dir = lfs.currentdir() 
+      -- Die anderen Werte werden aus der Konfigurationsdatei geholt.
+      for line in (io.lines("../ollmconfig.pl")) do
+        if string.sub(line,1,1) ~= "#" then
+           -- Nichtkommentarzeile, versuche parsen
+           v = string.match(line,"$first_chapter_number%s-=%s-(%S-);")
+           if v~= nil then
+              fst_chap_a = v
+              fst_chap_b = v
+           end
+           v1,v2 = string.match(line, "@first_chapter_number%s-=%s-%((%S-)%s-,%s-(%S-)%)%s-;")
+           if v1~= nil then
+              fst_chap_b = v1
+              fst_chap_a = v2
+           end
+           v = string.match(line,"$lectconfig%s-=%s-(%S-);")
+           if v ~= nil then
+              cfg_file = v
+           end   
+           v = string.match(line,"$shared_data_dir%s-=%s-(%S-);")
+           if v ~= nil then
+              sh_path = v
+           end   
+        end
+        -- \ollm dient als Hook für verschiedene OLLM-spezifische Macros
+        tex.print("\\gdef\\ollm{\\gdef\\OsgShareDataPath{".. sh_path.."}"..
+          "\\gdef\\OsgLectConfig{"..cfg_file.."}"..
+          "\\gdef\\OsgCurrentDir{"..cur_dir.."}"..
+          "\\IfToggle{osgscript}{\\gdef\\OsgFirstChapter{"..fst_chap_a.."}}{\\gdef\\OsgFirstChapter{"..fst_chap_b.."}}"..
+          "}")
+      end
+  else 
+      tex.print("\typeout{No proper directory configuration, assume standalone}")
+  end    
+\end{luacode*}
 \ifdef{\ollm}{
-  \booltrue{osgllm}
-}{
+   \ClassInfo{\classname}{osgllm set}
+   \booltrue{osgllm}
+ }{
+   \ClassInfo{\classname}{osgllm unset}
   \boolfalse{osgllm}
 }
 \newtoggle{osgscript}         % Wird bis zum Laden von Beamer als Unterscheidung
@@ -166,7 +220,7 @@
   % * screen  => Slides mit Kommentaren und Vorschau für die
   %              Vorführung (z.Z. nicht richtig unterstützt)
   % * script  => Kapitel eines Scripts
-  % * web     => Scriptkapitel in HTML
+  % * web     => Scriptkapitel in HTML (z.Z. nicht unterstützt)
   %
   % In der Regel sollte diese Option unter OLLM nicht per Hand gesetzt werden.
   doctype .choice: ,
@@ -186,9 +240,10 @@
     \togglefalse{osgscript}
   },
   doctype/web .code:n={
-    %\PassOptionsToClass{second}{beamer}
-    \toggletrue{osgscript}
-    \toggletrue{osgweb}
+    % \PassOptionsToClass{second}{beamer}
+    \ClassError{\classname}{Document type 'web' is not supported.}
+    %\toggletrue{osgscript}
+    %\toggletrue{osgweb}
   },
   % Die Sprache _kann_ explizit mit der Option lang=<lang> gesetzt werden, jedoch
   % sollte dies primär im 'standalone'-Mode genutzt werden
@@ -224,12 +279,12 @@
 % vorlesungsübergreifende Referenzierung), der eigene Verzeichnisname
 % sowie die erste logische Kapitelnummer (i.d.R. 0 oder 1) übergeben.
 \IfBool{osgllm}{
-  \ClassInfo{\classname}{Acivate OLLM}  
-  \ollm % Definiert \OsgShareDataPath, \OsgCurrentDir und \OsgFirstChapter
+  \ClassInfo{\classname}{Acivated OLLM}  
 }{
   \boolfalse{osgllm}
   % Ohne OLLM ist das Dokument alleinstehend (standalone), auch
   % wenn dies nicht explizit als Option angegeben wurde.
+  \ClassInfo{\classname}{Osgbeamer without OLLM, activate standalone}  
   \SetKeys{standalone=true} 
 }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -267,11 +322,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Es gibt drei Möglichkeiten, wie spezifische Klassenoptionen gesetzt
 % werden können:
-%   1. Mit \SetGlobalClassOptions in lectdatex.tex. Die hier gesetzten
+%   1. Mit \SetGlobalClassOptions in lectdate.tex. Die hier gesetzten
 %      Optionen gelten für *alle* Kapitel.
 %   2. Als 'normale' Klassenoption. Die so gesetzten Optionen gelten
 %      nur in dem Kapitel und überschreiben die Optionen von 1.
-%   3. Mit \EnforceGlobalClassOptions in lectdatex.tex. Die hier gesetzten
+%   3. Mit \EnforceGlobalClassOptions in lectdate.tex. Die hier gesetzten
 %      Optionen gelten für *alle* Kapitel und überschreiben Optionen
 %      von 1. und 2.
 %
@@ -308,7 +363,7 @@
 % Ausführung realisiert; entsprechend stehen die Modes außerhalb von 'lectdates.tex' nicht
 % zur Verfügung (auch nicht in von 'lectdates.tex' includierten Dateien).
 \NewDocumentCommand{\osg@makedelayed}{s m}{
-  % Wenn das Macro schom (durch den Kernel) definiert ist, speichere es unter einem anderen
+  % Wenn das Macro schon (durch den Kernel) definiert ist, speichere es unter einem anderen
   % Namen, sonst setzte es auf \relax.
   \ifcsdef{#2}{\ExpandArgs{cc}\NewCommandCopy{original@#2}{#2}}{\cslet{original@#2}{\relax}}
   \IfBooleanTF{#1}{ % Stern => mit optionalem Argument
@@ -345,6 +400,7 @@
   % ausgewertet. lectdates.tex wird also auch geladen, wenn OLLM korrekte
   % Verzeichnisstrukturen vorfindet und der Nutzer nicht 'standalone' 
   % als OLLM-Option übergibt, sondern nur als Klassenoption
+  \ollm % Definiert \OsgShareDataPath, \OsgLectConfig und \OsgFirstChapter
   \expandafter\InputIfFileExists{\OsgLectConfig}{
     \osg@makedelayed*{author}
     \osg@makedelayed*{date}
@@ -355,7 +411,9 @@
     \osg@makedelayed*{tucurl}
     \osg@makedelayed{input}
     \let\SetGlobalClassOptions=\SetKeys
-  }{}
+  }{
+    \ClassWarning{\classname}{'\OsgLectConfig' not found.}
+  }
   \expandafter\IfFileExists{\OsgLectConfig}{
     \osg@restoredelayed{author}
     \osg@restoredelayed{date}
@@ -394,7 +452,7 @@
   %\RequirePackage{hyperref}
   \RequirePackage{beamerarticle}
   \RequirePackage{beamerarticleosg}
-  \RequirePackage{scrhack}
+  %\RequirePackage{scrhack}
   % 
 }{
   \LoadClass{beamer}
@@ -404,6 +462,7 @@
     \expandafter\pgfpagesuselayout\osg@pgfpageoptions
   }
 }
+
 % Die Basisklasse (+ggf. beamerarticle) ist geladen.
 % Ab jetzt enspricht osgscript = true dem article-Mode,
 % false dem presentation-Mode.
@@ -472,11 +531,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Umgang mit Beamer-Modi
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-% Hilfsbefehl \makeselectable: Redefiniert ein Macro für die
+% Hilfsbefehl \osgmakeselectable: Redefiniert ein Macro für die
 % Verwendung mit beamer-Aktionen. Optionaler Parameter gibt den
 % Default-Mode (*mit* spitzen Klammern) 
 % % TODO: Behandlung von optionalen Parametern
-\NewDocumentCommand\makeselectable{m o}{
+\NewDocumentCommand\osgmakeselectable{m o}{
   \expandafter\let\csname\detokenize{#1}@osg@orig\endcsname=#1%
   \renewcommand<>{#1}{%
     \only##1{\csname\detokenize{#1}@osg@orig\endcsname}}%
@@ -492,19 +551,21 @@
   } %
 }  
 
-\makeselectable{\smallskip}[<presentation>]
-\makeselectable{\medskip}[<presentation>]
-\makeselectable{\bigskip}[<presentation>]
-\makeselectable{\TINY}
-\makeselectable{\Tiny}
-\makeselectable{\tiny}
-\makeselectable{\scriptsize}
-\makeselectable{\footnotesize}
-\makeselectable{\small}
-\makeselectable{\normalsize}
-\makeselectable{\large}
-\makeselectable{\Large} 
-\makeselectable{\LARGE}
+\osgmakeselectable{\smallskip}[<presentation>]
+\osgmakeselectable{\medskip}[<presentation>]
+\osgmakeselectable{\bigskip}[<presentation>]
+\osgmakeselectable{\TINY}
+\osgmakeselectable{\Tiny}
+\osgmakeselectable{\tiny}
+\osgmakeselectable{\scriptsize}
+\osgmakeselectable{\footnotesize}
+\osgmakeselectable{\small}
+\osgmakeselectable{\normalsize}
+\osgmakeselectable{\large}
+\osgmakeselectable{\Large} 
+\osgmakeselectable{\LARGE}
+\osgmakeselectable{\huge}
+\osgmakeselectable{\Huge}
 
 % \vspace kann wegen der Stern-Variante nicht direkt selektierbar
 % gemacht werden. Dafür werden die unterliegenden Macros \@vspacer und

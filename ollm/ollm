@@ -12,12 +12,11 @@
 # quite unelegant.
 # However, it seems to work.
 #################################################
-my $ollm_version='0.9.3';
-my $progname = 'ollm';
 use strict;
 use 5.30.0;
 use warnings;
 use File::Basename;
+my $progname = 'ollm';
 
 # Determine way of calling,         
 # restart if needed
@@ -32,12 +31,15 @@ if (basename($0) eq $progname) {
 #####################################
 package ollm;
 use 5.30.0;
+our $VERSION='v0.10.0';
 use feature 'signatures','lexical_subs','switch';
 #no warnings 'experimental::signatures','experimental::smartmatch';
 use strict;
 use warnings;
+
 use File::Basename;
 use File::Copy;
+use File::Which;
 use Data::Dumper qw(Dumper);   # For debugging only
 use Getopt::Long qw(GetOptions);
 use Pod::Usage;
@@ -54,16 +56,14 @@ no warnings 'experimental::signatures';
   no warnings 'once';
   @main::default_files=("./main.tex");
   $main::pdf_mode=4;
-  $main::lualatex = 'lualatex --synctex=1 %O %P';
-  $main::pre_tex_code = '';
+  $main::lualatex = 'lualatex --shell-escape --synctex=1 %O %P';
   $main::silent = 1;
-  $main::jobname = $main::jobname;
   $main::recorder=1;
-  $main::cleanup_mode=3; # aux files won't be deleted
   $main::clean_ext="bbl ext nav snm vrb lbr fls log fdb_latexmk";
   $main::compiling_cmd="tput setaf 4; echo \"Start TeXing %B...\";  tput init";
   $main::aux_dir="";
   $main::emulate_aux=0;
+  $main::jobname='';
 }
 
 my $doctype="slides";
@@ -78,9 +78,12 @@ my @first_chapter_number = undef;
 my $shared_source_dir ='../Include';
 my $shared_data_dir='../Ref';
 my $standalone=0;
-my $config_file = '../config.pl';
+my $config_file = '../ollmconfig.pl';
 my %deploy_path;
 my %deploy_file;
+my %deploy_restriction;
+my $deploy_pw;
+my $shell_escape=0;
 $deploy_file{all} = '${prefix}-${num}-${doctype}-${lang}-${topic}';
 
 greeting();
@@ -200,28 +203,22 @@ sub make_document {
   my $number;
   my $current_first_chapter;
   my $topic;
-  #my $current_first_chapter;
   if ($lang eq '') {
     $lang = $defaultlanguage;
   }
-  # Determine the number of the current directors (starting with 0)
+  if ($shell_escape == 1) {
+   # $main::lualatex = 'lualatex --shell-escape --synctex=1 %O %P';
+  }
+  # Determine the number of the current directory (starting with 0)
   ($number,$topic) = lect_descr($doctype);
   ($number,$current_first_chapter) = curr_number($number);
   # We need TeX code to be executed *before* the actual document
-  # '\DocumentMetadata' is needed for pdf tagging
+  # '\DocumentMetadata' is needed if we do pdf tagging
   if ($lang eq "en") {
-    $main::pre_tex_code='\DocumentMetadata{pdfversion=1.7,lang=en-US, uncompress}';
+    $main::pre_tex_code='\DocumentMetadata{pdfversion=1.7,lang=en-US}';
   } else { # $lang should be 'de'
-    $main::pre_tex_code='\DocumentMetadata{pdfversion=1.7,lang=de-DE, uncompress}';
+    $main::pre_tex_code='\DocumentMetadata{pdfversion=1.7,lang=de-DE}';
   }
-  # Inform osgbeamer class about...
-  $main::pre_tex_code=$main::pre_tex_code.
-    '\gdef\ollm{\gdef\OsgShareDataPath{'.$shared_data_dir.'}'. # path to common data
-    '\gdef\OsgLectConfig{'.$lectconfig.'}'.                    # global config file
-    '\gdef\OsgCurrentDir{../'.basename(getcwd()).'}'.          # the first directory (deprecated)
-    '\gdef\OsgFirstChapter{'.$current_first_chapter.'}'.       # chapter number for first directory
-    '}';
-  # Sammle 
   #$main::aux_dir=$shared_data_dir;
   #$main::emulate_aux=1;
   # the remaining information will be coded within the job name
@@ -233,9 +230,14 @@ sub publish(){
   # names of variables as used in config file
   my $num;
   my $topic;
-  my $prefix=$lectureprefix;;
-  # language(s) as arrax in case, both language variants should be published at the same time
+  my $prefix=$lectureprefix;
+  # language(s) as array in case, both language variants should be published at the same time
   my @langs;
+  my %possible_rights = ( 'p' => 'Printing', 'c' => 'CopyContents',
+			  's' => 'ScreenReaders', 'm' => 'ModifyAnnotations',
+			  'd' => 'DegradedPrinting', 'a' => 'ModifyAnnotations',
+			  'j' => 'Assembly');
+
   if (exists($deploy_path{'article'})) { $deploy_path{'script'} = $deploy_path{'article'}};
   if (exists($deploy_path{'beamer'})) { $deploy_path{'slides'} = $deploy_path{'beamer'}};
   if (exists($deploy_path{'presentation'})) { $deploy_path{'slides'} = $deploy_path{'presentation'}};
@@ -253,6 +255,10 @@ sub publish(){
   }
   if (!exists($deploy_file{$doctype})) { $deploy_file{$doctype} =  $deploy_file{'all'}; } 
 
+  if (exists($deploy_restriction{'article'})) { $deploy_restriction{'script'} = $deploy_restriction{'article'}};
+  if (exists($deploy_restriction{'beamer'})) { $deploy_restriction{'slides'} = $deploy_restriction{'beamer'}};
+  if (exists($deploy_restriction{'presentation'})) { $deploy_restriction{'slides'} = $deploy_restriction{'presentation'}};
+  
   if ($lang eq '') {
     $lang = $defaultlanguage;
   }
@@ -263,10 +269,29 @@ sub publish(){
   } else {
     @langs = $lang;
   }
+  # In case of restrictions, check pdf toolkit
+  if (keys %deploy_restriction != 0) {
+    die "Deploy restrictions are not implemented yet";
+    my $pdftk = which('pdftk');
+    if (!defined($pdftk)){
+      print colored('Error: Configuration requests pdf restrictions, but I can\'t find \'pdftk\'.','red');
+      exit(-1);
+    }
+    if (!defined($deploy_pw)) {
+      $deploy_pw = $prefix.'123456';
+    }
+    #foreach $char (split('', $text)){}
+    print "RESTRICTIONS APPY\n";
+    print 'Use password '.$deploy_pw."\n";
+  } else {
+    #print 'NO RESTRICTIONS\n';
+  }
+  ## Normalize hashes
   # More than on path possible => use arrays
   my $patharrayref = $deploy_path{$doctype};
   # single elements are converted to an array reference
   $patharrayref = [ $patharrayref ] if ref $patharrayref eq '';
+  
   for my $l (@langs) {
     my $source_pdffile_name = $lectureprefix.'-'.$num.'-'.$doctype.'-'.$l.'-'.$topic.'.pdf';
     if (-e "$source_pdffile_name") {
@@ -324,7 +349,7 @@ sub is_ollmtree {
 sub doc_dirs ($type) {
   # doc_dirs(type)
   #
-  # type: string (slides|script|article|lang)
+  # type: string (slides|script|article|handout)
   #
   # returns an ordered list of all ollm directories of the given type under the same parent directory
   if (!is_ollmtree()) {
@@ -345,7 +370,7 @@ sub doc_dirs ($type) {
 }
 
 sub greeting {
-  print colored("OLLM - OSG LaTeX Lecture Maker $ollm_version: an extension for latexmk to support osgbeamer.cls\n\n", "bold");
+  print colored("OLLM - OSG LaTeX Lecture Maker $VERSION: an extension for latexmk to support osgbeamer.cls\n\n", "bold");
 }
 
 sub ollm_print_help {
@@ -359,7 +384,7 @@ sub ollm_print_help {
 	"   +standalone:        disable most features of OLLM\n",
 	"   +debug|+verbose:    additional information\n",
 	"   +lang=[de|en]:      select language\n",
-	"   +ollmconfig=<file>: reads configuration from <file> (default: '../config.pl')\n",
+	"   +ollmconfig=<file>: reads configuration from <file> (default: '../ollmconfig.pl')\n",
 	"   +classpath=<path>:  adds <path> to LaTeX search path, end with '//' to include subdirectories\n",
 	"  <file> LaTeX file (default: 'main.tex'), *must* use osgbeamer class.\n\n",
 	" ",colored("Deploy documents:\n","faint"),
@@ -425,32 +450,32 @@ sub tex_path($path){
 #####################################
 # Dependencies                      #
 #####################################
-package main;
-add_cus_dep('eps','pdf',0,'eps2pdf');
-sub eps2pdf{
-  system("epspdf \"$_[0].eps\"" );
-}
-add_cus_dep('jpg','pdf',0,'jpg2pdf');
-sub jpg2pdf{
-  system("convert \"$_[0].jpg\" \"$_[0].pdf\"" );
-}
-
-add_cus_dep('jpeg','pdf',0,'jpeg2pdf');
-sub jpeg2pdf{
-  system("convert \"$_[0].jpeg\" \"$_[0].pdf\"" );
-}
-
-add_cus_dep('gif','pdf',0,'gif2pdf');
-sub gif2pdf{
-  system("convert \"$_[0].gif\" \"$_[0].pdf\"" );
-}
-sub rail{
-  system("rail \"$_[0]\"" );
-}
+#package main;
+#add_cus_dep('eps','pdf',0,'eps2pdf');
+#sub eps2pdf{
+#  system("epspdf \"$_[0].eps\"" );
+#}
+#add_cus_dep('jpg','pdf',0,'jpg2pdf');
+#sub jpg2pdf{
+#  system("convert \"$_[0].jpg\" \"$_[0].pdf\"" );
+#}
+#
+#add_cus_dep('jpeg','pdf',0,'jpeg2pdf');
+#sub jpeg2pdf{
+#  system("convert \"$_[0].jpeg\" \"$_[0].pdf\"" );
+#}
+#
+#add_cus_dep('gif','pdf',0,'gif2pdf');
+#sub gif2pdf{
+#  system("convert \"$_[0].gif\" \"$_[0].pdf\"" );
+#}
+#sub rail{
+#  system("rail \"$_[0]\"" );
+#}
 # comment in to build index (care for 'recursion')
 #$makeindex='texindy -M lang/german/duden-utf8 -M base/ff-ranges -M base/latin-lettergroups -M ../Include/localidx';
-
+#
 # add_input_ext('rao');
 # add_input_ext('rai');
-add_cus_dep('rai','rao',0,'rail');
+#add_cus_dep('rai','rao',0,'rail');
 
