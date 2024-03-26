@@ -155,7 +155,7 @@
      }
      \lb@dolbr
    }{
-     % Im lokalen wie im Standalone-Fall wird das Librarian-Package in
+     % Im lokalen wie im Standalone-Fall wird das Librarian-Package
      % entsprechend der Originalvorgehensweise eingesetzt.
      \RequirePackage{librarian}
      \lb@dolbr
@@ -213,7 +213,7 @@
            }%
            +% für et al.
        \else%
-           \ifcase\tempcount % 0 solte nicht vorkommen, Warnung?
+           \ifcase\tempcount % 0 sollte nicht vorkommen, Warnung?
                \or% 1
                    \ReadNamesFor{#1}{\stringrg{\Lastname}{1}{3}}%
                \or% 2
@@ -337,7 +337,7 @@
   }{}
   \NewDocumentCommand{\obb@endmatter}{m}{%
     \shorthandoff{"}
-    \typeout{BIB Reading #1}
+    \PackageInfo{\packagename}{reading #1}
     \BibFile{#1}
     %\SortingOrder{name,year}{}
     %\SortList{main}
@@ -419,9 +419,9 @@
          \etalii
      \else
          \ifnum\NameCount=1
-             \unless\ifx\Von\empty \Von\space \fi
-             \Lastname\formatFirstName[,]{\Firstname}
-             \unless\ifx\Junior\empty, \Junior \fi
+             \unless\ifx\Von\empty \Von\space \fi%
+             \Lastname\formatFirstName[,]{\Firstname}%
+             \unless\ifx\Junior\empty, \Junior \fi%
          \else
              \ifnum\NameCount=\tempcount\relax \space \ldeen{und}{and} \else , \fi
              \formatFirstName{\Firstname}
@@ -456,7 +456,14 @@
    \def\createtype#1{%
      \expandafter\def\csname#1@entrytype\endcsname
    }
-   \def\booktitle#1{\setbooktitle{\RetrieveField{#1}}}
+   \def\booktitle#1{\setbooktitle{\RetrieveField{#1}}%
+     \RetrieveFieldIn{series}\tempa\ifx\tempa\empty\relax\else%
+         \addstop{\ldeen{Serie}{series}\addcolon{\italics{\tempa}}}%
+         \RetrieveFieldIn{volume}\tempb%
+         \ifx\tempb\empty\relax\else%
+             \addcomma{\ldeen{Band}{volume}~\tempb}\fi%
+     \fi%
+   }
    \def\setbooktitle#1{\italics{#1}}
    \def\articletitle#1{\setarticletitle{\RetrieveField{#1}}}%
    \def\setarticletitle#1{\enquote{#1}}
