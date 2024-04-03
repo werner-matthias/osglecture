@@ -23,6 +23,12 @@
 \RequirePackage{etoolbox}
 \RequirePackage{luapackageloader}
 \RequirePackage{luacode}
+% \RequirePackage{pyluatex}
+
+% \begin{python}
+    
+% \end{python}
+
 
 \luaexec{
       % Voraussetzung: Lua-Modul http.request muss installiert sein, z.B. via LuaRocks.
@@ -151,7 +157,8 @@
       savegist(\luastring{#2},\luastring{#3},\luastring{#4},\csuse{osggist:#2})
     }%
   }%
-  \lstinputlisting[#1]{#4/#3}
+  %\lstinputlisting[#1]{#4/#3}
+  \inputminted[#1]{rust}{#4/#3}
 }
 
 % Wrapper für getgistid

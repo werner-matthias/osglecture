@@ -17,7 +17,7 @@
   \toggletrue{simpleframe}
 }
 \ProcessOptions
-\RequirePackage{scrhack}
+%\RequirePackage{scrhack}
 
 %\toggletrue{simpleframe}
 \providecommand{\ctearoutbg}{yellow!15}
@@ -35,107 +35,101 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Listings
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\RequirePackage{listings}
-\RequirePackage{lstautogobble}
+% \RequirePackage{listings}
+% \RequirePackage{lstautogobble}
+ 
+% \newcommand{\termfamily}{\ttfamily}
+% \newcommand{\comstyle}{\itshape\color{\clstcom}}
 
-\newcommand{\termfamily}{\ttfamily}
-\newcommand{\comstyle}{\itshape\color{\clstcom}}
+% \newcommand{\lstresetc}{%
+%   \lstset{language=C,
+%     morekeywords={_Bool,_Complex,_Imaginary,restrict},
+%     %basicstyle=\fontencoding{T1}\fontfamily{fvm}\selectfont\scriptsize<presentation>,
+%     basicstyle=\termfamily\scriptsize<presentation>,
+%     commentstyle=\comstyle,
+%     showstringspaces=false,
+%     xleftmargin=2pt,
+%     xrightmargin=2pt,
+%     columns=flexible,
+%     morecomment=[s][\fontsize{0.1}{0}\selectfont]{/**}{*/},  % really dirty hack 
+%     rangeprefix=/**\ ,rangesuffix=\ */,includerangemarker=false,
+%     %% 
+%   frame=none}
+% }
+% \lstdefinestyle{general}{
+%   basicstyle=\termfamily\scriptsize<presentation>\small<article>,
+%   commentstyle=\comstyle,
+%   showstringspaces=false,
+%   %xleftmargin=2pt,
+%   %xrightmargin=2pt,
+%   columns=flexible,
+%   extendedchars=true,
+%   morecomment=[s][\fontsize{0.1}{0}\selectfont]{/**}{*/},  % really dirty hack 
+%   rangeprefix=/**\ ,rangesuffix=\ */,includerangemarker=false,
+%     %% 
+%   frame=none,aboveskip=2pt,belowskip=2pt,
+%   autogobble=true,
+%   breaklines,breakatwhitespace,
+%   linewidth=.98\linewidth
+% }
 
-\newcommand{\lstresetc}{%
-  \lstset{language=C,
-    morekeywords={_Bool,_Complex,_Imaginary,restrict},
-    %basicstyle=\fontencoding{T1}\fontfamily{fvm}\selectfont\scriptsize<presentation>,
-    basicstyle=\termfamily\scriptsize<presentation>,
-    commentstyle=\comstyle,
-    showstringspaces=false,
-    xleftmargin=2pt,
-    xrightmargin=2pt,
-    columns=flexible,
-    morecomment=[s][\fontsize{0.1}{0}\selectfont]{/**}{*/},  % really dirty hack 
-    rangeprefix=/**\ ,rangesuffix=\ */,includerangemarker=false,
-    %% 
-  frame=none}
-}
-\lstdefinestyle{general}{
-  basicstyle=\termfamily\scriptsize<presentation>\small<article>,
-  commentstyle=\comstyle,
-  showstringspaces=false,
-  %xleftmargin=2pt,
-  %xrightmargin=2pt,
-  columns=flexible,
-  morecomment=[s][\fontsize{0.1}{0}\selectfont]{/**}{*/},  % really dirty hack 
-  rangeprefix=/**\ ,rangesuffix=\ */,includerangemarker=false,
-    %% 
-  frame=none,aboveskip=2pt,belowskip=2pt,
-  autogobble=true,
-  breaklines,breakatwhitespace,
-  linewidth=.98\linewidth
-}
+% \newcommand{\lstresetbash}{%
+%   \lstset{language=bash,
+%     basicstyle=\termfamily\color{\cterminalfg}\scriptsize<presentation>,
+%     showstringspaces=false,breaklines,numbers=none,
+%     xleftmargin=2pt,
+%     xrightmargin=2pt,
+%     columns=fixed,
+%     frame=none,aboveskip=0pt,belowskip=0pt}
+% }
 
-\newcommand{\lstresetbash}{%
-  \lstset{language=bash,
-    basicstyle=\termfamily\color{\cterminalfg}\scriptsize<presentation>,
-    showstringspaces=false,breaklines,numbers=none,
-    xleftmargin=2pt,
-    xrightmargin=2pt,
-    columns=fixed,
-    frame=none,aboveskip=0pt,belowskip=0pt}
-}
+% \newcommand{\lstresetpy}{%
+%   \lstset{language=Python,
+%     basicstyle=\termfamily\scriptsize<presentation>,
+%     showstringspaces=false,
+%     rangeprefix=\#\#\ ,rangesuffix=\ \#,includerangemarker=false,
+%     xleftmargin=2pt,
+%     xrightmargin=2pt,
+%     frame=none,aboveskip=2pt,belowskip=2pt}
+% }
 
-\newcommand{\lstresetpy}{%
-  \lstset{language=Python,
-    basicstyle=\termfamily\scriptsize<presentation>,
-    showstringspaces=false,
-    rangeprefix=\#\#\ ,rangesuffix=\ \#,includerangemarker=false,
-    xleftmargin=2pt,
-    xrightmargin=2pt,
-    frame=none,aboveskip=2pt,belowskip=2pt}
-}
+% \lstdefinestyle{colors}{keywordstyle=\color{\clstkeyword},emphstyle=\color{\clstnumber},stringstyle=\color{\clststr}}
 
-\lstdefinestyle{colors}{keywordstyle=\color{\clstkeyword},emphstyle=\color{\clstnumber},stringstyle=\color{\clststr}}
-\lstdefinestyle{nocolors}{keywordstyle=\color{black},emphstyle=\color{black},stringstyle=\color{black},commentstyle=\color{black}}
+% \newcommand{\lstcoloron}{\lstset{keywordstyle=\color{\clstkeyword},emphstyle=\color{\clstnumber},stringstyle=\color{\clststr}}\lstnumberson}
+% \newcommand{\lstcoloroff}{\lstset{keywordstyle=\color{black},emphstyle=\color{black},stringstyle=\color{black},commentstyle=\color{black}}}
 
-\newcommand{\lstcoloron}{\lstset{keywordstyle=\color{\clstkeyword},emphstyle=\color{\clstnumber},stringstyle=\color{\clststr}}\lstnumberson}
-\newcommand{\lstcoloroff}{\lstset{keywordstyle=\color{black},emphstyle=\color{black},stringstyle=\color{black},commentstyle=\color{black}}}
+% \mode<presentation>{
+%   \newcommand{\lstnumberson}{\lstset{numbers=left,numberstyle=\comstyle\fontsize{4pt}{4.5pt}\selectfont\color{\clstnumber}\sffamily,numbersep=3pt,xleftmargin=4pt}}
+%   \lstdefinestyle{numbers}{numbers=left,numberstyle=\comstyle\fontsize{4pt}{4.5pt}\selectfont\color{\clstnumber}\sffamily,numbersep=3pt,xleftmargin=4pt}
 
-\mode<presentation>{
-  \newcommand{\lstnumberson}{\lstset{numbers=left,numberstyle=\comstyle\fontsize{4pt}{4.5pt}\selectfont\color{\clstnumber}\sffamily,numbersep=3pt,xleftmargin=4pt}}
-  \lstdefinestyle{numbers}{numbers=left,numberstyle=\comstyle\fontsize{4pt}{4.5pt}\selectfont\color{\clstnumber}\sffamily,numbersep=3pt,xleftmargin=4pt}
+% }
+% \mode<article>{
+%   \newcommand{\lstnumberson}{\lstset{numbers=left,numberstyle=\comstyle\fontsize{4pt}{4.5pt}\selectfont\color{\clstnumber}\sffamily,numbersep=1pt,xleftmargin=4pt}}
+%   \lstdefinestyle{numbers}{numbers=left,numberstyle=\tiny\color{\clstnumber}\sffamily,numbersep=5pt,xleftmargin=1pt}
 
-}
-\mode<article>{
-  \newcommand{\lstnumberson}{\lstset{numbers=left,numberstyle=\comstyle\fontsize{4pt}{4.5pt}\selectfont\color{\clstnumber}\sffamily,numbersep=1pt,xleftmargin=4pt}}
-  \lstdefinestyle{numbers}{numbers=left,numberstyle=\tiny\color{\clstnumber}\sffamily,numbersep=5pt,xleftmargin=1pt}
+% }
+% \newcommand{\lstnumbersoff}{\lstset{numbers=none}}
+% \lstdefinestyle{nonumbers}{numbers=none}
+% \lstdefinestyle{tearout}{backgroundcolor=\ctearoutbg}
+% \lstdefinestyle{c-plain}{
+%   style=general,
+%   language=C
+% }
+% \RequirePackage{listings-rust}
+% \lstdefinestyle{rustplain}{
+%   style=general,
+%   language=Rust,
+%   style=nocolors,
+%   style=nonumbers
+% }
+% \lstdefinestyle{rust}{
+%   style=general,
+%   language=Rust,
+%   style=colors,
+%   style=numbers
+% }
 
-}
-\newcommand{\lstnumbersoff}{\lstset{numbers=none}}
-\lstdefinestyle{nonumbers}{numbers=none}
-\lstdefinestyle{tearout}{backgroundcolor=\ctearoutbg}
-\lstdefinestyle{c-plain}{
-  style=general,
-  language=C
-}
-\RequirePackage{listings-rust}
-\lstdefinestyle{rustplain}{
-  style=general,
-  language=Rust,
-  style=nocolors,
-  style=nonumbers
-}
-\lstdefinestyle{rust}{
-  style=general,
-  language=Rust,
-  style=colors,
-  style=numbers
-}
-\lstdefinestyle{bash}{
-  style=general,
-  language=bash,
-  style=nocolors,
-  columns=fixed,
-  breaklines,breakatwhitespace,
-  linewidth=.9\linewidth
-}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Tearout
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -171,50 +165,12 @@
   }
 }
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Terminal
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\definecolor{AppleRed}{RGB}{255,95,86}
-\definecolor{AppleYellow}{RGB}{255,189,46}
-\definecolor{AppleGreen}{RGB}{39,201,63}
-\definecolor{AppleGray}{HTML}{D8D6D9}
-\newcommand{\cterminalbg}{black!5!white}
-\newcommand{\cterminalfg}{blue!30!black}
-
-\NewTColorBox{terminal}{}{
-  title=Terminal,
-  coltitle=black!65,
-  skin=enhanced,%
-  halign title=center,%
-  skin=bicolor,%
-  boxrule=0.5mm,%
-  breakable,%
-  top=0pt,
-  bottom=0pt,
-  boxsep=.5ex,
-  %show bounding box,
-  left=1em,
-  right=1em,
-  frame style={%
-    draw=AppleGray,%
-    left color=AppleGray,%
-    right color=AppleGray%
-  },%
-  overlay first = {%
-     \node[inner sep=0pt,anchor=north west,yshift=-4pt,xshift=10pt,text=white,font=\tiny]
-     at (frame.north west) {\textcolor{AppleRed}{\faCircle}$\,$
-       \textcolor{AppleYellow}{\faCircle}$\,$
-       \textcolor{AppleGreen}{\faCircle}};
-   },%
-  overlay unbroken = {%
-     \node[inner sep=0pt,anchor=north west,yshift=-4pt,xshift=10pt,text=white,font=\tiny]
-     at (frame.north west) {\textcolor{AppleRed}{\faCircle}$\,$
-       \textcolor{AppleYellow}{\faCircle}$\,$
-       \textcolor{AppleGreen}{\faCircle}};
-   },%
-  fonttitle=\sffamily\scriptsize<presentation>,%\bfseries,%
-  fontupper=\ttfamily\footnotesize<presentation>\color{\cterminalfg}
-}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Minted
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\RequirePackage{minted}
+\setminted[rust]{numbersep=4pt}
+\renewcommand\theFancyVerbLine{\tiny\textcolor{gray}{\arabic{FancyVerbLine}}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Editor
@@ -235,27 +191,3 @@
     \end{tcbclipframe}
   }
 }
-% \newenvironment{terminal}{\par
-%   \colorlet{shadecolor}{\cterminalbg}
-%   \begin{mdframed}[innerleftmargin=10pt,innerrightmargin=10pt,
-%     skipabove=1.5ex plus 1ex minus .5ex,%
-%     outerlinewidth=1pt,outerlinecolor=gray,%
-%     middlelinewidth=.5pt,middlelinecolor=gray!80,%
-%     innerlinewidth=.25pt,innerlinecolor=gray!50!black,%
-%     backgroundcolor=\cterminalbg,
-%     fontcolor=\cterminalfg,%
-%     frametitle=,
-%     % fontcolor=white,%
-%     roundcorner=2pt%
-%     ]
-%     \makeselectable{\\}
-%     % \begin{fshaded}
-%     %   \color{\cterminalfg}
-%     %\catcode`\<=12
-%     %\catcode`\>=12
-%     \ttfamily\cfootnotesize
-%   }{
-%     % \catcode`<=1\catcode`>=1
-%   \end{mdframed}
-%   % \end{fshaded}
-% }
