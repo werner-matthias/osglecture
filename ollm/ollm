@@ -155,8 +155,8 @@ GetOptions(
 	   },
 	   'handout' => sub {
 	     $doctype='handout';
-	     if (is_beamer_dir() == 0) {
-	       say "Error: Directory is not intended for beamer document!\n";
+	     if (is_beamer_dir() == 0) {die
+	       say color('red')."Error: Directory is not intended for beamer document!\n".color('reset');
 	       exit(-1);
 	     }
 	   },
@@ -165,7 +165,8 @@ GetOptions(
 
 ## Read and process config file
 unless ( -e  $config_file) {
-  die"Error: Can't find config file '".$config_file."'\n";
+  die color('red')."Error: Can't find config file '".$config_file."'\n".
+  color('blue')."If you have an old config file, rename it to 'ollmconfig.pl'\n".color('reset');
 }
 
 # Make @ARGV local and save $config_file as first element of @ARGV.
@@ -242,7 +243,7 @@ sub publish(){
   if (exists($deploy_path{'beamer'})) { $deploy_path{'slides'} = $deploy_path{'beamer'}};
   if (exists($deploy_path{'presentation'})) { $deploy_path{'slides'} = $deploy_path{'presentation'}};
   if (!exists($deploy_path{$doctype}) and !exists($deploy_path{'all'})) {
-    die "No path for publishing given for document type $doctype.";
+    die color('red')."Error: No path for publishing given for document type $doctype.\n".color('reset');
   }
   if (!exists($deploy_path{$doctype})) { $deploy_path{$doctype} =  $deploy_path{'all'}; } 
 
@@ -251,7 +252,7 @@ sub publish(){
   if (exists($deploy_file{'presentation'})) { $deploy_file{'slides'} = $deploy_file{'presentation'}};
   if (!exists($deploy_file{$doctype}) and !exists($deploy_file{'all'})) {
     # Should never happen since a $deploy_file{'all'} is set be default
-    die "No path for publishing given for document type $doctype.";
+    die color('red')."Error: No path for publishing given for document type $doctype.\n".color('reset');
   }
   if (!exists($deploy_file{$doctype})) { $deploy_file{$doctype} =  $deploy_file{'all'}; } 
 
