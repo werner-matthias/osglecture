@@ -161,6 +161,8 @@
     colframe=tuccolor@warning!75!black,
     arc=0mm,
     enhanced,
+    top=2mm,
+    %show bounding box,
    code={
       \ifcsstring{insertblocktitle}{}{
         \tcbset{detach title}
@@ -196,11 +198,33 @@
   \end{tcolorbox}
 }
 
-% \setbeamertemplate{theorem begin}{
-% }
-
-% \setbeamertemplate{theorem end}{
-% }
+%\setbeamertemplate{theorems}[ams style]
+ \setbeamertemplate{theorem begin}{
+%   \begin{tcolorbox}[%
+%       % colback=structure!10!white,
+%       colback=tuccolor!10!white,
+%       colframe=tuccolor!75!black,
+%       arc=0mm,
+%       enhanced,
+%       code={
+%         \ifcsstring{insertblocktitle}{}{
+%               \tcbset{detach title}
+%             }{
+%               \tcbset{attach boxed title to top
+%                 left={yshift=-2mm,xshift=-5pt},
+%                 title=\insertblocktitle
+%               }
+%             }
+%           },
+%           colbacktitle= tuccolor!75!black,
+%           coltitle= white,
+%           fonttitle=\bfseries,
+%           ]
+}
+        
+ \setbeamertemplate{theorem end}{
+   % \end{tcolorbox}
+ }
   
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
@@ -211,7 +235,7 @@
 
 \define@key{beamer@col}{onlytextwidth}[true]{%
   \def\beamer@colentrycode{\hbox to\textwidth\bgroup\ignorespaces}%
-  \def\beamer@colexitcode{\unskip\egroup}}
+  \def\beamer@colexitcode{\unskip\egroup}}%
 \define@key{beamer@col}{totalwidth}{%
   \def\beamer@colentrycode{\hbox to#1\bgroup\ignorespaces}%
   \def\beamer@colexitcode{\unskip\egroup}}
@@ -225,8 +249,8 @@
   \begin{actionenv}#3%
       \setkeys{beamer@col}{#1}%
       \begin{minipage}[\beamer@colalign]{#2}%
-          \leavevmode\raggedright\beamer@colheadskip\ignorespaces}
-        {\end{minipage}\hfill\end{actionenv}\@ignoretrue}
+          \leavevmode\raggedright\beamer@colheadskip\ignorespaces}%
+        {\end{minipage}\hfill\end{actionenv}\@ignoretrue}%
 \let\endcolumn\endbeamer@columnenv
 
 \newcommand<>\osg@beamer@columncom[2][\beamer@colmode]{%
@@ -235,8 +259,8 @@
   \begin{actionenv}#3%
       \setkeys{beamer@col}{#1}%
       \begin{minipage}[\beamer@colalign]{#2}%
-          \leavevmode\raggedright\beamer@colheadskip\ignorespaces
-  }
+          \leavevmode\raggedright\beamer@colheadskip\ignorespaces%
+        }
       
 \let\osg@orig@beamer@columncom=\beamer@columncom
 \let\osg@beamer@columnenv=\beamer@columnenv
@@ -247,15 +271,15 @@
 % Damit sie beachtet wird, muss <all> (oder <article>) angegeben
 % werden. 
 \renewenvironment<>{columns}[1][c]{%
-  \def\beamer@colclose{}
+  \def\beamer@colclose{}%
   \ifstrempty{#2}{}{%
     \only#2{%
       \setkeys{beamer@col}{#1}%
-      \let\beamer@columncom=\osg@beamer@columncom
-      \let\beamer@columnenv=\osg@beamer@columnenv
-      \let\endbeamer@columnenv=\endosg@beamer@columnenv
-    }
-  }
+      \let\beamer@columncom=\osg@beamer@columncom%
+      \let\beamer@columnenv=\osg@beamer@columnenv%
+      \let\endbeamer@columnenv=\endosg@beamer@columnenv%
+    }%
+  }%
 }{
   \beamer@colclose
   \let\beamer@columncom=\osg@orig@beamer@columncom
