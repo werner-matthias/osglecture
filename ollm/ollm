@@ -36,11 +36,11 @@ use feature 'signatures','lexical_subs','switch';
 #no warnings 'experimental::signatures','experimental::smartmatch';
 use strict;
 use warnings;
+use version;
 
 use File::Basename;
 use File::Copy;
 use File::Which;
-use Data::Dumper qw(Dumper);   # For debugging only
 use Getopt::Long qw(GetOptions);
 use Pod::Usage;
 use Cwd qw(cwd getcwd);
@@ -48,12 +48,13 @@ use List::MoreUtils qw(firstidx);
 use Term::ANSIColor;
 
 no warnings 'experimental::signatures';
+package main;
 #####################################
 # Config-Variablen und Defaults     #
 #####################################
+# For semantics, see latexmk manual
 {
-  # For semantics, see latexmk manual
-  no warnings 'once';
+  no warnings; 
   @main::default_files=("./main.tex");
   $main::pdf_mode=4;
   $main::lualatex = 'lualatex --shell-escape --synctex=1 %O %P';
@@ -66,6 +67,8 @@ no warnings 'experimental::signatures';
   $main::jobname='';
 }
 
+package ollm;
+my $ollmver ='';
 my $doctype="slides";
 my $lang='';
 my $lectconfig='lectdates';
@@ -107,7 +110,6 @@ foreach ( @ARGV ) {
 if ($forceoptplus == 0) {
     foreach ( @ARGV ) {
 	# check for bare ollm options and add prefix (if no +force+)
-	$_ = '+'.$_ if $_ =~ /^(slides|beamer|presentation|script|article|handout|standalone|publish|debug|verbose|lang|classpath)/;
 	if ($_ eq '--') {last;}
     }
 }
@@ -115,7 +117,6 @@ if ($forceoptplus == 0) {
 GetOptions(
 	   'standalone' => \$standalone,
 	   'classpath=s' => \$osgbeamer_dir,
-	   'verbose|debug' => sub { $main::silent=0; },
 	   'h|help|?' => \&ollm_print_help
 	  );
 if ($standalone) {
@@ -166,7 +167,7 @@ GetOptions(
 ## Read and process config file
 unless ( -e  $config_file) {
   die color('red')."Error: Can't find config file '".$config_file."'\n".
-  color('blue')."If you have an old config file, rename it to 'ollmconfig.pl'\n".color('reset');
+  color('faint')."If you have an old config file, rename it to 'ollmconfig.pl'\n".color('reset');
 }
 
 # Make @ARGV local and save $config_file as first element of @ARGV.
@@ -177,9 +178,22 @@ eval $confcode;
 print color('reset');
 if ($@) {
   print color('red');
-  say "Can't parse \'$config_file\': ",$@;
+  say "Error: Can't parse \'$config_file\': ",$@;
   print color('reset');
   exit(-1);
+}
+if ($ollmver eq '') {
+  print color('red');
+  print color('faint');
+  say "Warning: Config file does not specifiy version.";
+  say "         Prepare for troubble due to old config file.";
+  print color('reset');
+} elsif ( version->parse($ollmver) != version->parse($VERSION)) {
+  print color('red');
+  print color('faint');
+  say "Warning: Version of config file doesn't match ollm version.";
+  say "         Prepare for troubble.";
+  print color('reset');
 }
 if ($osgbeamer_dir ne '') {
   tex_path($osgbeamer_dir);
