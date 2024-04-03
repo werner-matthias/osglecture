@@ -193,7 +193,6 @@
     \def\ldeen#1#2{#2}
   }
 }
-%%%%%%%%%%%%%% Convenience %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \newcommand{\llecture}[3]{\lecture{\lde{#1}\len{#2}}{#3}}
 \newcommand{\oex@xchecknextarg}{%
@@ -218,11 +217,17 @@
 \newcommand{\dMo}{\ldeen{Montag}{Monday}}
 \newcommand{\dTu}{\ldeen{Dienstag}{Tuesday}}
 \newcommand{\dWe}{\ldeen{Mittwoch}{Wednesday}}
-\newcommand{\dTh}{\ldeen{Donnerstag}{Wednesday}}
+\newcommand{\dTh}{\ldeen{Donnerstag}{Thursday}}
 \newcommand{\dFr}{\ldeen{Freitag}{Friday}}
-% Der Vollständigkeit halber auch das Wochenende
 \newcommand{\dSa}{\ldeen{Sonnabend}{Saturday}}
 \newcommand{\dSu}{\ldeen{Sonntag}{Sunday}}
+\newcommand{\dsMo}{\ldeen{Mo}{Mon}}
+\newcommand{\dsTu}{\ldeen{Di}{Tue}}
+\newcommand{\dsWe}{\ldeen{Mi}{Wed}}
+\newcommand{\dsTh}{\ldeen{Do}{Th}}
+\newcommand{\dsFr}{\ldeen{Fr}{Fri}}
+\newcommand{\dsSa}{\ldeen{Sa}{Sat}}
+\newcommand{\dsSu}{\ldeen{So}{Sun}}
 
 \AtBeginDocument{
   \setbeamertemplate{frametitle continuation}{(\ldeen{Forts.}{cont.})}
