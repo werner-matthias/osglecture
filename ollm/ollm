@@ -110,6 +110,7 @@ foreach ( @ARGV ) {
 if ($forceoptplus == 0) {
     foreach ( @ARGV ) {
 	# check for bare ollm options and add prefix (if no +force+)
+  $_ = '+'.$_ if $_ =~ /^(slides|beamer|presentation|script|article|handout|standalone|publish|debug|verbose|lang|classpath)/;
 	if ($_ eq '--') {last;}
     }
 }
