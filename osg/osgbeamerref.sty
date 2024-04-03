@@ -204,7 +204,7 @@ hyperref
   % Falls nicht, wird der Text #2 gefolgt von der Seitennummer von #1 ausgegeben.
   \NewDocumentCommand{\xrefdist}{O{} m m}{%
      \only<article>{%
-       \edef\tmpr{\zref@extractdefault{#2}{page}{??}}%
+       \edef\tmpr{\zref@extractdefault{#2}{page}{\textcolor{red}{??}}}%
        % Annahme: \distref wird pro Referenz nur EINMAL genutzt
        % Sollte sich das ändern, muss der Suffix "-ref" durch einen Zähler
        % ersetzt/ergänzt werden.
