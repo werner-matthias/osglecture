@@ -118,6 +118,7 @@ if ($forceoptplus == 0) {
 GetOptions(
 	   'standalone' => \$standalone,
 	   'classpath=s' => \$osgbeamer_dir,
+     'verbose|debug' => sub { $main::silent=0; },
 	   'h|help|?' => \&ollm_print_help
 	  );
 if ($standalone) {
@@ -303,7 +304,7 @@ sub publish(){
     #print 'NO RESTRICTIONS\n';
   }
   ## Normalize hashes
-  # More than on path possible => use arrays
+  # More than one path possible => use arrays
   my $patharrayref = $deploy_path{$doctype};
   # single elements are converted to an array reference
   $patharrayref = [ $patharrayref ] if ref $patharrayref eq '';
