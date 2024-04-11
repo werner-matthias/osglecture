@@ -255,9 +255,10 @@
 
 \newcommand<>\osg@beamer@columncom[2][\beamer@colmode]{%
   \beamer@colclose%
-  \def\beamer@colclose{\end{minipage}\hfill\end{actionenv}\ignorespaces}%
+  \def\beamer@colclose{\end{minipage}\end{savenotes}\hfill\end{actionenv}\ignorespaces}%
   \begin{actionenv}#3%
       \setkeys{beamer@col}{#1}%
+      \begin{savenotes}%          
       \begin{minipage}[\beamer@colalign]{#2}%
           \leavevmode\raggedright\beamer@colheadskip\ignorespaces%
         }
@@ -269,24 +270,25 @@
 % Um die Kompatibilität mit Beamer zu erhöhen, wird ohne
 % Mode-Spezifikation die columns-Umgebung im Article-Mode igoniert.
 % Damit sie beachtet wird, muss <all> (oder <article>) angegeben
-% werden. 
+% werden.
+\RequirePackage{footnotehyper}
 \renewenvironment<>{columns}[1][c]{%
-  \def\beamer@colclose{}%
-  \ifstrempty{#2}{}{%
-    \only#2{%
-      \setkeys{beamer@col}{#1}%
-      \let\beamer@columncom=\osg@beamer@columncom%
-      \let\beamer@columnenv=\osg@beamer@columnenv%
-      \let\endbeamer@columnenv=\endosg@beamer@columnenv%
-    }%
-  }%
-}{
-  \beamer@colclose
-  \let\beamer@columncom=\osg@orig@beamer@columncom
-  \let\beamer@columnenv=\osg@orig@beamer@columnenv
-  \let\endbeamer@columnenv=\endosg@orig@beamer@columnenv
-}
-
-
-
+\def\beamer@colclose{}%
+\ifstrempty{#2}{}{%
+   \only#2{%
+         \setkeys{beamer@col}{#1}%
+         \let\beamer@columncom=\osg@beamer@columncom%
+         \let\beamer@columnenv=\osg@beamer@columnenv%
+         \let\endbeamer@columnenv=\endosg@beamer@columnenv%
+       }%
+     }%
+   }{
+     \beamer@colclose
+     \let\beamer@columncom=\osg@orig@beamer@columncom
+     \let\beamer@columnenv=\osg@orig@beamer@columnenv
+     \let\endbeamer@columnenv=\endosg@orig@beamer@columnenv
+   }
+    
+    
+    
 \mode<all>
