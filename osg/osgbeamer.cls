@@ -6,7 +6,7 @@
 % Beamer- und Script-Template für die Professur Betriebssysteme an
 % der TU Chemnitz
 %
-% (c) Matthias Werner (matthias.werner@informatik.tu-chemnitz.de), 2022
+% (c) Matthias Werner (matthias.werner@informatik.tu-chemnitz.de), 2022-2024
 %
 % Dieses Material steht unter der Creative-Commons-Lizenz CC BY-SA 4.0
 % (Namensnennung - Weitergabe unter gleichen Bedingungen).
@@ -136,7 +136,6 @@
 \boolfalse{osglegacy}         
 \newbool{osgforcetoc}         % Legt eine Inhaltsverzeichnisdatei an, ohne ein 
 \booltrue{osgforcetoc}        % entsprechendes Verzeichnis zu generieren 
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Klassenoptionen
@@ -1005,35 +1004,35 @@
 \NewDocumentEnvironment{specialitemize}{ O{} +b }
  {
   % do the setup
-  \keys_set:nn { werner/itemize } { #1 }
+  \keys_set:nn { osg/itemize } { #1 }
   % split the contents at \item
-  \seq_set_split:Nnn \l_werner_itemize_input_seq { \item } { #2 }
+  \seq_set_split:Nnn \l_osg_itemize_input_seq { \item } { #2 }
   % remove the first (empty) item
-  \seq_pop_left:NN \l_werner_itemize_input_seq \l_tmpa_tl
+  \seq_pop_left:NN \l_osg_itemize_input_seq \l_tmpa_tl
   % issue the preamble
-  \tl_use:N \l_werner_itemize_pre_tl
+  \tl_use:N \l_osg_itemize_pre_tl
   % adorn the items
   \seq_set_map:NNn
-    \l_werner_itemize_output_seq
-    \l_werner_itemize_input_seq
-    { \__werner_itemize_do:n { ##1 } }
+    \l_osg_itemize_output_seq
+    \l_osg_itemize_input_seq
+    { \__osg_itemize_do:n { ##1 } }
   % output the items, separated by the chosen separator
-  \seq_use:NV \l_werner_itemize_output_seq \l_werner_itemize_sep_tl
+  \seq_use:NV \l_osg_itemize_output_seq \l_osg_itemize_sep_tl
   % issue the postamble
-  \tl_use:N \l_werner_itemize_post_tl
+  \tl_use:N \l_osg_itemize_post_tl
  }
  {}
 
-\seq_new:N \l_werner_itemize_input_seq
-\seq_new:N \l_werner_itemize_output_seq
+\seq_new:N \l_osg_itemize_input_seq
+\seq_new:N \l_osg_itemize_output_seq
 \cs_generate_variant:Nn \seq_use:Nn { NV }
 
-\keys_define:nn { werner/itemize }
+\keys_define:nn { osg/itemize }
  {
-  pre    .tl_set:N  = \l_werner_itemize_pre_tl,
-  post   .tl_set:N  = \l_werner_itemize_post_tl,
-  sep    .tl_set:N  = \l_werner_itemize_sep_tl,
-  action .code:n    = \cs_set_eq:NN \__werner_itemize_do:n #1,
+  pre    .tl_set:N  = \l_osg_itemize_pre_tl,
+  post   .tl_set:N  = \l_osg_itemize_post_tl,
+  sep    .tl_set:N  = \l_osg_itemize_sep_tl,
+  action .code:n    = \cs_set_eq:NN \__osg_itemize_do:n #1,
   action .initial:n = \use:n,
 }
 

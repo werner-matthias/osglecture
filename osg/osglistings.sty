@@ -169,24 +169,45 @@
 % Minted
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \RequirePackage{minted}
-\setminted[rust]{numbersep=4pt}
+\setminted[rust]{numbersep=4pt, fontsize=\small<article>\scriptsize<presentation>}
 \renewcommand\theFancyVerbLine{\tiny\textcolor{gray}{\arabic{FancyVerbLine}}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Editor
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\RequirePackage[notextcomp,notext,nomath,not1]{stix}
 \RequirePackage{fontawesome5}
-\NewTColorBox{codeeditor}{O{title=Code} m}{
+\def\osg@lang@symbol@none{}
+\def\osg@lang@symbol@rust{\faRust}
+\def\osg@lang@symbol@python{\faPython}
+\def\osg@lang@symbol@js{\faJs}
+\def\osg@lang@symbol@java{\faJava}
+\def\osg@lang@symbol@php{\faPhp}
+\def\osg@lang@symbol@c{\tikz{\node[regular polygon, draw, regular polygon sides=6, shape border rotate=30, inner sep=.5pt, fill=black, text=white]{\tiny\textbf{C}};}}
+\def\osg@lang@symbol@cpp{\tikz{\node[regular polygon, draw, regular polygon sides=6, shape border rotate=30, inner sep=0pt, fill=black, text=white]{{\tiny\textbf{\sffamily{C}}}\smash{\raisebox{1pt}{\scalebox{.3}{++}}}};}}
+\NewDocumentCommand{\langicon}{m}{
+  \csuse{osg@lang@symbol@#1}%
+}
+\DeclareKeys[osglistings]{
+   lang.store=\osg@ce@lang,
+   title.store=\osg@ce@title,
+   post.store=\osg@ce@post,
+   pre.store=\osg@ce@pre
+}
+\NewTColorBox{codeeditor}{O{title=Code,lang=none,post={}} m}{
+  code=\SetKeys[osglistings]{#1},
   enhanced,
   coltitle     = black,
   colbacktitle = black!10!white,
   colback      = blue!2!white,
   center title,
   fonttitle=\scriptsize\ttfamily,
-  #1,
+  title=\osg@ce@title,
+  after lower=\osg@ce@post,
+  before upper=\osg@ce@pre,
   overlay={%
     \begin{tcbclipframe}
-        \node[anchor=north west,inner ysep=2pt, font=\scriptsize] at (frame.north west){\faRust};
+        \node[anchor=north west,inner ysep=2pt, font=\scriptsize] at (frame.north west){\langicon{\osg@ce@lang}};
         \ifstrempty{#2}{}{\node[anchor=north east,inner ysep=2pt,font=\scriptsize] at (frame.north east){\href{#2}{\faClone[regular]}}};
     \end{tcbclipframe}
   }

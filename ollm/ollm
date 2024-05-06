@@ -110,7 +110,7 @@ foreach ( @ARGV ) {
 if ($forceoptplus == 0) {
     foreach ( @ARGV ) {
 	# check for bare ollm options and add prefix (if no +force+)
-  $_ = '+'.$_ if $_ =~ /^(slides|beamer|presentation|script|article|handout|standalone|publish|debug|verbose|lang|classpath)/;
+  $_ = '+'.$_ if $_ =~ /^(slides|beamer|presentation|script|article|handout|standalone|publish|debug|verbose|lang|classpath|nosocket)/;
 	if ($_ eq '--') {last;}
     }
 }
@@ -164,6 +164,9 @@ GetOptions(
 	     }
 	   },
 	   'publish' => \$do_publish,
+	   'nosocket' => sub {
+	       $main::lualatex = 'lualatex --shell-escape --synctex=1 --nosocket %O %P';
+	     }
 	  );
 
 ## Read and process config file

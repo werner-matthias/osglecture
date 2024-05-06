@@ -62,19 +62,25 @@
      %  print (k, v)
      %end
      local headers, stream = assert(req:go())
-     %print("============\\n")
-     %for k, v in headers: each () do
-     %  print (k, v)
-     %end
-     local body = assert(stream:get_body_as_string())
-     if headers:get ":status" ~= "200" then
-        error(body)
-     end
-     local gists = utilities.json.tolua(body)
-     if (gists ~= nil) then
-        osgallgists[owner] = gists
-     end
-     %print(body)   
+     if headers ~= nil then
+        %print("============\\n")
+        %for k, v in headers: each () do
+        %   print (k, v)
+        %end
+        if headers:get ":status" == "200" then
+           local body = assert(stream:get_body_as_string())
+           %print(body)   
+           local gists = utilities.json.tolua(body)
+           if (gists ~= nil) then
+             osgallgists[owner] = gists
+           end
+           %print("============*******************\\n")
+           %print(gists)  
+           %print("============\\n")
+        end  
+     else
+        tex.print("\\PackageWarningNoLine{osggist}{Can't open gist.}")
+     end   
   end     
   %
   % Gibt die ID eines Gists für einem gegebenen <filename> aus der Sammlung von <owner>.
@@ -150,14 +156,13 @@
 % Formatiert eine Datei aus dem lokalen Cache als Listing.
 % Falls diese nicht im Cache ist, wird versucht, sie zuerst aus dem Gist zu
 % holen
-% \gist[<lst-Options]{<owner>}{<filename>}{<local cache path>}
+% \gist[<mint-options>]{<owner>}{<filename>}{<local cache path>}
 \NewDocumentCommand{\gist}{O{} m m m}{
   \IfFileExists{#4/#3}{}{%
     \luadirect{
       savegist(\luastring{#2},\luastring{#3},\luastring{#4},\csuse{osggist:#2})
     }%
   }%
-  %\lstinputlisting[#1]{#4/#3}
   \inputminted[#1]{rust}{#4/#3}
 }
 
@@ -173,22 +178,21 @@
   https://gist.github.com/#1/\gistid{#1}{#2}/raw%
 }
 
-
 }{  % Kein Shell-Escape
-\NewDocumentCommand{\NewGist}{o m}{}
-\NewDocumentCommand{\gistsave}{m m m}{
-  \IfFileExists{#4/#3}{}{%
-    \PackageWarning{\packagename}{No file #3/#2 found.}%
-  }%
-}
-
-\NewDocumentCommand{\gist}{O{} m m m}{
-  \IfFileExists{#4/#3}{%
-    \lstinputlisting[#1]{#4/#3}}{
-    \textcolor{red}{\texttt{Can't access gist}}\par
+  \NewDocumentCommand{\NewGist}{o m}{}
+  \NewDocumentCommand{\gistsave}{m m m}{
+    \IfFileExists{#4/#3}{}{%
+      \PackageWarning{\packagename}{No file #3/#2 found.}%
+    }%
   }
-}
-
-\NewExpandableDocumentCommand{\gistid}{m m}{0}
-\NewExpandableDocumentCommand{\gistraw}{m m}{}
+  
+  \NewDocumentCommand{\gist}{O{} m m m}{
+    \IfFileExists{#4/#3}{%
+      \inputminted[#1]{rust}{#4/#3}}{
+      \textcolor{red}{\texttt{Can't access gist}}\par
+    }
+  }
+  
+  \NewExpandableDocumentCommand{\gistid}{m m}{0}
+  \NewExpandableDocumentCommand{\gistraw}{m m}{}
 }
