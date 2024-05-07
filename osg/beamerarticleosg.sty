@@ -126,76 +126,82 @@
 % \apptocmd{\usekomafont}{\boolfalse{@osg@inkoma}}{\typeout{Patching of
 %     KOMA \string\usekomafont\ succeed}}{\typeout{Can't
 %     patching KOMA \string\usekomafont}}
-
+\RequirePackage{footnotehyper}
 \RequirePackage{tcolorbox}
 \tcbuselibrary{most}
 
 \setbeamertemplate{block begin}{
-  \begin{tcolorbox}[%
-    %colback=structure!10!white,
-    colback=tuccolor!10!white,
-    colframe=tuccolor!75!black,
-    arc=0mm,
-    enhanced,
-    code={
-      \ifcsstring{insertblocktitle}{}{
-        \tcbset{detach title}
-      }{
-        \tcbset{attach boxed title to top
-          left={yshift=-2mm,xshift=-5pt},
-          title=\insertblocktitle
-        }
-      }
-    },
-    colbacktitle= tuccolor!75!black,
-    coltitle= white,
-    fonttitle=\bfseries,
-  ]
-}
+  \begin{savenotes}%
+      \begin{tcolorbox}[%
+          % colback=structure!10!white,
+          colback=tuccolor!10!white,
+          colframe=tuccolor!75!black,
+          arc=0mm,
+          enhanced,
+          code={
+            \ifcsstring{insertblocktitle}{}{
+                  \tcbset{detach title}
+                }{
+                  \tcbset{attach boxed title to top
+                    left={yshift=-2mm,xshift=-5pt},
+                    title=\insertblocktitle
+                  }
+                }
+              },
+              colbacktitle= tuccolor!75!black,
+              coltitle= white,
+              fonttitle=\bfseries,
+              ]
+            }
 \setbeamertemplate{block end}{
-  \end{tcolorbox}
+  \end{tcolorbox}%
+  \end{savenotes}
 } 
 \setbeamertemplate{block alerted begin}{
-  \begin{tcolorbox}[%
-    colback=tuccolor@warning!10!white,
-    colframe=tuccolor@warning!75!black,
-    arc=0mm,
-    enhanced,
-    top=2mm,
-    %show bounding box,
-   code={
-      \ifcsstring{insertblocktitle}{}{
-        \tcbset{detach title}
-      }{
-        \tcbset{attach boxed title to top
-          left={yshift=-2mm,xshift=-5pt},
-          title=\insertblocktitle
-        }
-      }
-    },
-    colbacktitle= black!25!tucwarning,
-    coltitle= white,
-    fonttitle=\bfseries,
-  ]
+  \begin{savenotes}
+      \begin{tcolorbox}[%
+          colback=tuccolor@warning!10!white,
+          colframe=tuccolor@warning!75!black,
+          arc=0mm,
+          enhanced,
+          top=2mm,
+          % show bounding box,
+          code={
+            \ifcsstring{insertblocktitle}{}{
+                  \tcbset{detach title}
+                }{
+                  \tcbset{attach boxed title to top
+                    left={yshift=-2mm,xshift=-5pt},
+                    title=\insertblocktitle
+                  }
+                }
+              },
+              colbacktitle= black!25!tucwarning,
+              coltitle= white,
+              fonttitle=\bfseries,
+              ]
 }
 \setbeamertemplate{block alerted end}{
-  \end{tcolorbox}
+     \end{tcolorbox}%
+   \end{savenotes}
 }
 \setbeamertemplate{block example begin}{
-  \begin{tcolorbox}[%
-    colback=tuccolor@info!5!white,
-    colframe=tuccolor@info,
-    arc=0mm,
-    title=\insertblocktitle,
-    colbacktitle=white,
-    coltitle=black,
-    fonttitle=\bfseries,
-    detach title,
-    before upper={\tcbtitle\par\smallskip}
-  ]
+  \begin{savenotes}
+      \begin{tcolorbox}[%
+          colback=tuccolor@info!5!white,
+          colframe=tuccolor@info,
+          arc=0mm,
+          title=\insertblocktitle,
+          colbacktitle=white,
+          coltitle=black,
+          fonttitle=\bfseries,
+          detach title,
+          before upper={\tcbtitle\par\smallskip}
+          ]
 }
 \setbeamertemplate{block example end}{
-  \end{tcolorbox}
+    \end{tcolorbox}%
+  \end{savenotes}
 }
 
 %\setbeamertemplate{theorems}[ams style]
@@ -261,7 +267,7 @@
       \begin{savenotes}%          
       \begin{minipage}[\beamer@colalign]{#2}%
           \leavevmode\raggedright\beamer@colheadskip\ignorespaces%
-        }
+}
       
 \let\osg@orig@beamer@columncom=\beamer@columncom
 \let\osg@beamer@columnenv=\beamer@columnenv
@@ -271,7 +277,6 @@
 % Mode-Spezifikation die columns-Umgebung im Article-Mode igoniert.
 % Damit sie beachtet wird, muss <all> (oder <article>) angegeben
 % werden.
-\RequirePackage{footnotehyper}
 \renewenvironment<>{columns}[1][c]{%
 \def\beamer@colclose{}%
 \ifstrempty{#2}{}{%
