@@ -16,7 +16,7 @@
 % Hinweis:
 % Obwohl diese Klasse eigenständig genutzt werden kann, ist sie primär
 % für den Einsatz in Vorlesungsreihen im Kombination mit dem
-% OSG LaTeX Lecture Maker (einem rc-Script für latexmk) gedacht.
+% OSG LaTeX Lecture Maker (ollm, einem rc-Script für latexmk) gedacht.
 %
 \IfFormatAtLeastTF{2022/06/01}{}{
 \ClassError{\classname}{\MessageBreak
@@ -197,6 +197,11 @@
     \SetLogo{OSG-Logo}
     \PassOptionsToClass{professionalfonts}{beamer}
   },
+  final.code{
+    \PassOptionsToPackage{final}{osgbeamerref}
+    \PassOptionsToClass{final}{beamer}
+    \PassOptionsToPackage{final}{scrbook}
+  }
   noforcetoc.code = {
     \boolfalse{osgforcetoc}
   }
