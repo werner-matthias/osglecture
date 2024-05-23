@@ -7,6 +7,12 @@
 hyperref
 ]{zref}
 
+\@ifclassloaded{osgbeamer}{% Nur in Verbindung mit osgbeamer sinnvoll
+ }{
+  \PackageError{osgbeamerref}{This package must be used together with
+    'osgbeamer.cls' only.}
+  \endinput
+} 
 \newcommand{\ifstreq}[4]{%
   \ifnum\pdf@strcmp{#1}{#2}=0%
   #3%
@@ -21,8 +27,12 @@ hyperref
   standalone.code = {
     \booltrue{osgoptionstandalone}
     \boolfalse{osgscript}
+  },
+  final.code = {
+    \providecommand{\missingref}{??}
   }
 }
+
 % Erweiterter LaTeX3-Syntax, vgl. Kommentar in osgbeamer.cls
 \ExplSyntaxOn
 \cs_generate_variant:Nn \keys_set:nn { nx }
@@ -84,6 +94,9 @@ hyperref
 % Als Vorgabe wird die Continuation nur im Article (Script) genutzt
 \SetKeys[osgbeamerref]{continuation = article}
 \ProcessKeyOptions[osgbeamerref]
+
+\providecommand{\missingref}{\fcolorbox{red}{white}{??}}
+\zref@setdefault {\missingref}
 
 \ifbool{osgoptionstandalone}{
   % Im standalone-Mode wird "normal" referenziert. Warnung, wenn
@@ -204,11 +217,11 @@ hyperref
   % Falls nicht, wird der Text #2 gefolgt von der Seitennummer von #1 ausgegeben.
   \NewDocumentCommand{\xrefdist}{O{} m m}{%
      \only<article>{%
-       \edef\tmpr{\zref@extractdefault{#2}{page}{\textcolor{red}{??}}}%
+       \edef\tmpr{\zref@extractdefault{#2}{page}{\missingref}}%
        % Annahme: \distref wird pro Referenz nur EINMAL genutzt
        % Sollte sich das ändern, muss der Suffix "-ref" durch einen Zähler
        % ersetzt/ergänzt werden.
-       \edef\tmpp{\zref@extractdefault{#2-ref}{page}{??}}\zlabel{#2-ref}%
+       \edef\tmpp{\zref@extractdefault{#2-ref}{page}{\missingref}}\zlabel{#2-ref}%
        \ifstreq{\tmpp}{\tmpr}{#1}{#3\ \tmpr}%
        }%
   }%
@@ -375,21 +388,24 @@ hyperref
      %
      % nr: Kapitelnummer
      getpathforchapternumber = function(nr)
+       tex.print(\luastring{\typeout{**** CALLED getpathforchapternumber}})
        if (allrefs ~= nil) then
           local ndx = tostring(tonumber(nr)-1)..'-'..\luastring{\omr@doctypecode}
           if allrefs[ndx] ~= nil then
-            %tex.print(allrefs[ndx]['path'])
+            %tex.print("\\typeout{**** Path for "..nr..":"..allrefs[ndx]['path'].."}")
             tex.print("\\xdef\\omrcpath{"..allrefs[ndx]['path'].."}")
           else
-            tex.print("\\AddToHook{enddocument/info}{\\PackageWarningNoLine{osgbeamerref}{Unknown path for chapter"..nr.."}}")
+            tex.print("\\AddToHook{enddocument/info}{\\PackageWarningNoLine{osgbeamerref}{Unknown path for chapter "..nr.."}}")
          end
+       else
+         tex.print(\luastring{\\PackageWarningNoLine{osgbeamerref}{Reference information invalid or not existing.}})
        end
      end    
      %
-     % getpathforlabel(label) - Gibt Pfad für Kapitellabel
+     % getpathforlabel(label) - Gibt Pfad für Kapitellabel TODO
      %
      % label: Kapitellabel
-     getpathforchapternumber = function(label)
+     getpathforlabel = function(label)
        if (allrefs ~= nil) then
           local fulllabel = \luastring{\omr@doctypecode}.."-\selectedbeamerlanguage-"..label
      %         for key, info in pairs(allrefs) do
@@ -454,9 +470,9 @@ hyperref
 
    % Definiere \omrcpath als den Dateienpfad (ohne Extension) für das angegebene Kapitel
    \newrobustcmd\getPathForChapter[1]{%
-     \directlua{
+     \luaexec{
        getpathforchapternumber(\luastring{#1})
-     }%
+       }%
    }
 
    \newrobustcmd\getPathForLabel[1]{%
@@ -533,4 +549,5 @@ hyperref
     '\string\xarticleref' or '\string\xpresentationref', respectively,] 
   }  
 } % Ende für OLLM (und nicht 'standalone')
+
 
