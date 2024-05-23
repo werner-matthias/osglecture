@@ -19,7 +19,6 @@
     \boolfalse{osgforcetoc}
     \newcommand\includeChapterNo[1]{%
       \getPathForChapter{#1}
-      \typeout{****** Include \omrcpath.pdf}
       \IfFileExists{\omrcpath.toc}{
         \immediate\write\tf@toc{\string\input{\omrcpath.toc}}
       }{
