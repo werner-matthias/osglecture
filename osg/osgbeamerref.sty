@@ -212,9 +212,10 @@ hyperref
       \ldeen{Folie}{slide}~\omr@ref[#1]{#2}[beamer@frame]%
     }%
   }
-  % Überprüft, ob Label #1 auf der selben Seite steht, wie dieser
+  % Überprüft, ob Label #2 auf der selben Seite steht, wie dieser
   % Befehl.
-  % Falls nicht, wird der Text #2 gefolgt von der Seitennummer von #1 ausgegeben.
+  % Falls nicht, wird der Text #3 gefolgt von der Seitennummer von #2
+  % ausgegeben, ansonsten wird #1 ausgegeben
   \NewDocumentCommand{\xrefdist}{O{} m m}{%
      \only<article>{%
        \edef\tmpr{\zref@extractdefault{#2}{page}{\missingref}}%
