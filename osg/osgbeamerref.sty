@@ -205,11 +205,12 @@ hyperref
     \ifstrempty{#1}{(\omr@ref[\beamer@currentlecturelabel]{osglecture})}{\omr@ref[#1]{osglecture}}%
   }
   % Referenziert in Beamer das Frame, im Script die Seite des Labels
-  \NewDocumentCommand{\xrefsmart}{O{} m}{%
+  % In der Stern-Variante wird im Beamer-Modus das Kapitel vorangestellt.
+  \NewDocumentCommand{\xrefsmart}{s O{} m}{%
     \alt<article>{%
-      \ldeen{Seite}{page}~\omr@ref[#1]{#2}[page]%
+      \ldeen{Seite}{page}~\omr@ref[#2]{#3}[page]%
     }{%
-      \ldeen{Folie}{slide}~\omr@ref[#1]{#2}[beamer@frame]%
+      \ldeen{Folie}{slide}~\IfBooleanT{#1}{\xrefchap{#2}-}\omr@ref[#2]{#3}[beamer@frame]%
     }%
   }
   % Überprüft, ob Label #2 auf der selben Seite steht, wie dieser
