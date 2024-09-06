@@ -4,13 +4,13 @@
 % Es wird im Skript nicht vollständig auf das TUC-CI gewechselt,
 % Roboto ist für längere Texte nicht günstig.
 \usepackage{unicode-math}
-\setmathfont{texgyrepagella-math.otf}
+%\setmathfont{texgyrepagella-math.otf}
 \usepackage{libertine}
 
 \RequirePackage[colorlinks=true,linkcolor=black,anchorcolor=black, citecolor=black,filecolor=black,menucolor=black,runcolor=black,urlcolor=teal,linktoc=all]{hyperref}
 \RequirePackage{enumitem}
 
-\setcounter{tocdepth}{1}   % Inhaltsverzeichnis
+\setcounter{tocdepth}{2}   % Inhaltsverzeichnis
 \newcommand{\osg@lecture}[3][]{%
   \ifstrempty{#1}{%
     \chapter{#2}
@@ -204,8 +204,70 @@
   \end{savenotes}
 }
 
+\DeclareEnvironmentCopy{osgorigarticletheorem}{theorem}
+\DeclareEnvironmentCopy{osgorigarticledefinition}{definition}
+
+
+\defbeamertemplate<article>{theorem number}{single}{}[action]
+{\renewcommand{\thetheorem}{\arabic{theorem}}}
+\defbeamertemplate<article>*{theorem number}{chapter}{}[action]
+{\renewcommand{\thetheorem}{\thechapter.\arabic{theorem}}}
+
+\defbeamertemplate<article>{theorems}{plain}{}[action]{
+  \RenewEnvironmentCopy{definition}{osgorigarticledefinition}
+}
+\defbeamertemplate<article>*{definition}{block}{}[action]{
+  \RenewDocumentEnvironment{definition}{o}{%
+    \begin{savenotes}%
+    \stepcounter{theorem}%
+    \def\insertblocktitle{\textbf{Definition~\thetheorem}%
+      \IfNoValueF{##1}{~(##1)}}%
+    \usebeamertemplate{theorem begin}%
+  }{
+    \usebeamertemplate{theorem end}%
+    \end{savenotes}
+  }
+}
+
+
+% \RenewDocumentEnvironment{definition}{o}{%
+%   \usebeamertemplate{article definition begin}
+% }{%
+%   \usebeamertemplate{article definition end}
+% }
+
+% \defbeamertemplate<article>*{definition}{plain}{%
+% }
+
 %\setbeamertemplate{theorems}[ams style]
- \setbeamertemplate{theorem begin}{
+\setbeamertemplate{theorem begin}{
+  \begin{tcolorbox}[%
+      % colback=structure!10!white,
+      colback=tuccolor!10!white,
+      colframe=tuccolor!75!black,
+      arc=0mm,
+      enhanced,
+      code={
+        \ifcsstring{insertblocktitle}{}{
+              \tcbset{detach title}
+            }{
+              \tcbset{attach boxed title to top
+                left={yshift=-2mm,xshift=-5pt},
+                title=\insertblocktitle
+              }
+            }
+          },
+          colbacktitle= tuccolor!75!black,
+          coltitle= white,
+          %fonttitle=\bfseries,
+          ]
+}
+        
+\setbeamertemplate{theorem end}{
+   \end{tcolorbox}
+ }
+  
+% \setbeamertemplate{definition begin}{
 %   \begin{tcolorbox}[%
 %       % colback=structure!10!white,
 %       colback=tuccolor!10!white,
@@ -226,13 +288,14 @@
 %           coltitle= white,
 %           fonttitle=\bfseries,
 %           ]
-}
+% }
         
- \setbeamertemplate{theorem end}{
-   % \end{tcolorbox}
- }
+% \setbeamertemplate{definition end}{
+%    \end{tcolorbox}
+%  }
   
 
+ 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Columns
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
