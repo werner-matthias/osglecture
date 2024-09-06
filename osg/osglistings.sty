@@ -192,7 +192,8 @@
    lang.store=\osg@ce@lang,
    title.store=\osg@ce@title,
    post.store=\osg@ce@post,
-   pre.store=\osg@ce@pre
+   pre.store=\osg@ce@pre,
+   fail.if = osg@ce@fail
 }
 \NewTColorBox{codeeditor}{O{title=Code,lang=none,post={}} m}{
   code=\SetKeys[osglistings]{#1},
@@ -207,8 +208,9 @@
   before upper=\osg@ce@pre,
   overlay={%
     \begin{tcbclipframe}
-        \node[anchor=north west,inner ysep=2pt, font=\scriptsize] at (frame.north west){\langicon{\osg@ce@lang}};
-        \ifstrempty{#2}{}{\node[anchor=north east,inner ysep=2pt,font=\scriptsize] at (frame.north east){\href{#2}{\faClone[regular]}}};
+        \node[anchor=north west,inner ysep=2pt, font=\scriptsize] at (frame.north
+        west){\langicon{\osg@ce@lang} \ifosg@ce@fail\textcolor{red!60!black}{\faSkullCrossbones}\fi };
+        \ifstrempty{#2}{}{\node[anchor=north east,inner ysep=2pt,font=\scriptsize] at (frame.north east){\href{#2}{\faEdit[regular]}}};
     \end{tcbclipframe}
   }
 }
