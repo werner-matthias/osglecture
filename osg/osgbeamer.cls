@@ -1,6 +1,7 @@
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
 \def\classname{osgbeamer}
-\ProvidesClass{\classname}[2022/08/17 v0.9.0d]
+\def\osgbeamerversion{2022/08/17 v0.9.0d}
+\ProvidesClass{\classname}[\osgbeamerversion]
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Beamer- und Script-Template für die Professur Betriebssysteme an
@@ -144,7 +145,7 @@
 % pgfkeys oder Koma-Script Klassenoptionen ggf. auch noch später gesetzt
 % werden (so sie nicht vor der ersten Seitenserstellung gebraucht werden).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\DeclareKeys{
+\DeclareKeys[osgbeamer]{
   % Soll die Kompatibilität zur alten osgbeamer-Klasse erhöhen (z.Z. nicht genutzt)
   legacy.code={
     \ClassWarning{\classname}{Legacy mode activated}
@@ -160,7 +161,7 @@
     \PassOptionsToClass{aspectratio=#1}{beamer}
   },
   % Optionen, die an die scrbook-Klasse weitergeleitet werden.
-  article.code = {
+  book.code = {
     \PassOptionsToClass{#1}{scrbook}
   },
   % Optionen, die an das tucbeamer-Package weitergeleitet werden.
@@ -255,12 +256,14 @@
   % gesetzt (siehe osgbeamerlanguage.sty)
   lang .choice:,
   lang/de .code:n = {
-    \providecommand\selectedbeamerlanguage{de}
-    \PassOptionsToPackage{de}{osgbeamerlanguage}
+   \providecommand\selectedbeamerlanguage{de}
+   \PassOptionsToPackage{de}{osgbeamerlanguage}
+   \PassOptionsToPackage{ngerman}{translator}
   },
   lang/en .code:n = {
     \providecommand\selectedbeamerlanguage{en}
     \PassOptionsToPackage{en}{osgbeamerlanguage}
+    \PassOptionsToPackage{english}{translator}
   },
   
   % Mit der Option 'handout format' kann angegeben werden, wieviel Folien
@@ -307,7 +310,7 @@
     10pt,
     unknownkeysallowed %,notheorems
   },
-  article={
+  book={
     chapterprefix=true,
     twoside,
     open=right,
@@ -632,7 +635,7 @@
   \gappto{\osg@aftertitle}{#1}
 }
 
-\RequirePackage{osgbeamerref}      % (Entfernte) Referenzierung 
+\RequirePackage{osgbeamerref}      % (Entfernte) Referenzierung
 \RequirePackage{osgbeamerlanguage} % Sprachbehandlung
 \IfBool{osglegacy}{
   % Babel sollte nicht nochmal geladen werden, um einen Optionsclash zu
@@ -719,6 +722,7 @@
 % In Beamer werden beim presentation-Mode nur die Fußnoten ausgeblendet, nicht
 % die Fußnotenzeichen. Die OSG-Version stellt das IHMO konsistente
 % Verhalten her.
+%% Alter Kommentar:
 % Außerdem sollen Fußnoten *immer* unten in einem Frame erscheinen,
 % nicht am Ende von Blöcken. Die aktuelle Beamer-Variante scheint dies
 % (entgegen der Doku) zwar per Default zu machen, zur Sicherheit wird
@@ -727,7 +731,7 @@
 % untersucht werden muss. 
 \NewCommandCopy{\original@footnote}{\footnote}
 \RenewDocumentCommand{\footnote}{D<>{all} O{} +m}{%
-  \only<#1>{\original@footnote[frame,#2]{#3}}%
+  \only<#1>{\original@footnote[#2]{#3}}%
 }
 
 %\RequirePackage{microtype}
@@ -774,9 +778,10 @@
 % %     }{\end{mdframed}\osg@footnote@do\end{actionenv}
 % % }
 
-% %    \mdtheorem[style=block]{osgdefinition}{Definition}[chapter]
-% %    \mdtheorem[style=block]{osgtheorem}{Theorem}[chapter]
-
+% \IfToggle{osgscript}{
+%   \mdtheorem[style=block]{osgdefinition}{Definition}[chapter]
+%   \mdtheorem[style=block]{osgtheorem}{Theorem}[chapter]
+% }
 % %    %%% TODO: Fußnotenmechanismus anpassen
 % %    \renewenvironment{definition}[1][]{%
 % %      \parshape0%
@@ -1041,15 +1046,16 @@
   action .initial:n = \use:n,
 }
 
-\ProvideDocumentCommand \NewEnvironmentCopy {mm} {
-    \expandafter \NewCommandCopy \csname#1\expandafter\endcsname \csname#2\endcsname
-    \expandafter \NewCommandCopy \csname end#1\expandafter\endcsname \csname end#2\endcsname
-}
+%% Überflüssig wg. TeX3
+% \ProvideDocumentCommand \NewEnvironmentCopy {mm} {
+%     \expandafter \NewCommandCopy \csname#1\expandafter\endcsname \csname#2\endcsname
+%     \expandafter \NewCommandCopy \csname end#1\expandafter\endcsname \csname end#2\endcsname
+% }
 
-\ProvideDocumentCommand \RenewEnvironmentCopy {mm} {
-    \expandafter \RenewCommandCopy \csname#1\expandafter\endcsname \csname#2\endcsname
-    \expandafter \RenewCommandCopy \csname end#1\expandafter\endcsname \csname end#2\endcsname
-}
+% \ProvideDocumentCommand \RenewEnvironmentCopy {mm} {
+%     \expandafter \RenewCommandCopy \csname#1\expandafter\endcsname \csname#2\endcsname
+%     \expandafter \RenewCommandCopy \csname end#1\expandafter\endcsname \csname end#2\endcsname
+% }
 \ExplSyntaxOff
 
 \NewDocumentCommand{\spacesaveitem}{m}{%
@@ -1131,7 +1137,7 @@
 
 \let\osg@origina@Roman=\Roman
 \renewcommand{\Roman}[1]{%
-  \ifnum\value{#1}=0\relax0\else\osg@origina@Roman{#1}\fi}
+  \ifnum\value{#1}=0\relax N\else\osg@origina@Roman{#1}\fi}
 
 \NewDocumentCommand\DebugFont{}{Family: \f@family\  with size: \f@size.}
 % %%% Local Variables:
