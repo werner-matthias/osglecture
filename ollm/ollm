@@ -239,6 +239,9 @@ sub make_document {
   } else { # $lang should be 'de'
     $main::pre_tex_code='\DocumentMetadata{pdfversion=1.7,lang=de-DE}';
   }
+  if ($number < 0) {
+    $number = '_'.abs($number);
+  }
   #$main::aux_dir=$shared_data_dir;
   #$main::emulate_aux=1;
   # the remaining information will be coded within the job name
