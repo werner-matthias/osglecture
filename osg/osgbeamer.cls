@@ -80,7 +80,7 @@
       -- Wenn Datei gefunden, wird osgllm-Flag gesetzt 
       tex.print("\\booltrue{osgllm}")
       -- Defaultwerte für OLLM
-      sh_path = "../Include"
+      sh_path = "../Ref"
       cfg_file = "lectdates"
       fst_chap_a = "1"
       fst_chap_b = "1"
