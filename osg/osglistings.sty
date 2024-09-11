@@ -188,6 +188,7 @@
 \NewDocumentCommand{\langicon}{m}{
   \csuse{osg@lang@symbol@#1}%
 }
+\def\osgfailicon{\textcolor{red!60!black}{\faIcon{bomb}}}
 \DeclareKeys[osglistings]{
    lang.store=\osg@ce@lang,
    title.store=\osg@ce@title,
@@ -209,7 +210,7 @@
   overlay={%
     \begin{tcbclipframe}
         \node[anchor=north west,inner ysep=2pt, font=\scriptsize] at (frame.north
-        west){\langicon{\osg@ce@lang} \ifosg@ce@fail\textcolor{red!60!black}{\faSkullCrossbones}\fi };
+        west){\langicon{\osg@ce@lang} \ifosg@ce@fail\osgfailicon\fi };
         \ifstrempty{#2}{}{\node[anchor=north east,inner ysep=2pt,font=\scriptsize] at (frame.north east){\href{#2}{\faEdit[regular]}}};
     \end{tcbclipframe}
   }
