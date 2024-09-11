@@ -1,12 +1,14 @@
 \NeedsTeXFormat{LaTeX2e}
 \edef\packagename{osgcombinescript}
 \ProvidesPackage{\packagename}[2023/04/02 v0.5.0]
-\RequirePackage{luacode}
-\RequirePackage{scrlfile}
+%\RequirePackage{luacode}
+%\RequirePackage{scrlfile}
 \RequirePackage{pdfpages}
 %\RequirePackage{graphicx}
 \RequirePackage{auxhook}
 \RequirePackage{osgbeamerref}
+\RequirePackage{xstring}
+\RequirePackage{newpax}
 
 % Das Paket verlässt sich auf osgbeamer...
 \@ifclassloaded{osgbeamer}{
@@ -16,22 +18,37 @@
       structure and without 'standalone' option}
     \endinput
   }{
+    \directlua{require("newpax")}
+
+    \NewDocumentCommand\setdestfilter{mm}{\def\HyperDestNameFilter##1{#1##1#2}}  
+
     \boolfalse{osgforcetoc}
-    \newcommand\includeChapterNo[1]{%
-      \getPathForChapter{#1}
-      \IfFileExists{\omrcpath.toc}{
-        \immediate\write\tf@toc{\string\input{\omrcpath.toc}}
-      }{
-        \PackageWarning{\packagename}{Can't find \omrcpath.toc, skipped.}
-      }
-      \IfFileExists{\omrcpath.pdf}{
-        \includepdf[pages=-, noautoscale, link=true, linkname=chapter.#1]{\omrcpath.pdf}
+    \NewExpandableDocumentCommand{\includeChapterPathTopic}{O{\selectedbeamerlanguage} m}{
+      %\xdef{\omrcpath}{#2-script-#1-}
+    }
+    \NewDocumentCommand{\includeChapterPath}{mm}{
+      \IfFileExists{#1.pdf}{
+        \directlua{newpax.writenewpax("#1")}
+        \IfFileExists{#1.toc}{
+          \addtocontents{toc}{\string\input{#1.toc}}
+          \newpaxsetup{dests=all} %force import of all destinations
+          %\def\HyperDestNameFilter##1{#1.newpax@##1}
+        }{
+          \addtocontents{toc}{Chapter #1 skipped}
+        }
+        \includepdf[pages=-, noautoscale, link=true,linkname=chapter.#2]{#1.pdf}
+        %\includepdf[pages=-]{#1.pdf}
       }{
         \chapterskipped
-        \PackageWarning{\packagename}{Can't find \omrcpath.pdf, skipped.}
+        \PackageWarning{\packagename}{Can't find #1.pdf, skipped.}
       }
     }
-}
+
+    }
+    \NewDocumentCommand\includeChapterNo{m}{%
+      \getPathForChapter{#1}%
+      \includeChapterPath{\omrcpath}{#1}
+  }
 }{
   \PackageError{osgcombinescript}{This package can only be used together\MessageBreak
     with the osgbeamer class}{}
