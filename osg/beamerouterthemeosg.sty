@@ -149,7 +149,8 @@
 }
 
 \defbeamertemplate{pagenumber}{roman}{
-{\Roman{chapter}}\hspace{1pt}--\hspace{1pt}\insertframenumber\ {\emph{\ldeen{von}{of}}}\ \inserttotalframenumber
+  \renewcommand{\thechapter}{\Roman{chapter}}
+{\thechapter}\hspace{1pt}--\hspace{1pt}\insertframenumber\ {\emph{\ldeen{von}{of}}}\ \inserttotalframenumber
 }
 \defbeamertemplate{pagenumber}{n of m}{\insertframenumber\ / \inserttotalframenumber}
 \defbeamertemplate{pagenumber}{single}{\insertframenumber}
