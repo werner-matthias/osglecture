@@ -87,6 +87,9 @@ hyperref
   },
   standalone .code:n={
     \booltrue{osgoptionstandalone}
+  },
+  docid.code:n = {
+    \providecommand\osg@docID{#1}
   }
 } 
 \ExplSyntaxOff
@@ -118,20 +121,26 @@ hyperref
     %
       \AddToHook{begindocument}{
         % aus \@starttoc, aber ohne Wiedereinlesen
-        \newwrite\tf@toc
-        \immediate\openout\tf@toc\jobname.toc\relax
+        \IfBool{osgforcetoc}{%
+          \newwrite\tf@toc
+          \immediate\openout\tf@toc\jobname.toc\relax
+        }{}
       }
       % TODO: bessere Steuerung und Name
   }{}
   % Im OLLM werden einige Information über den Jobnamen übertragen. Der Jobname hat das Format
   % <lectureprefix>-<number>-<doctype>-<language>-<topic>
-  % 
   \xdef\omr@generalprefix{\getfromjobname{1}}
-  \setcounter{chapter}{\getfromjobname{2}}
+  \ifnum0<0\getfromjobname{2}\relax
+      \setcounter{chapter}{\getfromjobname{2}}
+  \else
+      \setcounter{chapter}{0}
+  \fi
   % Da der chapter-Counter zu Kapitelbeginn einem \refstepcounter
   % unterliegt, muss für den korrekten Wert *im* Kapitel hier 1
   % abgezogen werden
   \addtocounter{chapter}{-1}
+  \ifundef{\osg@docID}{\xdef\osg@docID{\arabic{chapter}}}{}
   \xdef\omr@doctype{\getfromjobname{3}}
   \xdef\omr@currenttopic{\getfromjobname{5}}
   \xdef\currenttopic{\getfromjobname{5}} % Auch als User-Macro, kann z.B. zur Einbindung von Quelltexten
@@ -213,18 +222,19 @@ hyperref
       \ldeen{Folie}{slide}~\IfBooleanT{#1}{\xrefchap{#2}-}\omr@ref[#2]{#3}[beamer@frame]%
     }%
   }
-  % Überprüft, ob Label #2 auf der selben Seite steht, wie dieser
+  % Überprüft, ob Label #3 auf der selben Seite steht, wie dieser
   % Befehl.
-  % Falls nicht, wird der Text #3 gefolgt von der Seitennummer von #2
-  % ausgegeben, ansonsten wird #1 ausgegeben
-  \NewDocumentCommand{\xrefdist}{O{} m m}{%
+  % Falls nicht, wird der Text #4 gefolgt von der Seitennummer von #3
+  % ausgegeben, ansonsten wird #2 ausgegeben.
+  % Bei der Sternvariante wird der Ausdruck in Klammern gesetzt.
+  \NewDocumentCommand{\xrefdist}{s O{} m m}{%
      \only<article>{%
-       \edef\tmpr{\zref@extractdefault{#2}{page}{\missingref}}%
+       \edef\tmpr{\zref@extractdefault{#3}{page}{\missingref}}%
        % Annahme: \distref wird pro Referenz nur EINMAL genutzt
        % Sollte sich das ändern, muss der Suffix "-ref" durch einen Zähler
        % ersetzt/ergänzt werden.
-       \edef\tmpp{\zref@extractdefault{#2-ref}{page}{\missingref}}\zlabel{#2-ref}%
-       \ifstreq{\tmpp}{\tmpr}{#1}{#3\ \tmpr}%
+       \edef\tmpp{\zref@extractdefault{#3-ref}{page}{\missingref}}\zlabel{#3-ref}%
+       \ifstreq{\tmpp}{\tmpr}{#2}{\IfBooleanT{#1}{ (}#4\ \tmpr \IfBooleanT{#1}{)}}%
        }%
   }%
   % Erzwingt die Referenz auf das Artikel-Label (für Crosstype-Referenz)
@@ -321,7 +331,7 @@ hyperref
                     %tex.print("\\typeout{*********** BEFORE IMPORT KEY ".. info['prefix'] .. " PATH:"  .. info['path'] .."} ")                    
                     % Überprüfe, ob es sich um den Vorgänger in der OLLM-Sequenz handelt. Wenn ja,
                     % übernehme die Information für die letzte Seite.   
-                    if ((tonumber(info['number'])+1 == \arabic{chapter}) and ('\omr@doctypecode' == string.sub(info['prefix'],1,1))) then
+                    if ((tonumber(info['number'])+1 == \osg@docID) and ('\omr@doctypecode' == string.sub(info['prefix'],1,1))) then
                        tex.print("\\omrsetcont{" .. info['lastpage'] .. "}")
                        foundcont = 1
                     end
@@ -365,7 +375,7 @@ hyperref
         local prefix
         prefix = typecode .. '-' .. lang  .. '-' .. label 
         local info = {}
-        local cnt = '\arabic{chapter}'
+        local cnt = '\osg@docID'
         local ndx = cnt .. '-' .. typecode
         %tex.print("\\typeout{************ prefix == "..prefix..",
         %  chapter = "..ndx.."}")
@@ -390,13 +400,14 @@ hyperref
      %
      % nr: Kapitelnummer
      getpathforchapternumber = function(nr)
-       tex.print(\luastring{\typeout{**** CALLED getpathforchapternumber}})
+       %tex.print(\luastring{\typeout{**** CALLED getpathforchapternumber}})
        if (allrefs ~= nil) then
           local ndx = tostring(tonumber(nr)-1)..'-'..\luastring{\omr@doctypecode}
           if allrefs[ndx] ~= nil then
             %tex.print("\\typeout{**** Path for "..nr..":"..allrefs[ndx]['path'].."}")
             tex.print("\\xdef\\omrcpath{"..allrefs[ndx]['path'].."}")
           else
+            %tex.print("\\typeout{**** We~have~a~problem}")
             tex.print("\\AddToHook{enddocument/info}{\\PackageWarningNoLine{osgbeamerref}{Unknown path for chapter "..nr.."}}")
          end
        else
@@ -446,6 +457,7 @@ hyperref
      }
    }
 
+   \let\omrreadref\omr@readref
    \newrobustcmd{\omr@writeref}[1]{
      % Bei Beamer-Documenten zählen die Frames, im Scriptkapitel die
      % Seiten
