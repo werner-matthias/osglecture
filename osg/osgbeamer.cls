@@ -880,8 +880,10 @@
 }{}
 \RequirePackage{calc}
 \NewDocumentCommand\sourceref{sO{\ldeen{Quelle}{Source}} m O{style=sameline}}{%
-  \IfBooleanTF{#1}{\par\raggedleft
-    \fontsize{6pt}{2pt}\selectfont\textbf{#2:}\ \stress{#3}
+  \IfBooleanTF{#1}{
+    \begin{flushright}
+        \fontsize{6pt}{2pt}\selectfont\textbf{#2:}\ \stress{#3}
+    \end{flushright}
   }{
     \begin{description}[#4]\fontsize{6pt}{2pt}\selectfont
      \item[\textbf{#2:}] \stress{#3}
