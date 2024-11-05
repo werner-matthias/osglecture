@@ -47,7 +47,7 @@
         }{
           \addtocontents{toc}{Chapter #1 skipped}
         }
-        \IfBoolTF{
+        \IfBooleanTF{
           \chapterskipped
         }{%
           \includepdf[pages=-, noautoscale,link=true,linkname=chapter.#3]{#2.pdf}%
@@ -63,7 +63,7 @@
     }
     \NewDocumentCommand\includeChapterNo{sm}{%
       \getPathForChapter{#1}%
-      \IfBoolTF{%
+      \IfBooleanTF{%
         \includeChapterPath*{\omrcpath}{#1}%
       }{%
         \includeChapterPath{\omrcpath}{#1}%
