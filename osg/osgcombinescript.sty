@@ -20,7 +20,7 @@
   }{
     \directlua{require("newpax")}
 
-    \NewDocumentCommand\setdestfilter{mm}{\def\HyperDestNameFilter##1{#1##1#2}}  
+    \NewDocumentCommand\setdestfilter{mm}{\def\HyperDestNameFilter##2{#1##2#2}}  
 
     \boolfalse{osgforcetoc}
     \NewExpandableDocumentCommand{\includeChapterPathTopic}{O{\selectedbeamerlanguage} m}{
@@ -31,7 +31,7 @@
       \IfFileExists{#2.pdf}{
         \directlua{newpax.writenewpax("#2")}
         \IfFileExists{#2.toc}{
-          \addtocontents{toc}{\string\input{#1.toc}}
+          \addtocontents{toc}{\string\input{#2.toc}}
           \IfFileExists{#2.idx}{
             \luaexec{
               infile = io.open("#2.idx", "r")
@@ -45,24 +45,23 @@
           \newpaxsetup{dests=all} %force import of all destinations
           %\def\HyperDestNameFilter##1{#1.newpax@##1}
         }{
-          \addtocontents{toc}{Chapter #1 skipped}
+          \addtocontents{toc}{Chapter #2 skipped}
         }
         \IfBooleanTF{#1}{
           \chapterskipped
         }{%
           \includepdf[pages=-, noautoscale,link=true,linkname=chapter.#3]{#2.pdf}%
         }
-        %\includepdf[pages=-]{#1.pdf}
       }{
         \chapterskipped
-        \PackageWarning{\packagename}{Can't find #1.pdf, skipped.}
+        \PackageWarning{\packagename}{Can't find #2.pdf, skipped.}
       }
     }
     \makeatother
 
     }
     \NewDocumentCommand\includeChapterNo{sm}{%
-      \getPathForChapter{#1}%
+      \getPathForChapter{#2}%
       \IfBooleanTF{#1}{%
         \includeChapterPath*{\omrcpath}{#2}%
       }{%
