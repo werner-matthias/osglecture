@@ -3,9 +3,12 @@
 \ProvidesPackage{\packagename}[2022/09/20 v0.1]
 \RequirePackage{etoolbox}
 \RequirePackage{luacode}
+\RequirePackage{tabto}
+%\RequirePackage{changepage}
 
 \newbool{osgusebib}\boolfalse{osgusebib}
 \newbool{osgbibglobal}\boolfalse{osgbibglobal}
+%\newbool{osgstandalone}\boolfalse{osgstandalone}
 \RequirePackage{enumitem}
 
 \NewDocumentCommand\MakeCitation{m}{\MakeCitationAlpha{#1}}
@@ -76,8 +79,8 @@
   off    .meta:n = { article=off,    slides=off},
   disable.meta:n = { article=off,    slides=off},
   none   .meta:n = { article=off,    slides=off},
-  standalone .code = {
-    \booltrue{osgusebib}
+  standalone .code = { % Im standalone-Mode gibt es keine Serien, also gibt es
+                       % keine globale Bibliographie
     \boolfalse{osgbibglobal}
   },
   citestyle .choice:,
@@ -92,77 +95,72 @@
   }
 }
 
-
 \ExplSyntaxOff
-
 \ProcessKeyOptions[osgbeamerbib]
-
+% Überprüfe, ob die Optionskombinationen korrekt sind
+%% ToDo: Das sollte künfig schon ein den Key möglich sein.
+\IfBool{osgoptionstandalone}{
+  \IfBool{osgbibglobal}{
+    \PackageError{\packagename}{You can't have a global bibliography\\MessageBreak in
+      standalone mode}{Use 'bib=local' or disable 'standalone'}
+  }{}
+}{}
+\ifdef{\obb@bibfile}{
+  \IfBool{osgusebib}{}{
+    \PackageWarningNoLine{\packagename}{Bibliography disabled,\\MessageBreak bib file '\obb@bibfile' ignored}
+  }
+}{
+  \IfBool{osgusebib}{
+    \PackageWarningNoLine{\packagename}{Missing bib file, switch of\\MessageBreak 
+      bibliography}
+    \boolfalse{osgusebib}
+  }{}
+}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \ExplSyntaxOn
 % Importiere ein Substring-Macro von LaTeX3 in 2e
 \cs_generate_variant:Nn \str_range_ignore_spaces:nnn { Vnn }
+% Gibt von #1 den Substring von #2 bis #3 zurück
 \NewDocumentCommand\stringrg{ m m m}{%
   \str_range_ignore_spaces:Vnn{#1}{#2}{#3}%
 }
 \ExplSyntaxOff
 
 \IfBool{osgusebib}{
-  % Im global-Mode werden alle Referenzen einer Vortragsreihe
-  % (Vorlesung) in einer Datei
-  % \OsgShareDataPath/\omr@generalprefix.lbr gesammelt, bei
-  % lokal/standalone in \jobname.lbr.
+  \RequirePackage{librarian}
   \IfBool{osgbibglobal}{
-    % Da in librarian der Name der lbr-Datei fest verdrahtet ist,
-    % brauchen wir zwei ganz schmutzige Hacks:
-    % 1. '\jobname' wird temporär umdefiniert.
-    \let\osg@originaljobname=\jobname
-    \xdef\obb@jobname{\OsgShareDataPath/\omr@generalprefix}
-    \let\jobname=\obb@jobname
-    %
-    % 2. LuaLaTex erlaubt im (als Default eingestellten) Paranoid-Modus kein
+    \gdef\osb@glcitefile{\OsgShareDataPath/\obb@bibfile.lbc}
+    % Wenn es bereits ein globales Citefile gibt, wird es am Dokumentanfang eingelesen
+    % LuaLaTex erlaubt im (als Default eingestellten) Paranoid-Modus kein
     % TeX-Fileschreiben außerhalb des eigenen Verzeichnis (inklusive
     % Unterverzeichnisse). Dies funktioniert aber auf Lua-Ebene (warum
-    % eigentlich?) Da das Anlegen des Files global erfolgt, kann nicht einfach
-    % nur ein Macro gepatcht werden, da vorher mit Error abgebrochen werden
-    % würde. Stattdessen wird \newwrite temporär umgelenkt und damit das Lesen
-    % von librarian.sty an der kritischen Stelle beendet.  
-    \let\osg@original@newwrite=\newwrite
-    \let\lb@write=\endinput%
-    \let\newwrite=\endinput
-    
-    \RequirePackage{librarian}
-    % \jobname und \newwrite werden wieder hergestellt.
-    \let\jobname=\osg@originaljobname
-    \let\newwrite=\osg@original@newwrite
-    % Nun kann gepatcht werden. Statt [\immediate]\write werden die
-    % Lua-Filefunktionen genutzt
-    \RenewDocumentCommand\WriteInfo{+m}{%
-      \AtEndDocument{%
-        \WriteImmediateInfo{#1}%
-      }%
-    }
-    \RenewDocumentCommand\WriteImmediateInfo{+m}{%
+    % eigentlich?)
+    % Daher bnötigt das Schreiben in das Citefile Lua.
+    \AddToHook{begindocument}{%
+      % Alle globalen \cite werden eingelesen...
+      \expandafter\InputIfFileExists{\osb@glcitefile}{}{}%
+      % ...und aufgelöst.
+      \BibFile{\OsgShareDataPath/\obb@bibfile}
+      % Das Citefile wird zum Schreiben geöffnet.
       \luaexec{
-        if (bibfile) then
-            bibfile:write(\luastring{#1})
-         end
-       }
-     }
-     % Zum Schluss werden die letzten Zeilen von `librarian.sty`(die wegen
-     % \endinput nicht mehr ausgeführt worden) "nachempfunden". 
-     \luaexec{
-       bibfile = io.open("\obb@jobname.lbr","w")
-     }
-     \lb@dolbr
-   }{
-     % Im lokalen wie im Standalone-Fall wird das Librarian-Package
-     % entsprechend der Originalvorgehensweise eingesetzt.
-     \RequirePackage{librarian}
-     \lb@dolbr
-   }
+        osgcitefile = io.open("\osb@glcitefile","a+")
+      }
+    }
+    \NewDocumentCommand{\writecitefile}{m}{
+      \luaexec{
+        if (osgcitefile) then
+          osgcitefile:write(\luastring{#1})
+        end
+      }
+    }
+  }{
+    % Im lokalen wie im Standalone-Fall wird das Librarian-Package
+    % entsprechend der Originalvorgehensweise eingesetzt.
+  }
+  \lb@dolbr
   \def\lb@error#1{\PackageWarning{librarian}{#1}}
-
+  
   \newtoggle{obb@firstauthor}
   % Das Original-\AbbreviateFirstname von Librarian hängt bei Namen mit nur
   % einem Wort.
@@ -170,8 +168,8 @@
   % Siehe https://tex.stackexchange.com/questions/661363/abbreviatefirstname-in-librarian-makes-compilation-hang
   \def\lb@@loopovernames#1#2#3#4{%
     \iflb@abbreviate
-      \def\Firstname{}%
-      \ifblank{#1}{}{\lb@abbreviate#1 lb@end }% add test for emptyness
+    \def\Firstname{}%
+    \ifblank{#1}{}{\lb@abbreviate#1 lb@end }% add test for emptyness
     \else
        \def\Firstname{#1}%
     \fi
@@ -182,7 +180,7 @@
   % \RenewDocumentCommand\AbbreviateFirstname{}{
   %   \booltrue{obb@abbreviatefirstname}
   % }
-  \NewDocumentCommand\formatFirstName{o m}{
+  \NewDocumentCommand\formatFirstName{o m}{%
     \IfBlankTF{#2}{}% Wenn es keinen Vornamen gibt, gib gar nichts aus
     {\IfNoValueTF{#1}{}{#1\ }{#2}%
     }%
@@ -248,25 +246,16 @@
      \or q\or r\or s\or t\or u\or v\or w\or x%
      \or y\or z\fi
    }
+
+   %\SortDef{Ä}{A}
+   %\SortDef{ä}{a}
+   %\SortDef{Ü}{U}
+   %\SortDef{ü}{u}
+   %\SortDef{Ö}{O}
+   %\SortDef{ö}{o}
+   %\SortDef{ß}{ss}
    
    \glet\MakeReference=\compareentries
-   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-   % Layout Literaturliste
-   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-   \RequirePackage{needspace}
-   \newlength\osg@widestlit
-   \global\setlength\osg@widestlit{7em}%
-   \newlist{osgliteraturelist}{description}{1}
-   \setlist[osgliteraturelist]{font=\mdseries,
-     leftmargin=\dimexpr\osg@widestlit+0.5em\relax,
-     labelindent=0pt,
-     labelwidth=\osg@widestlit}
-
-  \NewDocumentEnvironment{literaturelist}{o}{
-    \begin{osgliteraturelist}
-      }{
-    \end{osgliteraturelist}
-  }
 
    \mode<article>{
      \NewDocumentCommand{\bibitemlabel}{m}{
@@ -291,7 +280,7 @@
    }
    \RenewDocumentCommand{\bibitem}{O{} m}{%
      \Cite{#2}{main}{%
-     \item[\bibitemlabel{#2}] \MakeReferenceItem}{\item[#2] \emph{#2}}%
+     \item[\bibitemlabel{#2}] \MakeReferenceItem}{\item[#2] \emph{#2}\writecitefile{\string\nocite{#2}}}%
      \IfBlankF{#1}{, #1}
    }
 
@@ -303,15 +292,30 @@
     \protect\needspace{3\baselineskip} 
   \item[]\structure{\textbf{#1}}
   }
-   
+
+  \def\printbibentry{\hspace*{-2cm}\MakeCitation{\EntryKey}\tabto{0cm}\MakeReferenceItem\par}
   \NewDocumentCommand\PrintBibliography{o}{
+    \glet\MakeReference=\compareentries
+    \SortingOrder{name,year}{lfvj}
+    \BibFile{\OsgShareDataPath/\obb@bibfile}
+    \SortList{main}
+    \ReadList{main}
+    \chapter*{Literatur}
+    \addcontentsline{toc}{chapter}{Literatur}
+    \glet\MakeReference=\printbibentry
+    \begin{adjustwidth}{2cm}{}
+    \ReadList{main}
+    \end{adjustwidth}
+    \glet\MakeReference=\compareentries
   }
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
   % Zitatreferenzen
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
   \NewDocumentCommand\citex{m}{%
     \iftoggle{obb@firstauthor}{}{, }%
-    \Cite{#1}{main}{\MakeCitation{#1}}{??}%
+    \Cite{#1}{main}{\MakeCitation{#1}}{??
+      \writecitefile{\string\nocite{#1}}
+    }%
     \togglefalse{obb@firstauthor}%    
   }
 
@@ -322,11 +326,11 @@
    }
 
    \RenewDocumentCommand\nocite{m}{%
-      \Cite{#1}{main}{}{}%
+      \Cite{#1}{main}{}{\writecitefile{\string\nocite{#1}}}%
    }
    
    \NewDocumentCommand\fullcite{o m}{%
-     \Cite{#2}{main}{\MakeReferenceItem}{\emph{#2}}
+     \Cite{#2}{main}{\MakeReferenceItem}{\emph{#2}\writecitefile{\string\nocite{#1}}}
    }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -340,8 +344,8 @@
     \shorthandoff{"}
     \PackageInfo{\packagename}{reading #1}
     \BibFile{#1}
-    %\SortingOrder{name,year}{}
-    %\SortList{main}
+    \SortingOrder{name,year}{lfvj}
+    \SortList{main}
     \ReadList{main}
     \shorthandon{"}
   }
@@ -385,7 +389,6 @@
      \fi
    }%
 
-   
    \def\editor{editor}
    \parindent0pt
    \sfcode`\.=\numexpr(\the\sfcode`\.+1)
@@ -396,8 +399,8 @@
    }
    
    %%% Typesetting entries.
-   \def\MakeReferenceItem{%
-     \par\noindent
+   \NewDocumentCommand{\MakeReferenceItem}{s}{%
+     % \IfBooleanF{#1}{\par\noindent}
      \RetrieveFieldIn{namenumber}\tempcount%
      \stress<presentation>{\ReadName\makerefname}%
      \RetrieveFieldIn{nametype}\temp%
@@ -416,20 +419,20 @@
    }
    %%% These are for names in the bibliography.
    \def\makerefname{%
-     \ifx\Lastname\othersname
-         \etalii
-     \else
-         \ifnum\NameCount=1
+     \ifx\Lastname\othersname%
+         \etalii%
+     \else%
+         \ifnum\NameCount=1%
              \unless\ifx\Von\empty \Von\space \fi%
              \Lastname\formatFirstName[,]{\Firstname}%
              \unless\ifx\Junior\empty, \Junior \fi%
          \else
-             \ifnum\NameCount=\tempcount\relax \space \ldeen{und}{and} \else , \fi
-             \formatFirstName{\Firstname}
-             \unless\ifx\Von\empty \space\Von \fi
-             \space\Lastname
-             \unless\ifx\Junior\empty , \Junior \fi
-         \fi
+             \ifnum\NameCount=\tempcount\relax \space \ldeen{und}{and} \else, \fi%
+             \formatFirstName{\Firstname}%
+             \unless\ifx\Von\empty \space\Von \fi%
+             \space\Lastname%
+             \unless\ifx\Junior\empty , \Junior \fi%
+         \fi%
      \fi
    }
    \def\makeedname{%
@@ -437,7 +440,7 @@
          \etalii
      \else
          \unless\ifnum\NameCount=1
-             \ifnum\NameCount=\tempcount\relax \space and \else , \fi
+             \ifnum\NameCount=\tempcount\relax \space and \else, \fi%
          \fi
          \Firstname
          \unless\ifx\Von\empty \space\Von \fi
@@ -574,14 +577,13 @@
      \booktitle{title}%
      \TypesetField{url}\addurl{}%
    }
-   \SortingOrder{name,year}{}%{lfvj}
  }{% Literaturreferenzen werden deaktiviert
    \NewDocumentCommand\obb@disabled@warning{}{
      \PackageInfo{osgbeamerbib}{Bibliographic referencing
        disabled.\MessageBreak
        Set package option to activate.\MessageBreak
        Current option may result in \MessageBreak
-       an unresolved reference}
+       unresolved references}
    }
    \RenewDocumentCommand{\cite}{o m}{[\textbf{?}]%
      \obb@disabled@warning
@@ -593,3 +595,24 @@
      \obb@disabled@warning
    }
  }
+
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+ % Layout Literaturliste
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ % Literaturlist gibt es auchohne bib-Referenzen.
+ % In diesem Fall muss statt \bibitem ein normales \item genutzt werden.
+ \RequirePackage{needspace}
+ \newlength\osg@widestlit
+ \global\setlength\osg@widestlit{7em}%
+ \newlist{osgliteraturelist}{description}{1}
+ \setlist[osgliteraturelist]{font=\mdseries,
+   leftmargin=\dimexpr\osg@widestlit+0.5em\relax,
+   labelindent=0pt,
+   labelwidth=\osg@widestlit}
+ 
+ \NewDocumentEnvironment{literaturelist}{o}{
+   \begin{osgliteraturelist}
+   }{
+   \end{osgliteraturelist}
+ }
+ 
