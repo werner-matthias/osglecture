@@ -69,6 +69,8 @@
 % gespeichert. Dann wird davon ausgegangen, dass ein korrektes
 % Verzeichnis-Layout existiert.
 \newbool{osgllm}\boolfalse{osgllm}
+\newbool{osglangset}\boolfalse{osglangset}
+\newbool{osgdoctypeset}\boolfalse{osgdoctypeset}
 \begin{luacode*}
   -- lfs wird für currentdir() benötigt
   require("lfs")
@@ -233,22 +235,31 @@
   % In der Regel sollte diese Option unter OLLM nicht per Hand gesetzt werden.
   doctype .choice: ,
   doctype/slides .code:n={
+    \booltrue{osgdoctypeset}
     \gdef\osgparentclass{beamer}
     \togglefalse{osgscript}
   },
   doctype/handout .code:n={
+    \booltrue{osgdoctypeset}
     \PassOptionsToClass{handout}{beamer}
     \togglefalse{osgscript}
   },
   doctype/script .code:n={
+    \booltrue{osgdoctypeset}
+    \toggletrue{osgscript}
+  },
+  doctype/article .code:n={
+    \booltrue{osgdoctypeset}
     \toggletrue{osgscript}
   },
   doctype/screen .code:n={
+    \booltrue{osgdoctypeset}
     \PassOptionsToClass{second}{beamer}
     \togglefalse{osgscript}
   },
   doctype/web .code:n={
     % \PassOptionsToClass{second}{beamer}
+    \booltrue{osgdoctypeset}
     \ClassError{\classname}{Document type 'web' is not supported.}
     %\toggletrue{osgscript}
     %\toggletrue{osgweb}
@@ -259,11 +270,13 @@
   % gesetzt (siehe osgbeamerlanguage.sty)
   lang .choice:,
   lang/de .code:n = {
-   \providecommand\selectedbeamerlanguage{de}
+    \booltrue{osglangset}
+    \providecommand\selectedbeamerlanguage{de}
    \PassOptionsToPackage{de}{osgbeamerlanguage}
    \PassOptionsToPackage{ngerman}{translator}
   },
   lang/en .code:n = {
+    \booltrue{osglangset}
     \providecommand\selectedbeamerlanguage{en}
     \PassOptionsToPackage{en}{osgbeamerlanguage}
     \PassOptionsToPackage{english}{translator}
@@ -446,8 +459,14 @@
                      % gesammelt worden, und hier *nach* \Processoptions ausgeführt werden.
 \IfBool{osgllm}{
   % Bei OLLM werden Sprache und Dokumentart aus dem Jobnamen geholt.
-  % ACHTUNG: ggf. gesetzte Klassenoptionen für Sprache/Dokumentart werden überschrieben.
-  \SetKeyEx{osgbeamer}{lang=\getfourfromjobname,doctype=\getthreefromjobname}
+  % ACHTUNG: ggf. gesetzte Klassenoptionen für Sprache/Dokumentart werden
+  % überschrieben.
+  \IfBool{osglangset}{}{
+    \SetKeyEx{osgbeamer}{lang=\getfourfromjobname}
+  }
+  \IfBool{osgdoctypeset}{}{
+    \SetKeyEx{osgbeamer}{doctype=\getthreefromjobname}
+  }
 }{}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
