@@ -30,7 +30,7 @@ hyperref
   },
   final.code = {
     \providecommand{\missingref}{??}
-  }
+  },
 }
 
 % Erweiterter LaTeX3-Syntax, vgl. Kommentar in osgbeamer.cls
@@ -90,6 +90,9 @@ hyperref
   },
   docid.code:n = {
     \providecommand\osg@docID{#1}
+  },
+  doctype.code:n = {
+    \providecommand\omr@doctype{#1}
   }
 } 
 \ExplSyntaxOff
@@ -141,7 +144,7 @@ hyperref
   % abgezogen werden
   \addtocounter{chapter}{-1}
   \ifundef{\osg@docID}{\xdef\osg@docID{\arabic{chapter}}}{}
-  \xdef\omr@doctype{\getfromjobname{3}}
+  \ifundef{\omr@doctype}{\xdef\omr@doctype{\getfromjobname{3}}}{}
   \xdef\omr@currenttopic{\getfromjobname{5}}
   \xdef\currenttopic{\getfromjobname{5}} % Auch als User-Macro, kann z.B. zur Einbindung von Quelltexten
                                          % oder anderen Source, die den Themenbaum nachbilden, genutzt werden.
@@ -483,9 +486,10 @@ hyperref
    \newcommand<>{\osglabel}[1]{\beamer@savemode\only#2{\zref@label{#1}}\beamer@resumemode}
 
    % Definiere \omrcpath als den Dateienpfad (ohne Extension) für das angegebene Kapitel
-   \newrobustcmd\getPathForChapter[1]{%
+   \NewDocumentCommand\getPathForChapter{om}{%
+     \IfNoValueF{\xdef\omr@doctypecode{#1}}
      \luaexec{
-       getpathforchapternumber(\luastring{#1})
+       getpathforchapternumber(\luastring{#2})
        }%
    }
 

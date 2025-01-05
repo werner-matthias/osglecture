@@ -237,24 +237,29 @@
   doctype/slides .code:n={
     \booltrue{osgdoctypeset}
     \gdef\osgparentclass{beamer}
+    \PassOptionsToPackage{doctype=slides}{osgbeamerref}
     \togglefalse{osgscript}
   },
   doctype/handout .code:n={
     \booltrue{osgdoctypeset}
     \PassOptionsToClass{handout}{beamer}
+    \PassOptionsToPackage{doctype=handout}{osgbeamerref}
     \togglefalse{osgscript}
   },
   doctype/script .code:n={
     \booltrue{osgdoctypeset}
+    \PassOptionsToPackage{doctype=script}{osgbeamerref}
     \toggletrue{osgscript}
   },
   doctype/article .code:n={
     \booltrue{osgdoctypeset}
+    \PassOptionsToPackage{doctype=script}{osgbeamerref}
     \toggletrue{osgscript}
   },
   doctype/screen .code:n={
     \booltrue{osgdoctypeset}
     \PassOptionsToClass{second}{beamer}
+    \PassOptionsToPackage{doctype=slides}{osgbeamerref}
     \togglefalse{osgscript}
   },
   doctype/web .code:n={
