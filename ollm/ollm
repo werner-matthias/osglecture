@@ -5,7 +5,7 @@
 # An extension for latexmk to support 
 # osgbeamer.cls
 #
-# REMARK:
+# DISCLAIMER:
 # This is my first piece of Perl code I've
 # ever written. 
 # Thus, probably, it shows bad style and it is 
@@ -31,12 +31,11 @@ if (basename($0) eq $progname) {
 #####################################
 package ollm;
 use 5.30.0;
-our $VERSION='v0.10.0';
 use feature 'signatures','lexical_subs','switch';
 #no warnings 'experimental::signatures','experimental::smartmatch';
 use strict;
 use warnings;
-use version;
+use version; our $VERSION = version->declare('0.10.1');
 
 use File::Basename;
 use File::Copy;
@@ -92,7 +91,6 @@ $deploy_file{all} = '${prefix}-${num}-${doctype}-${lang}-${topic}';
 greeting();
 
 Getopt::Long::Configure("pass_through"); # all unknown options will be passed to latexmk
-Getopt::Long::Configure("prefix=+");     # ollm options starts with '+'
 
 my $forceoptplus=0;
 foreach ( @ARGV ) {
@@ -107,6 +105,13 @@ foreach ( @ARGV ) {
   }
   if ($_ eq '--') {last;}
 }
+Getopt::Long::Configure("long_prefix_pattern=-|--");      
+GetOptions ("jobname=s" => \$main::jobname); # catch standard option 'jobname'
+# reinsert jobname
+if (!($main::jobname eq '')) {
+  push(@ARGV ,'--jobname='.$main::jobname);
+}
+Getopt::Long::Configure("prefix=+");     # ollm options starts with '+'
 if ($forceoptplus == 0) {
     foreach ( @ARGV ) {
 	# check for bare ollm options and add prefix (if no +force+)
@@ -118,7 +123,7 @@ if ($forceoptplus == 0) {
 GetOptions(
 	   'standalone' => \$standalone,
 	   'classpath=s' => \$osgbeamer_dir,
-     'verbose|debug' => sub { $main::silent=0; },
+	   'verbose|debug' => sub { $main::silent=0; },
 	   'h|help|?' => \&ollm_print_help
 	  );
 if ($standalone) {
@@ -128,7 +133,6 @@ if ($standalone) {
   }
   return 1; 
 }
-
 # Check directory structure
 if (!is_ollmtree()) {
   print colored("Error: No proper directory structure. Try option \'standalone\'.\n",'red');
@@ -140,7 +144,7 @@ GetOptions(
 	   # 
 	   'ollmconfig=s' => \$config_file,
 	   'lang=s' => \$lang,
-	   # 'slides', 'beamer', or 'presentation' gain doctype 'slides'
+	   # 'slides', 'beamer', or 'presentation' for doctype 'slides'
 	   'slides|beamer|presentation' => sub {
 	     $doctype='slides';
 	     if (is_beamer_dir() == 0) {
@@ -148,7 +152,7 @@ GetOptions(
 	       exit(-1);
 	     }
 	   },
-	   # 'script' or 'article' gain doctype 'script'
+	   # 'script' or 'article' for doctype 'script'
 	   'script|article' => sub {
 	     if (is_article_dir() == 0) {
 	       say "Error: Directory is not intended for article document!\n";
@@ -309,20 +313,35 @@ sub publish(){
   } else {
     #print 'NO RESTRICTIONS\n';
   }
-  ## Normalize hashes
   # More than one path possible => use arrays
   my $patharrayref = $deploy_path{$doctype};
+  # Override by Jobname
+  if (!($main::jobname eq '')
+      and
+      (exists($deploy_path{"$main::jobname"}))
+     ) {
+    $patharrayref = $deploy_path{"$main::jobname"};
+  }
+  ## Normalize hashes
   # single elements are converted to an array reference
   $patharrayref = [ $patharrayref ] if ref $patharrayref eq '';
-  
+   my $source_pdffile_name;
   for my $l (@langs) {
-    my $source_pdffile_name = $lectureprefix.'-'.$num.'-'.$doctype.'-'.$l.'-'.$topic.'.pdf';
+    if (!($main::jobname eq ''))  {
+      $source_pdffile_name = $main::jobname.'.pdf';
+    } else {
+      $source_pdffile_name = $lectureprefix.'-'.$num.'-'.$doctype.'-'.$l.'-'.$topic.'.pdf';
+    }
     if (-e "$source_pdffile_name") {
       for my $p  (@{ $patharrayref}) {
 	my $lang = $l;
 	my $deploy_file_name;
 	my $evalstr;
-	$evalstr = "\$deploy_file_name= \"$deploy_file{$doctype}.pdf\"";
+	if ( !($main::jobname eq '') and (exists($deploy_file{"$main::jobname"}))) {
+	  $evalstr = "\$deploy_file_name= \"$deploy_file{$main::jobname}.pdf\"";
+	} else {
+	  $evalstr = "\$deploy_file_name= \"$deploy_file{$doctype}.pdf\"";
+	}
 	eval $evalstr;
 	say "Copy \'$source_pdffile_name\' to \'$p$deploy_file_name\'";
 	copy($source_pdffile_name,$p.$deploy_file_name);

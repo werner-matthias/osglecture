@@ -10,13 +10,13 @@
 # Tool-Chain
 * [x] Verzicht auf Makefiles
 * [x] latexmk, ~~arara, scons?~~
-* [ ] Komandozeilenorientierung
+* [x] Komandozeilenorientierung
 * [ ] Flexible Configuration
 * [ ] Orthogonalisierung
 * [ ] einfaches Deployment
 
 # Script
-* [ ] Kapitelweise Übersetzung
+* [x] Kapitelweise Übersetzung
 * [x] Übergreifende Links
 * [x] Querreferenzen zwischen Folien und Script
 * 
