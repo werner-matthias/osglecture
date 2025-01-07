@@ -141,7 +141,7 @@
       % Alle globalen \cite werden eingelesen...
       \expandafter\InputIfFileExists{\osb@glcitefile}{}{}%
       % ...und aufgelöst.
-      \BibFile{\OsgShareDataPath/\obb@bibfile}
+      \BibFile{../Include/\obb@bibfile.bib}
       % Das Citefile wird zum Schreiben geöffnet.
       \luaexec{
         osgcitefile = io.open("\osb@glcitefile","a+")
@@ -297,7 +297,7 @@
   \NewDocumentCommand\PrintBibliography{o}{
     \glet\MakeReference=\compareentries
     \SortingOrder{name,year}{lfvj}
-    \BibFile{\OsgShareDataPath/\obb@bibfile}
+    \BibFile{../Include/\obb@bibfile}
     \SortList{main}
     \ReadList{main}
     \chapter*{Literatur}
