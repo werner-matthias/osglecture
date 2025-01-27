@@ -22,7 +22,7 @@
 * [x] Kapitelübergreifende Literaturreferenzen
 
 # Features
-* [x[ Sprachen ~~(Beamer-basiert?)~~
-* [x[ Formatierung auf TUC-Klasse aufbauend (soll austauschbar sein)
+* [x] Sprachen ~~(Beamer-basiert?)~~
+* [x] Formatierung auf TUC-Klasse aufbauend (soll austauschbar sein)
 
 
