@@ -5,7 +5,7 @@
     * Verbesserte Integration => Referenzen, Links, Kapitel
 * Vereinfachte Tool-Chain
 * Separierte, unabhängige Pakete
-* Kompatibilitäs-Layer?
+* Kompatibilitätslayer?
 
 # Tool-Chain
 * [x] Verzicht auf Makefiles
@@ -19,10 +19,10 @@
 * [x] Kapitelweise Übersetzung
 * [x] Übergreifende Links
 * [x] Querreferenzen zwischen Folien und Script
-* 
+* [x] Kapitelübergreifende Literaturreferenzen
 
 # Features
-* Sprachen (Beamer-basiert?)
-* Formatierung auf TUC-Klasse aufbauend (soll austauschbar sein)
-* 
+* [x] Sprachen ~~(Beamer-basiert?)~~
+* [x] Formatierung auf TUC-Klasse aufbauend (soll austauschbar sein)
+
 
