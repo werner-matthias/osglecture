@@ -492,7 +492,7 @@ sub tex_path($path){
 #####################################
 # Dependencies                      #
 #####################################
-#package main;
+package main;
 #add_cus_dep('eps','pdf',0,'eps2pdf');
 #sub eps2pdf{
 #  system("epspdf \"$_[0].eps\"" );
@@ -516,7 +516,7 @@ sub tex_path($path){
 #}
 # comment in to build index (care for 'recursion')
 if ($lang eq 'de') {
-  $main::makeindex='texindy -M lang/german/duden-utf8 -M base/ff-ranges -M base/latin-lettergroups -M ../Include/localidx';
+  $makeindex='texindy -M lang/german/duden-utf8 -M base/ff-ranges -M base/latin-lettergroups -M ../Include/localidx';
 }
 #
 # add_input_ext('rao');
