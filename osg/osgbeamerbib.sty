@@ -281,7 +281,7 @@
    \RenewDocumentCommand{\bibitem}{O{} m}{%
      \Cite{#2}{main}{%
      \item[\bibitemlabel{#2}] \MakeReferenceItem}{\item[#2] \emph{#2}\writecitefile{\string\nocite{#2}}}%
-     \IfBlankF{#1}{, #1}
+     \IfBlankF{#1}{, #1}%
    }
 
   \newcommand{\bibcomment}[2][\ldeen{Anm:}{rem:}]{%\vspace{-1.2ex}
@@ -314,7 +314,7 @@
   \NewDocumentCommand\citex{m}{%
     \iftoggle{obb@firstauthor}{}{, }%
     \Cite{#1}{main}{\MakeCitation{#1}}{??
-      \writecitefile{\string\nocite{#1}}
+      \writecitefile{\string\nocite{#1}}%
     }%
     \togglefalse{obb@firstauthor}%    
   }
@@ -322,7 +322,7 @@
   \RenewDocumentCommand\cite{o >{\SplitList{,}}m}{%
     \toggletrue{obb@firstauthor}%    
     [\ProcessList{#2}\citex%
-    \IfNoValueF{#1}{~#1}]
+    \IfNoValueF{#1}{~#1}]%
    }
 
    \RenewDocumentCommand\nocite{m}{%
