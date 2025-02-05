@@ -515,7 +515,9 @@ sub tex_path($path){
 #  system("rail \"$_[0]\"" );
 #}
 # comment in to build index (care for 'recursion')
-#$makeindex='texindy -M lang/german/duden-utf8 -M base/ff-ranges -M base/latin-lettergroups -M ../Include/localidx';
+if ($lang eq 'de') {
+  $main::makeindex='texindy -M lang/german/duden-utf8 -M base/ff-ranges -M base/latin-lettergroups -M ../Include/localidx';
+}
 #
 # add_input_ext('rao');
 # add_input_ext('rai');
