@@ -138,7 +138,9 @@
 \newbool{osglegacy}           % Zeigt die Nutzung des "Kompatibilitätsmodus" an
 \boolfalse{osglegacy}         
 \newbool{osgforcetoc}         % Legt eine Inhaltsverzeichnisdatei an, ohne ein 
-\booltrue{osgforcetoc}        % entsprechendes Verzeichnis zu generieren 
+\booltrue{osgforcetoc}        % entsprechendes Verzeichnis zu generieren
+\newbool{osgbib}              % true lädt osgbeamerbib.sty
+\booltrue{osgbib}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Klassenoptionen
@@ -171,7 +173,16 @@
     \PassOptionsToPackage{#1}{beamerthemetuc2019}
     %\PassOptionsToPackage{#1}{beamerarticletuc2019}
   },
-  % Optionen für Umgang mit Literaturreferenzen
+  % Bei nobib wird osgbeamerbib.sty nicht geladen. Die bib-Option wird
+  % ignoriert. Die Integration von \cite etc. funktioniert nicht.
+  % Dies ist sinnvoll, wenn
+  % - keine Literaturreferenzen genutzt werden, oder
+  % - eine eigene Verwaltung für Literaturreferenzen genutzt werden soll,
+  %   z.B. biblatex
+  nobib.code = {
+    \boolfalse{osgbib}
+  },
+  % Optionen für Umgang mit Literaturreferenzen (siehe osgbeamerbib.sty)
   bib.code = {
     \PassOptionsToPackage{#1}{osgbeamerbib}
   },
@@ -463,9 +474,8 @@
                      % werden können, da im Hook \osg@forceoptionhook Key-Settings
                      % gesammelt worden, und hier *nach* \Processoptions ausgeführt werden.
 \IfBool{osgllm}{
-  % Bei OLLM werden Sprache und Dokumentart aus dem Jobnamen geholt.
-  % ACHTUNG: ggf. gesetzte Klassenoptionen für Sprache/Dokumentart werden
-  % überschrieben.
+  % Bei OLLM werden Sprache und Dokumentart aus dem Jobnamen geholt, so sie noch
+  % nicht per Option gesetzt sind.
   \IfBool{osglangset}{}{
     \SetKeyEx{osgbeamer}{lang=\getfourfromjobname}
   }
@@ -680,11 +690,12 @@
     'babel' is skipped. Please remove \string\usepackage[...]{babel}}
   ]{babel}
 }{}
-\RequirePackage{osgbeamerbib}      % Literaturreferenzen
 
 % Jetzt wird das OSG-Beamertheme geladen, das wiederum auf dem TUC-Theme aufbaut
 \usetheme{osg}
-
+\IfBool{osgbib}{%
+  \RequirePackage{osgbeamerbib}      % Literaturreferenzen
+}{}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Fonts

@@ -8,16 +8,18 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Einfache Listen
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-\RequirePackage{enumitem}
+\RequirePackage[shortlabels]{enumitem}
 
 \setlist[itemize]{label=\usebeamerfont*{itemize item}%
   \usebeamercolor[fg]{itemize item}
   \usebeamertemplate{itemize item}}
 % \setlist[itemize,1]{leftmargin=*}
-\setlist[enumerate]{%
-  label=\protect\usebeamerfont{enumerate item}%
-  \protect\usebeamercolor[fg]{enumerate item}%
-  \insertenumlabel.}
+\renewlist{enumerate}{enumerate}{4}
+%\SetEnumerateShortLabel{i}{\emph{\alph*})}
+ \setlist[enumerate]{%
+    label={\protect\usebeamerfont{enumerate item}%
+    \protect\usebeamercolor[fg]{enumerate item}%
+    \insertenumlabel.}}
 \setlist[description]{font=\protect\usebeamercolor[fg]{structure}} %
 % label=%\protect\usebeamerfont{description item}%
 % \protect\usebeamercolor[fg]{description item}%
