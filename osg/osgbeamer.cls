@@ -191,7 +191,7 @@
     \PassOptionsToClass{continuation=#1}{osgbeamerref}
   },
   docid.code = {
-    \PassOptionsToClass{docid=#1}{osgbeamerref}
+    \PassOptionsToPackage{docid=#1}{osgbeamerref}
   },
   % Eine Standalone-Präsentation ist nicht Teil einer Serie
   standalone.code = {

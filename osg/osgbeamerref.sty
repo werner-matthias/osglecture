@@ -88,8 +88,10 @@ hyperref
   standalone .code:n={
     \booltrue{osgoptionstandalone}
   },
-  docid.code:n = {
+  docid. code:n = {
+    \typeout{****************************** DocID set: #1}
     \providecommand\osg@docID{#1}
+    \typeout{************************** DocID is \osg@docID}
   },
   doctype.code:n = {
     \providecommand\omr@doctype{#1}
@@ -143,7 +145,9 @@ hyperref
   % unterliegt, muss für den korrekten Wert *im* Kapitel hier 1
   % abgezogen werden
   \addtocounter{chapter}{-1}
+  %\typeout{*************************1 DocID is \osg@docID}
   \ifundef{\osg@docID}{\xdef\osg@docID{\arabic{chapter}}}{}
+  \typeout{*************************2 DocID is \osg@docID}
   \ifundef{\omr@doctype}{\xdef\omr@doctype{\getfromjobname{3}}}{}
   \xdef\omr@currenttopic{\getfromjobname{5}}
   \xdef\currenttopic{\getfromjobname{5}} % Auch als User-Macro, kann z.B. zur Einbindung von Quelltexten
@@ -381,7 +385,7 @@ hyperref
         local cnt = '\osg@docID'
         local ndx = \luastring{\jobname}
         %tex.print("\\typeout{************ prefix == "..prefix..",
-        %  chapter = "..ndx.."}")
+        %  id = "..cnt.."}")
         info['prefix'] = prefix
         local jobpath =  path .. '/' .. \luastring{\jobname}
         info['path'] = jobpath;
@@ -403,24 +407,19 @@ hyperref
      %
      % nr: Kapitelnummer
      getpathforchapternumber = function(nr)
-     % tex.print(\luastring{\typeout{**** CALLED getpathforchapternumber}})
-       local ndx=nil
+       % tex.print(\luastring{\typeout{**** CALLED getpathforchapternumber}})
+       % tex.print("\\typeout{**** nr: "..nr.."}")
+       tex.print("\\xdef\\omrcpath{}")
        if (allrefs ~= nil) then
           for k, v in pairs(allrefs) do
-              if v['number'] == tostring(nr-1) then
-                  ndx = k
+               tex.print("\\typeout{**** k: "..k..", v:"..v["number"].."}")
+               if tonumber(v['number']) == tonumber(nr)-1 then
+                   tex.print("\\xdef\\omrcpath{"..v['path'].."}")
+                   ndx = k
               end
           end
-          % local ndx = tostring(tonumber(nr)-1)..'-'..\luastring{\omr@doctypecode}
-          if (ndx ~= nill) and (allrefs[ndx] ~= nil) then
-            %tex.print("\\typeout{**** Path for "..nr..":"..allrefs[ndx]['path'].."}")
-            tex.print("\\xdef\\omrcpath{"..allrefs[ndx]['path'].."}")
-          else
-            %tex.print("\\typeout{**** We~have~a~problem}")
-            tex.print("\\AddToHook{enddocument/info}{\\PackageWarningNoLine{osgbeamerref}{Unknown path for chapter "..nr.."}}")
-          end
        else
-         tex.print(\luastring{\\PackageWarningNoLine{osgbeamerref}{Reference information invalid or not existing.}})
+          tex.print(\luastring{\\PackageWarningNoLine{osgbeamerref}{Reference information invalid or not existing.}})
        end
      end    
      %
