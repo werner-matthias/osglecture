@@ -379,7 +379,7 @@ hyperref
         prefix = typecode .. '-' .. lang  .. '-' .. label 
         local info = {}
         local cnt = '\osg@docID'
-        local ndx = cnt .. '-' .. typecode
+        local ndx = \luastring{\jobname}
         %tex.print("\\typeout{************ prefix == "..prefix..",
         %  chapter = "..ndx.."}")
         info['prefix'] = prefix
@@ -403,16 +403,22 @@ hyperref
      %
      % nr: Kapitelnummer
      getpathforchapternumber = function(nr)
-       %tex.print(\luastring{\typeout{**** CALLED getpathforchapternumber}})
+     % tex.print(\luastring{\typeout{**** CALLED getpathforchapternumber}})
+       local ndx=nil
        if (allrefs ~= nil) then
-          local ndx = tostring(tonumber(nr)-1)..'-'..\luastring{\omr@doctypecode}
-          if allrefs[ndx] ~= nil then
+          for k, v in pairs(allrefs) do
+              if v['number'] == tostring(nr-1) then
+                  ndx = k
+              end
+          end
+          % local ndx = tostring(tonumber(nr)-1)..'-'..\luastring{\omr@doctypecode}
+          if (ndx ~= nill) and (allrefs[ndx] ~= nil) then
             %tex.print("\\typeout{**** Path for "..nr..":"..allrefs[ndx]['path'].."}")
             tex.print("\\xdef\\omrcpath{"..allrefs[ndx]['path'].."}")
           else
             %tex.print("\\typeout{**** We~have~a~problem}")
             tex.print("\\AddToHook{enddocument/info}{\\PackageWarningNoLine{osgbeamerref}{Unknown path for chapter "..nr.."}}")
-         end
+          end
        else
          tex.print(\luastring{\\PackageWarningNoLine{osgbeamerref}{Reference information invalid or not existing.}})
        end
