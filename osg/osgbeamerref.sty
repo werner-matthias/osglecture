@@ -89,9 +89,7 @@ hyperref
     \booltrue{osgoptionstandalone}
   },
   docid. code:n = {
-    \typeout{****************************** DocID set: #1}
     \providecommand\osg@docID{#1}
-    \typeout{************************** DocID is \osg@docID}
   },
   doctype.code:n = {
     \providecommand\omr@doctype{#1}
@@ -145,9 +143,7 @@ hyperref
   % unterliegt, muss für den korrekten Wert *im* Kapitel hier 1
   % abgezogen werden
   \addtocounter{chapter}{-1}
-  %\typeout{*************************1 DocID is \osg@docID}
   \ifundef{\osg@docID}{\xdef\osg@docID{\arabic{chapter}}}{}
-  \typeout{*************************2 DocID is \osg@docID}
   \ifundef{\omr@doctype}{\xdef\omr@doctype{\getfromjobname{3}}}{}
   \xdef\omr@currenttopic{\getfromjobname{5}}
   \xdef\currenttopic{\getfromjobname{5}} % Auch als User-Macro, kann z.B. zur Einbindung von Quelltexten
@@ -412,7 +408,7 @@ hyperref
        tex.print("\\xdef\\omrcpath{}")
        if (allrefs ~= nil) then
           for k, v in pairs(allrefs) do
-               tex.print("\\typeout{**** k: "..k..", v:"..v["number"].."}")
+               %tex.print("\\typeout{**** k: "..k..", v:"..v["number"].."}")
                if tonumber(v['number']) == tonumber(nr)-1 then
                    tex.print("\\xdef\\omrcpath{"..v['path'].."}")
                    ndx = k
