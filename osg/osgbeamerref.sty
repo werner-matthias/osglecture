@@ -241,11 +241,11 @@ hyperref
        }%
   }%
   % Erzwingt die Referenz auf das Artikel-Label (für Crosstype-Referenz)
-  \NewDocumentCommand\xarticleref{O{} m}{
+  \NewDocumentCommand\xarticleref{O{} m}{%
     \omr@ref[#1][a]{#2}[default]%
   }
   % Erzwingt die Referenz auf das Beamer-Label (für Crosstype-Referenz)
-  \NewDocumentCommand\xpresentationref{O{} m}{
+  \NewDocumentCommand\xpresentationref{O{} m}{%
     \omr@ref[#1][b]{#2}[default]%
   }
   %%
