@@ -894,7 +894,7 @@
 %   \NewDocumentCommand\outline{D<>{all}+m}{\alt<#1>{\underline{#2}}{#2}}
 % }
 %\mode<presentation>{
-  \NewDocumentCommand\outline{D<>{all}+m}{\alt<#1>{\highLight{#2}}{\highLight[white]{#2}}} % Die white-Version sorgt für
+  \NewDocumentCommand\outline{D<>{all}+m}{\alt<#1>{\highLight{#2}}{\highLight[bg]{#2}}} % Die phantom \highLight[bg]-Version sorgt für
   % identische Abstände.
   % ToDo: \highLight anpassen, dass der Durchschuss nicht geändert wird.
 %}
