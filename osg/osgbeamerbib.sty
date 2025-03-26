@@ -129,34 +129,33 @@
 
 \IfBool{osgusebib}{
   \RequirePackage{librarian}
-  \IfBool{osgbibglobal}{
+  \IfBool{osgbibglobal}{%
     \gdef\osb@glcitefile{\OsgShareDataPath/\obb@bibfile.lbc}
-    % Wenn es bereits ein globales Citefile gibt, wird es am Dokumentanfang eingelesen
-    % LuaLaTex erlaubt im (als Default eingestellten) Paranoid-Modus kein
-    % TeX-Fileschreiben außerhalb des eigenen Verzeichnis (inklusive
-    % Unterverzeichnisse). Dies funktioniert aber auf Lua-Ebene (warum
-    % eigentlich?)
-    % Daher bnötigt das Schreiben in das Citefile Lua.
-    \AddToHook{begindocument}{%
-      % Alle globalen \cite werden eingelesen...
-      \expandafter\InputIfFileExists{\osb@glcitefile}{}{}%
-      % ...und aufgelöst.
-      \BibFile{../Include/\obb@bibfile.bib}
-      % Das Citefile wird zum Schreiben geöffnet.
-      \luaexec{
-        osgcitefile = io.open("\osb@glcitefile","a+")
-      }
-    }
-    \NewDocumentCommand{\writecitefile}{m}{
-      \luaexec{
-        if (osgcitefile) then
-          osgcitefile:write(\luastring{#1})
-        end
-      }
-    }
   }{
-    % Im lokalen wie im Standalone-Fall wird das Librarian-Package
-    % entsprechend der Originalvorgehensweise eingesetzt.
+    \gdef\osb@glcitefile{./\jobname.lbc}
+  }
+  % Wenn es bereits ein globales Citefile gibt, wird es am Dokumentanfang eingelesen
+  % LuaLaTex erlaubt im (als Default eingestellten) Paranoid-Modus kein
+  % TeX-Fileschreiben außerhalb des eigenen Verzeichnis (inklusive
+  % Unterverzeichnisse). Dies funktioniert aber auf Lua-Ebene (warum
+  % eigentlich?)
+  % Daher bnötigt das Schreiben in das Citefile Lua.
+  \AddToHook{begindocument}{%
+    % Alle globalen \cite werden eingelesen...
+    \expandafter\InputIfFileExists{\osb@glcitefile}{}{}%
+    % ...und aufgelöst.
+    \BibFile{../Include/\obb@bibfile.bib}
+    % Das Citefile wird zum Schreiben geöffnet.
+    \luaexec{
+      osgcitefile = io.open("\osb@glcitefile","a+")
+    }
+  }
+  \NewDocumentCommand{\writecitefile}{m}{%
+    \luaexec{
+      if (osgcitefile) then
+      osgcitefile:write(\luastring{#1})
+      end
+    }
   }
   \lb@dolbr
   \def\lb@error#1{\PackageWarning{librarian}{#1}}
