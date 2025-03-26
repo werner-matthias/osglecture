@@ -15,6 +15,6 @@
  %\message{**** OSG SVG called, #1 #2 ***}
  \def\svgwidth{#1}%
   \getabspath{#2.svg}%
-  \executeiffilenewer{\theabsdir#2.svg}{\theabsdir#2.pdf}{/Applications/Inkscape.app/Contents/Resources/bin/inkscape -z -D --file=\theabsdir#2.svg  --export-pdf=\theabsdir#2.pdf --export-latex}%
+  \executeiffilenewer{\theabsdir#2.svg}{\theabsdir#2.pdf}{/Applications/Inkscape.app/Contents/MacOS/inkscape -z -D --file=\theabsdir#2.svg  --export-pdf=\theabsdir#2.pdf --export-latex}%
  \input{#2.pdf_tex}%
 }
