@@ -966,10 +966,10 @@
 }
 
 
-\newenvironment<>{twocolumns}[1][t,0.475]{%
+\newenvironment<>{twocolumns}[1][t,0.5]{%
   \twocolparam{#1}% 
-  \setlength{\osgleftcolwid}{\fpeval{\osgtcfcwid*0.95}\textwidth}%
-  \setlength{\osgrightcolwid}{0.95\textwidth}%
+  \setlength{\osgleftcolwid}{\fpeval{\osgtcfcwid*0.975}\textwidth}%
+  \setlength{\osgrightcolwid}{0.975\textwidth}%
   \addtolength{\osgrightcolwid}{-\osgtcfcwid\textwidth}%
   \alt#2{\def\nextcolumn{\column{\osgrightcolwid}}}{\def\nextcolumn{\par}}%
   \begin{columns}#2[\osgtcalignparam]\column{\osgleftcolwid}%
