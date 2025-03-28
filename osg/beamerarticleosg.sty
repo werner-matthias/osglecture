@@ -228,6 +228,18 @@
     \end{savenotes}
   }
 }
+\defbeamertemplate<article>{theorem}{block}{}[action]{
+  \RenewDocumentEnvironment{theorem}{o}{%
+    \begin{savenotes}%
+    \stepcounter{theorem}%
+    \def\insertblocktitle{\textbf{Theorem~\thetheorem}%
+      \IfNoValueF{##1}{~(##1)}}%
+    \usebeamertemplate{theorem begin}%
+  }{
+    \usebeamertemplate{theorem end}%
+    \end{savenotes}
+  }
+}
 
 
 % \RenewDocumentEnvironment{definition}{o}{%
