@@ -127,7 +127,7 @@
       oex_deenargcnt=0
       oex_deenstr=\luastringN{#1}
     }%
-    \oex@xchecknextarg
+    \oex@xchecknextarg%
   }      
   \newcommand<>{\lframetitle}[2]{
     \frametitle#3{#1}
@@ -179,7 +179,7 @@
       oex_deenargcnt=0
       oex_deenstr=\luastringN{#2}
     }%
-    \oex@xchecknextarg
+    \oex@xchecknextarg%
   }      
   \newcommand<>{\lframetitle}[2]{\ifx\empty#2\empty\frametitle#3{#1}\else\frametitle#3{#2}\fi}
   \gdef\langall{\beamer@inlecturetrue%
@@ -205,9 +205,9 @@
     oex_deenargcnt=oex_deenargcnt+1
     oex_deenargs[oex_deenargcnt]=\luastringN{#1}
   }%
-  \@ifnextchar\bgroup{\osx@consumnextarg}{\oex@process@xdeen} 
+  \@ifnextchar\bgroup{\osx@consumnextarg}{\oex@process@xdeen}%
 }
-\def\oex@process@xdeen{
+\def\oex@process@xdeen{%
   \luadirect{
     for i=1, oex_deenargcnt do
       oex_deenpat='@'.. tostring(i)
