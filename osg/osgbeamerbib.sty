@@ -4,6 +4,7 @@
 \RequirePackage{etoolbox}
 \RequirePackage{luacode}
 \RequirePackage{tabto}
+\RequirePackage{needspace}
 %\RequirePackage{changepage}
 
 \newbool{osgusebib}\boolfalse{osgusebib}
@@ -283,14 +284,6 @@
      \IfBlankF{#1}{, #1}%
    }
 
-  \newcommand{\bibcomment}[2][\ldeen{Anm:}{rem:}]{%\vspace{-1.2ex}
-  \item[\hfill\stress{#1}] {\rmfamily \em #2\par}
-  }
-  \newcommand{\bibprolog}[1]{
-    \vspace{.5ex plus .5ex}
-    \protect\needspace{3\baselineskip} 
-  \item[]\structure{\textbf{#1}}
-  }
 
   \def\printbibentry{\hspace*{-2cm}\MakeCitation{\EntryKey}\tabto{0cm}\MakeReferenceItem\par}
   \NewDocumentCommand\PrintBibliography{o}{
@@ -333,6 +326,18 @@
    }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   \newlength\osg@widestlit
+   \global\setlength\osg@widestlit{7em}%
+   \newlist{osgliteraturelist}{description}{1}
+   \setlist[osgliteraturelist]{font=\mdseries,
+     leftmargin=\dimexpr\osg@widestlit+0.5em\relax,
+     labelindent=0pt,
+     labelwidth=\osg@widestlit}
+   \NewDocumentEnvironment{literaturelist}{o}{
+     \begin{osgliteraturelist}
+       }{
+     \end{osgliteraturelist}
+   }
 
   \IfBool{osglegacy}{
     \NewCSDeprecatedCommand{paperitem}{O{} m}{\bibitem[#1]{#2}}[use \string\bibitem]
@@ -593,25 +598,23 @@
    \ProvideDocumentCommand{\fullcite}{m}{[\textbf{?}]%
      \obb@disabled@warning
    }
- }
-
- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
- % Layout Literaturliste
- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- % Literaturlist gibt es auchohne bib-Referenzen.
- % In diesem Fall muss statt \bibitem ein normales \item genutzt werden.
- \RequirePackage{needspace}
- \newlength\osg@widestlit
- \global\setlength\osg@widestlit{7em}%
- \newlist{osgliteraturelist}{description}{1}
- \setlist[osgliteraturelist]{font=\mdseries,
-   leftmargin=\dimexpr\osg@widestlit+0.5em\relax,
-   labelindent=0pt,
-   labelwidth=\osg@widestlit}
- 
- \NewDocumentEnvironment{literaturelist}{o}{
-   \begin{osgliteraturelist}
-   }{
-   \end{osgliteraturelist}
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+   % Layout Literaturliste
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+   % Literaturlist gibt es auch ohne bib-Referenzen.
+   \NewDocumentEnvironment{literaturelist}{o}{
+     \begin{itemize}
+       }{%
+     \end{itemize}
+   }
+   \let\bibitem=\item
  }
  
+ \newcommand{\bibcomment}[2][\ldeen{Anm:}{rem:}]{%\vspace{-1.2ex}
+ \item[\hfill\stress{#1}] {\rmfamily \em #2\par}
+ }
+ \newcommand{\bibprolog}[1]{
+   \vspace{.5ex plus .5ex}
+   \protect\needspace{3\baselineskip} 
+ \item[]\structure{\textbf{#1}}
+ }
