@@ -1,0 +1,286 @@
+\NeedsTeXFormat{LaTeX2e}
+\edef\packagename{osgcode}
+\ProvidesPackage{\packagename}[2024/02/02]
+\RequirePackage{etoolbox}
+\RequirePackage{pdftexcmds}
+\RequirePackage{tcolorbox}
+
+\DeclareKeys[osgterminal]{
+  noexec.ifnot = @osgtermnoexec,   % Nur Terminalbox, keine Shell-Ausführung
+  noexec.usage = load,
+  codedir.store =\osg@term@codedir,% Directory, in dem Code übersetzt wird.
+  shell.store= \osgtermshell,      % Genutzte Shell
+  fontsize.store=\osgtermfontsize,
+}
+
+\edef\workingdir{\unexpanded\expandafter{\directlua{tex.write(lfs.currentdir())}}}%
+\SetKeys[osgterminal]{
+  noexec=false,
+  shell=zsh,
+  codedir=./code,
+  fontsize=\small<article>\scriptsize<presentation>,
+}
+
+\ProcessKeyOptions[osgterminal]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Code
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+%\usepackage{osglistings}
+%\usepackage{osggists}
+
+%% Wenn die Option 'noexec' gesetzt ist, definiert das Paket nur die
+%% LaTeX-Umgebung 'terminal', nicht die Möglichkeiten zur Ausführung
+%% von Shell-Kommandos (buildfrom).
+
+\if@osgtermnoexec 
+    \RequirePackage{robust-externalize}
+    \RequirePackage{shellesc}
+    \RequirePackage{fancyvrb}
+    \RequirePackage{fvextra}
+
+    \newtoggle{osg@term@first@chunk}
+    
+    \begin{PlaceholderFromCode}{__SHELL_TEMPLATE__}
+        __ROBEXT_MAIN_CONTENT_ORIG__
+    \end{PlaceholderFromCode}
+    \def\osgterminalprintranges{}
+    \pgfqkeys{/robExt}{
+      lst/.code   = {\setPlaceholder{__ROBEXT_LST_ARGS__}{#1}},
+      last/.code  = {\addToPlaceholder{__ROBEXT_LST_ARGS__}{,lastline=#1}},
+      linerange/.code= {\setPlaceholder{__ROBEXT_LST_RANGES__}{#1}},
+      intertext/.code= {\setPlaceholder{__ROBEXT_LST_INTERTEXT__}{#1}},
+      post/.code  = {\setPlaceholder{__ROBEXT_TERM_POST__}{#1}},
+      post/.initial={\setPlaceholder{__ROBEXT_TERM_POST__}{}},
+      nobreak/.code={\setPlaceholder{__ROBEXT_TERM_BREAK__}{breakable=false}},
+      codedir/.code={\expandafter\setPlaceholder{__ROBEXT_TERM_CODEDIR__}{#1}}
+    }
+    \NewDocumentCommand\osgtermprint{m m}{%
+      \iftoggle{osg@term@first@chunk}{%
+        \togglefalse{osg@term@first@chunk}
+      }{%
+        {\evalPlaceholder{__ROBEXT_LST_INTERTEXT__}}
+      }
+      \ifstrempty{#1}{%
+            \setPlaceholder{__OSGTERMFST__}{firstline=1}%
+          }{%
+            \setPlaceholder{__OSGTERMFST__}{firstline=#1}%
+          }%
+      \ifstrempty{#2}{%
+            \setPlaceholder{__OSGTERMLAST__}{}%
+          }{%
+            \setPlaceholder{__OSGTERMLAST__}{,lastline=#2}%
+          }%
+      \evalPlaceholder{%
+        \VerbatimInput[breaklines=true,fontsize=\osgtermfontsize,__ROBEXT_LST_ARGS__, __OSGTERMFST__ __OSGTERMLAST__,vspace=0pt]{__ROBEXT_CACHE_FOLDER____ROBEXT_OUTPUT_PREFIX__-compilation.log}%
+      }%
+    }
+
+    \NewDocumentCommand{\osgtermrange}{>{\SplitArgument{1}{-}} m}{%
+      \osgtermprint#1%
+    }
+    \ExplSyntaxOn
+    \NewDocumentCommand{\osgtermsplitranges}{>{\SplitList{,}}m}{%
+       \ProcessList{#1}{\osgtermrange}%
+    }
+    \ExplSyntaxOff
+    \robExtConfigure{
+      new preset={do shell}{
+        set compilation command={cd ../__ROBEXT_TERM_CODEDIR__; __ROBEXT_TERM_CWD__../Include/runterm.py "__ROBEXT_TERM_CWD____ROBEXT_CACHE_FOLDER____ROBEXT_SOURCE_FILE__"; touch  "__ROBEXT_TERM_CWD____ROBEXT_CACHE_FOLDER____ROBEXT_OUTPUT_PDF__"},
+        set template={__SHELL_TEMPLATE__},
+        set placeholder={__ROBEXT_LST_ARGS__}{},
+        set placeholder={__ROBEXT_TERM_POST__}{},
+        set placeholder={__ROBEXT_LST_RANGES__}{1-},
+        set placeholder={__ROBEXT_LST_INTERTEXT__}{\lineellipsis},
+        set placeholder={__ROBEXT_TERM_CODEDIR__}{./code},
+        set placeholder eval={__ROBEXT_TERM_CWD__}{\workingdir/},
+        set placeholder eval={__ROBEXT_TERM_SHELLCMD__}{\osgtermshell},
+        custom include command={%
+          \begin{terminal}
+            \evalPlaceholder{%
+              \toggletrue{osg@term@first@chunk}
+              % \typeout{************* Process: __ROBEXT_LST_RANGES__, __ROBEXT_LST_INTERTEXT__}
+              \osgtermsplitranges{__ROBEXT_LST_RANGES__}%{__ROBEXT_LST_INTERTEXT__}%
+              __ROBEXT_TERM_POST__
+            }
+          \end{terminal}
+        },
+        % Ensure that the code does not break when externalization is disabled
+        print verbatim if no externalization,
+      },
+      new preset={do shell nobreak}{
+        set compilation command={cd ../__ROBEXT_TERM_CODEDIR__; __ROBEXT_TERM_CWD__../Include/runterm.py "__ROBEXT_TERM_CWD____ROBEXT_CACHE_FOLDER____ROBEXT_SOURCE_FILE__"; touch  "__ROBEXT_TERM_CWD____ROBEXT_CACHE_FOLDER____ROBEXT_OUTPUT_PDF__"},
+        set template={__SHELL_TEMPLATE__},
+        set placeholder={__ROBEXT_LST_ARGS__}{},
+        set placeholder={__ROBEXT_TERM_POST__}{},
+        set placeholder={__ROBEXT_LST_RANGES__}{1-},
+        set placeholder={__ROBEXT_LST_INTERTEXT__}{\lineellipsis},
+        set placeholder={__ROBEXT_TERM_CODEDIR__}{./code},
+        set placeholder eval={__ROBEXT_TERM_CWD__}{\workingdir/},
+        set placeholder eval={__ROBEXT_TERM_SHELLCMD__}{\osgtermshell},
+        custom include command={%
+          \begin{terminal}[breakable=false]
+            \evalPlaceholder{%
+              \toggletrue{osg@term@first@chunk}
+              % \typeout{************* Process: __ROBEXT_LST_RANGES__, __ROBEXT_LST_INTERTEXT__}
+              \osgtermsplitranges{__ROBEXT_LST_RANGES__}%{__ROBEXT_LST_INTERTEXT__}%
+              __ROBEXT_TERM_POST__
+            }
+          \end{terminal}
+        },
+        % Ensure that the code does not break when externalization is disabled
+        print verbatim if no externalization,
+      }
+    }
+    \cacheEnvironment[{[}{]}]{termexec}{do shell}
+    \cacheEnvironment[{[}{]}]{termexec*}{do shell nobreak}
+    
+    \NewDocumentCommand{\buildfrom}{m m O{--edition 2021}}{%
+      \IfFileExists{\osg@term@codedir/#1}{% Überprüfe, ob sich die Quelle geändert hat
+        \ifnum\pdf@strcmp{\pdf@filemoddate{\osg@term@codedir/#1}}{\pdf@filemoddate{\osg@term@codedir/#2}}>0%
+            {\ShellEscape{(cd ./code; rustc #3 #2)}}
+        \fi%
+      }{% Sonst baue erstmalig
+        \ShellEscape{(cd \osg@term@codedir; rustc #3 #2)}
+      }
+    }
+    
+\fi % @osgtermnoexec
+
+\newcommand{\lineellipsis}{{\centerline{\osgtermfontsize\rotatebox{90}{\textellipsis}}}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%% Terminalwindows
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\definecolor{AppleRed}{RGB}{255,95,86}
+\definecolor{AppleYellow}{RGB}{255,189,46}
+\definecolor{AppleGreen}{RGB}{39,201,63}
+\definecolor{AppleGray}{HTML}{D8D6D9}
+\newcommand{\cterminalbg}{black!5!white}
+\newcommand{\cterminalfg}{blue!30!black}
+% Box mit dem Aussehen eines (MacOS-)Terminals.
+% "breakable=false" Version schaltet Unterstützung des internen Seitenumbruch aus,
+% was auch in allen minipage-Umgebungen (z.B. auch columns oder towcolumns)
+% notwendig ist.
+\NewTColorBox{terminal}{O{breakable=true}}{
+  title=Terminal,
+  coltitle=black!65,
+  skin=enhanced,%
+  halign title=center,%
+  skin=bicolor,%
+  boxrule=0.5mm,%
+  #1,
+  top=0pt,
+  bottom=0pt,
+  boxsep=.5ex,
+  %show bounding box,
+  left=1em,
+  right=1em,
+  frame style={%
+    draw=AppleGray,%
+    left color=AppleGray,%
+    right color=AppleGray%
+  },%
+  overlay first = {%
+     \node[inner sep=0pt,anchor=north west,yshift=-4pt,xshift=10pt,text=white,font=\tiny]
+     at (frame.north west) {\textcolor{AppleRed}{\faCircle}$\,$
+       \textcolor{AppleYellow}{\faCircle}$\,$
+       \textcolor{AppleGreen}{\faCircle}};
+   },%
+  overlay unbroken = {%
+     \node[inner sep=0pt,anchor=north west,yshift=-4pt,xshift=10pt,text=white,font=\tiny]
+     at (frame.north west) {\textcolor{AppleRed}{\faCircle}$\,$
+       \textcolor{AppleYellow}{\faCircle}$\,$
+       \textcolor{AppleGreen}{\faCircle}};
+   },%
+  fonttitle=\sffamily\scriptsize<presentation>,%\bfseries,%
+  fontupper=\ttfamily\osgtermfontsize\color{\cterminalfg}
+}
+
+\newcommand{\termfamily}{\ttfamily}
+% \RequirePackage{lstautogobble}
+
+% \lstdefinestyle{nocolors}{keywordstyle=\color{black},emphstyle=\color{black},stringstyle=\color{black},commentstyle=\color{black}}
+% \lstdefinestyle{bash}{
+%   basicstyle=\termfamily\scriptsize<presentation>\small<article>,
+%   showstringspaces=false,
+%   language=bash,
+%   style=nocolors,
+%   columns=fixed,
+%   extendedchars=true,
+%   breaklines,
+%   breakatwhitespace,
+%   linewidth=.9\linewidth,
+%   aboveskip=2pt,
+%   belowskip=2pt,
+%   frame=none,
+%   %xleftmargin=2pt,
+%   %xrightmargin=2pt,
+% }
+\RequirePackage[user]{zref}
+\zref@newprop{listingname}{??}
+\zref@addprop{main}{listingname}
+
+% \makeatletter
+% \mode<article>{
+
+\ExplSyntaxOn
+\keys_define:nn{osgrusteditor}{
+  title.store=\osgrusteditortitle,
+  post.store=\osgrusteditorpost,
+  pre.store=\osgrusteditorpre,
+  fail.code={\SetKeys[osglistings]{fail}},
+  figure.store=\osgrusteditorfig,
+  %figure.code={\osgrusteditorfigplacement={#1}},
+  unknown.code={
+    \IfBlankTF{#1}{
+      \setminted{\l_keys_key_str}
+    }{
+      \setminted{\l_keys_key_str=#1}
+    }
+  }
+}
+\ExplSyntaxOff
+
+\ProvideDocumentCommand{\osglablelstsrc}{m m}{
+  \zref@setcurrent{listingname}{#1}\label{#2}
+}
+\newtoks\osgrusteditorfigplacement
+\ProvideDocumentCommand{\rusteditor}{s D<>{all} O{pre={},post={},figure={htb}} m o}{%
+  \SetKeys[osgrusteditor]{linenos, autogobble, breaklines=true, title=#4,
+    pre={}, post={}}%
+  \fvset{firstline,lastline}
+  %\setminted{firstline,lastline}
+  %\ClearKey{osgrusteditor}{firstline}
+  %\ClearKey{osgrusteditor}{lastline}
+  \bgroup
+  \SetKeys[osgrusteditor]{#3}%
+  \only<#2>{%
+    \IfBooleanT{#1}{
+      \begingroup\makeatletter\let\fps@figure\osgrusteditorfig\makeatother\begin{figure}}%
+        \begin{codeeditor}[title=\osgrusteditortitle,lang=rust]{%
+              https://play.rust-lang.org/?version=stable\&mode=debug\&edition=2021\&gist=\gistid{werner-matthias}{#4}%
+            }
+            \osgrusteditorpre
+            \inputminted{rust}{code/#4}%
+            \osgrusteditorpost
+        \end{codeeditor}%
+        \SetKeys[osglistings]{fail=false}%
+        \IfNoValueF{#5}{\osglablelstsrc{#4}{#5}}%
+        \IfBooleanT{#1}{\end{figure}\endgroup}%
+  }%
+  \egroup%
+}
+\NewDocumentCommand{\file}{m}{\textcolor{teal}{\texttt{#1}}}
+\NewDocumentCommand{\xreflstname}{s O{} m}{%
+  \IfBooleanTF{#1}{\omr@ref[#2]{#3}[listingname]}{\file{\omr@ref[#2]{#3}[listingname]}}%
+}
+% }
+% \mode<presentation>{
+%   \ProvideDocumentCommand{\rusteditor}{O{fontsize=\scriptsize,linenos=false,autogobble} m}{
+%     \begin{codeeditor}[title=#2]{https://play.rust-lang.org/?version=stable\&mode=debug\&edition=2018\&gist=\gistid{werner-matthias}{#2}}
+%         \gist[#1]{werner-matthias}{#2}{./code}
+%     \end{codeeditor}
+%   }
+% }
+
+\NewDocumentCommand{\code}{m}{\textcolor{infgreen}{\texttt{#1}}}
