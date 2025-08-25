@@ -1,0 +1,3 @@
+MB-TEST: begin
+<PACKAGE-ERROR> multibabel: Babel detected, option clash
+MB-TEST: end

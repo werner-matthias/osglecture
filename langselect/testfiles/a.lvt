@@ -1,0 +1,21 @@
+\input{regression-test.tex}
+% --- Fehlerausgabe normalisieren: nur eine Zeile ins Log ---
+\makeatletter
+\def\@latex@error#1#2{%
+  \typeout{<LATEX-ERROR> #1}%   % nur Kernaussage
+}%
+\def\PackageError#1#2#3{%
+  \typeout{<PACKAGE-ERROR> #1: #2}%
+}%
+\def\ClassError#1#2#3{%
+  \typeout{<CLASS-ERROR> #1: #2}%
+}%
+\makeatother
+% -----------------------------------------------------------
+\documentclass{article}
+\usepackage{babel}
+\START
+\usepackage[languages = {de,en}]{multibabel}
+\END
+\begin{document}
+\end{document}
