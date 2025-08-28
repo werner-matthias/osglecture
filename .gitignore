@@ -13,3 +13,6 @@ test/standalone/main.toc
 test/standalone/main.synctex.gz
 *.safe
 *.so
+*.aux
+*.toc
+*.aux

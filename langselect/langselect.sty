@@ -12,10 +12,11 @@
 %% See http://www.latex-project.org/lppl.txt
 %% ----------------------------------------------------------------
 %% 
+\def\packagename{langselect}
 %%  (C) 2022-2025 Matthias Werner
 %%
 %%  Package langselect - generate documents in different languages
-%%                       from common source.
+%%                       from a common source.
 %%
 
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
@@ -23,7 +24,6 @@
 \def\packageversion{2025/08/10 v0.9.0d}
 \ProvidesPackage{\packagename}[\packageversion\space support for different
 languages versions of a document]
-\ExplSyntaxOn
 \ExplSyntaxOn
 \seq_const_from_clist:cn{olsIsoTags}{aa,ab,ae,af,ak,am,an,ar,as,av,ay,az,ba,be,bg,
   bh,bi,bm,bn,bo,br,bs,ca,ce,ch,co,cr,cs,cu,cv,cy,da,de,dv,dz,ee,el,en,eo,es,et,eu,
@@ -48,94 +48,238 @@ languages versions of a document]
   \tmpb
 }
 \DeclareKeys{
-  languages.clist_gset:N = \ols@langs,
+  languages.clist_gset:N = \ols_langs,
   languages.usage=load,
   targetlang.code = {
     \cs_if_exist:NF\olsTargetLanguage{
-          \str_if_eq:eeTF{\str_range:Nnn{#1}{1}{3}}{job}{% targetlang =job n
-            \olsChangeCatEleven{\getfromjobname{\str_range:Nnn{#1}{-1}{-1}}}
+      \str_if_eq:eeTF{\str_range:Nnn{#1}{1}{3}}{job}{%
+        \olsChangeCatEleven{\getfromjobname{\str_range:Nnn{#1}{-1}{-1}}}
+        \edef\olsTargetLanguage{\olsCatElven}
+      }{
+        \str_if_eq:nnTF{#1}{meta}{
+          \IfDocumentMetadataTF{
+            \edef\tmpa{\GetDocumentProperties{document/lang}}
+            \edef\tmpb{\str_range:Nnn\tmpa{1}{2}}
+            \olsChangeCatEleven{\tmpb}
             \edef\olsTargetLanguage{\olsCatElven}
-            % % \typeout{**** Set~olsTargetLanguage='\olsTargetLanguage'}
           }{
-            \str_if_eq:nnTF{#1}{meta}{
-              % %\typeout{**~SEARCH~FOR~META}
-              \IfDocumentMetadataTF{
-                \edef\tmpa{\GetDocumentProperties{document/lang}}
-                \edef\tmpb{\str_range:Nnn\tmpa{1}{2}}
-                \olsChangeCatEleven{\tmpb}
-                \typeout{*** Meta-lang: \GetDocumentProperties{document/lang},~**\tmpb}
-                \edef\olsTargetLanguage{\olsCatElven}
-              }{
-                \PackageWarningNoLine{\packagename}{No~meta~data~provided, falling
-                  back to English.}
-               % %\edef\olsTargetLanguage{en}
-              }
-            }{
-           \edef\olsTargetLanguage{#1}
-         }
-       }
-     }{}
-   },
+            \PackageWarningNoLine{\packagename}{No~meta~data~provided,
+              ~falling~back~to~English}
+            \def\olsTargetLanguage{en}
+          }
+        }{
+          \edef\olsTargetLanguage{#1}
+        }
+      }
+    }{}
+  },
   targetlang.usage=load,
-  prefix.store=\osl@sprefix,
+  prefix.store=\ols_sprefix,
   prefix.initial:n=l,
-  prefix.usage=load
+  prefix.usage=load,
+  auto.bool_set:N=\ols_generate,
+  auto.usage=load,
+  auto.initial:n=true
 }%
 \ProcessKeyOptions\relax
-\providecommand{\olsTargetLanguage}{en}
-\typeout{*****~\string\olsTargetLanguage='\olsTargetLanguage'}
+\cs_if_exist:NF \olsTargetLanguage {\def\olsTargetLanguage{en}}
 \IfTagIsValidF{\olsTargetLanguage}{
-  \PackageError{\packagename}{Couldn't~resolve~target~language~'\olsTargetLanguage'}{See
-    documentation.}
-  \aftergroup\endinput
+  \PackageWarningNoLine{\packagename}{Can't~resolve~target~language~'\olsTargetLanguage'.
+    \MessageBreak Fall~back~to~'en'}
+  \def\olsTargetLanguage{en}
 }
-\int_compare:nNnT{\clist_count:N{\ols@langs}} < {2}{
-  \PackageError{\packagename}{No~sufficient~number~of~selection\MessageBreak~languages~provided}{
+\int_compare:nNnT{\clist_count:N{\ols_langs}} < {2}{
+  \PackageError{\packagename}{No~sufficient~number~of~selectable
+    \MessageBreak~languages~provided}{
     You~have~to~provide~a~list~of~two~or~three\MessageBreak
     languages~via~'language'~option.}
   \aftergroup\endinput
 }
-\int_compare:nNnT{\clist_count:N\ols@langs} > {3}{
-      \PackageWarningNoLine{\packagename}{Too~many~selection~languages~provided.\MessageBreak
-        I~will~ignore~the~superflous~languages}
-}{}
-\clist_map_inline:Nn\ols@langs {
-  \typeout{***~CHECK~'#1'}
+\int_compare:nNnT{\clist_count:N\ols_langs} > {3}{
+  \PackageWarningNoLine{\packagename}{Too~many~selectable~languages~provided.
+    \MessageBreak I~will~ignore~the~superflous~languages}
+}
+\clist_map_inline:Nn\ols_langs {
+  %\typeout{***~CHECK~'#1'}
   \IfTagIsValidF{#1}{
-    \typeout{***~Problem~'#1'}
-    \PackageError{\packagename}{Couldn't~resolve~selection~language~'#1'}{
+    \PackageError{\packagename}{Couldn't~resolve~selectable~language~'#1'}{
       Use~valid~ISO-639-1~code~in~option~'languages'.}
     \aftergroup\endinput
   }
-  % %\typeout{*** '#1'~is~OKAY}
 }
-\clist_if_in:NVF\ols@langs{\olsTargetLanguage}{
+\clist_if_in:NVF\ols_langs{\olsTargetLanguage}{
   \PackageError{\packagename}{Target~language~'\olsTargetLanguage'~is~not\MessageBreak
-    in~the~list~of~selection~languages}{
+    in~the~list~of~selectable~languages}{
     Check~option~'language'~and~'targetlang'.}
 }
 \IfDocumentMetadataT{
-  \str_if_eq:eeF{\olsTargetLanguage}{\str_range:nnn{\GetDocumentProperties{document/lang}}{1}{2}}{
-    \PackageWarningNoLine{\packagename}{Target~language~'\olsTargetLanguage'~doesn't~comply~with
-      \MessageBreak\string\DocumentMetadata.~Prepare~for~troubble.}
+  \edef\olsDocLang{\exp_args:Ne\str_range:nnn{\GetDocumentProperties{document/lang}}{1}{2}}
+  \str_if_eq:eeF{\olsTargetLanguage}{\olsDocLang}{
+    \PackageWarningNoLine{\packagename}{Target~language~'\olsTargetLanguage'~
+      doesn't~comply~with\MessageBreak \c_backslash_str
+      DocumentMetadata~'\GetDocumentProperties{document/lang}'.\MessageBreak
+      I'll~try~to~overwrite~the~meta~data}
+    \AddToDocumentProperties[document]{lang}{\olsTargetLanguage}
   }
 }
-\def\olsFrstLanguage{\clist_item:Nn \ols@langs{1}}
-\def\olsScndLanguage{\clist_item:Nn \ols@langs{2}}
-\typeout{***~First:~\olsFrstLanguage}
-\typeout{***~Second:~\olsScndLanguage}
-\NewDocumentCommand{\olsMakeBilangualMacro}{m m m}{
-  \str_if_eq:eeT{\olsTargetLanguage}{#2}{
-    \typeout{***~Define~for~first~language}
-    \expandafter\long\expandafter\gdef\csname #1#2#3 \endcsname##1##2{##1}
+\bool_new:c{ols_trilang}
+\int_compare:nNnTF{\clist_count:N{\ols_langs}} > {2}{
+  \bool_set_true:c{ols_trilang}
+}{
+  \bool_set_false:c{ols_trilang}
+}
+\def\olsFrstLanguage{\clist_item:Nn \ols_langs{1}}
+\def\olsScndLanguage{\clist_item:Nn \ols_langs{2}}
+\bool_if:cT{ols_trilang}{
+  \def\olsThrdLanguage{\clist_item:Nn \ols_langs{3}}
+}
+ % #1: prefix, #2,#3: selectable languages, #4: own name
+\NewDocumentCommand{\olsMakeBilangualMacro}{O{\ols_sprefix} m m o}{
+  \str_if_eq:eeT{\olsTargetLanguage}{#2} {
+    \IfValueTF{#4}{
+      \ExpandArgs{c}\NewDocumentCommand{#1#4}{s +m +m}{
+        \IfBooleanTF{##1}{
+          \olsProcessArgs{##2}
+        }{
+          ##2
+        }
+      }
+    }{
+      \ExpandArgs{c}\NewDocumentCommand{#1#2#3}{s +m +m}{
+        \IfBooleanTF{##1}{
+          \olsProcessArgs{##2}
+        }{
+          ##2
+        }
+      }
+    }
   }
   \str_if_eq:eeT{\olsTargetLanguage}{#3}{
-    \expandafter\long\expandafter\gdef\csname #1#2#3 \endcsname##1##2{##2}
-    \typeout{***~Define~for~second~language}
+    \IfValueTF{#4}{
+      \ExpandArgs{c}\NewDocumentCommand{#1#4}{s +m +m}{
+        \IfBooleanTF{##1}{
+          \olsProcessArgs{##3}
+        }{
+          ##3
+        }
+      }
+    }{
+      \ExpandArgs{c}\NewDocumentCommand{#1#2#3}{s +m +m}{
+        \IfBooleanTF{##1}{
+          \olsProcessArgs{##3}
+        }{
+          ##3
+        }
+      }
+    }
   }
-  \typeout{*** Make \string\ #1#2#3}
 }
-\olsMakeBilangualMacro{\osl@sprefix}{\olsFrstLanguage}{\olsScndLanguage}
+\NewDocumentCommand{\olsMakeTrilangualMacro}{O{\ols_sprefix} m m m o}{
+  \str_if_eq:eeT{\olsTargetLanguage}{#2} {
+    \IfValueTF{#4}{
+      \ExpandArgs{c}\NewDocumentCommand{#1#5}{s +m +m +m}{
+        \IfBooleanTF{##1}{
+          \olsProcessArgs{##2}
+        }{
+          ##2
+        }
+      }
+    }{
+      \ExpandArgs{c}\NewDocumentCommand{#1#2#3}{s +m +m +m}{
+        \IfBooleanTF{##1}{
+          \olsProcessArgs{##2}
+        }{
+          ##2
+        }
+      }
+    }
+  }
+  \str_if_eq:eeT{\olsTargetLanguage}{#3} {
+    \IfValueTF{#4}{
+      \ExpandArgs{c}\NewDocumentCommand{#1#5}{s +m +m +m}{
+        \IfBooleanTF{##1}{
+          \olsProcessArgs{##2}
+        }{
+          ##3
+        }
+      }
+    }{
+      \ExpandArgs{c}\NewDocumentCommand{#1#2#3}{s +m +m +m}{
+        \IfBooleanTF{##1}{
+          \olsProcessArgs{##2}
+        }{
+          ##3
+        }
+      }
+    }
+  }
+  \str_if_eq:eeT{\olsTargetLanguage}{#4} {
+    \IfValueTF{#4}{
+      \ExpandArgs{c}\NewDocumentCommand{#1#5}{s +m +m +m}{
+        \IfBooleanTF{##1}{
+          \olsProcessArgs{##2}
+        }{
+          ##4
+        }
+      }
+    }{
+      \ExpandArgs{c}\NewDocumentCommand{#1#2#3}{s +m +m +m}{
+        \IfBooleanTF{##1}{
+          \olsProcessArgs{##2}
+        }{
+          ##4
+        }
+      }
+    }
+  }
+}
+\bool_if:cTF{ols_generate}{
+  \bool_if:cTF{ols_trilang}{
+    \olsMakeTrilangualMacro{\olsFrstLanguage}{\olsScndLanguage}{\olsThrdLanguage}
+  }{
+    \olsMakeBilangualMacro{\olsFrstLanguage}{\olsScndLanguage}
+  }
+}{
+  \PackageInfoNoLine{\packagename}{No~language~macros~generated.\MessageBreak
+  Use~\string\olsMakeBilangualMacro~or~\string\olsMakeTrilangualMacro~to~generate.}
+}
+\seq_new:N \ols_args_seq
+\int_new:N \ols_num_of_args
+\tl_new:N \ols_format_str_tl
+\makeatother
+\NewDocumentCommand \olsProcessArgs { +m } {
+  \tl_gset:Nn \ols_format_str_tl{#1}
+  \int_zero:N \ols_num_of_args
+  \int_step_inline:nnnn { 9 } { -1 } { 1 }
+  {
+    \regex_if_match:nnT {@##1}{ #1 }
+    {
+      \int_set:Nn \ols_num_of_args { ##1 } \prg_break:
+    }
+  }
+  \int_compare:nNnTF {\ols_num_of_args} = { 0 }
+  { #1 }{
+    \seq_clear:N \ols_args_seq
+    \ols_collect_replace:n \ols_num_of_args
+  }
+}
+
+\cs_new_protected:Npn \ols_collect_replace:n #1 #2{
+  \seq_put_right:Nn \ols_args_seq { #2 }
+  \int_compare:nNnTF { #1 } = { 1 }
+  {
+    \int_step_inline:nn { \ols_num_of_args }
+    {
+      \tl_replace_all:Nnn \ols_format_str_tl
+      { @##1 }
+      { \seq_item:Nn \ols_args_seq { ##1 } }
+    }
+    \ols_format_str_tl
+  }{
+    \ols_collect_replace:n { \int_eval:n { #1 - 1 } }
+  }
+}
+\makeatletter
 \ExplSyntaxOff
 
 %% This work is "maintained" (as per LPPL maintenance status) by
