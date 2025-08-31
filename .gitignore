@@ -1,7 +1,6 @@
 .#*
 .DS_Store
 rail.sty
-test/standalone/main.aux
 *.fdb_latexmk
 *.log
 *.fls
@@ -13,6 +12,6 @@ test/standalone/main.toc
 test/standalone/main.synctex.gz
 *.safe
 *.so
-*.aux
-*.toc
-*.aux
+**/*.aux
+**/*.toc
+*.code

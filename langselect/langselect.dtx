@@ -219,6 +219,40 @@ targetlang={job=2}
 
 \section{\ldeen{Einleitung}{Introduction}}
 \label{sec:intro}
+\subsection{TL;DR}
+\label{sec:tldr}
+\ldeen{Angenommen Sie wollen von einen Text eine englische und ein
+  deutsche Version erhalten, wobei Sie ein gemeinsames Quelldokument
+  nutzen wollen.}{Assume, you have a text with an English and a German version whilst
+  you want to use a common source}.
+\begin{enumerate}
+\item \ldeen*{Binden Sie @1 ein}{Include @1}{\cs{usepackage}\Oarg{languages=\Marg{en,de}}\Marg{langselect}}
+\item \ldeen{Nutzen Sie im Quelldokument 
+    \cs{lende}\marg{Text$_{en}$}\marg{Text$_{de}$}. \meta{Text$_{en}$} wird in
+    der englischen Version erscheinen, Text$_{de}$ in der deutschen.}{Use in the
+  source \cs{lende}\marg{text$_{en}$}\marg{text$_{de}$}. \meta{text$_{en}$} will
+  appear in the Englisch version, \meta{text$_{de}$} will appear in the German
+  one.}
+\begin{itemize}
+\item \ldeen*{Text, der in beiden Versionen vorkommt, schreiben Sie außerhalb des
+  Makros oder nutzen die Sternversion, um gemeinsame Daten im Fließtext nur
+  einmal schreiben zu müssen, siehe Abschnitt~@1}{Write text that appears in
+  both versions outside the macro or use the star version so that you only have to write common data in the body text once, see Section~@1}{\ref{sec:start-var}}.
+\end{itemize}
+\item \ldeen*{Übersetzen Sie das Dokument mit @1, um die englische Version zu
+    erhalten, und mit @2 für die deutsche.}{Translate the document with @1 to
+    get the English version and with @2 for the German version.}{\code{latex
+      \cs{def}\cs{olsTargetlanguage}\Marg{en}\cs{include}\marg{document}}}{\code{latex
+      \cs{def}\cs{olsTargetlanguage}\Marg{en}\cs{include}\marg{document}}}
+  \begin{itemize}
+  \item \ldeen{Es gibt noch einige andere Möglichkeiten,die Zielsprache zu
+      bestimmen, u.\;a.\ über den Jobnamen und über @1}{There are several other
+      ways to determine the target language, including via the job name and via
+      @1}{\cs{DocumentMetadata}}. 
+  \end{itemize}
+\end{enumerate}
+\subsection{Motivation}
+\label{sec:motivation}
 \ldeen{Mitunter werden mehrere Sprachversionen des gleichen Dokuments benötigt.
 Im Anwendungsgebiet des \pkg*{osglecture}-Bündel sind dies beispielsweise die
 Lehrskripte, Vorlesungsfolien und Handouts einer Lehrveranstaltung.
@@ -506,11 +540,11 @@ Section~@1.%
 \begin{options}
     \keyval{languages}{\ldeen{Liste von Auswahlsprachen}{list of selectable
         languages}}\Default!{}
-    \ldeen*{Gibt zwei oder drei Auswahlsprachen an. Die Reihenfolge ist relevant für die Generierung
-      der Sprachmakros (siehe Abschnitt~@1).
+    \ldeen*{Gibt zwei oder drei Auswahlsprachen an. Die Reihenfolge ist relevant
+      für die automatische Generierung der Sprachmakros (siehe Abschnitt~@1).
     }{%
       Provides two or three selectable languages.
-      The order matters for the generation of the language commands
+      The order matters for the automatic generation of the language commands
     (cf.\ Section~@1).
   }{\ref{sec:usermacros}}
 

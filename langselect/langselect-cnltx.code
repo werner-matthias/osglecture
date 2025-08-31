@@ -1,7 +1,0 @@
-      \newif\ifenglish
-      \englishtrue
-      \ifenglish
-          Welcome!
-      \else
-          Willkommen!
-      \fi
