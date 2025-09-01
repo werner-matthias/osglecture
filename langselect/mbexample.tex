@@ -1,9 +1,17 @@
-\DocumentMetadata{lang=de}
+%\DocumentMetadata{lang=de}
 \documentclass{scrartcl}
+\usepackage{polyglossia}
 \usepackage[
-languages = {de,es},
-targetlang={job=2}
+ languages = {de,en},
+ targetlang={job=2},
+ map={es=es-AR},
+ load=babel
 ]{langselect}
 \begin{document}
-\ldees{Hallo!}{¡Hola!}
+\ldeen{Hallo!}{Hello}
+\ExplSyntaxOn
+\ols_use_map:n {es}
+\ExplSyntaxOff
+Foo
+\ldeen*{Ich habe @{}1 im Code, na und?}{There is @@ in code. Anybode cares?}|x
 \end{document}

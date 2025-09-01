@@ -245,7 +245,7 @@ targetlang={job=2}
       \cs{def}\cs{olsTargetlanguage}\Marg{en}\cs{include}\marg{document}}}{\code{latex
       \cs{def}\cs{olsTargetlanguage}\Marg{en}\cs{include}\marg{document}}}
   \begin{itemize}
-  \item \ldeen{Es gibt noch einige andere Möglichkeiten,die Zielsprache zu
+  \item \ldeen*{Es gibt noch einige andere Möglichkeiten,die Zielsprache zu
       bestimmen, u.\;a.\ über den Jobnamen und über @1}{There are several other
       ways to determine the target language, including via the job name and via
       @1}{\cs{DocumentMetadata}}. 
@@ -331,18 +331,17 @@ mechanisms for selecting the target language.
       which makes it easy to output only certain sections of the document.
       This can also be used very well for language selection.
     }
-  \item[\pkg{translations}/\pkg{translator}/\pkg{xt\_capts}]
-    \ldeen{
-      Diese drei Pakete
-      \needpackage{translations}/\needpackage{translator}/\needpackage[/macros/latex/contrib/xtcapts]{xt\_capts}
+  \item[\pkg{bicaption}\pkg{translations}/\pkg{translator}/\pkg{xt\_capts}]
+    \ldeen*{
+      Die Pakete @1      
       addressieren Programmierer von \LaTeX-Paketen, um fixe Textelemente wie
-      die Überschriften von Verzeichnissen zu internationalisieren. Für Autoren mehrsprachiger Dokumente sind diese Pakete
+      die Überschriften von Verzeichnissen zu internationalisieren. Für Dokumentautoren sind diese Pakete
       nur bedingt geeignet.
     }{
-      These three packages are intended for programmers of \LaTeX\ packages to internationalize fixed
+      The packages @1 are intended for programmers of \LaTeX\ packages to internationalize fixed
       text elements such as the headings of tables of contents.
-      These packages are only of limited use for authors of multilingual documents.
-  }
+      These packages are only of limited use for document authors.
+  }{\needpackage{bicaption}\needpackage{translations}/\needpackage{translator}/\needpackage[/macros/latex/contrib/xtcapts]{xt\_capts}}
 \end{description}
 \subsection{\ldeen{Sprachen}{Languages}}
 \label{sec:languages}
@@ -464,12 +463,12 @@ Section~@1.%
   Once a target language has been determined, further evaluation is canceled.
 }
 \begin{enumerate}
-  \item \ldeen{Definition eines Makros \cs{omdTargetLanguage} \emph{vor} Laden des
+  \item \ldeen{Definition eines Makros \cs{olsTargetLanguage} \emph{vor} Laden des
     Pakets. Damit ist es beispielsweise möglich, über}{Definition of a macro
-    \cs{omdTargetLanguage} \emph{before} loading the package. This makes it
+    \cs{olsTargetLanguage} \emph{before} loading the package. This makes it
     possible, for example, to use}  
 \begin{verbatim}
-> latexmk -e"\def\olsTargetLanguage{fr}" document.tex
+> latexmk -e "\def\olsTargetLanguage{fr}" document.tex
 \end{verbatim}
     \ldeen{die Zielsprache Französisch für den Übersetzungslauf festzulegen}{to
       set the target language French for the translation run}.
@@ -842,21 +841,27 @@ languages versions of a document]
   }
   \tmpb
 }
+% \ldeen{Bei Bedarf bilden wir Spachcode auf Sprachvarianten ab. Bei
+% Interaktionen mit externen Code wir dann die Sprachvariante weitergegeben.}{If
+% necessary, we map language codes to language variants. When interacting with 
+% external code, the language variant is then passed on.} 
+\cs_new:Npn \ols_use_map:n #1 {
+  \cs_if_exist_use:cF { olslangmap / #1 }{ #1 }
+}
 % \ldeen{Wir definieren einige Optionen. Alle außer \option{language} sind
 % optional. Einige Ergebnisse werden wir in Variablen spreichern, die wir zuerst
 % anlegen.}{We define some options. All except \option{language} are
-% optional. We will store some results in variables that we first create.}  
-\prop_new:N \ols_langmap
-\prop_clear:N \ols_langmap
-
+% optional. We will store some results in variables that we first create.}
+\bool_new:N\ols_load_babel
+\bool_new:N\ols_load_polyglossia
 \DeclareKeys{
   languages.clist_gset:N = \ols_langs,
   languages.usage=load,
   targetlang.code = {
     \cs_if_exist:NF\olsTargetLanguage{
-      \str_if_eq:eeT{\str_range:Nnn{#1}{1}{3}}{job}{% 
+      \str_if_eq:eeT{\str_range:Nnn{#1}{1}{3}}{job}{%
         \olsChangeCatEleven{\getfromjobname{\str_range:Nnn{#1}{-1}{-1}}}
-        \edef\olsTargetLanguage{\olsCatElven}
+        \xdef\olsTargetLanguage{\olsCatElven}
       }
       \bool_if:nTF{
         \str_if_eq_p:nn{#1}{babel} || \str_if_eq_p:nn{#1}{polyglossia}
@@ -885,12 +890,26 @@ languages versions of a document]
   auto.usage=load,
   auto.initial:n=true,
   map.code:n = {
-    \prop_set_from_keyval:Nn \ols_langmap {#1}
+    \prop_new:N \ols_lang_pl
+    \prop_clear:N \ols_lang_pl
+    \prop_set_from_keyval:Nn \ols_lang_pl {#1}
+% \ldeen{Da Property-Listen nicht expandierbar sind, setzen wir die Einträge auf
+% gewöhnlich Makros um.}{Since property lists cannot be expanded, we convert the
+% entries to ordinary macros.} 
+    \prop_map_inline:Nn \ols_lang_pl
+      { \cs_gset:cpn { olslangmap / \tl_to_str:n {##1} } {##2} }
   },
-  load.choice:
-  load / babel.code = {},
-  load / polyglossia.code = {},
-  load.usage = load
+  load.choice:,
+  load / babel .code:n = {
+    \bool_set_true:N \ols_load_babel
+  },
+  load / polyglossia .code:n = {
+    \bool_set_true:N \ols_load_polyglossia
+  },
+  % load / babel. bool_set:N = \ols_load_babel,
+  % load / polyglossia. .bool_set:N = \ols_load_polyglossia,
+  load.usage = load,
+  shorthand~quotes.bool_set:N=\ols_gl_quotes,
 }%
 \ProcessKeyOptions\relax
 % \ldeen{Wenn über \cs{olsTargetLanguage} oder die \option{targetlang} keine
@@ -946,7 +965,7 @@ languages versions of a document]
   \PackageWarningNoLine{\packagename}{Too~many~selectable~languages~provided.
     \MessageBreak I~will~ignore~the~superflous~languages}
 }
-% \ldeen{Als nächstes überprüfen wir, ob alle Auswahlsprachen gülitge ISO
+% \ldeen{Als nächstes überprüfen wir, ob alle Auswahlsprachen gültige ISO
 % 639~1 Codes sind.}{Next, we test the validity of the selectable
 % languages. They should form ISO~693-1 codes.} 
 \clist_map_inline:Nn\ols_langs {
@@ -963,23 +982,46 @@ languages versions of a document]
     in~the~list~of~selectable~languages}{
     Check~option~'language'~and~'targetlang'.}
 }
+\bool_if:nT{
+  (\cs_if_exist_p:c{ver@babel.sty} || \cs_if_exist_p:c{ver@polyglossia.sty}) &&
+  ( \ols_load_babel || \ols_load_polyglossia)
+}{
+  \PackageWarningNoLine{\packagename}{Can't~load~babel/polyglossia~for~you,since\MessageBreak
+    a~language~package~is~already~loaded.\MessageBreak
+  I'll~ignore~that~option}
+}
+% \ldeen{\cs{ols_taget_map} ist die Bezeichnung der Zielsprache, wie sie ggf.\ an
+% externen Code weitergegeben wird, d.,h. \cs{DocumentMetadata}, Sprachpakete
+% und Hooks.}{\cs{ols_taget_map} is the name of the target language as it is
+% passed on to external code, if applicable, i.e. \cs{DocumentMetadata},
+% language packs, and hooks.} 
+\edef\ols_taget_map{\ols_use_map:n{\olsTargetLanguage}}
 % \ldeen{Wir korrigieren noch ggf.\ die über \cs{DocumentMetadata} gesetzen
 % Metadaten auf die der Zielsprache, so dass beispielsweise Babel
 % keine falsche Hauptsprache ableitet.
 % }{%
 % If needed, we correct the language metadata set by \cs{DocumentMetadata}.
 % Now, Babel (for example) does not derive a wrong main language.
-%}
+% }
 \IfDocumentMetadataT{
   \edef\olsDocLang{\exp_args:Ne\str_range:nnn{\GetDocumentProperties{document/lang}}{1}{2}}
-  \str_if_eq:eeF{\olsTargetLanguage}{\olsDocLang}{
+  \bool_if:nF{
+    \str_if_eq_p:nn{\olsDocLang}{\olsTargetLanguage} 
+  }{
     \PackageWarningNoLine{\packagename}{Target~language~'\olsTargetLanguage'~
       doesn't~comply~with\MessageBreak \c_backslash_str
       DocumentMetadata~'\GetDocumentProperties{document/lang}'.\MessageBreak
       I'll~try~to~overwrite~the~meta~data}
-    \AddToDocumentProperties[document]{lang}{\olsTargetLanguage}
+    \DocumentMetadata{lang=\ols_mapped_taget_lang}
   }
 }
+% \ldeen{Da der Name des Sprachmakros nicht bekannt ist, sind Patchen oder
+% generische Hooks komplizierter. Wir stellen deshalb eigene Hooks zur
+% Verfügung.}{Since the name of the language macro is unknown, patching or
+% generic hooks are more complicated. We therefore provide our own hooks.} 
+\NewHookWithArguments{langselect/begin}{1}
+\NewHookWithArguments{langselect/end}{1}
+\NewHookWithArguments{langselect/argument}{2}
 % \ldeen{Ein Boolean zur Markierung, ob mehr als zwei Auswahlsprachen angegeben
 % wurden.}{A Boolean to indicate whether more than two selectable languages have
 % been specified.} 
@@ -998,49 +1040,54 @@ languages versions of a document]
 % dienen zur Generierung der eigentlichen Sprachmakros.}{The commands
 % \cs{olsMakeBilangualMacro} and \cs{olsMakeTrilangualMacro}, resp., 
 % are used to generate the actual language commands.}
- % #1: prefix, #2,#3: selectable languages, #4: own name
-\NewDocumentCommand{\olsMakeBilangualMacro}{O{\ols_sprefix} m m o}{
-  \str_if_eq:eeT{\olsTargetLanguage}{#2} {
-    \IfValueTF{#4}{
-      \ExpandArgs{c}\NewDocumentCommand{#1#4}{s +m +m}{
-        \IfBooleanTF{##1}{
-          \tl_trim_spaces:n{\olsProcessArgs{##2}}
-        }{
-          \tl_trim_spaces:n{##2}
-        }
-      }
-    }{
-      \ExpandArgs{c}\NewDocumentCommand{#1#2#3}{s +m +m}{
-        \IfBooleanTF{##1}{
-          \tl_trim_spaces:n{\olsProcessArgs{##2}}
-        }{
-          \tl_trim_spaces:n{##2}
+ % #1: prefix, #2,#3: selectable languages, #4: base name
+ \NewDocumentCommand{\olsMakeBilangualMacro}{O{\ols_sprefix} m m o}{
+   \UseHook{langselect/begin}{\ols_mapped_taget_lang}
+   \str_if_eq:eeT{\olsTargetLanguage}{#2} {
+     \IfValueTF{#4}{
+       \ExpandArgs{c}\NewDocumentCommand{#1#4}{s +m +m}{
+         \IfBooleanTF{##1}{
+           \tl_trim_spaces:n{\olsProcessArgs{##2}}
+         }{
+           \tl_trim_spaces:n{##2}
+         }
+       }
+     }{
+       \ExpandArgs{c}\NewDocumentCommand{#1#2#3}{s +m +m}{
+         \IfBooleanTF{##1}{
+           \tl_trim_spaces:n{\olsProcessArgs{##2}}
+         }{
+           \tl_trim_spaces:n{##2}
+         }
+       }
+     }
+   }
+   \str_if_eq:eeT{\olsTargetLanguage}{#3}{
+     \IfValueTF{#4}{
+       \ExpandArgs{c}\NewDocumentCommand{#1#4}{s +m +m}{
+         \IfBooleanTF{##1}{
+           \tl_trim_spaces:n{\olsProcessArgs{##3}}
+         }{
+           \tl_trim_spaces:n{##3}
+         }
+       }
+     }{
+       \ExpandArgs{c}\NewDocumentCommand{#1#2#3}{s +m +m}{
+         \IfBooleanTF{##1}{
+           \tl_trim_spaces:n{\olsProcessArgs{##3}}
+         }{
+           \tl_trim_spaces:n{##3}
         }
       }
     }
   }
-  \str_if_eq:eeT{\olsTargetLanguage}{#3}{
-    \IfValueTF{#4}{
-      \ExpandArgs{c}\NewDocumentCommand{#1#4}{s +m +m}{
-        \IfBooleanTF{##1}{
-          \tl_trim_spaces:n{\olsProcessArgs{##3}}
-        }{
-          \tl_trim_spaces:n{##3}
-        }
-      }
-    }{
-      \ExpandArgs{c}\NewDocumentCommand{#1#2#3}{s +m +m}{
-        \IfBooleanTF{##1}{
-          \tl_trim_spaces:n{\olsProcessArgs{##3}}
-        }{
-          \tl_trim_spaces:n{##3}
-        }
-      }
-    }
-  }
+  \UseHook{langselect/end}{\ols_mapped_taget_lang}
 }
-% \ldeen{Nun das Gleiche nochmal für \emph{drei} Sprachen.}{Now do the same thing again for three languages.}
+% \ldeen{Nun das Gleiche nochmal für \emph{drei} Sprachen.}{Now do the same
+% thing again for \emph{three} languages.} 
+ % #1: prefix, #2...#4: selectable languages, #5: base name
 \NewDocumentCommand{\olsMakeTrilangualMacro}{O{\ols_sprefix} m m m o}{
+  \UseHook{langselect/begin}{\ols_mapped_taget_lang}
   \str_if_eq:eeT{\olsTargetLanguage}{#2} {
     \IfValueTF{#4}{
       \ExpandArgs{c}\NewDocumentCommand{#1#5}{s +m +m +m}{
@@ -1098,6 +1145,7 @@ languages versions of a document]
       }
     }
   }
+  \UseHook{langselect/end}{\ols_mapped_taget_lang}
 }
 % \ldeen{Falls die automatische Erzeugung nicht deaktivert ist, werden die
 % konkreten Sprachmakros angelegt. Der Name sind
@@ -1163,7 +1211,11 @@ languages versions of a document]
 % from the token stream following the command, where it finds the next replacement
 % text. This is stored in a token sequence and @1 is called again.}{\cs{ols\_collect\_replace}}
 \cs_new_protected:Npn \ols_collect_replace:n #1 #2{
-  \seq_put_right:Nn \ols_args_seq { #2 }
+  \IfHookIsEmptyTF{langselect/argument}{
+    \seq_put_right:Nn \ols_args_seq { #2 }
+  }{
+    \seq_put_right:Nn \ols_args_seq { \UseHook{langselect/argument}{\ols_mapped_taget_lang}{#2} }
+  }
   \int_compare:nNnTF { #1 } = { 1 }
   {
 % \ldeen{Wenn alle Ersetzungstexte eingelesen wurden, werden sie nacheinander
@@ -1198,17 +1250,10 @@ languages versions of a document]
 % % \AtBeginDocument{\GlobalQuoteShorthands}
 
 % % 2) Sprachagnostischer Hook: nach JEDEM \selectlanguage erneut setzen
-\AddToHook{cmd/selectlanguage/after}{\GlobalQuoteShorthands}
+%\AddToHook{cmd/selectlanguage/after}{\GlobalQuoteShorthands}
 \makeatother
 \ExplSyntaxOff
 
 %</pkg>
 % ----------------- Ende Paketcode ----------------------------
-% \section{Anwendung}
-% Laden und verwenden:
-%
-% \begin{verbatim}
-% \usepackage{mypkg}
-% \end{verbatim}
-%
-% Das war's.
+
