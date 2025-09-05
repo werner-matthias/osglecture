@@ -12,54 +12,25 @@
 %% See http://www.latex-project.org/lppl.txt
 %% ----------------------------------------------------------------
 %% 
-\def\packagename{langselect}
 %%  (C) 2022-2025 Matthias Werner
 %%
 %%  Package langselect - generate documents in different languages
 %%                       from a common source.
 %%
-\def\nameofplainTeX{plain}
-\ifx\fmtname\nameofplainTeX
-\input docstrip.tex
-\keepsilent
-\askforoverwritefalse
-\preamble
-----------------------------------------------------------------
-langselect -- multiple language versions from a common source
-E-mail: matthias.werner@informatik.tu-chemnitz.de
-Released under the LaTeX Project Public License v1.3c or later
-See http://www.latex-project.org/lppl.txt
-----------------------------------------------------------------
-
-\endpreamble
-\postamble
-This work is "maintained" (as per LPPL maintenance status) by
-Matthias Werner.
-
-This work consists of the file  langselect.dtx
-and the derived files           langselect.pdf and
-                                langselect.sty.
-\endpostamble
-
-\generate{
-  \file{\packagename.sty}{\from{\packagename.dtx}{pkg}}
-}
-  \expandafter\endbatchfile
-\fi
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
 \def\packagename{langselect}
-\def\packageversion{2025/08/10 v0.9.0d}
+\def\packageversion{2025/09/04 v0.2.1}
 \ProvidesPackage{\packagename}[\packageversion\space support for different
-languages versions of a document]
+languages versions from common source]
 \ExplSyntaxOn
-\seq_const_from_clist:cn{olsIsoTags}{aa,ab,ae,af,ak,am,an,ar,as,av,ay,az,ba,be,bg,
-  bh,bi,bm,bn,bo,br,bs,ca,ce,ch,co,cr,cs,cu,cv,cy,da,de,dv,dz,ee,el,en,eo,es,et,eu,
-  fa,ff,fi,fj,fo,fr,fy,ga,gd,gl,gn,gu,gv,ha,he,hi,ho,hr,ht,hu,hy,hz,ia,id,ie,ig,ii,
-  ik,io,is,it,iu,ja,jv,ka,kg,ki,kj,kk,kl,km,kn,ko,kr,ks,ku,kv,kw,ky,la,lb,lg,li,ln,
-  lo,lt,lu,lv,mg,mh,mi,mk,ml,mn,mr,ms,mt,my,na,nb,nd,ne,ng,nl,nn,no,nr,nv,ny,oc,oj,
-  om,or,os,pa,pi,pl,ps,pt,qu,rm,rn,ro,ru,rw,sa,sc,sd,se,sg,si,sk,sl,sm,sn,so,sq,sr,
-  ss,st,su,sv,sw,ta,te,tg,th,ti,tk,tl,tn,to,tr,ts,tt,tw,ty,ug,uk,ur,uz,ve,vi,vo,wa,
-  wo,xh,yi,yo,za,zh,zu}
+\seq_const_from_clist:cn{olsIsoTags}{aa,ab,ae,af,ak,am,an,ar,as,av,ay,az,ba,be,
+  bg,bh,bi,bm,bn,bo,br,bs,ca,ce,ch,co,cr,cs,cu,cv,cy,da,de,dv,dz,ee,el,en,eo,es,
+  et,eu,fa,ff,fi,fj,fo,fr,fy,ga,gd,gl,gn,gu,gv,ha,he,hi,ho,hr,ht,hu,hy,hz,ia,id,
+  ie,ig,ii,ik,io,is,it,iu,ja,jv,ka,kg,ki,kj,kk,kl,km,kn,ko,kr,ks,ku,kv,kw,ky,la,
+  lb,lg,li,ln,lo,lt,lu,lv,mg,mh,mi,mk,ml,mn,mr,ms,mt,my,na,nb,nd,ne,ng,nl,nn,no,
+  nr,nv,ny,oc,oj,om,or,os,pa,pi,pl,ps,pt,qu,rm,rn,ro,ru,rw,sa,sc,sd,se,sg,si,sk,
+  sl,sm,sn,so,sq,sr,ss,st,su,sv,sw,ta,te,tg,th,ti,tk,tl,tn,to,tr,ts,tt,tw,ty,ug,
+  uk,ur,uz,ve,vi,vo,wa,wo,xh,yi,yo,za,zh,zu}
 
 \newcommand\IfTagIsValidF[2]{%
   \seq_if_in:ceF{olsIsoTags}{#1}{#2}
@@ -238,12 +209,12 @@ languages versions of a document]
     \IfValueTF{#4}{
       \ExpandArgs{c}\NewExpandableDocumentCommand{#1#4}{s +m +m}{
         \UseHook{langselect/language}{\ols_mapped_target_lang}
-        \IfBooleanTF{##1}{\olsProcessArgs{\ols_trim:n{##2}}}{\ols_trim:n{##2}}
+        \IfBooleanTF{##1}{\ols_trim:n{\olsProcessArgs{##2}}}{\ols_trim:n{##2}}
       }
     }{
       \ExpandArgs{c}\NewExpandableDocumentCommand{#1#2#3}{s +m +m}{
         \UseHook{langselect/language}{\ols_mapped_target_lang}
-        \IfBooleanTF{##1}{\olsProcessArgs{\ols_trim:n{##2}}}{\ols_trim:n{##2}}
+        \IfBooleanTF{##1}{\ols_trim:n{\olsProcessArgs{##2}}}{\ols_trim:n{##2}}
       }
     }
   }
@@ -347,6 +318,8 @@ languages versions of a document]
   {
     \int_step_inline:nn { \ols_num_of_args }
     {
+      \tl_analysis_log:n{@}
+      \tl_analysis_log:n{\ols_format_str_tl}
       \tl_replace_all:Nnn \ols_format_str_tl
       { @##1 }
       { \seq_item:Nn \ols_args_seq { ##1 } }
@@ -365,13 +338,13 @@ languages versions of a document]
     }
   }
 }
+\bool_if:NT\ols_load_polyglossia{
+  \RequirePackage{polyglossia}
+}
 \cs_if_exist:cT{ver@babel.sty}{
   \AtBeginDocument{
     \selectlanguage{\ols_mapped_target_lang}
   }
-}
-\bool_if:NT\ols_load_polyglossia{
-  \RequirePackage{polyglossia}
 }
 \cs_if_exist:cT{ver@polyglossia.sty}{
   \bool_if:NTF\ols_shorthands{
@@ -387,6 +360,7 @@ languages versions of a document]
       \useshorthands*{"}
       \defineshorthand{"`}{\openautoquote}%
       \defineshorthand{"'}{\closeautoquote}%
+      \defineshorthand{"/}{\textormath{\bbl@allowhyphens\discretionary{/}{}{/}\bbl@allowhyphens}{}}%
     }
   }
 }

@@ -1,11 +1,44 @@
 module = "langselect"
 
+unpackfiles = { "langselect.dtx" }
+
 stdengine    = "luatex"
-checkengines = {
-   "luatex"
+checkengines = { "luatex" }
+
+sourcefiles  = { "langselect.dtx" }
+
+docfiles     = {
+  "langselect.dtx",
+  "langselect.pdf",
+  "langselect-de.pdf",
+  "README.txt"
 }
 
-sourcefiles = {
-   "langselect.dtx"
+jobnames = { "langselect", "langselect-de" }
+
+typesetfiles = { "langselect.dtx" } 
+
+typesetexe = "lualatex"
+
+cleanfiles={
+    "*-cnltx*",
+    "*.toc",
+    "*.aux",
+    "*.log"
 }
-dofile("../build.lua")
+
+function typeset(name, engine, _)
+   print(">>> typeset() called with engine: " .. engine)
+  for _, job in ipairs(jobnames) do
+    local cmd = string.format("%s %s -jobname=%s langselect.dtx", typesetexe, typesetopts, job)
+    print("Running: " .. cmd)
+    local result = os.execute(cmd)
+    if result ~= 0 then
+      return result
+    end
+  end
+  return 0
+end
+
+
+-- dofile("../build.lua")

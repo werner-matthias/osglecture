@@ -1,4 +1,3 @@
-\def\packagename{langselect}
 % \iffalse meta-comment
 %
 %<*pkg>
@@ -8,6 +7,9 @@
 %%                       from a common source.
 %%
 %</pkg>
+% \fi% meta
+%<*driver>
+\def\packagename{langselect}
 \def\nameofplainTeX{plain}
 \ifx\fmtname\nameofplainTeX
 \input docstrip.tex
@@ -36,10 +38,10 @@ and the derived files           langselect.pdf and
 }
   \expandafter\endbatchfile
 \fi
-% \fi% meta
-%<*driver>
-% % Patch cnltx-doc bundle
-\typeout{*** PATCH}
+% Patch cnltx-doc for modern LaTeX and LuaTeX
+\AddToHook{class/cnltx-doc/before}{
+  \typeout{==> First Aid for cnltx-doc.cls applied!}
+}
 \AddToHook{class/scrartcl/after}{
   \NewCommandCopy{\originalAfterPackage}{\AfterPackage}
   \RenewDocumentCommand{\AfterPackage}{t! m m}{
@@ -60,7 +62,6 @@ and the derived files           langselect.pdf and
   \def\error{}
   \RequirePackage{luacode}
 }{
-  
   \def\error{\errmessage{LuaLaTeX~is~required~to~build~this~documentation.}\endinput}
 }
 \error
@@ -82,84 +83,74 @@ Ligatures = {NoCommon,NoRequired,NoContextual}
 \usepackage{hyperref}
 \usepackage{multicol}
 \usepackage{luacode}
-\usepackage{listings}
-\lstset{language=TeX}
+\usepackage{fancyvrb}
+\fvset{formatcom=\color{blue},numbers=left,firstnumber=19}
 \mdfdefinestyle{cnltxmdframed}{
   backgroundcolor = cnltxbg ,
  linecolor = cnltx ,
  roundcorner = 5pt
 }
-% --- Mini-Autodoc: comments = doku --------
+% --- Autodoc: A poor mans version of gmdoc
 \begin{luacode*}
 -- autodoc: % => text; %<*pkg>..%</pkg> => Code
---   - Kommentarzeilen (%...) als Fließtext (kein verbatim),
---   - Nicht-%-Zeilen als verbatim-Code gesetzt.
--- Außerhalb von Guards: %... als Fließtext, sonst ignorieren.
 
 local function strip_pct(s) return (s:gsub("^%%+%s?","")) end
 
 function autodoc_process(fname)
-  tex.print("\\typeout{*********** Input: '"..fname.."'}")
   local f = io.open(fname,"r")
   if not f then tex.error("AutoDocInput: cannot open "..fname); return end
   local in_driver = false
-  local in_guard  = false  -- z.B. *package*
-  local in_vb     = false  -- verbatim läuft?
-
+  local in_guard  = false 
+  local in_vb     = false 
+  local vb_start  = true
+  
   local function vb_open()
     if not in_vb then
-      tex.print("\\color{blue}\\begin{verbatim}")
+      if vs_start then
+        -- 20 => length of preamble
+        tex.print("\\begin{Verbatim}[firstnumber=20]")
+      else
+         tex.print("\\begin{Verbatim}[firstnumber=last]")
+      end
       in_vb=true
-      -- print("START VERB")
     end
   end
   local function vb_close()
     if in_vb then
-      tex.print("\\end{verbatim}\\color{black}")
+      tex.print("\\end{Verbatim}")
       in_vb=false
-      -- print("END VERB")
     end
   end
 
   for line in f:lines() do
-    -- Driver auslassen
     if line:match("^%%<%*driver>") then
       in_driver=true
-      -- print("START DRIVER")
       goto continue
     end
     if line:match("^%%</driver>")   then
     in_driver=false
-      -- print("END DRIVER")
       goto continue
     end
     if in_driver then goto continue end
 
-    -- Beliebige Guard-Blöcke wie %<*package>
     local guard_open = line:match("^%%<%*(%w+)>")
     if guard_open then
        in_guard=true;
-       -- print("START PACKAGE")
        vb_close();
        goto continue
     end
     if line:match("^%%</%w+>") then
       in_guard=false
       vb_close()
-      -- print("END PACKAGE")
       goto continue
     end
     if in_guard then
       if line:match("^%%") then
-        -- Fließtext innerhalb des Guards
         vb_close()
         tex.print(strip_pct(line))
-        -- print("*T* ".. strip_pct(line))
       else
-        -- echter Code innerhalb des Guards
         vb_open()
         tex.print(line)
-        -- print("*C* ".. line)
       end
     else
       -- Außerhalb der Guards: nur Doku drucken
@@ -195,7 +186,8 @@ targetlang={job=2}
   version  = \UseVersionOf{\packagename.sty},
   date     = \UseDateOf{\packagename.sty},
   title    = The \pkg*{langselect} Package,
-  info     = \ldeen{Generierung verschiedener Sprachversionen aus einer Quelle}{Generate different language versions from a source},
+  info     = \ldeen{Generierung verschiedener Sprachversionen aus einer
+    Quelle}{Generate different language versions from a common source}, 
   authors  = {Matthias Werner[matthias.werner@informatik.tu-chemnitz.de]},
   abstract={
     \ldeen{
@@ -239,13 +231,24 @@ targetlang={job=2}
 \item \ldeen*{Text, der in beiden Versionen vorkommt, schreiben Sie außerhalb des
   Makros oder nutzen die Sternversion, um gemeinsame Daten im Fließtext nur
   einmal schreiben zu müssen, siehe Abschnitt~@1}{Write text that appears in
-  both versions outside the macro or use the star version so that you only have to write common data in the body text once, see Section~@1}{\ref{sec:start-var}}.
+  both versions outside the macro or use the star version so that you only have
+  to write common data in the body text once, see
+  Section~@1}{\ref{sec:start-var}}.  
 \end{itemize}
 \item \ldeen*{Übersetzen Sie das Dokument mit @1, um die englische Version zu
     erhalten, und mit @2 für die deutsche.}{Translate the document with @1 to
-    get the English version and with @2 for the German version.}{\code{latex
-      \cs{def}\cs{olsTargetlanguage}\Marg{en}\cs{include}\marg{document}}}{\code{latex
-      \cs{def}\cs{olsTargetlanguage}\Marg{en}\cs{include}\marg{document}}}
+    get the English version and with @2 for the German version.}{
+    
+    \centerline{\code{> latex
+        "\cs{def}\cs{olsTargetlanguage}\Marg{en}\cs{include}\marg{document}}"}
+      
+    }{
+
+      \centerline{\code{> latex
+          "\cs{def}\cs{olsTargetlanguage}\Marg{de}\cs{include}\marg{document}}"}
+
+    }
+    
   \begin{itemize}
   \item \ldeen*{Es gibt noch einige andere Möglichkeiten,die Zielsprache zu
       bestimmen, u.\;a.\ über den Jobnamen und über @1}{There are several other
@@ -333,7 +336,7 @@ mechanisms for selecting the target language.
       which makes it easy to output only certain sections of the document.
       This can also be used very well for language selection.
     }
-  \item[\pkg{bicaption}/\pkg{translations}/\pkg{translator}/\pkg{xt\_capts}]
+  \item[\pkg{bicaption}"/\pkg{translations}"/\pkg{translator}"/\pkg{xt\_capts}]
     \ldeen*{
       Die Pakete @1      
       addressieren Programmierer von \LaTeX-Paketen, um fixe Textelemente wie
@@ -343,8 +346,8 @@ mechanisms for selecting the target language.
       The packages @1 are intended for programmers of \LaTeX\ packages to internationalize fixed
       text elements such as the headings of tables of contents.
       These packages are only of limited use for document authors.
-  }{\needpackage{bicaption} / \needpackage{translations} /
-    \needpackage{translator} / \needpackage[/macros/latex/contrib/xtcapts]{xt\_capts}}
+    }{\needpackage{bicaption}"/\needpackage{translations}"/\needpackage{translator}"/%
+      \needpackage[/macros/latex/contrib/xtcapts]{xt\_capts}}
 \end{description}
 \subsection{\ldeen{Sprachen}{Languages}}
 \label{sec:languages}
@@ -470,7 +473,7 @@ Section~@1.%
     \cs{olsTargetLanguage} \emph{before} loading the package. This makes it
     possible, for example, to use}  
 \begin{verbatim}
-> latexmk -e "\def\olsTargetLanguage{fr}" document.tex
+> latexmk -usepretex="\def\olsTargetLanguage{fr}" document.tex
 \end{verbatim}
     \ldeen{die Zielsprache Französisch für den Übersetzungslauf festzulegen}{to
       set the target language French for the translation run}.
@@ -810,11 +813,11 @@ Section~@1.%
       "`from outside"' (i.e., with \cs{olsTargetLanguage} or via the job
       name).} 
   \item \ldeen{Umgekehrt lädt \thepkg\ Babel oder Polyglossia mit Hilfe der
-      Optionen \option{load babel}/\option{load polyglossia} landen und setzt
+      Optionen \option{load babel}"/\option{load polyglossia} landen und setzt
       die Zielsprache als Hauptsprache. Weitere Optionen an die Sprachpakete
       werden als Optionsargument übergeben.}{In turn, \thepkg\ loads Babel or
       Polyglossia using the 
-      options \option{load babel}/\option{load polyglossia} and sets
+      options \option{load babel}"/\option{load polyglossia} and sets
       the target language as the main language. Additional options for the
       language packages are passed as option arguments.}
   \item \ldeen{Schließlich kann mit dem Hook \code{langselect/language} beliebiger Code
@@ -824,17 +827,116 @@ Section~@1.%
     \code{langselect/language} can be used to insert any code 
     before the arguments of the language macro are output, e.g.,
     \cs{foreignlanguage} may be used here.
-    The hook has the target language as a parameter.}
+    The hook has the (mapped) target language as a parameter.}
 \end{enumerate}
 \subsection{Csquotes}
 \label{sec:csquote}
-% \ldeen{Wenn die Option \option{unified shorthands} wahr ist, wird \pkg{csqoutes}
-% geladen und die Shorthands \code{{"}{}`} und \code{{"}{}'} auf \cs{openautoquote}
-% bzw.\ \cs{closeautoquote} gesetzt.}{If the option \option{unified shorthands} is
-% true, \pkg{csqoutes} is loaded and the shorthands \code{“{}`} and \code{”{}'}
-% are set to \cs{openautoquote} and \cs{closeautoquote}, respectively.} 
+\ldeen{Unterschiedliche Sprachen haben unterschiedliche Konventionen zur Setzung
+  von Satzzeichen. Besonders stört das bei Anführungszeichen, da diese der
+  Zielsprache folgen sollen, aber durchaus auch außerhalb der Sprachmakros oder
+  in Argumenten der Sternvariante stehen könne.
+  Das Paket \needpackage{csquote} bietet dafür eine Lösung, indem es \cs{enquote}
+  und andere Makros anbietet, die der Zitatkonvention der aktuellen Sprache folgen.
+
+  Zur Erhöhung der Bequemlichkeit unterstützt \thepkg\ die Nutzung korrekter
+  Anführungszeichen mit sprachunabhängigen Shorthands:
+  Wenn die Option \option{unified shorthands} wahr ist, wird \pkg{csqoutes}
+  geladen und die Shorthands \code{{"}{}`} und \code{{"}{}'} auf \cs{openautoquote}
+  bzw.\ \cs{closeautoquote} gesetzt.
+
+  Damit werden in Sprachen wie Deutsch, wo diese Shorthands 
+}{Different languages have different conventions for punctuation.
+  This is particularly problematic with quotation marks, as these should follow the
+  target language, but may also appear outside language macros or
+  in arguments of the asterisk variant.
+  The \needpackage{csquote} package offers a solution for this by providing \cs{enquote}
+  and other macros that follow the quotation convention of the current language.
+
+  For added convenience, \thepkg\ supports the use of correct
+  quotation marks with language-independent shorthands: If the option
+  \option{unified shorthands} is true, \pkg{csqoutes} is loaded and the
+  shorthands \code{“{}`} and \code{”{}'} are set to \cs{openautoquote} and
+  \cs{closeautoquote}, respectively.}  
 \section{FAQ}
 \label{sec:faq}
+\begin{itemize}
+  \item \textbf{\ldeen{Ist \thepkg\ noch experimentell?}{Is \thepkg\ still
+        experimental?}}
+    
+    \ldeen{Auf jeden Fall. Während ist beim Autoren zwar im täglichen Einsatz
+      ist, ist nicht auszuschließen, dass es unerwünschte Wechselwirkunen zu
+      anderen Paketen gibt. Die Versionsnummer zeigt dies
+      an.}{Absolutely. Although the author uses it on a daily basis, 
+      it cannot be ruled out that there may be undesirable interactions with
+      other packages. The version number indicates this.}
+  \item \textbf{\ldeen{Wofür steht das "`o"' im \cs{ols}-Prefix?}{What does the
+        "`o"' in the \cs{ols} prefix stand for}}?
+    
+    \ldeen{Das Paket gehört zu Bundle \package*{osglecture}, von dort ist das
+      "`o"' geerbt.}{The package belongs to the \pkg{osglecture} bundle,
+      from which the "`o"' is inherited.}
+  \item \textbf{\ldeen{Gibt es Anwendungsbeispiele, die über ein Toy-Hello-World
+        hinausgehen?}{Are there any application examples that go beyond a toy
+        Hello World?}}
+    
+    \ldeen{Ja, einige. Gucken Sie doch mal zum Beispiel in den Quelltext dieser
+      Dokumentation.}{Yes, some. Take a look at the source code of this
+      documentation, for example.} 
+    
+  \item \textbf{\ldeen{Ich habe ein @1 in der Ausgabe, wo doch eine
+        Argumentersetzung stattfinden sollte.}{I have an @1 in the output where an
+        argument substitution should take place.}}
+
+    \ldeen{Das hat in der Regel eine der beiden folgenden Ursache:
+      \begin{enumerate}[nosep]
+        \item Sie haben den Stern im Sprachmakro vergessen.
+        \item Sie haben komische Dinge mit Catcodes angestellt.
+      \end{enumerate}
+    }{This usually has one of the following two causes:
+      \begin{enumerate}[nosep]
+        \item You forgot the asterisk in the language macro.
+        \item You did strange things with catcodes.
+      \end{enumerate}}
+    
+  \item \textbf{\ldeen{Kann ich in der Sternversion einen @$n$-Parameter
+        auslassen?}{Can I omit an @$n$ parameter in the starred version?}}
+
+    \ldeen{Nein. Außerdem wäre dann das Argument ja auch offensichtlich nicht
+      mehr gemeinsam.}{No. Besides, then the argument would obviously no longer be
+      shared.}
+    
+  \item \textbf{\ldeen{Kann ich @$n$-Parameter in gemischter Reihenfolge oder mehr als
+        einmal verwenden?}{Can I use @$n$ parameters in mixed order or more than
+        once?}}
+
+    \ldeen{Ja}{Yes}.
+
+  \item \textbf{\ldeen{Ich möchte @ in einer Sternvariante des Sprachmacros
+        verwenden.}{I want to use @ in a star variant of the language macro.}}
+
+    \ldeen{Dann machen Sie es.}{Just do it.}
+
+  \item  \textbf{\ldeen{Aber ich brauche @{}42.}{But I need @{42}.}}
+
+    \ldeen*{Nutzen Sie @1}{Use @1}{\code{@\{\}42}}
+
+   
+  \item \textbf{\ldeen{Ich nutze Russisch, aber der Font ist nicht richtig.}{I
+        use Russian, but the font is incorrect.}}
+
+    \ldeen{Das ist keine Problem von \thepkg\ (das kümmert sich gar nicht um den
+      Font), sondern wahrscheinlich von Babel, \cs{fontenc}, \cs{fontspec},
+      etc.}{This is not a problem with \thepkg\ (which does not deal with the 
+      font at all), but probably with Babel, \cs{fontenc}, \cs{fontspec}, etc.}
+
+    
+  \item \textbf{\ldeen{Meine Frage erscheint hier nicht.}{My question does not
+        appear here.}}
+
+    \ldeen{}{}
+
+    
+\end{itemize}
 \section{Implementation}
 \AutoDocInput{\packagename.dtx}
 \end{document}
@@ -842,20 +944,20 @@ Section~@1.%
 %<*pkg>
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
 \def\packagename{langselect}
-\def\packageversion{2025/08/10 v0.9.0d}
+\def\packageversion{2025/09/04 v0.2.1}
 \ProvidesPackage{\packagename}[\packageversion\space support for different
-languages versions of a document]
+languages versions from common source]
 \ExplSyntaxOn
 % \ldeen{\cs{olsIsoTags} enthält alle gültigen ISO
 % 639-1-Codestags.}{\cs{olsIsoTags} contains all valid ISO 639-1 code tags.}
-\seq_const_from_clist:cn{olsIsoTags}{aa,ab,ae,af,ak,am,an,ar,as,av,ay,az,ba,be,bg,
-  bh,bi,bm,bn,bo,br,bs,ca,ce,ch,co,cr,cs,cu,cv,cy,da,de,dv,dz,ee,el,en,eo,es,et,eu,
-  fa,ff,fi,fj,fo,fr,fy,ga,gd,gl,gn,gu,gv,ha,he,hi,ho,hr,ht,hu,hy,hz,ia,id,ie,ig,ii,
-  ik,io,is,it,iu,ja,jv,ka,kg,ki,kj,kk,kl,km,kn,ko,kr,ks,ku,kv,kw,ky,la,lb,lg,li,ln,
-  lo,lt,lu,lv,mg,mh,mi,mk,ml,mn,mr,ms,mt,my,na,nb,nd,ne,ng,nl,nn,no,nr,nv,ny,oc,oj,
-  om,or,os,pa,pi,pl,ps,pt,qu,rm,rn,ro,ru,rw,sa,sc,sd,se,sg,si,sk,sl,sm,sn,so,sq,sr,
-  ss,st,su,sv,sw,ta,te,tg,th,ti,tk,tl,tn,to,tr,ts,tt,tw,ty,ug,uk,ur,uz,ve,vi,vo,wa,
-  wo,xh,yi,yo,za,zh,zu} 
+\seq_const_from_clist:cn{olsIsoTags}{aa,ab,ae,af,ak,am,an,ar,as,av,ay,az,ba,be,
+  bg,bh,bi,bm,bn,bo,br,bs,ca,ce,ch,co,cr,cs,cu,cv,cy,da,de,dv,dz,ee,el,en,eo,es,
+  et,eu,fa,ff,fi,fj,fo,fr,fy,ga,gd,gl,gn,gu,gv,ha,he,hi,ho,hr,ht,hu,hy,hz,ia,id,
+  ie,ig,ii,ik,io,is,it,iu,ja,jv,ka,kg,ki,kj,kk,kl,km,kn,ko,kr,ks,ku,kv,kw,ky,la,
+  lb,lg,li,ln,lo,lt,lu,lv,mg,mh,mi,mk,ml,mn,mr,ms,mt,my,na,nb,nd,ne,ng,nl,nn,no,
+  nr,nv,ny,oc,oj,om,or,os,pa,pi,pl,ps,pt,qu,rm,rn,ro,ru,rw,sa,sc,sd,se,sg,si,sk,
+  sl,sm,sn,so,sq,sr,ss,st,su,sv,sw,ta,te,tg,th,ti,tk,tl,tn,to,tr,ts,tt,tw,ty,ug,
+  uk,ur,uz,ve,vi,vo,wa,wo,xh,yi,yo,za,zh,zu} 
 
 \newcommand\IfTagIsValidF[2]{%
   \seq_if_in:ceF{olsIsoTags}{#1}{#2}
@@ -1037,7 +1139,8 @@ languages versions of a document]
 }{
   \bool_set_false:N \ols_load_babel
   \bool_set_false:N \ols_load_polyglossia
-  \PackageWarningNoLine{\packagename}{Can't~load~babel/polyglossia~for~you,since\MessageBreak
+  \PackageWarningNoLine{\packagename}{Can't~load~babel/polyglossia~for
+    ~you,since\MessageBreak
     a~language~package~is~already~loaded.\MessageBreak
     I'll~ignore~that~option}
 }
@@ -1101,12 +1204,12 @@ languages versions of a document]
     \IfValueTF{#4}{
       \ExpandArgs{c}\NewExpandableDocumentCommand{#1#4}{s +m +m}{
         \UseHook{langselect/language}{\ols_mapped_target_lang}
-        \IfBooleanTF{##1}{\olsProcessArgs{\ols_trim:n{##2}}}{\ols_trim:n{##2}}
+        \IfBooleanTF{##1}{\ols_trim:n{\olsProcessArgs{##2}}}{\ols_trim:n{##2}}
       }
     }{
       \ExpandArgs{c}\NewExpandableDocumentCommand{#1#2#3}{s +m +m}{
         \UseHook{langselect/language}{\ols_mapped_target_lang}
-        \IfBooleanTF{##1}{\olsProcessArgs{\ols_trim:n{##2}}}{\ols_trim:n{##2}}
+        \IfBooleanTF{##1}{\ols_trim:n{\olsProcessArgs{##2}}}{\ols_trim:n{##2}}
       }
     }
   }
@@ -1174,7 +1277,7 @@ languages versions of a document]
 % bzw. \cs{\meta{Prefix}\meta{Sprache$_{1}$}\meta{Sprache$_{2}$}\meta{Sprache$_{2}$}}.}{%
 % If automatic generation is not disabled, the
 % specific language commands are created. The names are
-% \cs{\meta{prefix}\meta{language$_{1}$}\meta{Language$_{2}$}}
+% \cs{\meta{prefix}\meta{language$_{1}$}\meta{language$_{2}$}}
 % or \cs{\meta{prefix}\meta{language$_{1}$}\meta{language$_{2}$}\meta{language$_{3}$}}.
 % }
 \bool_if:cTF{ols_generate}{
@@ -1248,6 +1351,8 @@ languages versions of a document]
 % to the placeholder expressions.}
     \int_step_inline:nn { \ols_num_of_args }
     {
+      \tl_analysis_log:n{@}
+      \tl_analysis_log:n{\ols_format_str_tl}
       \tl_replace_all:Nnn \ols_format_str_tl
       { @##1 }
       { \seq_item:Nn \ols_args_seq { ##1 } }
@@ -1258,21 +1363,27 @@ languages versions of a document]
   }
 }
 \makeatletter
+% \ldeen{Wenn gewünscht, wird Babel oder Polyglossia geladen und die Zielsprache
+% als Hauptsprache gesetzt.}{If desired, Babel or Polyglossia is loaded and the
+% target language is set as the main language.} 
 \bool_if:NT \ols_load_babel{
-  \RequirePackage[main=\ols_mapped_target_lang]{babel}
+  \RequirePackage[main=\ols_mapped_target_lang, provide*=*]{babel}
   \bool_if:nT{
     \ols_shorthands && !\str_if_p:ee{olsTargetLanguage}{de}{
       \languageshorthands{ngerman}
     }
   }
 }
+\bool_if:NT\ols_load_polyglossia{
+  \RequirePackage{polyglossia}
+}
+% \ldeen{Unabhängig davon, wann ein Sprachpaket geladen wurde, wird versucht,
+% die Zielsprache zu aktivieren.}{Regardless of when a language pack was loaded, an attempt will be made to
+% activate the target language.} 
 \cs_if_exist:cT{ver@babel.sty}{
   \AtBeginDocument{
     \selectlanguage{\ols_mapped_target_lang}
   }
-}
-\bool_if:NT\ols_load_polyglossia{
-  \RequirePackage{polyglossia}
 }
 \cs_if_exist:cT{ver@polyglossia.sty}{
   \bool_if:NTF\ols_shorthands{
@@ -1284,10 +1395,12 @@ languages versions of a document]
 \bool_if:NT\ols_shorthands {
   \RequirePackage[autostyle=true]{csquotes}
   \AtBeginDocument{
-    \cs_if_exist:cT{useshorthands}{%
+    \cs_if_exist:cT{useshorthands}{
       \useshorthands*{"}
-      \defineshorthand{"`}{\openautoquote}%
-      \defineshorthand{"'}{\closeautoquote}%
+      \defineshorthand{"`}{\openautoquote}
+      \defineshorthand{"'}{\closeautoquote}
+      \defineshorthand{"/}{\textormath{\bbl@allowhyphens
+          \discretionary{/}{}{/}\bbl@allowhyphens}{}}
     }
   }
 }
