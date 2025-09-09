@@ -3,6 +3,9 @@
 *.fdb_latexmk
 *.log
 *.fls
+*.ilg
+*.ind
+*.idx
 test/standalone/main.synctex.gz
 *.safe
 *.so
@@ -11,3 +14,4 @@ test/standalone/main.synctex.gz
 **/*.synctex.gz
 **/*.code
 **/*-cnltx*
+**/build/*

@@ -1,4 +1,4 @@
 # osglecture
 =======
 
-LaTeX-Klasse und Build-System für die Professur Betriebssysteme der TU Chemnitz
+LaTeX bundle for lecture materials at the Operating Systems Group of the TU Chemnitz
