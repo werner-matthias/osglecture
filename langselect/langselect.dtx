@@ -1396,9 +1396,9 @@ languages versions from common source]
 \bool_if:NT \ols_load_babel{
   \RequirePackage[main=\ols_mapped_target_lang, provide*=*]{babel}
   \bool_if:nT{
-    \ols_shorthands && !\str_if_eq_p:nn{olsTargetLanguage}{de}{
-      \languageshorthands{ngerman}
-    }
+    \ols_shorthands && !\str_if_eq_p:nn{olsTargetLanguage}{de}}
+  {
+    \languageshorthands{ngerman}
   }
 }
 \bool_if:NT\ols_load_polyglossia{
