@@ -19,20 +19,29 @@ jobnames = { "langselect", "langselect-de" }
 typesetfiles = { "langselect.dtx" } 
 
 typesetexe = "lualatex"
+typesetopts = "-interaction=nonstopmode -shell-escape"
 
 cleanfiles={
     "*-cnltx*",
     "*.toc",
     "*.aux",
-    "*.log"
+    "*.log",
+    "*.fdb_latexmk",
+    "*.fls",
+    "*.idx",
+    "*.ilg",
+    "*.ind"
 }
 
+--  
 function typeset(name, engine, _)
    print(">>> typeset() called with engine: " .. engine)
   for _, job in ipairs(jobnames) do
     local cmd = string.format("%s %s -jobname=%s langselect.dtx", typesetexe, typesetopts, job)
     print("Running: " .. cmd)
-    local result = os.execute(cmd)
+    for _ = 1,typesetruns do 
+       local result = os.execute(cmd)
+    end
     if result ~= 0 then
       return result
     end

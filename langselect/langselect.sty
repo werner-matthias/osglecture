@@ -55,11 +55,13 @@ languages versions from common source]
   languages.usage=load,
   targetlang.code = {
     \cs_if_exist:NF\olsTargetLanguage{
-      \str_if_eq:eeT{\str_range:Nnn{#1}{1}{3}}{job}{%
+      \bool_if:nT{
+        \str_if_eq_p:ee{\str_range:nnn{#1}{1}{3}}{job}
+      }{%
         \olsChangeCatEleven{\getfromjobname{\str_range:Nnn{#1}{-1}{-1}}}
         \xdef\olsTargetLanguage{\olsCatElven}
       }
-      \bool_if:nTF{
+      \bool_if:nT{
         \str_if_eq_p:nn{#1}{babel} || \str_if_eq_p:nn{#1}{polyglossia}
       }{
         \str_if_empty:eF{\BCPdata{main.language}}{
@@ -76,6 +78,9 @@ languages versions from common source]
           \PackageWarningNoLine{\packagename}{No~meta~data~provided}
         }
       }
+    }
+    \cs_if_exist:NF \olsTargetLanguage {
+      \edef\olsTargetLanguage{#1}
     }
   },
   targetlang.usage=load,
@@ -168,11 +173,13 @@ languages versions from common source]
 }{
   \bool_set_false:N \ols_load_babel
   \bool_set_false:N \ols_load_polyglossia
-  \PackageWarningNoLine{\packagename}{Can't~load~babel/polyglossia~for~you,since\MessageBreak
+  \PackageWarningNoLine{\packagename}{Can't~load~babel/polyglossia~for
+    ~you,since\MessageBreak
     a~language~package~is~already~loaded.\MessageBreak
     I'll~ignore~that~option}
 }
 \edef\ols_mapped_target_lang{\ols_use_map:n{\olsTargetLanguage}}
+\PackageNoteNoLine{\packagename}{Target~language~is~'\olsTargetLanguage'~(\ols_mapped_target_lang)}
 \IfDocumentMetadataT{
   \edef\olsDocLang{\exp_args:Ne\str_range:nnn{\GetDocumentProperty{document/lang}}{1}{2}}
   \bool_if:nF{
@@ -331,9 +338,9 @@ languages versions from common source]
 }
 \makeatletter
 \bool_if:NT \ols_load_babel{
-  \RequirePackage[main=\ols_mapped_target_lang]{babel}
+  \RequirePackage[main=\ols_mapped_target_lang, provide*=*]{babel}
   \bool_if:nT{
-    \ols_shorthands && !\str_if_p:ee{olsTargetLanguage}{de}{
+    \ols_shorthands && !\str_if_eq_p:nn{olsTargetLanguage}{de}{
       \languageshorthands{ngerman}
     }
   }
@@ -356,11 +363,12 @@ languages versions from common source]
 \bool_if:NT\ols_shorthands {
   \RequirePackage[autostyle=true]{csquotes}
   \AtBeginDocument{
-    \cs_if_exist:cT{useshorthands}{%
+    \cs_if_exist:cT{useshorthands}{
       \useshorthands*{"}
-      \defineshorthand{"`}{\openautoquote}%
-      \defineshorthand{"'}{\closeautoquote}%
-      \defineshorthand{"/}{\textormath{\bbl@allowhyphens\discretionary{/}{}{/}\bbl@allowhyphens}{}}%
+      \defineshorthand{"`}{\openautoquote}
+      \defineshorthand{"'}{\closeautoquote}
+      \defineshorthand{"/}{\textormath{\bbl@allowhyphens
+          \discretionary{/}{}{/}\bbl@allowhyphens}{}}
     }
   }
 }
