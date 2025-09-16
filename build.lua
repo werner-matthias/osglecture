@@ -1,14 +1,15 @@
 bundle   = "osglecture"
 ctanpkg  = bundle
 
-modules = {
-  { name = "osglecture" },
-  { name = "langselect" },
-  { name = "osgterminal" },
-  { name = "osgbib" },
-  { name = "osgcombine" },
-  { name = "osglisting" },
-}
+--[ modules = {
+  --{ name = "osglecture" },
+  --{ name = "langselect" },
+  --{ name = "osgterminal" },
+  -- { name = "osglecturebib" },
+  --{ name = "osgcombine" },
+  --{ name = "osglisting" },
+-- }
+--]
 
 textfiles = { "README.md", "CHANGES.md", "LICENSE" }
 
@@ -19,8 +20,8 @@ scriptfiles = {
 }
 
 -- Globale Defaults (pro Modul überschreibbar)
-sourcefiles  = { "*.dtx", "*.ins", "doc/*.tex" }
-typesetfiles = { "doc/*-doc.tex" }
+sourcefiles  = { "*.dtx", "doc/*.tex" }
+typesetfiles = { "doc/*-doc.tex", "*.dtx"}
 
 -- Tests: Standard-Lauf (Unit je Modul) + Integrations-Lauf (siehe config-integ.lua)
 -- checkconfigs = { "build", "config-integ" }
@@ -29,9 +30,9 @@ checkconfigs = { "build"}
 -- Integration hängt von allen Modulen ab (sorgt für Entpacken/Build vor dem Test)
 checkdeps = {
   --"./osglecture",
-  "./multibabel",
+  "./langselect",
   --"./osgterminal",
-  --"./osgbib",
+  "./osglecturebib"
   --"./osgcombine",
   --"./osglisting",
 }

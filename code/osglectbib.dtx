@@ -1,0 +1,851 @@
+% \iffalse meta-comment
+%
+%<*pkg>
+%%  (C) 2022-2025 Matthias Werner
+%%
+%%  Package osglectbib - bibliography management for osglecture.
+%%
+%</pkg>
+% \fi% meta
+%<*driver>
+\def\packagename{osglectbib}
+\def\nameofplainTeX{plain}
+\ifx\fmtname\nameofplainTeX
+\input docstrip.tex
+\keepsilent
+\askforoverwritefalse
+\preamble
+----------------------------------------------------------------
+langselect -- multiple language versions from a common source
+E-mail: matthias.werner@informatik.tu-chemnitz.de
+Released under the LaTeX Project Public License v1.3c or later
+See http://www.latex-project.org/lppl.txt
+----------------------------------------------------------------
+
+\endpreamble
+\postamble
+This work is "maintained" (as per LPPL maintenance status) by
+Matthias Werner.
+
+This work consists of the file  osglectbib.dtx
+and the derived files           osglectbib.pdf and
+                                osglectbib.sty.
+\endpostamble
+
+\generate{
+  \file{\packagename.sty}{\from{\packagename.dtx}{pkg}}
+}
+  \expandafter\endbatchfile
+\fi
+% Patch cnltx-doc for modern LaTeX and LuaTeX
+\AddToHook{class/cnltx-doc/before}{
+  \typeout{==> First Aid for cnltx-doc.cls applied!}
+}
+\AddToHook{class/scrartcl/after}{
+  \NewCommandCopy{\originalAfterPackage}{\AfterPackage}
+  \RenewDocumentCommand{\AfterPackage}{t! m m}{
+    \IfBooleanTF{#1}{#3}{%
+      \originalAfterPackage{#2}{#3}
+    }
+  }
+}
+\makeatletter
+\AddToHook{package/cnltx-example/after}{%
+\renewcommand*\cnltx@exe{\ShellEscape}%
+}
+
+%\def\cnltxmdframed{\cnltx@mdframed@options}
+\makeatother
+\ExplSyntaxOn
+\sys_if_engine_luatex:TF{
+  \def\error{}
+  \RequirePackage{luacode}
+}{
+  \def\error{\errmessage{LuaLaTeX~is~required~to~build~this~documentation.}\endinput}
+}
+\error
+\ExplSyntaxOff
+\RequirePackage{luatex85}
+\RequirePackage{shellesc}
+\RequirePackage{multicol}
+\documentclass[
+load-preamble-,
+]{cnltx-doc}
+\usepackage[oldstyle]{libertine}
+\setmonofont[
+Scale = MatchLowercase ,
+Ligatures = {NoCommon,NoRequired,NoContextual}
+]{DejaVu Sans Mono}
+\usepackage{microtype}
+\usepackage{enumitem}
+\usepackage{readprov}
+\usepackage{hyperref}
+\usepackage{imakeidx}
+\usepackage{multicol}
+\usepackage{luacode}
+\usepackage{fancyvrb}
+\fvset{formatcom=\color{blue},numbers=left,firstnumber=19}
+\mdfdefinestyle{cnltxmdframed}{
+  backgroundcolor = cnltxbg ,
+ linecolor = cnltx ,
+ roundcorner = 5pt
+}
+% --- Autodoc: A poor mans version of gmdoc
+\begin{luacode*}
+-- autodoc: % => text; %<*pkg>..%</pkg> => Code
+
+local function strip_pct(s) return (s:gsub("^%%+%s?","")) end
+
+function autodoc_process(fname)
+  local f = io.open(fname,"r")
+  if not f then tex.error("AutoDocInput: cannot open "..fname); return end
+  local in_driver = false
+  local in_guard  = false 
+  local in_vb     = false 
+  local vb_start  = true
+  
+  local function vb_open()
+    if not in_vb then
+      if vs_start then
+        -- 20 => length of preamble
+        tex.print("\\begin{Verbatim}[firstnumber=20]")
+      else
+         tex.print("\\begin{Verbatim}[firstnumber=last]")
+      end
+      in_vb=true
+    end
+  end
+  local function vb_close()
+    if in_vb then
+      tex.print("\\end{Verbatim}")
+      in_vb=false
+    end
+  end
+
+  for line in f:lines() do
+    if line:match("^%%<%*driver>") then
+      in_driver=true
+      goto continue
+    end
+    if line:match("^%%</driver>")   then
+    in_driver=false
+      goto continue
+    end
+    if in_driver then goto continue end
+
+    local guard_open = line:match("^%%<%*(%w+)>")
+    if guard_open then
+       in_guard=true;
+       vb_close();
+       goto continue
+    end
+    if line:match("^%%</%w+>") then
+      in_guard=false
+      vb_close()
+      goto continue
+    end
+    if in_guard then
+      if line:match("^%%") then
+        vb_close()
+        tex.print(strip_pct(line))
+      else
+        vb_open()
+        tex.print(line)
+      end
+    else
+      -- Außerhalb der Guards: nur Doku drucken
+      if line:match("^%%") then
+        vb_close()
+        tex.print(strip_pct(line))
+        -- print("*** ".. strip_pct(line))
+      else
+        -- nackte Zeilen außerhalb ignorieren
+      end
+    end
+    ::continue::
+  end
+
+  vb_close()
+  f:close()
+end
+\end{luacode*}
+
+\newcommand{\AutoDocInput}[1]{\directlua{autodoc_process("#1")}}
+
+% --------------------------------------------------------------------
+\makeindex
+\ReadFileInfos{\packagename.sty}
+\def\thepkg{\pkg*{\packagename}}
+\setcnltx{
+  name  = \packagename,
+  package  = \packagename,
+  version  = \UseVersionOf{\packagename.sty},
+  date     = \UseDateOf{\packagename.sty},
+  title    = {The \pkg*{osglectbib} Package},
+  info     = {Simple bibliography management for collections without Bib(La)TeX}, 
+  authors  = {Matthias Werner[matthias.werner@informatik.tu-chemnitz.de]},
+  abstract={
+      The package is part of the \pkg{osglecture} bundle and is integrated into the \cls*{osglecture} class
+      and supported by the build script \code{ollm}. 
+    }
+  },
+  url      =https://github.com/tuc-osg/osglecture,
+  build-title
+}
+\def\thepkg{\pkg*{\packagename}}
+\makeatletter
+\def\gobble{\@gobble}
+\makeatother 
+\begin{document}
+\section{Implementation}
+\AutoDocInput{\packagename.dtx}
+
+\printindex
+
+\end{document}
+%</driver>
+%<*pkg>
+%
+\NeedsTeXFormat{LaTeX2e}
+%
+\def\packagename{osgbeamerbib}
+%
+
+\ProvidesPackage{\packagename}[2022/09/20 v0.1]
+\RequirePackage{etoolbox}
+\RequirePackage{luacode}
+\RequirePackage{tabto}
+\RequirePackage{needspace}
+%%\RequirePackage{changepage}
+\newbool{osgusebib}\boolfalse{osgusebib}
+\newbool{osgbibglobal}\boolfalse{osgbibglobal}
+%\newbool{osgstandalone}\boolfalse{osgstandalone}
+%\RequirePackage{enumitem}
+%
+
+\NewDocumentCommand\MakeCitation{m}{\MakeCitationAlpha{#1}}
+%\RenewDocumentCommand\MakeCitation{m}{\MakeCitationPlain{#1}}
+
+\ExplSyntaxOn
+\keys_define:nn {osgbeamerbib}{
+% Dateiname vom Bib-File. I.d.R. ist in Lehrveranstaltungen ein
+% Setzen als globale Klassenoption (in lectdates) sinnvoll, auch
+% wenn nicht in allen Kapiteln Literaturreferenzen vorkommen: Wenn
+% durch die in den lokalen Optionen die Nutzung des
+% Literatur-Referenzsystems ganz ausgeschaltet
+% (z.B. bib={article=off}) ist, wird die Option 'file' ignoriert.  
+
+  file .store = \obb@bibfile,
+% Sowohl für den presentation- als auch für den article-Mode gibt es jeweils
+% vier Optionen, mit denen man das Verhalten von Literaturreferenzen steuern kann:
+% - standalone:   kein Teil einer Vorlesungsserie
+% - off|disabled: keine Literaturreferenzen; die Nutzung von \cite etc. führt
+%                 zu einer Warnung
+% - local:        Nur im OLLM-Mode: Literaturreferenzen werden nur dokumentintern
+%                 aufgelöst. Innerhalb einer Vorlesungsreihe können
+%                 verschiedene Referenzen (bei gleichen Autorenkürzeln und
+%                 Jahr) den gleichen Label erhalten.
+% - global:       Nur im OLLM-Mode: Referenzen werden über alle Vorlesungen
+%                 abgeglichen. Erfordert mindestens zwei sequentielle(!)
+%                 Durchläufe für alle Vorlesungen (mit Referenzen)
+%
+% Ohne Angabe des Modes (d.h. z.B. 'local' statt 'article=local') werden beide
+% Modes gesetzt.
+
+  article .choice:,
+  article .default:n = global,
+  article/off .code:n = {
+    \only<article>{\boolfalse{osgusebib}}
+  },
+  article/disable .meta:n = { article=off },
+  article/local .code:n = {
+    \only<article>{
+      \booltrue{osgusebib}
+      \boolfalse{osgbibglobal}
+    }
+  },
+  article/global .code:n = {
+    \only<article>{
+      \booltrue{osgusebib}
+      \booltrue{osgbibglobal}
+    }
+  },
+  script .meta:n = { article={#1}},
+  slides .choice:,
+  slides .default:n = global,
+  slides/off .code:n = {
+     \only<presentation>{\boolfalse{osgusebib}}
+  },
+  slides/disable .meta:n = { article=off },
+  slides/local   .code:n = {
+    \only<presentation>{
+      \booltrue{osgusebib}
+      \boolfalse{osgbibglobal}
+    }
+  },
+  slides/global .code:n = {
+    \only<presentation>{
+      \booltrue{osgusebib}
+      \booltrue{osgbibglobal}
+    }
+  },
+  local  .meta:n = { article=local,  slides=local},
+  global .meta:n = { article=global, slides=global},
+  off    .meta:n = { article=off,    slides=off},
+  disable.meta:n = { article=off,    slides=off},
+  none   .meta:n = { article=off,    slides=off},
+  standalone .code = { % Im standalone-Mode gibt es keine Serien, also gibt es
+% keine globale Bibliographie
+
+    \boolfalse{osgbibglobal}
+  },
+  citestyle .choice:,
+  citestyle.default:n = alpha,
+  citestyle/plain.code = {
+    \PackageInfo{\packagename}{selected cite style: plain}
+    \RenewDocumentCommand\MakeCitation{m}{\MakeCitationPlain{##1}}
+  },
+  citestyle/alpha.code = {
+    \PackageInfo{\packagename}{selected cite style: alpha}
+    \RenewDocumentCommand\MakeCitation{m}{\MakeCitationAlpha{##1}}
+  }
+}
+\ExplSyntaxOff
+\ProcessKeyOptions[osgbeamerbib]
+% Überprüfe, ob die Optionskombinationen korrekt sind
+%% ToDo: Das sollte künfig schon ein den Key möglich sein.
+
+\IfBool{osgoptionstandalone}{
+  \IfBool{osgbibglobal}{
+    \PackageError{\packagename}{You can't have a global bibliography\\MessageBreak in
+      standalone mode}{Use 'bib=local' or disable 'standalone'}
+  }{}
+}{}
+\ifdef{\obb@bibfile}{
+  \IfBool{osgusebib}{}{
+    \PackageWarningNoLine{\packagename}{Bibliography disabled,\\MessageBreak bib file '\obb@bibfile' ignored}
+  }
+}{
+  \IfBool{osgusebib}{
+    \PackageWarningNoLine{\packagename}{Missing bib file, switch of\\MessageBreak 
+      bibliography}
+    \boolfalse{osgusebib}
+  }{}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+
+\ExplSyntaxOn
+% Importiere ein Substring-Macro von LaTeX3 in 2e
+
+\cs_generate_variant:Nn \str_range_ignore_spaces:nnn { Vnn }
+% Gibt von #1 den Substring von #2 bis #3 zurück
+
+\NewDocumentCommand\stringrg{ m m m}{%
+  \str_range_ignore_spaces:Vnn{#1}{#2}{#3}%
+}
+\ExplSyntaxOff
+\IfBool{osgusebib}{
+  \RequirePackage{librarian}
+  \IfBool{osgbibglobal}{%
+    \gdef\osb@glcitefile{\OsgShareDataPath/\obb@bibfile.lbc}
+  }{
+    \gdef\osb@glcitefile{./\jobname.lbc}
+  }
+% Wenn es bereits ein globales Citefile gibt, wird es am Dokumentanfang eingelesen
+% LuaLaTex erlaubt im (als Default eingestellten) Paranoid-Modus kein
+% TeX-Fileschreiben außerhalb des eigenen Verzeichnis (inklusive
+% Unterverzeichnisse). Dies funktioniert aber auf Lua-Ebene (warum
+% eigentlich?)
+% Daher bnötigt das Schreiben in das Citefile Lua.
+
+  \AddToHook{begindocument}{%
+% Alle globalen \cite werden eingelesen...
+
+    \expandafter\InputIfFileExists{\osb@glcitefile}{}{}%
+% ...und aufgelöst.
+
+    \BibFile{../Include/\obb@bibfile.bib}
+% Das Citefile wird zum Schreiben geöffnet.
+
+    \luaexec{
+      osgcitefile = io.open("\osb@glcitefile","a+")
+    }
+  }
+  \NewDocumentCommand{\writecitefile}{m}{%
+    \luaexec{
+      if (osgcitefile) then
+      osgcitefile:write(\luastring{#1})
+      end
+    }
+  }
+  \lb@dolbr
+  \def\lb@error#1{\PackageWarning{librarian}{#1}}
+  
+  \newtoggle{obb@firstauthor}
+% Das Original-\AbbreviateFirstname von Librarian hängt bei Namen mit nur
+% einem Wort.
+
+  \AbbreviateFirstname
+% Siehe https://tex.stackexchange.com/questions/661363/abbreviatefirstname-in-librarian-makes-compilation-hang
+
+  \def\lb@@loopovernames#1#2#3#4{%
+    \iflb@abbreviate
+    \def\Firstname{}%
+    \ifblank{#1}{}{\lb@abbreviate#1 lb@end }% add test for emptyness
+    \else
+       \def\Firstname{#1}%
+    \fi
+    \def\Von{#2}\def\Lastname{#3}\def\Junior{#4}%
+    \lb@makerefname
+  }
+% \newbool{obb@abbreviatefirstname}
+% \RenewDocumentCommand\AbbreviateFirstname{}{
+%   \booltrue{obb@abbreviatefirstname}
+% }
+
+  \NewDocumentCommand\formatFirstName{o m}{%
+    \IfBlankTF{#2}{}% Wenn es keinen Vornamen gibt, gib gar nichts aus
+    {\IfNoValueTF{#1}{}{#1\ }{#2}%
+    }%
+  }%
+  
+% \newcount\bibnum
+% \typeout{****** BIB new bibnum} 
+% \bibnum=0
+%
+
+  \NewDocumentCommand\MakeCitationPlain{m}{%
+    \EntryNumberInFor{#1}{main}{\bibnum}%
+    \ifdef{\bibnum}{\bibnum}{?}%
+  }
+  
+% \AbbreviateFirstname % ToDo: Als Option verfügbar machen?
+
+  
+  \NewDocumentCommand\MakeCitationAlpha{m}{%
+% Abgekürzte Autorennamen+Jahr. Bei Uneindeutigkeiten wird ein Buchstabe als
+% Suffix angehangen.
+
+    \RetrieveFieldInFor{key}{#1}{\tempkey}%
+    \ifdefempty{\tempkey}{%
+% Wenn kein Key gegeben ist, müssen wir uns diesen konstruieren.
+
+       \RetrieveFieldIn{namenumber}\tempcount%
+       \ifnum\tempcount>3%
+           \ReadNamesFor{#1}{%
+             \ifnum\NameCount=1%
+                 \stringrg{\Lastname}{1}{3}%
+             \fi%
+           }%
+           +% für et al.
+       \else%
+           \ifcase\tempcount % 0 sollte nicht vorkommen, Warnung?
+               \or% 1
+                   \ReadNamesFor{#1}{\stringrg{\Lastname}{1}{3}}%
+               \or% 2
+                   \ReadNamesFor{#1}{\stringrg{\Lastname}{1}{2}}%
+               \or% 3
+                   \ReadNamesFor{#1}{\stringrg{\Lastname}{1}{1}}%
+           \fi%
+       \fi%
+       \RetrieveFieldInFor{year}{#1}{\temp@year}%
+       \stringrg{\temp@year}{-2}{-1}\csname\EntryKey @suffix\endcsname%
+     }{%
+       \tempkey%   
+     }%
+   }
+ 
+   \newcount\sameentrycount
+   \def\compareentries{%
+     \ifequalentry
+         \advance\sameentrycount1
+         \WriteImmediateInfo{%
+           \noexpand\expandafter\def\noexpand\csname\EntryKey @suffix\noexpand\endcsname{\toletter}%
+         }%
+     \else
+         \sameentrycount=0
+     \fi
+   }
+   \def\toletter{%
+     \ifcase\sameentrycount
+     \or a\or b\or c\or d\or e\or f\or g\or h%
+     \or i\or j\or k\or l\or m\or n\or o\or p%
+     \or q\or r\or s\or t\or u\or v\or w\or x%
+     \or y\or z\fi
+   }
+   %\SortDef{Ä}{A}
+   %\SortDef{ä}{a}
+   %\SortDef{Ü}{U}
+   %\SortDef{ü}{u}
+   %\SortDef{Ö}{O}
+   %\SortDef{ö}{o}
+   %\SortDef{ß}{ss}
+   
+   \glet\MakeReference=\compareentries
+   \mode<article>{
+     \NewDocumentCommand{\bibitemlabel}{m}{
+       [\MakeCitation{#1}]
+     }
+   }
+   \RequirePackage{fontawesome5}
+   \newcommand{\papericon}{\textcolor{structure}{\faFile*[regular]}}
+   \newcommand{\bookicon}{\textcolor{structure}{\faBook}}
+   \newcommand{\webicon}{\textcolor{structure}{\faGlobeAmericas}}
+   
+   \mode<presentation>{
+     
+     \NewDocumentCommand{\bibitemlabel}{m}{
+       \RetrieveFieldInFor{entrytype}{#1}{\temp@type}
+       \ifdefstrequal{\temp@type}{book}{\bookicon}{%
+          \ifcsstring{temp@type}{online}{\webicon}{%
+                \papericon}%
+          }%
+          ~[\MakeCitation{#1}]
+     }
+   }
+   \RenewDocumentCommand{\bibitem}{O{} m}{%
+     \Cite{#2}{main}{%
+     \item[\bibitemlabel{#2}] \MakeReferenceItem}{\item[#2] \emph{#2}\writecitefile{\string\nocite{#2}}}%
+     \IfBlankF{#1}{, #1}%
+   }
+  \def\printbibentry{\hspace*{-2cm}\MakeCitation{\EntryKey}\tabto{0cm}\MakeReferenceItem\par}
+  \NewDocumentCommand\PrintBibliography{o}{
+    \glet\MakeReference=\compareentries
+    \SortingOrder{name,year}{lfvj}
+    \BibFile{../Include/\obb@bibfile}
+    \SortList{main}
+    \ReadList{main}
+    \chapter*{Literatur}
+    \addcontentsline{toc}{chapter}{Literatur}
+    \glet\MakeReference=\printbibentry
+    \begin{adjustwidth}{2cm}{}
+    \ReadList{main}
+    \end{adjustwidth}
+    \glet\MakeReference=\compareentries
+  }
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Zitatreferenzen
+
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+  \NewDocumentCommand\citex{m}{%
+    \iftoggle{obb@firstauthor}{}{, }%
+    \Cite{#1}{main}{\MakeCitation{#1}}{??
+      \writecitefile{\string\nocite{#1}}%
+    }%
+    \togglefalse{obb@firstauthor}%    
+  }
+  \RenewDocumentCommand\cite{o >{\SplitList{,}}m}{%
+    \toggletrue{obb@firstauthor}%    
+    [\ProcessList{#2}\citex%
+    \IfNoValueF{#1}{~#1}]%
+   }
+   \RenewDocumentCommand\nocite{m}{%
+      \Cite{#1}{main}{}{\writecitefile{\string\nocite{#1}}}%
+   }
+   
+   \NewDocumentCommand\fullcite{o m}{%
+     \Cite{#2}{main}{\MakeReferenceItem}{\emph{#2}\writecitefile{\string\nocite{#1}}}
+   }
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+   \newlength\osg@widestlit
+   \global\setlength\osg@widestlit{7em}%
+   \newlist{osgliteraturelist}{description}{1}
+   \setlist[osgliteraturelist]{font=\mdseries,
+     leftmargin=\dimexpr\osg@widestlit+0.5em\relax,
+     labelindent=0pt,
+     labelwidth=\osg@widestlit}
+   \NewDocumentEnvironment{literaturelist}{o}{
+     \begin{osgliteraturelist}
+       }{
+     \end{osgliteraturelist}
+   }
+  \IfBool{osglegacy}{
+    \NewCSDeprecatedCommand{paperitem}{O{} m}{\bibitem[#1]{#2}}[use \string\bibitem]
+    \NewCSDeprecatedCommand{bookitem}{O{} m}{\bibitem[#1]{#2}}[use \string\bibitem]
+    \NewCSDeprecatedCommand{webitem}{O{} m}{\bibitem[#1]{#2}}[use \string\bibitem]
+  }{}
+  \NewDocumentCommand{\obb@endmatter}{m}{%
+    \shorthandoff{"}
+    \PackageInfo{\packagename}{reading #1}
+    \BibFile{#1}
+    \SortingOrder{name,year}{lfvj}
+    \SortList{main}
+    \ReadList{main}
+    \shorthandon{"}
+  }
+  \AtEndDocument{
+    \filename@parse{\obb@bibfile}
+    \IfFileExists{\filename@base.bib}{\obb@endmatter{\filename@base}
+    }{%
+      \PackageWarning{osgbeamerbib}{Can't find file bib file
+        '\obb@bibfile'.\MessageBreak
+        Provide file or set option 'bib={file=<FILE>}' \MessageBreak
+      }
+    }
+  }
+   \def\italics#1{{\itshape#1}}
+   \chardef\namelimit=3
+   \def\leftcitemark{(}
+   \def\rightcitemark{)}
+   \def\etalii{\italics{ et al}}
+ 
+   \CreateField{url}
+   \CreateField{currnum}
+   
+   \def\othersname{others}
+   \def\makecitename{%
+     \ifx\Lastname\othersname
+         \etalii
+     \else
+         \ifnum\tempcount>\namelimit
+             \ifnum\NameCount=1
+                 \unless\ifx\Von\empty \Von~\fi
+                 \Lastname\etalii
+             \fi
+         \else
+             \unless\ifnum\NameCount=1
+                 \ifnum\NameCount=\tempcount\relax \space and \else, \fi
+             \fi
+             \unless\ifx\Von\empty \Von~\fi
+             \Lastname
+         \fi
+     \fi
+   }%
+   \def\editor{editor}
+   \parindent0pt
+   \sfcode`\.=\numexpr(\the\sfcode`\.+1)
+   \def\conditionalstop{%
+     \unless\ifnum\spacefactor=\sfcode`\.
+         .%
+     \fi
+   }
+   
+   %%% Typesetting entries.
+   \NewDocumentCommand{\MakeReferenceItem}{s}{%
+% \IfBooleanF{#1}{\par\noindent}
+
+     \RetrieveFieldIn{namenumber}\tempcount%
+     \stress<presentation>{\ReadName\makerefname}%
+     \RetrieveFieldIn{nametype}\temp%
+     \ifx\temp\editor%
+         \RetrieveFieldIn{namenumber}\temp%
+         \ifnum\temp>1%
+             \space \stress<presentation>{(\ldeen{Hrsg.}{eds.})}%
+         \else%
+             \space \stress<presentation>{ (\ldeen{Hrsg.}{ed.})}%
+         \fi%
+     \fi%
+     \stress<presentation>{:}\space
+     \compareentries%
+     \RetrieveFieldIn{entrytype}\temp%
+     \typesetref\temp%\conditionalstop
+   }
+   %%% These are for names in the bibliography.
+   \def\makerefname{%
+     \ifx\Lastname\othersname%
+         \etalii%
+     \else%
+         \ifnum\NameCount=1%
+             \unless\ifx\Von\empty \Von\space \fi%
+             \Lastname\formatFirstName[,]{\Firstname}%
+             \unless\ifx\Junior\empty, \Junior \fi%
+         \else
+             \ifnum\NameCount=\tempcount\relax \space \ldeen{und}{and} \else, \fi%
+             \formatFirstName{\Firstname}%
+             \unless\ifx\Von\empty \space\Von \fi%
+             \space\Lastname%
+             \unless\ifx\Junior\empty , \Junior \fi%
+         \fi%
+     \fi
+   }
+   \def\makeedname{%
+     \ifx\Lastname\othersname
+         \etalii
+     \else
+         \unless\ifnum\NameCount=1
+             \ifnum\NameCount=\tempcount\relax \space and \else, \fi%
+         \fi
+         \Firstname
+         \unless\ifx\Von\empty \space\Von \fi
+         \space\Lastname
+         \unless\ifx\Junior\empty , \Junior \fi
+     \fi
+   }
+   
+   %%% Here entries are defined.
+   \def\typesetref#1{%
+     \ifcsname#1@entrytype\endcsname
+         \csname#1@entrytype\endcsname
+     \else
+         \errmessage{Unknown entry type: `#1'}%
+     \fi
+   }
+   \def\createtype#1{%
+     \expandafter\def\csname#1@entrytype\endcsname
+   }
+   \def\booktitle#1{\setbooktitle{\RetrieveField{#1}}%
+     \RetrieveFieldIn{series}\tempa\ifx\tempa\empty\relax\else%
+         \addstop{\ldeen{Serie}{series}\addcolon{\italics{\tempa}}}%
+         \RetrieveFieldIn{volume}\tempb%
+         \ifx\tempb\empty\relax\else%
+             \addcomma{\ldeen{Band}{volume}~\tempb}\fi%
+     \fi%
+   }
+   \def\setbooktitle#1{\italics{#1}}
+   \def\articletitle#1{\setarticletitle{\RetrieveField{#1}}}%
+   \def\setarticletitle#1{\enquote{#1}}
+   \def\addjournal#1{\addstop{{\setbooktitle{#1}}}}
+   \def\addurl#1{\addcomma{\textcolor{structure}{\url{#1}}}}
+   \def\addcomma#1{, #1}
+   \def\addcolon#1{: #1}
+   \def\addpar#1{(#1)}
+   \def\addspace#1{\ #1}
+   \def\addstop#1{. #1}
+   \def\addimmediate#1{#1}
+   \def\addbook#1{, in \setbooktitle{#1}}
+   \def\addeditor#1{%
+     \RetrieveFieldIn{editornumber}\tempcount
+     , edited by \ReadEditor\makeedname}
+   \def\inbook#1{%
+     , chapter #1%
+   }
+   \def\crossref#1{%
+     ,  in \cite{#1}%
+     \WriteImmediateInfo{\noexpand\Cite{#1}{main}{}{}}%
+   }
+   
+   %%% The following do not pretend to show how entries
+   %%% should be typeset.
+   \createtype{book}{%
+     \booktitle{title}%
+     \TypesetField{publisher}\addstop{}%
+     \TypesetField{address}\addcomma{}%
+     \TypesetField{year}\addcomma{}%
+   }%
+   \createtype{article}{%
+     \articletitle{title}%
+     \TypesetField{journal}\addjournal{}%
+     \TypesetField{volume}\addcomma{}%
+     \TypesetField{number}\addpar{}%
+     \TypesetField{year}\addimmediate{}%
+     \TypesetField{pages}\addcomma{}%
+   }
+   \createtype{inbook}{%
+     \booktitle{title}%
+     \TypesetField{chapter}\inbook{%
+       \TypesetField{pages}\addcomma{}%
+     }%
+     \TypesetField{publisher}\addcomma{}%
+     \TypesetField{address}\addcolon{}%
+   }%
+   \createtype{incollection}{%
+     \articletitle{title}%
+     \TypesetField{crossref}\crossref{%
+       \TypesetField{booktitle}\addbook{}%
+       \TypesetField{editor}\addeditor{}%
+       \TypesetField{pages}\addcomma{}%
+       \TypesetField{publisher}\addcomma{}%
+       \TypesetField{address}\addcolon{}%  
+     }%
+   }
+   \createtype{inproceedings}{%
+     \articletitle{title}%
+     \TypesetField{booktitle}\addbook{}%
+     \TypesetField{editor}\addeditor{}%
+     \TypesetField{pages}\addcomma{}%
+     \TypesetField{address}\addcomma{}%
+   }
+   \createtype{conference}{%
+     \articletitle{title}%
+     \TypesetField{booktitle}\addbook{}%
+     \TypesetField{editor}\addeditor{}%
+     \TypesetField{pages}\addcomma{}%
+     \TypesetField{address}\addcomma{}%
+   }
+   \createtype{mastersthesis}{%
+     \booktitle{title}%
+     , Master's thesis%
+     \TypesetField{organization}\addcomma{}{}%
+   }
+   \createtype{phdthesis}{%
+     \booktitle{title}%
+     , PhD dissertation%
+     \TypesetField{organization}\addcomma{}{}%
+   }
+   \createtype{proceedings}{%
+     \booktitle{title}%
+     \TypesetField{publisher}\addcomma{%
+       \TypesetField{organisation}\addcomma{}%
+     }%
+     \TypesetField{address}\addcolon{}%
+   }
+   \createtype{techreport}{%
+     \booktitle{title}%
+     , technical report%
+     \TypesetField{institution}\addcomma{}%
+   }
+   \createtype{booklet}{%
+     \booktitle{title}%
+     \TypesetField{howpublished}\addcomma{}%
+   }
+   \createtype{manual}{%
+     \booktitle{title}%
+     \TypesetField{organization}\addcomma{}%
+   }
+   \createtype{misc}{%
+     \booktitle{title}%
+     \TypesetField{howpublished}\addcomma{}%
+   }
+   \createtype{online}{%
+     \booktitle{title}%
+     \TypesetField{url}\addurl{}%
+   }
+ }{% Literaturreferenzen werden deaktiviert
+   \NewDocumentCommand\obb@disabled@warning{}{
+     \PackageInfo{osgbeamerbib}{Bibliographic referencing
+       disabled.\MessageBreak
+       Set package option to activate.\MessageBreak
+       Current option may result in \MessageBreak
+       unresolved references}
+   }
+   \RenewDocumentCommand{\cite}{o m}{[\textbf{?}]%
+     \obb@disabled@warning
+   }
+   \RenewDocumentCommand{\nocite}{m}{%
+     \obb@disabled@warning
+   }
+   \ProvideDocumentCommand{\fullcite}{m}{[\textbf{?}]%
+     \obb@disabled@warning
+   }
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Layout Literaturliste
+
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Literaturlist gibt es auch ohne bib-Referenzen.
+
+   \NewDocumentEnvironment{literaturelist}{o}{
+     \begin{itemize}
+       }{%
+     \end{itemize}
+   }
+   \let\bibitem=\item
+ }
+ 
+ \newcommand{\bibcomment}[2][\ldeen{Anm:}{rem:}]{%\vspace{-1.2ex}
+ \item[\hfill\stress{#1}] {\rmfamily \em #2\par}
+ }
+ \newcommand{\bibprolog}[1]{
+   \vspace{.5ex plus .5ex}
+   \protect\needspace{3\baselineskip} 
+ \item[]\structure{\textbf{#1}}
+ }
+
+%
+% \iffalse
+%</package>
+% \fi
+%
+% \Finale
+\endinput

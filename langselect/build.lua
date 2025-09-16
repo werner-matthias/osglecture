@@ -1,4 +1,7 @@
+bundle = "osglecture"
 module = "langselect"
+
+mainindir=".."
 
 unpackfiles = { "langselect.dtx" }
 
