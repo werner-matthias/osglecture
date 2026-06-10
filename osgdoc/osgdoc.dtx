@@ -1,0 +1,272 @@
+%<*pkg|cls|driver>
+\def\packagename{osgdoc}
+\def\packagedate{2026/06/07}
+\def\packageversion{v0.0.1}
+%</pkg|cls|driver>
+%<*driver>
+\def\nameofplainTeX{plain}
+\ifx\fmtname\nameofplainTeX
+\input l3docstrip.tex
+\preamble
+
+========================================================================
+ osgdoc tools - support for documentation
+
+ (C) 2022-2026 Matthias Werner
+ E-mail: matthias.werner@informatik.tu-chemnitz.de
+
+ Released under the LaTeX Project Public License v1.3c or later
+ See http://www.latex-project.org/lppl.txt
+======================================================================== 
+
+\endpreamble
+\postamble
+
+ This work is "maintained" (as per LPPL maintenance status) by
+ Matthias Werner.
+\endpostamble
+
+\generate{
+  \file{\packagename.cls}{\from{\packagename.dtx}{cls}}
+  \file{\packagename.sty}{\from{\packagename.dtx}{pkg}}
+}
+  \expandafter\endbatchfile
+\fi
+
+
+\documentclass[load-preamble+]{osgdoc}
+\edef\pkgname{\packagename}
+\edef\thepkg{\pkg*{\packagename}}
+
+\usepackage{microtype}
+
+\usepackage{readprov}
+%\usepackage{imakeidx}
+
+
+
+\makeindex
+\setcnltx{
+  name  =  \CurrentFile,
+  package  = \CurrentFile,
+  version  = \UseVersionOf{\CurrentFile.cls},
+  date     = \UseDateOf{\CurrentFile.cls},
+  title    = {\ldeen{Die FOOBAR Tools}{The BARFOO Tools}},
+  info     = {\ldeen{Unterstützung für \LaTeX-Paket-Dokumentationen}{Support for
+      \LaTeX package documentation}},
+  authors  = {Matthias Werner[matthias.werner@informatik.tu-chemnitz.de]},
+  abstract={
+    \ldeen{Die \thepkg Tools sind Teil des \pkg*{osglecture} Bundles, jedoch auch
+      unabhängig von den anderen Paketen des Bundles einsetzbar.
+      Sie beinhalten einerseits einen Patch-Wrapper für Clemens Niederbergers großartige
+      \cls{clntx-doc}-Klasse, die aber leider nicht mehr mit den aktuellen \LaTeX\
+      kompatibel ist, zum anderen eine Unterstützung für \emph{literate
+        programming}{The \thepkg tools are part of the \pkg*{osglecture} bundle, but can also
+        be used independently of the other packages in the bundle.
+        They include, on the one hand, a patch wrapper for Clemens
+        Niederberger’s excellent  \cls{clntx-doc} class, which   unfortunately
+        is no longer compatible with the current \LaTeX\ version, and, on the
+        other hand, support for \emph{literate programming}.
+      }
+    }
+  },
+  url      =https://github.com/werner-matthias/osglecture,
+  build-title
+}
+\usepackage[
+languages={de,en},
+map={de=german,en=english},
+targetlang={job=2},
+load babel
+]{langselect}
+\def\thepkg{\pkg*{\packagename}}
+\makeatletter
+\def\gobble{\@gobble}
+\makeatother
+\begin{document}
+\renewcommand{\packageformat}{\color{cnltxformalblue}\sffamily}
+\section{Implementation}
+\subsection{Class \packagename.cls}
+\AutoDocInput{osgdoc.dtx}{cls}
+\subsection{Package \packagename.sty}
+\AutoDocInput{osgdoc.dtx}{pkg}
+\end{document}
+%</driver>
+%<*cls>
+\ProvidesExplClass{\packagename}{\packagedate}{\packageversion}{A thin wrapper
+  around cnltx-doc}
+
+\AddToHook{class/cnltx-doc/after}{
+  \typeout{==>~First~Aid~for~cnltx-doc.cls~applied!}
+}
+\AddToHook{class/scrartcl/after}{
+  \NewCommandCopy{\originalAfterPackage}{\AfterPackage}
+  \RenewDocumentCommand{\AfterPackage}{t! m m}{
+    \IfBooleanTF{#1}{#3}{%
+      \originalAfterPackage{#2}{#3}
+    }
+  }
+}
+\RequirePackage{luatex85}
+\RequirePackage{multicol}
+\RequirePackage{shellesc}
+\AddToHook{package/cnltx-example/after}{%
+\renewcommand*\cnltx@exe{\ShellEscape}%
+}
+\RequirePackage{osgdoc}
+\LoadClass{cnltx-doc}
+\mdfdefinestyle{cnltxmdframed}{
+  backgroundcolor = cnltxbg ,
+  linecolor = cnltx ,
+  roundcorner = 5pt
+}
+\RequirePackage[oldstyle]{libertine}
+\setmonofont[
+Scale = MatchLowercase ,
+Ligatures = {NoCommon,NoRequired,NoContextual}
+]{DejaVu Sans Mono}
+\RequirePackage{hyperref}
+
+%</cls>
+%<*pkg>
+\ProvidesExplPackage{\packagename}{\packagedate}{\packageversion}{}
+\sys_if_engine_luatex:TF{
+  \def\error{}
+  \RequirePackage{luacode}
+}{
+  \def\error{\errmessage{LuaLaTeX~is~required~to~use~this~package.}\endinput}
+}
+\error
+\RequirePackage{luacode}
+\RequirePackage{fancyvrb}
+\fvset{formatcom=\color{blue},numbers=left}
+
+\begin{luacode*}
+-- autodoc: % => text; %<*pkg>..%</pkg> => Code
+
+local function strip_pct(s) return (s:gsub("^%%+%s?","")) end
+
+local function quote_pat(s)
+  return (s:gsub("(%W)", "%%%1"))
+end
+
+local function opening_guard(line, terminal)
+   local atomchars = "%w_%-"
+   local expr = line:match("^%%%<%s*%*%s*(.-)%s*%>")
+   if not expr then return false end
+   
+   local t = quote_pat(terminal)
+   local pat = "%f[" .. atomchars .. "]" .. t .. "%f[^" .. atomchars .. "]"
+   
+   return expr:find(pat) ~= nil
+   end
+   
+local verbatim_counter = 0
+% \ldeen*{@1 muss global sein, damit die Dateien später durch einen
+% Callback bereinigt werden können.}{@1 has to be global. Then, all
+% files can be deleted later by a callback.}{\code{verbtempfiles}}						  
+verbtempfiles = {}
+local function uniqname()
+   verbatim_counter = verbatim_counter + 1
+   local name = string.format(
+      "osgdoc-%s-%04d.tmp",
+      tex.jobname,
+      verbatim_counter
+   )
+   return name
+end
+   
+function autodoc_process(fname, guard)
+   print(">>>> AUTODOC_PROC called : '"..fname.."', guard: '"..guard.."'")
+
+   local vf
+   local vfname
+   local f = io.open(fname,"r")
+   if not f then tex.error("AutoDocInput: cannot open "..fname); return end
+% \ldeen{Wir nutzen einen kleinen Zustandsautomaten}{We use a small state machine}.   
+   local OUTSIDE     = 0
+   local OUTSIDEVERB = 1
+   local VERB        = 2
+   local STARTVERB   = 3
+   local COMMENT     = 4
+   local state = OUTSIDE
+   
+   local lnr = 0
+   local tfcount = 0;
+   for line in f:lines() do
+     lnr = lnr + 1
+     local og = opening_guard(line,guard)
+     local cg = line:match("^%%%</")
+     local cc = line:match("^%%[^%<]")
+     if state == OUTSIDE then 
+	if og then
+	   state = STARTVERB
+	end
+     elseif state == OUTSIDEVERB then
+	if og then
+	   state = VERB
+	end
+     elseif state == STARTVERB then
+	if cc then
+	   tex.print(strip_pct(line))
+	   state = COMMENT
+	elseif cg then
+	   state = OUTSIDE
+	elseif og then
+	   tex.print("\\typeout{Warning: Cascading guards in "..lnr.."}")
+	else
+	   vfname = uniqname()
+	   vf = assert(io.open(vfname, "w"))
+	   vf:write(line,'\n')
+	   state = VERB
+	end
+     elseif state == VERB then
+	if cg then
+	   state = OUTSIDEVERB
+	elseif cc then
+	   vf:close()
+	   tex.print("\\VerbatimInput[firstnumber=last]{"..vfname.."}")
+	   tex.print(strip_pct(line))
+	   state = COMMENT
+	elseif og then
+	   tex.print("\\typeout{Warning: Cascading guards in "..lnr.."}")
+	else 
+	   vf:write(line,'\n')
+	end
+     elseif state == COMMENT then
+	if cg then
+	   state = OUTSIDE
+	elseif og then
+	   tex.warning("Cascading guards in "..lnr)
+	elseif cc then
+	   tex.print(strip_pct(line))
+	else
+	   vfname = uniqname()
+	   vf = assert(io.open(vfname, "w"))
+	   vf:write(line)
+	   state = VERB
+	end
+     else
+	tex.error("Can't parse.")	   
+     end
+  end
+   if ((state == VERB) or (state == OUTSIDEVERB)) then
+      vf:close()
+      tex.print("\\VerbatimInput[firstnumber=last]{"..vfname.."}")
+     -- tex.print("\\begin{Verbatim}")
+     -- texio.write_nl("\\end{Verbatim}")
+     -- tex.print("\\end{Verbatim}")
+     -- tex.print("\\relax")
+     --tex.print(" ")
+  end
+  f:close()
+end
+\end{luacode*}
+
+\newcommand{\AutoDocInput}[2]{
+  \directlua{
+    autodoc_process(\luastring{#1},\luastring{#2}
+    )
+  }
+}
+%</pkg>
