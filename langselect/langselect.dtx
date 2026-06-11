@@ -1,36 +1,30 @@
-% \iffalse meta-comment
-%
-%<*pkg>
-%%  (C) 2022-2025 Matthias Werner
-%%
-%%  Package langselect - generate documents in different languages
-%%                       from a common source.
-%%
-%</pkg>
-% \fi% meta
-%<*driver>
+%<*driver|pkg>
 \def\packagename{langselect}
+\def\packagedate{2025/09/04}
+\def\packageversion{v0.2.1}
+%</driver|pkg>
+%<*driver>
 \def\nameofplainTeX{plain}
 \ifx\fmtname\nameofplainTeX
-\input docstrip.tex
-\keepsilent
-\askforoverwritefalse
+\input l3docstrip.tex
 \preamble
-----------------------------------------------------------------
-langselect -- multiple language versions from a common source
-E-mail: matthias.werner@informatik.tu-chemnitz.de
-Released under the LaTeX Project Public License v1.3c or later
-See http://www.latex-project.org/lppl.txt
-----------------------------------------------------------------
+
+========================================================================
+ Package langselect - generate documents in different languages
+                      from a common source. This is a generated file.
+
+ (C) 2022-2026 Matthias Werner
+ E-mail: matthias.werner@informatik.tu-chemnitz.de
+
+ Released under the LaTeX Project Public License v1.3c or later
+ See http://www.latex-project.org/lppl.txt
+======================================================================== 
 
 \endpreamble
 \postamble
-This work is "maintained" (as per LPPL maintenance status) by
-Matthias Werner.
 
-This work consists of the file  langselect.dtx
-and the derived files           langselect.pdf and
-                                langselect.sty.
+This work is "maintained" (as per LPPL maintenance status) by
+ Matthias Werner.
 \endpostamble
 
 \generate{
@@ -38,154 +32,19 @@ and the derived files           langselect.pdf and
 }
   \expandafter\endbatchfile
 \fi
-% Patch cnltx-doc for modern LaTeX and LuaTeX
-\AddToHook{class/cnltx-doc/before}{
-  \typeout{==> First Aid for cnltx-doc.cls applied!}
-}
-\AddToHook{class/scrartcl/after}{
-  \NewCommandCopy{\originalAfterPackage}{\AfterPackage}
-  \RenewDocumentCommand{\AfterPackage}{t! m m}{
-    \IfBooleanTF{#1}{#3}{%
-      \originalAfterPackage{#2}{#3}
-    }
-  }
-}
-\makeatletter
-\AddToHook{package/cnltx-example/after}{%
-\renewcommand*\cnltx@exe{\ShellEscape}%
-}
-
-%\def\cnltxmdframed{\cnltx@mdframed@options}
-\makeatother
-\ExplSyntaxOn
-\sys_if_engine_luatex:TF{
-  \def\error{}
-  \RequirePackage{luacode}
-}{
-  \def\error{\errmessage{LuaLaTeX~is~required~to~build~this~documentation.}\endinput}
-}
-\error
-\ExplSyntaxOff
-\RequirePackage{luatex85}
-\RequirePackage{shellesc}
-\RequirePackage{multicol}
-\documentclass[
-load-preamble-,
-]{cnltx-doc}
-\usepackage[oldstyle]{libertine}
-\setmonofont[
-Scale = MatchLowercase ,
-Ligatures = {NoCommon,NoRequired,NoContextual}
-]{DejaVu Sans Mono}
-\usepackage{microtype}
-\usepackage{enumitem}
-\usepackage{readprov}
-\usepackage{hyperref}
-\usepackage{imakeidx}
-\usepackage{multicol}
-\usepackage{luacode}
-\usepackage{fancyvrb}
-\fvset{formatcom=\color{blue},numbers=left,firstnumber=19}
-\mdfdefinestyle{cnltxmdframed}{
-  backgroundcolor = cnltxbg ,
- linecolor = cnltx ,
- roundcorner = 5pt
-}
-% --- Autodoc: A poor mans version of gmdoc
-\begin{luacode*}
--- autodoc: % => text; %<*pkg>..%</pkg> => Code
-
-local function strip_pct(s) return (s:gsub("^%%+%s?","")) end
-
-function autodoc_process(fname)
-  local f = io.open(fname,"r")
-  if not f then tex.error("AutoDocInput: cannot open "..fname); return end
-  local in_driver = false
-  local in_guard  = false 
-  local in_vb     = false 
-  local vb_start  = true
   
-  local function vb_open()
-    if not in_vb then
-      if vs_start then
-        -- 20 => length of preamble
-        tex.print("\\begin{Verbatim}[firstnumber=20]")
-      else
-         tex.print("\\begin{Verbatim}[firstnumber=last]")
-      end
-      in_vb=true
-    end
-  end
-  local function vb_close()
-    if in_vb then
-      tex.print("\\end{Verbatim}")
-      in_vb=false
-    end
-  end
+\documentclass[
+load-preamble,
+]{osgdoc}
 
-  for line in f:lines() do
-    if line:match("^%%<%*driver>") then
-      in_driver=true
-      goto continue
-    end
-    if line:match("^%%</driver>")   then
-    in_driver=false
-      goto continue
-    end
-    if in_driver then goto continue end
-
-    local guard_open = line:match("^%%<%*(%w+)>")
-    if guard_open then
-       in_guard=true;
-       vb_close();
-       goto continue
-    end
-    if line:match("^%%</%w+>") then
-      in_guard=false
-      vb_close()
-      goto continue
-    end
-    if in_guard then
-      if line:match("^%%") then
-        vb_close()
-        tex.print(strip_pct(line))
-      else
-        vb_open()
-        tex.print(line)
-      end
-    else
-      -- Außerhalb der Guards: nur Doku drucken
-      if line:match("^%%") then
-        vb_close()
-        tex.print(strip_pct(line))
-        -- print("*** ".. strip_pct(line))
-      else
-        -- nackte Zeilen außerhalb ignorieren
-      end
-    end
-    ::continue::
-  end
-
-  vb_close()
-  f:close()
-end
-\end{luacode*}
-
-\newcommand{\AutoDocInput}[1]{\directlua{autodoc_process("#1")}}
-\usepackage[
-languages={de,en},
-map={de=ngerman,en=english},
-targetlang={job=2}
-]{langselect}
 % --------------------------------------------------------------------
 \makeindex
-\ReadFileInfos{\packagename.sty}
 \def\thepkg{\pkg*{\packagename}}
 \setcnltx{
   name  = \packagename,
   package  = \packagename,
-  version  = \UseVersionOf{\packagename.sty},
-  date     = \UseDateOf{\packagename.sty},
+  version  = \packageversion,
+  date     = \packagename,
   title    = {\ldeen{Das \pkg*{langselect}-Paket}{The \pkg*{langselect} Package}},
   info     = \ldeen{Generierung verschiedener Sprachversionen aus einer
     Quelle}{Generate different language versions from a common source}, 
@@ -194,9 +53,9 @@ targetlang={job=2}
     \ldeen{
       Dieses Paket unterstützt die Generierung von Dokumenten in zwei oder drei Sprachvarianten aus einem gemeinsamen
       Quelldokument. Es wird ein entsprechendes Nutzermakro generiert und es
-      gibt merhere Methoden, die Zielsprache zu bestimmen.
+      gibt mehrere Methoden, die Zielsprache zu bestimmen.
       
-      Das Paket gehört zum \pkg*{osglecture}-Bundle und wird in die \cls*{osglecture}-Klasse
+      Das Paket gehört zum \pkg*{osglecture}-Bundle, wird in die \cls*{osglecture}-Klasse
       integriert und vom Buildscript \code{ollm} unterstützt, kann aber auch eigenständig
       genutzt werden.
     }{
@@ -204,17 +63,24 @@ targetlang={job=2}
       source document. A corresponding user macro is generated, and there
       are several methods for determining the target language.
       
-      The package is part of the \pkg{osglecture} bundle and is integrated into the \cls*{osglecture} class
+      The package is part of the \pkg*{osglecture} bundle, is integrated into the \cls*{osglecture} class
       and supported by the build script \code{ollm}, but can also be used independently.
     }
   },
-  url      =https://github.com/tuc-osg/osglecture,
+  url      =https://github.com/werner-matthias/osglecture,
   build-title
 }
+
+\usepackage[
+languages={de,en},
+map={de=ngerman,en=english},
+targetlang={job=2}
+]{langselect}
+\usepackage{enumitem}
 \def\thepkg{\pkg*{\packagename}}
 \makeatletter
 \def\gobble{\@gobble}
-\makeatother 
+\makeatother
 \begin{document}
  
 \renewcommand{\packageformat}{\color{cnltxformalblue}\sffamily}
@@ -348,8 +214,8 @@ mechanisms for selecting the target language.
     \ldeen*{
       Die Pakete @1      
       addressieren Programmierer von \LaTeX-Paketen, um fixe Textelemente wie
-      die Überschriften von Verzeichnissen zu internationalisieren. Für Dokumentautoren sind diese Pakete
-      nur bedingt geeignet.
+      die Überschriften von Verzeichnissen zu internationalisieren.
+      Für Dokumentautoren sind diese Pakete nur bedingt geeignet.
     }{
       The packages @1 are intended for programmers of \LaTeX\ packages to internationalize fixed
       text elements such as the headings of tables of contents.
@@ -401,32 +267,36 @@ mechanisms for selecting the target language.
   \item
     \ldeen{
       Die Sprache, in der Textteile oder einzelne Wörter tatsächlich geschrieben
-      sind. Dies ist das Konzept von Sprache, das Pakete wie Babel oder
+      sind und die beispielsweise bei der Worttrennung berücksichtigt wird.
+      Dies ist das Konzept von Sprache, das Pakete wie Babel oder
       Polyglossia haben.\footnote{Wobei auch in diesen Pakten "`Sprache"' auch
         für mehrere unterschiedliche und z.\,T. voneinander unabhängige Konzepte
         wie Trennungsmuster, zu nutzende Fonts etc. steht}
       Bitte beachten Sie, dass ein mehrsprachiges Dokument aus der Sicht von
       \thepkg\ ein monosprachiges Dokument aus der Sicht von Babel sein kann.
-      Allerdings können durchaus noch weitere Sprachen hinzukommen:
+      Häufig ist es aber eher umgekehrt, so dann durchaus noch weitere Sprachen
+      als die Auswahlsprechen hinzukommen:
       Beispielsweise kann ein Dokument mit den Auswahlsprachen Deutsch und
       Englisch im Text lateinische Wörter oder Sätze enthalten.
-      Diese Auswahl wird über die üblichen Babelmechanismen wie
+      Diese Auswahl wird über die üblichen Mechanismen wie in
       \cs{selectlanguage}, \cs{foreignlanguage} oder \cs*{text}\meta{sprache}
       vorgenommen.
       Wenn Babel oder Polyglossia geladen wird, was auf Wunsch auch direkt über
       \thepkg\ erfolgen kann, wird als aktive Sprache die Zielsprache ausgewählt.
     }{
-       The language in which text fragments or individual words are actually written.
+       The language in which text fragments or individual words are actually
+       written, what is considered, e.\,g. for hyphenation.
        This is the concept of language used by packages such as Babel or
        Polyglossia.\footnote{However, in these packages, "`language"' also refers to
         several different and, in some cases, independent concepts such as
         hyphenation patterns, fonts to be used, etc.}
       Please note that a multilingual document from the perspective of
       \thepkg\ can be a monolingual document from the perspective of Babel.
-      However, additional languages may well be added:
-      For example, a document with the selected languages German and
+      Frequently, it is the other way around, and more languages than the
+      selectable languages are used:
+      For example, a document with the selectable languages German and
       English may contain Latin words or sentences in the text.
-      This selection is made using the usual Babel mechanisms such as
+      This selection is made using the usual mechanisms such as
       \cs{selectlanguage}, \cs{foreignlanguage} or \cs*{text}\meta{language}.
       When Babel or Polyglossia is loaded, which can also be done directly via
       \thepkg\ if desired, the target language is selected as the active language.
@@ -439,8 +309,8 @@ mechanisms for selecting the target language.
   bestimmter Dialekt oder eine bestimmte Variante gewünscht ist, kann ein
   Mapping erfolgen.
 }{
-  Languages are designated in \thepkg\ using ISO 639-1 codes ("`english"', "`french"',
-  "`ngerman"' \ldots).
+  Languages are designated in \thepkg\ using ISO 639-1 codes ("`en"', "`fr"',
+  "`de"' \ldots).
   If a specific dialect or variant is desired for language processing at the Babel/Polyglossia level,
   mapping can be performed.
 }
@@ -829,21 +699,23 @@ Section~@1.%
       options \option{load babel}"/\option{load polyglossia} and sets
       the target language as the main language. Additional options for the
       language packages are passed as option arguments.}
-  \item \ldeen{Schließlich kann mit dem Hook \code{langselect/language} beliebiger Code
-    vor Ausgabe der Argumente des Sprachmakros eingefügt werden, z.\,B.\
+  \item \ldeen{Schließlich kann mit dem Hooks \code{langselect/language/before}
+      und \code{langselect/language/before} beliebiger Code
+    vor bzw.\ nach Ausgabe der Argumente des Sprachmakros eingefügt werden, z.\,B.\
     kann hier \cs{foreignlanguage} genutzt werden.
-    Der Hook hat als Parameter die Zielsprache.}{Finally, the hook
-    \code{langselect/language} can be used to insert any code 
-    before the arguments of the language macro are output, e.g.,
+    Der \code{before}-Hook hat als Parameter die Zielsprachenvariante.}{Finally, the hooks
+    \code{langselect/language/before} and \code{langselect/language/after} can
+    be used to insert any code  
+    before or after the arguments of the language macro are output, e.g.,
     \cs{foreignlanguage} may be used here.
-    The hook has the (mapped) target language as a parameter.}
+    The \code{before} hook has the (mapped) target language as a parameter.}
 \end{enumerate}
 \subsection{Csquotes}
 \label{sec:csquote}
 \ldeen{Unterschiedliche Sprachen haben unterschiedliche Konventionen zur Setzung
   von Satzzeichen. Besonders stört das bei Anführungszeichen, da diese der
   Zielsprache folgen sollen, aber durchaus auch außerhalb der Sprachmakros oder
-  in Argumenten der Sternvariante stehen könne.
+  in Argumenten der Sternvariante stehen können.
   Das Paket \needpackage{csquotes} bietet dafür eine Lösung, indem es \cs{enquote}
   und andere Makros anbietet, die der Zitatkonvention der aktuellen Sprache folgen.
 
@@ -874,7 +746,7 @@ Section~@1.%
         experimental?}}
     
     \ldeen{Auf jeden Fall. Während ist beim Autoren zwar im täglichen Einsatz
-      ist, ist nicht auszuschließen, dass es unerwünschte Wechselwirkunen zu
+      ist, ist nicht auszuschließen, dass es unerwünschte Wechselwirkungen zu
       anderen Paketen gibt. Die Versionsnummer zeigt dies
       an.}{Absolutely. Although the author uses it on a daily basis, 
       it cannot be ruled out that there may be undesirable interactions with
@@ -890,7 +762,7 @@ Section~@1.%
         Hello World?}}
     
     \ldeen{Ja, einige. Gucken Sie doch mal zum Beispiel in den Quelltext dieser
-      Dokumentation.}{Yes, some. Take a look at the source code of this
+      Dokumentation.}{Yes, a few. Take a look at the source code of this
       documentation, for example.} 
     
   \item \textbf{\ldeen{Ich habe ein @1 in der Ausgabe, wo doch eine
@@ -912,8 +784,9 @@ Section~@1.%
           \env*{document} environment with a \cs{makeatother}.
       \end{enumerate}}
     
-  \item \textbf{\ldeen{Kann ich in der Sternversion einen @$n$-Parameter
-        auslassen?}{Can I omit an @$n$ parameter in the starred version?}}
+  \item \textbf{\ldeen{Kann ich in der Sternversion einen @$n$-Parameter in
+        einer Sprachversion
+        auslassen?}{Can I omit an @$n$ parameter in the starred version for one language?}}
 
     \ldeen{Nein. Außerdem wäre dann das Argument ja auch offensichtlich nicht
       mehr gemeinsam.}{No. Besides, then the argument would obviously no longer be
@@ -926,7 +799,8 @@ Section~@1.%
     \ldeen{Ja}{Yes}.
 
   \item \textbf{\ldeen{Ich möchte @ in einer Sternvariante des Sprachmacros
-        verwenden.}{I want to use @ in a star variant of the language macro.}}
+        nicht als Parameter verwenden.}{I want to use @ not as a prameter in a
+        star variant of the language macro.}} 
 
     \ldeen{Dann machen Sie es.}{Just do it.}
 
@@ -938,10 +812,11 @@ Section~@1.%
   \item \textbf{\ldeen{Ich nutze Russisch, aber der Font ist nicht richtig.}{I
         use Russian, but the font is incorrect.}}
 
-    \ldeen{Das ist keine Problem von \thepkg\ (das kümmert sich gar nicht um den
+    \ldeen*{Das ist keine Problem von \thepkg\ (das kümmert sich gar nicht um den
       Font), sondern wahrscheinlich von Babel, \pkg{fontenc}, \pkg{fontspec},
-      etc.}{This is not a problem with \thepkg\ (which does not deal with the 
-      font at all), but probably with Babel, \pkg{fontenc}, \pkg{fontspec}, etc.}
+      etc. Aber vielleicht können die Hooks für Sie nützlich sein, sihe Abschnitt~@1}{This is not a problem with \thepkg\ (which does not deal with the 
+      font at all), but probably with Babel, \pkg{fontenc}, \pkg{fontspec},
+      etc. But maybe you find the hooks useful, cf.\ section~@1}{\ref{sec:babel}}.
 
     
   \item \textbf{\ldeen{Meine Frage erscheint hier nicht.}{My question does not
@@ -953,7 +828,7 @@ Section~@1.%
     
 \end{itemize}
 \section{Implementation}
-\AutoDocInput{\packagename.dtx}
+\AutoDocInput{\packagename.dtx}{pkg}
 
 \printindex
 
@@ -961,11 +836,8 @@ Section~@1.%
 %</driver>
 %<*pkg>
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
-\def\packagename{langselect}
-\def\packageversion{2025/09/04 v0.2.1}
-\ProvidesPackage{\packagename}[\packageversion\space support for different
-languages versions from common source]
-\ExplSyntaxOn
+\ProvidesExplPackage{\packagename}{\packagedate}{\packageversion}{support for different
+languages versions from a common source}
 % \ldeen{\cs{olsIsoTags} enthält alle gültigen ISO
 % 639-1-Codestags.}{\cs{olsIsoTags} contains all valid ISO 639-1 code tags.}
 \seq_const_from_clist:cn{olsIsoTags}{aa,ab,ae,af,ak,am,an,ar,as,av,ay,az,ba,be,
@@ -982,7 +854,7 @@ languages versions from common source]
 }
 \RequirePackage{varsfromjobname}[2025/08/03]
 % \ldeen{Das Ergebnisse von \cs{varsfromjobname}\ und \cs*{str\_range:Nnn} haben
-% Catcode 12, aber Iso-Tags und Optionen haben Catcode 11. Wir vereinheitlichen
+% Catcode 12, aber ISO-Tags und Optionen haben Catcode 11. Wir vereinheitlichen
 % durch einen Wrapper auf Catcode 11.}{The results of \cs{varsfromjobname}\
 % and \cs*{str\_range:Nnn} have catcode 12, but ISO tags and options have catcode
 % 11. We standardize using a wrapper on catcode 11.} 
@@ -996,7 +868,7 @@ languages versions from common source]
   \tmpb
 }
 % \ldeen{Bei Bedarf bilden wir Spachcode auf Sprachvarianten ab. Bei
-% Interaktionen mit externen Code wir dann die Sprachvariante weitergegeben.}{If
+% Interaktionen mit externen Code wird dann die Sprachvariante weitergegeben.}{If
 % necessary, we map language codes to language variants. When interacting with 
 % external code, the language variant is then passed on.} 
 \cs_new:Npn \ols_use_map:n #1 {
@@ -1012,13 +884,20 @@ languages versions from common source]
   languages.clist_gset:N = \ols_langs,
   languages.usage=load,
   targetlang.code = {
-    \cs_if_exist:NF\olsTargetLanguage{
-      \bool_if:nT{
+% \ldeen*{Die Option @1 wird nur ausgewertet, wenn die Zielsprache nicht bereits
+% durch Definition von @2 gesetzt wurde.}{The option @1 will be only evaluated
+% in case, the target language isn't already set by definiton of
+% @2}{\option{targetlang}}{\cs{olsTargetLanguage}}.     
+      \cs_if_exist:NF\olsTargetLanguage{
+% \ldeen{Wird ein Element des Jobnames angegeben}{Is an element of the jobname given}?  
+      \bool_if:nT{                     
         \str_if_eq_p:ee{\str_range:nnn{#1}{1}{3}}{job}
       }{%
         \olsChangeCatEleven{\getfromjobname{\str_range:Nnn{#1}{-1}{-1}}}
         \xdef\olsTargetLanguage{\olsCatElven}
       }
+% \ldeen*{Soll die Zielsprache von @1 oder @2 abgeleitet werden}{Should the
+% target language be derived from @1 or @2}{\pkg{babel}}{\pkg{polyglossia}}?      
       \bool_if:nT{
         \str_if_eq_p:nn{#1}{babel} || \str_if_eq_p:nn{#1}{polyglossia}
       }{
@@ -1026,6 +905,8 @@ languages versions from common source]
           \edef\olsTargetLanguage{\BCPdata{main.language}}
         }
       }
+% \ldeen{Soll die Sprache aus dem Metadaten genutzt werden}{Should the language
+% of the meta data be used}?      
       \str_if_eq:nnTF{#1}{meta}{
         \IfDocumentMetadataTF{
           \edef\tmpa{\GetDocumentProperty{document/lang}}
@@ -1037,20 +918,30 @@ languages versions from common source]
         }
       }
     }
+% \ldeen{Wenn bisher noch keine Sprache zugewiesen wurde, wird das Argument als
+% Sprache angenommen. Es wird später überprüft, ob es gültig ist}{If no language
+% is assigned by now, the argument is assumed to be the language. We check
+% later, whether it is valid}.    
     \cs_if_exist:NF \olsTargetLanguage {
       \edef\olsTargetLanguage{#1}
     }
   },
+% \ldeen{Prefix für die Nutzer-Sprachbefehle}{Prefix of the user language commands}.
   targetlang.usage=load,
   prefix.store=\ols_sprefix,
   prefix.initial:n=l,
   prefix.usage=load,
+% \ldeen{Automatische Erzeugung der Sprachbefehle}{Automatic generation of the
+% language commands}?  
   auto.bool_set:N=\ols_generate,
   auto.usage=load,
   auto.initial:n=true,
+% \ldeen{Automatische Entfernung von Randleerzeichen}{Automatic removal of
+% heading and trailing spaces}?  
   trim.bool_set:N=\ols_trim,
   trim.usage=load,
   trim.initial:n=true,
+% \ldeen{Abbildung auf Sprachvarianten}{Mapping to language variants}.
   map.code:n = {
     \prop_new:N \ols_lang_pl
     \prop_clear:N \ols_lang_pl
@@ -1060,7 +951,9 @@ languages versions from common source]
 % entries to ordinary macros.} 
     \prop_map_inline:Nn \ols_lang_pl
       { \cs_gset:cpn { olslangmap / \tl_to_str:n {##1} } {##2} }
-  },
+    },
+% \ldeen*{Laden von @1 oder @2 mit Optionen}{Load @1 or
+% @2 with options}{\pkg{babel}}{\pkg{polyglossia}}.
   load~babel .code:n = {
     \bool_set_true:N \ols_load_babel
     \PassOptionsToPackage{#1}{babel}
@@ -1200,7 +1093,8 @@ languages versions from common source]
 % generische Hooks komplizierter. Wir stellen deshalb eigene Hooks zur
 % Verfügung.}{Since the name of the language macro is unknown, patching or
 % generic hooks are more complicated. We therefore provide our own hooks.} 
-\NewHookWithArguments{langselect/language}{1}
+\NewHookWithArguments{langselect/language/before}{1}
+\NewReversedHook{langselect/language/after}
 \NewHookWithArguments{langselect/argument}{2}
 % \ldeen{Ein Boolean zur Markierung, ob mehr als zwei Auswahlsprachen angegeben
 % wurden.}{A Boolean to indicate whether more than two selectable languages have
@@ -1230,26 +1124,46 @@ languages versions from common source]
   \str_if_eq:eeT{\olsTargetLanguage}{#2} {
     \IfValueTF{#4}{
       \ExpandArgs{c}\NewExpandableDocumentCommand{#1#4}{s +m +m}{
-        \UseHook{langselect/language}{\ols_mapped_target_lang}
-        \IfBooleanTF{##1}{\ols_trim:n{\olsProcessArgs{##2}}}{\ols_trim:n{##2}}
+        \UseHook{langselect/language/before}{\ols_mapped_target_lang}
+        \IfBooleanTF{##1}{
+          \ols_trim:n{\olsProcessArgs{##2}}
+        }{
+          \ols_trim:n{##2}
+          \UseHook{langselect/language/after}
+        }
+        
       }
     }{
       \ExpandArgs{c}\NewExpandableDocumentCommand{#1#2#3}{s +m +m}{
-        \UseHook{langselect/language}{\ols_mapped_target_lang}
-        \IfBooleanTF{##1}{\ols_trim:n{\olsProcessArgs{##2}}}{\ols_trim:n{##2}}
+        \UseHook{langselect/language/before}{\ols_mapped_target_lang}
+        \IfBooleanTF{##1}{
+          \ols_trim:n{\olsProcessArgs{##2}}
+        }{
+          \ols_trim:n{##2}
+          \UseHook{langselect/language/after}
+        }
       }
     }
   }
   \str_if_eq:eeT{\olsTargetLanguage}{#3}{
     \IfValueTF{#4}{
       \ExpandArgs{c}\NewExpandableDocumentCommand{#1#4}{s +m +m}{
-        \UseHook{langselect/language}{\ols_mapped_target_lang}
-        \IfBooleanTF{##1}{\ols_trim:n{\olsProcessArgs{##3}}}{\ols_trim:n{##3}}
+        \UseHook{langselect/language/before}{\ols_mapped_target_lang}
+        \IfBooleanTF{##1}{
+          \ols_trim:n{\olsProcessArgs{##3}}
+        }{
+          \ols_trim:n{##3}
+          \UseHook{langselect/language/after}
+        }
       }
     }{
       \ExpandArgs{c}\NewExpandableDocumentCommand{#1#2#3}{s +m +m}{
-        \UseHook{langselect/language}{\ols_mapped_target_lang}
-        \IfBooleanTF{##1}{\ols_trim:n{\olsProcessArgs{##3}}}{\ols_trim:n{##3}}
+        \UseHook{langselect/language/before}{\ols_mapped_target_lang}
+        \IfBooleanTF{##1}{
+          \ols_trim:n{\olsProcessArgs{##3}}
+        }{
+          \ols_trim:n{##3}\UseHook{langselect/language/after}
+        }
       }
     }
   }
@@ -1261,26 +1175,46 @@ languages versions from common source]
   \str_if_eq:eeT{\olsTargetLanguage}{#2} {
     \IfValueTF{#4}{
       \ExpandArgs{c}\NewExpandableDocumentCommand{#1#5}{s +m +m +m}{
-        \UseHook{langselect/language}{\ols_mapped_target_lang}
-        \IfBooleanTF{##1}{\ols_trim:{\olsProcessArgs{##2}}}{\ols_trim:{##2}}
+        \UseHook{langselect/language/before}{\ols_mapped_target_lang}
+        \IfBooleanTF{##1}{
+          \ols_trim:{\olsProcessArgs{##2}}
+        }{
+          \ols_trim:{##2}
+          \UseHook{langselect/language/after}
+        }
       }
     }{
       \ExpandArgs{c}\NewExpandableDocumentCommand{#1#2#3#4}{s +m +m +m}{
-        \UseHook{langselect/language}{\ols_mapped_target_lang}
-        \IfBooleanTF{##1}{\ols_trim:{\olsProcessArgs{##2}}}{\ols_trim:{##2}}
+        \UseHook{langselect/language/before}{\ols_mapped_target_lang}
+        \IfBooleanTF{##1}{
+          \ols_trim:{\olsProcessArgs{##2}}
+        }{
+          \ols_trim:{##2}
+          \UseHook{langselect/language/after}
+        }
       }
     }
   }
   \str_if_eq:eeT{\olsTargetLanguage}{#3} {
     \IfValueTF{#4}{
       \ExpandArgs{c}\NewExpandableDocumentCommand{#1#5}{s +m +m +m}{
-        \UseHook{langselect/language}{\ols_mapped_target_lang}
-        \IfBooleanTF{##1}{\ols_trim:{\olsProcessArgs{##2}}}{\ols_trim:{##3}}
+        \UseHook{langselect/language/before}{\ols_mapped_target_lang}
+        \IfBooleanTF{##1}{
+          \ols_trim:{\olsProcessArgs{##2}}
+        }{
+          \ols_trim:{##3}
+          \UseHook{langselect/language/after}
+        }
       }
     }{
       \ExpandArgs{c}\NewExpandableDocumentCommand{#1#2#3#4}{s +m +m +m}{
         \UseHook{langselect/language}{\ols_mapped_target_lang}
-        \IfBooleanTF{##1}{\ols_trim:{\olsProcessArgs{##2}}}{\ols_trim:{##3}}
+        \IfBooleanTF{##1}{
+          \ols_trim:{\olsProcessArgs{##2}}
+        }{
+          \ols_trim:{##3}
+          \UseHook{langselect/language/after}
+        }
       }
     }
   }
@@ -1288,12 +1222,22 @@ languages versions from common source]
     \IfValueTF{#4}{
       \ExpandArgs{c}\NewExpandableDocumentCommand{#1#5}{s +m +m +m}{
         \UseHook{langselect/language}{\ols_mapped_target_lang}
-        \IfBooleanTF{##1}{\ols_trim:{\olsProcessArgs{##2}}}{\ols_trim:{##4}}
+        \IfBooleanTF{##1}{
+          \ols_trim:{\olsProcessArgs{##2}}
+        }{
+          \ols_trim:{##4}
+          \UseHook{langselect/language/after}
+        }
       }
     }{
       \ExpandArgs{c}\NewExpandableDocumentCommand{#1#2#3#4}{s +m +m +m}{
         \UseHook{langselect/language}{\ols_mapped_target_lang}
-        \IfBooleanTF{##1}{\ols_trim:{\olsProcessArgs{##2}}}{\ols_trim:{##4}}
+        \IfBooleanTF{##1}{
+          \ols_trim:{\olsProcessArgs{##2}}
+        }{
+          \ols_trim:{##4}
+          \UseHook{langselect/language/after}
+        }
       }
     }
   }
@@ -1332,7 +1276,7 @@ languages versions from common source]
 % it must have the same catcode as in the document.}
 \makeatother
 \NewDocumentCommand \olsProcessArgs { +m } {
-  \tl_gset:Nn \ols_format_str_tl{#1}
+  \tl_gset:Nn \ols_format_str_tl{#1\UseHook{langselect/language/after}}
   \int_zero:N \ols_num_of_args
 % \ldeen*{Suche den höchsten Wert @1, für den @@1 im Formatstring vorkommt.}{Find
 % the highest value @1, where @@1 is contained in the format string.}{$n$}  
