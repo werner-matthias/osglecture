@@ -33,25 +33,20 @@
   \expandafter\endbatchfile
 \fi
 
-
-\documentclass[load-preamble+]{osgdoc}
-\edef\pkgname{\packagename}
-\edef\thepkg{\pkg*{\packagename}}
+\documentclass[
+%load-preamble+
+]{osgdoc}
+\def\pkgname{osgdoc}
+\def\thepkg{\pkg*{\pkgname}}
 
 \usepackage{microtype}
 
-\usepackage{readprov}
-%\usepackage{imakeidx}
-
-
-
 \makeindex
 \setcnltx{
-  name  =  \CurrentFile,
-  package  = \CurrentFile,
-  version  = \UseVersionOf{\CurrentFile.cls},
-  date     = \UseDateOf{\CurrentFile.cls},
-  title    = {\ldeen{Die FOOBAR Tools}{The BARFOO Tools}},
+  name  =  osgdoc,
+  version  = \UseVersionOf{osgdoc.sty},
+  date     = \UseDateOf{osgdoc.sty},
+  title    = {\ldeen{Die \thepkg\ Tools}{The \pkg*{osgdoc} Tools}},
   info     = {\ldeen{Unterstützung für \LaTeX-Paket-Dokumentationen}{Support for
       \LaTeX package documentation}},
   authors  = {Matthias Werner[matthias.werner@informatik.tu-chemnitz.de]},
@@ -61,14 +56,15 @@
       Sie beinhalten einerseits einen Patch-Wrapper für Clemens Niederbergers großartige
       \cls{clntx-doc}-Klasse, die aber leider nicht mehr mit den aktuellen \LaTeX\
       kompatibel ist, zum anderen eine Unterstützung für \emph{literate
-        programming}{The \thepkg tools are part of the \pkg*{osglecture} bundle, but can also
+        programming}
+    }{
+      The \thepkg tools are part of the \pkg*{osglecture} bundle, but can also
         be used independently of the other packages in the bundle.
         They include, on the one hand, a patch wrapper for Clemens
         Niederberger’s excellent  \cls{clntx-doc} class, which   unfortunately
         is no longer compatible with the current \LaTeX\ version, and, on the
         other hand, support for \emph{literate programming}.
       }
-    }
   },
   url      =https://github.com/werner-matthias/osglecture,
   build-title
@@ -79,7 +75,6 @@ map={de=german,en=english},
 targetlang={job=2},
 load babel
 ]{langselect}
-\def\thepkg{\pkg*{\packagename}}
 \makeatletter
 \def\gobble{\@gobble}
 \makeatother
@@ -93,12 +88,12 @@ load babel
 \end{document}
 %</driver>
 %<*cls>
-\ProvidesExplClass{\packagename}{\packagedate}{\packageversion}{A thin wrapper
-  around cnltx-doc}
+\ProvidesExplClass
+{osgdoc}
+{2026-06-11}
+{0.0.7}
+{A thin wrapper around cnltx-doc}
 
-\AddToHook{class/cnltx-doc/after}{
-  \typeout{==>~First~Aid~for~cnltx-doc.cls~applied!}
-}
 \AddToHook{class/scrartcl/after}{
   \NewCommandCopy{\originalAfterPackage}{\AfterPackage}
   \RenewDocumentCommand{\AfterPackage}{t! m m}{
@@ -107,29 +102,29 @@ load babel
     }
   }
 }
-\RequirePackage{luatex85}
+\RequirePackage{luatex85,ragged2e}
 \RequirePackage{multicol}
 \RequirePackage{shellesc}
-\AddToHook{package/cnltx-example/after}{%
-\renewcommand*\cnltx@exe{\ShellEscape}%
+\AddToHook{class/cnltx-doc/before}{
+  \typeout{==>~First~Aid~for~cnltx-doc.cls~applied!}
 }
-\RequirePackage{osgdoc}
 \LoadClass{cnltx-doc}
 \mdfdefinestyle{cnltxmdframed}{
   backgroundcolor = cnltxbg ,
   linecolor = cnltx ,
   roundcorner = 5pt
 }
+\RequirePackage{osgdoc}
 \RequirePackage[oldstyle]{libertine}
 \setmonofont[
 Scale = MatchLowercase ,
 Ligatures = {NoCommon,NoRequired,NoContextual}
 ]{DejaVu Sans Mono}
 \RequirePackage{hyperref}
-
+\RequirePackage{imakeidx}
 %</cls>
 %<*pkg>
-\ProvidesExplPackage{\packagename}{\packagedate}{\packageversion}{}
+\ProvidesExplPackage{osgdoc}{2026-06-11}{0.0.7}{small tools for documentation}
 \sys_if_engine_luatex:TF{
   \def\error{}
   \RequirePackage{luacode}
@@ -142,48 +137,69 @@ Ligatures = {NoCommon,NoRequired,NoContextual}
 \fvset{formatcom=\color{blue},numbers=left}
 
 \begin{luacode*}
--- autodoc: % => text; %<*pkg>..%</pkg> => Code
+  function texassert(v, msg)
+    if v then
+      return v
+    end
+    tex.error("Error", {msg or "assertion failed"})
+  end
+\end{luacode*}
 
-local function strip_pct(s) return (s:gsub("^%%+%s?","")) end
+% \ldeen{}{}
+\newcommand{\AutoDocInput}[2]{
+  \directlua{
+    autodoc.autodoc_process(\luastring{#1},\luastring{#2})
+  }
+}
+\begin{luacode*}
+autodoc = autodoc or {}
 
-local function quote_pat(s)
+function autodoc.quote_pat(s)
   return (s:gsub("(%W)", "%%%1"))
 end
 
-local function opening_guard(line, terminal)
+function autodoc.opening_guard(line, symbol)
    local atomchars = "%w_%-"
    local expr = line:match("^%%%<%s*%*%s*(.-)%s*%>")
    if not expr then return false end
    
-   local t = quote_pat(terminal)
+   local t = autodoc.quote_pat(symbol)
    local pat = "%f[" .. atomchars .. "]" .. t .. "%f[^" .. atomchars .. "]"
    
    return expr:find(pat) ~= nil
-   end
+end
+
+% \ldeen{Entfernt das Kommentarzeichen}{Removes the comment marker}.
+function autodoc.strip_pct(s) return (s:gsub("^%%+%s?","")) end
    
-local verbatim_counter = 0
-% \ldeen*{@1 muss global sein, damit die Dateien später durch einen
-% Callback bereinigt werden können.}{@1 has to be global. Then, all
-% files can be deleted later by a callback.}{\code{verbtempfiles}}						  
-verbtempfiles = {}
-local function uniqname()
-   verbatim_counter = verbatim_counter + 1
+local verbtempfiles = {}
+
+function autodoc.uniqname()
    local name = string.format(
       "osgdoc-%s-%04d.tmp",
       tex.jobname,
-      verbatim_counter
+      #verbtempfiles+1
    )
+   verbtempfiles[#verbtempfiles+1]=name
    return name
 end
    
-function autodoc_process(fname, guard)
-   print(">>>> AUTODOC_PROC called : '"..fname.."', guard: '"..guard.."'")
-
+function autodoc.autodoc_process(fname, guard)
    local vf
    local vfname
    local f = io.open(fname,"r")
    if not f then tex.error("AutoDocInput: cannot open "..fname); return end
-% \ldeen{Wir nutzen einen kleinen Zustandsautomaten}{We use a small state machine}.   
+% \ldeen{Wir nutzen einen kleinen Zustandsautomaten}{We use a small state machine}.
+% \begin{itemize}
+% \item [OUTSIDE] \ldeen{Vor Anfang oder nach Ende eines Codeblocks}{Before
+% start or after end of a code block}.
+% \item [OUTSIDEVERB] \ldeen{Außerhalb des Guard-Bereichs, aber in einem
+% offenen Codeblock}{Outside of guard range, but inside of an open code block}.
+% \item [VERB] \ldeen{Innerhalb eines Codeblocks}{Within of a code block}.
+% \item [STARTVERB] \ldeen{Start eines Codeblocks}{Start of a code block}.
+% \item [COMMENT] \ldeen{Kommentar innerhalb vom Guardbereich}{Comment within
+% guard range}.
+% \end{itemize}
    local OUTSIDE     = 0
    local OUTSIDEVERB = 1
    local VERB        = 2
@@ -195,7 +211,7 @@ function autodoc_process(fname, guard)
    local tfcount = 0;
    for line in f:lines() do
      lnr = lnr + 1
-     local og = opening_guard(line,guard)
+     local og = autodoc.opening_guard(line,guard)
      local cg = line:match("^%%%</")
      local cc = line:match("^%%[^%<]")
      if state == OUTSIDE then 
@@ -208,15 +224,15 @@ function autodoc_process(fname, guard)
 	end
      elseif state == STARTVERB then
 	if cc then
-	   tex.print(strip_pct(line))
+	   tex.print(autodoc.strip_pct(line))
 	   state = COMMENT
 	elseif cg then
-	   state = OUTSIDE
+	   state = OUTSIDEVERB
 	elseif og then
 	   tex.print("\\typeout{Warning: Cascading guards in "..lnr.."}")
 	else
-	   vfname = uniqname()
-	   vf = assert(io.open(vfname, "w"))
+	   vfname = autodoc.uniqname()
+	   vf = texassert(io.open(vfname, "w"),"Can't open '"..vfname.."'")
 	   vf:write(line,'\n')
 	   state = VERB
 	end
@@ -226,10 +242,10 @@ function autodoc_process(fname, guard)
 	elseif cc then
 	   vf:close()
 	   tex.print("\\VerbatimInput[firstnumber=last]{"..vfname.."}")
-	   tex.print(strip_pct(line))
+	   tex.print(autodoc.strip_pct(line))
 	   state = COMMENT
 	elseif og then
-	   tex.print("\\typeout{Warning: Cascading guards in "..lnr.."}")
+           tex.warning("Cascading guards in "..lnr)
 	else 
 	   vf:write(line,'\n')
 	end
@@ -237,13 +253,13 @@ function autodoc_process(fname, guard)
 	if cg then
 	   state = OUTSIDE
 	elseif og then
-	   tex.warning("Cascading guards in "..lnr)
+	   tex.print("\\typeout{Warning: Cascading guards in "..lnr.."}")
 	elseif cc then
-	   tex.print(strip_pct(line))
+	   tex.print(autodoc.strip_pct(line))
 	else
-	   vfname = uniqname()
-	   vf = assert(io.open(vfname, "w"))
-	   vf:write(line)
+	   vfname = autodoc.uniqname()
+	   vf = texassert(io.open(vfname, "w"),"Can't open '"..vfname.."'")
+	   vf:write(line,'\n')
 	   state = VERB
 	end
      else
@@ -253,20 +269,80 @@ function autodoc_process(fname, guard)
    if ((state == VERB) or (state == OUTSIDEVERB)) then
       vf:close()
       tex.print("\\VerbatimInput[firstnumber=last]{"..vfname.."}")
-     -- tex.print("\\begin{Verbatim}")
-     -- texio.write_nl("\\end{Verbatim}")
-     -- tex.print("\\end{Verbatim}")
-     -- tex.print("\\relax")
-     --tex.print(" ")
   end
   f:close()
 end
+% \ldeen{Installiere Callback für die Bereinigung der temporären
+% Dateien}{Install a callback to clean temp files}.
+luatexbase.add_to_callback("stop_run", function()
+  for _, name in ipairs(verbtempfiles) do
+    os.remove(name)
+  end
+end, "cleanup verbatim temp files")  
 \end{luacode*}
 
-\newcommand{\AutoDocInput}[2]{
-  \directlua{
-    autodoc_process(\luastring{#1},\luastring{#2}
-    )
-  }
+\NewDocumentCommand{\UseVersionOf}{m}
+{
+   \directlua{fileinfo.useversion(\luastring{#1})}
 }
+
+\NewDocumentCommand{\UseDateOf}{m}
+{
+   \directlua{fileinfo.usedate(\luastring{#1})}
+}
+
+\begin{luacode*}
+fileinfo = fileinfo or {}
+
+fileinfo.data = {}
+
+function fileinfo.getinfo(filename)
+   filename = kpse.find_file(filename)
+   local f = texassert(io.open(filename, "r"),"Can't read '"..filename.."'")
+   local s = f:read("*a")
+   f:close()
+   local ftype = nil
+   local name,date,version,descr = s:match("\\ProvidesExplPackage%s*{([^}]*)}%s*{([^}]*)}%s*{([^}]*)}%s*{([^}]*)}")
+   ftype = "package"
+   if name == nil then
+      name,date,version,descr = s:match("\\ProvidesExplClass%s*{([^}]*)}%s*{([^}]*)}%s*{([^}]*)}%s*{([^}]*)}")
+      ftype = "class"
+   end
+   if name == nil then
+      name,date,version,descr = s:match("\\ProvidesExplFile%s*{([^}]*)}%s*{([^}]*)}%s*{([^}]*)}%s*{([^}]*)}")
+      ftype = "file"
+   end
+   if name ~= nil then
+      fileinfo.data["name"] = name
+      fileinfo.data["date"] = date
+      fileinfo.data["version"] = version
+      fileinfo.data["descr"] = descr
+      fileinfo.data["type"] = ftype
+   end
+end
+
+function fileinfo.useversion(filename)
+   if fileinfo.data["name"] == nil then
+      fileinfo.getinfo(filename)
+   end
+   local res = fileinfo.data["version"]
+   if res == nil then
+      tex.print("??")
+   else
+      tex.print(res)
+   end
+end
+
+function fileinfo.usedate(filename)
+   if fileinfo.data["name"] == nil then
+      fileinfo.getinfo(filename)
+   end
+   local res = fileinfo.data["date"]
+   if res == nil then
+      tex.print("??")
+   else
+      tex.print(res)
+   end
+end
+\end{luacode*}
 %</pkg>
