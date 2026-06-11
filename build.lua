@@ -18,7 +18,8 @@ unpackfiles = { "*.dtx" }
 stdengine    = "luatex"
 checkengines = { "luatex" }
 
--- Dokumentation   
+-- Dokumentation
+docfiledir = maindir.."/doc"
 typesetexe = "lualatex"
 typesetopts = "-interaction=nonstopmode -shell-escape"
 maxruns    = 3
