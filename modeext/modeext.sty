@@ -1,0 +1,142 @@
+\ProvidesExplPackage{modeext}{2026-06-15}{0.1.0}
+  {Portable hierarchical document modes}
+
+
+\prop_new:N \g_modeext_parent_prop
+\prop_new:N \g_modeext_alias_prop
+\seq_new:N  \g_modeext_known_seq
+\tl_new:N   \g_modeext_current_tl
+
+\keys_define:nn { modeext }
+  {
+    mode .tl_gset:N = \g_modeext_current_tl,
+    mode .initial:n = auto,
+  }
+
+\ProcessKeyOptions [ modeext ]
+
+\cs_new_protected:Npn \modeext_declare:n #1
+  {
+    \seq_if_in:NnF \g_modeext_known_seq {#1}
+      { \seq_gput_right:Nn \g_modeext_known_seq {#1} }
+  }
+
+\tl_new:N \l_modeext_decl_mode_tl
+
+\keys_define:nn { modeext / declare }
+  {
+    parent .code:n =
+      {
+        \prop_gput:NVn \g_modeext_parent_prop
+          \l_modeext_decl_mode_tl {#1}
+      },
+  }
+
+\NewDocumentCommand \DeclareTalkMode { O{} m }
+  {
+    \modeext_declare:n {#2}
+    \tl_set:Nn \l_modeext_decl_mode_tl {#2}
+    \keys_set:nn { modeext / declare } {#1}
+  }
+
+\NewDocumentCommand \DeclareTalkModeAlias { m m }
+  {
+    \prop_gput:Nnn \g_modeext_alias_prop {#1} {#2}
+  }
+
+\cs_new_protected:Npn \modeext_resolve:nN #1#2
+  {
+    \prop_get:NnNTF \g_modeext_alias_prop {#1} #2
+      { }
+      { \tl_set:Nn #2 {#1} }
+  }
+
+\NewDocumentCommand \SetTalkMode { m }
+  {
+    \modeext_resolve:nN {#1} \l_tmpa_tl
+    \tl_gset_eq:NN \g_modeext_current_tl \l_tmpa_tl
+  }
+  
+\NewExpandableDocumentCommand \TalkMode { }
+  {
+    \g_modeext_current_tl
+  }
+
+
+\prg_new_conditional:Npnn \modeext_if_active:n #1 { T, F, TF }
+  {
+    \modeext_resolve:nN {#1} \l_tmpa_tl
+    \tl_set_eq:NN \l_tmpb_tl \g_modeext_current_tl
+    \bool_set_false:N \l_tmpa_bool
+
+    \bool_until_do:nn
+      { \tl_if_blank_p:V \l_tmpb_tl || \l_tmpa_bool }
+      {
+        \tl_if_eq:NNTF \l_tmpa_tl \l_tmpb_tl
+          { \bool_set_true:N \l_tmpa_bool }
+          {
+            \prop_get:NVNTF \g_modeext_parent_prop
+              \l_tmpb_tl \l_tmpc_tl
+              { \tl_set_eq:NN \l_tmpb_tl \l_tmpc_tl }
+              { \tl_clear:N \l_tmpb_tl }
+          }
+      }
+
+    \bool_if:NTF \l_tmpa_bool
+      { \prg_return_true: }
+      { \prg_return_false: }
+  }
+  
+
+\NewDocumentCommand \IfTalkModeTF { m m m }
+  {
+    \modeext_if_active:nTF {#1} {#2} {#3}
+  }
+
+\NewDocumentCommand \talkmode { d<> +m }
+  {
+    \IfNoValueTF {#1}
+      {#2}
+      { \modeext_if_active:nT {#1} {#2} }
+  }
+
+% Do not override beamer's \mode.
+\@ifclassloaded{beamer}
+  { }
+  {
+    \ProvideDocumentCommand \mode { d<> +m }
+      {
+        \IfNoValueTF {#1}
+          {#2}
+          { \modeext_if_active:nT {#1} {#2} }
+      }
+  }
+
+% Defaults
+\DeclareTalkMode{presentation}
+\DeclareTalkMode[parent=presentation]{beamer}
+\DeclareTalkMode[parent=presentation]{projector}
+\DeclareTalkMode[parent=presentation]{handout}
+\DeclareTalkMode[parent=presentation]{trans}
+
+\DeclareTalkMode{article}
+\DeclareTalkMode[parent=article]{script}
+\DeclareTalkMode[parent=article]{print}
+\DeclareTalkMode[parent=article]{web}
+
+\DeclareTalkModeAlias{slides}{projector}
+
+\AddToHook{begindocument/before}
+  {
+    \tl_if_eq:NnT \g_modeext_current_tl { auto }
+      {
+        \@ifclassloaded{beamer}
+          { \SetTalkMode{beamer} }
+          {
+            \@ifclassloaded{ltx-talk}
+              { \SetTalkMode{projector} }
+              { \SetTalkMode{article} }
+          }
+      }
+  }
+

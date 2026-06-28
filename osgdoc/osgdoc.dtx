@@ -34,56 +34,103 @@
 \fi
 
 \documentclass[
-%load-preamble+
+load-preamble+
 ]{osgdoc}
-\def\pkgname{osgdoc}
-\def\thepkg{\pkg*{\pkgname}}
 
+\usepackage{enumitem}
 \usepackage{microtype}
-
-\makeindex
-\setcnltx{
-  name  =  osgdoc,
-  version  = \UseVersionOf{osgdoc.sty},
-  date     = \UseDateOf{osgdoc.sty},
-  title    = {\ldeen{Die \thepkg\ Tools}{The \pkg*{osgdoc} Tools}},
-  info     = {\ldeen{Unterstützung für \LaTeX-Paket-Dokumentationen}{Support for
-      \LaTeX package documentation}},
-  authors  = {Matthias Werner[matthias.werner@informatik.tu-chemnitz.de]},
-  abstract={
-    \ldeen{Die \thepkg Tools sind Teil des \pkg*{osglecture} Bundles, jedoch auch
-      unabhängig von den anderen Paketen des Bundles einsetzbar.
-      Sie beinhalten einerseits einen Patch-Wrapper für Clemens Niederbergers großartige
-      \cls{clntx-doc}-Klasse, die aber leider nicht mehr mit den aktuellen \LaTeX\
-      kompatibel ist, zum anderen eine Unterstützung für \emph{literate
-        programming}
-    }{
-      The \thepkg tools are part of the \pkg*{osglecture} bundle, but can also
-        be used independently of the other packages in the bundle.
-        They include, on the one hand, a patch wrapper for Clemens
-        Niederberger’s excellent  \cls{clntx-doc} class, which   unfortunately
-        is no longer compatible with the current \LaTeX\ version, and, on the
-        other hand, support for \emph{literate programming}.
-      }
-  },
-  url      =https://github.com/werner-matthias/osglecture,
-  build-title
-}
 \usepackage[
 languages={de,en},
 map={de=german,en=english},
 targetlang={job=2},
 load babel
 ]{langselect}
-\makeatletter
-\def\gobble{\@gobble}
-\makeatother
+
+\def\pkgname{osgdoc}
+\def\thepkg{\pkg{\pkgname}}
+\newpackagename{\cnltx}{cnltx-doc}
+
+\makeindex
+\setcnltx{
+  name  =  osgdoc,
+  class = osgdoc,
+  version  = \UseVersionOf{osgdoc.sty},
+  date     = \UseDateOf{osgdoc.sty},
+  title    = {\ldeen{Die \osgdoc\ Tools}{The \osgdoc\ Tools}},
+  info     = {\ldeen{Unterstützung für \LaTeX-Paket-Dokumentationen}{Support for
+      \LaTeX package documentation}},
+  authors  = {Matthias Werner[matthias.werner@informatik.tu-chemnitz.de]},
+  abstract={
+    \ldeen{Die \osgdoc-Tools sind Teil des \pkg*{osglecture} Bundles, jedoch auch
+      unabhängig von den anderen Paketen des Bundles einsetzbar.
+      Sie beinhalten einerseits einen Patch-Wrapper für \name*{Clemens Niederbergers} großartige
+      \cnltx-Klasse, die aber leider nicht mehr mit den aktuellen \LaTeX\
+      kompatibel ist. Zum anderen werden ein paar Makros eine Unterstützung von
+      Dokumentationen definiert.
+    }{
+      The \osgdoc\ tools are part of the \pkg*{osglecture} bundle, but can also
+        be used independently of the other packages in the bundle.
+        They include, on the one hand, a patch wrapper for \name*{Clemens
+        Niederberger}’s excellent  \cnltx\ class, which unfortunately
+        is no longer compatible with the current \LaTeX\ version. On the
+        other hand, a few macros to support documentations are provided.
+      }
+  },
+  url      =https://github.com/werner-matthias/osglecture,
+  build-title
+}
+
+
+
 \begin{document}
-\renewcommand{\packageformat}{\color{cnltxformalblue}\sffamily}
+\section{\ldeen{Nutzung}{Usage}}
+\ldeen{
+  Das \osgdoc-Paket  besteht aus der Klassendatei \code{osgdoc.cls} und der
+  Paketdatei \code{osgdoc.sty}. Letztere wird durch die Klasse geladen, man kann
+  sie aber auch unabhängig verwenden, wenn nur die dort definierten Befehle
+  gebraucht werden.
+}{
+  The \osgdoc package consists of the class file \code{osgdoc.cls} and the
+  style file \code{osgdoc.sty}. The latter is loaded by the class, but it can
+  also be used independently if only the commands defined there
+  are needed.
+}
+\section{\ldeen{Bugs und Einschränkungen}{Bugs and Limitations}}
+\begin{itemize}
+\item \ldeen{\osgdoc\ ist zum gegenwärtigen Zeitpunkt als experimentell zu betrachten,
+  die Versionsnummer weist darauf hin.}{\osgdoc\ should be regarded as
+  experimental at this stage, as the version number indicates.}
+\item \ldeen{
+    Die \osgdoc-Klasse ist nur ein dünner Wrapper für die
+    {\cnltx-doc}-Klasse aus dem \needpackage{cnltx}-Paket. Sie sorgt nur für
+    syntaktische Korrektheit im 
+    Standardfall. Es ist durchaus möglich, dass bei der Vielzahl von Optionen
+    und Möglichkeiten, die \cnltx\ bietet, weitere Probleme mit dem
+    heutigen \LaTeX\ existieren, die \osgdoc\ nicht abfängt.
+  }{
+    The \osgdoc\ class is merely a thin wrapper for the
+    \cnltx\ class. It ensures syntactic correctness only in
+    the standard case. Given the multitude of options
+    and possibilities offered by \cnltx, it is entirely possible that
+    there are additional issues with 
+    today’s \LaTeX\ that \osgdoc\ does not handle.
+  }
+\item \ldeen{
+    Die Dateiinformation bei den klassischen (nicht \LaTeX{}3)
+    \cs*{Provide\ldots}-Befehlen beruhen auf einen einfachen Lua-Musterabgleich über dem
+    optionalen Argument. Wenn sicher ist, dass Dateien \emph{nicht} im \LaTeX{}3-Syntax
+    geschrieben sind, sollte besser \pkg{readprov} benutzt werden.
+  }{
+    The file information for the classic (non-LaTeX3)
+    \cs*{Provide\ldots} commands is based on a simple Lua pattern match using the
+    optional argument. If you are certain that files are \emph{not} written in LaTeX3 syntax,
+    it is better to use \pkg{readprov}.
+  }
+\end{itemize}
 \section{Implementation}
-\subsection{Class \packagename.cls}
+\subsection{Class \pkgname.cls}
 \AutoDocInput{osgdoc.dtx}{cls}
-\subsection{Package \packagename.sty}
+\subsection{Package \pkgname.sty}
 \AutoDocInput{osgdoc.dtx}{pkg}
 \end{document}
 %</driver>
@@ -114,14 +161,21 @@ load babel
   linecolor = cnltx ,
   roundcorner = 5pt
 }
+\setcnltx{
+  color-scheme=blue
+  }
+\RequirePackage[hidelinks]{hyperref}
 \RequirePackage{osgdoc}
 \RequirePackage[oldstyle]{libertine}
 \setmonofont[
-Scale = MatchLowercase ,
-Ligatures = {NoCommon,NoRequired,NoContextual}
+ Scale = MatchLowercase ,
+ Ligatures = {NoCommon,NoRequired,NoContextual}
 ]{DejaVu Sans Mono}
-\RequirePackage{hyperref}
 \RequirePackage{imakeidx}
+\renewcommand{\packageformat}{\color{cnltxformalblue}\sffamily}
+
+\def\gobble{\@gobble}
+
 %</cls>
 %<*pkg>
 \ProvidesExplPackage{osgdoc}{2026-06-11}{0.0.7}{small tools for documentation}
@@ -145,7 +199,6 @@ Ligatures = {NoCommon,NoRequired,NoContextual}
   end
 \end{luacode*}
 
-% \ldeen{}{}
 \newcommand{\AutoDocInput}[2]{
   \directlua{
     autodoc.autodoc_process(\luastring{#1},\luastring{#2})
@@ -190,14 +243,14 @@ function autodoc.autodoc_process(fname, guard)
    local f = io.open(fname,"r")
    if not f then tex.error("AutoDocInput: cannot open "..fname); return end
 % \ldeen{Wir nutzen einen kleinen Zustandsautomaten}{We use a small state machine}.
-% \begin{itemize}
-% \item [OUTSIDE] \ldeen{Vor Anfang oder nach Ende eines Codeblocks}{Before
+% \begin{itemize}[nosep]
+% \item \textbf{OUTSIDE} \ldeen{Vor Anfang oder nach Ende eines Codeblocks}{Before
 % start or after end of a code block}.
-% \item [OUTSIDEVERB] \ldeen{Außerhalb des Guard-Bereichs, aber in einem
+% \item \textbf{OUTSIDEVERB} \ldeen{Außerhalb des Guard-Bereichs, aber in einem
 % offenen Codeblock}{Outside of guard range, but inside of an open code block}.
-% \item [VERB] \ldeen{Innerhalb eines Codeblocks}{Within of a code block}.
-% \item [STARTVERB] \ldeen{Start eines Codeblocks}{Start of a code block}.
-% \item [COMMENT] \ldeen{Kommentar innerhalb vom Guardbereich}{Comment within
+% \item \textbf{VERB} \ldeen{Innerhalb eines Codeblocks}{Within of a code block}.
+% \item \textbf{STARTVERB} \ldeen{Start eines Codeblocks}{Start of a code block}.
+% \item \textbf{COMMENT} \ldeen{Kommentar innerhalb vom Guardbereich}{Comment within
 % guard range}.
 % \end{itemize}
    local OUTSIDE     = 0
@@ -302,17 +355,47 @@ function fileinfo.getinfo(filename)
    local s = f:read("*a")
    f:close()
    local ftype = nil
-   local name,date,version,descr = s:match("\\ProvidesExplPackage%s*{([^}]*)}%s*{([^}]*)}%s*{([^}]*)}%s*{([^}]*)}")
+   local name,date,version,descr = s:match(
+      "\\ProvidesExplPackage%s*{([^}]*)}%s*{([^}]*)}%s*{([^}]*)}%s*{([^}]*)}")
    ftype = "package"
    if name == nil then
-      name,date,version,descr = s:match("\\ProvidesExplClass%s*{([^}]*)}%s*{([^}]*)}%s*{([^}]*)}%s*{([^}]*)}")
+      name,date,descr = s:match(
+	 "\\ProvidesPackage{([^}]*)}%s*%[(%d%d%d%d[%-/]%d%d[%-/]%d%d)%s?([^%]]*)%]")
+      if name ~= nil then
+	 descr = descr or "??"
+	 version = descr:match("^v?(%d+[%p%d]*%l*)%s")
+      end
+   end
+   
+   if name == nil then
+      name,date,version,descr = s:match(
+	 "\\ProvidesExplClass%s*{([^}]*)}%s*{([^}]*)}%s*{([^}]*)}%s*{([^}]*)}")
       ftype = "class"
+      if name == nil then
+	 name,date,descr = s:match(
+	    "\\ProvidesClass{([^}]*)}%s*%[(%d%d%d%d[%-/]%d%d[%-/]%d%d)%s?([^%]]*)%]")
+	 if name ~= nil then
+	    descr = descr or "??"
+	    version = descr:match("^v?(%d+(%p%d+)*%l*)%s")
+	 end
+      end
    end
    if name == nil then
-      name,date,version,descr = s:match("\\ProvidesExplFile%s*{([^}]*)}%s*{([^}]*)}%s*{([^}]*)}%s*{([^}]*)}")
+      name,date,version,descr = s:match(
+	 "\\ProvidesExplFile%s*{([^}]*)}%s*{([^}]*)}%s*{([^}]*)}%s*{([^}]*)}")
       ftype = "file"
+      if name == nil then
+	 name,date,descr = s:match(
+	    "\\ProvidesFile{([^}]*)}%s*%[(%d%d%d%d[%-/]%d%d[%-/]%d%d)%s?([^%]]*)%]")
+	 if name ~= nil then
+	    descr = descr or "??"
+	    version = descr:match("^v?(%d+(%p%d+)*%l*)%s")
+	 end
+      end
    end
    if name ~= nil then
+      date = date or "??"
+      version = version or "??"
       fileinfo.data["name"] = name
       fileinfo.data["date"] = date
       fileinfo.data["version"] = version

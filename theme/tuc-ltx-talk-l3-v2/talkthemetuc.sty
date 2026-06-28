@@ -1,0 +1,75 @@
+\ProvidesExplPackage{talkthemetuc}{2026-06-16}{0.3.2}{TUC ltx-talk theme}
+\definecolor{tuccolor_tuc}{HTML}{005F50}
+\definecolor{tuccolor_natwi}{HTML}{70706F}
+\definecolor{tuccolor_ma}{HTML}{A10B70}
+\definecolor{tuccolor_mb}{HTML}{123375}
+\definecolor{tuccolor_etit}{HTML}{E4032D}
+\definecolor{tuccolor_inf}{HTML}{4A8246}
+\definecolor{tuccolor_wiwi}{HTML}{9D0736}
+\definecolor{tuccolor_phil}{HTML}{C65306}
+\definecolor{tuccolor_hsw}{HTML}{0075BF}
+\definecolor{tuccolor_gold}{HTML}{8D6831}
+\definecolor{tuccolor_silver}{HTML}{9D9C9C}
+\definecolor{tuccolor_info}{HTML}{555555}
+\definecolor{tuccolor_warning}{HTML}{FF9900}
+\definecolor{tuccolor_danger}{HTML}{FF0000}
+\keys_define:nn {talkthemetuc}{
+  fakcolor .code = {
+    \colorlet{tuccolor}{tuccolor_#1}
+    \colorlet{structure}{tuccolor_#1}
+  }
+}
+
+\ProcessKeyOptions[talkthemetuc]\relax
+
+\geometry{
+  tmargin = 1.8cm,
+  headsep = 0.8cm,
+}
+
+\NewDocumentCommand \tucurl { = { short-tucurl } O { {#2} } m }
+  {
+    \keys_set:nn { talk / metadata } {#1}
+    \tl_gset:Nn \@tucurl {#2}
+  }
+\keys_define:nn { talk / metadata }
+{
+  tucurl .tl_gset:c = @tucurl ,
+  short-tucurl .tl_gset:c = @shorttucurl
+}
+% header settings
+\EditInstance{header}{std}{
+  background-color = tuccolor,
+  color = white,
+  height = 1.8cm
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% footer
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\DeclareInstance{footer-element}{tucurl}{talk}{}
+\EditInstance{footer-element}{framenumber}{
+  font = \small,
+  left-hspace = 5pt \hfill, % this is a hack
+}
+\EditInstance{footer-element}{tucurl}{
+  font = \small,
+  left-hspace = 5pt \hfill, % again
+}
+\EditInstance{footer-element}{author}{
+  font = \small,
+  left-hspace = 1pt ·, % ... and again
+}
+\EditInstance{footer-element}{date}{
+  font = \small,
+}
+
+\EditInstance{footer}{std}{
+  color = black,
+  separator = {\hspace{1pt}},
+  element-order = {date,author,framenumber,tucurl},
+  right-hspace = 3mm,
+  left-hspace = 3mm,
+}

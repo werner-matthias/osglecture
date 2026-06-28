@@ -1,0 +1,45 @@
+\DocumentMetadata{}
+\documentclass{ltx-talk}
+
+\usepackage[
+  mode=projector,
+  ignorenonframetext=false,
+  raw-skip-envs={verbatim,Verbatim,lstlisting,minted,comment}  
+]{ltxtalkmodes}
+
+\usepackage{twocolumns}
+
+\begin{document}
+
+Dieser Text wird ignoriert.
+
+\section{Einleitung}
+\label{sec:intro}
+
+Auch dieser Text wird ignoriert.
+
+\begin{verbatim}
+\section{Das wird nicht gesehen}
+\end{verbatim}
+
+\begin{frame}
+  \frametitle{Toller Titel}
+  Dieser Frame wird gesetzt.
+  \begin{twocolumns}[t,c]
+    Das ist der Text, der links steht.
+    \nextcolumn
+    Das ist der etwas längere Text.
+    Das ist der etwas längere Text, der rechts steht.
+    Das ist der etwas längere Text, der rechts steht.
+  \end{twocolumns}
+\end{frame}
+
+\talkmode<article>{
+  Nur article/script/print/web.
+}
+
+\talkmode<presentation>{
+  presentation gilt für projector, handout, beamer, trans.
+}
+
+\end{document}

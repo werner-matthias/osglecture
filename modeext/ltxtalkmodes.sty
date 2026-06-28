@@ -1,0 +1,287 @@
+\ProvidesExplPackage{ltxtalkmodes}{2026-06-15}{0.1.0}
+  {ltx-talk adapter with ignore-non-frame-text}
+
+\RequirePackage{modeext}
+
+\ExplSyntaxOn
+
+\bool_new:N  \g_ltxtalkmodes_ignore_bool
+\bool_new:N  \g_ltxtalkmodes_after_structure_bool
+\clist_new:N \g_ltxtalkmodes_raw_skip_envs_clist
+
+\clist_gset:Nn \g_ltxtalkmodes_raw_skip_envs_clist
+  {
+    verbatim,
+    Verbatim,
+    lstlisting,
+    minted,
+    comment
+  }
+
+\keys_define:nn { ltxtalkmodes }
+  {
+    mode .code:n =
+      { \SetTalkMode{#1} },
+
+    ignorenonframetext .bool_gset:N =
+      \g_ltxtalkmodes_ignore_bool,
+
+    ignorenonframetext .default:n = true,
+
+    raw-skip-envs .clist_gset:N =
+      \g_ltxtalkmodes_raw_skip_envs_clist,
+  }
+
+\ProcessKeyOptions [ ltxtalkmodes ]
+
+\sys_if_engine_luatex:TF
+  {
+    \directlua{require("talkmodes-talk.lua")}
+  }
+  {
+    \bool_if:NT \g_ltxtalkmodes_ignore_bool
+      {
+        \PackageWarning
+          {ltxtalkmodes}
+          {ignorenonframetext with raw-skip support needs LuaLaTeX}
+      }
+  }
+
+\cs_new_protected:Npn \ltxtalkmodes_lua_raw_skip:n #1
+  {
+    \sys_if_engine_luatex:T
+      {
+        \directlua{
+          talkmodes_talk.start_raw_skip("\luaescapestring{#1}")
+        }
+      }
+  }
+
+\cs_new_protected:Npn \ltxtalkmodes_peek_if_exist:NTF #1#2#3
+  {
+    \cs_if_exist:NTF #1
+      { \peek_meaning_remove:NTF #1 {#2} {#3} }
+      {#3}
+  }
+  
+\cs_new_protected:Npn \ltxtalkmodes_start_scan:
+  {
+    \bool_if:NT \g_ltxtalkmodes_ignore_bool
+    {
+      \typeout{>>> Ignore~mode~on}
+        \modeext_if_active:nT { presentation }
+        {
+          \typeout{>>> Start scan}
+          \ltxtalkmodes_scan:
+        }
+      }
+  }
+
+\cs_new_protected:Npn \ltxtalkmodes_scan:
+  {
+    \peek_meaning:NTF \begin
+      { \ltxtalkmodes_scan_begin: }
+      {
+        \peek_meaning:NTF \end
+          { \ltxtalkmodes_scan_end: }
+          { \ltxtalkmodes_scan_token: }
+      }
+  }  
+
+\cs_new_protected:Npn \ltxtalkmodes_scan_begin:
+  {
+    %\peek_remove:NT \begin
+    \peek_meaning_remove:NT \begin
+    \ltxtalkmodes_scan_begin_aux:n
+  }
+
+  
+\cs_new_protected:Npn \ltxtalkmodes_scan_begin_aux:n #1
+  {
+    \str_if_eq:nnTF {#1} {frame}
+      {
+        \begin{frame}
+      }
+      {
+        \clist_if_in:NnTF \g_ltxtalkmodes_raw_skip_envs_clist {#1}
+          {
+            \ltxtalkmodes_lua_raw_skip:n {#1}
+            \ltxtalkmodes_scan:
+          }
+          {
+            \ltxtalkmodes_skip_environment:n {#1}
+            \ltxtalkmodes_scan:
+          }
+      }
+  }
+
+\cs_new_protected:Npn \ltxtalkmodes_scan_end:
+  {
+    \peek_meaning_remove:NT \end
+    \ltxtalkmodes_scan_end_aux:n
+  }
+
+\cs_new_protected:Npn \ltxtalkmodes_scan_end_aux:n #1
+  {
+    \str_if_eq:nnTF {#1} {document}
+      {
+        \end{document}
+      }
+      {
+        % fremdes \end{...} außerhalb von frames ignorieren
+        \ltxtalkmodes_scan:
+      }
+  }
+  
+\cs_new_protected:Npn \ltxtalkmodes_skip_environment:n #1
+  {
+    \cs_set_protected:Npn \ltxtalkmodes_skip:w ##1 \end ##2
+      {
+        \str_if_eq:nnF {#1} {##2}
+          { \ltxtalkmodes_skip:w }
+      }
+    \ltxtalkmodes_skip:w
+  }
+
+\prop_new:N \g_ltxtalkmodes_dispatch_prop
+\bool_new:N \l_ltxtalkmodes_dispatch_hit_bool
+
+\cs_new_protected:Npn \ltxtalkmodes_declare_allowed_command:nn #1#2
+  {
+    \prop_gput:Nnn \g_ltxtalkmodes_dispatch_prop {#1} {#2}
+  }
+
+\cs_new_protected:Npn \ltxtalkmodes_scan_token:
+  {
+    \bool_set_false:N \l_ltxtalkmodes_dispatch_hit_bool
+
+    \prop_map_inline:Nn \g_ltxtalkmodes_dispatch_prop
+      {
+        \bool_if:NF \l_ltxtalkmodes_dispatch_hit_bool
+          {
+            \cs_if_exist:cT {##1}
+              {
+                \exp_args:Nc \peek_meaning_remove:NTF {##1}
+                  {
+                    \bool_set_true:N \l_ltxtalkmodes_dispatch_hit_bool
+                    \use:c {##2}
+                  }
+                  { }
+              }
+          }
+      }
+
+    \bool_if:NF \l_ltxtalkmodes_dispatch_hit_bool
+      { \ltxtalkmodes_discard_one: }
+   }
+
+% handler
+\cs_new_protected:Npn \ltxtalkmodes_keep_part:
+  { \ltxtalkmodes_keep_structure:N \part }
+
+\cs_new_protected:Npn \ltxtalkmodes_keep_section:
+  { \ltxtalkmodes_keep_structure:N \section }
+
+\cs_new_protected:Npn \ltxtalkmodes_keep_subsection:
+  { \ltxtalkmodes_keep_structure:N \subsection }
+
+\cs_new_protected:Npn \ltxtalkmodes_keep_subsubsection:
+  { \ltxtalkmodes_keep_structure:N \subsubsection }
+
+\cs_new_protected:Npn \ltxtalkmodes_keep_appendix:
+  {
+    \appendix
+    \bool_gset_true:N \g_ltxtalkmodes_after_structure_bool
+    \ltxtalkmodes_scan:
+  }
+
+\cs_new_protected:Npn \ltxtalkmodes_keep_label:
+  { \ltxtalkmodes_keep_label:n }
+
+\cs_new_protected:Npn \ltxtalkmodes_keep_input:
+  { \ltxtalkmodes_keep_input:n }
+
+\cs_new_protected:Npn \ltxtalkmodes_keep_include:
+  { \ltxtalkmodes_keep_include:n }
+
+%\cs_new_protected:Npn \ltxtalkmodes_keep_talkmode:
+%  { \ltxtalkmodes_keep_talkmode: }
+
+\NewDocumentCommand \ltxtalkmodes_keep_talkmode: { d<> +m }
+  {
+    \talkmode<#1>{#2}
+    \bool_gset_false:N \g_ltxtalkmodes_after_structure_bool
+    \ltxtalkmodes_scan:
+  }
+  
+\cs_new_protected:Npn \ltxtalkmodes_keep_mode:
+  { \ltxtalkmodes_keep_mode: }   
+
+\ltxtalkmodes_declare_allowed_command:nn { part }          { ltxtalkmodes_keep_part: }
+\ltxtalkmodes_declare_allowed_command:nn { section }       { ltxtalkmodes_keep_section: }
+\ltxtalkmodes_declare_allowed_command:nn { subsection }    { ltxtalkmodes_keep_subsection: }
+\ltxtalkmodes_declare_allowed_command:nn { subsubsection } { ltxtalkmodes_keep_subsubsection: }
+\ltxtalkmodes_declare_allowed_command:nn { appendix }      { ltxtalkmodes_keep_appendix: }
+\ltxtalkmodes_declare_allowed_command:nn { label }         { ltxtalkmodes_keep_label: }
+\ltxtalkmodes_declare_allowed_command:nn { input }         { ltxtalkmodes_keep_input: }
+\ltxtalkmodes_declare_allowed_command:nn { include }       { ltxtalkmodes_keep_include: }
+\ltxtalkmodes_declare_allowed_command:nn { talkmode }      { ltxtalkmodes_keep_talkmode: }
+\ltxtalkmodes_declare_allowed_command:nn { mode }          { ltxtalkmodes_keep_mode: } 
+
+\NewDocumentCommand \ltxtalkmodes_keep_structure:N { m s o m }
+  {
+    \IfBooleanTF {#2}
+      {
+        \IfNoValueTF {#3}
+          { #1*{#4} }
+          { #1*[#3]{#4} }
+      }
+      {
+        \IfNoValueTF {#3}
+          { #1{#4} }
+          { #1[#3]{#4} }
+      }
+    \bool_gset_true:N \g_ltxtalkmodes_after_structure_bool
+    \ltxtalkmodes_scan:
+  }
+
+\cs_new_protected:Npn \ltxtalkmodes_keep_label:n #1
+  {
+    \bool_if:NT \g_ltxtalkmodes_after_structure_bool
+      { \label{#1} }
+    \bool_gset_false:N \g_ltxtalkmodes_after_structure_bool
+    \ltxtalkmodes_scan:
+  }
+
+\cs_new_protected:Npn \ltxtalkmodes_keep_input:n #1
+  {
+    \input{#1}
+    \bool_gset_false:N \g_ltxtalkmodes_after_structure_bool
+    \ltxtalkmodes_scan:
+  }
+
+\cs_new_protected:Npn \ltxtalkmodes_keep_include:n #1
+  {
+    \include{#1}
+    \bool_gset_false:N \g_ltxtalkmodes_after_structure_bool
+    \ltxtalkmodes_scan:
+  }
+
+
+\cs_new_protected:Npn \ltxtalkmodes_discard_one:
+  {
+    \ltxtalkmodes_discard_one:n
+  }
+
+\cs_new_protected:Npn \ltxtalkmodes_discard_one:n #1
+  {
+    \bool_gset_false:N \g_ltxtalkmodes_after_structure_bool
+    \ltxtalkmodes_scan:
+  }
+
+\AddToHook{begindocument}
+  { \ltxtalkmodes_start_scan: }
+
+\AddToHook{env/frame/after}
+  { \ltxtalkmodes_start_scan: }
+

@@ -1,9 +1,6 @@
-%<*driver|pkg>
-\def\packagename{langselect}
-\def\packagedate{2025/09/04}
-\def\packageversion{v0.2.1}
-%</driver|pkg>
 %<*driver>
+\def\packagename{langselect}
+
 \def\nameofplainTeX{plain}
 \ifx\fmtname\nameofplainTeX
 \input l3docstrip.tex
@@ -37,21 +34,30 @@ This work is "maintained" (as per LPPL maintenance status) by
 load-preamble,
 ]{osgdoc}
 
+\usepackage[
+languages={de,en},
+map={de=ngerman,en=english},
+targetlang={job=2}
+]{langselect}
+\usepackage{enumitem}
+
 % --------------------------------------------------------------------
 \makeindex
+\def\packagename{langselect}
 \def\thepkg{\pkg*{\packagename}}
+
 \setcnltx{
-  name  = \packagename,
-  package  = \packagename,
-  version  = \packageversion,
-  date     = \packagename,
+  package  = langselect,
+  version  = \UseVersionOf{\packagename.sty},
+  date     = \UseDateOf{\packagename.sty},
   title    = {\ldeen{Das \pkg*{langselect}-Paket}{The \pkg*{langselect} Package}},
   info     = \ldeen{Generierung verschiedener Sprachversionen aus einer
     Quelle}{Generate different language versions from a common source}, 
   authors  = {Matthias Werner[matthias.werner@informatik.tu-chemnitz.de]},
   abstract={
     \ldeen{
-      Dieses Paket unterstützt die Generierung von Dokumenten in zwei oder drei Sprachvarianten aus einem gemeinsamen
+      Dieses Paket unterstützt die Generierung von Dokumenten in zwei oder drei
+      Sprachvarianten aus einem gemeinsamen 
       Quelldokument. Es wird ein entsprechendes Nutzermakro generiert und es
       gibt mehrere Methoden, die Zielsprache zu bestimmen.
       
@@ -59,11 +65,12 @@ load-preamble,
       integriert und vom Buildscript \code{ollm} unterstützt, kann aber auch eigenständig
       genutzt werden.
     }{
-      This package supports the generation of documents in two or three language versions from a common
-      source document. A corresponding user macro is generated, and there
-      are several methods for determining the target language.
+      This package supports the generation of documents in two or three language
+      versions from a common source document. A corresponding user macro is
+      generated, and there are several methods for determining the target language.
       
-      The package is part of the \pkg*{osglecture} bundle, is integrated into the \cls*{osglecture} class
+      The package is part of the \pkg*{osglecture} bundle, is integrated into
+      the \cls*{osglecture} class 
       and supported by the build script \code{ollm}, but can also be used independently.
     }
   },
@@ -71,19 +78,10 @@ load-preamble,
   build-title
 }
 
-\usepackage[
-languages={de,en},
-map={de=ngerman,en=english},
-targetlang={job=2}
-]{langselect}
-\usepackage{enumitem}
-\def\thepkg{\pkg*{\packagename}}
-\makeatletter
-\def\gobble{\@gobble}
-\makeatother
+
 \begin{document}
  
-\renewcommand{\packageformat}{\color{cnltxformalblue}\sffamily}
+%\renewcommand{\packageformat}{\color{cnltxformalblue}\sffamily}
 \section{\ldeen{Einleitung}{Introduction}}
 \label{sec:intro}
 \subsection{TL;DR}
@@ -319,7 +317,7 @@ mechanisms for selecting the target language.
 \ldeen{Das Paket wird auf die übliche Weise geladen}{The package is loaded in
   the usual way}:
 
-\centerline{\cs{usepackage}\oarg{options}\Marg{\packagename}}
+\centerline{\cs{usepackage}\oarg{options}\Marg{langselect}}
 
 \noindent
 \ldeen*{%
@@ -828,7 +826,7 @@ Section~@1.%
     
 \end{itemize}
 \section{Implementation}
-\AutoDocInput{\packagename.dtx}{pkg}
+\AutoDocInput{langselect.dtx}{pkg}
 
 \printindex
 
@@ -836,8 +834,9 @@ Section~@1.%
 %</driver>
 %<*pkg>
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
-\ProvidesExplPackage{\packagename}{\packagedate}{\packageversion}{support for different
-languages versions from a common source}
+\def\packagename{langselect}
+\ProvidesExplPackage{langselect}{2025/09/04}{v0.2.1}{support for different
+  languages versions from a common source}
 % \ldeen{\cs{olsIsoTags} enthält alle gültigen ISO
 % 639-1-Codestags.}{\cs{olsIsoTags} contains all valid ISO 639-1 code tags.}
 \seq_const_from_clist:cn{olsIsoTags}{aa,ab,ae,af,ak,am,an,ar,as,av,ay,az,ba,be,

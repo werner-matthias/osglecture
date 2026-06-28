@@ -1,0 +1,176 @@
+\ProvidesExplPackage{twocolumns}{2026-06-15}{0.1.0}{}
+
+\cs_generate_variant:Nn \tl_if_blank:nF { V }
+\cs_generate_variant:Nn \tl_if_eq:nnTF { Vn }
+\cs_generate_variant:Nn \seq_put_right:Nn { NV }
+
+\dim_new:N \l_twocol_sep_dim
+\dim_new:N \l_twocol_avail_dim
+\dim_new:N \l_twocol_a_dim
+\dim_new:N \l_twocol_b_dim
+\dim_new:N \l_twocol_h_dim
+
+\fp_new:N  \l_twocol_frac_fp
+\tl_new:N  \l_twocol_a_align_tl
+\tl_new:N  \l_twocol_b_align_tl
+\seq_new:N \l_twocol_align_seq
+\seq_new:N \l_twocol_body_seq
+
+\box_new:N \l_twocol_a_box
+\box_new:N \l_twocol_b_box
+
+\dim_set:Nn \l_twocol_sep_dim { \columnsep }
+
+\cs_new_protected:Npn \twocol_add_option:n #1
+  {
+    \tl_set:Nx \l_tmpa_tl { \tl_trim_spaces:n {#1} }
+
+    \tl_if_blank:VF \l_tmpa_tl
+      {
+        \tl_if_eq:VnTF \l_tmpa_tl { t }
+          { \seq_put_right:NV \l_twocol_align_seq \l_tmpa_tl }
+          {
+            \tl_if_eq:VnTF \l_tmpa_tl { c }
+              { \seq_put_right:NV \l_twocol_align_seq \l_tmpa_tl }
+              {
+                \tl_if_eq:VnTF \l_tmpa_tl { b }
+                  { \seq_put_right:NV \l_twocol_align_seq \l_tmpa_tl }
+                  { \fp_set:Nn \l_twocol_frac_fp { \l_tmpa_tl } }
+              }
+          }
+      }
+  }
+
+\cs_new_protected:Npn \twocol_parse:n #1
+  {
+    \fp_set:Nn \l_twocol_frac_fp { .5 }
+    \tl_set:Nn \l_twocol_a_align_tl { c }
+    \tl_set:Nn \l_twocol_b_align_tl { c }
+    \seq_clear:N \l_twocol_align_seq
+
+    \clist_map_inline:nn {#1}
+      { \twocol_add_option:n {##1} }
+
+    \fp_compare:nF
+      { 0 < \l_twocol_frac_fp && \l_twocol_frac_fp < 1 }
+      { \fp_set:Nn \l_twocol_frac_fp { .5 } }
+
+    \int_case:nn { \seq_count:N \l_twocol_align_seq }
+      {
+        {1}
+          {
+            \tl_set:Nx \l_twocol_a_align_tl
+              { \seq_item:Nn \l_twocol_align_seq {1} }
+            \tl_set_eq:NN \l_twocol_b_align_tl \l_twocol_a_align_tl
+          }
+        {2}
+          {
+            \tl_set:Nx \l_twocol_a_align_tl
+              { \seq_item:Nn \l_twocol_align_seq {1} }
+            \tl_set:Nx \l_twocol_b_align_tl
+              { \seq_item:Nn \l_twocol_align_seq {2} }
+          }
+      }
+
+    \dim_set:Nn \l_twocol_avail_dim
+      { \linewidth - \l_twocol_sep_dim }
+
+    \dim_set:Nn \l_twocol_a_dim
+      {
+        \fp_to_dim:n
+          { \l_twocol_frac_fp * \dim_to_fp:n { \l_twocol_avail_dim } }
+      }
+
+    \dim_set:Nn \l_twocol_b_dim
+      { \l_twocol_avail_dim - \l_twocol_a_dim }
+  }
+
+\cs_new_protected:Npn \twocol_set_box:NNn #1#2#3
+  {
+    \vbox_set:Nn #1
+      {
+        \hsize=#2
+        \dim_set:Nn \linewidth { \hsize }
+        \dim_set:Nn \columnwidth { \hsize }
+        #3
+        \par
+      }
+  }
+
+\cs_new_protected:Npn \twocol_aligned_box:NN #1#2
+  {
+    \vbox to \l_twocol_h_dim
+      {
+        \tl_if_eq:VnTF #2 { b }
+          { \vfil \box_use:N #1 }
+          {
+            \tl_if_eq:VnTF #2 { c }
+              { \vfil \box_use:N #1 \vfil }
+              { \box_use:N #1 \vfil }
+          }
+      }
+  }
+
+\cs_new_protected:Npn \twocol_tag_begin:
+  {
+    \cs_if_exist:NT \tagstructbegin
+      { \tagstructbegin { tag=Div } }
+  }
+
+\cs_new_protected:Npn \twocol_tag_end:
+  {
+    \cs_if_exist:NT \tagstructend
+      { \tagstructend }
+  }
+
+\cs_new_protected:Npn \twocol_typeset_columns:nn #1#2
+  {
+    \twocol_parse:n {#1}
+    \seq_set_split:Nnn \l_twocol_body_seq { \nextcolumn } {#2}
+
+    \twocol_set_box:NNn \l_twocol_a_box \l_twocol_a_dim
+      { \seq_item:Nn \l_twocol_body_seq {1} }
+
+    \twocol_set_box:NNn \l_twocol_b_box \l_twocol_b_dim
+      { \seq_item:Nn \l_twocol_body_seq {2} }
+
+    \dim_set:Nn \l_twocol_h_dim
+      {
+        \dim_max:nn
+          { \box_ht:N \l_twocol_a_box + \box_dp:N \l_twocol_a_box }
+          { \box_ht:N \l_twocol_b_box + \box_dp:N \l_twocol_b_box }
+      }
+
+    \par\noindent
+    \twocol_tag_begin:
+    \hbox to \linewidth
+      {
+        \hbox to \l_twocol_a_dim
+          { \twocol_aligned_box:NN \l_twocol_a_box \l_twocol_a_align_tl \hss }
+        \hskip \l_twocol_sep_dim
+        \hbox to \l_twocol_b_dim
+          { \twocol_aligned_box:NN \l_twocol_b_box \l_twocol_b_align_tl \hss }
+      }
+    \twocol_tag_end:
+    \par
+  }
+
+\cs_new_protected:Npn \twocol_typeset_plain:n #1
+  {
+    \seq_set_split:Nnn \l_twocol_body_seq { \nextcolumn } {#1}
+    \seq_use:Nn \l_twocol_body_seq { \par\smallskip }
+  }
+
+\NewDocumentEnvironment{twocolumns}{ D<>{} O{} +b }
+  {
+    \group_begin:
+    \tl_if_blank:nTF {#1}
+      { \twocol_typeset_columns:nn {#2} {#3} }
+      {
+        \alt<#1>
+          { \twocol_typeset_columns:nn {#2} {#3} }
+          { \twocol_typeset_plain:n {#3} }
+      }
+    \group_end:
+  }
+  {}
