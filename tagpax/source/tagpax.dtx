@@ -1,0 +1,148 @@
+% \iffalse meta-comment
+%
+% Copyright (C) 2026 The tagpax project
+%
+% This work may be distributed and/or modified under the conditions of the
+% LaTeX Project Public License, either version 1.3c of this license or (at your
+% option) any later version. The latest version of this license is in
+%   https://www.latex-project.org/lppl.txt
+% and version 1.3c or later is part of all distributions of LaTeX version
+% 2008 or later.
+%
+% \fi
+%
+% \iffalse
+%<*driver>
+\ProvidesFile{tagpax.dtx}[2026-07-14 v0.3.2-dev Tagged PDF page import experiments]
+\documentclass{l3doc}
+\begin{document}
+  \DocInput{tagpax.dtx}
+\end{document}
+%</driver>
+% \fi
+%
+% \title{The \pkg{tagpax} package}
+% \author{The tagpax project}
+% \date{2026-07-14 \quad Version 0.3.2-dev}
+%
+% \maketitle
+%
+% \begin{documentation}
+%
+% \pkg{tagpax} is an experimental LuaLaTeX package for preserving the logical
+% structure and navigation of fully tagged contribution PDFs when assembling
+% proceedings with \pkg{pdfpages}.
+%
+% The package is under active development.  At this stage the extractor and
+% navigation layer are implemented; attachment of existing marked content in
+% imported Form XObjects to the master structure tree is still experimental.
+%
+% \section{Requirements}
+%
+% PDF management and tagging must be activated before the document class:
+% \begin{verbatim}
+% \DocumentMetadata{tagging=on}
+% \documentclass{book}
+% \end{verbatim}
+%
+% The obsolete |testphase| key is not required by \pkg{tagpax}.
+%
+% \section{User interface}
+%
+% \begin{function}{\tagpaxsetup}
+%   \begin{syntax}
+%     \cs{tagpaxsetup}\Arg{key--value list}
+%   \end{syntax}
+%   Configures the heading map and navigation depths.
+% \end{function}
+%
+% \begin{function}{\TagPaxExtract}
+%   \begin{syntax}
+%     \cs{TagPaxExtract}\oarg{output file}\marg{PDF file}
+%   \end{syntax}
+%   Extracts the semantic intermediate representation using LuaTeX's |pdfe|
+%   library.
+% \end{function}
+%
+% \begin{function}{\tagpaxinclude}
+%   \begin{syntax}
+%     \cs{tagpaxinclude}\oarg{options}\marg{PDF file}
+%   \end{syntax}
+%   Imports all pages and derives multi-level table-of-contents entries from
+%   the corresponding |.tagpax| file.
+% \end{function}
+%
+% \end{documentation}
+%
+% \begin{implementation}
+%
+% \section{Implementation}
+%
+%    \begin{macrocode}
+%<*package>
+\NeedsTeXFormat{LaTeX2e}[2025-06-01]
+\ProvidesExplPackage{tagpax}{2026-07-14}{0.3.2-dev}{Tagged PDF page import experiments}
+\RequirePackage{expl3,xparse,pdfpages}
+\ExplSyntaxOn
+\msg_new:nnn {tagpax}{luatex-required}{tagpax~currently~requires~LuaLaTeX.}
+\msg_new:nnn {tagpax}{metadata-required}{Activate~PDF~management/tagging~with~\string\DocumentMetadata{tagging=on}.}
+\msg_new:nnn {tagpax}{backend-missing}{External-MCR~backend~not~installed;~navigation~is~generated,~structure~attachment~is~not~yet~written.}
+\sys_if_engine_luatex:F {\msg_fatal:nn{tagpax}{luatex-required}}
+\pdfmanagement_if_active:F {\msg_warning:nn{tagpax}{metadata-required}}
+\seq_new:N \l__tagpax_headings_seq
+\tl_new:N \l__tagpax_toc_depth_tl
+\tl_new:N \l__tagpax_bookmark_depth_tl
+\tl_new:N \l__tagpax_ir_tl
+\tl_new:N \l__tagpax_file_tl
+\prop_new:N \g__tagpax_heading_map_prop
+\prop_gput_from_keyval:Nn \g__tagpax_heading_map_prop {H2=chapter,H3=section,H4=subsection,H5=subsubsection,H6=paragraph}
+\keys_define:nn {tagpax/setup}{
+  toc-depth .tl_set:N=\l__tagpax_toc_depth_tl,
+  bookmark-depth .tl_set:N=\l__tagpax_bookmark_depth_tl,
+  heading-map .code:n=\prop_gput_from_keyval:Nn \g__tagpax_heading_map_prop {#1},
+}
+\keys_set:nn {tagpax/setup}{toc-depth=H4,bookmark-depth=H5}
+\NewDocumentCommand\tagpaxsetup{m}{\keys_set:nn{tagpax/setup}{#1}}
+\cs_new_protected:Npn \tagpax_heading_record:nnnn #1#2#3#4 {\seq_put_right:Nn\l__tagpax_headings_seq{{#1}{#2}{#3}{#4}}}
+\cs_new:Npn \__tagpax_heading_num:n #1 {\int_eval:n{\tl_tail:n{#1}}}
+\cs_new_protected:Npn \__tagpax_build_addtotoc:N #1 {
+  \tl_clear:N #1
+  \seq_map_inline:Nn \l__tagpax_headings_seq {
+    \__tagpax_build_addtotoc_aux:nnnnN ##1 #1
+  }
+}
+\cs_new_protected:Npn \__tagpax_build_addtotoc_aux:nnnnN #1#2#3#4#5 {
+  \int_compare:nNnT {\__tagpax_heading_num:n{#1}} <= {\__tagpax_heading_num:n{\l__tagpax_toc_depth_tl}} {
+    \prop_get:NnNT \g__tagpax_heading_map_prop {#1}\l_tmpa_tl {
+      \tl_if_empty:NF #5 {\tl_put_right:Nn #5 {,}}
+      \tl_put_right:Ne #5 {#2,\l_tmpa_tl,{\exp_not:n{#4}},tagpax.#3}
+    }
+  }
+}
+\keys_define:nn {tagpax/include}{
+  ir .tl_set:N=\l__tagpax_ir_tl,
+  toc-depth .tl_set:N=\l__tagpax_toc_depth_tl,
+  bookmark-depth .tl_set:N=\l__tagpax_bookmark_depth_tl,
+}
+\NewDocumentCommand\TagPaxExtract{O{}m}{
+  \directlua{local m=require('tagpax'); m.extract([[#2]], [[#1]]~='' and [[#1]] or nil)}
+}
+\NewDocumentCommand\tagpaxinclude{O{}m}{
+  \group_begin:
+  \tl_set:Nn\l__tagpax_file_tl{#2}
+  \tl_set:Ne\l__tagpax_ir_tl{\tl_remove_once:nn{#2}{.pdf}.tagpax}
+  \keys_set:nn{tagpax/include}{#1}
+  \seq_clear:N\l__tagpax_headings_seq
+  \directlua{require('tagpax').emit_tex_headings([[\luaescapestring{\l__tagpax_ir_tl}]])}
+  \__tagpax_build_addtotoc:N\l_tmpa_tl
+  \msg_warning:nn{tagpax}{backend-missing}
+  \exp_args:Nne\includepdf{pages=-,addtotoc={\l_tmpa_tl}}{#2}
+  \group_end:
+}
+\ExplSyntaxOff
+%</package>
+%    \end{macrocode}
+%
+% \end{implementation}
+%
+% \Finale

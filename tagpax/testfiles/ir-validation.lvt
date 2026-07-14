@@ -1,0 +1,25 @@
+\input regression-test.tex
+\documentclass{article}
+\begin{document}
+\START
+\directlua{
+  local tagpax = require("tagpax")
+  local ir = tagpax.read("sample-ir.tagpax")
+  local ok, errors = tagpax.validate(ir)
+  local node_count = 0
+  for _ in pairs(ir.nodes) do
+    node_count = node_count + 1
+  end
+  local function report(message)
+    texio.write_nl("log", message)
+  end
+  report("valid=" .. tostring(ok))
+  report("nodes=" .. tostring(node_count))
+  report("kids=" .. tostring(rawlen(ir.kids)))
+  report("headings=" .. tostring(rawlen(ir.headings)))
+  for _, message in ipairs(errors) do
+    report("error=" .. message)
+  end
+}
+\END
+\end{document}

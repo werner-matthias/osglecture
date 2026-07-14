@@ -1,0 +1,29 @@
+\input regression-test.tex
+\documentclass{article}
+\begin{document}
+\START
+\directlua{
+  local tagpax = require("tagpax")
+  local output = tagpax.extract("subdocument.pdf", "extraction.tagpax")
+  local ir = tagpax.read(output)
+  local ok, errors = tagpax.validate(ir)
+  if not ok then
+    error(table.concat(errors, "; "))
+  end
+  local function report(message)
+    texio.write_nl("log", message)
+  end
+  report("source-pages=" .. tostring(ir.source.pages))
+  report("roots=" .. tostring(rawlen(ir.roots)))
+  report("headings=" .. tostring(rawlen(ir.headings)))
+  for index, heading in ipairs(ir.headings) do
+    report(
+      "heading-" .. tostring(index) ..
+      "=" .. tostring(heading.role) ..
+      ",page-" .. tostring(heading.page) ..
+      "," .. tostring(heading.text or "")
+    )
+  end
+}
+\END
+\end{document}
