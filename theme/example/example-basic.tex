@@ -1,0 +1,75 @@
+% example-basic.tex
+% Basic example for ltxtalk-themes
+
+\documentclass{ltx-talk}
+
+% Theme laden und aktivieren
+\usepackage{ltxtalk-theme-modern}
+\useltxtalktheme{modern}
+
+% Dokumentinformationen
+\title[Kurztitel]{Vollständiger Präsentationstitel}
+\subtitle{Untertitel der Präsentation}
+\author[M. Mustermann]{Max Mustermann}
+\institute{Universität Beispielstadt}
+\date{\today}
+
+\begin{document}
+
+% Titelfolie
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% Inhaltsverzeichnis
+\begin{frame}{Übersicht}
+  \tableofcontents
+\end{frame}
+
+\section{Einleitung}
+
+\begin{frame}{Erste Schritte}
+  \framesubtitle{Motivation und Ziele}
+  \begin{itemize}
+    \item Erster wichtiger Punkt
+    \item Zweiter wichtiger Punkt
+    \item Dritter wichtiger Punkt
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Erste Schritte (cont.)}
+  \framesubtitle{Weitere Aspekte}
+  \begin{itemize}
+    \item Vierter Punkt
+    \item Fünfter Punkt
+  \end{itemize}
+\end{frame}
+
+\section{Hauptteil}
+
+\begin{frame}{Wichtige Ergebnisse}
+  \framesubtitle{Datenanalyse}
+  \begin{block}{Ergebnis 1}
+    Hier steht das erste wichtige Ergebnis.
+  \end{block}
+  
+  \begin{block}{Ergebnis 2}
+    Hier steht das zweite wichtige Ergebnis.
+  \end{block}
+\end{frame}
+
+\section{Zusammenfassung}
+
+\begin{frame}{Fazit}
+  \begin{itemize}
+    \item Zusammenfassung der wichtigsten Punkte
+    \item Ausblick auf zukünftige Arbeiten
+  \end{itemize}
+  
+  \vfill
+  \begin{center}
+    \large Vielen Dank für die Aufmerksamkeit!
+  \end{center}
+\end{frame}
+
+\end{document}

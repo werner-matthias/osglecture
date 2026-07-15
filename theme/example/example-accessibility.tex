@@ -1,0 +1,77 @@
+% example-accessibility.tex
+% Accessibility demonstration
+
+\documentclass{ltx-talk}
+\usepackage{ltxtalk-theme-academic}
+
+\useltxtalktheme{academic}
+
+% Accessibility-Einstellungen
+\setltxtalkheadingbehavior{
+  auto-section-title = true,
+  detect-continuation = true,
+  header-as-navigation = true,
+}
+
+\title{Accessible Presentation}
+\author{Accessibility Team}
+\institute{University of Inclusive Design}
+\date{\today}
+
+\begin{document}
+
+\section{Introduction to Accessibility}
+
+% Frame 1: Section-Titel wird automatisch Frame-Titel
+\begin{frame}
+  % \insertsection wird automatisch als Frametitle verwendet
+  \begin{itemize}
+    \item What is accessibility?
+    \item Why does it matter?
+    \item Legal requirements
+  \end{itemize}
+\end{frame}
+
+% Frame 2: Fortsetzung (automatisch erkannt)
+\begin{frame}
+  % Selber Section-Titel -> Fortsetzung
+  \begin{itemize}
+    \item WCAG guidelines
+    \item PDF/UA standard
+    \item Testing tools
+  \end{itemize}
+\end{frame}
+
+\section{Implementation Strategies}
+
+% Frame 3: Neuer Section-Titel -> Neue H2
+\begin{frame}
+  \begin{itemize}
+    \item Semantic structure
+    \item Alternative texts
+    \item Color contrast
+  \end{itemize}
+\end{frame}
+
+% Frame 4: Explizite Fortsetzung
+\begin{frame}{Implementation Strategies (cont.)}
+  \begin{itemize}
+    \item Keyboard navigation
+    \item Screen reader testing
+    \item User feedback
+  \end{itemize}
+\end{frame}
+
+\section{Best Practices}
+
+% Frame 5: Mit explizitem Subtitle
+\begin{frame}{Best Practices}
+  \framesubtitle{Summary of Key Points}
+  \begin{enumerate}
+    \item Always provide text alternatives
+    \item Ensure sufficient color contrast
+    \item Test with actual users
+  \end{enumerate}
+\end{frame}
+
+\end{document}

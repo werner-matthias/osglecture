@@ -1,0 +1,192 @@
+% ltxtalk-theme-academic.sty
+% Version 0.2 - 2026/07/15
+% Academic theme for ltx-talk
+%
+% Copyright 2026
+% Licence: LPPL 1.3c
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage{ltxtalk-theme-academic}{2026/07/15}{0.2}
+  {Academic theme for ltx-talk}
+
+\RequirePackage{ltxtalk-theme-core}
+
+\cs_new_protected:Npn \__ltxtalk_academic_theme_setup:
+  {
+    % === LAYOUT ===
+    \ltxtalksetup{
+      header = true,
+      header-height = 3cm,
+      header-rows = 2,
+      left-margin = true,
+      footer = true,
+      footer-height = 1cm,
+      margin-width = 3.5cm,
+    }
+    
+    % === TITEL-PLATZIERUNG ===
+    \setltxtalktitleplacement{
+      frametitle = header,
+      section = header,
+    }
+    
+    % === HEADING-VERHALTEN ===
+    \setltxtalkheadingbehavior{
+      auto-section-title = true,
+      detect-continuation = true,
+      header-as-navigation = true,
+    }
+    
+    % === SLOTS ===
+    \defineltxtalkslot{acad-institute}{header}{institute}{
+      role = note
+    }
+    \defineltxtalkslot{acad-title}{header}{title}{
+      role = heading, heading-level = 1
+    }
+    \defineltxtalkslot{acad-date}{header}{date}{
+      role = note
+    }
+    \defineltxtalkslot{acad-section}{header}{section}{
+      role = navigation
+    }
+    \defineltxtalkslot{acad-subsection}{header}{subsection}{
+      role = navigation
+    }
+    \defineltxtalkslot{acad-page}{header}{pagenumber}{
+      role = navigation
+    }
+    \defineltxtalkslot{acad-logo}{left}{logo}{
+      role = artifact, alt-text = Logo
+    }
+    \defineltxtalkslot{acad-author}{left}{author}{
+      role = note
+    }
+    \defineltxtalkslot{acad-ftitle}{content}{frametitle}{
+      role = heading, heading-level = 2
+    }
+    \defineltxtalkslot{acad-fsubtitle}{content}{framesubtitle}{
+      role = heading, heading-level = 3
+    }
+    \defineltxtalkslot{acad-footer-page}{footer}{pagenumber}{
+      role = navigation
+    }
+    
+    % === POSITIONIERUNG ===
+    \positionltxtalkslot{acad-institute}{left}{0.3cm}{0.3\paperwidth}{0.8cm}
+    \positionltxtalkslot{acad-title}{center}{0.3cm}{0.4\paperwidth}{1cm}
+    \positionltxtalkslot{acad-date}{right}{0.3cm}{0.3\paperwidth}{0.8cm}
+    \positionltxtalkslot{acad-section}{left}{1.5cm}{0.35\paperwidth}{0.8cm}
+    \positionltxtalkslot{acad-subsection}{center}{1.5cm}{0.3\paperwidth}{0.8cm}
+    \positionltxtalkslot{acad-page}{right}{1.5cm}{0.15\paperwidth}{0.8cm}
+    \positionltxtalkslot{acad-logo}{0.5cm}{0.5cm}{2.5cm}{2.5cm}
+    \positionltxtalkslot{acad-author}{0.5cm}{3.5cm}{2.5cm}{2cm}
+    \positionltxtalkslot{acad-ftitle}{center}{1cm}{0.8\paperwidth}{1.5cm}
+    \positionltxtalkslot{acad-fsubtitle}{center}{2.5cm}{0.8\paperwidth}{1cm}
+    \positionltxtalkslot{acad-footer-page}{center}{bottom}{0.3\paperwidth}{0.6cm}
+    
+    % === FORMATIERUNG ===
+    \styleltxtalkslot{acad-institute}{
+      font = \small\scshape,
+      color = ltxtalk-secondary!80,
+      align = left,
+    }
+    \styleltxtalkslot{acad-title}{
+      font = \large\bfseries\sffamily,
+      color = ltxtalk-primary,
+      frame = bottom,
+      rule-color = ltxtalk-accent,
+      rule-thick = 2pt,
+      padding = 3pt,
+    }
+    \styleltxtalkslot{acad-date}{
+      font = \small,
+      color = ltxtalk-secondary!60,
+      align = right,
+    }
+    \styleltxtalkslot{acad-section}{
+      font = \normalsize\bfseries\scshape,
+      color = ltxtalk-accent,
+      rule-color = ltxtalk-primary!30,
+      rule-thick = 0.5pt,
+      frame = bottom,
+    }
+    \styleltxtalkslot{acad-subsection}{
+      font = \small\scshape,
+      color = ltxtalk-accent!80,
+    }
+    \styleltxtalkslot{acad-page}{
+      font = \tiny\sffamily,
+      color = ltxtalk-secondary!50,
+    }
+    \styleltxtalkslot{acad-logo}{
+      frame = box,
+      rule-color = ltxtalk-primary!30,
+      padding = 5pt,
+      background = white,
+    }
+    \styleltxtalkslot{acad-author}{
+      font = \footnotesize\itshape,
+      color = ltxtalk-secondary,
+      align = center,
+      rule-color = ltxtalk-primary,
+      rule-thick = 1pt,
+      frame = top,
+    }
+    \styleltxtalkslot{acad-ftitle}{
+      font = \LARGE\bfseries,
+      color = ltxtalk-primary,
+      frame = bottom,
+      rule-color = ltxtalk-primary,
+      rule-thick = 3pt,
+      padding = 5pt,
+    }
+    \styleltxtalkslot{acad-fsubtitle}{
+      font = \large\itshape,
+      color = ltxtalk-secondary,
+    }
+    \styleltxtalkslot{acad-footer-page}{
+      font = \tiny\sffamily,
+      color = ltxtalk-secondary!50,
+      frame = top,
+      rule-color = ltxtalk-primary!20,
+      rule-thick = 0.5pt,
+    }
+    
+    % === BEREICHSDEKORATIONEN ===
+    \decorateltxtalkarea{header}{
+      frame = bottom,
+      rule-color = ltxtalk-accent,
+      rule-thickness = 4pt,
+      background = ltxtalk-primary!5,
+      padding = 5pt,
+      artifact-type = layout,
+    }
+    \decorateltxtalkarea{footer}{
+      frame = topbottom,
+      rule-color = ltxtalk-primary!30,
+      rule-thickness = 0.5pt,
+      background = ltxtalk-primary!3,
+      artifact-type = decorative,
+    }
+    \decorateltxtalkarea{left}{
+      frame = right,
+      rule-color = ltxtalk-accent,
+      rule-thickness = 2pt,
+      background = ltxtalk-primary!5,
+      artifact-type = decorative,
+    }
+    
+    % === FARBEN ===
+    \setltxtalkcolors{
+      primary   = {RGB}{139,0,0},
+      secondary = {RGB}{70,70,70},
+      accent    = {RGB}{180,150,0},
+      text      = {RGB}{30,30,30},
+      background = {RGB}{255,255,255},
+    }
+  }
+
+\RegisterLTXTalkTheme{academic}{\__ltxtalk_academic_theme_setup:}
+
+\endinput

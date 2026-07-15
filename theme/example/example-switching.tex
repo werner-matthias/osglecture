@@ -1,0 +1,64 @@
+% example-switching.tex
+% Theme switching example
+
+\documentclass{ltx-talk}
+
+% Mehrere Themes laden
+\usepackage{ltxtalk-theme-modern}
+\usepackage{ltxtalk-theme-academic}
+\usepackage{ltxtalk-theme-minimal}
+
+\title{Theme-Wechsel Demonstration}
+\author{Max Mustermann}
+\date{\today}
+
+\begin{document}
+
+% Start mit Modern
+\useltxtalktheme{modern}
+
+\begin{frame}{Modern Theme}
+  Diese Folie verwendet das Modern-Theme.
+  \begin{itemize}
+    \item Header mit Titel und Navigation
+    \item Linke Seitenleiste mit Logo
+    \item Footer mit Institut und Datum
+  \end{itemize}
+\end{frame}
+
+% Wechsel zu Academic
+\useltxtalktheme{academic}
+
+\begin{frame}{Academic Theme}
+  Diese Folie verwendet das Academic-Theme.
+  \begin{itemize}
+    \item Mehrzeiliger Header
+    \item Goldener Akzentbalken
+    \item Traditionelles Layout
+  \end{itemize}
+\end{frame}
+
+% Wechsel zu Minimal
+\useltxtalktheme{minimal}
+
+\begin{frame}{Minimal Theme}
+  Diese Folie verwendet das Minimal-Theme.
+  \begin{itemize}
+    \item Nur das Nötigste
+    \item Dezente Linien
+    \item Keine Ablenkungen
+  \end{itemize}
+\end{frame}
+
+% Zurück zum Default
+\useltxtalktheme{default}
+
+\begin{frame}{Default ltx-talk}
+  Diese Folie verwendet das Standard-Layout von ltx-talk.
+  \begin{itemize}
+    \item Kein Theme aktiv
+    \item Originales ltx-talk-Verhalten
+  \end{itemize}
+\end{frame}
+
+\end{document}

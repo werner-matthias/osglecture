@@ -1,0 +1,144 @@
+% ltxtalk-theme-modern.sty
+% Version 0.2 - 2026/07/15
+% Modern theme for ltx-talk
+%
+% Copyright 2026
+% Licence: LPPL 1.3c
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage{ltxtalk-theme-modern}{2026/07/15}{0.2}
+  {Modern theme for ltx-talk}
+
+\RequirePackage{ltxtalk-theme-core}
+
+\cs_new_protected:Npn \__ltxtalk_modern_theme_setup:
+  {
+    % === LAYOUT ===
+    \ltxtalksetup{
+      header = true,
+      header-height = 2cm,
+      left-margin = true,
+      footer = true,
+      margin-width = 3cm,
+    }
+    
+    % === TITEL-PLATZIERUNG ===
+    \setltxtalktitleplacement{
+      frametitle = content,
+      section = header,
+    }
+    
+    % === SLOTS ===
+    \defineltxtalkslot{mod-title}{header}{title}{
+      role = heading, heading-level = 1
+    }
+    \defineltxtalkslot{mod-section}{header}{section}{
+      role = navigation
+    }
+    \defineltxtalkslot{mod-page}{header}{pagenumber}{
+      role = navigation
+    }
+    \defineltxtalkslot{mod-logo}{left}{logo}{
+      role = artifact, alt-text = Logo
+    }
+    \defineltxtalkslot{mod-author}{left}{author}{
+      role = note
+    }
+    \defineltxtalkslot{mod-ftitle}{content}{frametitle}{
+      role = heading, heading-level = 2
+    }
+    \defineltxtalkslot{mod-fsubtitle}{content}{framesubtitle}{
+      role = heading, heading-level = 3
+    }
+    \defineltxtalkslot{mod-institute}{footer}{institute}{
+      role = note
+    }
+    \defineltxtalkslot{mod-date}{footer}{date}{
+      role = note
+    }
+    
+    % === POSITIONIERUNG ===
+    \positionltxtalkslot{mod-title}{center}{0.5cm}{0.6\paperwidth}{1cm}
+    \positionltxtalkslot{mod-section}{left}{1.5cm}{0.3\paperwidth}{0.5cm}
+    \positionltxtalkslot{mod-page}{right}{1.5cm}{0.1\paperwidth}{0.5cm}
+    \positionltxtalkslot{mod-logo}{0.5cm}{0.5cm}{2cm}{2cm}
+    \positionltxtalkslot{mod-author}{0.5cm}{3cm}{2cm}{2cm}
+    \positionltxtalkslot{mod-ftitle}{center}{2cm}{0.8\paperwidth}{1.5cm}
+    \positionltxtalkslot{mod-fsubtitle}{center}{3.5cm}{0.8\paperwidth}{1cm}
+    \positionltxtalkslot{mod-institute}{left}{bottom}{0.5\paperwidth}{0.5cm}
+    \positionltxtalkslot{mod-date}{right}{bottom}{0.3\paperwidth}{0.5cm}
+    
+    % === FORMATIERUNG ===
+    \styleltxtalkslot{mod-title}{
+      font = \Large\bfseries\sffamily,
+      color = ltxtalk-primary,
+    }
+    \styleltxtalkslot{mod-section}{
+      font = \small\sffamily,
+      color = ltxtalk-accent,
+    }
+    \styleltxtalkslot{mod-page}{
+      font = \tiny\sffamily,
+      color = ltxtalk-secondary!50,
+    }
+    \styleltxtalkslot{mod-author}{
+      font = \footnotesize\itshape,
+      color = ltxtalk-secondary,
+      align = center,
+    }
+    \styleltxtalkslot{mod-ftitle}{
+      font = \LARGE\bfseries,
+      color = ltxtalk-primary,
+      frame = bottom,
+      rule-color = ltxtalk-primary,
+      rule-thick = 2pt,
+      padding = 5pt,
+    }
+    \styleltxtalkslot{mod-fsubtitle}{
+      font = \large\itshape,
+      color = ltxtalk-secondary,
+    }
+    \styleltxtalkslot{mod-institute}{
+      font = \tiny,
+      color = ltxtalk-secondary!70,
+      align = left,
+    }
+    \styleltxtalkslot{mod-date}{
+      font = \tiny,
+      color = ltxtalk-secondary!70,
+      align = right,
+    }
+    
+    % === BEREICHSDEKORATIONEN ===
+    \decorateltxtalkarea{header}{
+      frame = bottom,
+      rule-color = ltxtalk-primary,
+      rule-thickness = 1pt,
+      background = ltxtalk-primary!5,
+      artifact-type = layout,
+    }
+    \decorateltxtalkarea{footer}{
+      frame = top,
+      rule-color = ltxtalk-primary!20,
+      rule-thickness = 0.5pt,
+      artifact-type = decorative,
+    }
+    \decorateltxtalkarea{left}{
+      frame = right,
+      rule-color = ltxtalk-primary!15,
+      rule-thickness = 0.5pt,
+      background = ltxtalk-primary!3,
+      artifact-type = decorative,
+    }
+    
+    % === FARBEN ===
+    \setltxtalkcolors{
+      primary   = {HTML}{2B3A67},
+      secondary = {HTML}{496A81},
+      accent    = {HTML}{66999B},
+      background = {HTML}{F5F5F5},
+    }
+  }
+
+\RegisterLTXTalkTheme{modern}{\__ltxtalk_modern_theme_setup:}
+

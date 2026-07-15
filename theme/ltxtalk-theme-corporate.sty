@@ -1,0 +1,184 @@
+% ltxtalk-theme-corporate.sty
+% Version 0.2 - 2026/07/15
+% Corporate theme for ltx-talk
+%
+% Copyright 2026
+% Licence: LPPL 1.3c
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage{ltxtalk-theme-corporate}{2026/07/15}{0.2}
+  {Corporate theme for ltx-talk}
+
+\RequirePackage{ltxtalk-theme-core}
+
+\cs_new_protected:Npn \__ltxtalk_corporate_theme_setup:
+  {
+    % === LAYOUT ===
+    \ltxtalksetup{
+      header = true,
+      header-height = 2.5cm,
+      left-margin = true,
+      right-margin = true,
+      footer = true,
+      footer-height = 0.8cm,
+      margin-width = 2.8cm,
+    }
+    
+    % === TITEL-PLATZIERUNG ===
+    \setltxtalktitleplacement{
+      frametitle = content,
+      section = header,
+    }
+    
+    % === SLOTS ===
+    \defineltxtalkslot{corp-logo-header}{header}{logo}{
+      role = artifact, alt-text = Firmenlogo
+    }
+    \defineltxtalkslot{corp-title}{header}{title}{
+      role = heading, heading-level = 1
+    }
+    \defineltxtalkslot{corp-section}{header}{section}{
+      role = navigation
+    }
+    \defineltxtalkslot{corp-logo-left}{left}{logo}{
+      role = artifact, alt-text = Logo
+    }
+    \defineltxtalkslot{corp-author}{left}{author}{
+      role = note
+    }
+    \defineltxtalkslot{corp-ftitle}{content}{frametitle}{
+      role = heading, heading-level = 2
+    }
+    \defineltxtalkslot{corp-fsubtitle}{content}{framesubtitle}{
+      role = heading, heading-level = 3
+    }
+    \defineltxtalkslot{corp-date}{right}{date}{
+      role = note
+    }
+    \defineltxtalkslot{corp-page}{right}{pagenumber}{
+      role = navigation
+    }
+    \defineltxtalkslot{corp-institute}{footer}{institute}{
+      role = note
+    }
+    
+    % === POSITIONIERUNG ===
+    \positionltxtalkslot{corp-logo-header}{left}{center}{0.2\paperwidth}{2cm}
+    \positionltxtalkslot{corp-title}{center}{center}{0.6\paperwidth}{1.5cm}
+    \positionltxtalkslot{corp-section}{right}{bottom}{0.2\paperwidth}{0.8cm}
+    \positionltxtalkslot{corp-logo-left}{center}{1cm}{2cm}{2cm}
+    \positionltxtalkslot{corp-author}{center}{3.5cm}{2cm}{1.5cm}
+    \positionltxtalkslot{corp-ftitle}{left}{1cm}{0.9\paperwidth}{2cm}
+    \positionltxtalkslot{corp-fsubtitle}{left}{3cm}{0.9\paperwidth}{1cm}
+    \positionltxtalkslot{corp-date}{center}{1cm}{2cm}{1cm}
+    \positionltxtalkslot{corp-page}{center}{2.5cm}{2cm}{1cm}
+    \positionltxtalkslot{corp-institute}{center}{bottom}{0.5\paperwidth}{0.6cm}
+    
+    % === FORMATIERUNG ===
+    \styleltxtalkslot{corp-logo-header}{
+      frame = box,
+      rule-color = ltxtalk-primary!30,
+      background = white,
+      padding = 8pt,
+    }
+    \styleltxtalkslot{corp-title}{
+      font = \huge\bfseries\sffamily,
+      color = white,
+      background = ltxtalk-primary,
+      padding = 10pt,
+      frame = box,
+      rule-color = ltxtalk-primary,
+    }
+    \styleltxtalkslot{corp-section}{
+      font = \small\sffamily,
+      color = ltxtalk-primary,
+      align = right,
+      rule-color = ltxtalk-accent,
+      rule-thick = 1.5pt,
+      frame = bottom,
+    }
+    \styleltxtalkslot{corp-logo-left}{
+      frame = box,
+      rule-color = ltxtalk-primary!20,
+      padding = 5pt,
+    }
+    \styleltxtalkslot{corp-author}{
+      font = \footnotesize\itshape,
+      color = ltxtalk-secondary,
+      align = center,
+    }
+    \styleltxtalkslot{corp-ftitle}{
+      font = \LARGE\bfseries\sffamily,
+      color = ltxtalk-primary,
+      frame = left,
+      rule-color = ltxtalk-accent,
+      rule-thick = 5pt,
+      padding = 8pt,
+    }
+    \styleltxtalkslot{corp-fsubtitle}{
+      font = \large,
+      color = ltxtalk-secondary,
+    }
+    \styleltxtalkslot{corp-date}{
+      font = \small\sffamily,
+      color = ltxtalk-secondary!60,
+      align = center,
+    }
+    \styleltxtalkslot{corp-page}{
+      font = \tiny\sffamily,
+      color = ltxtalk-secondary!50,
+      align = center,
+      frame = top,
+      rule-color = ltxtalk-primary!20,
+      rule-thick = 0.5pt,
+    }
+    \styleltxtalkslot{corp-institute}{
+      font = \tiny\sffamily,
+      color = ltxtalk-secondary!60,
+      align = center,
+    }
+    
+    % === BEREICHSDEKORATIONEN ===
+    \decorateltxtalkarea{header}{
+      frame = bottom,
+      rule-color = ltxtalk-accent,
+      rule-thickness = 0pt,
+      background = ltxtalk-primary,
+      background-opacity = 0.95,
+      shadow = true,
+      shadow-color = black!20,
+      shadow-offset = 4pt,
+      artifact-type = layout,
+    }
+    \decorateltxtalkarea{footer}{
+      frame = top,
+      rule-color = ltxtalk-primary!20,
+      rule-thickness = 0.5pt,
+      artifact-type = decorative,
+    }
+    \decorateltxtalkarea{left}{
+      frame = right,
+      rule-color = ltxtalk-primary!15,
+      rule-thickness = 0.5pt,
+      artifact-type = decorative,
+    }
+    \decorateltxtalkarea{right}{
+      frame = left,
+      rule-color = ltxtalk-primary!15,
+      rule-thickness = 0.5pt,
+      artifact-type = decorative,
+    }
+    
+    % === FARBEN ===
+    \setltxtalkcolors{
+      primary   = {HTML}{003366},
+      secondary = {HTML}{555555},
+      accent    = {HTML}{CC6600},
+      text      = {HTML}{333333},
+      background = {HTML}{FAFAFA},
+    }
+  }
+
+\RegisterLTXTalkTheme{corporate}{\__ltxtalk_corporate_theme_setup:}
+
+\endinput
