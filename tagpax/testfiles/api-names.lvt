@@ -1,0 +1,21 @@
+\input regression-test.tex
+\IfFormatAtLeastTF{2025-06-01}
+  {\DocumentMetadata{tagging=on,lang=en-US}}
+  {\DocumentMetadata{testphase={phase-III,title,table,math,firstaid},lang=en-US}}
+\documentclass{article}
+\usepackage{tagpax}
+\begin{document}
+\START
+\ExplSyntaxOn
+\cs_if_exist:NTF \tagpaxextract
+  {\TYPE{extract-command=true}}
+  {\TYPE{extract-command=false}}
+\cs_if_exist:NTF \tagpaxinclude
+  {\TYPE{include-command=true}}
+  {\TYPE{include-command=false}}
+\cs_if_exist:NTF \TagPaxExtract
+  {\TYPE{legacy-extract-alias=true}}
+  {\TYPE{legacy-extract-alias=false}}
+\ExplSyntaxOff
+\END
+\end{document}

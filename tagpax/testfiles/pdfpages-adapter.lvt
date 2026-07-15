@@ -1,0 +1,15 @@
+\input regression-test.tex
+\IfFormatAtLeastTF{2025-06-01}
+  {\DocumentMetadata{tagging=on,lang=en-US}}
+  {\DocumentMetadata{testphase={phase-III,title,table,math,firstaid},lang=en-US}}
+\documentclass{article}
+\usepackage{tagpax-pdfpages}
+\begin{document}
+\START
+\ExplSyntaxOn
+\cs_if_exist:NTF \tagpaxincludepdf
+  {\TYPE{adapter-command=true}}
+  {\TYPE{adapter-command=false}}
+\ExplSyntaxOff
+\END
+\end{document}

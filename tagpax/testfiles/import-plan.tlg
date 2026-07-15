@@ -1,0 +1,10 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+nodes=2
+roots=n2,n3
+mcrs=2
+unresolved=1
+unresolved-kind=object
+resolved=true
+page-handle=page-form-1
+object-handle=nested-form-1

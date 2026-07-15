@@ -1,0 +1,27 @@
+\input regression-test.tex
+\documentclass{article}
+\begin{document}
+\START
+\directlua{
+  local ir = require("tagpax-ir").read("import-plan.tagpax")
+  local importer = require("tagpax-import")
+  local function report(s) texio.write_nl("log", s) end
+
+  local partial = importer.plan(ir, {pages={[1]="page-form-1", [2]="page-form-2"}})
+  report("nodes=" .. tostring(rawlen(partial.nodes)))
+  report("roots=" .. table.concat(partial.imported_roots, ","))
+  report("mcrs=" .. tostring(rawlen(partial.mcrs)))
+  report("unresolved=" .. tostring(rawlen(partial.unresolved)))
+  report("unresolved-kind=" .. tostring(partial.unresolved[1].kind))
+
+  local complete = importer.plan(ir, {
+    pages={[1]="page-form-1", [2]="page-form-2"},
+    streams={s1="nested-form-1"},
+  })
+  local ok = importer.assert_resolved(complete)
+  report("resolved=" .. tostring(ok))
+  report("page-handle=" .. tostring(complete.mcrs[1].handle))
+  report("object-handle=" .. tostring(complete.mcrs[2].handle))
+}
+\END
+\end{document}

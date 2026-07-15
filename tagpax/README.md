@@ -1,40 +1,58 @@
-# tagpax 0.3.3-dev
+# tagpax — development prototype
 
-Experimental LuaLaTeX package for preserving tagged-PDF structure when complete
-contribution PDFs are assembled with `pdfpages`.
+`tagpax` extracts and reconstructs the logical structure of fully tagged
+contribution PDFs for proceedings assembled with LuaLaTeX.
+
+## Import architecture
+
+```text
+PDF -> Lua inspection -> semantic IR -> import plan -> native LuaTeX page Forms
+    -> explicit StructElems/MCRs -> ParentTree
+```
+
+The public native command is:
+
+```latex
+\tagpaxextract[paper.tagpax]{paper.pdf}
+\tagpaxinclude[ir=paper.tagpax]{paper.pdf}
+```
+
+It currently supports complete linear documents, one fresh Form XObject per
+source page, page-content MCIDs, and a new `Part` wrapper. Explicit nested
+`/Stm` source Forms remain represented in the IR but are rejected by the native
+writer until a reliable nested-XObject mapping is available.
+
+A restricted compatibility for `pdfpages` frontend is generated as `tagpax-pdfpages.sty`:
+
+```latex
+\usepackage{tagpax-pdfpages}
+\tagpaxincludepdf[pages=-]{paper.pdf}
+```
+
+This accepts only the linear full-document case and routes it through the native
+importer. It intentionally does not use `pdfpages` for Form creation.
+
+## Modules
+
+- `tagpax.lua`: extraction facade;
+- `tagpax-ir.lua`: IR and deserialization;
+- `tagpax-validate.lua`: semantic validation;
+- `tagpax-inspect.lua`: inspection API;
+- `tagpax-import.lua`: backend-independent import plan;
+- `tagpax-luatex.lua`: controlled page Form import;
+- `tagpax-native.lua`: native linear document emitter;
+- `tagpax-backend.lua`: TeX backend-plan emission;
+- `tagpax-compare.lua`: semantic roundtrip comparison.
 
 ## Build
 
 ```sh
 l3build unpack
 l3build check
+l3build check -c roundtrip
 l3build doc
+l3build ctan
 ```
 
-The standard fixtures use automatic tagging through
-`\DocumentMetadata{tagging=on}` on current LaTeX formats. A compatibility branch
-is retained only inside fixtures for older formats.
-
-## Test configurations
-
-The normal regression suite has no dependency on external PDF tools:
-
-```sh
-l3build check
-```
-
-Additional structural checks are enabled through standard l3build configurations:
-
-```sh
-l3build check -c structure
-```
-
-This compiles `testfiles/support/headings.tex` and runs qpdf, mutool and pdfcpu when available. A known pdfcpu limitation for PDF 2.0 `/AF` is reported as `UNSUPPORTED` and does not fail the test; all other validation errors do.
-
-For the same checks plus veraPDF:
-
-```sh
-l3build check -c verapdf
-```
-
-The veraPDF report is written to `build/validate/headings-verapdf.txt`. Optional tools that are not installed are reported as skipped.
+The roundtrip test compiles a tagged contribution, extracts it, imports it with
+the native path, extracts the master PDF, and compares the semantic trees.

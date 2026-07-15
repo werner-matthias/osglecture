@@ -1,5 +1,7 @@
 tagpax	version=1
 source	file=paper.pdf	pages=3
+stream	id=p1	kind=page	page=1
+stream	id=p2	kind=page	page=2
 node	id=n1	role=Document
 node	id=n2	role=H2	title=Paper%20Title
 node	id=n3	role=H3	title=Introduction

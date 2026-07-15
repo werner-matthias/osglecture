@@ -1,0 +1,262 @@
+%%
+%% This is file `osgdoc.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% osgdoc.dtx  (with options: `pkg')
+%% 
+%% ========================================================================
+%%  osgdoc tools - support for documentation
+%% 
+%%  (C) 2022-2026 Matthias Werner
+%%  E-mail: matthias.werner@informatik.tu-chemnitz.de
+%% 
+%%  Released under the LaTeX Project Public License v1.3c or later
+%%  See http://www.latex-project.org/lppl.txt
+%% ========================================================================
+%% 
+\def\packagename{osgdoc}
+\def\packagedate{2026/06/07}
+\def\packageversion{v0.0.1}
+\ProvidesExplPackage{osgdoc}{2026-06-11}{0.0.7}{small tools for documentation}
+\sys_if_engine_luatex:TF{
+  \def\error{}
+  \RequirePackage{luacode}
+}{
+  \def\error{\errmessage{LuaLaTeX~is~required~to~use~this~package.}\endinput}
+}
+\error
+\RequirePackage{luacode}
+\RequirePackage{fancyvrb}
+\fvset{formatcom=\color{blue},numbers=left}
+
+\begin{luacode*}
+  function texassert(v, msg)
+    if v then
+      return v
+    end
+    tex.error("Error", {msg or "assertion failed"})
+  end
+\end{luacode*}
+
+\newcommand{\AutoDocInput}[2]{
+  \directlua{
+    autodoc.autodoc_process(\luastring{#1},\luastring{#2})
+  }
+}
+\begin{luacode*}
+autodoc = autodoc or {}
+
+function autodoc.quote_pat(s)
+  return (s:gsub("(%W)", "%%%1"))
+end
+
+function autodoc.opening_guard(line, symbol)
+   local atomchars = "%w_%-"
+   local expr = line:match("^%%%<%s*%*%s*(.-)%s*%>")
+   if not expr then return false end
+
+   local t = autodoc.quote_pat(symbol)
+   local pat = "%f[" .. atomchars .. "]" .. t .. "%f[^" .. atomchars .. "]"
+
+   return expr:find(pat) ~= nil
+end
+
+function autodoc.strip_pct(s) return (s:gsub("^%%+%s?","")) end
+
+local verbtempfiles = {}
+
+function autodoc.uniqname()
+   local name = string.format(
+      "osgdoc-%s-%04d.tmp",
+      tex.jobname,
+      #verbtempfiles+1
+   )
+   verbtempfiles[#verbtempfiles+1]=name
+   return name
+end
+
+function autodoc.autodoc_process(fname, guard)
+   local vf
+   local vfname
+   local f = io.open(fname,"r")
+   if not f then tex.error("AutoDocInput: cannot open "..fname); return end
+   local OUTSIDE     = 0
+   local OUTSIDEVERB = 1
+   local VERB        = 2
+   local STARTVERB   = 3
+   local COMMENT     = 4
+   local state = OUTSIDE
+
+   local lnr = 0
+   local tfcount = 0;
+   for line in f:lines() do
+     lnr = lnr + 1
+     local og = autodoc.opening_guard(line,guard)
+     local cg = line:match("^%%%</")
+     local cc = line:match("^%%[^%<]")
+     if state == OUTSIDE then
+if og then
+   state = STARTVERB
+end
+     elseif state == OUTSIDEVERB then
+if og then
+   state = VERB
+end
+     elseif state == STARTVERB then
+if cc then
+   tex.print(autodoc.strip_pct(line))
+   state = COMMENT
+elseif cg then
+   state = OUTSIDEVERB
+elseif og then
+   tex.print("\\typeout{Warning: Cascading guards in "..lnr.."}")
+else
+   vfname = autodoc.uniqname()
+   vf = texassert(io.open(vfname, "w"),"Can't open '"..vfname.."'")
+   vf:write(line,'\n')
+   state = VERB
+end
+     elseif state == VERB then
+if cg then
+   state = OUTSIDEVERB
+elseif cc then
+   vf:close()
+   tex.print("\\VerbatimInput[firstnumber=last]{"..vfname.."}")
+   tex.print(autodoc.strip_pct(line))
+   state = COMMENT
+elseif og then
+           tex.warning("Cascading guards in "..lnr)
+else
+   vf:write(line,'\n')
+end
+     elseif state == COMMENT then
+if cg then
+   state = OUTSIDE
+elseif og then
+   tex.print("\\typeout{Warning: Cascading guards in "..lnr.."}")
+elseif cc then
+   tex.print(autodoc.strip_pct(line))
+else
+   vfname = autodoc.uniqname()
+   vf = texassert(io.open(vfname, "w"),"Can't open '"..vfname.."'")
+   vf:write(line,'\n')
+   state = VERB
+end
+     else
+tex.error("Can't parse.") 
+     end
+  end
+   if ((state == VERB) or (state == OUTSIDEVERB)) then
+      vf:close()
+      tex.print("\\VerbatimInput[firstnumber=last]{"..vfname.."}")
+  end
+  f:close()
+end
+luatexbase.add_to_callback("stop_run", function()
+  for _, name in ipairs(verbtempfiles) do
+    os.remove(name)
+  end
+end, "cleanup verbatim temp files")
+\end{luacode*}
+
+\NewDocumentCommand{\UseVersionOf}{m}
+{
+   \directlua{fileinfo.useversion(\luastring{#1})}
+}
+
+\NewDocumentCommand{\UseDateOf}{m}
+{
+   \directlua{fileinfo.usedate(\luastring{#1})}
+}
+
+\begin{luacode*}
+fileinfo = fileinfo or {}
+
+fileinfo.data = {}
+
+function fileinfo.getinfo(filename)
+   filename = kpse.find_file(filename)
+   local f = texassert(io.open(filename, "r"),"Can't read '"..filename.."'")
+   local s = f:read("*a")
+   f:close()
+   local ftype = nil
+   local name,date,version,descr = s:match(
+      "\\ProvidesExplPackage%s*{([^}]*)}%s*{([^}]*)}%s*{([^}]*)}%s*{([^}]*)}")
+   ftype = "package"
+   if name == nil then
+      name,date,descr = s:match(
+ "\\ProvidesPackage{([^}]*)}%s*%[(%d%d%d%d[%-/]%d%d[%-/]%d%d)%s?([^%]]*)%]")
+      if name ~= nil then
+ descr = descr or "??"
+ version = descr:match("^v?(%d+[%p%d]*%l*)%s")
+      end
+   end
+
+   if name == nil then
+      name,date,version,descr = s:match(
+ "\\ProvidesExplClass%s*{([^}]*)}%s*{([^}]*)}%s*{([^}]*)}%s*{([^}]*)}")
+      ftype = "class"
+      if name == nil then
+ name,date,descr = s:match(
+    "\\ProvidesClass{([^}]*)}%s*%[(%d%d%d%d[%-/]%d%d[%-/]%d%d)%s?([^%]]*)%]")
+ if name ~= nil then
+    descr = descr or "??"
+    version = descr:match("^v?(%d+(%p%d+)*%l*)%s")
+ end
+      end
+   end
+   if name == nil then
+      name,date,version,descr = s:match(
+ "\\ProvidesExplFile%s*{([^}]*)}%s*{([^}]*)}%s*{([^}]*)}%s*{([^}]*)}")
+      ftype = "file"
+      if name == nil then
+ name,date,descr = s:match(
+    "\\ProvidesFile{([^}]*)}%s*%[(%d%d%d%d[%-/]%d%d[%-/]%d%d)%s?([^%]]*)%]")
+ if name ~= nil then
+    descr = descr or "??"
+    version = descr:match("^v?(%d+(%p%d+)*%l*)%s")
+ end
+      end
+   end
+   if name ~= nil then
+      date = date or "??"
+      version = version or "??"
+      fileinfo.data["name"] = name
+      fileinfo.data["date"] = date
+      fileinfo.data["version"] = version
+      fileinfo.data["descr"] = descr
+      fileinfo.data["type"] = ftype
+   end
+end
+
+function fileinfo.useversion(filename)
+   if fileinfo.data["name"] == nil then
+      fileinfo.getinfo(filename)
+   end
+   local res = fileinfo.data["version"]
+   if res == nil then
+      tex.print("??")
+   else
+      tex.print(res)
+   end
+end
+
+function fileinfo.usedate(filename)
+   if fileinfo.data["name"] == nil then
+      fileinfo.getinfo(filename)
+   end
+   local res = fileinfo.data["date"]
+   if res == nil then
+      tex.print("??")
+   else
+      tex.print(res)
+   end
+end
+\end{luacode*}
+%% 
+%%  This work is "maintained" (as per LPPL maintenance status) by
+%%  Matthias Werner.
+%%
+%% End of file `osgdoc.sty'.

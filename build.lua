@@ -4,6 +4,7 @@ ctanpkg  = bundle
 modules = {
    "langselect",
    "osgdoc",
+   "tagpax",
    -- "osglecture"
    -- "osgterminal",
    -- "osgref",

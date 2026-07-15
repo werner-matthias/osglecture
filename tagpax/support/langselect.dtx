@@ -1,0 +1,1377 @@
+%<*driver>
+\def\packagename{langselect}
+
+\def\nameofplainTeX{plain}
+\ifx\fmtname\nameofplainTeX
+\input l3docstrip.tex
+\preamble
+
+========================================================================
+ Package langselect - generate documents in different languages
+                      from a common source. This is a generated file.
+
+ (C) 2022-2026 Matthias Werner
+ E-mail: matthias.werner@informatik.tu-chemnitz.de
+
+ Released under the LaTeX Project Public License v1.3c or later
+ See http://www.latex-project.org/lppl.txt
+======================================================================== 
+
+\endpreamble
+\postamble
+
+This work is "maintained" (as per LPPL maintenance status) by
+ Matthias Werner.
+\endpostamble
+
+\generate{
+  \file{\packagename.sty}{\from{\packagename.dtx}{pkg}}
+}
+  \expandafter\endbatchfile
+\fi
+  
+\documentclass[
+load-preamble,
+]{osgdoc}
+
+\usepackage[
+languages={de,en},
+map={de=ngerman,en=english},
+targetlang={job=2}
+]{langselect}
+\usepackage{enumitem}
+
+% --------------------------------------------------------------------
+\makeindex
+\def\packagename{langselect}
+\def\thepkg{\pkg*{\packagename}}
+
+\setcnltx{
+  package  = langselect,
+  version  = \UseVersionOf{\packagename.sty},
+  date     = \UseDateOf{\packagename.sty},
+  title    = {\ldeen{Das \pkg*{langselect}-Paket}{The \pkg*{langselect} Package}},
+  info     = \ldeen{Generierung verschiedener Sprachversionen aus einer
+    Quelle}{Generate different language versions from a common source}, 
+  authors  = {Matthias Werner[matthias.werner@informatik.tu-chemnitz.de]},
+  abstract={
+    \ldeen{
+      Dieses Paket unterstützt die Generierung von Dokumenten in zwei oder drei
+      Sprachvarianten aus einem gemeinsamen 
+      Quelldokument. Es wird ein entsprechendes Nutzermakro generiert und es
+      gibt mehrere Methoden, die Zielsprache zu bestimmen.
+      
+      Das Paket gehört zum \pkg*{osglecture}-Bundle, wird in die \cls*{osglecture}-Klasse
+      integriert und vom Buildscript \code{ollm} unterstützt, kann aber auch eigenständig
+      genutzt werden.
+    }{
+      This package supports the generation of documents in two or three language
+      versions from a common source document. A corresponding user macro is
+      generated, and there are several methods for determining the target language.
+      
+      The package is part of the \pkg*{osglecture} bundle, is integrated into
+      the \cls*{osglecture} class 
+      and supported by the build script \code{ollm}, but can also be used independently.
+    }
+  },
+  url      =https://github.com/werner-matthias/osglecture,
+  build-title
+}
+
+
+\begin{document}
+ 
+%\renewcommand{\packageformat}{\color{cnltxformalblue}\sffamily}
+\section{\ldeen{Einleitung}{Introduction}}
+\label{sec:intro}
+\subsection{TL;DR}
+\label{sec:tldr}
+\ldeen{Angenommen Sie wollen von einen Text eine englische und ein
+  deutsche Version erhalten, wobei Sie ein gemeinsames Quelldokument
+  nutzen wollen.}{Assume, you have a text with an English and a German version whilst
+  you want to use a common source}.
+\begin{enumerate}
+\item \ldeen*{Binden Sie @1 ein}{Include @1}{\cs{usepackage}\Oarg{languages=\Marg{en,de}}\Marg{langselect}}
+\item \ldeen{Nutzen Sie im Quelldokument 
+    \cs*{lende}\marg{Text$_{en}$}\marg{Text$_{de}$}. \meta{Text$_{en}$} wird in
+    der englischen Version erscheinen, während Text$_{de}$ in der deutschen
+    Version erscheinen wird.}{Use in the
+  source \cs*{lende}\marg{text$_{en}$}\marg{text$_{de}$}. \meta{text$_{en}$} will
+  appear in the Englisch version, whereas \meta{text$_{de}$} will appear in the German
+  one.}
+\begin{itemize}
+\item \ldeen*{Text, der in beiden Versionen vorkommt, schreiben Sie außerhalb des
+  Makros oder nutzen die Sternversion, um gemeinsame Daten im Fließtext nur
+  einmal schreiben zu müssen, siehe Abschnitt~@1}{Write text that appears in
+  both versions outside the macro or use the star version so that you only have
+  to write common data in the body text once, see
+  Section~@1}{\ref{sec:start-var}}.  
+\end{itemize}
+\item \ldeen*{Übersetzen Sie das Dokument mit @1, um die englische Version zu
+    erhalten, und mit @2 für die deutsche.}{Translate the document with @1 to
+    get the English version and with @2 for the German version.}{
+    
+    \centerline{\code{> latex
+        "\cs*{def}\cs{olsTargetLanguage}\Marg{en}\cs{include}\marg{document}}"}
+      
+    }{
+
+      \centerline{\code{> latex
+          "\cs*{def}\cs{olsTargetLanguage}\Marg{de}\cs{include}\marg{document}}"}
+
+    }
+    
+  \begin{itemize}
+  \item \ldeen*{Es gibt noch einige andere Möglichkeiten,die Zielsprache zu
+      bestimmen, u.\;a.\ über den Jobnamen und über @1}{There are several other
+      ways to determine the target language, including via the job name and via
+      @1}{\cs{DocumentMetadata}}. 
+  \end{itemize}
+\end{enumerate}
+\subsection{Motivation}
+\label{sec:motivation}
+\ldeen{Mitunter werden mehrere Sprachversionen des gleichen Dokuments benötigt.
+Im Anwendungsgebiet des \pkg*{osglecture}-Bündel sind dies beispielsweise die
+Lehrskripte, Vorlesungsfolien und Handouts einer Lehrveranstaltung.
+Es fällt häufig schwer, mehrere parallel existierende Sprachversionen konsistent zu halten.
+Diese Aufgabe ist etwas einfacher, wenn alle Versionen in einem gemeinsamen
+Quelldokument enthalten sind.
+
+Dieses Paket unterstützt die Generierung solcher Sprachversionen aus einem
+gemeinsamen \LaTeX-Quelldokument indem es Makros für Sprachvarianten und
+Mechanismen zur Auswahl der Zielsprache bereitstellt.
+}{
+Sometimes, multiple language versions of the same document are required.
+In the application area of the \pkg*{osglecture} bundle, these are, for example, the
+lecture notes, lecture slides, and handouts for a course.
+It is often difficult to keep multiple parallel language versions consistent.
+This task is somewhat easier if all versions are contained in a common
+source document.
+
+This package supports the generation of such language versions from a
+common \LaTeX\ source document by providing commands for language variants and
+mechanisms for selecting the target language.
+}
+
+\subsection{\ldeen{Alternativen}{Alternatives}}
+\label{sec:alternatives}
+\ldeen{Es gibt eine Reihe von Alternativen zu \thepkg.}{The are a number of
+  alternatives to \thepkg.}
+\begin{description}
+  \item [\ldeen{Adhoc-Makros}{Ad hoc commands}]\ldeen{Man kann relativ einfach adhoc Lösungen schaffen, wie z.\,B.}{It
+      is relatively easy to create ad hoc solutions, such as the following}
+    \begin{example}[code-only]
+        \newif\ifenglish
+        \englishtrue
+        \ifenglish
+            Welcome!
+        \else
+            ¡Bienvenido!
+        \fi
+    \end{example}
+    \ldeen{
+      Tatsächlich folgt \thepkg\ grundsätzlich diesem Ansatz, automatisiert aber die
+      Erstellung der Sprachmakros, vereinfacht die gemeinsame Nutzung
+      von nichtsprachabhängigen Elementen wie z.\,B. Formeln und ermöglicht die
+      Auswahl der Sprachvariante über verschiedene Methoden.
+    }{
+      In fact, \thepkg\ basically follows this approach, but automates the
+      creation of language commands, simplifies the sharing
+      of non-language-dependent elements such as formulas, and enables the
+      selection of the target language by different approaches.
+    }
+  \item[\pkg{multilang}]
+    \ldeen{
+      Das ausgeklügelte Paket \needpackage{multilang} von \name{Richard Grewe} erstellt
+      Sprachversionen von gegebenen Makros, wobei die aktive Sprache direkt aus
+      \pkg*{Babel} oder \pkg*{Polyglossia} übernommen wird.
+      \thepkg\ hat ein ähnliches Ziel, aber ein anderes (aus Sicht des
+      Paketautoren: praktischeres) Interface.
+      Falls Sie aber den Ansatz von \thepkg\ nicht mögen, sollten Sie sich
+      unbedingt \pkg*{multilang} anschauen.
+    }{
+      The sophisticated package \needpackage{multilang} by \name{Richard Grewe} creates
+      language versions of given commands, whereby the active language is taken directly from
+      \pkg*{Babel} or \pkg*{Polyglossia}.
+      \thepkg\ has a similar goal, but a different (from the package author's
+      point of view: more practical) interface. 
+      However, if you don't like the approach of \thepkg\, you should definitely
+      take a look at \pkg*{multilang}. 
+    }
+  \item[\pkg{comment}]
+    \ldeen{
+      \name{Victor Eijkhout} hat des Paket \needpackage{comment} geschrieben,
+      das auf einfache Weise ermöglicht, nur bestimmte Abschnitte im Dokument
+      auszugeben. Dies kann auch sehr gut für eine Sprachauswahl genutzt werden.
+    }{
+      \name{Victor Eijkhout} wrote the package \needpackage{comment},
+      which makes it easy to output only certain sections of the document.
+      This can also be used very well for language selection.
+    }
+  \item[\pkg{bicaption}"/\pkg{translations}"/\pkg{translator}"/\pkg{xt\_capts}]
+    \ldeen*{
+      Die Pakete @1      
+      addressieren Programmierer von \LaTeX-Paketen, um fixe Textelemente wie
+      die Überschriften von Verzeichnissen zu internationalisieren.
+      Für Dokumentautoren sind diese Pakete nur bedingt geeignet.
+    }{
+      The packages @1 are intended for programmers of \LaTeX\ packages to internationalize fixed
+      text elements such as the headings of tables of contents.
+      These packages are only of limited use for document authors.
+    }{\needpackage{bicaption}"/\needpackage{translations}"/\needpackage{translator}"/%
+      \needpackage[/macros/latex/contrib/xtcapts]{xt\_capts}}
+\end{description}
+\subsection{\ldeen{Sprachen}{Languages}}
+\label{sec:languages}
+\ldeen{%
+  Das Konzept von \thepkg\ beinhaltet die Nutzung von Sprachen auf verschiedenen
+  Ebenen mit unterschiedlicher Wirkung. Um Verwechselungen zu vermeiden, wollen
+  wir hier die Begriffe eindeutig definieren.
+}{%
+  The concept of \thepkg\ involves the use of languages at different
+  levels with different effects. To avoid confusion, we want to
+  clearly define the terms here.
+}
+
+\begin{enumerate}
+  \item \ldeen*{
+      Die Menge \emph{möglicher} Zielsprachen des Dokuments. Ein Dokument, das
+      \thepkg\ nutzt, enthält typischerweise Textteile in verschiedenen
+      Zielsprachen. Die möglichen Zielsprachen werden über eine Paketoption
+      gesetzt, siehe Abbschnitt~@1. Im weiteren Text dieser Dokumentation
+      nennen wir die \emph{möglichen} Zielsprachen \emph{Auswahlsprachen}, da für die
+      \LaTeX-Übersetzung eine dieser Sprachen ausgewählt wird.
+    }{
+      The set of \emph{possible} target languages for the document. A document that
+      uses \thepkg\ typically contains text sections in different target
+      languages. The possible target languages are set via a package option, see
+      Section~@1. In the remaining part of this documentation,
+      we refer to the \emph{possible} target languages as \emph{selectable languages},
+      since one of these languages is selected for the \LaTeX\ translation.
+    }{\ref{sec:options}}
+  \item
+    \ldeen{%
+      Die tatsächliche bei einer \LaTeX-Übersetzung gebrauchte Zielsprache.
+      Diese muss eine der Sprachen aus 1. sein. Typischerweise wird der
+      Übersetzungsvorgang für jede der tatsächlichen Zielsprachen einzeln
+      ausgeführt.
+      Für die Auswahl der tatsächlichen Zielsprache gibt es mehrere Methoden,
+      siehe Abschnitt}{%
+      The actual target language used in a LaTeX translation.
+      This must be one of the languages from 1. Typically, the  translation
+      process is performed separately for each of the actual target languages. 
+      There are several methods for selecting the actual target language;  see
+      section}~\ref{sec:targetlang}.
+  \item
+    \ldeen{
+      Die Sprache, in der Textteile oder einzelne Wörter tatsächlich geschrieben
+      sind und die beispielsweise bei der Worttrennung berücksichtigt wird.
+      Dies ist das Konzept von Sprache, das Pakete wie Babel oder
+      Polyglossia haben.\footnote{Wobei auch in diesen Pakten "`Sprache"' auch
+        für mehrere unterschiedliche und z.\,T. voneinander unabhängige Konzepte
+        wie Trennungsmuster, zu nutzende Fonts etc. steht}
+      Bitte beachten Sie, dass ein mehrsprachiges Dokument aus der Sicht von
+      \thepkg\ ein monosprachiges Dokument aus der Sicht von Babel sein kann.
+      Häufig ist es aber eher umgekehrt, so dann durchaus noch weitere Sprachen
+      als die Auswahlsprechen hinzukommen:
+      Beispielsweise kann ein Dokument mit den Auswahlsprachen Deutsch und
+      Englisch im Text lateinische Wörter oder Sätze enthalten.
+      Diese Auswahl wird über die üblichen Mechanismen wie in
+      \cs{selectlanguage}, \cs{foreignlanguage} oder \cs*{text}\meta{sprache}
+      vorgenommen.
+      Wenn Babel oder Polyglossia geladen wird, was auf Wunsch auch direkt über
+      \thepkg\ erfolgen kann, wird als aktive Sprache die Zielsprache ausgewählt.
+    }{
+       The language in which text fragments or individual words are actually
+       written, what is considered, e.\,g. for hyphenation.
+       This is the concept of language used by packages such as Babel or
+       Polyglossia.\footnote{However, in these packages, "`language"' also refers to
+        several different and, in some cases, independent concepts such as
+        hyphenation patterns, fonts to be used, etc.}
+      Please note that a multilingual document from the perspective of
+      \thepkg\ can be a monolingual document from the perspective of Babel.
+      Frequently, it is the other way around, and more languages than the
+      selectable languages are used:
+      For example, a document with the selectable languages German and
+      English may contain Latin words or sentences in the text.
+      This selection is made using the usual mechanisms such as
+      \cs{selectlanguage}, \cs{foreignlanguage} or \cs*{text}\meta{language}.
+      When Babel or Polyglossia is loaded, which can also be done directly via
+      \thepkg\ if desired, the target language is selected as the active language.
+    }
+\end{enumerate}
+\ldeen{
+  Sprachen werden in \thepkg über ISO 639-1-Codes (z.\,B. "`en"', "`fr"',
+  "`de"', \ldots) bezeichnet.
+  Wenn für die Sprachbehandlung auf der Ebene von Babel/Polyglossia ein
+  bestimmter Dialekt oder eine bestimmte Variante gewünscht ist, kann ein
+  Mapping erfolgen.
+}{
+  Languages are designated in \thepkg\ using ISO 639-1 codes ("`en"', "`fr"',
+  "`de"' \ldots).
+  If a specific dialect or variant is desired for language processing at the Babel/Polyglossia level,
+  mapping can be performed.
+}
+\section{\ldeen{Anwendung}{Usage}}
+\label{sec:usage}
+\ldeen{Das Paket wird auf die übliche Weise geladen}{The package is loaded in
+  the usual way}:
+
+\centerline{\cs{usepackage}\oarg{options}\Marg{langselect}}
+
+\noindent
+\ldeen*{%
+  Da die Auswahl der Zielsprache sowohl über Optionen als auch auf anderem Weg
+  erfolgen kann, werden hier zunächst diese verschiedenen Wege beschrieben.
+  Weitere Optionen wie das Setzen der Auswahlsprachen werden in Abschnitt~@1 besprochen.%
+}{%
+  Since the target language can be selected both via options and in other ways,
+  these different methods are described here first.
+  Further options, such as setting the selectable languages, are discussed in
+Section~@1.%
+}{\ref{sec:options}}
+\subsection{\ldeen{Auswahl der Zielsprache}{Selection of the Target Language}}
+\label{sec:targetlang}
+
+\ldeen{%
+  Um eine Zielsprache für einen \LaTeX-Übersetzungslauf zu bestimmen, gibt es verschiedene
+  Möglichkeiten. Die Reihenfolge in der folgenden Liste spiegelt auch die
+  Reihenfolge der Auswertung. Sobald damit eine Zielsprache ermittelt wird, wird
+  eine weitere Auswertung abgebrochen.
+}{%
+  There are various ways to determine a target language for a LaTeX translation run.
+  The order in the following list also reflects the order of evaluation.
+  Once a target language has been determined, further evaluation is canceled.
+}
+\begin{enumerate}
+  \item \ldeen{Definition eines Makros \cs{olsTargetLanguage} \emph{vor} Laden des
+    Pakets. Damit ist es beispielsweise möglich, über}{Definition of a macro
+    \cs{olsTargetLanguage} \emph{before} loading the package. This makes it
+    possible, for example, to use}  
+\begin{verbatim}
+> latexmk -usepretex="\def\olsTargetLanguage{fr}" document.tex
+\end{verbatim}
+    \ldeen{die Zielsprache Französisch für den Übersetzungslauf festzulegen}{to
+      set the target language French for the translation run}.
+  \item \ldeen*{Setzen der Paketoption @1. Verschiedene Werte sind hier möglich}{Setting of
+      the packet option @1. Various values are
+      possible here}{\option{targetlang}}:
+    \begin{options}
+      \keyval-{targetlang}{\ldeen{ISO-Code}{ISO code}}
+        \ldeen{Die Zielsprache wird direkt durch den Code angegeben.}{The target
+          language is specified directly by the code.}
+        
+       \keychoice{targetlang}{\Marg{job=\meta{n}}}
+         \ldeen{Die Zielsprache wird aus dem $n.$ Element des Jobnamens bestimmt.
+           Ein Element ist ein mit "`-"' (Minus) abgetrennter Teil des Jobnamens, siehe
+           die Dokumentation zum Paket \needpackage{varsfromjobname}, das dafür geladen
+           wird.}{
+           The target language is determined from the $n$th element of the job name.
+           An element is a part of the job name separated by "`-"' (minus), see
+           the documentation for the package \needpackage{varsfromjobname}, which is loaded
+           for this purpose.
+         }%
+        \ldeen{%
+          Beispielsweise kann bei \keyis*{targetlang}{job=2} über 
+        }{%
+          For example, with \keyis*{targetlang}{job=2} one can set Russian as target
+          language using
+        }
+\begin{verbatim}
+> latex -jobname doc-ru doc.tex
+\end{verbatim}
+        \ldeen{
+          Russisch als Zielsprache eingestellt werden.
+        }{}
+        \keychoice{targetlang}{babel,polyglossia}
+        \ldeen{Für die Nutzung dieses Schlüsselwerts muss Babel oder Polyglossia
+          \emph{vor} \thepkg\ geladen sein. Die 
+          Zielsprache wird dann auf die durch das Sprachpaket eingestellte
+          (Haupt-)Sprache gesetzt.}{To use this key value,
+          Babel or Polyglossia must be loaded \emph{before} \thepkg. The
+          target language is then set to the (main) language set by the language
+          packet.}\footnote{\ldeen{Beide Werte bewirken exakt das Gleiche: Da
+            Babel und Polyglossia die gleiche Schnittstelle anbieten, ist es
+            egal, welches von beiden Paketen geladen
+            ist. \keyis*-{targetlang}{polyglossia} findet also auch 
+            Babel.}{Both values have exactly the same effect: Since Babel and
+            Polyglossia offer the same interface, it doesn't matter which of the
+            two packages is loaded. Thus, \keyis*-{targetlang}{polyglossia} will also find Babel.}}  
+        \keychoice{targetlang}{meta}
+        \ldeen{Die in \cs{DocumentMetadata} angegebene Sprache als Zielsprache verwendet.
+        }{Uses the language specified in \cs{DocumentMetadata}  as the target language. }
+    \end{options}
+  \item \ldeen{Wenn weder \cs{olsTargetLanguage} definiert noch die Option
+      \option{targetlang} gesetzt wird, versucht \thepkg\ selbständig die
+      Zielsprache zu bestimmen, indem es erst die Option
+      \keyis*-{targetlang}{babel} und dann (wenn kein Sprachpaket gefunden
+      wurde) die Option \keyis*-{targetlang}{meta} ausprobiert.}{If neither
+      \cs{olsTargetLanguage} is defined nor the option 
+      \option{targetlang} is set, \thepkg\ attempts to determine the target
+      language on its own by first trying the option \keyis*-{targetlang}{babel}
+      and then (if no language package was found) the option
+      \keyis*-{targetlang}{meta}.}
+  \item \ldeen{Wenn alles andere versagt, wird Englisch als Zielsprache
+      gesetzt.}{If everything else fails, English is set as the target language.}
+\end{enumerate}
+\subsection{\ldeen{Optionen}{Options}}
+\label{sec:options}
+\ldeen{Folgende Optionen stehen zur Verfügung}{The following options are available}:
+\begin{options}
+    \keyval{languages}{\ldeen{Liste von Auswahlsprachen}{list of selectable
+        languages}}\Default!{}
+    \ldeen*{Gibt zwei oder drei Auswahlsprachen an. Die Reihenfolge ist relevant
+      für die automatische Generierung der Sprachmakros (siehe Abschnitt~@1).
+    }{%
+      Provides two or three selectable languages.
+      The order matters for the automatic generation of the language commands
+    (cf.\ Section~@1).
+  }{\ref{sec:usermacros}}
+
+  \keychoice{targetlang}{\meta{\ldeen{Sprache}{language}},\{job=\meta{n}\},babel,polyglossia,meta}%\Default{}
+  \ldeen{Siehe Abbschnitt}{See Section}~\ref{sec:targetlang}
+
+  \keyval{prefix}{prefix}\Default{l}
+  \ldeen{Setzt einen Prefix für die Multisprachmakros. Es kann auch ein leerer
+    Prefix gesetzt werden.}{Sets a prefix for multilingual commands. An empty
+    prefix can also be set.}
+
+  \keybool{auto}\Default{true}\ldeen*{Die eigentlichen Sprachmakros werden
+    automatisch angelegt, siehe Abschnitt~@1. Wird \keyis*-{auto}{false}
+    gesetzt, werden nur die Makros zur Erzeugung der Sprachmakros zur Verfügung
+    gestellt, nicht die Sprachmakros selbst.}{The actual language commands are
+    created automatically, see Section~@1. If \keyis*-{auto}{false}
+    is set, only the commands for generating the language commands are provided, not
+    the language commands themselves.}{\ref{sec:usermacros}}
+  \keybool{trim}\Default{true}\ldeen{Enfernt Whitespaces am Anfang und Ende der
+    Argumente der Sprachmakros.}{Removes whitespace at the beginning and end of
+    language macro arguments.}
+  \keyval{load babel}{Babel \ldeen{Optionen}{options}}\gobble
+  \keyval{load polyglossia}{Polyglossia \ldeen{Optionen}{options}}
+  \ldeen{Lädt entweder Babel oder Polyglossia so, dass die Zielsprache von
+    \thepkg\ als Hauptsprache gesetzt wird. Die hier übergebenen Optionen werden
+    an das jeweilige Sprachpaket weitergeleitet.
+    Wenn eine dieser Option genutzt wird, darf
+    nicht \keyis*-{targetlang}{babel} oder \keyis*-{targetlang}{polyglossia}
+    gesetzt sein und \thepkg\ muss vor dem jeweiligen Sprachpaket geladen
+    werden.
+  }{%
+    Loads either Babel or Polyglossia so that the target language of \thepkg is
+    set as the main language. The options passed here are forwarded to the
+    respective language package. 
+    If one of these options is used, \keyis*-{targetlang}{babel} or
+    \keyis*-{targetlang}{polyglossia} must not be set, and \thepkg\ must be
+    loaded before the respective language package.}  
+  \keychoice{map}{\Marg{\meta{\ldeen{Sprache}{language}}=\meta{\ldeen{Variante}{variant}},\ldots}}
+  \ldeen{Legt ein Mapping von Sprachen zu einer Sprachvariante fest. Wenn
+    \thepkg\ mit anderen Paketen interagiert, wird dann die spezifische
+    Sprachvariante statt des ISO-Codes weitergegeben.%
+
+    Falls Sie beispielsweise Babel von \thepkg\ aus laden und Ihr Dokument explizit
+    \emph{Britisches} Englisch und \emph{Schweizerdeutsch} nutzt, sichern Sie
+    mit folgendem Code ab, dass Babel korrekte Optionen erhält. 
+  }{%
+    Defines a mapping of languages to a language variant. When
+    \thepkg\ interacts with other packages, the specific
+    language variant is passed instead of the ISO code.
+
+     For example, if you load Babel from \thepkg\ and your document explicitly
+     uses  \emph{British} English and \emph{Swiss} German, use the following
+     code to ensure that Babel receives the correct options.}
+   \begin{example}[code-only]
+       \documentclass{article}
+       \usepackage[
+         languages={en,de},
+         load=babel,
+         map={en=british,de=nswissgerman}
+       ]
+       \begin{document}
+        \title{\lende{Hallo}{Grüezi}}
+    \end{example}
+    \keybool{unified shorthands}\Default{true}\ldeen{Definiert
+      sprachenübergreifende Shorthands zur Unterstützung von \pkg{csquotes}.}{Defines
+      cross-language shorthands to support \pkg{csquotes}}
+\end{options}
+   
+\section{\ldeen{Nutzermakros}{User Commands}}
+\label{sec:usermacros}
+\subsection{\ldeen{Automatisch Sprachmakros}{Automatic Language Commands}}
+\label{sec:automatic}
+\ldeen{Wenn Sie nicht die Option \keyis-{auto}{false} gesetzt haben, wird ein
+  Multisprachmakro angelegt. Dessen Name wird durch die Liste der Auswahlsprachen
+  festgelegt. Je nachdem, ob Sie zwei oder mehr Auswahlsprachen angegeben haben,
+  ist ist der Name}{If you have not set the option \keyis-{auto}{false}, a multilanguage command will be created.
+  Its names is determined by the list of selection languages.
+  Depending on whether you have specified two or more selection languages,
+  the name is}
+\begin{itemize}[nosep]
+  \item \cs*{\meta{\ldeen{Prefix}{prefix}}\meta{\ldeen{Sprache}{language}$_{1}$}%
+      \meta{\ldeen{Sprache}{language}$_{2}$}\marg{\ldeen{Text}{text}$_{1}$}\marg{\ldeen{Text}{text}$_{2}$}}
+\end{itemize}
+\ldeen{oder}{or}
+\begin{itemize}[nosep]
+  \item \cs*{\meta{\ldeen{Prefix}{prefix}}\meta{\ldeen{Sprache}{language}$_{1}$}%
+      \meta{\ldeen{Sprache}{language}$_{2}$}\meta{\ldeen{Sprache}{language}$_{3}$}%
+      \marg{\ldeen{Text}{text}$_{1}$}\marg{\ldeen{Text}{text}$_{2}$}\marg{\ldeen{Text}{text}$_{3}$}
+    }
+\end{itemize}
+\ldeen{Beispielsweise für für diese Dokumentation das Paket mit folgenden
+  Optionen geladen:}{For example, for this documentation, the package was loaded with the following
+  options:}
+\begin{example}[code-only]
+    \usepackage[
+      languages={de,en},
+      targetlang={job=2}
+    ]{langselect}
+\end{example}
+\ldeen*{
+  Damit steht das Makro \cs*{ldeen\marg{Text$_{1}$}\marg{Text$_{1}$}} zur Verfügung.
+  Wenn jetzt die Zielsprache "`de"' ausgewählt wird (hier über den Jobnamen,
+  aber es gibt auch andere Möglichkeiten, vgl.\ Abschnitt~@1), wird nur
+  \meta{Text$_{1}$} in das PDF-Dokument übernommen und \meta{Text$_{2}$}
+  verworfen.
+  Bei der Zielsprache "`en"' ist es umgekehrt.
+}{This makes the command \cs*{ldeen} available.
+
+  If the target language "`de"' is now selected (here via the job name,
+  but there are also other options, see Section~@1), only
+  \meta{Text$_{1}$} is transferred to the PDF document and \meta{Text$_{2}$}
+  is discarded.
+  With the target language "`de"', it is the other way
+  around.}{\ref{sec:targetlang}}
+\begin{mdframed}[style=cnltxmdframed]
+    \textbf{\ldeen{Achtung}{Attention}!}\par
+
+    \noindent
+    \ldeen{Die automatische Generierung der Sprachmakros kann manchmal zu
+      Problemen führen. Beispielsweise ergibt Abchasisch (Code: "`ab"' ) als Erst- und
+      Griechisch (Code: "`el"') als Zweisprache den automatischen Namen \cs{label}, was zu
+      Fehlermeldungen führt. Nutzen Sie in solchen Fällen die im Abschnitt~\ref{sec:own-names}
+      beschriebenen Möglichkeiten.}{The automatic generation of language commands can sometimes cause
+      problems. For example, Abkhaz (code: "`ab"')  as the first language and
+      Greek (Code: "`el"') as the second language results in the automatic name \cs{label}, which leads to
+      error messages. In such cases, use the features described in section~\ref{sec:own-names}.}
+\end{mdframed}
+\subsection{\ldeen{Sternvariante}{Starred Variant}}
+\label{sec:start-var}
+\ldeen{Ein häufiges Problem bei mehreren Sprachversionen ist die Konsistenz
+  nichtsprachabhängiger Daten, insbesondere wenn diese Daten sich öfter
+  ändern. (Denken Sie \zB an Stundenpläne.)
+  
+  Für solche Fälle stellt \thepkg\ eine Sternvariante der Sprachmakros bereit.
+  In dieser Sternvariante können die Textargumente Platzhalter der Form
+  "`@\meta{n}"' enthalten, wobei \meta{n} einen Wert zwischen $1$ und $9$
+  darstellt.
+  Hinter dem Makro müssen dann weitere Argumente angegeben werden, und zwar so
+  viele, wie es dem höchsten verwendeten \meta{n} entspricht. Die Sternvariante
+  ersetzt die Platzhalter mit den entsprechenden Argumenten.
+
+  Die Sternvariante der Sprachmakros ist "`zerbrechlich"', bitte verwenden Sie
+  sie nicht in einem beweglichen Kontext, z.\,B.\ innerhalb eines
+  \cs{section}-Arguments. 
+}{A common problem with multiple language versions is the consistency of
+  non-language-dependent data, especially if this data changes frequently
+  (think, for example, of timetables).
+  
+  For such cases, \thepkg\ provides a starred variant of the language commands.
+  In this starred variant, the text arguments can contain placeholders of the form
+  "`@\meta{n}"' can be used, where \meta{n} represents a value between $1$ and $9$.
+
+  Additional arguments must then be specified after the command, namely as many
+  as correspond to the highest \meta{n} used. The starred variant
+  replaces the placeholders with the corresponding arguments.
+
+  The star variant of the language macros is "`fragile"', please do not use
+  them in a mobile context, e.g., within an argument of \cs{section}. 
+}
+\begin{example}[compile,pages=1,graphics={trim=3cm 22cm 3cm 4cm,clip}]
+    \documentclass{article}
+    \usepackage[languages={en,fr},
+    targetlang=fr]{langselect}
+    
+    \begin{document}
+    \lenfr*{
+      The formula @1 generally refers to the Pythagorean theorem.
+    }{
+      La formule @1 fait généralement référence au théorème de
+      Pythagore.
+    }{$a^{2}+b^{2}=c^{2}$}
+    
+    \lenfr*{
+      Calculate the length of the third side if one side is @1 units long
+      and the hypotenuse is @2 units long.
+    }{
+      Calculez la longueur du troisième
+      côté si un côté mesure @1 unités et l'hypoténuse @2 unités.
+    }{$4$}{$5$}  
+    \end{document}
+\end{example}
+\subsection{\ldeen{Individuelle Sprachmakros}{Individual Language Commands}}
+\label{sec:own-names}
+\ldeen{Wenn Ihnen die generierten Namen der Sprachmakros nicht gefallen oder
+  diese sogar zu Kollisionen führen, können Sie diese ändern. Am einfachsten ist
+  es, die Paketoption \option{prefix} zu ändern, so dass beispielsweise mit
+  \keyis-{prefix}{mv} das Sprachmakro für die Deutsch/Englisch-Kombination
+  \cs*{mvdeen} heisst.}{If you do not like the generated names of the language
+  commands or if they even lead to collisions, you can change them. The easiest
+  way is to change the package option \option{prefix} so that, for example, with
+  \keyis-{prefix}{mv}, the language command for the German/English combination
+  is called \cs*{mvdeen}.}
+
+\ldeen{Wenn dies nicht ausreichend ist, geben Ihnen die folgenden zwei Makros die
+  vollständige Kontrolle über die Namensbildung.}{If this is not sufficient, the
+  following two commands give you complete control over the naming.}
+\begin{commands}
+    \command{olsMakeBilangualMacro}[\oarg{\ldeen{P}{p}refix}\marg{\ldeen{Sprache}{lang}$_{1}$}\marg{\ldeen{Sprache}{lang}$_{2}$}\oarg{\ldeen{Basisname}{base
+        name}}]\default{}% Missuse to eat additional newline
+    \command{olsMakeTrilangualMacro}[\oarg{\ldeen{P}{p}refix}\marg{\ldeen{Sprache}{lang}$_{1}$}\marg{\ldeen{Sprache}{lang}$_{2}$}\marg{\ldeen{Sprache}{lang}$_{3}$}\oarg{\ldeen{Basisname}{base
+        name}}]
+    \ldeen{Diese Makros legen ein bilinguales bzw.\ trilinguales Sprachmakro für
+    die angegbenen Sprachen an. Wenn \meta{Basisname} angegeben wird, ist der
+    Name des Sprachmakros \cs*{\meta{Prefix}\meta{Basisname}}. Wenn das
+    \meta{Prefix}-Argument benutzt wird, bestimmt dieses den Prefix, sonst
+    gelten die Paketoptionen.}{These commands create a bilingual or trilingual language command for
+    the specified languages. If \meta{base name} is specified, the
+    name of the language command is \cs*{\meta{prefix}\meta{base name}}. If the
+    \meta{prefix} argument is used, it determines the prefix; otherwise,
+    the package options apply.}
+\end{commands}
+\section{\ldeen{Interaktion mit anderen Paketen}{Interaction with  Other Packages}}
+\label{sec:other-pkg}
+\subsection{Babel/Polyglossia}
+\label{sec:babel}
+\ldeen{Das Paket \thepkg\ ist zunächst einmal unabhängig von Sprachpaketen wie
+  Babel oder Polyglossia. Es kann ohne oder neben diesen Paketen eingesetzt werden.
+  Wenn man sich jedoch die Mühe eines mehrsprachigen Dokuments macht, will man
+  in der Regel auch, dass für die jeweilige Sprache die richtigen
+  Trennungsregeln, Fonteinstellungen, Datumsformate etc.\ benutzt werden.%
+}{%
+  The \thepkg\ package is initially independent of language packages such as Babel
+  or Polyglossia. It can be used without or together with these
+  packages. However, if you take the trouble to create a multilingual document,
+  you will usually also want the correct hyphenation rules, font settings, date
+  formats, etc.\ to be used for the respective language.}\footnote{\ldeen{Im
+    Folgenden werde ich mich ausschließlich auf Babel beziehen. Das Gesagte gilt
+    jedoch entsprechend auch für Polyglossia.}{In the following, I will refer
+    exclusively to Babel. However, what has been said also applies accordingly
+    to Polyglossia.}} 
+
+\ldeen{Bitte beachten Sie, dass, solange Sie nicht \emph{innerhalb} eines Textes
+  eine andere Sprache (vielleicht ja die Sprache der anderen Sprachversion)
+  nutzen, ihr Dokument aus der Sicht von Babel ein
+  \emph{einsprachiges} Dokument ist. Es besteht die Gefahr, dass Sie Babel auf die
+  gewohnte Weise mit den verschiedenen Sprachen ihrer Sprachversion aufrufen,
+  aber zur Bestimmung der Zielsprache nicht die Option
+  \keyis*-{targetlang}{babel} nutzen. Als Ergebnis stimmt u.U. die Zielsprache
+  nicht mit Babels aktiver Sprache überein, und können Sie inkorrekte
+  Trennungen und ähnliche Fehler erhalten.
+}{%
+  Please note that as long as you do not use a different language \emph{within} a text
+  (perhaps the language of the other language version), your document is, from
+  the perspective of Babel, a \emph{monolingual} document. There is a risk
+  that you will invoke Babel in the usual way with the various languages of your
+  language version but, for determining the target language, do not use the
+  option \keyis*-{targetlang}{babel}. As a result, the target language may not
+  match Babel’s active language, and you may end up with incorrect hyphenation
+  and similar errors.  
+}
+
+\ldeen{Um solche Probleme zu vermeiden, bieten \thepkg\ verschiedene
+  Möglichkeiten}{To avoid such problems, \thepkg\ offers some options}:
+\begin{enumerate}
+  \item \ldeen{Wie oben erwähnt kann man die Paketoption
+      \keyis-{targetlang}{babel} nutzen. Dann wird die Zielsprache durch die
+      Hauptsprache von Babel bestimmt. Allerdings muss man dann auf die
+      Möglichkeit verzichten, die Zielsprache "`von außen"' (also mit
+      \cs{olsTargetLanguage} oder über den Jobnamen) zu steuern.}{As mentioned
+      above, you can use the package option \keyis-{targetlang}{babel}.
+      Then the target language is determined by the main language of Babel.
+      However, you then have to forego the option of controlling the target language
+      "`from outside"' (i.e., with \cs{olsTargetLanguage} or via the job
+      name).} 
+  \item \ldeen{Umgekehrt lädt \thepkg\ Babel oder Polyglossia mit Hilfe der
+      Optionen \option{load babel}"/\option{load polyglossia} landen und setzt
+      die Zielsprache als Hauptsprache. Weitere Optionen an die Sprachpakete
+      werden als Optionsargument übergeben.}{In turn, \thepkg\ loads Babel or
+      Polyglossia using the 
+      options \option{load babel}"/\option{load polyglossia} and sets
+      the target language as the main language. Additional options for the
+      language packages are passed as option arguments.}
+  \item \ldeen{Schließlich kann mit dem Hooks \code{langselect/language/before}
+      und \code{langselect/language/before} beliebiger Code
+    vor bzw.\ nach Ausgabe der Argumente des Sprachmakros eingefügt werden, z.\,B.\
+    kann hier \cs{foreignlanguage} genutzt werden.
+    Der \code{before}-Hook hat als Parameter die Zielsprachenvariante.}{Finally, the hooks
+    \code{langselect/language/before} and \code{langselect/language/after} can
+    be used to insert any code  
+    before or after the arguments of the language macro are output, e.g.,
+    \cs{foreignlanguage} may be used here.
+    The \code{before} hook has the (mapped) target language as a parameter.}
+\end{enumerate}
+\subsection{Csquotes}
+\label{sec:csquote}
+\ldeen{Unterschiedliche Sprachen haben unterschiedliche Konventionen zur Setzung
+  von Satzzeichen. Besonders stört das bei Anführungszeichen, da diese der
+  Zielsprache folgen sollen, aber durchaus auch außerhalb der Sprachmakros oder
+  in Argumenten der Sternvariante stehen können.
+  Das Paket \needpackage{csquotes} bietet dafür eine Lösung, indem es \cs{enquote}
+  und andere Makros anbietet, die der Zitatkonvention der aktuellen Sprache folgen.
+
+  Zur Erhöhung der Bequemlichkeit unterstützt \thepkg\ die Nutzung korrekter
+  Anführungszeichen mit sprachunabhängigen Shorthands:
+  Wenn die Option \option{unified shorthands} wahr ist, wird \pkg{csquotes}
+  geladen und die Shorthands \code{"{}`!} und \code{"{}'} auf \cs{openautoquote}
+  bzw.\ \cs{closeautoquote} gesetzt.
+
+  Damit werden diese Shorthands in Sprachen wie Deutsch, wo sie bereits definiert
+  sind, überschrieben.
+}{Different languages have different conventions for punctuation.
+  This is particularly problematic with quotation marks, as these should follow the
+  target language, but may also appear outside language macros or
+  in arguments of the asterisk variant.
+  The \needpackage{csquotes} package offers a solution for this by providing \cs{enquote}
+  and other macros that follow the quotation convention of the current language.
+
+  For added convenience, \thepkg\ supports the use of correct
+  quotation marks with language-independent shorthands: If the option
+  \option{unified shorthands} is true, \pkg{csquotes} is loaded and the
+  shorthands \code{"{}`} and \code{"{}'} are set to \cs{openautoquote} and
+  \cs{closeautoquote}, respectively.}  
+\section{FAQ}
+\label{sec:faq}
+\begin{itemize}
+  \item \textbf{\ldeen{Ist \thepkg\ noch experimentell?}{Is \thepkg\ still
+        experimental?}}
+    
+    \ldeen{Auf jeden Fall. Während ist beim Autoren zwar im täglichen Einsatz
+      ist, ist nicht auszuschließen, dass es unerwünschte Wechselwirkungen zu
+      anderen Paketen gibt. Die Versionsnummer zeigt dies
+      an.}{Absolutely. Although the author uses it on a daily basis, 
+      it cannot be ruled out that there may be undesirable interactions with
+      other packages. The version number indicates this.}
+  \item \textbf{\ldeen{Wofür steht das "`o"' im \cs*{ols}-Prefix?}{What does the
+        "`o"' in the \cs*{ols} prefix stand for}}?
+    
+    \ldeen{Das Paket gehört zu Bundle \pkg{osglecture}, von dort ist das
+      "`o"' geerbt.}{The package belongs to the \pkg{osglecture} bundle,
+      from which the "`o"' is inherited.}
+  \item \textbf{\ldeen{Gibt es Anwendungsbeispiele, die über ein Toy-Hello-World
+        hinausgehen?}{Are there any application examples that go beyond a toy
+        Hello World?}}
+    
+    \ldeen{Ja, einige. Gucken Sie doch mal zum Beispiel in den Quelltext dieser
+      Dokumentation.}{Yes, a few. Take a look at the source code of this
+      documentation, for example.} 
+    
+  \item \textbf{\ldeen{Ich habe ein @1 in der Ausgabe, wo doch eine
+        Argumentersetzung stattfinden sollte.}{I have an @1 in the output where an
+        argument substitution should take place.}}
+
+    \ldeen{Das hat in der Regel eine der beiden folgenden Ursache:
+      \begin{enumerate}[nosep]
+        \item Sie haben den Stern im Sprachmakro vergessen.
+        \item Sie haben komische Dinge mit Catcodes angestellt. Meist
+          wurde vergessen, ein \cs{makeatletter} innerhalb der
+          \env*{document}-Umgebung durch ein \cs{makeatother} wieder aufzuheben.
+      \end{enumerate}
+    }{This usually has one of the following two causes:
+      \begin{enumerate}[nosep]
+        \item You forgot the asterisk in the language macro.
+        \item You did strange things with catcodes.  In most cases,
+          people forgot to cancel a \cs{makeatletter} within the
+          \env*{document} environment with a \cs{makeatother}.
+      \end{enumerate}}
+    
+  \item \textbf{\ldeen{Kann ich in der Sternversion einen @$n$-Parameter in
+        einer Sprachversion
+        auslassen?}{Can I omit an @$n$ parameter in the starred version for one language?}}
+
+    \ldeen{Nein. Außerdem wäre dann das Argument ja auch offensichtlich nicht
+      mehr gemeinsam.}{No. Besides, then the argument would obviously no longer be
+      shared.}
+    
+  \item \textbf{\ldeen{Kann ich @$n$-Parameter in gemischter Reihenfolge oder mehr als
+        einmal verwenden?}{Can I use @$n$ parameters in mixed order or more than
+        once?}}
+
+    \ldeen{Ja}{Yes}.
+
+  \item \textbf{\ldeen{Ich möchte @ in einer Sternvariante des Sprachmacros
+        nicht als Parameter verwenden.}{I want to use @ not as a prameter in a
+        star variant of the language macro.}} 
+
+    \ldeen{Dann machen Sie es.}{Just do it.}
+
+  \item  \textbf{\ldeen{Aber ich brauche @{}42.}{But I need @{42}.}}
+
+    \ldeen*{Nutzen Sie @1}{Use @1}{\code{@\{\}42}}
+
+   
+  \item \textbf{\ldeen{Ich nutze Russisch, aber der Font ist nicht richtig.}{I
+        use Russian, but the font is incorrect.}}
+
+    \ldeen*{Das ist keine Problem von \thepkg\ (das kümmert sich gar nicht um den
+      Font), sondern wahrscheinlich von Babel, \pkg{fontenc}, \pkg{fontspec},
+      etc. Aber vielleicht können die Hooks für Sie nützlich sein, sihe Abschnitt~@1}{This is not a problem with \thepkg\ (which does not deal with the 
+      font at all), but probably with Babel, \pkg{fontenc}, \pkg{fontspec},
+      etc. But maybe you find the hooks useful, cf.\ section~@1}{\ref{sec:babel}}.
+
+    
+  \item \textbf{\ldeen{Meine Frage erscheint hier nicht.}{My question does not
+        appear here.}}
+
+    \ldeen*{Sie können Sie unter @1 stellen.}{You may ask at @1.}
+      {\url{https://github.com/werner-matthias/osglecture/issues}}
+
+    
+\end{itemize}
+\section{Implementation}
+\AutoDocInput{langselect.dtx}{pkg}
+
+\printindex
+
+\end{document}
+%</driver>
+%<*pkg>
+\NeedsTeXFormat{LaTeX2e}[2022/06/01]
+\def\packagename{langselect}
+\ProvidesExplPackage{langselect}{2025/09/04}{v0.2.1}{support for different
+  languages versions from a common source}
+% \ldeen{\cs{olsIsoTags} enthält alle gültigen ISO
+% 639-1-Codestags.}{\cs{olsIsoTags} contains all valid ISO 639-1 code tags.}
+\seq_const_from_clist:cn{olsIsoTags}{aa,ab,ae,af,ak,am,an,ar,as,av,ay,az,ba,be,
+  bg,bh,bi,bm,bn,bo,br,bs,ca,ce,ch,co,cr,cs,cu,cv,cy,da,de,dv,dz,ee,el,en,eo,es,
+  et,eu,fa,ff,fi,fj,fo,fr,fy,ga,gd,gl,gn,gu,gv,ha,he,hi,ho,hr,ht,hu,hy,hz,ia,id,
+  ie,ig,ii,ik,io,is,it,iu,ja,jv,ka,kg,ki,kj,kk,kl,km,kn,ko,kr,ks,ku,kv,kw,ky,la,
+  lb,lg,li,ln,lo,lt,lu,lv,mg,mh,mi,mk,ml,mn,mr,ms,mt,my,na,nb,nd,ne,ng,nl,nn,no,
+  nr,nv,ny,oc,oj,om,or,os,pa,pi,pl,ps,pt,qu,rm,rn,ro,ru,rw,sa,sc,sd,se,sg,si,sk,
+  sl,sm,sn,so,sq,sr,ss,st,su,sv,sw,ta,te,tg,th,ti,tk,tl,tn,to,tr,ts,tt,tw,ty,ug,
+  uk,ur,uz,ve,vi,vo,wa,wo,xh,yi,yo,za,zh,zu} 
+
+\newcommand\IfTagIsValidF[2]{%
+  \seq_if_in:ceF{olsIsoTags}{#1}{#2}
+}
+\RequirePackage{varsfromjobname}[2025/08/03]
+% \ldeen{Das Ergebnisse von \cs{varsfromjobname}\ und \cs*{str\_range:Nnn} haben
+% Catcode 12, aber ISO-Tags und Optionen haben Catcode 11. Wir vereinheitlichen
+% durch einen Wrapper auf Catcode 11.}{The results of \cs{varsfromjobname}\
+% and \cs*{str\_range:Nnn} have catcode 12, but ISO tags and options have catcode
+% 11. We standardize using a wrapper on catcode 11.} 
+\newcommand\olsChangeCatEleven[1]{
+  \def\tmpa{#1} 
+  \edef\tmpb{
+    \noexpand\scantokens{
+      \noexpand\edef\noexpand\olsCatElven{\tmpa}
+    }
+  }
+  \tmpb
+}
+% \ldeen{Bei Bedarf bilden wir Spachcode auf Sprachvarianten ab. Bei
+% Interaktionen mit externen Code wird dann die Sprachvariante weitergegeben.}{If
+% necessary, we map language codes to language variants. When interacting with 
+% external code, the language variant is then passed on.} 
+\cs_new:Npn \ols_use_map:n #1 {
+  \cs_if_exist_use:cF { olslangmap / #1 }{ #1 }
+}
+% \ldeen{Wir definieren einige Optionen. Alle außer \option{languages} sind
+% optional. Einige Ergebnisse werden wir in Variablen spreichern, die wir zuerst
+% anlegen.}{We define some options. All except \option{languages} are
+% optional. We will store some results in variables that we first create.}
+\bool_new:N\ols_load_babel
+\bool_new:N\ols_load_polyglossia
+\DeclareKeys{
+  languages.clist_gset:N = \ols_langs,
+  languages.usage=load,
+  targetlang.code = {
+% \ldeen*{Die Option @1 wird nur ausgewertet, wenn die Zielsprache nicht bereits
+% durch Definition von @2 gesetzt wurde.}{The option @1 will be only evaluated
+% in case, the target language isn't already set by definiton of
+% @2}{\option{targetlang}}{\cs{olsTargetLanguage}}.     
+      \cs_if_exist:NF\olsTargetLanguage{
+% \ldeen{Wird ein Element des Jobnames angegeben}{Is an element of the jobname given}?  
+      \bool_if:nT{                     
+        \str_if_eq_p:ee{\str_range:nnn{#1}{1}{3}}{job}
+      }{%
+        \olsChangeCatEleven{\getfromjobname{\str_range:Nnn{#1}{-1}{-1}}}
+        \xdef\olsTargetLanguage{\olsCatElven}
+      }
+% \ldeen*{Soll die Zielsprache von @1 oder @2 abgeleitet werden}{Should the
+% target language be derived from @1 or @2}{\pkg{babel}}{\pkg{polyglossia}}?      
+      \bool_if:nT{
+        \str_if_eq_p:nn{#1}{babel} || \str_if_eq_p:nn{#1}{polyglossia}
+      }{
+        \str_if_empty:eF{\BCPdata{main.language}}{
+          \edef\olsTargetLanguage{\BCPdata{main.language}}
+        }
+      }
+% \ldeen{Soll die Sprache aus dem Metadaten genutzt werden}{Should the language
+% of the meta data be used}?      
+      \str_if_eq:nnTF{#1}{meta}{
+        \IfDocumentMetadataTF{
+          \edef\tmpa{\GetDocumentProperty{document/lang}}
+          \edef\tmpb{\str_range:Nnn\tmpa{1}{2}}
+          \olsChangeCatEleven{\tmpb}
+          \edef\olsTargetLanguage{\olsCatElven}
+        }{
+          \PackageWarningNoLine{\packagename}{No~meta~data~provided}
+        }
+      }
+    }
+% \ldeen{Wenn bisher noch keine Sprache zugewiesen wurde, wird das Argument als
+% Sprache angenommen. Es wird später überprüft, ob es gültig ist}{If no language
+% is assigned by now, the argument is assumed to be the language. We check
+% later, whether it is valid}.    
+    \cs_if_exist:NF \olsTargetLanguage {
+      \edef\olsTargetLanguage{#1}
+    }
+  },
+% \ldeen{Prefix für die Nutzer-Sprachbefehle}{Prefix of the user language commands}.
+  targetlang.usage=load,
+  prefix.store=\ols_sprefix,
+  prefix.initial:n=l,
+  prefix.usage=load,
+% \ldeen{Automatische Erzeugung der Sprachbefehle}{Automatic generation of the
+% language commands}?  
+  auto.bool_set:N=\ols_generate,
+  auto.usage=load,
+  auto.initial:n=true,
+% \ldeen{Automatische Entfernung von Randleerzeichen}{Automatic removal of
+% heading and trailing spaces}?  
+  trim.bool_set:N=\ols_trim,
+  trim.usage=load,
+  trim.initial:n=true,
+% \ldeen{Abbildung auf Sprachvarianten}{Mapping to language variants}.
+  map.code:n = {
+    \prop_new:N \ols_lang_pl
+    \prop_clear:N \ols_lang_pl
+    \prop_set_from_keyval:Nn \ols_lang_pl {#1}
+% \ldeen{Da Property-Listen nicht expandierbar sind, setzen wir die Einträge auf
+% gewöhnlich Makros um.}{Since property lists cannot be expanded, we convert the
+% entries to ordinary macros.} 
+    \prop_map_inline:Nn \ols_lang_pl
+      { \cs_gset:cpn { olslangmap / \tl_to_str:n {##1} } {##2} }
+    },
+% \ldeen*{Laden von @1 oder @2 mit Optionen}{Load @1 or
+% @2 with options}{\pkg{babel}}{\pkg{polyglossia}}.
+  load~babel .code:n = {
+    \bool_set_true:N \ols_load_babel
+    \PassOptionsToPackage{#1}{babel}
+  },
+  load~polyglossia .code:n = {
+    \bool_set_true:N \ols_load_polyglossia
+    \PassOptionsToPackage{#1}{polyglossia}
+  },
+  load.usage = load,
+  unified~shorthands.bool_set:N=\ols_shorthands,
+  unified~shorthands.initial:n=true,
+  unified~shorthands.usage=load
+}%
+\ProcessKeyOptions\relax
+% \ldeen{Wenn über \cs{olsTargetLanguage} oder die \option{targetlang} keine
+% Zielsprache zugewiesen wurde, untersuchen wir noch einmal, ob über
+% Sprachpakete oder \cs{DocumentMetadata} eine Sprache identifiziert werden kann.
+% }{If no target language has been assigned via \cs{olsTargetLanguage} or \option{targetlang},
+% we check again whether a language can be identified via
+% language packages or \cs{DocumentMetadata}.}
+\cs_if_exist:NF \olsTargetLanguage {
+  \str_if_eq:eeF{\BCPdata{main.language}}{}{\edef\olsTargetLanguage{\BCPdata{main.language}}}
+}
+\cs_if_exist:NF \olsTargetLanguage {
+  \IfDocumentMetadataT{
+    \edef\tmpa{\GetDocumentProperty{document/lang}}
+    \edef\tmpb{\str_range:Nnn\tmpa{1}{2}}
+    \olsChangeCatEleven{\tmpb}
+    \edef\olsTargetLanguage{\olsCatElven}
+  }
+}
+\cs_if_exist:NF \olsTargetLanguage {
+  \PackageWarningNoLine{\packagename}{Can't~identify~any~target~language.
+    \MessageBreak Falling~back~to~'en'} 
+  \def\olsTargetLanguage{en}
+}
+% \ldeen{
+% Wir führen verschiedene Checks durch. Als erstes prüfen wir, ob eine valide
+% Zielsprache ermittelt werden konnte.
+% }{
+% We are doing some checks. First, we check whether a valid
+% target language could be determined.
+% }
+\IfTagIsValidF{\olsTargetLanguage}{
+  \PackageWarningNoLine{\packagename}{Do~not~recognize~language~'\olsTargetLanguage'.
+    \MessageBreak Take~'en'~as~replacement}
+  \def\olsTargetLanguage{en}
+}
+% \ldeen{Sind mindestes zwei Auswahlsprachen angegeben?}{Are at least two
+% selectable languages specified?}
+\int_compare:nNnT{\clist_count:N{\ols_langs}} < {2}{
+  \PackageError{\packagename}{No~sufficient~number~of~selectable
+    \MessageBreak~languages~provided}{
+    You~have~to~provide~a~list~of~two~or~three\MessageBreak
+    languages~via~'language'~option.}
+  \aftergroup\endinput      
+}
+% \ldeen{%
+% Im Moment kann \thepkg\ nicht mehr als drei Auswahlsprachen verarbeiten. Wir
+% warnen daher, wenn mehr als drei Sprachen angegeben werden.}{%
+% Currently, \thepkg\ can't process more than three languages. Thus, we issue a
+% warning if the list of selectable languages contrains more than three languages.
+%}
+\int_compare:nNnT{\clist_count:N\ols_langs} > {3}{
+  \PackageWarningNoLine{\packagename}{Too~many~selectable~languages~provided.
+    \MessageBreak I~will~ignore~the~superflous~languages}
+}
+% \ldeen{Als nächstes überprüfen wir, ob alle Auswahlsprachen gültige ISO
+% 639~1 Codes sind.}{Next, we test the validity of the selectable
+% languages. They should form ISO~693-1 codes.} 
+\clist_map_inline:Nn\ols_langs {
+  \IfTagIsValidF{#1}{
+    \PackageError{\packagename}{Couldn't~resolve~selectable~language~'#1'}{
+      Use~valid~ISO-639-1~code~in~option~'languages'.}
+    \aftergroup\endinput
+  }
+}
+% \ldeen{Die Zielsprache sollte in der Liste von Auswahlsprachen enthalten
+% sein.}{The list of selectable languages should include the target language.}
+\clist_if_in:NVF\ols_langs{\olsTargetLanguage}{
+  \PackageError{\packagename}{Target~language~'\olsTargetLanguage'~is~not\MessageBreak
+    in~the~list~of~selectable~languages}{
+    Check~option~'language'~and~'targetlang'.}
+}
+% \ldeen{Babel und Polyglossia können nicht beiden geladen werden.}{Babel and
+% Polyglossia cannot both be loaded.} 
+\bool_if:nT{
+  \ols_load_babel && \ols_load_polyglossia
+}{
+  \bool_set_false:N \ols_load_babel
+  \bool_set_false:N \ols_load_polyglossia
+  \PackageError{\packagename}{The~options~'load~babel'~and~'load~polyglossia'
+    \MessageBreak are~mutual~exclusive,~you~can't~use~both}{Use~one~load~option,~only.}
+}
+\bool_if:nT{
+  ( \cs_if_exist_p:c{ver@babel.sty} || \cs_if_exist_p:c{ver@polyglossia.sty} )
+  &&
+  ( \ols_load_babel && \ols_load_polyglossia )
+}{
+  \bool_set_false:N \ols_load_babel
+  \bool_set_false:N \ols_load_polyglossia
+  \PackageWarningNoLine{\packagename}{Can't~load~babel/polyglossia~for
+    ~you,since\MessageBreak
+    a~language~package~is~already~loaded.\MessageBreak
+    I'll~ignore~that~option}
+}
+% \ldeen*{@1 ist die Bezeichnung der Zielsprache, wie sie ggf.\ an
+% externen Code weitergegeben wird, d.,h. \cs{DocumentMetadata}, Sprachpakete
+% und Hooks.}{@1 is the name of the target language as it is
+% passed on to external code, if applicable, i.e. \cs{DocumentMetadata},
+% language packs, and hooks.}{\cs{ols\_mapped\_target\_lang}}
+\edef\ols_mapped_target_lang{\ols_use_map:n{\olsTargetLanguage}}
+% \ldeen{Jetzt sollte die Zielsprache feststehen. Wir geben die Informationen
+% ins Log.}{The target language should now be determined. We write the
+% information into the log.}
+\PackageNoteNoLine{\packagename}{Target~language~is~'\olsTargetLanguage'~(\ols_mapped_target_lang)}
+% \ldeen{Wir korrigieren noch ggf.\ die über \cs{DocumentMetadata} gesetzen
+% Metadaten auf die der Zielsprache, so dass beispielsweise Babel
+% keine falsche Hauptsprache ableitet.
+% }{%
+% If needed, we correct the language metadata set by \cs{DocumentMetadata}.
+% Now, Babel (for example) does not derive a wrong main language.
+% }
+\IfDocumentMetadataT{
+  \edef\olsDocLang{\exp_args:Ne\str_range:nnn{\GetDocumentProperty{document/lang}}{1}{2}}
+  \bool_if:nF{
+    \str_if_eq_p:ee{\olsDocLang}{\olsTargetLanguage} 
+  }{
+    \PackageWarningNoLine{\packagename}{Target~language~'\olsTargetLanguage'~
+      doesn't~comply~with\MessageBreak \c_backslash_str
+      DocumentMetadata~'\GetDocumentProperty{document/lang}'.\MessageBreak
+      I'll~try~to~overwrite~the~meta~data}
+    \DocumentMetadata{lang=\ols_mapped_target_lang}
+  }
+}
+% \ldeen{Da der Name des Sprachmakros nicht bekannt ist, sind Patchen oder
+% generische Hooks komplizierter. Wir stellen deshalb eigene Hooks zur
+% Verfügung.}{Since the name of the language macro is unknown, patching or
+% generic hooks are more complicated. We therefore provide our own hooks.} 
+\NewHookWithArguments{langselect/language/before}{1}
+\NewReversedHook{langselect/language/after}
+\NewHookWithArguments{langselect/argument}{2}
+% \ldeen{Ein Boolean zur Markierung, ob mehr als zwei Auswahlsprachen angegeben
+% wurden.}{A Boolean to indicate whether more than two selectable languages have
+% been specified.} 
+\bool_new:c{ols_trilang}
+\int_compare:nNnTF{\clist_count:N{\ols_langs}} > {2}{
+  \bool_set_true:c{ols_trilang}
+}{
+  \bool_set_false:c{ols_trilang}
+}
+\def\olsFrstLanguage{\clist_item:Nn \ols_langs{1}}
+\def\olsScndLanguage{\clist_item:Nn \ols_langs{2}}
+\bool_if:cT{ols_trilang}{
+  \def\olsThrdLanguage{\clist_item:Nn \ols_langs{3}}
+}
+\bool_if:NTF\ols_trim{
+  \let\ols_trim:n=\tl_trim_spaces:n
+}{
+  \let\ols_trim:n=\relax
+}
+% \ldeen{Die Makros \cs{olsMakeBilangualMacro} bzw.\ \cs{olsMakeTrilangualMacro}
+% dienen zur Generierung der eigentlichen Sprachmakros.}{The commands
+% \cs{olsMakeBilangualMacro} and \cs{olsMakeTrilangualMacro}, resp., 
+% are used to generate the actual language commands.}
+ % #1: prefix, #2,#3: selectable languages, #4: base name
+\NewDocumentCommand{\olsMakeBilangualMacro}{O{\ols_sprefix} m m o}{
+  \str_if_eq:eeT{\olsTargetLanguage}{#2} {
+    \IfValueTF{#4}{
+      \ExpandArgs{c}\NewExpandableDocumentCommand{#1#4}{s +m +m}{
+        \UseHook{langselect/language/before}{\ols_mapped_target_lang}
+        \IfBooleanTF{##1}{
+          \ols_trim:n{\olsProcessArgs{##2}}
+        }{
+          \ols_trim:n{##2}
+          \UseHook{langselect/language/after}
+        }
+        
+      }
+    }{
+      \ExpandArgs{c}\NewExpandableDocumentCommand{#1#2#3}{s +m +m}{
+        \UseHook{langselect/language/before}{\ols_mapped_target_lang}
+        \IfBooleanTF{##1}{
+          \ols_trim:n{\olsProcessArgs{##2}}
+        }{
+          \ols_trim:n{##2}
+          \UseHook{langselect/language/after}
+        }
+      }
+    }
+  }
+  \str_if_eq:eeT{\olsTargetLanguage}{#3}{
+    \IfValueTF{#4}{
+      \ExpandArgs{c}\NewExpandableDocumentCommand{#1#4}{s +m +m}{
+        \UseHook{langselect/language/before}{\ols_mapped_target_lang}
+        \IfBooleanTF{##1}{
+          \ols_trim:n{\olsProcessArgs{##3}}
+        }{
+          \ols_trim:n{##3}
+          \UseHook{langselect/language/after}
+        }
+      }
+    }{
+      \ExpandArgs{c}\NewExpandableDocumentCommand{#1#2#3}{s +m +m}{
+        \UseHook{langselect/language/before}{\ols_mapped_target_lang}
+        \IfBooleanTF{##1}{
+          \ols_trim:n{\olsProcessArgs{##3}}
+        }{
+          \ols_trim:n{##3}\UseHook{langselect/language/after}
+        }
+      }
+    }
+  }
+}
+% \ldeen{Nun das Gleiche nochmal für \emph{drei} Sprachen.}{Now do the same
+% thing again for \emph{three} languages.} 
+ % #1: prefix, #2...#4: selectable languages, #5: base name
+\NewDocumentCommand{\olsMakeTrilangualMacro}{O{\ols_sprefix} m m m o}{
+  \str_if_eq:eeT{\olsTargetLanguage}{#2} {
+    \IfValueTF{#4}{
+      \ExpandArgs{c}\NewExpandableDocumentCommand{#1#5}{s +m +m +m}{
+        \UseHook{langselect/language/before}{\ols_mapped_target_lang}
+        \IfBooleanTF{##1}{
+          \ols_trim:{\olsProcessArgs{##2}}
+        }{
+          \ols_trim:{##2}
+          \UseHook{langselect/language/after}
+        }
+      }
+    }{
+      \ExpandArgs{c}\NewExpandableDocumentCommand{#1#2#3#4}{s +m +m +m}{
+        \UseHook{langselect/language/before}{\ols_mapped_target_lang}
+        \IfBooleanTF{##1}{
+          \ols_trim:{\olsProcessArgs{##2}}
+        }{
+          \ols_trim:{##2}
+          \UseHook{langselect/language/after}
+        }
+      }
+    }
+  }
+  \str_if_eq:eeT{\olsTargetLanguage}{#3} {
+    \IfValueTF{#4}{
+      \ExpandArgs{c}\NewExpandableDocumentCommand{#1#5}{s +m +m +m}{
+        \UseHook{langselect/language/before}{\ols_mapped_target_lang}
+        \IfBooleanTF{##1}{
+          \ols_trim:{\olsProcessArgs{##2}}
+        }{
+          \ols_trim:{##3}
+          \UseHook{langselect/language/after}
+        }
+      }
+    }{
+      \ExpandArgs{c}\NewExpandableDocumentCommand{#1#2#3#4}{s +m +m +m}{
+        \UseHook{langselect/language}{\ols_mapped_target_lang}
+        \IfBooleanTF{##1}{
+          \ols_trim:{\olsProcessArgs{##2}}
+        }{
+          \ols_trim:{##3}
+          \UseHook{langselect/language/after}
+        }
+      }
+    }
+  }
+  \str_if_eq:eeT{\olsTargetLanguage}{#4} {
+    \IfValueTF{#4}{
+      \ExpandArgs{c}\NewExpandableDocumentCommand{#1#5}{s +m +m +m}{
+        \UseHook{langselect/language}{\ols_mapped_target_lang}
+        \IfBooleanTF{##1}{
+          \ols_trim:{\olsProcessArgs{##2}}
+        }{
+          \ols_trim:{##4}
+          \UseHook{langselect/language/after}
+        }
+      }
+    }{
+      \ExpandArgs{c}\NewExpandableDocumentCommand{#1#2#3#4}{s +m +m +m}{
+        \UseHook{langselect/language}{\ols_mapped_target_lang}
+        \IfBooleanTF{##1}{
+          \ols_trim:{\olsProcessArgs{##2}}
+        }{
+          \ols_trim:{##4}
+          \UseHook{langselect/language/after}
+        }
+      }
+    }
+  }
+}
+% \ldeen{Falls die automatische Erzeugung nicht deaktivert ist, werden die
+% konkreten Sprachmakros angelegt. Der Name sind
+% \cs*{\meta{Prefix}\meta{Sprache$_{1}$}\meta{Sprache$_{2}$}}
+% bzw. \cs*{\meta{Prefix}\meta{Sprache$_{1}$}\meta{Sprache$_{2}$}\meta{Sprache$_{2}$}}.}{%
+% If automatic generation is not disabled, the
+% specific language commands are created. The names are
+% \cs*{\meta{prefix}\meta{language$_{1}$}\meta{language$_{2}$}}
+% or \cs*{\meta{prefix}\meta{language$_{1}$}\meta{language$_{2}$}\meta{language$_{3}$}}.
+% }
+\bool_if:cTF{ols_generate}{
+  \bool_if:cTF{ols_trilang}{
+    \olsMakeTrilangualMacro{\olsFrstLanguage}{\olsScndLanguage}{\olsThrdLanguage}
+  }{
+    \olsMakeBilangualMacro{\olsFrstLanguage}{\olsScndLanguage}
+  }
+}{
+  \PackageInfoNoLine{\packagename}{No~language~macros~generated.\MessageBreak
+  Use~\string\olsMakeBilangualMacro~or~\string\olsMakeTrilangualMacro~to~generate.}
+}
+% \ldeen{Für die Sternvarianten der Sprachmakros legen wir uns ein Makro an,
+% dass die folgenden Argumente verarbeitet.}{For the starred variants of the
+% language commands, we create a command that processes the subsequent
+% arguments.}
+
+\seq_new:N \ols_args_seq 
+\int_new:N \ols_num_of_args
+\tl_new:N \ols_format_str_tl
+
+% \ldeen{Da das Platzhalterzeichen @ im folgendem Code als Literal auftritt,
+% muss es den gleichen Catcode wie im Dokument haben.}{Since the placeholder
+% character @ appears as a literal in the following code, 
+% it must have the same catcode as in the document.}
+\makeatother
+\NewDocumentCommand \olsProcessArgs { +m } {
+  \tl_gset:Nn \ols_format_str_tl{#1\UseHook{langselect/language/after}}
+  \int_zero:N \ols_num_of_args
+% \ldeen*{Suche den höchsten Wert @1, für den @@1 im Formatstring vorkommt.}{Find
+% the highest value @1, where @@1 is contained in the format string.}{$n$}  
+  \int_step_inline:nnnn { 9 } { -1 } { 1 }
+  {
+    \regex_if_match:nnT {@##1}{ #1 }
+    {
+      \int_set:Nn \ols_num_of_args { ##1 } \prg_break:
+    }
+  }
+% \ldeen{Wenn kein Platzhalterzeichen gefunden wurde, gib den Text in
+% Originalform aus. Ansonsten wird das Ersetzungmakro gerufen.}{If no
+% placeholder character is found, output the text in 
+% original form. Otherwise, the replacement command is called.}  
+  \int_compare:nNnTF {\ols_num_of_args} = { 0 }
+  { #1 }{
+    \seq_clear:N \ols_args_seq
+    \ols_collect_replace:n \ols_num_of_args
+  }
+}
+% \ldeen*{@1 erhält \emph{ein} Argument übergeben, nämlich die Anzahl der
+% verbleibenden Ersetzungstexte. Es konsumiert aber \emph{zwei}
+% Argumente. Dieses zweite holt es sich aus dem nach dem Makro liegenden
+% Tokenstrom, wo es den jeweilig nächsten Ersetzungstext findet.
+% Dieser wird in einer Tokensequent gespeichert und @1 erneut aufgerufen.}{@1
+% receives \emph{one} argument, namely the number of remaining replacement
+% texts. However, it consumes \emph{two} arguments. It obtains the second one
+% from the token stream following the command, where it finds the next replacement
+% text. This is stored in a token sequence and @1 is called again.}{\cs{ols\_collect\_replace}}
+\cs_new_protected:Npn \ols_collect_replace:n #1 #2{
+  \IfHookEmptyTF{langselect/argument}{
+    \seq_put_right:Nn \ols_args_seq { #2 }
+  }{
+    \seq_put_right:Nn \ols_args_seq {
+      \UseHook{langselect/argument}{\ols_mapped_target_lang}{#2}
+    }
+  }
+  \int_compare:nNnTF { #1 } = { 1 }
+  {
+% \ldeen{Wenn alle Ersetzungstexte eingelesen wurden, werden sie nacheinander
+% auf die Platzhalterausdrücke angewendet.}{Once all replacement texts have been
+% read in, they are applied one after the other 
+% to the placeholder expressions.}
+    \int_step_inline:nn { \ols_num_of_args }
+    {
+      \tl_analysis_log:n{@}
+      \tl_analysis_log:n{\ols_format_str_tl}
+      \tl_replace_all:Nnn \ols_format_str_tl
+      { @##1 }
+      { \seq_item:Nn \ols_args_seq { ##1 } }
+    }
+    \ols_format_str_tl
+  }{
+    \ols_collect_replace:n { \int_eval:n { #1 - 1 } }
+  }
+}
+\makeatletter
+% \ldeen{Wenn gewünscht, wird Babel oder Polyglossia geladen und die Zielsprache
+% als Hauptsprache gesetzt.}{If desired, Babel or Polyglossia is loaded and the
+% target language is set as the main language.} 
+\bool_if:NT \ols_load_babel{
+  \RequirePackage[main=\ols_mapped_target_lang, provide*=*]{babel}
+  \bool_if:nT{
+    \ols_shorthands && !\str_if_eq_p:nn{olsTargetLanguage}{de}}
+  {
+    \languageshorthands{ngerman}
+  }
+}
+\bool_if:NT\ols_load_polyglossia{
+  \RequirePackage{polyglossia}
+}
+% \ldeen{Unabhängig davon, wann ein Sprachpaket geladen wurde, wird versucht,
+% die Zielsprache zu aktivieren.}{Regardless of when a language pack was loaded, an attempt will be made to
+% activate the target language.} 
+\cs_if_exist:cT{ver@babel.sty}{
+  \AtBeginDocument{
+    \selectlanguage{\ols_mapped_target_lang}
+  }
+}
+\cs_if_exist:cT{ver@polyglossia.sty}{
+  \bool_if:NTF\ols_shorthands{
+   \setdefaultlanguage[babelshorthands=true]{\ols_mapped_target_lang}
+  }{
+    \setdefaultlanguage{\ols_mapped_target_lang}
+  }
+}
+\bool_if:NT\ols_shorthands {
+  \RequirePackage[autostyle=true]{csquotes}
+  \AtBeginDocument{
+    \cs_if_exist:cT{useshorthands}{
+      \useshorthands*{"}
+      \defineshorthand{"`}{\openautoquote}
+      \defineshorthand{"'}{\closeautoquote}
+      \defineshorthand{"/}{\textormath{\bbl@allowhyphens
+          \discretionary{/}{}{/}\bbl@allowhyphens}{}}
+    }
+  }
+}
+%</pkg>

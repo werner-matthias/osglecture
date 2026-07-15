@@ -1,0 +1,14 @@
+tagpax	version=1	generator=0.4.0-dev
+source	file=nested.pdf	pages=2
+stream	id=p1	kind=page	page=1
+stream	id=p2	kind=page	page=2
+stream	id=s1	kind=object	page=2	source-object=19	structparents=7	subtype=Form
+node	id=n1	role=Document
+node	id=n2	role=H2	title=Contribution
+node	id=n3	role=P
+kid	parent=n1	index=1	kind=node	ref=n2
+kid	parent=n1	index=2	kind=node	ref=n3
+kid	parent=n2	index=1	kind=mcr	page=1	stream=p1	mcid=0
+kid	parent=n3	index=1	kind=mcr	page=2	stream=s1	mcid=4
+heading	node=n2	role=H2	page=1	text=Contribution
+root	index=1	node=n1

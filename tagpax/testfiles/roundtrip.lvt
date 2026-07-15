@@ -1,0 +1,16 @@
+\input regression-test.tex
+\documentclass{article}
+\begin{document}
+\START
+\directlua{
+ local reader=require('tagpax-ir')
+ local compare=require('tagpax-compare')
+ local source=reader.read('subdocument.tagpax')
+ local target=reader.read('roundtrip-master.tagpax')
+ texio.write_nl('log','pages='..tostring(target.source.pages))
+ local ok,errors=compare.semantic(source,target)
+ texio.write_nl('log','roundtrip='..tostring(ok))
+ for _,e in ipairs(errors) do texio.write_nl('log','error='..e) end
+}
+\END
+\end{document}

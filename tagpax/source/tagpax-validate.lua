@@ -8,10 +8,16 @@ function M.validate(ir)
   for _, root in ipairs(ir.roots) do
     if not ir.nodes[root.node] then errors[#errors + 1] = "root references missing node " .. tostring(root.node) end
   end
+  for id, stream in pairs(ir.streams or {}) do
+    if stream.id ~= id then errors[#errors + 1] = "stream id mismatch " .. tostring(id) end
+    if stream.kind ~= "page" and stream.kind ~= "object" then errors[#errors + 1] = "invalid stream kind " .. tostring(stream.kind) end
+    if stream.kind == "page" and tonumber(stream.page) == nil then errors[#errors + 1] = "page stream has invalid page" end
+  end
   for _, kid in ipairs(ir.kids) do
     if not ir.nodes[kid.parent] then errors[#errors + 1] = "kid has missing parent " .. tostring(kid.parent) end
     if kid.kind == "node" and not ir.nodes[kid.ref] then errors[#errors + 1] = "kid references missing node " .. tostring(kid.ref) end
     if kid.kind == "mcr" and tonumber(kid.mcid) == nil then errors[#errors + 1] = "MCR has invalid MCID" end
+    if kid.kind == "mcr" and ir.streams and next(ir.streams) and not ir.streams[kid.stream] then errors[#errors + 1] = "MCR references missing stream " .. tostring(kid.stream) end
   end
   for _, heading in ipairs(ir.headings) do
     local node = ir.nodes[heading.node]

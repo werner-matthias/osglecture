@@ -1,6 +1,6 @@
 -- tagpax.lua -- semantic tagged-PDF extractor and IR reader
 -- LPPL 1.3c or later
-local M = { version = "0.3.2-dev", date = "2026-07-14" }
+local M = { version = "0.7.1-dev", date = "2026-07-15" }
 
 local pdfe = assert(pdfe, "tagpax requires LuaTeX's pdfe library")
 
@@ -146,6 +146,38 @@ function M.extract(filename, outname)
 
   local nextid, seen = 0, {}
   local headings, node_meta = {}, {}
+  local streams, stream_by_object, nextstream = {}, {}, 0
+
+  local function emit_stream(id, kind, page, object_number, structparents, subtype)
+    if streams[id] then return id end
+    streams[id] = true
+    write_record(f, "stream", {
+      __order = { "id", "kind", "page", "source-object", "structparents", "subtype" },
+      id = id, kind = kind, page = page, ["source-object"] = object_number,
+      structparents = structparents, subtype = subtype,
+    })
+    return id
+  end
+
+  local function page_stream(page)
+    local id = "p" .. tostring(page or 0)
+    return emit_stream(id, "page", page or 0)
+  end
+
+  local function object_stream(stm, page)
+    local object_number = ref_number(stm)
+    if object_number and stream_by_object[object_number] then return stream_by_object[object_number] end
+    nextstream = nextstream + 1
+    local id = "s" .. tostring(nextstream)
+    local dict = as_dict(stm)
+    local structparents, subtype
+    if dict then
+      structparents = select(2, value(dict, "StructParents"))
+      subtype = pdf_name(dict, "Subtype")
+    end
+    if object_number then stream_by_object[object_number] = id end
+    return emit_stream(id, "object", page or 0, object_number, structparents, subtype)
+  end
 
   local function newid()
     nextid = nextid + 1
@@ -162,11 +194,11 @@ function M.extract(filename, outname)
     if mcid == nil then return nil end
     local page = page_from_ref(select(2, value(dict, "Pg")), inherited_page)
     local stm = select(2, value(dict, "Stm"))
-    local stream_kind = stm and "object" or "page"
+    local stream_id = stm and object_stream(stm, page) or page_stream(page)
     write_record(f, "kid", {
       __order = { "parent", "index", "kind", "page", "stream", "mcid" },
       parent = parent, index = index, kind = "mcr", page = page or 0,
-      stream = stream_kind, mcid = mcid,
+      stream = stream_id, mcid = mcid,
     })
     return page
   end
@@ -178,7 +210,7 @@ function M.extract(filename, outname)
       write_record(f, "kid", {
         __order = { "parent", "index", "kind", "page", "stream", "mcid" },
         parent = parent, index = index, kind = "mcr", page = inherited_page or 0,
-        stream = "page", mcid = kid,
+        stream = page_stream(inherited_page), mcid = kid,
       })
       return inherited_page
     elseif kid_type == "pdfe.dictionary" or kid_type == "pdfe.reference" then
@@ -290,7 +322,7 @@ local function parse_line(line)
 end
 
 function M.read(filename)
-  local ir = { nodes = {}, kids = {}, roots = {}, headings = {}, header = nil, source = nil }
+  local ir = { nodes = {}, kids = {}, roots = {}, headings = {}, streams = {}, header = nil, source = nil }
   for line in assert(io.lines(filename)) do
     if line ~= "" and line:sub(1, 1) ~= "#" then
       local record = parse_line(line)
@@ -299,6 +331,7 @@ function M.read(filename)
       elseif record.record_type == "kid" then ir.kids[#ir.kids + 1] = record
       elseif record.record_type == "root" then ir.roots[#ir.roots + 1] = record
       elseif record.record_type == "heading" then ir.headings[#ir.headings + 1] = record
+      elseif record.record_type == "stream" then ir.streams[record.id] = record
       elseif record.record_type == "source" then ir.source = record end
     end
   end
@@ -312,10 +345,15 @@ function M.validate(ir)
   for _, root in ipairs(ir.roots) do
     if not ir.nodes[root.node] then errors[#errors + 1] = "root references missing node " .. tostring(root.node) end
   end
+  for id, stream in pairs(ir.streams or {}) do
+    if stream.id ~= id then errors[#errors + 1] = "stream id mismatch " .. tostring(id) end
+    if stream.kind ~= "page" and stream.kind ~= "object" then errors[#errors + 1] = "invalid stream kind " .. tostring(stream.kind) end
+  end
   for _, kid in ipairs(ir.kids) do
     if not ir.nodes[kid.parent] then errors[#errors + 1] = "kid has missing parent " .. tostring(kid.parent) end
     if kid.kind == "node" and not ir.nodes[kid.ref] then errors[#errors + 1] = "kid references missing node " .. tostring(kid.ref) end
     if kid.kind == "mcr" and tonumber(kid.mcid) == nil then errors[#errors + 1] = "MCR has invalid MCID" end
+    if kid.kind == "mcr" and ir.streams and next(ir.streams) and not ir.streams[kid.stream] then errors[#errors + 1] = "MCR references missing stream " .. tostring(kid.stream) end
   end
   for _, heading in ipairs(ir.headings) do
     local node = ir.nodes[heading.node]

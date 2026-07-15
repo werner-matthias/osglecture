@@ -1,6 +1,6 @@
-package.path = "./?.lua;./?/init.lua;" .. package.path
-local tools = require("build-support.tools")
-assert(type(tools.process.quote("a b"))=="string")
-assert(type(tools.qpdf.available())=="boolean")
-assert(type(tools.pdfcpu.available())=="boolean")
+local tools = dofile("build-support/tools.lua")
+assert(type(tools.quote) == "function")
+assert(type(tools.command_exists) == "function")
+assert(type(tools.pdfcpu) == "function")
+assert(tools.quote("a b.pdf"):match("a b%.pdf"))
 print("tagpax build tools: ok")
