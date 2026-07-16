@@ -1,14 +1,11 @@
-# tagpax — development prototype
+# tagpax
+
+Goal: Semantic import of tagged PDFs.
+
+Read this file, doc/ARCHITECTURE.md and doc/STATUS.md before starting development.
 
 `tagpax` extracts and reconstructs the logical structure of fully tagged
 contribution PDFs for proceedings assembled with LuaLaTeX.
-
-## Import architecture
-
-```text
-PDF -> Lua inspection -> semantic IR -> import plan -> native LuaTeX page Forms
-    -> explicit StructElems/MCRs -> ParentTree
-```
 
 The public native command is:
 

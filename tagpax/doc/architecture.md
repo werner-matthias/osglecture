@@ -1,8 +1,18 @@
-# Architecture notes
+# Architecture Notes
 
-## v0.1 invariants
+## Canonical architecture:
+The maintained architecture is:
+PDF -> Inspector -> Canonical IR -> Transformations -> Import Plan -> Backend Plan -> Backend
 
-- A contribution is imported completely, in source order, once.
+1. Inspector reads PDF objects and produces canonical IR.
+2. Transformations modify only IR semantics.
+3. Import planning resolves streams and placement bindings.
+4. Backend planning orders PDF-writing operations.
+5. Backend emits Forms, StructElems, MCRs, OBJRs and ParentTree entries.
+
+## Invariants
+- A pdf document is imported completely, in source order, once.
+- No backend or navigation module may read the source PDF directly.
 - Source `Document` is unwrapped and its children are attached below a new master `Part`.
 - Heading roles and MCIDs are preserved.
 - One `StructParents` key is allocated per imported structure-bearing Form XObject.
@@ -24,8 +34,7 @@ The LaTeX side needs a public or narrowly isolated implementation of:
 
 The core package must not write a second ParentTree or guess `ParentTreeNextKey`.
 
-## Stream graph and import plan (0.4 development)
-
+## Stream graph and import plan 
 The IR now assigns every marked-content stream a stable local identifier.
 Page-content streams use `p<page>` identifiers; explicit `/Stm` references use
 `s<n>` identifiers and retain the source object number only as an extraction
@@ -56,15 +65,15 @@ streams are rejected rather than attached to the outer page form.
 
 ## Experimental page-stream backend findings (0.4.1-dev)
 
-A first live backend prototype confirmed that imported PDF pages can be created as
+An experimental prototype confirmed that imported PDF pages can be created as
 LuaTeX image/Form resources with a `/StructParents` attribute.  However, using
 `tagpdf`'s normal `tag_struct_begin/end` operations to clone a complete external
-structure tree is not safe: those operations are stack-oriented and interact with
+structure tree is **not safe**: those operations are stack-oriented and interact with
 automatically opened paragraph and page structures in the master document.
 
-The production backend therefore needs a non-stack API for creating StructElem
+The backend therefore needs a non-stack API for creating StructElem
 objects with an explicit parent, appending existing-stream MCR dictionaries, and
-registering ParentTree arrays.  The narrowly isolated private bridge now supplies that operation for the
+registering ParentTree arrays.  The narrowly isolated private bridge supplies that operation for the
 prototype, and the native page-stream writer is connected to `\tagpaxinclude`.
 The target-independent import plan and stream bindings remain the stable
 boundary; the bridge is still provisional pending an upstream public API.
@@ -98,16 +107,3 @@ exactly one master page per source page.
 montage or selection options are rejected.  The adapter routes all accepted
 imports through the native backend so the tagging invariants remain identical.
 
-## Frozen layer model (0.7)
-
-The maintained architecture is:
-
-1. Inspector reads PDF objects and produces canonical IR.
-2. Transformations modify only IR semantics.
-3. Import planning resolves streams and placement bindings.
-4. Backend planning orders PDF-writing operations.
-5. Backend emits Forms, StructElems, MCRs, OBJRs and ParentTree entries.
-
-No backend or navigation module may read the source PDF directly. The user
-manual is maintained bilingually with tightly coupled `langselect` templates;
-the developer documentation remains English.

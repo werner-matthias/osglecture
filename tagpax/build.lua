@@ -1,26 +1,28 @@
--- build.lua -- l3build configuration for tagpax
+bundle = "osglecture"
 module = "tagpax"
-ctanpkg = "tagpax"
+maindir = ".."
 
 sourcefiledir = "source"
-sourcefiles = { "*.dtx", "*.ins", "*.lua", "tagpax-de.tex", "tagpax-en.tex" }
-unpackfiles = { "*.ins" }
-installfiles = { "*.sty", "*.lua" }
 
--- Documentation is generated from the documented source. Keeping this
--- explicit makes `l3build doc` and `l3build ctan` reproducible.
-typesetfiles = { "tagpax-de.tex", "tagpax-en.tex" }
-supportdir = "support"
-typesetsuppfiles = { "osgdoc.cls", "osgdoc.sty", "langselect.sty" }
-typesetexe = "lualatex"
-typesetruns = 2
-typesetopts = "-interaction=nonstopmode -halt-on-error"
+sourcefiles = {
+  "*.dtx",
+  "*.ins",
+  "*.lua"
+}
+
+unpackfiles = { "*.ins" }
+
+installfiles = {
+  "*.sty",
+  "*.lua"
+}
+
+typesetfiles = { "tagpax.dtx" }
 
 textfiles = {
   "README.md",
   "CHANGELOG.md",
   "doc/*.md",
-  "support/*.md",
   "roundtrip.lua"
 }
 
@@ -30,14 +32,10 @@ docfiles = {
   "doc/*.md"
 }
 
-checkengines = { "luatex" }
-stdengine = "luatex"
 checkruns = 1
 excludetests = { "roundtrip" }
 checksuppfiles = { "*.tagpax", "*.tex" }
 
--- The source PDF used by the extraction test is generated after l3build has
--- copied test support files into the isolated test directory.
 function checkinit_hook()
   local command = table.concat({
     "lualatex",
@@ -46,9 +44,14 @@ function checkinit_hook()
     "subdocument.tex"
   }, " ")
 
-  local errorlevel = runcmd(command, testdir, { "TEXINPUTS", "LUAINPUTS" })
+  local errorlevel =
+    runcmd(command, testdir, { "TEXINPUTS", "LUAINPUTS" })
+
   if errorlevel ~= 0 then
     return errorlevel
   end
+
   return runcmd(command, testdir, { "TEXINPUTS", "LUAINPUTS" })
 end
+
+dofile("../build.lua")
