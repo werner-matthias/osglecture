@@ -4,6 +4,8 @@ ctanpkg  = bundle
 modules = {
    "langselect",
    "osgdoc",
+   "lttheme",
+   "modeext",
    "tagpax",
    -- "osglecture"
    -- "osgterminal",
@@ -14,7 +16,7 @@ modules = {
 
 textfiles = { "README.md", "CHANGES.md", "LICENSE" }
 
-unpackfiles = { "*.dtx" }
+unpackfiles = unpackfiles  or { "*.dtx" }
 
 stdengine    = "luatex"
 checkengines = { "luatex" }
@@ -114,17 +116,17 @@ target_list.cleanall = {
 -- Script-Auslieferung (landet in TEXMF/scripts/osglecture/)
 -- scriptfiles = {
 --  "scripts/ollm",
---  "scripts/ollm.bat",   -- optional; für Windows bequem
+--  "scripts/ollm.bat",   -- optional; für Windows
 --}
 
-docfiles     = {
+docfiles     = docfiles or {
   "*.dtx",
   "*.pdf",
   "README.md"
 }
 
-sourcefiles  = { "*.dtx"}
-typesetfiles = { "*.dtx"}
+sourcefiles  = sourcefiles  or { "*.dtx"}
+typesetfiles = typesetfiles or { "*.dtx"}
 
 --[[
 -- Tests: Standard-Lauf (Unit je Modul) + Integrations-Lauf (siehe config-integ.lua)
@@ -140,7 +142,6 @@ checkdeps = {
   --"./osgcombine",
   --"./osglisting",
 }
-
 
 -- Tagging (optional)
 tagfiles = {
