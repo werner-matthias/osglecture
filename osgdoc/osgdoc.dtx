@@ -65,7 +65,7 @@ load babel
       unabhängig von den anderen Paketen des Bundles einsetzbar.
       Sie beinhalten einerseits einen Patch-Wrapper für \name*{Clemens Niederbergers} großartige
       \cnltx-Klasse, die aber leider nicht mehr mit den aktuellen \LaTeX\
-      kompatibel ist. Zum anderen werden ein paar Makros eine Unterstützung von
+      kompatibel ist. Zum anderen werden ein paar Makros zur Unterstützung von
       Dokumentationen definiert.
     }{
       The \osgdoc\ tools are part of the \pkg*{osglecture} bundle, but can also
@@ -95,6 +95,46 @@ load babel
   also be used independently if only the commands defined there
   are needed.
 }
+\subsection{osgdoc.cls}
+\ldeen{Die Klasse wird auf dem üblichen Weg geladen}{The class is loaded in the usual way}:
+\cs{documentclass}\oarg{options}\{osgdoc\}
+
+\ldeen*{Die Optionen und zur Verfügung gestellten Befehle der Basisklasse @1 entnehmen Sie bitte der Dokumentation des @2-Pakets.}{
+  For a documentation of options and provided commands of the base class @1, please see the @2 package documentation.}{\cnltx}{\needpackage{cnltx}}
+\ldeen*{Zusätzlich stehen noch die im Abschnitt~@1 beschriebenen Befehle zur Verfügung.}{%
+  In addition, the commands described in Section @1 are available.}{\ref{sec:usage:sty}}
+
+\subsection{osgdoc.sty}
+\label{sec:usage:sty}
+\begin{commands}
+  \command{AutoDocInput}[\oarg{mode}\marg{file}\marg{guard}]%\Default{\cs{AutoDocInput}[\Oarg{tex}\marg{file}\marg{guard}]}
+\ldeen*{
+  Leichtgewichtige Möglichkeit für die Aufnahme dokumentierten Quellcodes,  analog dem @1 Mechanismus.}{
+    A lightweight option for including documented source code,  similar to the @1 mechanism. 
+    }{\needpackage{doc}/\needpackage{docstrip}}
+\ldeen*{
+  Im Unterschied zu diesem sind jedoch (wie in @1) kein @2 notweendig, und es kann auch Lua-Code dokumentiert werden.}{
+  Unlike the latter, however (as in @1), @2 is not required, and Lua code can also be documented.
+}{\pkg{gmdoc}}{\cs*{begin}\Marg{macrocode}\ldots \cs*{end}\Marg{macrocode}}
+
+\begin{options}
+  \opt{mode}\Default{tex}
+  \ldeen{
+  Dies bestimmt, welcher Art von Guards und Kommentaren genutzt werden können, siehe folgende Tabelle.
+  }{
+  This determines what types of guards and comments can be used; see the table below. 
+  }
+
+  \begin{tabular}{lll}
+    \textbf{Mode}&\textbf{Guard\ldeen{stil}{ style}}&\textbf{\ldeen{Kommentarstil}{Comment style}}\\\hline
+    \code{tex}&\code{\%<*\meta{Guard}>} / \code{\%</\meta{Guard}>} &\code{\% \meta{\ldeen{Kommentar}{comment}}}\\
+    \code{lua}&\code{--<*\meta{Guard}>} / \code{--</\meta{Guard}>} &\code{-- \meta{\ldeen{Kommentar}{comment}}} / \code{--[ \meta{\ldeen{Kommentar}{comment}} --]}\\
+    \code{tex/lua}&\code{\%<*\meta{Guard}>} / \code{\%</\meta{Guard}>} &\code{-- \meta{\ldeen{Kommentar}{comment}}} / \code{--[ \meta{\ldeen{Kommentar}{comment}} --]}\\\hline
+  \end{tabular}
+\end{options}
+\end{commands}
+
+
 \section{\ldeen{Bugs und Einschränkungen}{Bugs and Limitations}}
 \begin{itemize}
 \item \ldeen{\osgdoc\ ist zum gegenwärtigen Zeitpunkt als experimentell zu betrachten,
@@ -102,7 +142,7 @@ load babel
   experimental at this stage, as the version number indicates.}
 \item \ldeen{
     Die \osgdoc-Klasse ist nur ein dünner Wrapper für die
-    {\cnltx-doc}-Klasse aus dem \needpackage{cnltx}-Paket. Sie sorgt nur für
+    {\cnltx-doc}-Klasse aus dem \pkg{cnltx}-Paket. Sie sorgt nur für
     syntaktische Korrektheit im 
     Standardfall. Es ist durchaus möglich, dass bei der Vielzahl von Optionen
     und Möglichkeiten, die \cnltx\ bietet, weitere Probleme mit dem
@@ -115,17 +155,17 @@ load babel
     there are additional issues with 
     today’s \LaTeX\ that \osgdoc\ does not handle.
   }
-\item \ldeen{
+\item \ldeen*{
     Die Dateiinformation bei den klassischen (nicht \LaTeX{}3)
     \cs*{Provide\ldots}-Befehlen beruhen auf einen einfachen Lua-Musterabgleich über dem
     optionalen Argument. Wenn sicher ist, dass Dateien \emph{nicht} im \LaTeX{}3-Syntax
-    geschrieben sind, sollte besser \pkg{readprov} benutzt werden.
+    geschrieben sind, sollte besser @1 benutzt werden.
   }{
     The file information for the classic (non-LaTeX3)
     \cs*{Provide\ldots} commands is based on a simple Lua pattern match using the
     optional argument. If you are certain that files are \emph{not} written in LaTeX3 syntax,
-    it is better to use \pkg{readprov}.
-  }
+    it is better to use @1.
+  }{\needpackage{readprov}}
 \end{itemize}
 \section{Implementation}
 \subsection{Class \pkgname.cls}
@@ -173,7 +213,19 @@ load babel
 ]{DejaVu Sans Mono}
 \RequirePackage{imakeidx}
 \renewcommand{\packageformat}{\color{cnltxformalblue}\sffamily}
-
+% \ldeen{
+%   Ich denke, die Paketbeschreibung ist nützlicher als der Verzeichnispfad. Außerdem sollte nur noch https genutzt werden.}{
+%   I think, the package description is more useful than the directory path. Also, today should https be used only.
+% }
+\renewcommand{\needpackage}[2][pkg]{
+  \pkg{#2}\footnote{\CTANurl[#1]{#2}}
+}
+\renewcommand{\needclass}[2][bar]{
+  \cls{#2}\footnote{\CTANurl[#1]{#2}}
+}
+\renewcommand{\CTANurl}[2][pkg] {
+  on~\ctan\ as~\cnltx@weblink@font{#2}:~\url{https://ctan.org/#1/#2/}
+}
 \def\gobble{\@gobble}
 
 %</cls>
@@ -199,139 +251,596 @@ load babel
   end
 \end{luacode*}
 
-\newcommand{\AutoDocInput}[2]{
-  \directlua{
-    autodoc.autodoc_process(\luastring{#1},\luastring{#2})
+\NewDocumentCommand{\AutoDocInput}{O{tex} m m}
+  {
+    \directlua{
+      autodoc.autodoc_process(
+        \luastring{#2},
+        \luastring{#3},
+        \luastring{#1}
+      )
+    }
   }
-}
 \begin{luacode*}
 autodoc = autodoc or {}
 
-function autodoc.quote_pat(s)
-  return (s:gsub("(%W)", "%%%1"))
-end
-
-function autodoc.opening_guard(line, symbol)
-   local atomchars = "%w_%-"
-   local expr = line:match("^%%%<%s*%*%s*(.-)%s*%>")
-   if not expr then return false end
-   
-   local t = autodoc.quote_pat(symbol)
-   local pat = "%f[" .. atomchars .. "]" .. t .. "%f[^" .. atomchars .. "]"
-   
-   return expr:find(pat) ~= nil
-end
-
-% \ldeen{Entfernt das Kommentarzeichen}{Removes the comment marker}.
-function autodoc.strip_pct(s) return (s:gsub("^%%+%s?","")) end
-   
 local verbtempfiles = {}
 
-function autodoc.uniqname()
-   local name = string.format(
-      "osgdoc-%s-%04d.tmp",
-      tex.jobname,
-      #verbtempfiles+1
-   )
-   verbtempfiles[#verbtempfiles+1]=name
-   return name
+-- Syntax modes
+local syntaxes = {
+  tex = {
+    guard_prefix = "%%",
+    comment_kind = "tex",
+  },
+
+  lua = {
+    guard_prefix = "%-%-",
+    comment_kind = "lua",
+  },
+
+  ["tex/lua"] = {
+    guard_prefix = "%%",
+    comment_kind = "lua",
+  },
+}
+
+local function get_syntax(mode)
+  mode = mode or "tex"
+
+  local syntax = syntaxes[mode]
+
+  if syntax then
+    return syntax
+  end
+
+  tex.error(
+    "AutoDocInput: unknown syntax mode `" .. tostring(mode) .. "'",
+    {
+      "Supported syntax modes are:",
+      "  tex",
+      "  lua",
+      "  tex/lua",
+    }
+  )
+
+  return syntaxes.tex
 end
-   
-function autodoc.autodoc_process(fname, guard)
-   local vf
-   local vfname
-   local f = io.open(fname,"r")
-   if not f then tex.error("AutoDocInput: cannot open "..fname); return end
-% \ldeen{Wir nutzen einen kleinen Zustandsautomaten}{We use a small state machine}.
-% \begin{itemize}[nosep]
-% \item \textbf{OUTSIDE} \ldeen{Vor Anfang oder nach Ende eines Codeblocks}{Before
-% start or after end of a code block}.
-% \item \textbf{OUTSIDEVERB} \ldeen{Außerhalb des Guard-Bereichs, aber in einem
-% offenen Codeblock}{Outside of guard range, but inside of an open code block}.
-% \item \textbf{VERB} \ldeen{Innerhalb eines Codeblocks}{Within of a code block}.
-% \item \textbf{STARTVERB} \ldeen{Start eines Codeblocks}{Start of a code block}.
-% \item \textbf{COMMENT} \ldeen{Kommentar innerhalb vom Guardbereich}{Comment within
-% guard range}.
-% \end{itemize}
-   local OUTSIDE     = 0
-   local OUTSIDEVERB = 1
-   local VERB        = 2
-   local STARTVERB   = 3
-   local COMMENT     = 4
-   local state = OUTSIDE
-   
-   local lnr = 0
-   local tfcount = 0;
-   for line in f:lines() do
-     lnr = lnr + 1
-     local og = autodoc.opening_guard(line,guard)
-     local cg = line:match("^%%%</")
-     local cc = line:match("^%%[^%<]")
-     if state == OUTSIDE then 
-	if og then
-	   state = STARTVERB
-	end
-     elseif state == OUTSIDEVERB then
-	if og then
-	   state = VERB
-	end
-     elseif state == STARTVERB then
-	if cc then
-	   tex.print(autodoc.strip_pct(line))
-	   state = COMMENT
-	elseif cg then
-	   state = OUTSIDEVERB
-	elseif og then
-	   tex.print("\\typeout{Warning: Cascading guards in "..lnr.."}")
-	else
-	   vfname = autodoc.uniqname()
-	   vf = texassert(io.open(vfname, "w"),"Can't open '"..vfname.."'")
-	   vf:write(line,'\n')
-	   state = VERB
-	end
-     elseif state == VERB then
-	if cg then
-	   state = OUTSIDEVERB
-	elseif cc then
-	   vf:close()
-	   tex.print("\\VerbatimInput[firstnumber=last]{"..vfname.."}")
-	   tex.print(autodoc.strip_pct(line))
-	   state = COMMENT
-	elseif og then
-           tex.warning("Cascading guards in "..lnr)
-	else 
-	   vf:write(line,'\n')
-	end
-     elseif state == COMMENT then
-	if cg then
-	   state = OUTSIDE
-	elseif og then
-	   tex.print("\\typeout{Warning: Cascading guards in "..lnr.."}")
-	elseif cc then
-	   tex.print(autodoc.strip_pct(line))
-	else
-	   vfname = autodoc.uniqname()
-	   vf = texassert(io.open(vfname, "w"),"Can't open '"..vfname.."'")
-	   vf:write(line,'\n')
-	   state = VERB
-	end
-     else
-	tex.error("Can't parse.")	   
-     end
-  end
-   if ((state == VERB) or (state == OUTSIDEVERB)) then
-      vf:close()
-      tex.print("\\VerbatimInput[firstnumber=last]{"..vfname.."}")
-  end
-  f:close()
+
+------------------------------------------------------------------------
+-- Lua-pattern helpers
+------------------------------------------------------------------------
+
+local function quote_pattern(text)
+  return (text:gsub("(%W)", "%%%1"))
 end
-% \ldeen{Installiere Callback für die Bereinigung der temporären
-% Dateien}{Install a callback to clean temp files}.
-luatexbase.add_to_callback("stop_run", function()
-  for _, name in ipairs(verbtempfiles) do
-    os.remove(name)
+
+local function guard_contains_symbol(expression, symbol)
+  if not expression then
+    return false
   end
-end, "cleanup verbatim temp files")  
+
+  local atomchars = "%w_%-"
+  local quoted_symbol = quote_pattern(symbol)
+
+  local pattern =
+    "%f[" .. atomchars .. "]"
+    .. quoted_symbol
+    .. "%f[^" .. atomchars .. "]"
+
+  return expression:find(pattern) ~= nil
+end
+
+------------------------------------------------------------------------
+-- Guard recognition
+------------------------------------------------------------------------
+
+local function guard_expression(line, syntax, guard_kind)
+  local operator
+
+  if guard_kind == "open" then
+    operator = "%*"
+  elseif guard_kind == "close" then
+    operator = "/"
+  else
+    error("Unknown guard kind: " .. tostring(guard_kind))
+  end
+
+  return line:match(
+    "^%s*"
+    .. syntax.guard_prefix
+    .. "%s*<%s*"
+    .. operator
+    .. "%s*(.-)%s*>%s*$"
+  )
+end
+
+local function is_opening_guard(line, syntax, symbol)
+  local expression = guard_expression(line, syntax, "open")
+  return guard_contains_symbol(expression, symbol)
+end
+
+local function is_closing_guard(line, syntax, symbol)
+  local expression = guard_expression(line, syntax, "close")
+  return guard_contains_symbol(expression, symbol)
+end
+
+------------------------------------------------------------------------
+-- Documentation-comment recognition
+------------------------------------------------------------------------
+
+local function tex_comment_text(line)
+  -- A guard is not a documentation comment.
+  if line:match("^%s*%%%s*<") then
+    return nil
+  end
+
+  return line:match("^%s*%%+%s?(.*)$")
+end
+
+local function lua_line_comment_text(line)
+  -- A Lua guard is not a documentation comment.
+  if line:match("^%s*%-%-%s*<") then
+    return nil
+  end
+
+  -- Long-comment openings are handled separately.
+  if line:match("^%s*%-%-%[(=*)%[") then
+    return nil
+  end
+
+  if line:match("^%s*%-%-%[%s*$") then
+    return nil
+  end
+
+  return line:match("^%s*%-%-+%s?(.*)$")
+end
+
+local function comment_text(line, syntax)
+  if syntax.comment_kind == "tex" then
+    return tex_comment_text(line)
+  end
+
+  return lua_line_comment_text(line)
+end
+
+------------------------------------------------------------------------
+-- Lua long comments
+------------------------------------------------------------------------
+
+-- Recognised forms:
+--
+--   --[[ ... ]]
+--   --[=[ ... ]=]
+--   --[==[ ... ]==]
+--
+-- For the requested documentation convention, this also accepts:
+--
+--   --[
+--   ...
+--   --]
+--
+-- The latter is not normal Lua syntax, but can be useful inside a source
+-- container such as a .dtx file.
+
+local function lua_long_comment_start(line)
+  local equals, rest =
+    line:match("^%s*%-%-%[(=*)%[%s?(.*)$")
+
+  if equals ~= nil then
+    return {
+      pseudo = false,
+      equals = equals,
+      text = rest,
+    }
+  end
+
+  local rest_pseudo =
+    line:match("^%s*%-%-%[%s?(.*)$")
+
+  if rest_pseudo ~= nil then
+    return {
+      pseudo = true,
+      equals = "",
+      text = rest_pseudo,
+    }
+  end
+
+  return nil
+end
+
+local function lua_long_comment_line(line, long_comment)
+  if long_comment.pseudo then
+    local text = line:match("^(.-)%s*%-%-%]%s*$")
+
+    if text ~= nil then
+      return text, true
+    end
+
+    return line, false
+  end
+
+  local delimiter =
+    "%]"
+    .. quote_pattern(long_comment.equals)
+    .. "%]"
+
+  local text =
+    line:match("^(.-)%s*" .. delimiter .. "%s*$")
+
+  if text ~= nil then
+    return text, true
+  end
+
+  return line, false
+end
+
+------------------------------------------------------------------------
+-- Temporary verbatim files
+------------------------------------------------------------------------
+
+local function unique_temp_name()
+  local name = string.format(
+    "osgdoc-%s-%04d.tmp",
+    tex.jobname,
+    #verbtempfiles + 1
+  )
+
+  verbtempfiles[#verbtempfiles + 1] = name
+
+  return name
+end
+
+------------------------------------------------------------------------
+-- Main processing function
+------------------------------------------------------------------------
+
+function autodoc.autodoc_process(filename, guard, mode)
+  local syntax = get_syntax(mode)
+
+  local input = io.open(filename, "r")
+
+  if not input then
+    tex.error(
+      "AutoDocInput: cannot open `" .. filename .. "'"
+    )
+    return
+  end
+
+  -- OUTSIDE:
+  --   Außerhalb eines ausgewählten Guard-Bereichs; keine Verbatim-Datei offen.
+  --
+  -- OUTSIDE_VERBATIM:
+  --   Außerhalb eines ausgewählten Guard-Bereichs; eine Verbatim-Datei ist
+  --   weiterhin offen. Der nächste passende Guard setzt denselben Codeblock
+  --   fort.
+  --
+  -- START:
+  --   Direkt hinter einem öffnenden Guard; noch keine Entscheidung zwischen
+  --   Dokumentation und Code getroffen.
+  --
+  -- VERBATIM:
+  --   Innerhalb eines ausgewählten Guard-Bereichs und mit geöffneter
+  --   Verbatim-Datei.
+  --
+  -- COMMENT:
+  --   Innerhalb eines ausgewählten Guard-Bereichs und in Dokumentation.
+  --
+  -- LONG_COMMENT:
+  --   Innerhalb eines mehrzeiligen Lua-Dokumentationskommentars.
+
+  local OUTSIDE = 0
+  local OUTSIDE_VERBATIM = 1
+  local START = 2
+  local VERBATIM = 3
+  local COMMENT = 4
+  local LONG_COMMENT = 5
+
+  local state = OUTSIDE
+
+  local long_comment = nil
+  local long_comment_return_state = nil
+
+  local verbatim_file = nil
+  local verbatim_filename = nil
+
+  local line_number = 0
+
+  local function warn(message)
+    tex.warning(
+      string.format(
+        "AutoDocInput: %s in %s:%d",
+        message,
+        filename,
+        line_number
+      )
+    )
+  end
+
+  local function print_documentation(text)
+    tex.print(text or "")
+  end
+
+  local function open_verbatim(first_line)
+    if verbatim_file ~= nil then
+      tex.error(
+        "AutoDocInput: internal error",
+        {
+          string.format(
+            "Attempt to open a second verbatim file in %s:%d.",
+            filename,
+            line_number
+          )
+        }
+      )
+      return false
+    end
+
+    verbatim_filename = unique_temp_name()
+
+    verbatim_file = io.open(verbatim_filename, "w")
+
+    if not verbatim_file then
+      tex.error(
+        "AutoDocInput: cannot open temporary file",
+        {verbatim_filename}
+      )
+      verbatim_filename = nil
+      return false
+    end
+
+    verbatim_file:write(first_line, "\n")
+    return true
+  end
+
+  local function write_verbatim(line)
+    if verbatim_file == nil then
+      tex.error(
+        "AutoDocInput: internal parser error",
+        {
+          string.format(
+            "VERBATIM state without an open file in %s:%d.",
+            filename,
+            line_number
+          )
+        }
+      )
+      return false
+    end
+
+    verbatim_file:write(line, "\n")
+    return true
+  end
+
+  local function close_verbatim()
+    if verbatim_file == nil then
+      return
+    end
+
+    verbatim_file:close()
+    verbatim_file = nil
+
+    tex.print(
+      "\\VerbatimInput[firstnumber=last]{"
+        .. verbatim_filename
+        .. "}"
+    )
+
+    verbatim_filename = nil
+  end
+
+  local function begin_long_comment(start, return_state)
+    long_comment = start
+    long_comment_return_state = return_state
+    state = LONG_COMMENT
+
+    if start.text == "" then
+      return
+    end
+
+    local text, finished =
+      lua_long_comment_line(start.text, long_comment)
+
+    print_documentation(text)
+
+    if finished then
+      state = long_comment_return_state
+      long_comment_return_state = nil
+      long_comment = nil
+    end
+  end
+
+  for line in input:lines() do
+    line_number = line_number + 1
+
+    --------------------------------------------------------------------
+    -- Lua-Langkommentar
+    --------------------------------------------------------------------
+
+    if state == LONG_COMMENT then
+      local text, finished =
+        lua_long_comment_line(line, long_comment)
+
+      print_documentation(text)
+
+      if finished then
+        state = long_comment_return_state
+        long_comment_return_state = nil
+        long_comment = nil
+      end
+
+    else
+      local opening =
+        is_opening_guard(line, syntax, guard)
+
+      local closing =
+        is_closing_guard(line, syntax, guard)
+
+      local documentation =
+        comment_text(line, syntax)
+
+      local long_start = nil
+
+      if syntax.comment_kind == "lua" then
+        long_start = lua_long_comment_start(line)
+      end
+
+      ------------------------------------------------------------------
+      -- Außerhalb; keine Verbatim-Datei offen
+      ------------------------------------------------------------------
+
+      if state == OUTSIDE then
+        if opening then
+          state = START
+        end
+
+      ------------------------------------------------------------------
+      -- Außerhalb; Verbatim-Datei bleibt geöffnet
+      ------------------------------------------------------------------
+
+      elseif state == OUTSIDE_VERBATIM then
+        if opening then
+          -- Dieselbe Verbatim-Datei wird fortgesetzt.
+          if verbatim_file == nil then
+            tex.error(
+              "AutoDocInput: internal parser error",
+              {
+                string.format(
+                  "OUTSIDE_VERBATIM without an open file in %s:%d.",
+                  filename,
+                  line_number
+                )
+              }
+            )
+            state = START
+          else
+            state = VERBATIM
+          end
+        end
+
+      ------------------------------------------------------------------
+      -- Erste Zeile nach öffnendem Guard
+      ------------------------------------------------------------------
+
+      elseif state == START then
+        if closing then
+          -- Leerer Guard-Bereich; es wurde keine Datei geöffnet.
+          state = OUTSIDE
+
+        elseif opening then
+          warn("cascading opening guards")
+
+        elseif long_start then
+          begin_long_comment(long_start, COMMENT)
+
+        elseif documentation ~= nil then
+          print_documentation(documentation)
+          state = COMMENT
+
+        else
+          if open_verbatim(line) then
+            state = VERBATIM
+          else
+            state = OUTSIDE
+          end
+        end
+
+      ------------------------------------------------------------------
+      -- Code; Verbatim-Datei ist geöffnet
+      ------------------------------------------------------------------
+
+      elseif state == VERBATIM then
+        if closing then
+          -- Wichtig: Datei nicht schließen.
+          --
+          -- Ein späterer ausgewählter Guard kann denselben Codeblock
+          -- fortsetzen.
+          state = OUTSIDE_VERBATIM
+
+        elseif opening then
+          warn("cascading opening guards")
+
+        elseif long_start then
+          close_verbatim()
+          begin_long_comment(long_start, COMMENT)
+
+        elseif documentation ~= nil then
+          close_verbatim()
+          print_documentation(documentation)
+          state = COMMENT
+
+        else
+          write_verbatim(line)
+        end
+
+      ------------------------------------------------------------------
+      -- Dokumentation
+      ------------------------------------------------------------------
+
+      elseif state == COMMENT then
+        if closing then
+          state = OUTSIDE
+
+        elseif opening then
+          warn("cascading opening guards")
+
+        elseif long_start then
+          begin_long_comment(long_start, COMMENT)
+
+        elseif documentation ~= nil then
+          print_documentation(documentation)
+
+        else
+          if open_verbatim(line) then
+            state = VERBATIM
+          else
+            state = OUTSIDE
+          end
+        end
+
+      else
+        tex.error(
+          "AutoDocInput: invalid parser state",
+          {
+            string.format(
+              "Invalid state %s in %s:%d.",
+              tostring(state),
+              filename,
+              line_number
+            )
+          }
+        )
+        break
+      end
+    end
+  end
+
+  ----------------------------------------------------------------------
+  -- Abschluss
+  ----------------------------------------------------------------------
+
+  if state == LONG_COMMENT then
+    warn("unterminated Lua long comment")
+  end
+
+  -- Die Datei kann sowohl in VERBATIM als auch in OUTSIDE_VERBATIM
+  -- geöffnet sein.
+  if verbatim_file ~= nil then
+    close_verbatim()
+  end
+
+  input:close()
+end
+
+-- Cleanup
+luatexbase.add_to_callback(
+  "stop_run",
+  function()
+    for _, filename in ipairs(verbtempfiles) do
+      os.remove(filename)
+    end
+  end,
+  "cleanup osgdoc verbatim temporary files"
+)
 \end{luacode*}
 
 \NewDocumentCommand{\UseVersionOf}{m}
