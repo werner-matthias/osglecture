@@ -1,8 +1,3 @@
-%<*pkg|cls|driver>
-\def\packagename{osgdoc}
-\def\packagedate{2026/06/07}
-\def\packageversion{v0.0.1}
-%</pkg|cls|driver>
 %<*driver>
 \def\nameofplainTeX{plain}
 \ifx\fmtname\nameofplainTeX
@@ -27,8 +22,8 @@
 \endpostamble
 
 \generate{
-  \file{\packagename.cls}{\from{\packagename.dtx}{cls}}
-  \file{\packagename.sty}{\from{\packagename.dtx}{pkg}}
+  \file{osgdoc.cls}{\from{osgdoc.dtx}{cls}}
+  \file{osgdoc.sty}{\from{osgdoc.dtx}{pkg}}
 }
   \expandafter\endbatchfile
 \fi
@@ -108,32 +103,44 @@ load babel
 \label{sec:usage:sty}
 \begin{commands}
   \command{AutoDocInput}[\oarg{mode}\marg{file}\marg{guard}]%\Default{\cs{AutoDocInput}[\Oarg{tex}\marg{file}\marg{guard}]}
-\ldeen*{
-  Leichtgewichtige Möglichkeit für die Aufnahme dokumentierten Quellcodes,  analog dem @1 Mechanismus.}{
-    A lightweight option for including documented source code,  similar to the @1 mechanism. 
-    }{\needpackage{doc}/\needpackage{docstrip}}
-\ldeen*{
-  Im Unterschied zu diesem sind jedoch (wie in @1) kein @2 notweendig, und es kann auch Lua-Code dokumentiert werden.}{
-  Unlike the latter, however (as in @1), @2 is not required, and Lua code can also be documented.
-}{\pkg{gmdoc}}{\cs*{begin}\Marg{macrocode}\ldots \cs*{end}\Marg{macrocode}}
+  \ldeen*{
+    Leichtgewichtige Möglichkeit für die Aufnahme dokumentierten Quellcodes,  analog dem @1 Mechanismus.}{
+      A lightweight option for including documented source code,  similar to the @1 mechanism. 
+      }{\needpackage{doc}/\needpackage{docstrip}}
+  \ldeen*{
+    Im Unterschied zu diesem sind jedoch (wie in @1) kein @2 notweendig, und es kann auch Lua-Code dokumentiert werden.}{
+    Unlike the latter, however (as in @1), @2 is not required, and Lua code can also be documented.
+  }{\pkg{gmdoc}}{\cs*{begin}\Marg{macrocode}\ldots \cs*{end}\Marg{macrocode}}
 
-\begin{options}
-  \opt{mode}\Default{tex}
-  \ldeen{
-  Dies bestimmt, welcher Art von Guards und Kommentaren genutzt werden können, siehe folgende Tabelle.
-  }{
-  This determines what types of guards and comments can be used; see the table below. 
-  }
+  \begin{quote}
+    \begin{options}
+      \opt{mode}\Default{tex}
+      \ldeen{
+        Dies bestimmt, welcher Art von Guards und Kommentaren genutzt werden können, siehe folgende Tabelle.
+      }{
+        This determines what types of guards and comments can be used; see the table below. 
+      }
 
-  \begin{tabular}{lll}
-    \textbf{Mode}&\textbf{Guard\ldeen{stil}{ style}}&\textbf{\ldeen{Kommentarstil}{Comment style}}\\\hline
-    \code{tex}&\code{\%<*\meta{Guard}>} / \code{\%</\meta{Guard}>} &\code{\% \meta{\ldeen{Kommentar}{comment}}}\\
-    \code{lua}&\code{--<*\meta{Guard}>} / \code{--</\meta{Guard}>} &\code{-- \meta{\ldeen{Kommentar}{comment}}} / \code{--[ \meta{\ldeen{Kommentar}{comment}} --]}\\
-    \code{tex/lua}&\code{\%<*\meta{Guard}>} / \code{\%</\meta{Guard}>} &\code{-- \meta{\ldeen{Kommentar}{comment}}} / \code{--[ \meta{\ldeen{Kommentar}{comment}} --]}\\\hline
-  \end{tabular}
-\end{options}
+      \begin{tabular}{lll}
+        \textbf{Mode}&\textbf{Guard\ldeen{stil}{ style}}&\textbf{\ldeen{Kommentarstil}{Comment style}}\\\hline
+        \code{tex}&\code{\%<*\meta{Guard}>} / \code{\%</\meta{Guard}>} &\code{\% \meta{\ldeen{Kommentar}{comment}}}\\
+        \code{lua}&\code{--<*\meta{Guard}>} / \code{--</\meta{Guard}>} &\code{-- \meta{\ldeen{Kommentar}{comment}}} / \code{--[[ \meta{\ldeen{Kommentar}{comment}} --]]}\\
+        \code{tex/lua}&\code{\%<*\meta{Guard}>} / \code{\%</\meta{Guard}>} &\code{-- \meta{\ldeen{Kommentar}{comment}}} / \code{--[[ \meta{\ldeen{Kommentar}{comment}} --]]}\\\hline
+      \end{tabular}
+      \opt{file}\ldeen{Name der Datei, die eingebunden werden soll.}{Name of file to include.}
+      \opt{guard}\ldeen{
+        Name des Guards. Es sind nur einfache Namen zulässig, keine komplexen Guardausdrücke.}{
+        Name of the guard. Only simple names are allowed here, no complex guard expressions.}
+    \end{options}
+  \end{quote}
+  \command{UseVersionOf}[\marg{file}]\default{}%\vspace{-.7\baselineskip}
+  \command{UseDateOf}[\marg{file}]
+    \ldeen{
+      Liest die durch \meta{file} angegebene Datei und sucht nach \cs{ProvidesExplPackage}, \cs{ProvidesPackage}, \cs{ProvidesExplClass}, \cs{ProvidesClass}, \cs{ProvidesExplFile} oder \cs{ProvidesFile} und gibt die gesuchte Information zurück (Version oder Datum). 
+    }{
+      Reads the file specified by \meta{file} and searches for \cs{ProvidesExplPackage}, \cs{ProvidesPackage}, \cs{ProvidesExplClass}, \cs{ProvidesClass}, \cs{ProvidesExplFile}, or \cs{ProvidesFile}, and returns the information being sought (version or date). 
+    }
 \end{commands}
-
 
 \section{\ldeen{Bugs und Einschränkungen}{Bugs and Limitations}}
 \begin{itemize}
@@ -180,7 +187,11 @@ load babel
 {2026-06-11}
 {0.0.7}
 {A thin wrapper around cnltx-doc}
-
+% \ldeen*{Zunächst müssen wir @1 patchen. Dazu muss aber der nicht mehr gültige @2-Ruf abgefangen 
+%   werden.
+% }{
+% First, we need to patch @1. To do that, however, we need to intercept the @2 call, which is no longer valid. 
+% }{\cls*{cnltx-doc}}{\cs{AfterPackage!}}
 \AddToHook{class/scrartcl/after}{
   \NewCommandCopy{\originalAfterPackage}{\AfterPackage}
   \RenewDocumentCommand{\AfterPackage}{t! m m}{
@@ -189,9 +200,11 @@ load babel
     }
   }
 }
-\RequirePackage{luatex85,ragged2e}
-\RequirePackage{multicol}
-\RequirePackage{shellesc}
+% \ldeen*{Die Pakete @1 und @2 müssen explizit geladen werden, um nicht den Fehler @3 zu triggern.}{
+%  The packages @1 and @2 must be explicitly loaded to avoid triggering @3 error .
+% }{\pkg{multicol}}{\pkg{ragged2e}}{\emph{Loading in a group}}
+\RequirePackage{multicol,ragged2e}
+\RequirePackage{luatex85, shellesc}
 \AddToHook{class/cnltx-doc/before}{
   \typeout{==>~First~Aid~for~cnltx-doc.cls~applied!}
 }
@@ -201,6 +214,7 @@ load babel
   linecolor = cnltx ,
   roundcorner = 5pt
 }
+% \ldeen{Noch ein paar Einstellungen, die ich bevorzuge.}{A few more settings that I prefer.}
 \setcnltx{
   color-scheme=blue
   }
@@ -227,10 +241,13 @@ load babel
   on~\ctan\ as~\cnltx@weblink@font{#2}:~\url{https://ctan.org/#1/#2/}
 }
 \def\gobble{\@gobble}
-
 %</cls>
 %<*pkg>
-\ProvidesExplPackage{osgdoc}{2026-06-11}{0.0.7}{small tools for documentation}
+\ProvidesExplPackage
+{osgdoc}
+{2026-06-11}
+{0.0.7}
+{small tools for documentation}
 \sys_if_engine_luatex:TF{
   \def\error{}
   \RequirePackage{luacode}
@@ -241,7 +258,7 @@ load babel
 \RequirePackage{luacode}
 \RequirePackage{fancyvrb}
 \fvset{formatcom=\color{blue},numbers=left}
-
+\LuaCodeDebugOn
 \begin{luacode*}
   function texassert(v, msg)
     if v then
@@ -250,23 +267,24 @@ load babel
     tex.error("Error", {msg or "assertion failed"})
   end
 \end{luacode*}
-
-\NewDocumentCommand{\AutoDocInput}{O{tex} m m}
-  {
-    \directlua{
-      autodoc.autodoc_process(
-        \luastring{#2},
-        \luastring{#3},
-        \luastring{#1}
-      )
-    }
+%
+% \cs{AutoDocInput}\oarg{mode}\marg{file}\marg{guard}
+\NewDocumentCommand{\AutoDocInput}{O{tex} m m}{
+  \directlua{
+    autodoc.autodoc_process(
+      \luastring{#2},
+      \luastring{#3},
+      \luastring{#1}
+    )
   }
+}
+\LuaCodeDebugOn
 \begin{luacode*}
 autodoc = autodoc or {}
 
 local verbtempfiles = {}
-
--- Syntax modes
+% \ldeen{Syntaxmodi}{Syntax modes}
+% TODO: mode auto?
 local syntaxes = {
   tex = {
     guard_prefix = "%%",
@@ -306,10 +324,7 @@ local function get_syntax(mode)
   return syntaxes.tex
 end
 
-------------------------------------------------------------------------
--- Lua-pattern helpers
-------------------------------------------------------------------------
-
+% \ldeen{Helper für Lua-Patterns}{Lua-pattern helpers}
 local function quote_pattern(text)
   return (text:gsub("(%W)", "%%%1"))
 end
@@ -330,10 +345,7 @@ local function guard_contains_symbol(expression, symbol)
   return expression:find(pattern) ~= nil
 end
 
-------------------------------------------------------------------------
--- Guard recognition
-------------------------------------------------------------------------
-
+% \ldeen{Guarderkennung}{Guard recognition}
 local function guard_expression(line, syntax, guard_kind)
   local operator
 
@@ -364,10 +376,7 @@ local function is_closing_guard(line, syntax, symbol)
   return guard_contains_symbol(expression, symbol)
 end
 
-------------------------------------------------------------------------
--- Documentation-comment recognition
-------------------------------------------------------------------------
-
+% \ldeen{Erkennung von Kommentaren}{Documentation-comment recognition}
 local function tex_comment_text(line)
   -- A guard is not a documentation comment.
   if line:match("^%s*%%%s*<") then
@@ -378,12 +387,12 @@ local function tex_comment_text(line)
 end
 
 local function lua_line_comment_text(line)
-  -- A Lua guard is not a documentation comment.
+  -- Again: a Lua guard is not a documentation comment.
   if line:match("^%s*%-%-%s*<") then
     return nil
   end
 
-  -- Long-comment openings are handled separately.
+% \ldeen{Lua Langkommentare werden gesondert behandelt}{Lua long-comment openings are handled separately.}
   if line:match("^%s*%-%-%[(=*)%[") then
     return nil
   end
@@ -403,24 +412,13 @@ local function comment_text(line, syntax)
   return lua_line_comment_text(line)
 end
 
-------------------------------------------------------------------------
--- Lua long comments
-------------------------------------------------------------------------
-
--- Recognised forms:
---
---   --[[ ... ]]
---   --[=[ ... ]=]
---   --[==[ ... ]==]
---
--- For the requested documentation convention, this also accepts:
---
---   --[
---   ...
---   --]
---
--- The latter is not normal Lua syntax, but can be useful inside a source
--- container such as a .dtx file.
+% \ldeen{Lua Langkommentare. Folgende Varianten werden erkannt:}{Lua long comments. 
+% Recognised forms:}
+% \begin{itemize}
+%   \item \texttt{--[[} \ldots \texttt{]]}
+%   \item  \texttt{--[=[} \ldots \texttt{]=]}
+%   \item \texttt{--[==[} \ldots \texttt{]==]}
+% \end{itemize}
 
 local function lua_long_comment_start(line)
   local equals, rest =
@@ -474,29 +472,21 @@ local function lua_long_comment_line(line, long_comment)
   return line, false
 end
 
-------------------------------------------------------------------------
--- Temporary verbatim files
-------------------------------------------------------------------------
-
+% \ldeen{Temporäre Verbatim-Dateien}{Temporary verbatim files}
 local function unique_temp_name()
   local name = string.format(
     "osgdoc-%s-%04d.tmp",
     tex.jobname,
     #verbtempfiles + 1
   )
-
   verbtempfiles[#verbtempfiles + 1] = name
-
   return name
 end
 
-------------------------------------------------------------------------
--- Main processing function
-------------------------------------------------------------------------
-
+% \ldeen{Hauptfunktion für AutoDocInput}{Main processing function}
 function autodoc.autodoc_process(filename, guard, mode)
   local syntax = get_syntax(mode)
-
+  local first = true
   local input = io.open(filename, "r")
 
   if not input then
@@ -505,29 +495,58 @@ function autodoc.autodoc_process(filename, guard, mode)
     )
     return
   end
-
-  -- OUTSIDE:
-  --   Außerhalb eines ausgewählten Guard-Bereichs; keine Verbatim-Datei offen.
-  --
-  -- OUTSIDE_VERBATIM:
-  --   Außerhalb eines ausgewählten Guard-Bereichs; eine Verbatim-Datei ist
-  --   weiterhin offen. Der nächste passende Guard setzt denselben Codeblock
-  --   fort.
-  --
-  -- START:
-  --   Direkt hinter einem öffnenden Guard; noch keine Entscheidung zwischen
-  --   Dokumentation und Code getroffen.
-  --
-  -- VERBATIM:
-  --   Innerhalb eines ausgewählten Guard-Bereichs und mit geöffneter
-  --   Verbatim-Datei.
-  --
-  -- COMMENT:
-  --   Innerhalb eines ausgewählten Guard-Bereichs und in Dokumentation.
-  --
-  -- LONG_COMMENT:
-  --   Innerhalb eines mehrzeiligen Lua-Dokumentationskommentars.
-
+%
+% \ldeen{
+%   Zum Parsen wird ein kleiner Zustandsautomat genutzt. Dabei haben die Zustände folgende Bedeutungen:
+% }{
+%   A small finite-state machine is used for parsing. The states have the following meanings:
+% }
+% 
+% \begin{itemize}
+%    \item \textbf{OUTSIDE}: 
+%      \ldeen{
+%        Außerhalb eines ausgewählten Guard-Bereichs; keine Verbatim-Datei offen.
+%        }{
+%          Outside of a selected guard area;  no verbatim file open}
+%    \item \textbf{OUTSIDE\_VERBATIM}: 
+%      \ldeen{
+%        Außerhalb eines ausgewählten Guard-Bereichs; eine Verbatim-Datei ist
+%        weiterhin offen. Der nächste passende Guard setzt denselben Codeblock
+%      fort.
+%      }{
+%        Outside a selected guard region; a verbatim file is
+%        still open. The next matching guard continues the same code block
+%      }
+%    \item \textbf{START}:
+%      \ldeen{
+%        Direkt hinter einem öffnenden Guard; noch keine Entscheidung zwischen
+%        Dokumentation und Code getroffen.
+%      }{
+%        Immediately after an opening guard; no decision has yet been made between
+%        documentation and code.
+%      }
+%    \item \textbf{VERBATIM}:
+%      \ldeen{
+%        Innerhalb eines ausgewählten Guard-Bereichs und mit geöffneter
+%        Verbatim-Datei.
+%      }{
+%        Inside a selected guard region with opened verbatim file.
+%      }
+%
+%    \item \textbf{COMMENT}:
+%      \ldeen{
+%        Innerhalb eines ausgewählten Guard-Bereichs und in Dokumentation.
+%      }{
+%        Within a selected guard area and in documentation.
+%      }
+%      \item \textbf{LONG\_COMMENT}:
+%        \ldeen{
+%          Innerhalb eines mehrzeiligen Lua-Dokumentationskommentars.
+%        }{
+%          Within a multi-line Lua documentation comment.
+%        }
+%  \end{itemize}
+% 
   local OUTSIDE = 0
   local OUTSIDE_VERBATIM = 1
   local START = 2
@@ -619,12 +638,27 @@ function autodoc.autodoc_process(filename, guard, mode)
     verbatim_file:close()
     verbatim_file = nil
 
-    tex.print(
-      "\\VerbatimInput[firstnumber=last]{"
-        .. verbatim_filename
-        .. "}"
-    )
-
+% \ldeen{
+%   Die Zeilennummer entspricht der logischen Zeilennummer der Implementation, d.\,h. generierter Boilerplate wird
+%   nicht berücksichtigt.
+% }{
+%   The line number corresponds to the logical line number in the implementation; that is, generated boilerplate is
+%   not taken into account.
+% } 
+    if first then 
+      tex.print(
+        "\\VerbatimInput[firstnumber=1]{"
+          .. verbatim_filename
+          .. "}"
+      )
+      first = false
+    else  
+      tex.print(
+        "\\VerbatimInput[firstnumber=last]{"
+          .. verbatim_filename
+          .. "}"
+      )
+    end
     verbatim_filename = nil
   end
 
@@ -649,12 +683,10 @@ function autodoc.autodoc_process(filename, guard, mode)
     end
   end
 
-  for line in input:lines() do
-    line_number = line_number + 1
 
-    --------------------------------------------------------------------
-    -- Lua-Langkommentar
-    --------------------------------------------------------------------
+  for line in input:lines() do
+% \ldeen{Der eigentliche Automat}{The actual state machine}
+    line_number = line_number + 1
 
     if state == LONG_COMMENT then
       local text, finished =
@@ -684,22 +716,13 @@ function autodoc.autodoc_process(filename, guard, mode)
         long_start = lua_long_comment_start(line)
       end
 
-      ------------------------------------------------------------------
-      -- Außerhalb; keine Verbatim-Datei offen
-      ------------------------------------------------------------------
-
       if state == OUTSIDE then
         if opening then
           state = START
         end
 
-      ------------------------------------------------------------------
-      -- Außerhalb; Verbatim-Datei bleibt geöffnet
-      ------------------------------------------------------------------
-
       elseif state == OUTSIDE_VERBATIM then
         if opening then
-          -- Dieselbe Verbatim-Datei wird fortgesetzt.
           if verbatim_file == nil then
             tex.error(
               "AutoDocInput: internal parser error",
@@ -716,10 +739,6 @@ function autodoc.autodoc_process(filename, guard, mode)
             state = VERBATIM
           end
         end
-
-      ------------------------------------------------------------------
-      -- Erste Zeile nach öffnendem Guard
-      ------------------------------------------------------------------
 
       elseif state == START then
         if closing then
@@ -744,17 +763,10 @@ function autodoc.autodoc_process(filename, guard, mode)
           end
         end
 
-      ------------------------------------------------------------------
-      -- Code; Verbatim-Datei ist geöffnet
-      ------------------------------------------------------------------
-
       elseif state == VERBATIM then
         if closing then
-          -- Wichtig: Datei nicht schließen.
-          --
-          -- Ein späterer ausgewählter Guard kann denselben Codeblock
-          -- fortsetzen.
           state = OUTSIDE_VERBATIM
+          -- Don't close file here! A later contiuation is possible.
 
         elseif opening then
           warn("cascading opening guards")
@@ -771,10 +783,6 @@ function autodoc.autodoc_process(filename, guard, mode)
         else
           write_verbatim(line)
         end
-
-      ------------------------------------------------------------------
-      -- Dokumentation
-      ------------------------------------------------------------------
 
       elseif state == COMMENT then
         if closing then
@@ -814,16 +822,11 @@ function autodoc.autodoc_process(filename, guard, mode)
     end
   end
 
-  ----------------------------------------------------------------------
-  -- Abschluss
-  ----------------------------------------------------------------------
-
   if state == LONG_COMMENT then
     warn("unterminated Lua long comment")
   end
 
-  -- Die Datei kann sowohl in VERBATIM als auch in OUTSIDE_VERBATIM
-  -- geöffnet sein.
+  -- A file can be open in both, VERBATIM or OUTSIDE_VERBATIM
   if verbatim_file ~= nil then
     close_verbatim()
   end
@@ -831,7 +834,7 @@ function autodoc.autodoc_process(filename, guard, mode)
   input:close()
 end
 
--- Cleanup
+% \ldeen{Temporäre Dateien aufräumen.}{Cleanup temporary files.}
 luatexbase.add_to_callback(
   "stop_run",
   function()
@@ -843,6 +846,11 @@ luatexbase.add_to_callback(
 )
 \end{luacode*}
 
+% \ldeen*{
+% @1 und @2 nutzen beide die Lua-Funktion @3.
+% }{
+% Both, @1 and @2 use the lua function @3.
+% }{\cs{UseVersionOf}}{\cs{UseDateOf}}{\code{useversion}}
 \NewDocumentCommand{\UseVersionOf}{m}
 {
    \directlua{fileinfo.useversion(\luastring{#1})}

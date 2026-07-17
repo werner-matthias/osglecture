@@ -22,9 +22,9 @@ stdengine    = "luatex"
 checkengines = { "luatex" }
 
 -- Dokumentation
-docfiledir = maindir.."/doc"
+docfiledir = maindir.."/doc/"
 typesetexe = "lualatex"
-typesetopts = "-interaction=nonstopmode -shell-escape"
+typesetopts = "-interaction=nonstopmode -shell-escape --synctex=10"
 maxruns    = 3
 
 cleanfiles={
