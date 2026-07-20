@@ -2,14 +2,12 @@ bundle = "osglecture"
 module = "lttheme"
 maindir = ".."
 
-sourcefiledir = "source"
-sourcefiles = { "lttheme.dtx", "lttheme.ins" }
-unpackfiles = { "lttheme.ins" }
-installfiles = { "ltxtalk-theme-*.sty" }
-typesetfiles = { "lttheme.dtx" }
-
-checkengines = { "luatex" }
-stdengine = "luatex"
-checkruns = 1
+installfiles = {
+    "ltxtalk-theme-core.sty",
+    "ltxtalk-theme-academic.sty",
+    "ltxtalk-theme-minimal.sty",
+    "ltxtalk-theme-modern.sty",
+    "ltxtalk-theme-corporate.sty",
+}
 
 dofile("../build.lua")

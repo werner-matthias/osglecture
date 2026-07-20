@@ -1,21 +1,238 @@
-% ltxtalk-theme-core.sty
-% Version 0.2 - 2026/07/15
-% Theme Engine for ltx-talk - Accessible, Flexible, Minimalinvasive
-% Pure LaTeX3 Implementation
-%
-% Copyright 2026
-% Licence: LPPL 1.3c
+%<*driver>
+\def\nameofplainTeX{plain}
+\ifx\fmtname\nameofplainTeX
+\input l3docstrip.tex
+\preamble
 
+========================================================================
+ ltxtalk-theme - themes for ltxtalk
+
+ (C) 2026 Matthias Werner
+ E-mail: matthias.werner@informatik.tu-chemnitz.de
+
+ Released under the LaTeX Project Public License v1.3c or later
+ See http://www.latex-project.org/lppl.txt
+======================================================================== 
+
+\endpreamble
+\postamble
+
+ This work is "maintained" (as per LPPL maintenance status) by
+ Matthias Werner.
+\endpostamble
+
+\generate{
+  \file{ltxtalk-theme-core.sty}{\from{lttheme.dtx}{core}}
+  \file{ltxtalk-theme-modern.sty}{\from{lttheme.dtx}{modern}}
+  \file{ltxtalk-theme-minimal.sty}{\from{lttheme.dtx}{minimal}}
+  \file{ltxtalk-theme-academic.sty}{\from{lttheme.dtx}{academic}}
+  \file{ltxtalk-theme-corporate.sty}{\from{lttheme.dtx}{corporate}}
+}
+  \expandafter\endbatchfile
+\fi
+ \documentclass[
+load-preamble+
+]{osgdoc}
+
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage[
+languages={de,en},
+map={de=german,en=english},
+targetlang={job=2},
+load babel
+]{langselect}
+
+\def\pkgname{ltxtalk-theme}
+\def\thepkg{\pkg{\pkgname}}
+
+\makeindex
+\setcnltx{
+  name  =  ltxtalk-theme,
+  version  = \UseVersionOf{ltxtalk-theme-core.sty},
+  date     = \UseDateOf{ltxtalk-theme-core.sty},
+  title    = {\ldeen{Das \pkgname\ Paket}{The \pkgname\ Package}},
+  info     = {Theme Engine \ldeen{für}{for} \cls{ltx-talk}},
+  authors  = {Matthias Werner[matthias.werner@informatik.tu-chemnitz.de]},
+  abstract={
+  \ldeen{   
+    }{
+    }
+  },
+  url      =https://github.com/werner-matthias/osglecture,
+  build-title
+}
+\begin{document}
+\section{\ldeen{Nutzung}{Usage}}
+%
+% \section{Overview}
+% The \textsf{lttheme} module provides a theme engine and four predefined
+% themes for the \textsf{ltx-talk} document class.
+%
+% \section{API reference}
+% The following material was migrated from \texttt{docs/api-reference.md}.
+%
+% # ltxtalk-themes API Reference
+% 
+% ## Overview
+% 
+% The ltxtalk-themes system provides a flexible, accessible theme engine for the ltx-talk document class. Themes are built on a slot-based architecture using LaTeX3 coffins internally, but this complexity is completely hidden from users.
+% 
+% ## Core Commands
+% 
+% ### Theme Management
+% 
+% | Command | Description |
+% |---------|-------------|
+% | `\useltxtalktheme{name}` | Activate a theme |
+% | `\RegisterLTXTalkTheme{name}{setup}` | Register a new theme (for developers) |
+% 
+% ### Layout Configuration
+% 
+% ```latex
+% \ltxtalksetup{
+%   header = true/false,
+%   header-height = dimension,
+%   header-rows = integer,
+%   left-margin = true/false,
+%   right-margin = true/false,
+%   footer = true/false,
+%   footer-height = dimension,
+%   margin-width = dimension,
+% }
+% ```
+% 
+% ### Color Configuration
+% 
+% ```latex
+% \setltxtalkcolors{
+%   primary = {HTML}{2B3A67},
+%   secondary = {HTML}{496A81},
+%   accent = {HTML}{66999B},
+%   text = {HTML}{333333},
+%   background = {HTML}{FFFFFF},
+% }
+% ```
+% 
+% ### Slot Definition
+% ```latex
+% \defineltxtalkslot{slot-name}{area}{type}{accessibility-options}
+% 
+% % Example:
+% \defineltxtalkslot{my-title}{header}{frametitle}{
+%   role = heading,
+%   heading-level = 2
+% }
+% ```
+% 
+% ### Slot Positioning
+% ```latex
+% \positionltxtalkslot{slot-name}{x-pos}{y-pos}{width}{height}
+% 
+% % Example:
+% \positionltxtalkslot{my-title}{center}{0.5cm}{0.8\paperwidth}{1.5cm}
+% ```
+% 
+% ### Slot Styling
+% ```latex
+% \styleltxtalkslot{slot-name}{
+%   font = \Large\bfseries,
+%   color = ltxtalk-primary,
+%   frame = bottom,
+%   rule-color = ltxtalk-accent,
+%   rule-thick = 2pt,
+%   padding = 5pt,
+%   align = center,
+%   background = none,
+% }
+% ```
+% 
+% ### Area Decoration
+% ```latex
+% \decorateltxtalkarea{header}{
+%   frame = bottom,
+%   rule-color = ltxtalk-accent,
+%   rule-thickness = 4pt,
+%   background = ltxtalk-primary!5,
+%   shadow = true,
+% }
+% ```
+% 
+% ### Available Slot Types
+% 
+% | Type            | Description        | Default Role.    |
+% |-----------------|--------------------|------------------| 
+% | `frametitle`    | Frame title        | heading (H2)     | 
+% | `framesubtitle` | Frame subtitle     | heading (H3)     | 
+% | `title`         | Presentation title | heading (H1)     | 
+% | `section`       | Current section    | heading (H2)     | 
+% | `subsection`    | Current subsection | heading (H3)     | 
+% | `author`        | Author name        | note             | 
+% | `date`          | Date               | note             | 
+% | `institute`     | Institute name     | note             | 
+% | `pagenumber`    | Page number        | navigation       | 
+% | `logo`          | Logo               | graphic artifact |
+% | `custom`        | User-defined       | artifact         | 
+% 
+% ### Available Areas
+% 
+% | Area.     | Description           |
+% |-----------|-----------------------| 
+% | `header`  | Top of the frame      | 
+% | `left`.   | Left margin           | 
+% | `content` | Main content area     | 
+% | `right`.  | Right margin          | 
+% | `footer`  | Bottom of the frame.  | 
+% 
+% ### Accessibility Options
+% ```latex
+% \defineltxtalkslot{name}{area}{type}{
+%   role = heading|artifact|navigation|content|note,
+%   heading-level = 1|2|3,
+%   alt-text = "Description",
+%   continuation-text = "(cont.)",
+%   continuation-mode = explicit|implicit,
+% }
+% ```
+% 
+% ### Title Placement
+% ```latex
+% \setltxtalktitleplacement{
+%   frametitle = content|header|both,
+%   section = header|none,
+% }
+% ```
+% 
+% ### Best Practices
+% 1. Always provide accessibility roles for slots
+% 2. Use `artifact` role for decorative elements
+% 3. Set appropriate heading levels for titles
+% 4. Test with screen readers
+% 5. Provide alt-text for logos and images
+% \end{lang}
+%
+% \begin{lang}{de}
+% \section{Überblick}
+% Das Modul \textsf{lttheme} stellt eine Theme-Engine und vier
+% vordefinierte Themes für die Dokumentklasse \textsf{ltx-talk} bereit.
+% \section{API-Referenz}
+% Die englische API-Referenz wurde zunächst unverändert übernommen.
+% \end{lang}
+%
+\section{Implementation}
+\subsection{ltxtalk-theme-core}
+\AutoDocInput{lttheme.dtx}{core}
+\end{document}
+%</driver>
+%<*core>
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesExplPackage{ltxtalk-theme-core}{2026/07/15}{0.2}
+\ProvidesExplPackage{ltxtalk-theme-core}{2026-07-15}{0.2}
   {Theme engine for ltx-talk}
 
-% ==========================================
-% ABHÄNGIGKEITEN
-% ==========================================
 \RequirePackage{xcoffins}
 \RequirePackage{xcolor}
 
+% \ldeen{Das Paket ist nur sinnvoll, wenn \cls{}}{}
 % ==========================================
 % KLASSENPRÜFUNG
 % ==========================================
@@ -196,10 +413,12 @@
 
 \NewDocumentCommand \defineltxtalkslot { m m m m }
   {
-    % #1: Slot-Name (eindeutig)
-    % #2: Bereich (header/left/content/right/footer)
-    % #3: Slot-Typ (frametitle, section, logo, etc.)
-    % #4: Accessibility-Optionen (key-value)
+    % \begin{itemize}
+    % \item \#1: Slot-Name (eindeutig)
+    % \item \#2: Bereich (header/left/content/right/footer)
+    % \item \#3: Slot-Typ (frametitle, section, logo, etc.)
+    % \item \#4: Accessibility-Optionen (key-value)
+    % \end{itemize}
     \prop_gput:Nnn \g__ltxtalk_slot_areas_prop { #1 } { #2 }
     \prop_gput:Nnn \g__ltxtalk_slot_types_prop { #1 } { #3 }
     \prop_gput:Nnn \g__ltxtalk_slot_a11y_prop { #1 } { #4 }
@@ -222,11 +441,14 @@
 
 \NewDocumentCommand \positionltxtalkslot { m m m m m }
   {
-    % #1: Slot-Name
-    % #2: x-Position (Dimension oder 'left'/'center'/'right')
-    % #3: y-Position (Dimension oder 'top'/'center'/'bottom')
-    % #4: Breite (Dimension)
-    % #5: Höhe (Dimension)
+    % 
+    % \begin{itemize}
+    %  \item \#1: Slot-Name
+    %  \item \#2: x-Position (Dimension oder 'left'/'center'/'right')
+    %  \item \#3: y-Position (Dimension oder 'top'/'center'/'bottom')
+    %  \item \#4: Breite (Dimension)
+    %  \item \#5: Höhe (Dimension)
+    %\end{itemize}
     \prop_gput:Nnn \g__ltxtalk_slot_positions_prop { #1 } 
       { { #2 } { #3 } { #4 } { #5 } }
   }
@@ -284,8 +506,10 @@
 
 \NewDocumentCommand \styleltxtalkslot { m m }
   {
-    % #1: Slot-Name
-    % #2: Formatierungsoptionen (key-value)
+    % \begin{itemize}
+    %  \item \#1: Slot-Name
+    %  \item \#2: Formatierungsoptionen (key-value)
+    % \end{itemize} 
     \prop_gput:Nnn \g__ltxtalk_slot_styles_prop { #1 } { #2 }
   }
 
@@ -314,8 +538,11 @@
 
 \NewDocumentCommand \decorateltxtalkarea { m m }
   {
-    % #1: Bereich (header/left/right/footer/content)
-    % #2: Dekorationsoptionen (key-value)
+    % 
+    % \begin{itemize}
+    %  \item \#1: Bereich (header/left/right/footer/content)
+    %  \item \#2: Dekorationsoptionen (key-value)
+    % \end{itemize}
     \prop_gput:Nnn \g__ltxtalk_area_decorations_prop { #1 } { #2 }
   }
 
@@ -505,7 +732,7 @@
       }
   }
 
-% Auch auf \frametitle-Befehl reagieren
+% Auch auf \cs{frametitle-Befehl} reagieren
 \cs_if_exist:NT \frametitle
   {
     \AddToHook{cmd/frametitle/after}
@@ -626,8 +853,11 @@
 
 \cs_new_protected:Npn \__ltxtalk_resolve_slot_content:Nn #1 #2
   {
-    % #1: Slot-Typ
-    % #2: Ziel-Tokenlist
+    % 
+    % \begin{itemize}
+    %  \item \#1: Slot-Typ
+    %  \item \#2: Ziel-Tokenlist
+    % \end{itemize}
     
     \str_case:nn { #1 }
       {
@@ -853,8 +1083,10 @@
 
 \cs_new_protected:Npn \__ltxtalk_render_area_with_decorations:nn #1 #2
   {
-    % #1: Bereichsname
-    % #2: Inhalt (Slots)
+    % \begin{itemize}
+    %  \item \#1: Bereichsname
+    %  \item \#2: Inhalt (Slots)
+    % \end{itemize} 
     
     \prop_get:NnNTF \g__ltxtalk_area_decorations_prop { #1 } \l__ltxtalk_area_deco_tl
       {
@@ -1013,7 +1245,7 @@
       }
   }
 
-% Auch auf \frametitle-Änderungen reagieren
+% Auch auf \cs{frametitle}-Änderungen reagieren
 \cs_if_exist:NT \frametitle
   {
     \AddToHook{cmd/frametitle/after}
@@ -1043,4 +1275,643 @@
     }
 }
 
-\endinput
+\endinput\n\endinput\n%</core>\n% \end{macrocode}\n% \subsection{Modern theme}\n% \begin{macrocode}\n%<*modern>\n% ltxtalk-theme-modern.sty
+% Version 0.2 - 2026/07/15
+% Modern theme for ltx-talk
+%
+% Copyright 2026
+% Licence: LPPL 1.3c
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage{ltxtalk-theme-modern}{2026/07/15}{0.2}
+  {Modern theme for ltx-talk}
+
+\RequirePackage{ltxtalk-theme-core}
+
+\cs_new_protected:Npn \__ltxtalk_modern_theme_setup:
+  {
+    % === LAYOUT ===
+    \ltxtalksetup{
+      header = true,
+      header-height = 2cm,
+      left-margin = true,
+      footer = true,
+      margin-width = 3cm,
+    }
+    
+    % === TITEL-PLATZIERUNG ===
+    \setltxtalktitleplacement{
+      frametitle = content,
+      section = header,
+    }
+    
+    % === SLOTS ===
+    \defineltxtalkslot{mod-title}{header}{title}{
+      role = heading, heading-level = 1
+    }
+    \defineltxtalkslot{mod-section}{header}{section}{
+      role = navigation
+    }
+    \defineltxtalkslot{mod-page}{header}{pagenumber}{
+      role = navigation
+    }
+    \defineltxtalkslot{mod-logo}{left}{logo}{
+      role = artifact, alt-text = Logo
+    }
+    \defineltxtalkslot{mod-author}{left}{author}{
+      role = note
+    }
+    \defineltxtalkslot{mod-ftitle}{content}{frametitle}{
+      role = heading, heading-level = 2
+    }
+    \defineltxtalkslot{mod-fsubtitle}{content}{framesubtitle}{
+      role = heading, heading-level = 3
+    }
+    \defineltxtalkslot{mod-institute}{footer}{institute}{
+      role = note
+    }
+    \defineltxtalkslot{mod-date}{footer}{date}{
+      role = note
+    }
+    
+    % === POSITIONIERUNG ===
+    \positionltxtalkslot{mod-title}{center}{0.5cm}{0.6\paperwidth}{1cm}
+    \positionltxtalkslot{mod-section}{left}{1.5cm}{0.3\paperwidth}{0.5cm}
+    \positionltxtalkslot{mod-page}{right}{1.5cm}{0.1\paperwidth}{0.5cm}
+    \positionltxtalkslot{mod-logo}{0.5cm}{0.5cm}{2cm}{2cm}
+    \positionltxtalkslot{mod-author}{0.5cm}{3cm}{2cm}{2cm}
+    \positionltxtalkslot{mod-ftitle}{center}{2cm}{0.8\paperwidth}{1.5cm}
+    \positionltxtalkslot{mod-fsubtitle}{center}{3.5cm}{0.8\paperwidth}{1cm}
+    \positionltxtalkslot{mod-institute}{left}{bottom}{0.5\paperwidth}{0.5cm}
+    \positionltxtalkslot{mod-date}{right}{bottom}{0.3\paperwidth}{0.5cm}
+    
+    % === FORMATIERUNG ===
+    \styleltxtalkslot{mod-title}{
+      font = \Large\bfseries\sffamily,
+      color = ltxtalk-primary,
+    }
+    \styleltxtalkslot{mod-section}{
+      font = \small\sffamily,
+      color = ltxtalk-accent,
+    }
+    \styleltxtalkslot{mod-page}{
+      font = \tiny\sffamily,
+      color = ltxtalk-secondary!50,
+    }
+    \styleltxtalkslot{mod-author}{
+      font = \footnotesize\itshape,
+      color = ltxtalk-secondary,
+      align = center,
+    }
+    \styleltxtalkslot{mod-ftitle}{
+      font = \LARGE\bfseries,
+      color = ltxtalk-primary,
+      frame = bottom,
+      rule-color = ltxtalk-primary,
+      rule-thick = 2pt,
+      padding = 5pt,
+    }
+    \styleltxtalkslot{mod-fsubtitle}{
+      font = \large\itshape,
+      color = ltxtalk-secondary,
+    }
+    \styleltxtalkslot{mod-institute}{
+      font = \tiny,
+      color = ltxtalk-secondary!70,
+      align = left,
+    }
+    \styleltxtalkslot{mod-date}{
+      font = \tiny,
+      color = ltxtalk-secondary!70,
+      align = right,
+    }
+    
+    % === BEREICHSDEKORATIONEN ===
+    \decorateltxtalkarea{header}{
+      frame = bottom,
+      rule-color = ltxtalk-primary,
+      rule-thickness = 1pt,
+      background = ltxtalk-primary!5,
+      artifact-type = layout,
+    }
+    \decorateltxtalkarea{footer}{
+      frame = top,
+      rule-color = ltxtalk-primary!20,
+      rule-thickness = 0.5pt,
+      artifact-type = decorative,
+    }
+    \decorateltxtalkarea{left}{
+      frame = right,
+      rule-color = ltxtalk-primary!15,
+      rule-thickness = 0.5pt,
+      background = ltxtalk-primary!3,
+      artifact-type = decorative,
+    }
+    
+    % === FARBEN ===
+    \setltxtalkcolors{
+      primary   = {HTML}{2B3A67},
+      secondary = {HTML}{496A81},
+      accent    = {HTML}{66999B},
+      background = {HTML}{F5F5F5},
+    }
+  }
+
+\RegisterLTXTalkTheme{modern}{\__ltxtalk_modern_theme_setup:}\n\endinput\n%</modern>\n% \end{macrocode}\n% \subsection{Minimal theme}\n% \begin{macrocode}\n%<*minimal>\n% ltxtalk-theme-minimal.sty
+% Version 0.2 - 2026/07/15
+% Minimal theme for ltx-talk
+%
+% Copyright 2026
+% Licence: LPPL 1.3c
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage{ltxtalk-theme-minimal}{2026/07/15}{0.2}
+  {Minimal theme for ltx-talk}
+
+\RequirePackage{ltxtalk-theme-core}
+
+\cs_new_protected:Npn \__ltxtalk_minimal_theme_setup:
+  {
+    % === LAYOUT ===
+    \ltxtalksetup{
+      header = true,
+      header-height = 1.2cm,
+      footer = true,
+      footer-height = 0.6cm,
+    }
+    
+    % === TITEL-PLATZIERUNG ===
+    \setltxtalktitleplacement{
+      frametitle = content,
+      section = none,
+    }
+    
+    % === SLOTS ===
+    \defineltxtalkslot{min-title}{header}{title}{
+      role = note
+    }
+    \defineltxtalkslot{min-section}{header}{section}{
+      role = note
+    }
+    \defineltxtalkslot{min-page}{header}{pagenumber}{
+      role = navigation
+    }
+    \defineltxtalkslot{min-ftitle}{content}{frametitle}{
+      role = heading, heading-level = 2
+    }
+    \defineltxtalkslot{min-fsubtitle}{content}{framesubtitle}{
+      role = heading, heading-level = 3
+    }
+    \defineltxtalkslot{min-author}{footer}{author}{
+      role = note
+    }
+    \defineltxtalkslot{min-footer-page}{footer}{pagenumber}{
+      role = navigation
+    }
+    
+    % === POSITIONIERUNG ===
+    \positionltxtalkslot{min-title}{left}{0.3cm}{0.4\paperwidth}{0.6cm}
+    \positionltxtalkslot{min-section}{center}{0.3cm}{0.3\paperwidth}{0.6cm}
+    \positionltxtalkslot{min-page}{right}{0.3cm}{0.1\paperwidth}{0.6cm}
+    \positionltxtalkslot{min-ftitle}{left}{1cm}{0.9\paperwidth}{2cm}
+    \positionltxtalkslot{min-fsubtitle}{left}{3cm}{0.9\paperwidth}{1cm}
+    \positionltxtalkslot{min-author}{left}{bottom}{0.4\paperwidth}{0.4cm}
+    \positionltxtalkslot{min-footer-page}{right}{bottom}{0.1\paperwidth}{0.4cm}
+    
+    % === FORMATIERUNG ===
+    \styleltxtalkslot{min-title}{
+      font = \small\sffamily,
+      color = ltxtalk-secondary,
+      align = left,
+    }
+    \styleltxtalkslot{min-section}{
+      font = \small\sffamily,
+      color = ltxtalk-secondary!70,
+    }
+    \styleltxtalkslot{min-page}{
+      font = \tiny\sffamily,
+      color = ltxtalk-secondary!50,
+      align = right,
+    }
+    \styleltxtalkslot{min-ftitle}{
+      font = \LARGE\bfseries,
+      color = ltxtalk-primary,
+    }
+    \styleltxtalkslot{min-fsubtitle}{
+      font = \large\itshape,
+      color = ltxtalk-secondary,
+    }
+    \styleltxtalkslot{min-author}{
+      font = \tiny\itshape,
+      color = ltxtalk-secondary!60,
+      align = left,
+    }
+    \styleltxtalkslot{min-footer-page}{
+      font = \tiny\sffamily,
+      color = ltxtalk-secondary!50,
+      align = right,
+    }
+    
+    % === BEREICHSDEKORATIONEN ===
+    \decorateltxtalkarea{header}{
+      frame = bottom,
+      rule-color = ltxtalk-primary,
+      rule-thickness = 1pt,
+      margin-bottom = 10pt,
+      artifact-type = layout,
+    }
+    \decorateltxtalkarea{footer}{
+      frame = top,
+      rule-color = ltxtalk-primary!30,
+      rule-thickness = 0.4pt,
+      margin-top = 5pt,
+      artifact-type = decorative,
+    }
+    
+    % === FARBEN ===
+    \setltxtalkcolors{
+      primary   = {HTML}{333333},
+      secondary = {HTML}{666666},
+      accent    = {HTML}{999999},
+      text      = {HTML}{222222},
+      background = {HTML}{FFFFFF},
+    }
+  }
+
+\RegisterLTXTalkTheme{minimal}{\__ltxtalk_minimal_theme_setup:}
+
+\endinput\n\endinput\n%</minimal>\n% \end{macrocode}\n% \subsection{Academic theme}\n% \begin{macrocode}\n%<*academic>\n% ltxtalk-theme-academic.sty
+% Version 0.2 - 2026/07/15
+% Academic theme for ltx-talk
+%
+% Copyright 2026
+% Licence: LPPL 1.3c
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage{ltxtalk-theme-academic}{2026/07/15}{0.2}
+  {Academic theme for ltx-talk}
+
+\RequirePackage{ltxtalk-theme-core}
+
+\cs_new_protected:Npn \__ltxtalk_academic_theme_setup:
+  {
+    % === LAYOUT ===
+    \ltxtalksetup{
+      header = true,
+      header-height = 3cm,
+      header-rows = 2,
+      left-margin = true,
+      footer = true,
+      footer-height = 1cm,
+      margin-width = 3.5cm,
+    }
+    
+    % === TITEL-PLATZIERUNG ===
+    \setltxtalktitleplacement{
+      frametitle = header,
+      section = header,
+    }
+    
+    % === HEADING-VERHALTEN ===
+    \setltxtalkheadingbehavior{
+      auto-section-title = true,
+      detect-continuation = true,
+      header-as-navigation = true,
+    }
+    
+    % === SLOTS ===
+    \defineltxtalkslot{acad-institute}{header}{institute}{
+      role = note
+    }
+    \defineltxtalkslot{acad-title}{header}{title}{
+      role = heading, heading-level = 1
+    }
+    \defineltxtalkslot{acad-date}{header}{date}{
+      role = note
+    }
+    \defineltxtalkslot{acad-section}{header}{section}{
+      role = navigation
+    }
+    \defineltxtalkslot{acad-subsection}{header}{subsection}{
+      role = navigation
+    }
+    \defineltxtalkslot{acad-page}{header}{pagenumber}{
+      role = navigation
+    }
+    \defineltxtalkslot{acad-logo}{left}{logo}{
+      role = artifact, alt-text = Logo
+    }
+    \defineltxtalkslot{acad-author}{left}{author}{
+      role = note
+    }
+    \defineltxtalkslot{acad-ftitle}{content}{frametitle}{
+      role = heading, heading-level = 2
+    }
+    \defineltxtalkslot{acad-fsubtitle}{content}{framesubtitle}{
+      role = heading, heading-level = 3
+    }
+    \defineltxtalkslot{acad-footer-page}{footer}{pagenumber}{
+      role = navigation
+    }
+    
+    % === POSITIONIERUNG ===
+    \positionltxtalkslot{acad-institute}{left}{0.3cm}{0.3\paperwidth}{0.8cm}
+    \positionltxtalkslot{acad-title}{center}{0.3cm}{0.4\paperwidth}{1cm}
+    \positionltxtalkslot{acad-date}{right}{0.3cm}{0.3\paperwidth}{0.8cm}
+    \positionltxtalkslot{acad-section}{left}{1.5cm}{0.35\paperwidth}{0.8cm}
+    \positionltxtalkslot{acad-subsection}{center}{1.5cm}{0.3\paperwidth}{0.8cm}
+    \positionltxtalkslot{acad-page}{right}{1.5cm}{0.15\paperwidth}{0.8cm}
+    \positionltxtalkslot{acad-logo}{0.5cm}{0.5cm}{2.5cm}{2.5cm}
+    \positionltxtalkslot{acad-author}{0.5cm}{3.5cm}{2.5cm}{2cm}
+    \positionltxtalkslot{acad-ftitle}{center}{1cm}{0.8\paperwidth}{1.5cm}
+    \positionltxtalkslot{acad-fsubtitle}{center}{2.5cm}{0.8\paperwidth}{1cm}
+    \positionltxtalkslot{acad-footer-page}{center}{bottom}{0.3\paperwidth}{0.6cm}
+    
+    % === FORMATIERUNG ===
+    \styleltxtalkslot{acad-institute}{
+      font = \small\scshape,
+      color = ltxtalk-secondary!80,
+      align = left,
+    }
+    \styleltxtalkslot{acad-title}{
+      font = \large\bfseries\sffamily,
+      color = ltxtalk-primary,
+      frame = bottom,
+      rule-color = ltxtalk-accent,
+      rule-thick = 2pt,
+      padding = 3pt,
+    }
+    \styleltxtalkslot{acad-date}{
+      font = \small,
+      color = ltxtalk-secondary!60,
+      align = right,
+    }
+    \styleltxtalkslot{acad-section}{
+      font = \normalsize\bfseries\scshape,
+      color = ltxtalk-accent,
+      rule-color = ltxtalk-primary!30,
+      rule-thick = 0.5pt,
+      frame = bottom,
+    }
+    \styleltxtalkslot{acad-subsection}{
+      font = \small\scshape,
+      color = ltxtalk-accent!80,
+    }
+    \styleltxtalkslot{acad-page}{
+      font = \tiny\sffamily,
+      color = ltxtalk-secondary!50,
+    }
+    \styleltxtalkslot{acad-logo}{
+      frame = box,
+      rule-color = ltxtalk-primary!30,
+      padding = 5pt,
+      background = white,
+    }
+    \styleltxtalkslot{acad-author}{
+      font = \footnotesize\itshape,
+      color = ltxtalk-secondary,
+      align = center,
+      rule-color = ltxtalk-primary,
+      rule-thick = 1pt,
+      frame = top,
+    }
+    \styleltxtalkslot{acad-ftitle}{
+      font = \LARGE\bfseries,
+      color = ltxtalk-primary,
+      frame = bottom,
+      rule-color = ltxtalk-primary,
+      rule-thick = 3pt,
+      padding = 5pt,
+    }
+    \styleltxtalkslot{acad-fsubtitle}{
+      font = \large\itshape,
+      color = ltxtalk-secondary,
+    }
+    \styleltxtalkslot{acad-footer-page}{
+      font = \tiny\sffamily,
+      color = ltxtalk-secondary!50,
+      frame = top,
+      rule-color = ltxtalk-primary!20,
+      rule-thick = 0.5pt,
+    }
+    
+    % === BEREICHSDEKORATIONEN ===
+    \decorateltxtalkarea{header}{
+      frame = bottom,
+      rule-color = ltxtalk-accent,
+      rule-thickness = 4pt,
+      background = ltxtalk-primary!5,
+      padding = 5pt,
+      artifact-type = layout,
+    }
+    \decorateltxtalkarea{footer}{
+      frame = topbottom,
+      rule-color = ltxtalk-primary!30,
+      rule-thickness = 0.5pt,
+      background = ltxtalk-primary!3,
+      artifact-type = decorative,
+    }
+    \decorateltxtalkarea{left}{
+      frame = right,
+      rule-color = ltxtalk-accent,
+      rule-thickness = 2pt,
+      background = ltxtalk-primary!5,
+      artifact-type = decorative,
+    }
+    
+    % === FARBEN ===
+    \setltxtalkcolors{
+      primary   = {RGB}{139,0,0},
+      secondary = {RGB}{70,70,70},
+      accent    = {RGB}{180,150,0},
+      text      = {RGB}{30,30,30},
+      background = {RGB}{255,255,255},
+    }
+  }
+
+\RegisterLTXTalkTheme{academic}{\__ltxtalk_academic_theme_setup:}
+
+\endinput\n\endinput\n%</academic>\n% \end{macrocode}\n% \subsection{Corporate theme}\n% \begin{macrocode}\n%<*corporate>\n% ltxtalk-theme-corporate.sty
+% Version 0.2 - 2026/07/15
+% Corporate theme for ltx-talk
+%
+% Copyright 2026
+% Licence: LPPL 1.3c
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage{ltxtalk-theme-corporate}{2026/07/15}{0.2}
+  {Corporate theme for ltx-talk}
+
+\RequirePackage{ltxtalk-theme-core}
+
+\cs_new_protected:Npn \__ltxtalk_corporate_theme_setup:
+  {
+    % === LAYOUT ===
+    \ltxtalksetup{
+      header = true,
+      header-height = 2.5cm,
+      left-margin = true,
+      right-margin = true,
+      footer = true,
+      footer-height = 0.8cm,
+      margin-width = 2.8cm,
+    }
+    
+    % === TITEL-PLATZIERUNG ===
+    \setltxtalktitleplacement{
+      frametitle = content,
+      section = header,
+    }
+    
+    % === SLOTS ===
+    \defineltxtalkslot{corp-logo-header}{header}{logo}{
+      role = artifact, alt-text = Firmenlogo
+    }
+    \defineltxtalkslot{corp-title}{header}{title}{
+      role = heading, heading-level = 1
+    }
+    \defineltxtalkslot{corp-section}{header}{section}{
+      role = navigation
+    }
+    \defineltxtalkslot{corp-logo-left}{left}{logo}{
+      role = artifact, alt-text = Logo
+    }
+    \defineltxtalkslot{corp-author}{left}{author}{
+      role = note
+    }
+    \defineltxtalkslot{corp-ftitle}{content}{frametitle}{
+      role = heading, heading-level = 2
+    }
+    \defineltxtalkslot{corp-fsubtitle}{content}{framesubtitle}{
+      role = heading, heading-level = 3
+    }
+    \defineltxtalkslot{corp-date}{right}{date}{
+      role = note
+    }
+    \defineltxtalkslot{corp-page}{right}{pagenumber}{
+      role = navigation
+    }
+    \defineltxtalkslot{corp-institute}{footer}{institute}{
+      role = note
+    }
+    
+    % === POSITIONIERUNG ===
+    \positionltxtalkslot{corp-logo-header}{left}{center}{0.2\paperwidth}{2cm}
+    \positionltxtalkslot{corp-title}{center}{center}{0.6\paperwidth}{1.5cm}
+    \positionltxtalkslot{corp-section}{right}{bottom}{0.2\paperwidth}{0.8cm}
+    \positionltxtalkslot{corp-logo-left}{center}{1cm}{2cm}{2cm}
+    \positionltxtalkslot{corp-author}{center}{3.5cm}{2cm}{1.5cm}
+    \positionltxtalkslot{corp-ftitle}{left}{1cm}{0.9\paperwidth}{2cm}
+    \positionltxtalkslot{corp-fsubtitle}{left}{3cm}{0.9\paperwidth}{1cm}
+    \positionltxtalkslot{corp-date}{center}{1cm}{2cm}{1cm}
+    \positionltxtalkslot{corp-page}{center}{2.5cm}{2cm}{1cm}
+    \positionltxtalkslot{corp-institute}{center}{bottom}{0.5\paperwidth}{0.6cm}
+    
+    % === FORMATIERUNG ===
+    \styleltxtalkslot{corp-logo-header}{
+      frame = box,
+      rule-color = ltxtalk-primary!30,
+      background = white,
+      padding = 8pt,
+    }
+    \styleltxtalkslot{corp-title}{
+      font = \huge\bfseries\sffamily,
+      color = white,
+      background = ltxtalk-primary,
+      padding = 10pt,
+      frame = box,
+      rule-color = ltxtalk-primary,
+    }
+    \styleltxtalkslot{corp-section}{
+      font = \small\sffamily,
+      color = ltxtalk-primary,
+      align = right,
+      rule-color = ltxtalk-accent,
+      rule-thick = 1.5pt,
+      frame = bottom,
+    }
+    \styleltxtalkslot{corp-logo-left}{
+      frame = box,
+      rule-color = ltxtalk-primary!20,
+      padding = 5pt,
+    }
+    \styleltxtalkslot{corp-author}{
+      font = \footnotesize\itshape,
+      color = ltxtalk-secondary,
+      align = center,
+    }
+    \styleltxtalkslot{corp-ftitle}{
+      font = \LARGE\bfseries\sffamily,
+      color = ltxtalk-primary,
+      frame = left,
+      rule-color = ltxtalk-accent,
+      rule-thick = 5pt,
+      padding = 8pt,
+    }
+    \styleltxtalkslot{corp-fsubtitle}{
+      font = \large,
+      color = ltxtalk-secondary,
+    }
+    \styleltxtalkslot{corp-date}{
+      font = \small\sffamily,
+      color = ltxtalk-secondary!60,
+      align = center,
+    }
+    \styleltxtalkslot{corp-page}{
+      font = \tiny\sffamily,
+      color = ltxtalk-secondary!50,
+      align = center,
+      frame = top,
+      rule-color = ltxtalk-primary!20,
+      rule-thick = 0.5pt,
+    }
+    \styleltxtalkslot{corp-institute}{
+      font = \tiny\sffamily,
+      color = ltxtalk-secondary!60,
+      align = center,
+    }
+    
+    % === BEREICHSDEKORATIONEN ===
+    \decorateltxtalkarea{header}{
+      frame = bottom,
+      rule-color = ltxtalk-accent,
+      rule-thickness = 0pt,
+      background = ltxtalk-primary,
+      background-opacity = 0.95,
+      shadow = true,
+      shadow-color = black!20,
+      shadow-offset = 4pt,
+      artifact-type = layout,
+    }
+    \decorateltxtalkarea{footer}{
+      frame = top,
+      rule-color = ltxtalk-primary!20,
+      rule-thickness = 0.5pt,
+      artifact-type = decorative,
+    }
+    \decorateltxtalkarea{left}{
+      frame = right,
+      rule-color = ltxtalk-primary!15,
+      rule-thickness = 0.5pt,
+      artifact-type = decorative,
+    }
+    \decorateltxtalkarea{right}{
+      frame = left,
+      rule-color = ltxtalk-primary!15,
+      rule-thickness = 0.5pt,
+      artifact-type = decorative,
+    }
+    
+    % === FARBEN ===
+    \setltxtalkcolors{
+      primary   = {HTML}{003366},
+      secondary = {HTML}{555555},
+      accent    = {HTML}{CC6600},
+      text      = {HTML}{333333},
+      background = {HTML}{FAFAFA},
+    }
+  }
+
+\RegisterLTXTalkTheme{corporate}{\__ltxtalk_corporate_theme_setup:}
+
+\endinput\n\endinput\n%</corporate>\n% \end{macrocode}\n% \Finale\n
