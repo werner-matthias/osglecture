@@ -200,9 +200,9 @@ load babel
     }
   }
 }
-% \ldeen*{Die Pakete @1 und @2 müssen explizit geladen werden, um nicht den Fehler @3 zu triggern.}{
-%  The packages @1 and @2 must be explicitly loaded to avoid triggering @3 error .
-% }{\pkg{multicol}}{\pkg{ragged2e}}{\emph{Loading in a group}}
+% \ldeen*{Die Pakete @1 und @2 müssen explizit geladen werden, um nicht den Fehler "`\emph{@3}"' zu triggern.}{
+%  The packages @1 and @2 must be explicitly loaded to avoid triggering "`\emph{@3}"' error .
+% }{\pkg{multicol}}{\pkg{ragged2e}}{Loading in a group}
 \RequirePackage{multicol,ragged2e}
 \RequirePackage{luatex85, shellesc}
 \AddToHook{class/cnltx-doc/before}{
@@ -283,15 +283,15 @@ load babel
 autodoc = autodoc or {}
 
 local verbtempfiles = {}
-% \ldeen{Syntaxmodi}{Syntax modes}
+% \ldeen{Syntaxmodi}{Syntax modes}\\
 % TODO: mode auto?
 local syntaxes = {
-  tex = {
+  ["tex"] = {
     guard_prefix = "%%",
     comment_kind = "tex",
   },
 
-  lua = {
+  ["lua"] = {
     guard_prefix = "%-%-",
     comment_kind = "lua",
   },
@@ -392,7 +392,7 @@ local function lua_line_comment_text(line)
     return nil
   end
 
-% \ldeen{Lua Langkommentare werden gesondert behandelt}{Lua long-comment openings are handled separately.}
+% \ldeen{Lua-Langkommentare werden gesondert behandelt}{Lua long-comment openings are handled separately.}
   if line:match("^%s*%-%-%[(=*)%[") then
     return nil
   end
@@ -412,9 +412,9 @@ local function comment_text(line, syntax)
   return lua_line_comment_text(line)
 end
 
-% \ldeen{Lua Langkommentare. Folgende Varianten werden erkannt:}{Lua long comments. 
+% \ldeen{Lua-Langkommentare. Folgende Varianten werden erkannt:}{Lua long comments. 
 % Recognised forms:}
-% \begin{itemize}
+% \begin{itemize}[nosep]
 %   \item \texttt{--[[} \ldots \texttt{]]}
 %   \item  \texttt{--[=[} \ldots \texttt{]=]}
 %   \item \texttt{--[==[} \ldots \texttt{]==]}
