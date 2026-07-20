@@ -63,7 +63,434 @@ load babel
   build-title
 }
 \begin{document}
-\section{\ldeen{Nutzung}{Usage}}
+% --------------------------------------------------------------------------
+% Documentation
+% --------------------------------------------------------------------------
+
+\section{\ldeen{Einführung}{Introduction}}
+
+\subsection{\ldeen{Ziel des Pakets}{Purpose of the package}}
+
+\ldeen{
+Präsentationsfolien bestehen aus zwei grundsätzlich verschiedenen
+Bestandteilen: ihrem Inhalt und dessen visueller Darstellung.
+Während sich der Inhalt von Vortrag zu Vortrag ändert, folgt die
+Gestaltung häufig einem einheitlichen Erscheinungsbild oder einem
+vorgegebenen Corporate Design.
+}{
+Presentation slides consist of two fundamentally different parts:
+their content and its visual presentation. While the content changes
+from one presentation to another, the design often follows a consistent
+visual identity or a prescribed corporate design.
+}
+
+\ldeen{
+Das Paket \thepkg{} stellt das Theme-System für die Dokumentklasse
+\cls{ltx-talk} bereit. Es ermöglicht, die visuelle Gestaltung einer
+Präsentation unabhängig von ihrem Inhalt zu beschreiben.
+}{
+The \thepkg{} package provides the theme system for the
+\cls{ltx-talk} document class. It allows the visual design of a
+presentation to be described independently of its content.
+}
+
+\ldeen{
+Dadurch können unterschiedliche Themes ausgewählt oder entwickelt
+werden, ohne die eigentliche Präsentationsquelle an ein bestimmtes
+Erscheinungsbild zu binden.
+}{
+This makes it possible to select or develop different themes without
+tying the presentation source itself to a particular visual design.
+}
+
+\ldeen{
+Ein Theme umfasst dabei mehr als Farben und Schriftarten. Es legt fest,
+welche Informationen dargestellt werden, wie sie auf einer Folie
+angeordnet sind und wie ihre visuelle Gestaltung erfolgt.
+}{
+A theme comprises more than colours and fonts. It determines which
+information is displayed, how that information is arranged on a slide,
+and how it is presented visually.
+}
+
+
+\subsection{\ldeen{Leserwege}{Reading paths}}
+
+\ldeen{
+Diese Dokumentation richtet sich an zwei Zielgruppen. Anwender möchten
+ein vorhandenes Theme auswählen und gegebenenfalls an ihre Anforderungen
+anpassen. Theme-Autoren möchten dagegen ein eigenes Theme erstellen oder
+ein vorhandenes Theme erweitern.
+}{
+This documentation addresses two audiences. Users want to select an
+existing theme and, where necessary, adapt it to their requirements.
+Theme authors, on the other hand, want to create a new theme or extend
+an existing one.
+}
+
+\ldeen{
+Wer ein vorhandenes Theme verwenden möchte, beginnt mit dem
+Schnelleinstieg und den Abschnitten über die Verwendung und Anpassung
+von Themes.
+}{
+Readers who want to use an existing theme should begin with the quick
+start and the sections on using and customizing themes.
+}
+
+\ldeen{
+Wer ein eigenes Theme erstellen möchte, sollte anschließend das
+Theme-Modell und den Abschnitt über die Entwicklung eigener Themes
+lesen. Die Referenz dient beiden Zielgruppen zum gezielten
+Nachschlagen.
+}{
+Readers who want to create a theme of their own should then continue
+with the theme model and the section on developing custom themes.
+The reference is intended as a lookup resource for both audiences.
+}
+
+
+\subsection{\ldeen{Designprinzipien}{Design principles}}
+
+\subsubsection{
+  \ldeen
+    {Trennung von Inhalt und Gestaltung}
+    {Separation of content and presentation}
+}
+
+\ldeen{
+Das Präsentationsdokument beschreibt seinen Inhalt. Das Theme bestimmt,
+wie dieser Inhalt dargestellt wird. Beide Aspekte bleiben bewusst
+voneinander getrennt.
+}{
+The presentation document describes its content. The theme determines
+how that content is presented. Both aspects are deliberately kept
+separate.
+}
+
+\ldeen{
+Eine Präsentation kann daher ihr Erscheinungsbild wechseln, ohne dass
+ihre inhaltliche Struktur dafür angepasst werden muss.
+}{
+A presentation can therefore change its visual appearance without
+requiring changes to its content structure.
+}
+
+
+\subsubsection{\ldeen{Semantische Elemente}{Semantic elements}}
+
+\ldeen{
+Themes arbeiten mit der Bedeutung von Elementen wie Titel, Autor,
+Abschnitt, Logo oder Foliennummer. Sie behandeln diese Elemente nicht
+lediglich als Text oder Grafik an einer festen Position.
+}{
+Themes operate on the meaning of elements such as the title, author,
+section, logo, or slide number. They do not treat these elements merely
+as text or graphics at fixed positions.
+}
+
+\ldeen{
+Die technische Repräsentation solcher Elemente durch Slots wird im
+Abschnitt über das Theme-Modell erläutert.
+}{
+The technical representation of such elements by slots is explained
+in the section on the theme model.
+}
+
+
+\subsubsection{
+  \ldeen
+    {Trennung von Anordnung und Erscheinungsbild}
+    {Separation of arrangement and appearance}
+}
+
+\ldeen{
+Die räumliche Anordnung eines Elements und seine visuelle Gestaltung
+sind unterschiedliche Eigenschaften. Ein Layout beantwortet vor allem
+die Frage, wo und in welcher Größe ein Element erscheint.
+}{
+The spatial arrangement of an element and its visual styling are
+different properties. A layout primarily answers where an element
+appears and how much space it occupies.
+}
+
+\ldeen{
+Farben, Schriften, Linien, Hintergründe und ähnliche Eigenschaften
+bestimmen dagegen sein Erscheinungsbild. Durch diese Trennung können
+Anordnung und Gestaltung weitgehend unabhängig voneinander entwickelt
+werden.
+}{
+Colours, fonts, rules, backgrounds, and similar properties determine
+its appearance. This separation allows arrangement and visual design
+to be developed largely independently.
+}
+
+
+\subsubsection{\ldeen{Erweiterbarkeit}{Extensibility}}
+
+\ldeen{
+Themes sollen nicht in jedem Fall vollständig neu erstellt werden
+müssen. Vorhandene Definitionen können als Ausgangspunkt dienen und
+gezielt verändert oder ergänzt werden.
+}{
+Themes should not always have to be created entirely from scratch.
+Existing definitions can serve as a starting point and be changed or
+extended selectively.
+}
+
+\ldeen{
+Auf diese Weise können verwandte Themes gemeinsame Eigenschaften
+verwenden und sich nur dort unterscheiden, wo dies tatsächlich
+erforderlich ist.
+}{
+In this way, related themes can share common properties and differ only
+where this is actually necessary.
+}
+
+
+\subsubsection{\ldeen{Barrierefreiheit}{Accessibility}}
+
+\ldeen{
+Die visuelle Gestaltung einer Präsentation darf ihre semantische
+Struktur und ihre Zugänglichkeit nicht unnötig beeinträchtigen.
+Barrierefreiheit wird deshalb als Bestandteil des Theme-Modells
+behandelt und nicht lediglich nachträglich ergänzt.
+}{
+The visual design of a presentation should not unnecessarily impair
+its semantic structure or accessibility. Accessibility is therefore
+treated as part of the theme model rather than being added only as an
+afterthought.
+}
+
+\ldeen{
+Die dafür vorgesehenen Eigenschaften und Empfehlungen werden in einem
+eigenen Abschnitt beschrieben.
+}{
+The relevant properties and recommendations are described in a
+dedicated section.
+}
+
+
+% ==========================================================================
+% For users
+% ==========================================================================
+
+\section{\ldeen{Schnelleinstieg}{Quick start}}
+
+% TODO:
+% - minimal complete presentation
+% - selecting one of the provided themes
+% - result and first explanation
+
+
+\section{\ldeen{Themes verwenden}{Using themes}}
+
+\subsection{\ldeen{Ein Theme auswählen}{Selecting a theme}}
+
+% TODO: migrate and expand theme management material
+
+\subsection{\ldeen{Themes wechseln}{Switching themes}}
+
+% TODO
+
+\subsection{\ldeen{Mitgelieferte Themes}{Provided themes}}
+
+% TODO:
+% - modern
+% - minimal
+% - academic
+% - corporate
+
+
+\section{\ldeen{Themes anpassen}{Customizing themes}}
+
+\subsection{\ldeen{Das Layout anpassen}{Customizing the layout}}
+
+% TODO: migrate layout configuration material
+
+\subsection{\ldeen{Farben anpassen}{Customizing colours}}
+
+% TODO: migrate colour configuration material
+
+\subsection{\ldeen{Titel platzieren}{Positioning titles}}
+
+% TODO: migrate title placement material
+
+\subsection{\ldeen{Weitere Anpassungen}{Further customizations}}
+
+% TODO:
+% Describe only customizations intended for ordinary users.
+% Detailed slot and area construction belongs to the theme-author section.
+
+
+\section{\ldeen{Barrierefreiheit}{Accessibility}}
+
+% TODO:
+% - behaviour relevant to users of existing themes
+% - selecting suitable colours
+% - alternative text where user-provided content is involved
+% - testing and practical recommendations
+
+
+% ==========================================================================
+% For theme authors
+% ==========================================================================
+
+\section{\ldeen{Das Theme-Modell}{The theme model}}
+
+\subsection{\ldeen{Bereiche}{Areas}}
+
+% TODO: concept before commands
+% Existing areas:
+% - header
+% - left
+% - content
+% - right
+% - footer
+
+\subsection{\ldeen{Slots}{Slots}}
+
+% TODO:
+% - semantic purpose
+% - relation between a slot and an area
+% - distinction between the concept and its positioning/styling
+
+\subsection{\ldeen{Slottypen}{Slot types}}
+
+% TODO: migrate the table of available slot types
+
+\subsection{\ldeen{Layout}{Layout}}
+
+% TODO:
+% Explain arrangement, dimensions, and positioning.
+
+\subsection{\ldeen{Gestaltung}{Styling}}
+
+% TODO:
+% Explain fonts, colours, rules, backgrounds, padding, and alignment.
+
+\subsection{\ldeen{Dekoration von Bereichen}{Area decoration}}
+
+% TODO:
+% Explain decoration independently of the content slots.
+
+
+\section{\ldeen{Eigene Themes entwickeln}{Developing custom themes}}
+
+\subsection{\ldeen{Aufbau eines Themes}{Structure of a theme}}
+
+% TODO:
+% - registration
+% - setup
+% - activation
+% - relationship to the core package
+
+\subsection{\ldeen{Bereiche und Slots definieren}{Defining areas and slots}}
+
+% TODO: migrate slot definition material
+
+\subsection{\ldeen{Slots positionieren}{Positioning slots}}
+
+% TODO: migrate slot positioning material
+
+\subsection{\ldeen{Slots gestalten}{Styling slots}}
+
+% TODO: migrate slot styling material
+
+\subsection{\ldeen{Bereiche dekorieren}{Decorating areas}}
+
+% TODO: migrate area decoration material
+
+\subsection{
+  \ldeen
+    {Vorhandene Themes erweitern}
+    {Extending existing themes}
+}
+
+% TODO
+
+\subsection{\ldeen{Empfehlungen}{Recommendations}}
+
+% TODO: migrate and expand the existing best-practices material
+
+
+% ==========================================================================
+% Reference
+% ==========================================================================
+
+\section{\ldeen{Referenz}{Reference}}
+
+\subsection{\ldeen{Theme-Verwaltung}{Theme management}}
+
+% TODO:
+% \useltxtalktheme
+% \RegisterLTXTalkTheme
+
+\subsection{\ldeen{Layout-Konfiguration}{Layout configuration}}
+
+% TODO:
+% \ltxtalksetup
+
+\subsection{\ldeen{Farbkonfiguration}{Colour configuration}}
+
+% TODO:
+% \setltxtalkcolors
+
+\subsection{\ldeen{Slot-Definition}{Slot definition}}
+
+% TODO:
+% \defineltxtalkslot
+
+\subsection{\ldeen{Slot-Positionierung}{Slot positioning}}
+
+% TODO:
+% \positionltxtalkslot
+
+\subsection{\ldeen{Slot-Gestaltung}{Slot styling}}
+
+% TODO:
+% \styleltxtalkslot
+
+\subsection{\ldeen{Bereichsdekoration}{Area decoration}}
+
+% TODO:
+% \decorateltxtalkarea
+
+\subsection{\ldeen{Titelplatzierung}{Title placement}}
+
+% TODO:
+% \setltxtalktitleplacement
+
+\subsection{
+  \ldeen
+    {Optionen für Barrierefreiheit}
+    {Accessibility options}
+}
+
+% TODO:
+% - role
+% - heading-level
+% - alt-text
+% - continuation-text
+% - continuation-mode
+
+
+% --------------------------------------------------------------------------
+% Implementation
+% --------------------------------------------------------------------------
+
+\section{Implementation}
+
+\subsection{ltxtalk-theme-core}
+
+\AutoDocInput{lttheme.dtx}{core}
+
+
+\section{\ldeen{Referenz}{Reference}}
+
+% bisherige API-Referenz
+
+
+%\section{\ldeen{Nutzung}{Usage}}
 %
 % \section{Overview}
 % The \textsf{lttheme} module provides a theme engine and four predefined
