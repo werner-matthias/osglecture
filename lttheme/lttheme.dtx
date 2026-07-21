@@ -27,6 +27,8 @@
   \file{ltxtalk-theme-minimal.sty}{\from{lttheme.dtx}{minimal}}
   \file{ltxtalk-theme-academic.sty}{\from{lttheme.dtx}{academic}}
   \file{ltxtalk-theme-corporate.sty}{\from{lttheme.dtx}{corporate}}
+  \file{ltxtalk-theme-tuc-2019.sty}{\from{lttheme.dtx}{tuc-2019}}
+  \file{ltxtalk-tuc-2019.sty}{\from{lttheme.dtx}{tuc-2019-alias}}
 }
   \expandafter\endbatchfile
 \fi
@@ -117,9 +119,9 @@ an existing one.
 Für erstere Gruppe sind die Abschnitte @1 bis @2 hinreichend.
 }{
 }{\ref{sec:quick-start}}{\ref{sec:accessibility}}
-\ldeen{
-Wer dagegen ein eigenes Theme erstellen möchte, sollte anschließend das
-auch die Abschnitte @1 bis @2 nutzen. Die Referenz (Abschnitt @3) kann beiden 
+\ldeen*{
+Wer dagegen ein eigenes Theme erstellen möchte, sollte anschließend auch
+die Abschnitte @1 bis @2 lesen. Die Referenz (Abschnitt @3) kann beiden
 Gruppen zum gezielten Nachschlagen dienen.
 }{
 }{\ref{sec:theme-model}}{\ref{sec:develop-themes}}{\ref{ref:reference}}
@@ -212,6 +214,18 @@ afterthought.
 }
 
 \ldeen{
+Das PDF-Tagging der tatsächlich ausgegebenen Folien übernimmt derzeit
+überwiegend die Klasse \cls{ltx-talk}. Ein Theme muss deren semantische
+Struktur bewahren; \thepkg{} konfiguriert dafür die öffentlichen Templates
+der Klasse. Die im Slot-Modell hinterlegten Angaben zur Barrierefreiheit
+beschreiben darüber hinaus die angestrebte Semantik der Slots. Sie sind noch
+nicht in allen Fällen unmittelbar mit der von \cls{ltx-talk} erzeugten
+Tag-Struktur verbunden.
+}{
+% TODO: English translation
+}
+
+\ldeen{
 Die dafür vorgesehenen Eigenschaften und Empfehlungen werden in einem
 eigenen Abschnitt beschrieben.
 }{
@@ -236,6 +250,7 @@ und eine weitere Folie mit einfachem Inhalt.
 }
 
 \begin{example}[code-only]
+  \DocumentMetadata{}
   \documentclass{ltx-talk}
 
   \usepackage{ltxtalk-theme-modern}
@@ -248,10 +263,11 @@ und eine weitere Folie mit einfachem Inhalt.
   \begin{document}
 
   \begin{frame}
-    \titlepage
+    \maketitle
   \end{frame}
 
-  \begin{frame}{Ein erstes Thema}
+  \begin{frame}
+    \frametitle{Ein erstes Thema}
     \begin{itemize}
       \item Eine Präsentation enthält den Inhalt.
       \item Das Theme bestimmt dessen Darstellung.
@@ -273,10 +289,11 @@ Themes gehören dabei zusammen.
 
 \ldeen{
 Die Befehle für Titel, Autor und Datum sowie die Umgebung \code{frame}
-gehören zur Dokumentklasse \cls{ltx-talk}. Das Theme wertet diese
-semantischen Angaben aus und legt fest, wo und in welcher Form sie auf
-den Folien erscheinen. Der eigentliche Inhalt bleibt dadurch unabhängig
-vom gewählten Theme.
+gehören zur Dokumentklasse \cls{ltx-talk}. Das Theme konfiguriert deren
+öffentliche Templates und legt damit fest, wo und in welcher Form diese
+Angaben auf den Folien erscheinen. Das Setzen und semantische Taggen der
+Inhalte bleibt Aufgabe der Klasse. Der eigentliche Inhalt bleibt dadurch
+unabhängig vom gewählten Theme.
 }{
 % TODO: English translation
 }
@@ -303,35 +320,335 @@ beschreibt der folgende Abschnitt.
 % - academic
 % - corporate
 
+\subsection{TU Chemnitz 2019}
+
+\ldeen{
+Das Theme \code{tuc-2019} bildet das seit 2019 verwendete Corporate
+Design der TU Chemnitz für Präsentationen nach. Das kurze Paket
+\pkg{ltxtalk-tuc-2019} lädt die eigentliche Implementierung aus
+\pkg{ltxtalk-theme-tuc-2019}. Beide Paketnamen sind daher gleichwertig.
+Anschließend wird das Theme wie üblich aktiviert:
+}{
+% TODO: English translation
+}
+
+\begin{sourcecode}
+  \usepackage{ltxtalk-tuc-2019}
+  \useltxtalktheme{tuc-2019}
+\end{sourcecode}
+
+\subsubsection{Aufbau der Folien}
+
+\ldeen{
+Auf normalen Folien enthält das grüne Kopfband links das weiße
+Universitätslogo. Eine weiße Linie trennt es vom Veranstaltungskontext.
+Die erste Textzeile besteht aus Präsentationstitel und aktuellem Abschnitt,
+die zweite aus dem aktuellen Unterabschnitt. Die Angaben werden aus
+\cs*{title}, \cs*{section} und \cs*{subsection} übernommen.
+}{
+% TODO: English translation
+}
+
+\ldeen{
+Der Folientitel und ein optionaler Folienuntertitel stehen im Hauptbereich.
+Die Fußzeile ist durch eine dünne Linie abgesetzt und enthält den Autor links,
+die Foliennummer in der Seitenmitte und die Webadresse rechts. Alle drei
+Felder besitzen den im Corporate Design vorgesehenen Abstand zum Seitenrand.
+}{
+% TODO: English translation
+}
+
+\ldeen{
+Die Titelfolie unterscheidet sich bewusst von normalen Folien. Ihr Kopfband
+ist höher und zeigt neben dem größeren Universitätslogo den Titel und das
+Datum. Im Hauptbereich steht links ein zweites, veranstaltungsbezogenes Logo;
+dessen Seitenkanten fluchten mit denen des Universitätslogos. Der Titelblock
+beginnt unter dem Text des Kopfbandes. Eine Fußzeile wird auf der Titelfolie
+nicht ausgegeben.
+}{
+% TODO: English translation
+}
+
+\subsubsection{Logos und Webadresse}
+
+\ldeen{
+Das Universitätslogo, das Logo der Titelfolie und die Webadresse können vor
+\cs*{begin}\Marg{document} gesetzt werden. Die Pfade werden wie bei
+\cs*{includegraphics} relativ zur Hauptdatei der Präsentation aufgelöst.
+Für die mit dem Bundle ausgelieferten Dateien kann die Konfiguration zum
+Beispiel so aussehen:
+}{
+% TODO: English translation
+}
+
+\begin{sourcecode}
+  \settucthemelogo{images/logos/tuc_white.pdf}
+  \settucthemetitlelogo{images/logos/osg.png}
+  \settucthemeurl{https://www.tu-chemnitz.de/}
+\end{sourcecode}
+
+\ldeen{
+Das Logo im Kopfband wird über seine Höhe skaliert. Das zweite Logo wird auf
+die Breite der Logo-Spalte skaliert, so dass beide Logos dieselbe Breite und
+dieselben horizontalen Fluchten besitzen. Für das mitgelieferte OSG-Logo
+gleicht das Theme dessen transparenten oberen Bildrand aus. Bei einer anderen,
+bereits eng beschnittenen Datei kann dieser Ausgleich mit
+\cs*{settucthemetitlelogoraise}\Marg{0pt} abgeschaltet werden.
+}{
+% TODO: English translation
+}
+
+\subsubsection{Titelfolie}
+
+\ldeen{
+Die speziell gestaltete Titelfolie wird mit \cs*{maketuctitle} erzeugt. Der
+Befehl legt den benötigten Frame selbst an und darf daher nicht innerhalb
+einer \code{frame}-Umgebung stehen. Er verwendet die Angaben aus
+\cs*{title}, \cs*{subtitle}, \cs*{author}, \cs*{institute} und \cs*{date}.
+Nach der Titelfolie stellt er automatisch die Geometrie normaler Folien
+wieder her.
+}{
+% TODO: English translation
+}
+
+\subsubsection{Vollständiges Beispiel}
+
+\begin{example}[code-only]
+  \DocumentMetadata{}
+  \documentclass{ltx-talk}
+
+  \usepackage{ltxtalk-tuc-2019}
+  \settucthemelogo{images/logos/tuc_white.pdf}
+  \settucthemetitlelogo{images/logos/osg.png}
+  \settucthemeurl{https://www.tu-chemnitz.de/}
+  \useltxtalktheme{tuc-2019}
+
+  \title{Echtzeitsysteme}
+  \subtitle{0. Kapitel\\Organisatorisches}
+  \author{Prof. Matthias Werner}
+  \institute{Professur Betriebssysteme}
+  \date{Sommersemester 2026}
+
+  \begin{document}
+  \maketuctitle
+
+  \section{Organisatorisches}
+  \subsection{Willkommen}
+  \begin{frame}
+    \frametitle{Willkommen zur Lehrveranstaltung}
+    \begin{itemize}
+      \item Informationen und Materialien
+      \item Termine und Ansprechpartner
+    \end{itemize}
+  \end{frame}
+  \end{document}
+\end{example}
+
+\ldeen{
+Eine ausführlichere Präsentation befindet sich in
+\code{example/example-tuc-2019.tex}.
+}{
+% TODO: English translation
+}
+
 
 \section{\ldeen{Themes anpassen}{Customizing themes}}
 \label{sec:customizing-themes}
 \subsection{\ldeen{Das Layout anpassen}{Customizing the layout}}
 
-% TODO: migrate layout configuration material
+\ldeen{
+Nach der Aktivierung lassen sich die vom Theme gewählten Abmessungen mit
+\cs*{ltxtalksetup} überschreiben. Dabei werden nur die angegebenen
+Eigenschaften geändert. Das folgende Beispiel vergrößert Kopf- und Fußbereich
+und schaltet den rechten Randbereich ab:
+}{
+% TODO: English translation
+}
+
+\begin{sourcecode}
+  \useltxtalktheme{academic}
+  \ltxtalksetup{
+    header-height = 2.8cm,
+    footer-height = 0.8cm,
+    right-margin = false
+  }
+\end{sourcecode}
+
+\ldeen{
+Zur Verfügung stehen \code{header}, \code{left-margin},
+\code{right-margin} und \code{footer} als Schalter sowie
+\code{header-height}, \code{footer-height} und \code{margin-width} als
+Längen. Eine Änderung der Bereichsgröße verschiebt vorhandene Slots nicht
+automatisch. Größere Eingriffe sollten deshalb in einem eigenen Theme oder
+Teiltheme vorgenommen werden; Abschnitt~\ref{sec:develop-themes} beschreibt
+dieses Vorgehen.
+}{
+% TODO: English translation
+}
 
 \subsection{\ldeen{Farben anpassen}{Customizing colours}}
 
-% TODO: migrate colour configuration material
+\ldeen{
+Die fünf semantischen Theme-Farben lassen sich mit
+\cs*{setltxtalkcolors} neu belegen. Jeder Wert besteht wie bei
+\cs*{definecolor} aus Farbmodell und Farbangabe:
+}{
+% TODO: English translation
+}
+
+\begin{sourcecode}
+  \setltxtalkcolors{
+    primary   = {HTML}{005B50},
+    secondary = {HTML}{3C7A73},
+    accent    = {HTML}{D6A800},
+    text      = {HTML}{202020},
+    background= {HTML}{FFFFFF}
+  }
+\end{sourcecode}
+
+\ldeen{
+Die entsprechenden Farbnamen tragen das Präfix \code{ltxtalk-}; für
+\code{background} lautet der Name abgekürzt \code{ltxtalk-bg}. Sie stehen
+überall dort zur Verfügung, wo eine Farbe erwartet wird. Ob eine Änderung
+sichtbar wird, hängt davon ab, ob das aktive Theme an der betreffenden Stelle
+die semantische Farbe oder einen eigenen Farbnamen verwendet.
+}{
+% TODO: English translation
+}
 
 \subsection{\ldeen{Titel platzieren}{Positioning titles}}
 
-% TODO: migrate title placement material
+\ldeen{
+Mit \cs*{setltxtalktitleplacement} wird festgelegt, in welchem Bereich ein
+Theme Folien- und Abschnittstitel vorsieht. Ein Folientitel kann im
+Inhaltsbereich, im Kopf oder in beiden Bereichen erscheinen; ein
+Abschnittstitel kann im Kopf ein- oder ausgeblendet werden:
+}{
+% TODO: English translation
+}
+
+\begin{sourcecode}
+  \setltxtalktitleplacement{
+    frametitle = both,
+    section = header
+  }
+\end{sourcecode}
+
+\ldeen{
+Diese Einstellung ist eine Vereinbarung zwischen Core und Theme. Das Theme
+muss passende Slots für die gewählte Platzierung enthalten. Fehlt ein solcher
+Slot, erzeugt die Option allein kein zusätzliches sichtbares Element.
+}{
+% TODO: English translation
+}
 
 \subsection{\ldeen{Weitere Anpassungen}{Further customizations}}
 
-% TODO:
-% Describe only customizations intended for ordinary users.
-% Detailed slot and area construction belongs to the theme-author section.
+\ldeen{
+Einzelne vorhandene Slots können nach der Theme-Aktivierung mit
+\cs*{styleltxtalkslot} umgestaltet werden. Dafür muss der vom Theme
+verwendete Slotname bekannt sein; er gehört deshalb zur Schnittstelle des
+jeweiligen Themes, nicht zur allgemeinen Anwenderschnittstelle. Ebenso kann
+\cs*{decorateltxtalkarea} beispielsweise eine Linie über dem Footer ändern.
+}{
+% TODO: English translation
+}
+
+\begin{sourcecode}
+  \styleltxtalkslot{min-ftitle}{
+    color = ltxtalk-primary,
+    font = \Large\bfseries,
+    align = left
+  }
+  \decorateltxtalkarea{footer}{
+    frame = top,
+    rule-color = ltxtalk-accent,
+    rule-thickness = 0.6pt
+  }
+\end{sourcecode}
+
+\ldeen{
+Solche Anpassungen sollten unmittelbar nach \cs*{useltxtalktheme} stehen,
+weil eine spätere erneute Theme-Aktivierung alle Slots und Dekorationen
+zurücksetzt. Für wiederverwendbare oder strukturelle Ergänzungen ist ein
+Teiltheme mit \cs*{addltxtalktheme} geeigneter.
+}{
+% TODO: English translation
+}
 
 
 \section{\ldeen{Barrierefreiheit}{Accessibility}}
 \label{sec:accessibility}
-% TODO:
-% - behaviour relevant to users of existing themes
-% - selecting suitable colours
-% - alternative text where user-provided content is involved
-% - testing and practical recommendations
+
+\ldeen{
+Ein Theme verändert die visuelle Darstellung, darf aber die von
+\cls{ltx-talk} erzeugte Dokumentstruktur nicht ersetzen. Folientitel sollten
+daher mit \cs*{frametitle}, Untertitel mit \cs*{framesubtitle} und
+Gliederungsebenen mit \cs*{section} beziehungsweise \cs*{subsection}
+ausgezeichnet werden. Rein optisch formatierter Text kann diese semantischen
+Befehle nicht ersetzen.
+}{
+% TODO: English translation
+}
+
+\subsection{\ldeen{Lesbare Gestaltung}{Readable design}}
+
+\ldeen{
+Bei eigenen Farbanpassungen müssen Vorder- und Hintergrund ausreichend
+kontrastieren. Farbe sollte außerdem nie das einzige Mittel sein, um eine
+Bedeutung auszudrücken. Kleine Schrift, sehr dünne Linien und dicht belegte
+Randbereiche sind auf Projektoren und bei starker Vergrößerung besonders
+problematisch. Entscheidend ist nicht nur die Titelfolie, sondern auch eine
+inhaltlich volle Standardfolie.
+}{
+% TODO: English translation
+}
+
+\ldeen{
+Text und wesentliche Grafiken sollten innerhalb der verfügbaren Bereiche
+bleiben. Eine Änderung von \code{margin-width}, \code{header-height} oder
+\code{footer-height} muss deshalb mit langen Titeln, mehrzeiligen Angaben und
+verschiedenen Seitenverhältnissen geprüft werden.
+}{
+% TODO: English translation
+}
+
+\subsection{\ldeen{Grafiken und Logos}{Graphics and logos}}
+
+\ldeen{
+Für inhaltliche Grafiken gelten die Möglichkeiten von \cls{ltx-talk} und den
+verwendeten Grafikpaketen; dort ist ein aussagekräftiger Alternativtext
+anzugeben. Wiederkehrende Logos, Farbflächen und Trennlinien sind gewöhnlich
+dekorativ und dürfen die Lesereihenfolge nicht mit wiederholten Informationen
+belasten. Ein Theme-Autor kennzeichnet solche Elemente durch die passende
+Slot-Rolle; Anwender sollten ein inhaltliches Bild daher nicht lediglich als
+Theme-Logo einsetzen.
+}{
+% TODO: English translation
+}
+
+\subsection{\ldeen{Tagging und Prüfung}{Tagging and testing}}
+
+\ldeen{
+Für getaggte PDF-Ausgabe sollte die Präsentation mit \cs*{DocumentMetadata}
+beginnen. Das eigentliche Tagging von Frame-Inhalt und Überschriften übernimmt
+gegenwärtig überwiegend \cls{ltx-talk}. \thepkg{} bewahrt diese Anbindung,
+indem Folientitel im Inhaltsbereich über die öffentlichen Klassenbefehle
+gesetzt werden. Die Accessibility-Angaben der Slot-Schnittstelle dokumentieren
+zusätzlich die beabsichtigte Rolle; sie werden noch nicht in jedem Fall in
+einen eigenen PDF-Tag des Slots umgesetzt.
+}{
+% TODO: English translation
+}
+
+\ldeen{
+Eine Prüfung sollte deshalb sowohl visuell als auch strukturell erfolgen:
+mit langen und leeren Metadaten, mehreren Gliederungsebenen, fortgesetzten
+Folien und einem PDF-Prüfwerkzeug. Das Bundle enthält dafür l3build-Tests, die
+unter anderem die von \cls{ltx-talk} erzeugte Überschriftenstruktur prüfen.
+}{
+% TODO: English translation
+}
 
 
 % ==========================================================================
@@ -342,66 +659,217 @@ beschreibt der folgende Abschnitt.
 \label{sec:theme-model}
 \subsection{\ldeen{Bereiche}{Areas}}
 
-% TODO: concept before commands
-% Existing areas:
-% - header
-% - left
-% - content
-% - right
-% - footer
+Ein Theme ordnet Seitenelemente den fünf Bereichen \texttt{header},
+\texttt{left}, \texttt{content}, \texttt{right} und \texttt{footer} zu.
+Header, Ränder und Footer werden durch den Seitenstil \texttt{lttheme}
+ausgegeben. Der Inhaltsbereich bleibt Teil des normalen Frame-Inhalts; dadurch
+bleiben Umbruch, Overlays und die semantische Einordnung durch \pkg{ltx-talk}
+erhalten.
 
 \subsection{\ldeen{Slots}{Slots}}
 
-% TODO:
-% - semantic purpose
-% - relation between a slot and an area
-% - distinction between the concept and its positioning/styling
+Ein Slot bezeichnet ein Element mit einer Aufgabe, nicht eine fest verdrahtete
+Stelle. Erst die Zuordnung zu einem Bereich, seine Position und sein
+Darstellungs-Template ergeben das konkrete Layout. Mehrere Slots desselben
+Typs sind zulässig. So kann etwa ein Folientitel im Header, im Inhaltsbereich
+oder in beiden Bereichen vorkommen.
 
 \subsection{\ldeen{Slottypen}{Slot types}}
 
-% TODO: migrate the table of available slot types
+Vordefinierte Typen liefern unter anderem Dokumenttitel, Autor, Institut,
+Abschnitt, Unterabschnitt, Folientitel, Folienuntertitel und Foliennummer.
+Der Typ \texttt{custom} bezieht seinen Inhalt aus
+\cs{setltxtalkslotcontent}; damit lassen sich beispielsweise Pfad- und
+Baumnavigationen oder frei gestaltete Logos ergänzen.
 
 \subsection{\ldeen{Layout}{Layout}}
 
-% TODO:
-% Explain arrangement, dimensions, and positioning.
+Die Seitenbereiche werden mit Coffins zusammengesetzt. Jeder Slot besitzt eine
+horizontale und vertikale Ankerposition sowie Breite und Höhe. Symbolische
+Positionen wie \texttt{left}, \texttt{center}, \texttt{right}, \texttt{top}
+und \texttt{bottom} können mit absoluten Längen kombiniert werden. Die
+Core-Logik kennt dabei keine Namen konkreter Themes.
 
 \subsection{\ldeen{Gestaltung}{Styling}}
 
-% TODO:
-% Explain fonts, colours, rules, backgrounds, padding, and alignment.
+Für jeden Slot existiert eine Instanz des Templates \texttt{lttheme-slot}.
+Themes geben geeignete Vorgaben vor; Anwender können diese Instanzen mit den
+üblichen Template-Mitteln weiter bearbeiten. Schrift, Farbe, Hintergrund,
+Ausrichtung, Innenabstand und Regeln gehören damit zum Theme, nicht zum
+Seitenstil.
 
 \subsection{\ldeen{Dekoration von Bereichen}{Area decoration}}
 
-% TODO:
-% Explain decoration independently of the content slots.
+Bereichsdekorationen sind von den Slots unabhängig. Das Template
+\texttt{lttheme-area} kann insbesondere Hintergrundflächen und Trennlinien
+zeichnen. Eine obere Linie des Footers ist daher eine Eigenschaft des
+Footer-Bereichs und kein künstlicher Footer-Slot.
+
+Der Seitenstil bildet die stabile Verbindung zu \pkg{ltx-talk}. Sockets teilen
+seine Ausgabe zusätzlich in Hintergrund, die vier Seitenbereiche und
+Vordergrund. Ein vollständiges Theme muss diese Sockets nicht anfassen; sie
+sind Erweiterungspunkte für austauschbare Layoutphasen, nicht der Ersatz für
+die additive Slot-Schnittstelle.
 
 
 \section{\ldeen{Eigene Themes entwickeln}{Developing custom themes}}
 \label{sec:develop-themes}
 \subsection{\ldeen{Aufbau eines Themes}{Structure of a theme}}
 
-% TODO:
-% - registration
-% - setup
-% - activation
-% - relationship to the core package
+\ldeen{
+Ein Theme-Paket lädt zunächst \pkg{ltxtalk-theme-core}, definiert eine
+Setup-Anweisung und registriert diese unter einem eindeutigen Namen. Die
+Setup-Anweisung wird nicht beim Laden, sondern erst durch
+\cs*{useltxtalktheme} ausgeführt. Dadurch können mehrere Theme-Pakete geladen
+und später gezielt aktiviert werden.
+}{
+% TODO: English translation
+}
+
+\begin{sourcecode}
+  \RequirePackage{ltxtalk-theme-core}
+  \ExplSyntaxOn
+  \cs_new_protected:Npn \__my_theme_setup:
+    {
+      \ltxtalksetup{header=true,header-height=1.5cm}
+      % Slots, Positionen und Gestaltung
+    }
+  \RegisterLTXTalkTheme{my-theme}{\__my_theme_setup:}
+  \ExplSyntaxOff
+\end{sourcecode}
+
+\ldeen{
+Die Core-Logik kennt den Namen des Themes nicht. Bei der Aktivierung leert
+sie den bisherigen Theme-Zustand, führt die registrierte Setup-Anweisung aus,
+passt den Textbereich an und wählt den Seitenstil \code{lttheme}. Das Theme
+beschreibt daher ausschließlich Bereiche, Slots und deren Erscheinungsbild.
+}{
+% TODO: English translation
+}
 
 \subsection{\ldeen{Bereiche und Slots definieren}{Defining areas and slots}}
 
-% TODO: migrate slot definition material
+\ldeen{
+Ein Slot wird mit Name, Bereich, Typ und Accessibility-Angaben definiert. Der
+Name muss innerhalb des aktiven Themes eindeutig sein. Als Bereiche sind
+\code{header}, \code{left}, \code{content}, \code{right} und \code{footer}
+vorgesehen.
+}{
+% TODO: English translation
+}
+
+\begin{sourcecode}
+  \defineltxtalkslot{my-section}{header}{section}{
+    role = navigation
+  }
+  \defineltxtalkslot{my-path}{right}{custom}{
+    role = navigation
+  }
+  \setltxtalkslotcontent{my-path}{
+    \thesection\quad\thesubsection
+  }
+\end{sourcecode}
+
+\ldeen{
+Die vordefinierten Typen \code{title}, \code{author}, \code{date},
+\code{institute}, \code{section}, \code{subsection}, \code{frametitle},
+\code{framesubtitle} und \code{pagenumber} beziehen ihren Inhalt aus der
+Klasse. Der Typ \code{custom} sowie unbekannte eigene Typen verwenden den mit
+\cs*{setltxtalkslotcontent} hinterlegten Inhalt. Auch Logos werden zweckmäßig
+auf diese Weise mit explizitem Grafikcode belegt.
+}{
+% TODO: English translation
+}
 
 \subsection{\ldeen{Slots positionieren}{Positioning slots}}
 
-% TODO: migrate slot positioning material
+\ldeen{
+Nach der Definition erhält jeder sichtbare Slot eine Position und eine Größe:
+}{
+% TODO: English translation
+}
+
+\begin{sourcecode}
+  \positionltxtalkslot
+    {my-section}{left}{center}{0.55\paperwidth}{0.8cm}
+  \positionltxtalkslot
+    {my-path}{center}{1cm}{2cm}{4cm}
+\end{sourcecode}
+
+\ldeen{
+Das zweite und dritte Argument bezeichnen die horizontale und vertikale
+Position innerhalb des Bereichs. Horizontal sind \code{left}, \code{center}
+und \code{right}, vertikal \code{top}, \code{center} und \code{bottom}
+zulässig. Stattdessen kann jeweils eine Länge ab der linken beziehungsweise
+oberen Bereichskante angegeben werden. Breite und Höhe sind Längen; ein Slot
+wird nicht automatisch vor Überlappungen mit anderen Slots geschützt.
+}{
+% TODO: English translation
+}
 
 \subsection{\ldeen{Slots gestalten}{Styling slots}}
 
-% TODO: migrate slot styling material
+\ldeen{
+\cs*{styleltxtalkslot} bearbeitet die für den Slot angelegte Instanz des
+Templates \code{lttheme-slot}. So bleiben Inhalt, Position und Gestaltung
+voneinander getrennt.
+}{
+% TODO: English translation
+}
+
+\begin{sourcecode}
+  \styleltxtalkslot{my-section}{
+    font = \large\bfseries,
+    color = white,
+    align = left,
+    padding = 2mm,
+    frame = bottom,
+    rule-color = ltxtalk-accent,
+    rule-thick = 0.8pt
+  }
+\end{sourcecode}
+
+\ldeen{
+Neben \code{font}, \code{color}, \code{align} und \code{padding} stehen
+\code{background}, \code{frame}, \code{rule-color} und \code{rule-thick}
+zur Verfügung. \code{frame} akzeptiert \code{none}, \code{box}, \code{top},
+\code{bottom}, \code{left} und \code{right}. Die Schnittstelle kennt außerdem
+die Optionen \code{rotate}, \code{opacity}, \code{shadow}, \code{uppercase}
+und \code{lowercase}; deren vollständige visuelle Umsetzung ist derzeit noch
+nicht abgeschlossen und sollte in stabilen Themes nicht vorausgesetzt werden.
+}{
+% TODO: English translation
+}
 
 \subsection{\ldeen{Bereiche dekorieren}{Decorating areas}}
 
-% TODO: migrate area decoration material
+\ldeen{
+Hintergrundflächen und Trennlinien, die einen ganzen Bereich betreffen,
+gehören nicht in einen Slot. Sie werden mit \cs*{decorateltxtalkarea} an der
+Instanz des Templates \code{lttheme-area} eingestellt:
+}{
+% TODO: English translation
+}
+
+\begin{sourcecode}
+  \decorateltxtalkarea{footer}{
+    background = white,
+    frame = top,
+    rule-color = ltxtalk-primary,
+    rule-thickness = 0.5pt,
+    artifact-type = decorative
+  }
+\end{sourcecode}
+
+\ldeen{
+Für \code{frame} sind zusätzlich \code{topbottom} und die üblichen Seiten
+zulässig. Die Dekoration wird vor den Slots des Bereichs gesetzt. Die Optionen
+\code{background-opacity}, \code{shadow}, \code{shadow-color},
+\code{shadow-offset}, \code{margin-top} und \code{margin-bottom} sind bereits
+Teil der Schnittstelle, werden aber noch nicht vollständig gezeichnet.
+}{
+% TODO: English translation
+}
 
 \subsection{
   \ldeen
@@ -409,11 +877,48 @@ beschreibt der folgende Abschnitt.
     {Extending existing themes}
 }
 
-% TODO
+Ein registriertes Theme kann auch nur zusätzliche Slots oder eine einzelne
+Dekoration enthalten. Nach der Aktivierung des Basisthemes fügt
+\cs{addltxtalktheme}\marg{Name} ein solches Teiltheme hinzu, ohne vorhandene
+Slots zu löschen. Das Beispiel \code{example-switching.tex} ergänzt auf diese
+Weise eine eigene Pfadnavigation. Das erneute Aktivieren eines Themes beginnt
+dagegen bewusst mit einem leeren Theme-Zustand.
+
+\begin{sourcecode}
+  \useltxtalktheme{minimal}
+  \addltxtalktheme{course-navigation}
+\end{sourcecode}
+
+\ldeen{
+Ein Teiltheme sollte nur die Eigenschaften definieren, die es tatsächlich
+ergänzt. Insbesondere darf es weder den Theme-Zustand leeren noch selbst den
+Seitenstil wechseln. Slotnamen sollten einen paketspezifischen Präfix tragen,
+damit sie nicht mit denen des Basisthemes kollidieren.
+}{
+% TODO: English translation
+}
 
 \subsection{\ldeen{Empfehlungen}{Recommendations}}
 
-% TODO: migrate and expand the existing best-practices material
+\ldeen{
+Semantische Slottypen sind eigenen Typen vorzuziehen. Dekorative Elemente
+sollten als Artefakt, Navigation als solche und echte Überschriften mit einer
+passenden Ebene beschrieben werden. Wiederkehrende Seitenelemente dürfen den
+eigentlichen Frame-Inhalt und dessen Lesereihenfolge nicht duplizieren.
+}{
+% TODO: English translation
+}
+
+\ldeen{
+Themes sollten kurze und lange Inhalte, fehlende Metadaten, mehrzeilige
+Kopfzeilen, beide Randbereiche sowie Folien mit und ohne Untertitel abdecken.
+Für jedes Theme empfiehlt sich ein l3build-Sichttest; strukturelle Tests sollten
+zusätzlich die getaggte Überschriftenhierarchie prüfen. Theme-spezifische
+Logik bleibt im Theme-Paket, während der Core nur die allgemeinen Bereiche,
+Slots, Templates und den Seitenstil bereitstellt.
+}{
+% TODO: English translation
+}
 
 
 % ==========================================================================
@@ -424,44 +929,142 @@ beschreibt der folgende Abschnitt.
 \label{ref:reference}
 \subsection{\ldeen{Theme-Verwaltung}{Theme management}}
 
-% TODO:
-% \useltxtalktheme
-% \RegisterLTXTalkTheme
+\begin{commands}
+  \command{useltxtalktheme}[\marg{Name}]
+  \ldeen{
+    Aktiviert das registrierte Theme \meta{Name}. Der bisherige Theme-Zustand
+    wird vollständig geleert. \code{default} stellt den Seitenstil der Klasse
+    ohne lttheme-Slots wieder her.
+  }{% TODO: English translation
+  }
+
+  \command{addltxtalktheme}[\marg{Name}]
+  \ldeen{
+    Führt die Setup-Anweisung eines registrierten Themes zusätzlich zum
+    aktiven Theme aus, ohne vorhandene Slots zu löschen. Der Befehl dient vor
+    allem zum Hinzufügen von Teilthemes.
+  }{% TODO: English translation
+  }
+
+  \command{RegisterLTXTalkTheme}[\marg{Name}\marg{Setup-Code}]
+  \ldeen{
+    Registriert \meta{Setup-Code} unter \meta{Name}. Üblicherweise wird hier
+    eine geschützte interne Anweisung des Theme-Pakets übergeben. Eine
+    vorhandene Registrierung gleichen Namens wird ersetzt.
+  }{% TODO: English translation
+  }
+\end{commands}
 
 \subsection{\ldeen{Layout-Konfiguration}{Layout configuration}}
 
-% TODO:
-% \ltxtalksetup
+\begin{commands}
+  \command{ltxtalksetup}[\marg{Optionen}]
+  \ldeen{
+    Ändert die Geometrie der Theme-Bereiche. Die booleschen Schlüssel
+    \code{header}, \code{left-margin}, \code{right-margin} und \code{footer}
+    schalten Bereiche ein oder aus. \code{header-height},
+    \code{footer-height} und \code{margin-width} erwarten Längen.
+    \code{header-rows} erwartet eine ganze Zahl; \code{header-columns} und
+    \code{footer-columns} erwarten kommagetrennte Anteile. Die beiden letzten
+    Spaltenangaben gehören zur älteren Layoutschnittstelle und beeinflussen
+    die frei positionierten Slots derzeit nicht.
+  }{% TODO: English translation
+  }
+\end{commands}
 
 \subsection{\ldeen{Farbkonfiguration}{Colour configuration}}
 
-% TODO:
-% \setltxtalkcolors
+\begin{commands}
+  \command{setltxtalkcolors}[\marg{Farben}]
+  \ldeen{
+    Definiert die semantischen Farben \code{primary}, \code{secondary},
+    \code{accent}, \code{text} und \code{background}. Jeder Wert hat die Form
+    \code{\Marg{Modell}\Marg{Wert}}, beispielsweise
+    \code{primary=\Marg{HTML}\Marg{005B50}}. Die zugehörigen Farbnamen lauten
+    \code{ltxtalk-primary}, \code{ltxtalk-secondary}, \code{ltxtalk-accent},
+    \code{ltxtalk-text} und \code{ltxtalk-bg}.
+  }{% TODO: English translation
+  }
+\end{commands}
 
 \subsection{\ldeen{Slot-Definition}{Slot definition}}
 
-% TODO:
-% \defineltxtalkslot
+\begin{commands}
+  \command{defineltxtalkslot}
+    [\marg{Name}\marg{Bereich}\marg{Typ}\marg{Accessibility-Optionen}]
+  \ldeen{
+    Definiert einen Slot und fügt ihn am Ende des angegebenen Bereichs ein.
+    Gültige Standardbereiche sind \code{header}, \code{left}, \code{content},
+    \code{right} und \code{footer}. Vordefinierte Typen sind \code{title},
+    \code{author}, \code{date}, \code{institute}, \code{section},
+    \code{subsection}, \code{frametitle}, \code{framesubtitle},
+    \code{pagenumber}, \code{logo} und \code{custom}.
+  }{% TODO: English translation
+  }
+
+  \command{setltxtalkslotcontent}[\marg{Name}\marg{Inhalt}]
+  \ldeen{
+    Hinterlegt den auszuführenden Inhalt eines freien Slots. Er wird für
+    \code{custom}, \code{logo} und nicht vordefinierte eigene Typen verwendet.
+  }{% TODO: English translation
+  }
+\end{commands}
 
 \subsection{\ldeen{Slot-Positionierung}{Slot positioning}}
 
-% TODO:
-% \positionltxtalkslot
+\begin{commands}
+  \command{positionltxtalkslot}
+    [\marg{Name}\marg{x}\marg{y}\marg{Breite}\marg{Höhe}]
+  \ldeen{
+    Positioniert den Slot relativ zu seinem Bereich. Für \meta{x} sind
+    \code{left}, \code{center}, \code{right} oder eine Länge zulässig; für
+    \meta{y} entsprechend \code{top}, \code{center}, \code{bottom} oder eine
+    Länge. Positive Längen werden von der linken beziehungsweise oberen Kante
+    gemessen.
+  }{% TODO: English translation
+  }
+\end{commands}
 
 \subsection{\ldeen{Slot-Gestaltung}{Slot styling}}
 
-% TODO:
-% \styleltxtalkslot
+\begin{commands}
+  \command{styleltxtalkslot}[\marg{Name}\marg{Optionen}]
+  \ldeen{
+    Bearbeitet die Template-Instanz eines Slots. Stabil umgesetzt sind
+    \code{font}, \code{color}, \code{background}, \code{align}, \code{frame},
+    \code{padding}, \code{rule-color} und \code{rule-thick}. \code{align}
+    akzeptiert \code{left}, \code{center} und \code{right}; \code{frame}
+    akzeptiert \code{none}, \code{box}, \code{top}, \code{bottom},
+    \code{left} und \code{right}.
+  }{% TODO: English translation
+  }
+\end{commands}
 
 \subsection{\ldeen{Bereichsdekoration}{Area decoration}}
 
-% TODO:
-% \decorateltxtalkarea
+\begin{commands}
+  \command{decorateltxtalkarea}[\marg{Bereich}\marg{Optionen}]
+  \ldeen{
+    Bearbeitet die Template-Instanz eines Bereichs. Stabil umgesetzt sind
+    \code{background}, \code{frame}, \code{rule-color},
+    \code{rule-thickness}, \code{padding} und \code{artifact-type}.
+    \code{frame} akzeptiert \code{none}, \code{box}, \code{top},
+    \code{bottom}, \code{left}, \code{right} und \code{topbottom}.
+  }{% TODO: English translation
+  }
+\end{commands}
 
 \subsection{\ldeen{Titelplatzierung}{Title placement}}
 
-% TODO:
-% \setltxtalktitleplacement
+\begin{commands}
+  \command{setltxtalktitleplacement}[\marg{Optionen}]
+  \ldeen{
+    Legt mit \code{frametitle=content|header|both} und
+    \code{section=header|none} die beabsichtigte Titelplatzierung fest. Das
+    aktive Theme muss Slots für die gewählten Bereiche definieren.
+  }{% TODO: English translation
+  }
+\end{commands}
 
 \subsection{
   \ldeen
@@ -469,12 +1072,106 @@ beschreibt der folgende Abschnitt.
     {Accessibility options}
 }
 
-% TODO:
-% - role
-% - heading-level
-% - alt-text
-% - continuation-text
-% - continuation-mode
+\ldeen{
+Das vierte Argument von \cs*{defineltxtalkslot} akzeptiert folgende
+Schlüssel: \code{role} mit den Werten \code{heading}, \code{heading-1},
+\code{heading-2}, \code{heading-3}, \code{artifact}, \code{content},
+\code{navigation} oder \code{note}; \code{heading-level} mit einer ganzen
+Zahl; \code{alt-text}; \code{continuation-text}; sowie
+\code{continuation-mode=explicit|implicit}. Diese Angaben beschreiben die
+beabsichtigte Semantik des Slots. Ihre Abbildung auf PDF-Tags ist derzeit noch
+nicht für alle Slots implementiert.
+}{
+% TODO: English translation
+}
+
+\begin{commands}
+  \command{setltxtalkheadingbehavior}[\marg{Optionen}]
+  \ldeen{
+    Konfiguriert die Überschriftenbehandlung mit den booleschen Schlüsseln
+    \code{auto-section-title}, \code{detect-continuation} und
+    \code{header-as-navigation}. Diese Schnittstelle ist experimentell; das
+    tatsächlich erzeugte Tagging wird wesentlich durch \cls{ltx-talk}
+    bestimmt.
+  }{% TODO: English translation
+  }
+\end{commands}
+
+\subsection{\ldeen{Templates und Sockets}{Templates and sockets}}
+
+\ldeen{
+Für jeden Slot existiert eine Instanz des Template-Typs
+\code{lttheme-slot}, für jeden Bereich eine Instanz von \code{lttheme-area}.
+Zum Bearbeiten dieser Instanzen dienen die beiden zuvor dokumentierten
+Befehle für Slotgestaltung und Bereichsdekoration.
+}{
+% TODO: English translation
+}
+
+\ldeen{
+Der Seitenstil stellt Sockets für den Seitenhintergrund, die Bereiche
+\code{header}, \code{left}, \code{right} und \code{footer} sowie den
+Seitenvordergrund bereit. Ihre Namen folgen dem Schema
+\code{lttheme/area/}\meta{Bereich} beziehungsweise
+\code{lttheme/page/}\meta{Ebene}. Der Plug \code{standard} rendert den
+zugehörigen Bereich. Eigene Plugs sind für grundlegende, austauschbare
+Ausgabephasen gedacht; zusätzliche Seitenelemente sollten gewöhnlich als
+Slots eines Teilthemes implementiert werden.
+}{
+% TODO: English translation
+}
+
+\subsection{TU Chemnitz 2019}
+
+\begin{commands}
+  \command{settucthemelogo}[\marg{Datei}]
+  \ldeen{
+    Setzt die Datei für das weiße TU-Chemnitz-Logo im Kopfband. Auf der
+    Titelfolie wird es größer dargestellt als auf normalen Folien. Ist die
+    Datei nicht auffindbar, gibt das Theme ersatzweise den Text
+    \code{TU CHEMNITZ} aus.
+  }{
+    % TODO: English translation
+  }
+
+  \command{settucthemetitlelogo}[\marg{Datei}]
+  \ldeen{
+    Setzt das veranstaltungsbezogene Logo im linken Bereich der Titelfolie.
+    Es wird auf die Breite des TU-Logos skaliert und oben bündig mit dem
+    Titelblock angeordnet. Ist die Datei nicht auffindbar, bleibt die
+    Logo-Spalte leer.
+  }{
+    % TODO: English translation
+  }
+
+  \command{settucthemetitlelogoraise}[\marg{Länge}]
+  \ldeen{
+    Verschiebt das sichtbare Logo der Titelfolie um die angegebene Länge nach
+    oben, um einen transparenten oberen Bildrand auszugleichen. Der Vorgabewert
+    \code{0.21cm} passt zum mitgelieferten OSG-Logo; für eng beschnittene
+    Logos ist gewöhnlich \code{0pt} richtig.
+  }{
+    % TODO: English translation
+  }
+
+  \command{settucthemeurl}[\marg{Webadresse}]
+  \ldeen{
+    Setzt den rechtsbündigen Text in der Fußzeile normaler Folien. Das
+    Argument wird unverändert gesetzt; soll die Adresse anklickbar sein, kann
+    daher beispielsweise \cs*{url} im Argument verwendet werden.
+  }{
+    % TODO: English translation
+  }
+
+  \command{maketuctitle}
+  \ldeen{
+    Erzeugt die vollständige Titelfolie des Themes. Der Befehl ist nach
+    \cs*{begin}\Marg{document}, aber außerhalb einer \code{frame}-Umgebung
+    aufzurufen. Die Titelfolie besitzt keine Fußzeile.
+  }{
+    % TODO: English translation
+  }
+\end{commands}
 
 
 % --------------------------------------------------------------------------
@@ -488,7 +1185,7 @@ beschreibt der folgende Abschnitt.
 % \AutoDocInput{lttheme.dtx}{core} % comment out to during text development to speed up latex
 
 
-\section{\ldeen{Referenz}{Reference}}
+% \section{\ldeen{Referenz}{Reference}}
 
 % bisherige API-Referenz
 
@@ -649,10 +1346,7 @@ beschreibt der folgende Abschnitt.
 % Die englische API-Referenz wurde zunächst unverändert übernommen.
 % \end{lang}
 %
-\section{Implementation}
-\subsection{ltxtalk-theme-core}
 
-% \AutoDocInput{lttheme.dtx}{core} % comment out during text development
 \end{document}
 
 %</driver>
@@ -733,6 +1427,7 @@ beschreibt der folgende Abschnitt.
           {
             \tl_gset:Nn \g__ltxtalk_active_theme_tl { #1 }
             \l_tmpa_tl
+            \__ltxtalk_apply_class_templates:
           }
           {
             \msg_error:nnn { ltxtalk } { unknown-theme } { #1 }
@@ -807,12 +1502,18 @@ beschreibt der folgende Abschnitt.
 
 \keys_define:nn { ltxtalk / colors }
   {
-    primary    .code:n = \color_set:nn { ltxtalk-primary } { #1 },
-    secondary  .code:n = \color_set:nn { ltxtalk-secondary } { #1 },
-    accent     .code:n = \color_set:nn { ltxtalk-accent } { #1 },
-    text       .code:n = \color_set:nn { ltxtalk-text } { #1 },
-    background .code:n = \color_set:nn { ltxtalk-bg } { #1 },
+    primary    .code:n = \__ltxtalk_set_color:nn { ltxtalk-primary } { #1 },
+    secondary  .code:n = \__ltxtalk_set_color:nn { ltxtalk-secondary } { #1 },
+    accent     .code:n = \__ltxtalk_set_color:nn { ltxtalk-accent } { #1 },
+    text       .code:n = \__ltxtalk_set_color:nn { ltxtalk-text } { #1 },
+    background .code:n = \__ltxtalk_set_color:nn { ltxtalk-bg } { #1 },
   }
+
+\cs_new_protected:Npn \__ltxtalk_set_color:nn #1#2
+  { \__ltxtalk_set_color_aux:nnn { #1 } #2 }
+
+\cs_new_protected:Npn \__ltxtalk_set_color_aux:nnn #1#2#3
+  { \color_set:nnn { #1 } { #2 } { #3 } }
 
 \NewDocumentCommand \setltxtalkcolors { m }
   {
@@ -820,11 +1521,11 @@ beschreibt der folgende Abschnitt.
   }
 
 % Standardfarben
-\color_set:nn { ltxtalk-primary } { HTML }{ 2B3A67 }
-\color_set:nn { ltxtalk-secondary } { HTML }{ 496A81 }
-\color_set:nn { ltxtalk-accent } { HTML }{ 66999B }
-\color_set:nn { ltxtalk-text } { HTML }{ 333333 }
-\color_set:nn { ltxtalk-bg } { HTML }{ FFFFFF }
+\color_set:nnn { ltxtalk-primary } { HTML } { 2B3A67 }
+\color_set:nnn { ltxtalk-secondary } { HTML } { 496A81 }
+\color_set:nnn { ltxtalk-accent } { HTML } { 66999B }
+\color_set:nnn { ltxtalk-text } { HTML } { 333333 }
+\color_set:nnn { ltxtalk-bg } { HTML } { FFFFFF }
 
 % ==========================================
 % NAMED-SLOT-SYSTEM
@@ -834,14 +1535,14 @@ beschreibt der folgende Abschnitt.
 \prop_new:N \g__ltxtalk_slot_positions_prop
 \prop_new:N \g__ltxtalk_slot_styles_prop
 \prop_new:N \g__ltxtalk_slot_areas_prop
-\prop_new:N \g__ltxtalk_slot_a11y_prop
+\prop_new:N \g__ltxtalk_slot_accessibility_prop
 
 \tl_new:N \l__ltxtalk_current_slot_name_tl
 \tl_new:N \l__ltxtalk_slot_type_tl
 \tl_new:N \l__ltxtalk_slot_content_tl
 \tl_new:N \l__ltxtalk_slot_style_tl
 \tl_new:N \l__ltxtalk_slot_area_tl
-\tl_new:N \l__ltxtalk_slot_a11y_tl
+\tl_new:N \l__ltxtalk_slot_accessibility_tl
 
 \NewDocumentCommand \defineltxtalkslot { m m m m }
   {
@@ -853,7 +1554,7 @@ beschreibt der folgende Abschnitt.
     % \end{itemize}
     \prop_gput:Nnn \g__ltxtalk_slot_areas_prop { #1 } { #2 }
     \prop_gput:Nnn \g__ltxtalk_slot_types_prop { #1 } { #3 }
-    \prop_gput:Nnn \g__ltxtalk_slot_a11y_prop { #1 } { #4 }
+    \prop_gput:Nnn \g__ltxtalk_slot_accessibility_prop { #1 } { #4 }
     
     % Automatische Rollenerkennung basierend auf Slot-Typ
     \str_case:nnF { #3 }
@@ -1127,14 +1828,6 @@ beschreibt der folgende Abschnitt.
 \tl_new:N \g__ltxtalk_current_section_tl
 \tl_new:N \g__ltxtalk_current_subsection_tl
 
-% Informationen über den aktuellen Frame sammeln
-\AddToHook{env/frame/begin}
-  {
-    \__ltxtalk_capture_frame_info:
-    \__ltxtalk_detect_heading_source:
-    \__ltxtalk_manage_frametitle_placement:
-  }
-
 \cs_new_protected:Npn \__ltxtalk_capture_frame_info:
   {
     \cs_if_exist:NT \insertframetitle
@@ -1161,15 +1854,6 @@ beschreibt der folgende Abschnitt.
     \cs_if_exist:NT \insertsubsection
       {
         \tl_gset:Nx \g__ltxtalk_current_subsection_tl { \insertsubsection }
-      }
-  }
-
-% Auch auf \cs{frametitle-Befehl} reagieren
-\cs_if_exist:NT \frametitle
-  {
-    \AddToHook{cmd/frametitle/after}
-      {
-        \tl_gset:Nx \g__ltxtalk_current_frametitle_tl { #1 }
       }
   }
 
@@ -1329,7 +2013,7 @@ beschreibt der folgende Abschnitt.
         % Formatierung anwenden
         \prop_get:NnNTF \g__ltxtalk_slot_styles_prop { #1 } \l__ltxtalk_slot_style_tl
           {
-            \keys_set:nn { ltxtalk / slot-style } { \l__ltxtalk_slot_style_tl }
+            \keys_set:nV { ltxtalk / slot-style } \l__ltxtalk_slot_style_tl
           }
           {
             \__ltxtalk_default_slot_style:V \l__ltxtalk_slot_type_tl
@@ -1411,11 +2095,11 @@ beschreibt der folgende Abschnitt.
 
 \cs_new_protected:Npn \__ltxtalk_tag_slot_content:n #1
   {
-    \prop_get:NnNTF \g__ltxtalk_slot_a11y_prop 
+    \prop_get:NnNTF \g__ltxtalk_slot_accessibility_prop
       { \l__ltxtalk_current_slot_name_tl } 
-      \l__ltxtalk_slot_a11y_tl
+      \l__ltxtalk_slot_accessibility_tl
       {
-        \keys_set:nn { ltxtalk / a11y } { \l__ltxtalk_slot_a11y_tl }
+        \keys_set:nV { ltxtalk / a11y } \l__ltxtalk_slot_accessibility_tl
       }
       {
         \keys_set:nn { ltxtalk / a11y } { role = artifact }
@@ -1522,7 +2206,7 @@ beschreibt der folgende Abschnitt.
     
     \prop_get:NnNTF \g__ltxtalk_area_decorations_prop { #1 } \l__ltxtalk_area_deco_tl
       {
-        \keys_set:nn { ltxtalk / area-decoration } { \l__ltxtalk_area_deco_tl }
+        \keys_set:nV { ltxtalk / area-decoration } \l__ltxtalk_area_deco_tl
       }
       {
         \tl_set:Nn \l__ltxtalk_area_frame_tl { none }
@@ -1666,25 +2350,65 @@ beschreibt der folgende Abschnitt.
   }
 
 % ==========================================
-% PAGE-STYLE-INTEGRATION
+% INTEGRATION IN DIE LTX-TALK-TEMPLATES
 % ==========================================
 
-\AddToHook{env/frame/begin}
+\cs_new_protected:Npn \__ltxtalk_apply_class_templates:
   {
-    \str_if_eq:VnF \g__ltxtalk_active_theme_tl { default }
+    \EditInstance { header } { std }
       {
-        \__ltxtalk_build_themed_page:
+        background-color = ltxtalk-primary,
+        color = white,
+        font = \bfseries,
+        height = \headheight + \headsep,
+        print-frame-title = true
       }
-  }
-
-% Auch auf \cs{frametitle}-Änderungen reagieren
-\cs_if_exist:NT \frametitle
-  {
-    \AddToHook{cmd/frametitle/after}
+    \EditInstance { footer } { std }
       {
-        \str_if_eq:VnF \g__ltxtalk_active_theme_tl { default }
+        background-color = ltxtalk-bg,
+        color = ltxtalk-secondary,
+        element-order = { author, institute, date, framenumber },
+        font = \tiny
+      }
+    \EditInstance { frametitle } { header }
+      {
+        color = white,
+        font = \Large \bfseries,
+        before-vspace = 0pt,
+        after-vspace = 0pt
+      }
+    \EditInstance { titlepage-element } { title }
+      { color = ltxtalk-primary, font = \Large \bfseries }
+    \EditInstance { titlepage-element } { subtitle }
+      { color = ltxtalk-secondary }
+    \str_case:Vn \g__ltxtalk_active_theme_tl
+      {
+        { minimal }
           {
-            \__ltxtalk_build_themed_page:
+            \EditInstance { header } { std }
+              { background-color =, color = ltxtalk-primary }
+            \EditInstance { footer } { std }
+              { background-color =, element-order = { framenumber } }
+            \EditInstance { frametitle } { header }
+              { color = ltxtalk-primary, font = \Large \bfseries }
+          }
+        { academic }
+          {
+            \EditInstance { header } { std }
+              { background-color = ltxtalk-primary, color = white }
+            \EditInstance { footer } { std }
+              { element-order = { author, institute, framenumber } }
+          }
+        { corporate }
+          {
+            \EditInstance { header } { std }
+              { background-color = ltxtalk-primary, color = white }
+            \EditInstance { footer } { std }
+              {
+                background-color = ltxtalk-primary,
+                color = white,
+                element-order = { institute, date, framenumber }
+              }
           }
       }
   }
@@ -1707,7 +2431,528 @@ beschreibt der folgende Abschnitt.
     }
 }
 
-\endinput\n\endinput\n%</core>\n% \end{macrocode}\n% \subsection{Modern theme}\n% \begin{macrocode}\n%<*modern>\n% ltxtalk-theme-modern.sty
+% ==========================================
+% GENERIC PAGE-STYLE ADAPTER
+% ==========================================
+
+% The page style is the integration point with ltx-talk.  Themes only add
+% slots and configure areas; this adapter deliberately knows no theme names.
+\seq_new:N \g__ltxtalk_header_slots_seq
+\seq_new:N \g__ltxtalk_left_slots_seq
+\seq_new:N \g__ltxtalk_content_slots_seq
+\seq_new:N \g__ltxtalk_right_slots_seq
+\seq_new:N \g__ltxtalk_footer_slots_seq
+\prop_new:N \g__ltxtalk_slot_contents_prop
+
+\coffin_new:N \l__ltxtalk_area_coffin
+\coffin_new:N \l__ltxtalk_slot_coffin
+\dim_new:N \l__ltxtalk_current_area_width_dim
+\dim_new:N \l__ltxtalk_current_area_height_dim
+\dim_new:N \l__ltxtalk_current_slot_width_dim
+\dim_new:N \l__ltxtalk_current_slot_height_dim
+\dim_new:N \l__ltxtalk_current_slot_x_dim
+\dim_new:N \l__ltxtalk_current_slot_y_dim
+\dim_new:N \g__ltxtalk_base_left_margin_dim
+\dim_new:N \g__ltxtalk_base_right_margin_dim
+\dim_new:N \g__ltxtalk_current_left_margin_dim
+\dim_new:N \g__ltxtalk_current_right_margin_dim
+\dim_gset:Nn \g__ltxtalk_base_left_margin_dim {\Gm@lmargin}
+\dim_gset:Nn \g__ltxtalk_base_right_margin_dim {\Gm@rmargin}
+
+\NewTemplateType { lttheme-slot } { 1 }
+\DeclareTemplateInterface { lttheme-slot } { standard } { 1 }
+  {
+    font        : tokenlist = \normalfont,
+    color       : tokenlist = ltxtalk-text,
+    background  : tokenlist = none,
+    align       : choice { left, center, right } = center,
+    frame       : choice { none, box, top, bottom, left, right } = none,
+    padding     : length = 0pt,
+    rule-color  : tokenlist = ltxtalk-primary,
+    rule-thick  : length = 0.4pt,
+    rotate      : tokenlist = 0,
+    opacity     : tokenlist = 1,
+    shadow      : boolean = false,
+    uppercase   : boolean = false,
+    lowercase   : boolean = false
+  }
+\DeclareTemplateCode { lttheme-slot } { standard } { 1 }
+  {
+    font       = \l__ltxtalk_slot_font_tl,
+    color      = \l__ltxtalk_slot_color_tl,
+    background = \l__ltxtalk_slot_bg_tl,
+    align      =
+      {
+        left   = \tl_set:Nn \l__ltxtalk_slot_align_tl { left },
+        center = \tl_set:Nn \l__ltxtalk_slot_align_tl { center },
+        right  = \tl_set:Nn \l__ltxtalk_slot_align_tl { right }
+      },
+    frame      =
+      {
+        none   = \tl_set:Nn \l__ltxtalk_slot_frame_tl { none },
+        box    = \tl_set:Nn \l__ltxtalk_slot_frame_tl { box },
+        top    = \tl_set:Nn \l__ltxtalk_slot_frame_tl { top },
+        bottom = \tl_set:Nn \l__ltxtalk_slot_frame_tl { bottom },
+        left   = \tl_set:Nn \l__ltxtalk_slot_frame_tl { left },
+        right  = \tl_set:Nn \l__ltxtalk_slot_frame_tl { right }
+      },
+    padding    = \l__ltxtalk_slot_padding_dim,
+    rule-color = \l__ltxtalk_slot_rule_tl,
+    rule-thick = \l__ltxtalk_slot_rule_thick_dim,
+    rotate = \l__ltxtalk_slot_rotate_tl,
+    opacity = \l__ltxtalk_slot_opacity_tl,
+    shadow = \l__ltxtalk_slot_shadow_bool,
+    uppercase = \l__ltxtalk_slot_uppercase_bool,
+    lowercase = \l__ltxtalk_slot_lowercase_bool
+  }
+  { \__ltxtalk_typeset_slot:n {#1} }
+
+\cs_new_protected:Npn \__ltxtalk_typeset_slot:n #1
+  {
+    \group_begin:
+      \setlength\fboxsep{\l__ltxtalk_slot_padding_dim}
+      \setlength\fboxrule{\l__ltxtalk_slot_rule_thick_dim}
+      \color{\l__ltxtalk_slot_color_tl}
+      \l__ltxtalk_slot_font_tl
+      \str_case:Vn \l__ltxtalk_slot_align_tl
+        {
+          { left }   { \raggedright }
+          { center } { \centering }
+          { right }  { \raggedleft }
+        }
+      \str_if_eq:VnF \l__ltxtalk_slot_frame_tl { none }
+        { \color{\l__ltxtalk_slot_rule_tl} }
+      \str_if_eq:VnTF \l__ltxtalk_slot_frame_tl { box }
+        {
+          \fcolorbox{\l__ltxtalk_slot_rule_tl}
+            {\str_if_eq:VnTF \l__ltxtalk_slot_bg_tl {none}{white}{\l__ltxtalk_slot_bg_tl}}
+            {\color{\l__ltxtalk_slot_color_tl}#1}
+        }
+        {
+          \str_if_eq:VnF \l__ltxtalk_slot_bg_tl { none }
+            { \colorbox{\l__ltxtalk_slot_bg_tl}{\color{\l__ltxtalk_slot_color_tl}#1} }
+          \str_if_eq:VnT \l__ltxtalk_slot_bg_tl { none } {#1}
+        }
+    \group_end:
+  }
+
+\NewTemplateType { lttheme-area } { 1 }
+\DeclareTemplateInterface { lttheme-area } { standard } { 1 }
+  {
+    background     : tokenlist = none,
+    frame          : choice { none, box, top, bottom, left, right, topbottom } = none,
+    rule-color     : tokenlist = ltxtalk-primary,
+    rule-thickness : length = 0.4pt,
+    padding        : length = 0pt,
+    artifact-type  : tokenlist = layout,
+    background-opacity : tokenlist = 1,
+    shadow         : boolean = false,
+    shadow-color   : tokenlist = black!30,
+    shadow-offset  : length = 3pt,
+    margin-top     : length = 0pt,
+    margin-bottom  : length = 0pt
+  }
+\DeclareTemplateCode { lttheme-area } { standard } { 1 }
+  {
+    background = \l__ltxtalk_area_background_tl,
+    frame =
+      {
+        none      = \tl_set:Nn \l__ltxtalk_area_frame_tl { none },
+        box       = \tl_set:Nn \l__ltxtalk_area_frame_tl { box },
+        top       = \tl_set:Nn \l__ltxtalk_area_frame_tl { top },
+        bottom    = \tl_set:Nn \l__ltxtalk_area_frame_tl { bottom },
+        left      = \tl_set:Nn \l__ltxtalk_area_frame_tl { left },
+        right     = \tl_set:Nn \l__ltxtalk_area_frame_tl { right },
+        topbottom = \tl_set:Nn \l__ltxtalk_area_frame_tl { topbottom }
+      },
+    rule-color = \l__ltxtalk_area_rule_color_tl,
+    rule-thickness = \l__ltxtalk_area_rule_thickness_dim,
+    padding = \l__ltxtalk_area_padding_dim,
+    artifact-type = \l__ltxtalk_area_artifact_tl,
+    background-opacity = \l__ltxtalk_area_bg_opacity_tl,
+    shadow = \l__ltxtalk_area_shadow_bool,
+    shadow-color = \l__ltxtalk_area_shadow_color_tl,
+    shadow-offset = \l__ltxtalk_area_shadow_offset_dim,
+    margin-top = \l__ltxtalk_area_margin_top_dim,
+    margin-bottom = \l__ltxtalk_area_margin_bottom_dim
+  }
+  { \__ltxtalk_typeset_area_background:n {#1} }
+
+\clist_map_inline:nn { header, left, content, right, footer }
+  { \DeclareInstance { lttheme-area } {#1} { standard } { } }
+
+\cs_new_protected:Npn \__ltxtalk_typeset_area_background:n #1
+  {
+    \group_begin:
+      \setlength\fboxsep{0pt}
+      \clist_if_in:nVT {top,topbottom,box} \l__ltxtalk_area_frame_tl
+        {
+          \color{\l__ltxtalk_area_rule_color_tl}
+          \rule{\l__ltxtalk_current_area_width_dim}
+            {\l__ltxtalk_area_rule_thickness_dim}\par\nointerlineskip
+        }
+      \str_if_eq:VnTF \l__ltxtalk_area_background_tl { none }
+        {\parbox[c][\l__ltxtalk_current_area_height_dim][c]
+           {\l__ltxtalk_current_area_width_dim}
+           {\__ltxtalk_typeset_area_sides:n {#1}}}
+        {\colorbox{\l__ltxtalk_area_background_tl}
+           {\parbox[c][\l__ltxtalk_current_area_height_dim][c]
+             {\l__ltxtalk_current_area_width_dim}
+             {\__ltxtalk_typeset_area_sides:n {#1}}}}
+      \clist_if_in:nVT {bottom,topbottom,box} \l__ltxtalk_area_frame_tl
+        {
+          \par\nointerlineskip\color{\l__ltxtalk_area_rule_color_tl}
+          \rule{\l__ltxtalk_current_area_width_dim}
+            {\l__ltxtalk_area_rule_thickness_dim}
+        }
+    \group_end:
+  }
+\cs_new_protected:Npn \__ltxtalk_typeset_area_sides:n #1
+  {
+    \str_if_eq:VnT \l__ltxtalk_area_frame_tl {left}
+      {
+        \color{\l__ltxtalk_area_rule_color_tl}
+        \rule{\l__ltxtalk_area_rule_thickness_dim}
+          {\l__ltxtalk_current_area_height_dim}\hspace{\l__ltxtalk_area_padding_dim}
+      }
+    #1
+    \str_if_eq:VnT \l__ltxtalk_area_frame_tl {right}
+      {
+        \hfill\color{\l__ltxtalk_area_rule_color_tl}
+        \rule{\l__ltxtalk_area_rule_thickness_dim}
+          {\l__ltxtalk_current_area_height_dim}
+      }
+  }
+
+\NewSocket { lttheme/page/background } { 0 }
+\NewSocket { lttheme/area/header } { 0 }
+\NewSocket { lttheme/area/left } { 0 }
+\NewSocket { lttheme/area/right } { 0 }
+\NewSocket { lttheme/area/footer } { 0 }
+\NewSocket { lttheme/page/foreground } { 0 }
+\NewSocketPlug { lttheme/page/background } { standard } { }
+\NewSocketPlug { lttheme/area/header } { standard }
+  { \__ltxtalk_render_area:nnn {header}{\paperwidth}{\l__ltxtalk_header_height_dim} }
+\NewSocketPlug { lttheme/area/left } { standard }
+  { \__ltxtalk_render_area:nnn {left}{\l__ltxtalk_margin_dim}{\textheight} }
+\NewSocketPlug { lttheme/area/right } { standard }
+  { \__ltxtalk_render_area:nnn {right}{\l__ltxtalk_margin_dim}{\textheight} }
+\NewSocketPlug { lttheme/area/footer } { standard }
+  { \__ltxtalk_render_area:nnn {footer}{\paperwidth}{\l__ltxtalk_footer_height_dim} }
+\NewSocketPlug { lttheme/page/foreground } { standard } { }
+\clist_map_inline:nn
+  { page/background, area/header, area/left, area/right, area/footer, page/foreground }
+  { \AssignSocketPlug { lttheme/#1 } { standard } }
+
+\cs_new_protected:Npn \__ltxtalk_clear_theme_state:
+  {
+    \prop_gclear:N \g__ltxtalk_slot_types_prop
+    \prop_gclear:N \g__ltxtalk_slot_positions_prop
+    \prop_gclear:N \g__ltxtalk_slot_styles_prop
+    \prop_gclear:N \g__ltxtalk_slot_areas_prop
+    \prop_gclear:N \g__ltxtalk_slot_accessibility_prop
+    \prop_gclear:N \g__ltxtalk_slot_contents_prop
+    \prop_gclear:N \g__ltxtalk_area_decorations_prop
+    \seq_gclear:N \g__ltxtalk_header_slots_seq
+    \seq_gclear:N \g__ltxtalk_left_slots_seq
+    \seq_gclear:N \g__ltxtalk_content_slots_seq
+    \seq_gclear:N \g__ltxtalk_right_slots_seq
+    \seq_gclear:N \g__ltxtalk_footer_slots_seq
+  }
+
+\cs_new_protected:Npn \__ltxtalk_update_text_area:
+  {
+    \dim_gset_eq:NN \g__ltxtalk_current_left_margin_dim
+      \g__ltxtalk_base_left_margin_dim
+    \dim_gset_eq:NN \g__ltxtalk_current_right_margin_dim
+      \g__ltxtalk_base_right_margin_dim
+    \bool_if:NT \l__ltxtalk_show_left_margin_bool
+      {
+        \dim_gadd:Nn \g__ltxtalk_current_left_margin_dim
+          {\l__ltxtalk_margin_dim}
+      }
+    \bool_if:NT \l__ltxtalk_show_right_margin_bool
+      {
+        \dim_gadd:Nn \g__ltxtalk_current_right_margin_dim
+          {\l__ltxtalk_margin_dim}
+      }
+    \cs_gset:Npx \Gm@lmargin
+      {\dim_use:N \g__ltxtalk_current_left_margin_dim}
+    \cs_gset:Npx \Gm@rmargin
+      {\dim_use:N \g__ltxtalk_current_right_margin_dim}
+    \dim_gset:Nn \textwidth
+      {
+        \paperwidth-\g__ltxtalk_current_left_margin_dim
+        -\g__ltxtalk_current_right_margin_dim
+      }
+    \dim_gset:Nn \oddsidemargin
+      {\g__ltxtalk_current_left_margin_dim-1in}
+    \dim_gset_eq:NN \evensidemargin \oddsidemargin
+    \dim_gset_eq:NN \columnwidth \textwidth
+    \dim_gset_eq:NN \linewidth \textwidth
+    \dim_gset_eq:NN \hsize \textwidth
+  }
+
+\RenewDocumentCommand \defineltxtalkslot { m m m m }
+  {
+    \prop_gput:Nnn \g__ltxtalk_slot_areas_prop {#1} {#2}
+    \prop_gput:Nnn \g__ltxtalk_slot_types_prop {#1} {#3}
+    \prop_gput:Nnn \g__ltxtalk_slot_accessibility_prop {#1} {#4}
+    \seq_if_exist:cF { g__ltxtalk_#2_slots_seq }
+      { \seq_new:c { g__ltxtalk_#2_slots_seq } }
+    \seq_gput_right:cn { g__ltxtalk_#2_slots_seq } {#1}
+    \IfInstanceExistsTF { lttheme-slot } {#1}
+      { \EditInstance { lttheme-slot } {#1} { } }
+      { \DeclareInstance { lttheme-slot } {#1} { standard } { } }
+  }
+
+\NewDocumentCommand \setltxtalkslotcontent { m m }
+  { \prop_gput:Nnn \g__ltxtalk_slot_contents_prop {#1} {#2} }
+
+\RenewDocumentCommand \styleltxtalkslot { m m }
+  {
+    \prop_gput:Nnn \g__ltxtalk_slot_styles_prop {#1} {#2}
+    \EditInstance { lttheme-slot } {#1} {#2}
+  }
+
+\RenewDocumentCommand \decorateltxtalkarea { m m }
+  {
+    \prop_gput:Nnn \g__ltxtalk_area_decorations_prop {#1} {#2}
+    \EditInstance { lttheme-area } {#1} {#2}
+  }
+
+\RenewDocumentCommand \useltxtalktheme { m }
+  {
+    \str_if_eq:nnTF {#1} {default}
+      {
+        \__ltxtalk_clear_theme_state:
+        \tl_gset:Nn \g__ltxtalk_active_theme_tl {default}
+        \__ltxtalk_update_text_area:
+        \pagestyle{talk}
+      }
+      {
+        \prop_get:NnNTF \g__ltxtalk_themes_prop {#1} \l_tmpa_tl
+          {
+            \__ltxtalk_clear_theme_state:
+            \tl_gset:Nn \g__ltxtalk_active_theme_tl {#1}
+            \l_tmpa_tl
+            \__ltxtalk_apply_class_templates:
+          }
+          { \msg_error:nnn {ltxtalk}{unknown-theme}{#1} }
+      }
+  }
+
+\NewDocumentCommand \addltxtalktheme { m }
+  {
+    \prop_get:NnNTF \g__ltxtalk_themes_prop {#1} \l_tmpa_tl
+      { \l_tmpa_tl \__ltxtalk_apply_class_templates: }
+      { \msg_error:nnn {ltxtalk}{unknown-theme}{#1} }
+  }
+
+\cs_new_protected:Npn \__ltxtalk_slot_content:n #1
+  {
+    \prop_get:NnN \g__ltxtalk_slot_types_prop {#1} \l__ltxtalk_slot_type_tl
+    \str_case:VnF \l__ltxtalk_slot_type_tl
+      {
+        {title}         {\@title}
+        {author}        {\@author}
+        {date}          {\@date}
+        {institute}     {\@institute}
+        {section}       {\tl_use:N \g__talk_section_tl}
+        {subsection}    {\tl_use:N \g__talk_subsection_tl}
+        {frametitle}
+          {\__talk_frame_title:n {\tl_use:N \g__talk_frame_title_tl}}
+        {framesubtitle} {\tl_use:N \g__talk_frame_subtitle_tl}
+        {pagenumber}    {\@framenumber}
+      }
+      { \prop_item:Nn \g__ltxtalk_slot_contents_prop {#1} }
+  }
+
+\cs_new_protected:Npn \__ltxtalk_render_slot:n #1
+  {
+    \prop_get:NnNT \g__ltxtalk_slot_positions_prop {#1} \l_tmpa_tl
+      {
+        \exp_after:wN \__ltxtalk_render_slot_aux:w
+          \l_tmpa_tl \q_stop {#1}
+      }
+  }
+\cs_new_protected:Npn \__ltxtalk_render_slot_aux:w #1#2#3#4 \q_stop #5
+  { \__ltxtalk_render_slot:nnnnn {#5}{#1}{#2}{#3}{#4} }
+\cs_new_protected:Npn \__ltxtalk_render_slot:nnnnn #1#2#3#4#5
+  {
+    \dim_set:Nn \l__ltxtalk_current_slot_width_dim {#4}
+    \dim_set:Nn \l__ltxtalk_current_slot_height_dim {#5}
+    \dim_set:Nn \l__ltxtalk_current_slot_x_dim
+      {
+        \str_case:nnF {#2}
+          {
+            {left}{0pt}
+            {center}{(\l__ltxtalk_current_area_width_dim-#4)/2}
+            {right}{\l__ltxtalk_current_area_width_dim-#4}
+          }{#2}
+      }
+    \dim_set:Nn \l__ltxtalk_current_slot_y_dim
+      {
+        \str_case:nnF {#3}
+          {
+            {top}{0pt}
+            {center}{(\l__ltxtalk_current_area_height_dim-#5)/2}
+            {bottom}{\l__ltxtalk_current_area_height_dim-#5}
+          }{#3}
+      }
+    \hcoffin_set:Nn \l__ltxtalk_slot_coffin
+      {
+        \parbox[c][#5][c]{#4}
+          {\UseInstance {lttheme-slot}{#1}{\__ltxtalk_slot_content:n {#1}}}
+      }
+    \coffin_join:NnnNnnnn \l__ltxtalk_area_coffin {l}{t}
+      \l__ltxtalk_slot_coffin {l}{t}
+      {\l__ltxtalk_current_slot_x_dim}{-\l__ltxtalk_current_slot_y_dim}
+  }
+
+\cs_new_protected:Npn \__ltxtalk_render_area:nnn #1#2#3
+  {
+    \dim_set:Nn \l__ltxtalk_current_area_width_dim {#2}
+    \dim_set:Nn \l__ltxtalk_current_area_height_dim {#3}
+    \vcoffin_set:Nnn \l__ltxtalk_area_coffin {#2}
+      {\UseInstance {lttheme-area}{#1}{\rule{0pt}{#3}}}
+    \seq_map_inline:cn {g__ltxtalk_#1_slots_seq}
+      {\__ltxtalk_render_slot:n {##1}}
+    \coffin_typeset:Nnnnn \l__ltxtalk_area_coffin {l}{t}{0pt}{0pt}
+  }
+
+% Content slots belong to the frame's text stream, not to the page furniture.
+% This narrow adapter preserves the class command and adds all matching slots
+% in declaration order.  Consequently a theme may place a title in the main
+% block, in the header, or in both areas without the core knowing the theme.
+\cs_new_protected:Npn \__ltxtalk_render_content_slots:n #1
+  {
+    \seq_map_inline:Nn \g__ltxtalk_content_slots_seq
+      {
+        \prop_get:NnNT \g__ltxtalk_slot_types_prop {##1} \l_tmpa_tl
+          {
+            \str_if_eq:VnT \l_tmpa_tl {#1}
+              {
+                \prop_get:NnNT \g__ltxtalk_slot_positions_prop {##1} \l_tmpb_tl
+                  {
+                    \exp_after:wN \__ltxtalk_render_content_slot_aux:w
+                      \l_tmpb_tl \q_stop {##1}
+                  }
+              }
+          }
+      }
+  }
+\cs_new_protected:Npn \__ltxtalk_render_content_slot_aux:w
+  #1#2#3#4 \q_stop #5
+  {
+    \par \noindent
+    \UseInstance {lttheme-slot}{#5}{\__ltxtalk_slot_content:n {#5}}
+    \par
+  }
+\RenewDocumentCommand \frametitle { D <> { all } O {#3} m }
+  {
+    \__talk_if_overlay:nT {#1}
+      {
+        \tl_gset:Nn \g__talk_frame_title_tl {#3}
+        \__ltxtalk_render_content_slots:n {frametitle}
+      }
+  }
+\RenewDocumentCommand \framesubtitle { D <> { all } O {#3} m }
+  {
+    \__talk_if_overlay:nT {#1}
+      {
+        \tl_gset:Nn \g__talk_frame_subtitle_tl {#3}
+        \__ltxtalk_render_content_slots:n {framesubtitle}
+      }
+  }
+
+\cs_new_nopar:Npn \ps@lttheme
+  {
+    \cs_set_nopar:Npn \@oddhead
+      {
+        \hbox_to_wd:nn {0pt}
+          {
+            \skip_horizontal:n {-\Gm@lmargin}
+            \bool_if:NT \l__ltxtalk_show_left_margin_bool
+              {
+                \raisebox
+                  {-\dim_eval:n{\l__ltxtalk_header_height_dim-\Gm@tmargin}}
+                  [0pt][0pt]{\UseSocket{lttheme/area/left}}
+              }
+            \hss
+          }
+        \hbox_to_wd:nn {0pt}
+          {
+            \bool_if:NT \l__ltxtalk_show_right_margin_bool
+              {
+                \skip_horizontal:n
+                  {
+                    \dim_eval:n
+                      {-\Gm@lmargin+\paperwidth-\l__ltxtalk_margin_dim}
+                  }
+                \raisebox
+                  {-\dim_eval:n{\l__ltxtalk_header_height_dim-\Gm@tmargin}}
+                  [0pt][0pt]
+                  {\UseSocket{lttheme/area/right}}
+              }
+            \hss
+          }
+        \hbox_to_wd:nn {0pt}
+          {
+            \bool_if:NT \l__ltxtalk_show_header_bool
+              {
+                \skip_horizontal:n {-\Gm@lmargin}
+                \raisebox{\Gm@tmargin}[0pt][0pt]
+                  {\UseSocket{lttheme/area/header}}
+              }
+            \hss
+          }
+        \hfil
+      }
+    \cs_set_nopar:Npn \@oddfoot
+      {
+        \hbox_to_wd:nn {0pt}
+          {
+            \bool_if:NT \l__ltxtalk_show_footer_bool
+              {
+                \skip_horizontal:n {-\Gm@lmargin}
+                \raisebox
+                  {
+                    \dim_eval:n
+                      {
+                        \l__ltxtalk_footer_height_dim
+                        -\Gm@bmargin+\footskip
+                      }
+                  }
+                  [0pt][0pt]
+                  {\UseSocket{lttheme/area/footer}}
+              }
+            \hss
+          }
+        \hfil
+      }
+    \cs_set_eq:NN \@evenhead \@oddhead
+    \cs_set_eq:NN \@evenfoot \@oddfoot
+  }
+
+\cs_set_protected:Npn \__ltxtalk_apply_class_templates:
+  {
+    \__ltxtalk_update_text_area:
+    \pagestyle{lttheme}
+  }
+\AddToHook { begindocument / end }
+  {
+    \str_if_eq:VnF \g__ltxtalk_active_theme_tl {default}
+      {\__ltxtalk_update_text_area:}
+  }
+
+%</core>
+%<core>\endinput
+% \end{macrocode}
+% \subsection{Modern theme}
+% \begin{macrocode}
+%<*modern>
+% ltxtalk-theme-modern.sty
 % Version 0.2 - 2026/07/15
 % Modern theme for ltx-talk
 %
@@ -1750,6 +2995,8 @@ beschreibt der folgende Abschnitt.
     \defineltxtalkslot{mod-logo}{left}{logo}{
       role = artifact, alt-text = Logo
     }
+    \setltxtalkslotcontent{mod-logo}
+      {\fbox{\rule{0pt}{1.2cm}\sffamily LT}}
     \defineltxtalkslot{mod-author}{left}{author}{
       role = note
     }
@@ -1849,7 +3096,14 @@ beschreibt der folgende Abschnitt.
     }
   }
 
-\RegisterLTXTalkTheme{modern}{\__ltxtalk_modern_theme_setup:}\n\endinput\n%</modern>\n% \end{macrocode}\n% \subsection{Minimal theme}\n% \begin{macrocode}\n%<*minimal>\n% ltxtalk-theme-minimal.sty
+\RegisterLTXTalkTheme{modern}{\__ltxtalk_modern_theme_setup:}
+%</modern>
+%<modern>\endinput
+% \end{macrocode}
+% \subsection{Minimal theme}
+% \begin{macrocode}
+%<*minimal>
+% ltxtalk-theme-minimal.sty
 % Version 0.2 - 2026/07/15
 % Minimal theme for ltx-talk
 %
@@ -1972,7 +3226,13 @@ beschreibt der folgende Abschnitt.
 
 \RegisterLTXTalkTheme{minimal}{\__ltxtalk_minimal_theme_setup:}
 
-\endinput\n\endinput\n%</minimal>\n% \end{macrocode}\n% \subsection{Academic theme}\n% \begin{macrocode}\n%<*academic>\n% ltxtalk-theme-academic.sty
+%</minimal>
+%<minimal>\endinput
+% \end{macrocode}
+% \subsection{Academic theme}
+% \begin{macrocode}
+%<*academic>
+% ltxtalk-theme-academic.sty
 % Version 0.2 - 2026/07/15
 % Academic theme for ltx-talk
 %
@@ -2036,7 +3296,7 @@ beschreibt der folgende Abschnitt.
     \defineltxtalkslot{acad-author}{left}{author}{
       role = note
     }
-    \defineltxtalkslot{acad-ftitle}{content}{frametitle}{
+    \defineltxtalkslot{acad-ftitle}{header}{frametitle}{
       role = heading, heading-level = 2
     }
     \defineltxtalkslot{acad-fsubtitle}{content}{framesubtitle}{
@@ -2055,9 +3315,11 @@ beschreibt der folgende Abschnitt.
     \positionltxtalkslot{acad-page}{right}{1.5cm}{0.15\paperwidth}{0.8cm}
     \positionltxtalkslot{acad-logo}{0.5cm}{0.5cm}{2.5cm}{2.5cm}
     \positionltxtalkslot{acad-author}{0.5cm}{3.5cm}{2.5cm}{2cm}
-    \positionltxtalkslot{acad-ftitle}{center}{1cm}{0.8\paperwidth}{1.5cm}
+    \positionltxtalkslot{acad-ftitle}{center}{1.5cm}{0.5\paperwidth}{1cm}
     \positionltxtalkslot{acad-fsubtitle}{center}{2.5cm}{0.8\paperwidth}{1cm}
     \positionltxtalkslot{acad-footer-page}{center}{bottom}{0.3\paperwidth}{0.6cm}
+    \setltxtalkslotcontent{acad-logo}
+      {\fbox{\rule{0pt}{1.2cm}\sffamily UNI}}
     
     % === FORMATIERUNG ===
     \styleltxtalkslot{acad-institute}{
@@ -2163,7 +3425,13 @@ beschreibt der folgende Abschnitt.
 
 \RegisterLTXTalkTheme{academic}{\__ltxtalk_academic_theme_setup:}
 
-\endinput\n\endinput\n%</academic>\n% \end{macrocode}\n% \subsection{Corporate theme}\n% \begin{macrocode}\n%<*corporate>\n% ltxtalk-theme-corporate.sty
+%</academic>
+%<academic>\endinput
+% \end{macrocode}
+% \subsection{Corporate theme}
+% \begin{macrocode}
+%<*corporate>
+% ltxtalk-theme-corporate.sty
 % Version 0.2 - 2026/07/15
 % Corporate theme for ltx-talk
 %
@@ -2223,9 +3491,18 @@ beschreibt der folgende Abschnitt.
     \defineltxtalkslot{corp-page}{right}{pagenumber}{
       role = navigation
     }
+    \defineltxtalkslot{corp-path}{right}{custom}{
+      role = navigation
+    }
     \defineltxtalkslot{corp-institute}{footer}{institute}{
       role = note
     }
+    \setltxtalkslotcontent{corp-logo-header}
+      {\fbox{\rule{0pt}{0.8cm}\sffamily ACME}}
+    \setltxtalkslotcontent{corp-logo-left}
+      {\fbox{\rule{0pt}{1.2cm}\sffamily A}}
+    \setltxtalkslotcontent{corp-path}
+      {Start\\$\triangleright$ Bereich\\$\triangleright$ \textbf{Folie}}
     
     % === POSITIONIERUNG ===
     \positionltxtalkslot{corp-logo-header}{left}{center}{0.2\paperwidth}{2cm}
@@ -2237,6 +3514,7 @@ beschreibt der folgende Abschnitt.
     \positionltxtalkslot{corp-fsubtitle}{left}{3cm}{0.9\paperwidth}{1cm}
     \positionltxtalkslot{corp-date}{center}{1cm}{2cm}{1cm}
     \positionltxtalkslot{corp-page}{center}{2.5cm}{2cm}{1cm}
+    \positionltxtalkslot{corp-path}{center}{4cm}{2.4cm}{2cm}
     \positionltxtalkslot{corp-institute}{center}{bottom}{0.5\paperwidth}{0.6cm}
     
     % === FORMATIERUNG ===
@@ -2297,6 +3575,15 @@ beschreibt der folgende Abschnitt.
       rule-color = ltxtalk-primary!20,
       rule-thick = 0.5pt,
     }
+    \styleltxtalkslot{corp-path}{
+      font = \scriptsize\sffamily,
+      color = ltxtalk-secondary,
+      align = left,
+      frame = left,
+      rule-color = ltxtalk-accent,
+      rule-thick = 1pt,
+      padding = 3pt,
+    }
     \styleltxtalkslot{corp-institute}{
       font = \tiny\sffamily,
       color = ltxtalk-secondary!60,
@@ -2346,4 +3633,211 @@ beschreibt der folgende Abschnitt.
 
 \RegisterLTXTalkTheme{corporate}{\__ltxtalk_corporate_theme_setup:}
 
-\endinput\n\endinput\n%</corporate>\n% \end{macrocode}\n% \Finale\n
+%</corporate>
+%<corporate>\endinput
+% \end{macrocode}
+% \subsection{TU Chemnitz 2019 theme}
+% \begin{macrocode}
+%<*tuc-2019>
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage{ltxtalk-theme-tuc-2019}{2026/07/21}{0.1}
+  {TU Chemnitz presentation design introduced in 2019}
+
+\RequirePackage{ltxtalk-theme-core}
+
+\tl_new:N \g__ltxtalk_tuc_logo_tl
+\tl_new:N \g__ltxtalk_tuc_title_logo_tl
+\tl_new:N \g__ltxtalk_tuc_url_tl
+\dim_new:N \g__ltxtalk_tuc_title_logo_raise_dim
+\bool_new:N \g__ltxtalk_tuc_title_bool
+\tl_gset:Nn \g__ltxtalk_tuc_logo_tl {tuc_white.pdf}
+\tl_gset:Nn \g__ltxtalk_tuc_title_logo_tl {osg.png}
+\tl_gset:Nn \g__ltxtalk_tuc_url_tl {https://www.tu-chemnitz.de/}
+\dim_gset:Nn \g__ltxtalk_tuc_title_logo_raise_dim {0.21cm}
+
+\NewDocumentCommand \settucthemelogo {m}
+  {\tl_gset:Nn \g__ltxtalk_tuc_logo_tl {#1}}
+\NewDocumentCommand \settucthemetitlelogo {m}
+  {\tl_gset:Nn \g__ltxtalk_tuc_title_logo_tl {#1}}
+\NewDocumentCommand \settucthemetitlelogoraise {m}
+  {\dim_gset:Nn \g__ltxtalk_tuc_title_logo_raise_dim {#1}}
+\NewDocumentCommand \settucthemeurl {m}
+  {\tl_gset:Nn \g__ltxtalk_tuc_url_tl {#1}}
+
+\cs_new_protected:Npn \__ltxtalk_tuc_logo:
+  {
+    \file_if_exist:VTF \g__ltxtalk_tuc_logo_tl
+      {
+        \includegraphics
+          [height=\bool_if:NTF \g__ltxtalk_tuc_title_bool {1.25cm}{0.82cm}]
+          {\g__ltxtalk_tuc_logo_tl}
+      }
+      {\sffamily\bfseries TU~CHEMNITZ}
+  }
+\cs_new_protected:Npn \__ltxtalk_tuc_title_logo:
+  {
+    \file_if_exist:VTF \g__ltxtalk_tuc_title_logo_tl
+      {
+        \includegraphics[width=2.485cm]{\g__ltxtalk_tuc_title_logo_tl}
+      }
+      {}
+  }
+\cs_new_protected:Npn \__ltxtalk_tuc_context:
+  {
+    \sffamily
+    \bool_if:NTF \g__ltxtalk_tuc_title_bool
+      {\large \@title \\[0.18cm] \normalsize \@date}
+      {
+        \@title
+        \tl_if_blank:VF \l__talk_section_tl
+          {~--~\tl_use:N \l__talk_section_tl}
+        \tl_if_blank:VF \l__talk_subsection_tl
+          {\\\tl_use:N \l__talk_subsection_tl}
+      }
+  }
+\cs_new_protected:Npn \__ltxtalk_tuc_header_line:
+  {
+    \hbox_to_wd:nn {\paperwidth}
+      {
+        \skip_horizontal:n {0.4cm}
+        \begin{minipage}[t]
+          {\bool_if:NTF \g__ltxtalk_tuc_title_bool {2.485cm}{1.63cm}}
+          \vspace{0pt}\__ltxtalk_tuc_logo:
+        \end{minipage}
+        \skip_horizontal:n {0.4cm}
+        \begin{minipage}[t]{0.4pt}
+          \vspace{0pt}\color{white}
+          \rule
+            {0.4pt}
+            {\bool_if:NTF \g__ltxtalk_tuc_title_bool {1.35cm}{0.82cm}}
+        \end{minipage}
+        \skip_horizontal:n {0.4cm}
+        \begin{minipage}[t]{0.62\paperwidth}
+          \vspace{0.08cm}\color{white}\__ltxtalk_tuc_context:
+        \end{minipage}
+        \hfil
+      }
+  }
+\cs_new_eq:NN \__ltxtalk_tuc_header: \__ltxtalk_tuc_header_line:
+
+\cs_new_protected:Npn \__ltxtalk_tuc_theme_setup:
+  {
+    \ltxtalksetup
+      {
+        header = true,
+        header-height = 1.45cm,
+        left-margin = false,
+        right-margin = false,
+        footer = true,
+        footer-height = 0.52cm
+      }
+    \setltxtalkcolors
+      {
+        primary = {HTML}{4E8749},
+        secondary = {HTML}{333333},
+        accent = {HTML}{F07D00},
+        text = {HTML}{202020},
+        background = {HTML}{FFFFFF}
+      }
+    \color_set:nnn { structure } { HTML } { 4E8749 }
+
+    \defineltxtalkslot{tuc-header}{header}{custom}{role=navigation}
+    \setltxtalkslotcontent{tuc-header}{\__ltxtalk_tuc_header:}
+    \positionltxtalkslot{tuc-header}{left}{0.38cm}{\paperwidth}{1.05cm}
+    \styleltxtalkslot{tuc-header}
+      {align=left,color=white,font=\footnotesize\sffamily}
+
+    \defineltxtalkslot{tuc-frametitle}{content}{frametitle}
+      {role=heading,heading-level=2}
+    \positionltxtalkslot{tuc-frametitle}{left}{top}{\textwidth}{0.9cm}
+    \styleltxtalkslot{tuc-frametitle}
+      {align=left,color=ltxtalk-primary,font=\Large\sffamily}
+
+    \defineltxtalkslot{tuc-framesubtitle}{content}{framesubtitle}
+      {role=heading,heading-level=3}
+    \positionltxtalkslot{tuc-framesubtitle}{left}{top}{\textwidth}{0.55cm}
+    \styleltxtalkslot{tuc-framesubtitle}
+      {align=left,color=ltxtalk-secondary,font=\normalsize\sffamily}
+
+    \defineltxtalkslot{tuc-author}{footer}{custom}{role=note}
+    \setltxtalkslotcontent{tuc-author}
+      {\makebox[0.36\paperwidth][l]{\@author}}
+    \positionltxtalkslot{tuc-author}{0.4cm}{center}{0.36\paperwidth}{0.32cm}
+    \styleltxtalkslot{tuc-author}
+      {align=left,color=ltxtalk-secondary,font=\tiny\sffamily}
+
+    \defineltxtalkslot{tuc-page}{footer}{custom}{role=navigation}
+    \setltxtalkslotcontent{tuc-page}
+      {\makebox[0.22\paperwidth][c]{N~--~\@framenumber\ von~\@totalframes}}
+    \positionltxtalkslot{tuc-page}{center}{center}{0.22\paperwidth}{0.32cm}
+    \styleltxtalkslot{tuc-page}
+      {align=center,color=ltxtalk-secondary,font=\tiny\sffamily}
+
+    \defineltxtalkslot{tuc-url}{footer}{custom}{role=note}
+    \setltxtalkslotcontent{tuc-url}
+      {\makebox[0.36\paperwidth][r]{\tl_use:N \g__ltxtalk_tuc_url_tl}}
+    \positionltxtalkslot{tuc-url}
+      {\dim_eval:n{\paperwidth-0.4cm-0.36\paperwidth}}
+      {center}{0.36\paperwidth}{0.32cm}
+    \styleltxtalkslot{tuc-url}
+      {align=right,color=ltxtalk-secondary,font=\tiny\sffamily}
+
+    \decorateltxtalkarea{header}
+      {background=ltxtalk-primary,frame=none,artifact-type=layout}
+    \decorateltxtalkarea{footer}
+      {
+        background=white,
+        frame=top,
+        rule-color=ltxtalk-secondary,
+        rule-thickness=0.35pt,
+        artifact-type=layout
+      }
+  }
+
+\NewDocumentCommand \maketuctitle {}
+  {
+    \bool_gset_true:N \g__ltxtalk_tuc_title_bool
+    \ltxtalksetup
+      {header-height=2.4cm,footer=false}
+    \positionltxtalkslot{tuc-header}{left}{0.45cm}{\paperwidth}{1.6cm}
+    \__ltxtalk_update_text_area:
+    \begin{frame}
+      \thispagestyle{lttheme}
+      \vspace*{0.7cm}
+      \noindent
+      \skip_horizontal:n {\dim_eval:n{0.4cm-\Gm@lmargin}}
+      \begin{minipage}[t]{2.485cm}
+        \vspace{0pt}\par
+        \vspace{\dim_eval:n{-\g__ltxtalk_tuc_title_logo_raise_dim}}
+        \centering\__ltxtalk_tuc_title_logo:
+      \end{minipage}
+      \skip_horizontal:n {0.4cm+0.4pt+0.4cm}
+      \begin{minipage}[t]{0.62\paperwidth}
+          \vspace{0pt}
+          \sffamily
+          \Large\bfseries \@title\par
+          \vspace{0.8cm}
+          \color{ltxtalk-primary}\large \@subtitle\par
+          \vspace{0.75cm}
+          \normalsize\color{ltxtalk-secondary}\@author\par
+          \small \@institute
+      \end{minipage}
+    \end{frame}
+    \bool_gset_false:N \g__ltxtalk_tuc_title_bool
+    \ltxtalksetup
+      {header-height=1.45cm,footer=true,footer-height=0.52cm}
+    \positionltxtalkslot{tuc-header}{left}{0.38cm}{\paperwidth}{1.05cm}
+    \__ltxtalk_update_text_area:
+  }
+
+\RegisterLTXTalkTheme{tuc-2019}{\__ltxtalk_tuc_theme_setup:}
+%</tuc-2019>
+%<tuc-2019>\endinput
+%<*tuc-2019-alias>
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{ltxtalk-tuc-2019}[2026/07/21 v0.1 TU Chemnitz 2019 theme]
+\RequirePackage{ltxtalk-theme-tuc-2019}
+%</tuc-2019-alias>
+%<tuc-2019-alias>\endinput
+% \end{macrocode}
+% \Finale
