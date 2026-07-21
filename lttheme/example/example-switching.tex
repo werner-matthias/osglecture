@@ -1,12 +1,14 @@
 % example-switching.tex
 % Theme switching example
 
+\DocumentMetadata{}
 \documentclass{ltx-talk}
 
 % Mehrere Themes laden
 \usepackage{ltxtalk-theme-modern}
 \usepackage{ltxtalk-theme-academic}
 \usepackage{ltxtalk-theme-minimal}
+\useltxtalktheme{modern}
 
 \title{Theme-Wechsel Demonstration}
 \author{Max Mustermann}
@@ -15,8 +17,6 @@
 \begin{document}
 
 % Start mit Modern
-\useltxtalktheme{modern}
-
 \begin{frame}{Modern Theme}
   Diese Folie verwendet das Modern-Theme.
   \begin{itemize}

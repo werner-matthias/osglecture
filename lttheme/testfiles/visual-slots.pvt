@@ -1,0 +1,221 @@
+\DocumentMetadata{}
+\documentclass{ltx-talk}
+
+\usepackage{ltxtalk-theme-core}
+
+\ExplSyntaxOn
+\cs_new_protected:Npn \__lttheme_test_slot_showcase:
+  {
+    \ltxtalksetup
+      {
+        header = true,
+        header-height = 2cm,
+        header-rows = 2,
+        header-columns = { 0.25, 0.5, 0.25 },
+        left-margin = true,
+        right-margin = true,
+        footer = true,
+        footer-height = 0.8cm,
+        footer-columns = { 0.4, 0.4, 0.2 },
+        margin-width = 2cm
+      }
+    \setltxtalkcolors
+      {
+        primary = {HTML}{174A5B},
+        secondary = {HTML}{376B73},
+        accent = {HTML}{D17A22},
+        text = {HTML}{202A2E},
+        background = {HTML}{F4F7F7}
+      }
+    \setltxtalktitleplacement
+      { frametitle = header, section = header }
+    \setltxtalkheadingbehavior
+      {
+        auto-section-title = true,
+        detect-continuation = true,
+        header-as-navigation = true
+      }
+
+    \defineltxtalkslot{show-title}{header}{title}
+      { role = heading, heading-level = 1 }
+    \defineltxtalkslot{show-section}{header}{section}
+      { role = navigation }
+    \defineltxtalkslot{show-page}{header}{pagenumber}
+      { role = navigation }
+    \defineltxtalkslot{show-author}{left}{author}
+      { role = note }
+    \defineltxtalkslot{show-frame-title}{content}{frametitle}
+      {
+        role = heading,
+        heading-level = 2,
+        continuation-text = {(Fortsetzung)},
+        continuation-mode = explicit
+      }
+    \defineltxtalkslot{show-frame-subtitle}{content}{framesubtitle}
+      { role = heading, heading-level = 3 }
+    \defineltxtalkslot{show-subsection}{right}{subsection}
+      { role = navigation }
+    \defineltxtalkslot{show-institute}{footer}{institute}
+      { role = note }
+    \defineltxtalkslot{show-date}{footer}{date}
+      { role = note }
+    \defineltxtalkslot{show-footer-page}{footer}{pagenumber}
+      { role = navigation }
+
+    \positionltxtalkslot{show-title}{center}{0.25cm}{0.5\paperwidth}{0.7cm}
+    \positionltxtalkslot{show-section}{left}{1.15cm}{0.3\paperwidth}{0.5cm}
+    \positionltxtalkslot{show-page}{right}{1.15cm}{1cm}{0.5cm}
+    \positionltxtalkslot{show-author}{center}{top}{1.5cm}{1cm}
+    \positionltxtalkslot{show-frame-title}{left}{top}{0.7\paperwidth}{1cm}
+    \positionltxtalkslot{show-frame-subtitle}{left}{1cm}{0.7\paperwidth}{0.7cm}
+    \positionltxtalkslot{show-subsection}{center}{top}{1.5cm}{1cm}
+    \positionltxtalkslot{show-institute}{left}{bottom}{0.4\paperwidth}{0.5cm}
+    \positionltxtalkslot{show-date}{center}{bottom}{0.3\paperwidth}{0.5cm}
+    \positionltxtalkslot{show-footer-page}{right}{bottom}{1cm}{0.5cm}
+
+    \styleltxtalkslot{show-title}
+      {
+        font = \Large\bfseries\sffamily,
+        color = white,
+        align = center,
+        uppercase = false
+      }
+    \styleltxtalkslot{show-section}
+      { font = \small\bfseries, color = white, align = left }
+    \styleltxtalkslot{show-page}
+      { font = \small, color = white, align = right }
+    \styleltxtalkslot{show-author}
+      {
+        font = \footnotesize\itshape,
+        color = ltxtalk-secondary,
+        background = ltxtalk-primary!5,
+        frame = box,
+        rule-color = ltxtalk-accent,
+        rule-thick = 0.8pt,
+        padding = 4pt,
+        align = center,
+        shadow = true
+      }
+    \styleltxtalkslot{show-frame-title}
+      {
+        font = \LARGE\bfseries,
+        color = ltxtalk-primary,
+        frame = bottom,
+        rule-color = ltxtalk-accent,
+        rule-thick = 2pt,
+        padding = 5pt,
+        align = left
+      }
+    \styleltxtalkslot{show-frame-subtitle}
+      {
+        font = \large\itshape,
+        color = ltxtalk-secondary,
+        opacity = 0.9
+      }
+    \styleltxtalkslot{show-subsection}
+      {
+        font = \scriptsize\bfseries,
+        color = ltxtalk-accent,
+        align = center,
+        rotate = 0
+      }
+    \styleltxtalkslot{show-institute}
+      { font = \tiny, color = ltxtalk-secondary, align = left }
+    \styleltxtalkslot{show-date}
+      { font = \tiny, color = ltxtalk-secondary, align = center }
+    \styleltxtalkslot{show-footer-page}
+      { font = \tiny\bfseries, color = ltxtalk-primary, align = right }
+
+    \decorateltxtalkarea{header}
+      {
+        frame = bottom,
+        rule-color = ltxtalk-accent,
+        rule-thickness = 3pt,
+        background = ltxtalk-primary,
+        background-opacity = 1,
+        padding = 3pt,
+        artifact-type = layout
+      }
+    \decorateltxtalkarea{left}
+      {
+        frame = right,
+        rule-color = ltxtalk-secondary!40,
+        rule-thickness = 0.5pt,
+        background = ltxtalk-primary!5,
+        shadow = true,
+        shadow-color = black!20,
+        shadow-offset = 2pt,
+        artifact-type = decorative
+      }
+    \decorateltxtalkarea{right}
+      {
+        frame = left,
+        rule-color = ltxtalk-accent,
+        rule-thickness = 1pt,
+        background = ltxtalk-accent!5,
+        artifact-type = decorative
+      }
+    \decorateltxtalkarea{footer}
+      {
+        frame = topbottom,
+        rule-color = ltxtalk-primary!30,
+        rule-thickness = 0.5pt,
+        background = ltxtalk-bg,
+        margin-top = 2pt,
+        margin-bottom = 2pt,
+        artifact-type = layout
+      }
+  }
+
+% Besides creating the PDF reference, parse every stored option list.  This
+% makes the test fail when slot, accessibility, or decoration keys regress.
+\cs_new_protected:Npn \__lttheme_test_validate_slot_setup:
+  {
+    \prop_map_inline:Nn \g__ltxtalk_slot_styles_prop
+      { \keys_set:nn { ltxtalk / slot-style } { ##2 } }
+    \prop_map_inline:Nn \g__ltxtalk_slot_accessibility_prop
+      { \keys_set:nn { ltxtalk / a11y } { ##2 } }
+    \prop_map_inline:Nn \g__ltxtalk_area_decorations_prop
+      { \keys_set:nn { ltxtalk / area-decoration } { ##2 } }
+  }
+
+\RegisterLTXTalkTheme{slot-showcase}{\__lttheme_test_slot_showcase:}
+\useltxtalktheme{slot-showcase}
+\__lttheme_test_validate_slot_setup:
+\ExplSyntaxOff
+
+\title[Slot-Test]{Das Slot-System im Sichttest}
+\subtitle{Bereiche, Positionen, Stile und Semantik}
+\author[A. Beispiel]{Ada Beispiel}
+\institute{Beispiel-Institut}
+\date{3. Juli 2026}
+
+\begin{document}
+
+\begin{frame}
+  \maketitle
+\end{frame}
+
+\section{Bereiche und Slots}
+\subsection{Gestaltung}
+
+\begin{frame}{Konfigurierte Inhaltsfolie}
+  \framesubtitle{Titel, Navigation und Fußzeile}
+  Diese Folie bildet die visuelle Referenz für ein selbst definiertes Theme.
+  \begin{itemize}
+    \item zehn Slots in fünf Bereichen
+    \item eigene Farben und Bereichsdekorationen
+    \item Rollen und Überschriftenebenen
+  \end{itemize}
+  \begin{block}{Akzent}
+    Auch Block, Formel $\int_0^1 x^2\,dx=\frac13$ und \alert{Hervorhebung}
+    bleiben Teil des Vergleichs.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Konfigurierte Inhaltsfolie (Fortsetzung)}
+  \framesubtitle{Explizite Fortsetzungskennzeichnung}
+  Die dritte Seite prüft die konfigurierte Fortsetzungssemantik.
+\end{frame}
+
+\end{document}

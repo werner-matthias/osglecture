@@ -1,0 +1,29 @@
+\DocumentMetadata{}
+\input regression-test.tex
+\documentclass{ltx-talk}
+\usepackage{ltxtalk-theme-modern}
+\usepackage{ltxtalk-theme-minimal}
+\usepackage{ltxtalk-theme-academic}
+\usepackage{ltxtalk-theme-corporate}
+\useltxtalktheme{modern}
+\title{Compatibility test}
+\author{Test author}
+\date{2026-07-21}
+\begin{document}
+\ExplSyntaxOn
+\clist_map_inline:nn { modern, minimal, academic, corporate }
+  {
+    \useltxtalktheme{#1}
+    \begin{frame}
+      \frametitle{#1 theme}
+      Test content.
+    \end{frame}
+  }
+\START
+\TYPE{compat-modern:passed}
+\TYPE{compat-minimal:passed}
+\TYPE{compat-academic:passed}
+\TYPE{compat-corporate:passed}
+\ExplSyntaxOff
+\END
+\end{document}

@@ -1,0 +1,22 @@
+\DocumentMetadata{}
+\input regression-test.tex
+\documentclass{ltx-talk}
+\usepackage{ltxtalk-theme-modern}
+\useltxtalktheme{modern}
+\title{Compatibility test}
+\author{Test author}
+\date{2026-07-21}
+\begin{document}
+\begin{frame}
+  \maketitle
+\end{frame}
+\section{Test section}
+\begin{frame}
+  \frametitle{Test frame}
+  \framesubtitle{Test subtitle}
+  Test content.
+\end{frame}
+\START
+\TYPE{compat-modern: passed}
+\END
+\end{document}

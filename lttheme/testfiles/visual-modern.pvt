@@ -1,0 +1,33 @@
+\DocumentMetadata{}
+\documentclass{ltx-talk}
+
+\usepackage{ltxtalk-theme-modern}
+\useltxtalktheme{modern}
+
+\title[PDF-Sichttest]{PDF-Sichttest für lttheme}
+\subtitle{Feste Referenzfolie}
+\author[A. Beispiel]{Ada Beispiel}
+\institute{Beispiel-Institut}
+\date{3. Juli 2026}
+
+\begin{document}
+
+\begin{frame}
+  \maketitle
+\end{frame}
+
+\section{Referenzabschnitt}
+
+\begin{frame}{Typografie und Flächen}
+  \framesubtitle{Eine feste visuelle Referenz}
+  Ein kurzer Absatz prüft Schrift, Textfarbe und Satzspiegel.
+  \begin{itemize}
+    \item erster Listenpunkt
+    \item zweiter Listenpunkt mit \alert{Hervorhebung}
+  \end{itemize}
+  \begin{block}{Beispielblock}
+    Inhalt des Blocks mit der Formel $a^2+b^2=c^2$.
+  \end{block}
+\end{frame}
+
+\end{document}

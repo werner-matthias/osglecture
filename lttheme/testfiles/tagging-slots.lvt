@@ -1,0 +1,42 @@
+\input regression-test.tex
+\DocumentMetadata{tagging=on,lang=de-DE}
+\documentclass{ltx-talk}
+
+\usepackage{ltxtalk-theme-modern}
+\useltxtalktheme{modern}
+
+\title[Tagging-Test]{Tagging des Slot-Systems}
+\subtitle{Semantische Struktur}
+\author[A. Beispiel]{Ada Beispiel}
+\institute{Beispiel-Institut}
+\date{3. Juli 2026}
+
+\begin{document}
+
+\begin{frame}
+  \maketitle
+\end{frame}
+
+\section{Strukturabschnitt}
+
+\begin{frame}
+  \frametitle{Überschrift der Inhaltsfolie}
+  Ein Absatz als Inhalt des Frames.
+  \begin{itemize}
+    \item erster Listenpunkt
+    \item zweiter Listenpunkt
+  \end{itemize}
+  \begin{block}{Getaggter Block}
+    Inhalt des Blocks.
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Überschrift der Inhaltsfolie (Fortsetzung)}
+  Ein explizit gekennzeichneter Fortsetzungsframe.
+\end{frame}
+
+\clearpage
+\SHOWPDFTAGS
+
+\end{document}
