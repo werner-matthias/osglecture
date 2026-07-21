@@ -12,6 +12,8 @@ installfiles = {
     "ltxtalk-theme-minimal.sty",
     "ltxtalk-theme-modern.sty",
     "ltxtalk-theme-corporate.sty",
+    "ltxtalk-theme-tuc-2019.sty",
+    "ltxtalk-tuc-2019.sty",
 }
 
 dofile("../build.lua")

@@ -8,7 +8,22 @@
 \usepackage{ltxtalk-theme-modern}
 \usepackage{ltxtalk-theme-academic}
 \usepackage{ltxtalk-theme-minimal}
+\ExplSyntaxOn
+\cs_new_protected:Npn \example_progress_theme:
+  {
+    \ltxtalksetup{right-margin=true,margin-width=2.2cm}
+    \defineltxtalkslot{example-progress}{right}{custom}
+      { role = navigation }
+    \setltxtalkslotcontent{example-progress}
+      {Start\\\textbf{Themen}\\Abschluss}
+    \positionltxtalkslot{example-progress}{center}{4cm}{2cm}{2.5cm}
+    \styleltxtalkslot{example-progress}
+      {font=\scriptsize\sffamily,color=ltxtalk-accent,align=left}
+  }
+\RegisterLTXTalkTheme{progress}{\example_progress_theme:}
+\ExplSyntaxOff
 \useltxtalktheme{modern}
+\addltxtalktheme{progress}
 
 \title{Theme-Wechsel Demonstration}
 \author{Max Mustermann}
@@ -17,19 +32,22 @@
 \begin{document}
 
 % Start mit Modern
-\begin{frame}{Modern Theme}
+\begin{frame}
+  \frametitle{Modern Theme}
   Diese Folie verwendet das Modern-Theme.
   \begin{itemize}
     \item Header mit Titel und Navigation
     \item Linke Seitenleiste mit Logo
     \item Footer mit Institut und Datum
+    \item Additives Teiltheme mit eigener Pfadnavigation
   \end{itemize}
 \end{frame}
 
 % Wechsel zu Academic
 \useltxtalktheme{academic}
 
-\begin{frame}{Academic Theme}
+\begin{frame}
+  \frametitle{Academic Theme}
   Diese Folie verwendet das Academic-Theme.
   \begin{itemize}
     \item Mehrzeiliger Header
@@ -41,7 +59,8 @@
 % Wechsel zu Minimal
 \useltxtalktheme{minimal}
 
-\begin{frame}{Minimal Theme}
+\begin{frame}
+  \frametitle{Minimal Theme}
   Diese Folie verwendet das Minimal-Theme.
   \begin{itemize}
     \item Nur das Nötigste
@@ -53,7 +72,8 @@
 % Zurück zum Default
 \useltxtalktheme{default}
 
-\begin{frame}{Default ltx-talk}
+\begin{frame}
+  \frametitle{Default ltx-talk}
   Diese Folie verwendet das Standard-Layout von ltx-talk.
   \begin{itemize}
     \item Kein Theme aktiv
