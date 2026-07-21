@@ -167,6 +167,27 @@
       }
   }
 
+% A partial theme is additive: it contributes a previously unknown element
+% without copying or replacing the base theme.
+\cs_new_protected:Npn \__lttheme_test_tree_navigation:
+  {
+    \defineltxtalkslot{show-tree}{right}{custom}
+      { role = navigation }
+    \setltxtalkslotcontent{show-tree}
+      {Grundlagen\\\quad Slots\\\qquad \textbf{Sichttest}}
+    \positionltxtalkslot{show-tree}{center}{3cm}{1.7cm}{3cm}
+    \styleltxtalkslot{show-tree}
+      {
+        font = \scriptsize\sffamily,
+        color = ltxtalk-primary,
+        align = left,
+        frame = left,
+        rule-color = ltxtalk-accent,
+        rule-thick = 1.5pt,
+        padding = 3pt
+      }
+  }
+
 % Besides creating the PDF reference, parse every stored option list.  This
 % makes the test fail when slot, accessibility, or decoration keys regress.
 \cs_new_protected:Npn \__lttheme_test_validate_slot_setup:
@@ -180,7 +201,9 @@
   }
 
 \RegisterLTXTalkTheme{slot-showcase}{\__lttheme_test_slot_showcase:}
+\RegisterLTXTalkTheme{tree-navigation}{\__lttheme_test_tree_navigation:}
 \useltxtalktheme{slot-showcase}
+\addltxtalktheme{tree-navigation}
 \__lttheme_test_validate_slot_setup:
 \ExplSyntaxOff
 
@@ -199,7 +222,8 @@
 \section{Bereiche und Slots}
 \subsection{Gestaltung}
 
-\begin{frame}{Konfigurierte Inhaltsfolie}
+\begin{frame}
+  \frametitle{Konfigurierte Inhaltsfolie}
   \framesubtitle{Titel, Navigation und Fußzeile}
   Diese Folie bildet die visuelle Referenz für ein selbst definiertes Theme.
   \begin{itemize}
@@ -213,7 +237,8 @@
   \end{block}
 \end{frame}
 
-\begin{frame}{Konfigurierte Inhaltsfolie (Fortsetzung)}
+\begin{frame}
+  \frametitle{Konfigurierte Inhaltsfolie (Fortsetzung)}
   \framesubtitle{Explizite Fortsetzungskennzeichnung}
   Die dritte Seite prüft die konfigurierte Fortsetzungssemantik.
 \end{frame}

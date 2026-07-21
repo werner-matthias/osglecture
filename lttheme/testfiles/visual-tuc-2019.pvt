@@ -1,0 +1,32 @@
+\DocumentMetadata{}
+\documentclass{ltx-talk}
+
+\usepackage{ltxtalk-theme-tuc-2019}
+\settucthemelogo{../../images/logos/tuc_white.pdf}
+\settucthemetitlelogo{../../images/logos/osg.png}
+\useltxtalktheme{tuc-2019}
+
+\title{Echtzeitsysteme}
+\subtitle{0. Kapitel\\Organisatorisches}
+\author{Prof. Matthias Werner}
+\institute{Professur Betriebssysteme}
+\date{Sommersemester 2026}
+
+\begin{document}
+\maketuctitle
+
+\section{Organisatorisches}
+\subsection{Regularien}
+\begin{frame}
+  \frametitle{0.1 Regularien}
+  \framesubtitle{Willkommen zur Lehrveranstaltung}
+  \begin{itemize}
+    \item Informationen und Materialien auf der Lernplattform
+    \item Übungen vertiefen die Inhalte der Vorlesung
+    \item Fragen sind ausdrücklich willkommen
+  \end{itemize}
+  \begin{block}{Hinweis}
+    Die Fußzeile zeigt Autor, Foliennummer und Webadresse.
+  \end{block}
+\end{frame}
+\end{document}

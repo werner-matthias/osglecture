@@ -5,13 +5,14 @@
 \usepackage{ltxtalk-theme-minimal}
 \usepackage{ltxtalk-theme-academic}
 \usepackage{ltxtalk-theme-corporate}
+\usepackage{ltxtalk-tuc-2019}
 \useltxtalktheme{modern}
 \title{Compatibility test}
 \author{Test author}
 \date{2026-07-21}
 \begin{document}
 \ExplSyntaxOn
-\clist_map_inline:nn { modern, minimal, academic, corporate }
+\clist_map_inline:nn { modern, minimal, academic, corporate, tuc-2019 }
   {
     \useltxtalktheme{#1}
     \begin{frame}
@@ -24,6 +25,7 @@
 \TYPE{compat-minimal:passed}
 \TYPE{compat-academic:passed}
 \TYPE{compat-corporate:passed}
+\TYPE{compat-tuc-2019:passed}
 \ExplSyntaxOff
 \END
 \end{document}

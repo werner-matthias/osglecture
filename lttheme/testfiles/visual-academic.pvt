@@ -18,7 +18,8 @@
 
 \section{Referenzabschnitt}
 
-\begin{frame}{Typografie und Flächen}
+\begin{frame}
+  \frametitle{Typografie und Flächen}
   \framesubtitle{Eine feste visuelle Referenz}
   Ein kurzer Absatz prüft Schrift, Textfarbe und Satzspiegel.
   \begin{itemize}

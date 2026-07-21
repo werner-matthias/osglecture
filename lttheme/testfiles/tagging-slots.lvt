@@ -3,6 +3,7 @@
 \documentclass{ltx-talk}
 
 \usepackage{ltxtalk-theme-modern}
+\usepackage{ltxtalk-theme-academic}
 \useltxtalktheme{modern}
 
 \title[Tagging-Test]{Tagging des Slot-Systems}
@@ -31,9 +32,10 @@
   \end{block}
 \end{frame}
 
+\useltxtalktheme{academic}
 \begin{frame}
   \frametitle{Überschrift der Inhaltsfolie (Fortsetzung)}
-  Ein explizit gekennzeichneter Fortsetzungsframe.
+  Ein explizit gekennzeichneter Fortsetzungsframe mit Titel im Header.
 \end{frame}
 
 \clearpage

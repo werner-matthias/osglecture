@@ -1,19 +1,33 @@
 %PDF-2.0
 %Ã’¡‘≈ÿ–ƒ∆
+25 0 obj
+<< /Filter /FlateDecode /Length 544 >>        
+[BINARY STREAM]
+endobj
 23 0 obj
-<< /Filter /FlateDecode /Length 343 >>        
+<< /Type /XObject /Subtype /Form /FormType 1 /PTEX.PageNumber 1 /PTEX.InfoDict << /Producer (cairo 1.16.0 (https://cairographics.org)) /CreationDate (D:20190226134957+01'00) >> /BBox [ 0 0 397.298981 199.840424 ] /Group << /Type /Group /S /Transparency /I true /CS /DeviceRGB >> /Resources << /ExtGState << /a0 << /CA 1 /ca 1 >> >> /XObject << /x6 32 0 R >> >>
+/Group<</S/Transparency/K false/I false>>
+ /Length 55 /Filter /FlateDecode >>
 [BINARY STREAM]
 endobj
 32 0 obj
-<< /Filter /FlateDecode /Length 1519 >>       
+<< /Length 33 0 R /Filter /FlateDecode /Type /XObject /Subtype /Form /BBox [ 0 0 398 200 ] /Resources 34 0 R >>
 [BINARY STREAM]
 endobj
-46 0 obj
-<< /Filter /FlateDecode /Length 1079 >>       
+22 0 obj
+<< /Type /XObject /Subtype /Image /Width 500 /Height 353 /BitsPerComponent 8 /ColorSpace /DeviceRGB /SMask 35 0 R /Filter /FlateDecode /Length 58872 >>      
 [BINARY STREAM]
 endobj
-43 0 obj
-<< /Type /Metadata /Subtype /XML /Length 12377 >>      
+35 0 obj
+<< /Type /XObject /Subtype /Image /Width 500 /Height 353 /BitsPerComponent 8 /ColorSpace /DeviceGray /Filter /FlateDecode /Length 25126 >>      
+[BINARY STREAM]
+endobj
+39 0 obj
+<< /Filter /FlateDecode /Length 890 >>        
+[BINARY STREAM]
+endobj
+36 0 obj
+<< /Type /Metadata /Subtype /XML /Length 12363 >>      
 stream
 <?xpacket begin="Ôªø" id="W5M0MpCehiHzreSzNTczkc9d"?>
 <x:xmpmeta xmlns:x="adobe:ns:meta/">
@@ -223,13 +237,13 @@ stream
    <pdf:PDFVersion>2.0</pdf:PDFVersion>
    <dc:creator>
     <rdf:Seq>
-     <rdf:li>Ada Beispiel</rdf:li>
+     <rdf:li>Prof. Matthias Werner</rdf:li>
     </rdf:Seq>
    </dc:creator>
    <dc:title>
     <rdf:Alt>
-     <rdf:li xml:lang="x-default">Das Slot-System im Sichttest</rdf:li>
-     <rdf:li xml:lang="en">Das Slot-System im Sichttest</rdf:li>
+     <rdf:li xml:lang="x-default">Echtzeitsysteme</rdf:li>
+     <rdf:li xml:lang="en">Echtzeitsysteme</rdf:li>
     </rdf:Alt>
    </dc:title>
    <dc:type>
@@ -248,80 +262,56 @@ stream
     </rdf:Seq>
    </dc:date>
    <dc:format>application/pdf</dc:format>
-   <dc:source>visual-slots.tex</dc:source>
+   <dc:source>visual-tuc-2019.tex</dc:source>
    <xmp:CreatorTool>LaTeX with hyperref</xmp:CreatorTool>
    <xmp:CreateDate>2016-05-20T09:00:00Z</xmp:CreateDate>
    <xmp:ModifyDate>2016-05-20T09:00:00Z</xmp:ModifyDate>
    <xmp:MetadataDate>2016-05-20T09:00:00Z</xmp:MetadataDate>
-   <xmpMM:DocumentID>uuid:a7bb0da6-66ea-4220-8854-911e89cd6a7f</xmpMM:DocumentID>
-   <xmpMM:InstanceID>uuid:6e9788cf-4933-4397-8349-1bde2638891a</xmpMM:InstanceID>
+   <xmpMM:DocumentID>uuid:2e10a64a-be13-4aae-894e-e101699e8f02</xmpMM:DocumentID>
+   <xmpMM:InstanceID>uuid:f84ecd66-1e6d-47d6-81cf-c3c6b370121e</xmpMM:InstanceID>
    <prism:complianceProfile>three</prism:complianceProfile>
-   <prism:pageCount>3</prism:pageCount>
+   <prism:pageCount>2</prism:pageCount>
   </rdf:Description>
  </rdf:RDF>
 </x:xmpmeta>
 <?xpacket end="w"?>
 endstream
 endobj
-56 0 obj
-<< /Subtype /CIDFontType0C /Filter /FlateDecode /Length 845 >>        
+55 0 obj
+<< /Subtype /CIDFontType0C /Filter /FlateDecode /Length 2366 >>       
 [BINARY STREAM]
 endobj
-57 0 obj
-<< /Filter /FlateDecode /Length 375 >>        
+56 0 obj
+<< /Filter /FlateDecode /Length 493 >>        
+[BINARY STREAM]
+endobj
+60 0 obj
+<< /Subtype /CIDFontType0C /Filter /FlateDecode /Length 2492 >>       
 [BINARY STREAM]
 endobj
 61 0 obj
-<< /Subtype /CIDFontType0C /Filter /FlateDecode /Length 882 >>        
+<< /Filter /FlateDecode /Length 490 >>        
 [BINARY STREAM]
 endobj
-62 0 obj
-<< /Filter /FlateDecode /Length 390 >>        
+65 0 obj
+<< /Subtype /CIDFontType0C /Filter /FlateDecode /Length 3447 >>       
 [BINARY STREAM]
 endobj
 66 0 obj
-<< /Subtype /CIDFontType0C /Filter /FlateDecode /Length 2486 >>       
-[BINARY STREAM]
-endobj
-67 0 obj
-<< /Filter /FlateDecode /Length 501 >>        
-[BINARY STREAM]
-endobj
-71 0 obj
-<< /Subtype /CIDFontType0C /Filter /FlateDecode /Length 2265 >>       
+<< /Filter /FlateDecode /Length 576 >>        
 [BINARY STREAM]
 endobj
 72 0 obj
-<< /Filter /FlateDecode /Length 485 >>        
+<< /Producer (luahbtex-1.24.0)/Creator <FEFF004C006100540065005800200077006900740068002000680079007000650072007200650066>/Title <FEFF0045006300680074007A00650069007400730079007300740065006D0065>/Author <FEFF00500072006F0066002E0020004D00610074007400680069006100730020005700650072006E00650072>/CreationDate (D:20160520090000Z)/ModDate (D:20160520090000Z) /Trapped /False /PTEX.FullBanner (This is LuaHBTeX, Version 1.24.0 (TeX Live 2026)) >>
+endobj
+31 0 obj
+<< /Type /ObjStm /N 41 /First 302 /Filter /FlateDecode /Length 1575 >>       
 [BINARY STREAM]
 endobj
-76 0 obj
-<< /Subtype /CIDFontType0C /Filter /FlateDecode /Length 2622 >>       
-[BINARY STREAM]
-endobj
-77 0 obj
-<< /Filter /FlateDecode /Length 471 >>        
-[BINARY STREAM]
-endobj
-81 0 obj
-<< /Subtype /CIDFontType0C /Filter /FlateDecode /Length 3327 >>       
-[BINARY STREAM]
-endobj
-82 0 obj
-<< /Filter /FlateDecode /Length 568 >>        
-[BINARY STREAM]
-endobj
-88 0 obj
-<< /Producer (luahbtex-1.24.0)/Creator <FEFF004C006100540065005800200077006900740068002000680079007000650072007200650066>/Title <FEFF00440061007300200053006C006F0074002D00530079007300740065006D00200069006D0020005300690063006800740074006500730074>/Author <FEFF00410064006100200042006500690073007000690065006C>/CreationDate (D:20160520090000Z)/ModDate (D:20160520090000Z) /Trapped /False /PTEX.FullBanner (This is LuaHBTeX, Version 1.24.0 (TeX Live 2026)) >>
-endobj
-29 0 obj
-<< /Type /ObjStm /N 54 /First 410 /Filter /FlateDecode /Length 1889 >>       
-[BINARY STREAM]
-endobj
-89 0 obj
-<< /Type /XRef /Index [ 0 90 ] /Size 90 /W [ 1 2 1 ] /Root 87 0 R /Info 88 0 R /ID [ <4D4A6996A3B000535C9231869A7CA3C9> <4D4A6996A3B000535C9231869A7CA3C9> ] /Filter /FlateDecode /Length 214 >>        
+73 0 obj
+<< /Type /XRef /Index [ 0 74 ] /Size 74 /W [ 1 3 1 ] /Root 71 0 R /Info 72 0 R /ID [ <17FCEDE3483836DCB048B5AD2AFD55F9> <17FCEDE3483836DCB048B5AD2AFD55F9> ] /Filter /FlateDecode /Length 206 >>        
 [BINARY STREAM]
 endobj
 startxref
-34478
+121839
 %%EOF
