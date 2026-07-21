@@ -72,54 +72,39 @@ load babel
 \subsection{\ldeen{Ziel des Pakets}{Purpose of the package}}
 
 \ldeen{
-Präsentationsfolien bestehen aus zwei grundsätzlich verschiedenen
-Bestandteilen: ihrem Inhalt und dessen visueller Darstellung.
-Während sich der Inhalt von Vortrag zu Vortrag ändert, folgt die
-Gestaltung häufig einem einheitlichen Erscheinungsbild oder einem
-vorgegebenen Corporate Design.
+  Die Klasse \needclass{ltx-talk} ist eine \LaTeX-Klasse für Präsentationen und soll mittelfristig die verbreitete Klasse \needclass{beamer} ablösen, um PDF-Tagging für Präsentationen zu ermöglichen.
+}{}
+\ldeen{Bei Präsentationsfolien spielen (wie bei vielen Texten) eine konzeptionelle Trennung  zwischen ihrem Inhalt 
+  und  dessen visueller Darstellung. Während sich der Inhalt von Vortrag zu Vortrag ändert, folgt die
+  Gestaltung häufig einem einheitlichen Erscheinungsbild oder einem
+  vorgegebenen Corporate Design. Dieses Erscheinungsbild wird in der Regel \emph{Thema} genannt.
 }{
-Presentation slides consist of two fundamentally different parts:
-their content and its visual presentation. While the content changes
-from one presentation to another, the design often follows a consistent
-visual identity or a prescribed corporate design.
 }
 
 \ldeen{
-Das Paket \thepkg{} stellt das Theme-System für die Dokumentklasse
-\cls{ltx-talk} bereit. Es ermöglicht, die visuelle Gestaltung einer
-Präsentation unabhängig von ihrem Inhalt zu beschreiben.
+  Es ist ausdrücklich \emph{kein} Ziel von \cls{ltx-talk}, Unterstützung für Themen zur Verfügung zu stellen.
+  Diese Lücke soll das Paket \thepkg{} ein Stück weit ausfüllen. Es stellt ein Theme-System für die Dokumentklasse
+\cls{ltx-talk} bereit. 
 }{
-The \thepkg{} package provides the theme system for the
-\cls{ltx-talk} document class. It allows the visual design of a
-presentation to be described independently of its content.
 }
-
 \ldeen{
-Dadurch können unterschiedliche Themes ausgewählt oder entwickelt
-werden, ohne die eigentliche Präsentationsquelle an ein bestimmtes
-Erscheinungsbild zu binden.
+  Ein Thema umfasst dabei mehr als Farben und Schriftarten. Es legt fest,
+  welche Informationen dargestellt werden, wie sie auf einer Folie
+  angeordnet sind und wie ihre visuelle Gestaltung erfolgt.
 }{
-This makes it possible to select or develop different themes without
-tying the presentation source itself to a particular visual design.
 }
 
-\ldeen{
-Ein Theme umfasst dabei mehr als Farben und Schriftarten. Es legt fest,
-welche Informationen dargestellt werden, wie sie auf einer Folie
-angeordnet sind und wie ihre visuelle Gestaltung erfolgt.
-}{
-A theme comprises more than colours and fonts. It determines which
-information is displayed, how that information is arranged on a slide,
-and how it is presented visually.
-}
+\ldeen{Es soll ausdrücklich darauf hingewiesen werden, dass dieses Paket experimentell ist, noch über das Maß 
+  hinaus, was häufig experimentelle Pakete haben: Schließlich hängt es von der experimentellen, sich noch in 
+  Entwicklung befindenden Klasse \cls{ltx-talk} ab. Änderungen dort können zu einer sofortigen Nichtnutzbarkeit von 
+  \thepkg{} führen.}{}
 
-
-\subsection{\ldeen{Leserwege}{Reading paths}}
+\subsection{\ldeen{Wer sollte diese Dokumentation lesen?}{Who sould read this documentation?}}
 
 \ldeen{
 Diese Dokumentation richtet sich an zwei Zielgruppen. Anwender möchten
-ein vorhandenes Theme auswählen und gegebenenfalls an ihre Anforderungen
-anpassen. Theme-Autoren möchten dagegen ein eigenes Theme erstellen oder
+ein vorhandenes Theme nutzen und gegebenenfalls an ihre Anforderungen
+anpassen. Themen-Autoren möchten dagegen ein eigenes Theme erstellen oder
 ein vorhandenes Theme erweitern.
 }{
 This documentation addresses two audiences. Users want to select an
@@ -128,54 +113,19 @@ Theme authors, on the other hand, want to create a new theme or extend
 an existing one.
 }
 
-\ldeen{
-Wer ein vorhandenes Theme verwenden möchte, beginnt mit dem
-Schnelleinstieg und den Abschnitten über die Verwendung und Anpassung
-von Themes.
+\ldeen*{
+Für erstere Gruppe sind die Abschnitte @1 bis @2 hinreichend.
 }{
-Readers who want to use an existing theme should begin with the quick
-start and the sections on using and customizing themes.
-}
-
+}{\ref{sec:quick-start}}{\ref{sec:accessibility}}
 \ldeen{
-Wer ein eigenes Theme erstellen möchte, sollte anschließend das
-Theme-Modell und den Abschnitt über die Entwicklung eigener Themes
-lesen. Die Referenz dient beiden Zielgruppen zum gezielten
-Nachschlagen.
+Wer dagegen ein eigenes Theme erstellen möchte, sollte anschließend das
+auch die Abschnitte @1 bis @2 nutzen. Die Referenz (Abschnitt @3) kann beiden 
+Gruppen zum gezielten Nachschlagen dienen.
 }{
-Readers who want to create a theme of their own should then continue
-with the theme model and the section on developing custom themes.
-The reference is intended as a lookup resource for both audiences.
-}
+}{\ref{sec:theme-model}}{\ref{sec:develop-themes}}{\ref{ref:reference}}
 
 
 \subsection{\ldeen{Designprinzipien}{Design principles}}
-
-\subsubsection{
-  \ldeen
-    {Trennung von Inhalt und Gestaltung}
-    {Separation of content and presentation}
-}
-
-\ldeen{
-Das Präsentationsdokument beschreibt seinen Inhalt. Das Theme bestimmt,
-wie dieser Inhalt dargestellt wird. Beide Aspekte bleiben bewusst
-voneinander getrennt.
-}{
-The presentation document describes its content. The theme determines
-how that content is presented. Both aspects are deliberately kept
-separate.
-}
-
-\ldeen{
-Eine Präsentation kann daher ihr Erscheinungsbild wechseln, ohne dass
-ihre inhaltliche Struktur dafür angepasst werden muss.
-}{
-A presentation can therefore change its visual appearance without
-requiring changes to its content structure.
-}
-
-
 \subsubsection{\ldeen{Semantische Elemente}{Semantic elements}}
 
 \ldeen{
@@ -275,25 +225,78 @@ dedicated section.
 % ==========================================================================
 
 \section{\ldeen{Schnelleinstieg}{Quick start}}
+\label{sec:quick-start}
 
-% TODO:
-% - minimal complete presentation
-% - selecting one of the provided themes
-% - result and first explanation
+\ldeen{
+Das folgende Beispiel ist eine vollständige, lauffähige Präsentation.
+Es lädt das mitgelieferte Theme \code{modern}, erzeugt eine Titelfolie
+und eine weitere Folie mit einfachem Inhalt.
+}{
+% TODO: English translation
+}
+
+\begin{example}[code-only]
+  \documentclass{ltx-talk}
+
+  \usepackage{ltxtalk-theme-modern}
+  \useltxtalktheme{modern}
+
+  \title{Meine Präsentation}
+  \author{Max Mustermann}
+  \date{\today}
+
+  \begin{document}
+
+  \begin{frame}
+    \titlepage
+  \end{frame}
+
+  \begin{frame}{Ein erstes Thema}
+    \begin{itemize}
+      \item Eine Präsentation enthält den Inhalt.
+      \item Das Theme bestimmt dessen Darstellung.
+    \end{itemize}
+  \end{frame}
+
+  \end{document}
+\end{example}
+
+\ldeen{
+Ein Theme wird in zwei Schritten ausgewählt. Zunächst lädt
+\cs*{usepackage}\Marg{ltxtalk-theme-modern} die Definition des Themes.
+Anschließend aktiviert \cs*{useltxtalktheme}\Marg{modern} diese
+Definition für die Präsentation. Der Name des Pakets und der Name des
+Themes gehören dabei zusammen.
+}{
+% TODO: English translation
+}
+
+\ldeen{
+Die Befehle für Titel, Autor und Datum sowie die Umgebung \code{frame}
+gehören zur Dokumentklasse \cls{ltx-talk}. Das Theme wertet diese
+semantischen Angaben aus und legt fest, wo und in welcher Form sie auf
+den Folien erscheinen. Der eigentliche Inhalt bleibt dadurch unabhängig
+vom gewählten Theme.
+}{
+% TODO: English translation
+}
+
+\ldeen{
+Zum Wechseln des Erscheinungsbilds genügt es im einfachsten Fall, ein
+anderes mitgeliefertes Theme-Paket zu laden und den zugehörigen Namen an
+\cs*{useltxtalktheme} zu übergeben. Welche Themes verfügbar sind und wie
+ein Theme auch innerhalb einer Präsentation gewechselt werden kann,
+beschreibt der folgende Abschnitt.
+}{
+% TODO: English translation
+}
 
 
 \section{\ldeen{Themes verwenden}{Using themes}}
+\label{sec:use-themes}
+% - Selecting and switching a theme
 
-\subsection{\ldeen{Ein Theme auswählen}{Selecting a theme}}
-
-% TODO: migrate and expand theme management material
-
-\subsection{\ldeen{Themes wechseln}{Switching themes}}
-
-% TODO
-
-\subsection{\ldeen{Mitgelieferte Themes}{Provided themes}}
-
+% - Provided themes
 % TODO:
 % - modern
 % - minimal
@@ -302,7 +305,7 @@ dedicated section.
 
 
 \section{\ldeen{Themes anpassen}{Customizing themes}}
-
+\label{sec:customizing-themes}
 \subsection{\ldeen{Das Layout anpassen}{Customizing the layout}}
 
 % TODO: migrate layout configuration material
@@ -323,7 +326,7 @@ dedicated section.
 
 
 \section{\ldeen{Barrierefreiheit}{Accessibility}}
-
+\label{sec:accessibility}
 % TODO:
 % - behaviour relevant to users of existing themes
 % - selecting suitable colours
@@ -336,7 +339,7 @@ dedicated section.
 % ==========================================================================
 
 \section{\ldeen{Das Theme-Modell}{The theme model}}
-
+\label{sec:theme-model}
 \subsection{\ldeen{Bereiche}{Areas}}
 
 % TODO: concept before commands
@@ -375,7 +378,7 @@ dedicated section.
 
 
 \section{\ldeen{Eigene Themes entwickeln}{Developing custom themes}}
-
+\label{sec:develop-themes}
 \subsection{\ldeen{Aufbau eines Themes}{Structure of a theme}}
 
 % TODO:
@@ -418,7 +421,7 @@ dedicated section.
 % ==========================================================================
 
 \section{\ldeen{Referenz}{Reference}}
-
+\label{ref:reference}
 \subsection{\ldeen{Theme-Verwaltung}{Theme management}}
 
 % TODO:
@@ -482,7 +485,7 @@ dedicated section.
 
 \subsection{ltxtalk-theme-core}
 
-\AutoDocInput{lttheme.dtx}{core}
+% \AutoDocInput{lttheme.dtx}{core} % comment out to during text development to speed up latex
 
 
 \section{\ldeen{Referenz}{Reference}}
@@ -648,8 +651,10 @@ dedicated section.
 %
 \section{Implementation}
 \subsection{ltxtalk-theme-core}
-\AutoDocInput{lttheme.dtx}{core}
+
+% \AutoDocInput{lttheme.dtx}{core} % comment out during text development
 \end{document}
+
 %</driver>
 %<*core>
 \NeedsTeXFormat{LaTeX2e}
