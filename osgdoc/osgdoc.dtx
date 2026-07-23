@@ -183,7 +183,7 @@ load babel
 \ProvidesExplClass
 {osgdoc}
 {2026-06-11}
-{0.0.7}
+{0.1.0}
 {A thin wrapper around cnltx-doc}
 % \ldeen*{Zunächst müssen wir @1 patchen. Dazu muss aber der nicht mehr gültige @2-Ruf abgefangen 
 %   werden.
@@ -254,8 +254,9 @@ load babel
 }
 \error
 \RequirePackage{luacode}
-\RequirePackage{fancyvrb}
-\fvset{formatcom=\color{blue},numbers=left}
+\RequirePackage{fvextra}
+
+\fvset{formatcom=\color{blue},numbers=left, breaklines, breakafter=~\{}
 
 \begin{luacode*}
   function texassert(v, msg)
