@@ -10,6 +10,17 @@
  texio.write_nl('log','pages='..tostring(target.source.pages))
  local ok,errors=compare.semantic(source,target)
  texio.write_nl('log','roundtrip='..tostring(ok))
+ local precise=false
+ for _,annotation in ipairs(target.annotations or {}) do
+   if annotation.action=='GoTo' then
+     local destination=target.destinations[annotation.destination]
+     precise=destination and destination.view=='XYZ'
+       and tonumber(destination.arg1)~=nil
+       and tonumber(destination.arg2)~=nil
+     break
+   end
+ end
+ texio.write_nl('log','precise-destination='..tostring(not not precise))
  for _,e in ipairs(errors) do texio.write_nl('log','error='..e) end
 }
 \END

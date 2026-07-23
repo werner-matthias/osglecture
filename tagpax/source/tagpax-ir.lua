@@ -17,7 +17,10 @@ local function parse_line(line)
 end
 
 function M.new()
-  return { nodes = {}, kids = {}, roots = {}, headings = {}, streams = {}, header = nil, source = nil }
+  return {
+    nodes = {}, kids = {}, roots = {}, headings = {}, streams = {},
+    destinations = {}, annotations = {}, header = nil, source = nil,
+  }
 end
 
 function M.read(filename)
@@ -31,6 +34,10 @@ function M.read(filename)
       elseif record.record_type == "root" then ir.roots[#ir.roots + 1] = record
       elseif record.record_type == "heading" then ir.headings[#ir.headings + 1] = record
       elseif record.record_type == "stream" then ir.streams[record.id] = record
+      elseif record.record_type == "destination" then ir.destinations[record.id] = record
+      elseif record.record_type == "annotation" then
+        ir.annotations[#ir.annotations + 1] = record
+        ir.annotations[record.id] = record
       elseif record.record_type == "source" then ir.source = record end
     end
   end

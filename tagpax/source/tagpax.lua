@@ -1,6 +1,6 @@
 -- tagpax.lua -- semantic tagged-PDF extractor and IR reader
 -- LPPL 1.3c or later
-local M = { version = "0.7.1-dev", date = "2026-07-15" }
+local M = { version = "0.8.3-dev", date = "2026-07-23" }
 
 local pdfe = assert(pdfe, "tagpax requires LuaTeX's pdfe library")
 
@@ -35,15 +35,56 @@ local function value(dict, key)
   return typ, val, detail
 end
 
+local function decode_pdf_string(s, hexadecimal)
+  if hexadecimal then
+    s = tostring(s or ""):gsub("%s+", "")
+    s = s:gsub("(%x%x)", function(pair)
+      return string.char(tonumber(pair, 16))
+    end)
+  end
+  if s and #s >= 2 and s:byte(1) == 0xFE and s:byte(2) == 0xFF then
+    local chars = {}
+    local index = 3
+    while index + 1 <= #s do
+      local first = s:byte(index) * 256 + s:byte(index + 1)
+      index = index + 2
+      if first >= 0xD800 and first <= 0xDBFF and index + 1 <= #s then
+        local second = s:byte(index) * 256 + s:byte(index + 1)
+        if second >= 0xDC00 and second <= 0xDFFF then
+          first = 0x10000 + (first - 0xD800) * 0x400 + second - 0xDC00
+          index = index + 2
+        end
+      end
+      chars[#chars + 1] = utf8.char(first)
+    end
+    return table.concat(chars)
+  end
+  return s
+end
+
 local function pdf_string(dict, key)
-  local typ, val = value(dict, key)
-  if typ == 4 or typ == "string" then return val end
+  local typ, val, detail = value(dict, key)
+  if typ == 6 or typ == "string" then return decode_pdf_string(val, detail) end
   return nil
 end
 
 local function pdf_name(dict, key)
   local typ, val = value(dict, key)
   if typ == 5 or typ == "name" then return val end
+  return nil
+end
+
+local function pdf_filespec(dict, key)
+  local _, item = value(dict, key)
+  local current = item
+  if type(current) == "string" then return current end
+  if pdfe.type(current) == "pdfe.reference" then
+    local _, resolved = pdfe.getfromreference(current)
+    current = resolved
+  end
+  if pdfe.type(current) == "pdfe.dictionary" then
+    return pdf_string(current, "UF") or pdf_string(current, "F")
+  end
   return nil
 end
 
@@ -77,6 +118,51 @@ local function page_map(doc)
   local map = {}
   for number, page in ipairs(pages) do map[page[3]] = number end
   return map, #pages
+end
+
+local function array_values(array)
+  local result = {}
+  if not array then return result end
+  for index = 1, #array do
+    local _, item = pdfe.getfromarray(array, index)
+    result[#result + 1] = item
+  end
+  return result
+end
+
+local function name_tree(dict, target)
+  if not dict then return end
+  local names = pdfe.getarray(dict, "Names")
+  if names then
+    local index = 1
+    while index <= #names do
+      local _, key = pdfe.getfromarray(names, index)
+      local _, item = pdfe.getfromarray(names, index + 1)
+      if key ~= nil and item ~= nil then target[tostring(key)] = item end
+      index = index + 2
+    end
+  end
+  local kids = pdfe.getarray(dict, "Kids")
+  if kids then
+    for index = 1, #kids do
+      local _, kid = pdfe.getfromarray(kids, index)
+      name_tree(as_dict(kid), target)
+    end
+  end
+end
+
+local function named_destinations(doc)
+  local result = {}
+  local names = pdfe.getdictionary(doc.Catalog, "Names")
+  if names then name_tree(pdfe.getdictionary(names, "Dests"), result) end
+  -- PDF 1.1 compatibility: /Dests may be a dictionary in the catalog.
+  local legacy = pdfe.getdictionary(doc.Catalog, "Dests")
+  if legacy then
+    for key, item in pairs(pdfe.dictionarytotable(legacy)) do
+      result[tostring(key)] = select(2, value(legacy, key)) or item
+    end
+  end
+  return result
 end
 
 local function min_page(a, b)
@@ -136,6 +222,7 @@ function M.extract(filename, outname)
 
   local doc = assert(pdfe.open(filename), "cannot open PDF: " .. filename)
   local pmap, npages = page_map(doc)
+  local named_dests = named_destinations(doc)
   local root = pdfe.getdictionary(doc.Catalog, "StructTreeRoot")
   assert(root, "PDF has no StructTreeRoot")
   local struct_page = build_struct_page_map(root)
@@ -147,6 +234,134 @@ function M.extract(filename, outname)
   local nextid, seen = 0, {}
   local headings, node_meta = {}, {}
   local streams, stream_by_object, nextstream = {}, {}, 0
+  local destinations, destination_by_key, annotations = {}, {}, {}
+  local annotation_by_object = {}
+
+  local function destination_array(operand)
+    local current = operand
+    local guard = 0
+    while current and guard < 8 do
+      guard = guard + 1
+      local kind = pdfe.type(current)
+      if kind == "pdfe.array" then return current end
+      if kind == "pdfe.reference" then
+        local _, resolved = pdfe.getfromreference(current)
+        current = resolved
+      elseif kind == "pdfe.dictionary" then
+        local _, resolved = value(current, "D")
+        current = resolved
+      elseif type(current) == "string" then
+        current = named_dests[current]
+      else
+        return nil
+      end
+    end
+    return nil
+  end
+
+  local function register_destination(operand, name)
+    local key = name and ("name:" .. name) or ("object:" .. tostring(operand))
+    if destination_by_key[key] then return destination_by_key[key] end
+    local array = destination_array(operand)
+    if not array then return nil end
+    local items = array_values(array)
+    local page = pmap[ref_number(items[1])]
+    if not page then return nil end
+    local id = "d" .. tostring(#destinations + 1)
+    local destination = {
+      id = id, name = name, page = page,
+      view = tostring(items[2] or "Fit"):gsub("^/", ""),
+    }
+    for index = 3, math.min(#items, 6) do
+      if type(items[index]) == "number" then
+        destination["arg" .. tostring(index - 2)] = items[index]
+      end
+    end
+    destinations[#destinations + 1] = destination
+    destination_by_key[key] = id
+    return id
+  end
+
+  local function extract_navigation()
+    local names = {}
+    for name in pairs(named_dests) do names[#names + 1] = name end
+    table.sort(names)
+    for _, name in ipairs(names) do register_destination(name, name) end
+
+    for page_number = 1, npages do
+      local page = pdfe.getpage(doc, page_number)
+      -- Page array properties use Lua's zero-based pdfe container access.
+      -- getfromarray() is one-based and is used for ordinary destination
+      -- arrays elsewhere in this module.
+      local annots = page.Annots
+      if annots then
+        for index = 0, #annots - 1 do
+          local annot = pdfe.getdictionary(annots, index)
+          local _, annot_item = pdfe.getfromarray(annots, index + 1)
+          if annot and pdf_name(annot, "Subtype") == "Link" then
+            local rect = array_values(pdfe.getarray(annot, "Rect"))
+            local action = pdfe.getdictionary(annot, "A")
+            local action_type = action and pdf_name(action, "S")
+            local _, direct_dest = value(annot, "Dest")
+            local action_dest
+            if action then action_dest = select(2, value(action, "D")) end
+            local record
+            if direct_dest or action_type == "GoTo" then
+              local operand = direct_dest or action_dest
+              local destination
+              if type(operand) == "string" then
+                destination = register_destination(operand, operand)
+              elseif operand then
+                destination = register_destination(operand)
+              end
+              if destination then
+                record = {
+                  action = "GoTo",
+                  destination = destination,
+                }
+              end
+            elseif action_type == "URI" then
+              local uri = pdf_string(action, "URI")
+              if uri then record = { action = "URI", uri = uri } end
+            elseif action_type == "GoToR" then
+              local file = pdf_filespec(action, "F")
+              if file and type(action_dest) == "string" then
+                record = {
+                  action = "GoToR", file = file,
+                  ["remote-destination"] = action_dest,
+                }
+              elseif file and pdfe.type(action_dest) == "pdfe.array" then
+                local remote = array_values(action_dest)
+                local view = tostring(remote[2] or "Fit"):gsub("^/", "")
+                local supported_views = {
+                  XYZ = true, Fit = true, FitH = true, FitV = true,
+                  FitR = true, FitB = true, FitBH = true, FitBV = true,
+                }
+                if not supported_views[view] then view = "Fit" end
+                record = {
+                  action = "GoToR", file = file,
+                  ["remote-page"] = tonumber(remote[1]),
+                  ["remote-view"] = view,
+                }
+              end
+            end
+            if record and #rect >= 4 then
+              record.id = "a" .. tostring(#annotations + 1)
+              record.page = page_number
+              record.subtype = "Link"
+              record.llx, record.lly = rect[1], rect[2]
+              record.urx, record.ury = rect[3], rect[4]
+              annotations[#annotations + 1] = record
+              local object_number = ref_number(annot_item)
+              if object_number then annotation_by_object[object_number] = record end
+            end
+          end
+        end
+      end
+    end
+  end
+
+  extract_navigation()
 
   local function emit_stream(id, kind, page, object_number, structparents, subtype)
     if streams[id] then return id end
@@ -217,6 +432,18 @@ function M.extract(filename, outname)
       local dict = as_dict(kid)
       if not dict then return nil end
       local typ = pdf_name(dict, "Type")
+      if typ == "OBJR" then
+        local _, object = value(dict, "Obj")
+        local annotation = annotation_by_object[ref_number(object)]
+        if annotation then
+          annotation.parent = parent
+          write_record(f, "kid", {
+            __order = { "parent", "index", "kind", "ref" },
+            parent = parent, index = index, kind = "objr", ref = annotation.id,
+          })
+        end
+        return page_from_ref(select(2, value(dict, "Pg")), inherited_page)
+      end
       if typ == "MCR" or select(2, value(dict, "MCID")) ~= nil then
         return emit_mcr(parent, index, dict, inherited_page)
       end
@@ -304,6 +531,32 @@ function M.extract(filename, outname)
       text = heading.text, source = heading.source,
     })
   end
+  for _, destination in ipairs(destinations) do
+    write_record(f, "destination", {
+      __order = { "id", "name", "page", "view", "arg1", "arg2", "arg3", "arg4" },
+      id = destination.id, name = destination.name, page = destination.page,
+      view = destination.view, arg1 = destination.arg1, arg2 = destination.arg2,
+      arg3 = destination.arg3, arg4 = destination.arg4,
+    })
+  end
+  for _, annotation in ipairs(annotations) do
+    write_record(f, "annotation", {
+      __order = {
+        "id", "page", "subtype", "action", "destination", "uri", "file",
+        "remote-destination", "remote-page", "remote-view", "parent",
+        "llx", "lly", "urx", "ury",
+      },
+      id = annotation.id, page = annotation.page, subtype = annotation.subtype,
+      action = annotation.action, destination = annotation.destination,
+      uri = annotation.uri, file = annotation.file,
+      ["remote-destination"] = annotation["remote-destination"],
+      ["remote-page"] = annotation["remote-page"],
+      ["remote-view"] = annotation["remote-view"],
+      parent = annotation.parent,
+      llx = annotation.llx, lly = annotation.lly,
+      urx = annotation.urx, ury = annotation.ury,
+    })
+  end
 
   f:close()
   pdfe.close(doc)
@@ -322,7 +575,10 @@ local function parse_line(line)
 end
 
 function M.read(filename)
-  local ir = { nodes = {}, kids = {}, roots = {}, headings = {}, streams = {}, header = nil, source = nil }
+  local ir = {
+    nodes = {}, kids = {}, roots = {}, headings = {}, streams = {},
+    destinations = {}, annotations = {}, header = nil, source = nil,
+  }
   for line in assert(io.lines(filename)) do
     if line ~= "" and line:sub(1, 1) ~= "#" then
       local record = parse_line(line)
@@ -332,6 +588,10 @@ function M.read(filename)
       elseif record.record_type == "root" then ir.roots[#ir.roots + 1] = record
       elseif record.record_type == "heading" then ir.headings[#ir.headings + 1] = record
       elseif record.record_type == "stream" then ir.streams[record.id] = record
+      elseif record.record_type == "destination" then ir.destinations[record.id] = record
+      elseif record.record_type == "annotation" then
+        ir.annotations[#ir.annotations + 1] = record
+        ir.annotations[record.id] = record
       elseif record.record_type == "source" then ir.source = record end
     end
   end
@@ -352,6 +612,7 @@ function M.validate(ir)
   for _, kid in ipairs(ir.kids) do
     if not ir.nodes[kid.parent] then errors[#errors + 1] = "kid has missing parent " .. tostring(kid.parent) end
     if kid.kind == "node" and not ir.nodes[kid.ref] then errors[#errors + 1] = "kid references missing node " .. tostring(kid.ref) end
+    if kid.kind == "objr" and not (ir.annotations or {})[kid.ref] then errors[#errors + 1] = "OBJR references missing annotation " .. tostring(kid.ref) end
     if kid.kind == "mcr" and tonumber(kid.mcid) == nil then errors[#errors + 1] = "MCR has invalid MCID" end
     if kid.kind == "mcr" and ir.streams and next(ir.streams) and not ir.streams[kid.stream] then errors[#errors + 1] = "MCR references missing stream " .. tostring(kid.stream) end
   end
@@ -359,6 +620,55 @@ function M.validate(ir)
     local node = ir.nodes[heading.node]
     if not node then errors[#errors + 1] = "heading references missing node " .. tostring(heading.node)
     elseif node.role ~= heading.role then errors[#errors + 1] = "heading role mismatch at " .. heading.node end
+  end
+  for id, destination in pairs(ir.destinations or {}) do
+    if destination.id ~= id then errors[#errors + 1] = "destination id mismatch " .. tostring(id) end
+    local page = tonumber(destination.page)
+    if not page or page < 1 or (ir.source and page > tonumber(ir.source.pages)) then
+      errors[#errors + 1] = "destination has invalid page " .. tostring(destination.page)
+    end
+    local view = destination.view or "Fit"
+    local supported = { XYZ=true, Fit=true, FitH=true, FitV=true,
+      FitR=true, FitB=true, FitBH=true, FitBV=true }
+    if not supported[view] then errors[#errors + 1] = "destination has unsupported view " .. tostring(view) end
+    for index = 1, 4 do
+      local argument = destination["arg" .. index]
+      if argument ~= nil and tonumber(argument) == nil then
+        errors[#errors + 1] = "destination has invalid arg" .. index .. " " .. tostring(id)
+      end
+    end
+    if view == "FitR" and
+      (not tonumber(destination.arg1) or not tonumber(destination.arg2)
+        or not tonumber(destination.arg3) or not tonumber(destination.arg4)) then
+      errors[#errors + 1] = "FitR destination has incomplete rectangle " .. tostring(id)
+    end
+  end
+  for _, annotation in ipairs(ir.annotations or {}) do
+    if annotation.subtype ~= "Link"
+      or (annotation.action ~= "GoTo"
+        and annotation.action ~= "URI"
+        and annotation.action ~= "GoToR") then
+      errors[#errors + 1] = "unsupported annotation " .. tostring(annotation.id)
+    end
+    if annotation.action == "GoTo" and not ir.destinations[annotation.destination] then
+      errors[#errors + 1] = "annotation references missing destination " .. tostring(annotation.destination)
+    end
+    if annotation.action == "URI" and not annotation.uri then
+      errors[#errors + 1] = "URI annotation has no URI " .. tostring(annotation.id)
+    end
+    if annotation.action == "GoToR" and
+      (not annotation.file or
+        (not annotation["remote-destination"] and annotation["remote-page"] == nil)) then
+      errors[#errors + 1] = "GoToR annotation has incomplete target " .. tostring(annotation.id)
+    end
+    if annotation.parent and not ir.nodes[annotation.parent] then
+      errors[#errors + 1] = "annotation references missing parent " .. tostring(annotation.parent)
+    end
+    for _, key in ipairs({"page", "llx", "lly", "urx", "ury"}) do
+      if tonumber(annotation[key]) == nil then
+        errors[#errors + 1] = "annotation has invalid " .. key .. " " .. tostring(annotation.id)
+      end
+    end
   end
   return #errors == 0, errors
 end

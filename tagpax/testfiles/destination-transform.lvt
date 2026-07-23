@@ -1,0 +1,22 @@
+\input regression-test.tex
+\documentclass{article}
+\begin{document}
+\START
+\directlua{
+  local geometry=require('tagpax-luatex').page_geometry
+  local media={10,20,210,120}
+  local p=string.char(37)
+  local format='rotate='..p..'d corners='..p..'.0f,'..p..'.0f:'..
+    p..'.0f,'..p..'.0f rect='..p..'.0f,'..p..'.0f,'..p..'.0f,'..p..'.0f'
+  for _,case in ipairs({
+    {0,400,200},{90,200,400},{180,400,200},{270,200,400}
+  }) do
+    local g=geometry(media,case[1],case[2],case[3])
+    local x1,y1=g.point(10,20)
+    local x2,y2=g.point(210,120)
+    local x,y,w,h=g.rectangle(20,30,40,50)
+    texio.write_nl('log',string.format(format,case[1],x1,y1,x2,y2,x,y,w,h))
+  end
+}
+\END
+\end{document}

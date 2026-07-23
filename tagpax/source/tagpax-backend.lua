@@ -32,7 +32,7 @@ local function roots(ir)
   return list
 end
 
-function M.emit_tex(filename)
+local function walk_ir(filename, phase)
   local ir = ir_reader.read(filename)
   local by_parent = sorted_kids(ir)
   local mcr_serial = 0
@@ -46,7 +46,9 @@ function M.emit_tex(filename)
     for _, kid in ipairs(by_parent[parent] or {}) do
       if kid.kind == "node" then
         local node = assert(ir.nodes[kid.ref], "missing node " .. tostring(kid.ref))
-        out("\\TagPaxBackendNode{" .. tex_escape(kid.ref) .. "}{" .. tex_escape(node.role or "Div") .. "}{" .. tex_escape(target_parent) .. "}")
+        if phase == "reserve" then
+          out("\\TagPaxBackendNode{" .. tex_escape(kid.ref) .. "}{" .. tex_escape(node.role or "Div") .. "}{" .. tex_escape(target_parent) .. "}")
+        end
         emit_kids(kid.ref, kid.ref)
       elseif kid.kind == "mcr" then
         local stream = ir.streams and ir.streams[kid.stream]
@@ -54,30 +56,50 @@ function M.emit_tex(filename)
           out("\\TagPaxBackendUnsupportedStream{" .. tex_escape(kid.stream) .. "}{" .. tex_escape(stream.kind) .. "}")
         else
           mcr_serial = mcr_serial + 1
-          out(string.format(
-            "\\TagPaxBackendMCR{%d}{%s}{%s}{%s}{%s}",
-            mcr_serial,
-            tex_escape(kid.page or (stream and stream.page) or "0"),
-            tex_escape(kid.mcid or "0"),
-            tex_escape(kid.stream or "page"),
-            tex_escape(target_parent)
-          ))
+          local command = phase == "reserve"
+            and "\\TagPaxBackendReserveMCR"
+            or "\\TagPaxBackendBindMCR"
+          out(string.format("%s{%d}{%s}{%s}{%s}{%s}", command,
+              mcr_serial, tex_escape(kid.page or (stream and stream.page) or "0"),
+              tex_escape(kid.mcid or "0"), tex_escape(kid.stream or "page"),
+              tex_escape(target_parent)))
         end
+      elseif kid.kind == "objr" and phase == "reserve" then
+        out("\\TagPaxBackendReserveOBJR{" .. tex_escape(kid.ref) ..
+          "}{" .. tex_escape(target_parent) .. "}")
       end
     end
   end
 
-  out("\\TagPaxBackendDocumentBegin")
+  if phase == "reserve" then out("\\TagPaxBackendDocumentBegin") end
   for _, root in ipairs(roots(ir)) do
     local node = ir.nodes[root.node]
     if node and node.role == "Document" then
       emit_kids(root.node, "@wrapper")
     elseif node then
-      out("\\TagPaxBackendNode{" .. tex_escape(root.node) .. "}{" .. tex_escape(node.role or "Div") .. "}{@wrapper}")
+      if phase == "reserve" then
+        out("\\TagPaxBackendNode{" .. tex_escape(root.node) .. "}{" ..
+          tex_escape(node.role or "Div") .. "}{@wrapper}")
+      end
       emit_kids(root.node, root.node)
     end
   end
-  out("\\TagPaxBackendDocumentEnd")
+  if phase == "bind" then out("\\TagPaxBackendDocumentEnd") end
+end
+
+function M.emit_reservations(filename)
+  walk_ir(filename, "reserve")
+end
+
+function M.emit_bindings(filename)
+  walk_ir(filename, "bind")
+end
+
+-- Compatibility entry point for callers which only need the old, monolithic
+-- emitter. Native inclusion deliberately uses the two phase API above.
+function M.emit_tex(filename)
+  M.emit_reservations(filename)
+  M.emit_bindings(filename)
 end
 
 return M

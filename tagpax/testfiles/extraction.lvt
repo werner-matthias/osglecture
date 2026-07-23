@@ -16,6 +16,31 @@
   report("source-pages=" .. tostring(ir.source.pages))
   report("roots=" .. tostring(rawlen(ir.roots)))
   report("headings=" .. tostring(rawlen(ir.headings)))
+  local destination_count = 0
+  for _ in pairs(ir.destinations) do destination_count = destination_count + 1 end
+  report("destinations=" .. tostring(destination_count))
+  report("annotations=" .. tostring(rawlen(ir.annotations)))
+  if ir.annotations[1] then
+    report(
+      "annotation-1=" .. tostring(ir.annotations[1].action) ..
+      ",page-" .. tostring(ir.annotations[1].page) ..
+      ",target-page-" ..
+      tostring(ir.destinations[ir.annotations[1].destination].page)
+    )
+  end
+  if ir.annotations[2] then
+    report(
+      "annotation-2=" .. tostring(ir.annotations[2].action) ..
+      ",uri-" .. tostring(ir.annotations[2].uri)
+    )
+  end
+  if ir.annotations[3] then
+    report(
+      "annotation-3=" .. tostring(ir.annotations[3].action) ..
+      ",file-" .. tostring(ir.annotations[3].file) ..
+      ",remote-page-" .. tostring(ir.annotations[3]["remote-page"])
+    )
+  end
   for index, heading in ipairs(ir.headings) do
     report(
       "heading-" .. tostring(index) ..

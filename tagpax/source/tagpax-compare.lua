@@ -28,7 +28,11 @@ local function signatures(ir, unwrap_document, options)
     out[#out+1]="N:"..tostring(role_of(n.role, options))
     for _,k in ipairs(bp[id] or {}) do
       if k.kind=="node" then walk(k.ref)
-      elseif k.kind=="mcr" then out[#out+1]="M:"..tostring(k.mcid) end
+      elseif k.kind=="mcr" then out[#out+1]="M:"..tostring(k.mcid)
+      elseif k.kind=="objr" then
+        local annotation=(ir.annotations or {})[k.ref]
+        out[#out+1]="O:"..tostring(annotation and annotation.action or "?")
+      end
     end
     out[#out+1]="E:"..tostring(role_of(n.role, options))
   end
@@ -45,7 +49,12 @@ local function all_subtree_signatures(ir, role, options)
   local function sig(id,out)
     local n=ir.nodes[id]; out[#out+1]="N:"..tostring(role_of(n.role, options))
     for _,k in ipairs(bp[id] or {}) do
-      if k.kind=="node" then sig(k.ref,out) elseif k.kind=="mcr" then out[#out+1]="M:"..tostring(k.mcid) end
+      if k.kind=="node" then sig(k.ref,out)
+      elseif k.kind=="mcr" then out[#out+1]="M:"..tostring(k.mcid)
+      elseif k.kind=="objr" then
+        local annotation=(ir.annotations or {})[k.ref]
+        out[#out+1]="O:"..tostring(annotation and annotation.action or "?")
+      end
     end
     out[#out+1]="E:"..tostring(role_of(n.role, options))
   end

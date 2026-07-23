@@ -1,3 +1,46 @@
+## 0.8.3-dev
+
+- recreate a separate namespaced target for every source destination instead
+  of redirecting all links to a page-level target;
+- preserve and transform `XYZ`, `Fit`, `FitH`, `FitV`, `FitR`, `FitB`, `FitBH`
+  and `FitBV` destination views;
+- transform destination coordinates, FitR rectangles, annotation rectangles,
+  and XYZ zoom values to the scaled imported page;
+- account for `/Rotate` values 0, 90, 180 and 270, including the FitH/FitV and
+  FitBH/FitBV view swap;
+- validate destination views and arguments and verify precise XYZ targets in
+  the live PDF roundtrip.
+
+## 0.8.2-dev
+
+- import URI and remote GoToR annotations with named or page targets;
+- decode hexadecimal UTF-16BE PDF strings, fixing heading titles and Unicode
+  file specifications;
+- retain source OBJR associations in the IR and fix annotation object lookup;
+- fix navigation depth comparisons and prevent navigation processing from
+  clobbering the reserved page-stream key;
+- write URI and GoToR actions through PDF management with valid tagged Link
+  annotations and verify the generated PDF syntax with qpdf;
+- avoid duplicate `/P` entries produced by the updated tagpdf serializer.
+- split backend execution into reservation, page binding, and finalization so
+  late annotation and Form object references can fill source-ordered kids;
+- bind recreated annotations through `StructParent`, `OBJR`, and the central
+  ParentTree to their original imported `Link` elements instead of creating
+  synthetic replacement Link structures;
+- include OBJR positions and annotation action kinds in semantic roundtrip
+  comparison.
+
+## 0.8.1-dev
+
+- extract named and direct PDF destinations into the canonical IR;
+- extract internal `Link`/`GoTo` annotations, including rectangle and source
+  `OBJR` parent association;
+- recreate internal links as scaled overlays targeting namespaced imported
+  page destinations;
+- add imported headings to the master table of contents and PDF outline;
+- make `toc-depth`, `bookmark-depth`, and `heading-map` effective during import;
+- update the private tagpdf bridge for the 2026 tagpdf structure internals.
+
 ## 0.8.0-dev
 - Architecture baseline.
 - Added architecture/project documentation.

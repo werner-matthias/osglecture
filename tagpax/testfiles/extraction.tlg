@@ -3,6 +3,11 @@ Don't change this file in any respect.
 source-pages=2
 roots=1
 headings=3
-heading-1=H2,page-1,
-heading-2=H3,page-1,
-heading-3=H3,page-2,
+destinations=7
+annotations=3
+annotation-1=GoTo,page-1,target-page-2
+annotation-2=URI,uri-https://example.org/tagpax?source=test
+annotation-3=GoToR,file-other.pdf,remote-page-0
+heading-1=H2,page-1,A Tagged Contribution
+heading-2=H3,page-1,Introduction
+heading-3=H3,page-2,Second page

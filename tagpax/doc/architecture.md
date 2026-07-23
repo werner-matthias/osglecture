@@ -19,6 +19,20 @@ PDF -> Inspector -> Canonical IR -> Transformations -> Import Plan -> Backend Pl
 - Every new MCR contains `/Stm <target-form-ref>` and the original `/MCID`.
 - ParentTree arrays are registered through the single LaTeX/tagpdf owner of the master ParentTree.
 - TOC and outline destinations point to source-page starts.
+- Every import receives a unique destination namespace; links never target a
+  destination belonging to another included contribution.
+- Every source destination receives its own target destination. Coordinates
+  are transformed through MediaBox translation, page rotation and the final
+  whole-page scale used by the imported Form.
+
+Destination transformation is deliberately part of the LuaTeX page writer,
+not navigation extraction: only the writer knows the final Form dimensions.
+`XYZ` points and `FitR` rectangles are mapped through the page transform.
+For quarter-turn rotations, horizontal and vertical fit modes exchange roles.
+Fit modes without coordinates remain page-level. A `null` XYZ coordinate,
+which means “retain the viewer's current coordinate” in PDF, has no positional
+LaTeX destination equivalent; tagpax uses the corresponding MediaBox edge for
+that missing component while preserving an explicit zoom when present.
 
 ## Required backend contract
 
@@ -31,8 +45,39 @@ The LaTeX side needs a public or narrowly isolated implementation of:
 5. `external_struct_append_mcr(parent, form-ref, mcid, target-page-ref)`
 6. `external_parenttree_register(key, mcid, struct-id)`
 7. `external_stream_commit(key)`
+8. `external_annotation_bind(annotation-ref, struct-parent-key, struct-id)`
 
 The core package must not write a second ParentTree or guess `ParentTreeNextKey`.
+
+## Reservation, binding and finalization
+
+Native inclusion deliberately runs in three phases:
+
+1. **Reservation** creates every imported StructElem and fills each `/K`
+   sequence in source order. MCR and OBJR positions contain expandable
+   placeholders because their target PDF object references do not exist yet.
+2. **Binding** writes the page Forms and annotation overlays. It records Form
+   references, assigns each annotation a `StructParent`, creates its OBJR
+   object, and registers the original imported Link element in tagpdf's
+   ParentTree.
+3. **Finalization** registers MCID-to-StructElem mappings and commits the
+   external-stream ParentTree arrays. When tagpdf serializes the StructElems,
+   the placeholders expand to the references recorded during binding.
+
+This ordering is required by two constraints that point in opposite
+directions: the `/K` array must preserve source order, while LuaTeX allocates
+Form and annotation object numbers only while pages are built or shipped out.
+Appending OBJRs at shipout would lose their original position; delaying the
+whole structure until after shipout would prevent correct annotation
+association. Reserving ordered slots resolves both constraints without
+changing the canonical IR.
+
+Imported annotations bypass tagpdf's automatic Link-structure creation. The
+bridge disables the Lua link-splitting association for just the reconstructed
+overlay, supplies `StructParent` itself, and binds the resulting annotation to
+the already reserved source Link. This narrowly isolated use of tagpdf
+internals is intentional: allowing both mechanisms to run would create a
+duplicate OBJR in tagpdf's fallback link container.
 
 ## Stream graph and import plan 
 The IR now assigns every marked-content stream a stable local identifier.
@@ -106,4 +151,3 @@ exactly one master page per source page.
 `\tagpaxincludepdf` command accepts `pages=-` and `pagecommand`; unsupported
 montage or selection options are rejected.  The adapter routes all accepted
 imports through the native backend so the tagging invariants remain identical.
-

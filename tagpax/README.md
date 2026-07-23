@@ -19,6 +19,13 @@ source page, page-content MCIDs, and a new `Part` wrapper. Explicit nested
 `/Stm` source Forms remain represented in the IR but are rejected by the native
 writer until a reliable nested-XObject mapping is available.
 
+Named destinations and `/Link` annotations with `GoTo`, `URI`, and `GoToR`
+actions are imported. Internal targets currently resolve to the beginning of
+the corresponding included page; remote named and page targets are retained.
+Extracted headings are added to the master table of contents and, when the
+`bookmark` interface is available, to the master PDF outline according to
+`toc-depth`, `bookmark-depth`, and `heading-map`.
+
 A restricted compatibility for `pdfpages` frontend is generated as `tagpax-pdfpages.sty`:
 
 ```latex

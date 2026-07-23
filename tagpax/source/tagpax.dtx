@@ -13,7 +13,7 @@
 %
 % \iffalse
 %<*driver>
-\ProvidesFile{tagpax.dtx}[2026-07-15 v0.7.2-dev Semantic tagged PDF document import]
+\ProvidesFile{tagpax.dtx}[2026-07-23 v0.8.3-dev Semantic tagged PDF document import]
 \providecommand\olsTargetLanguage{en}
 \DocumentMetadata{lang=\olsTargetLanguage}
 \documentclass[load-preamble+]{osgdoc}
@@ -311,9 +311,12 @@ otherwise. Callers should treat undocumented fields as private.
 
 \subsection{Backend prototype: \code{tagpax-backend}}
 \begin{luafunctions}
-  \DescribeLuaFunction{backend.emit_tex(filename)}
-    Reads an import plan and emits bridge operations for explicit-parent
-    StructElems and external MCR children. This interface remains provisional.
+  \DescribeLuaFunction{backend.emit_reservations(filename)}
+    Reserves explicit-parent StructElems and source-ordered MCR/OBJR kid slots
+    before page objects exist.
+  \DescribeLuaFunction{backend.emit_bindings(filename)}
+    Registers the MCID bindings and commits external ParentTree arrays after
+    pages and annotations have supplied their target object references.
 \end{luafunctions}
 
 \section{Canonical intermediate representation}
@@ -340,11 +343,16 @@ Record & Required fields & Meaning \\
 
 \section{Backend contract}
 
-The backend reserves a \code{StructParents} key before a Form XObject is
-written, adds the key to the Form dictionary, creates structure elements with
-explicit parents, appends MCR dictionaries containing \code{/Stm} and
-\code{/MCID}, and commits the MCID-to-StructElem array to the central
-ParentTree. It must not mutate the global \tagpdfpkg{} structure stack.
+The backend first reserves all structure elements and source-ordered kid slots.
+It then writes Form XObjects and annotation overlays, binding their late PDF
+object references into the reserved slots. Finally it commits the MCR and
+annotation mappings to the central ParentTree. This three-phase order is
+necessary because LuaTeX allocates Form and annotation objects during page
+construction, but appending children only at that time would lose the source
+\code{/K} order. Imported annotations receive \code{/StructParent} and
+\code{/OBJR} entries owned by their original imported \code{Link} element;
+tagpdf's automatic replacement-Link mechanism is suppressed for these overlays.
+The bridge must not mutate the global \tagpdfpkg{} structure stack.
 
 \section{Architecture decisions}
 
@@ -373,7 +381,7 @@ without explicit \code{macrocode} environments.
 %
 %<*package>
 \NeedsTeXFormat{LaTeX2e}[2024-11-01]
-\ProvidesExplPackage{tagpax}{2026-07-15}{0.7.2-dev}{Native tagged PDF document import}
+\ProvidesExplPackage{tagpax}{2026-07-23}{0.8.3-dev}{Native tagged PDF document import}
 \RequirePackage{expl3,xparse}
 \RequirePackage{tagpax-tagpdf-bridge}
 \ExplSyntaxOn
@@ -385,20 +393,31 @@ without explicit \code{macrocode} environments.
 \seq_new:N \l__tagpax_headings_seq
 \tl_new:N \l__tagpax_toc_depth_tl
 \tl_new:N \l__tagpax_bookmark_depth_tl
+\int_new:N \l__tagpax_toc_depth_int
+\int_new:N \l__tagpax_bookmark_depth_int
 \tl_new:N \l__tagpax_ir_tl
 \tl_new:N \l__tagpax_file_tl
 \tl_new:N \l__tagpax_pagecommand_tl
+\tl_new:N \l__tagpax_import_id_tl
+\tl_new:N \l__tagpax_import_stream_key_tl
+\int_new:N \g__tagpax_import_int
 \prop_new:N \g__tagpax_heading_map_prop
 \prop_gput_from_keyval:Nn \g__tagpax_heading_map_prop {H2=chapter,H3=section,H4=subsection,H5=subsubsection,H6=paragraph}
 \keys_define:nn {tagpax/setup}{
-  toc-depth .tl_set:N=\l__tagpax_toc_depth_tl,
-  bookmark-depth .tl_set:N=\l__tagpax_bookmark_depth_tl,
+  toc-depth .code:n={
+    \tl_set:Nn\l__tagpax_toc_depth_tl{#1}
+    \int_set:Nn\l__tagpax_toc_depth_int{\tl_tail:n{#1}}
+  },
+  bookmark-depth .code:n={
+    \tl_set:Nn\l__tagpax_bookmark_depth_tl{#1}
+    \int_set:Nn\l__tagpax_bookmark_depth_int{\tl_tail:n{#1}}
+  },
   heading-map .code:n=\prop_gput_from_keyval:Nn \g__tagpax_heading_map_prop {#1},
 }
 \keys_set:nn {tagpax/setup}{toc-depth=H4,bookmark-depth=H5}
 \NewDocumentCommand\tagpaxsetup{m}{\keys_set:nn{tagpax/setup}{#1}}
 \cs_new_protected:Npn \tagpax_heading_record:nnnn #1#2#3#4 {\seq_put_right:Nn\l__tagpax_headings_seq{{#1}{#2}{#3}{#4}}}
-\cs_new:Npn \__tagpax_heading_num:n #1 {\int_eval:n{\tl_tail:n{#1}}}
+\cs_new:Npn \__tagpax_heading_num:n #1 {\tl_tail:n{#1}}
 \cs_new_protected:Npn \__tagpax_build_addtotoc:N #1 {
   \tl_clear:N #1
   \seq_map_inline:Nn \l__tagpax_headings_seq {
@@ -406,7 +425,10 @@ without explicit \code{macrocode} environments.
   }
 }
 \cs_new_protected:Npn \__tagpax_build_addtotoc_aux:nnnnN #1#2#3#4#5 {
-  \int_compare:nNnT {\__tagpax_heading_num:n{#1}} <= {\__tagpax_heading_num:n{\l__tagpax_toc_depth_tl}} {
+  \int_compare:nNnT
+    {\__tagpax_heading_num:n{#1}}
+    <
+    {\l__tagpax_toc_depth_int+1} {
     \prop_get:NnNT \g__tagpax_heading_map_prop {#1}\l_tmpa_tl {
       \tl_if_empty:NF #5 {\tl_put_right:Nn #5 {,}}
       \tl_put_right:Ne #5 {#2,\l_tmpa_tl,{\exp_not:n{#4}},tagpax.#3}
@@ -415,8 +437,14 @@ without explicit \code{macrocode} environments.
 }
 \keys_define:nn {tagpax/include}{
   ir .tl_set:N=\l__tagpax_ir_tl,
-  toc-depth .tl_set:N=\l__tagpax_toc_depth_tl,
-  bookmark-depth .tl_set:N=\l__tagpax_bookmark_depth_tl,
+  toc-depth .code:n={
+    \tl_set:Nn\l__tagpax_toc_depth_tl{#1}
+    \int_set:Nn\l__tagpax_toc_depth_int{\tl_tail:n{#1}}
+  },
+  bookmark-depth .code:n={
+    \tl_set:Nn\l__tagpax_bookmark_depth_tl{#1}
+    \int_set:Nn\l__tagpax_bookmark_depth_int{\tl_tail:n{#1}}
+  },
   pagecommand .tl_set:N=\l__tagpax_pagecommand_tl,
 }
 \msg_new:nnn {tagpax}{deprecated-command}
@@ -431,14 +459,19 @@ without explicit \code{macrocode} environments.
 }
 \NewDocumentCommand\tagpaxinclude{O{}m}{
   \group_begin:
+  \int_gincr:N \g__tagpax_import_int
+  \tl_set:Ne \l__tagpax_import_id_tl {\int_use:N\g__tagpax_import_int}
   \tl_set:Nn \l__tagpax_file_tl {#2}
   \tl_set:Nn \l__tagpax_ir_tl {#2}
   \regex_replace_once:nnN { \.pdf\Z } {.tagpax} \l__tagpax_ir_tl
   \tl_clear:N \l__tagpax_pagecommand_tl
   \keys_set:nn {tagpax/include}{#1}
+  \directlua{require('tagpax-backend').emit_reservations(
+    [[\luaescapestring{\l__tagpax_ir_tl}]])}
   \directlua{require('tagpax-native').emit_page_imports(
-    [[\luaescapestring{#2}]],[[\luaescapestring{\l__tagpax_ir_tl}]])}
-  \directlua{require('tagpax-backend').emit_tex(
+    [[\luaescapestring{#2}]],[[\luaescapestring{\l__tagpax_ir_tl}]],
+    [[\luaescapestring{\l__tagpax_import_id_tl}]])}
+  \directlua{require('tagpax-backend').emit_bindings(
     [[\luaescapestring{\l__tagpax_ir_tl}]])}
   \group_end:
 }
@@ -502,7 +535,7 @@ without explicit \code{macrocode} environments.
   { \msg_fatal:nn {tagpax}{bridge-incompatible} }
 \prop_new:N \g__tagpax_bridge_stream_key_prop
 \prop_new:N \g__tagpax_bridge_stream_committed_prop
-\cs_generate_variant:Nn \prop_gput:Nnn { cee }
+\cs_generate_variant:Nn \prop_gput:Nnn { cee, Nee }
 \seq_new:N  \g__tagpax_bridge_stream_seq
 \tl_new:N   \l__tagpax_bridge_role_ns_tl
 \tl_new:N   \l__tagpax_bridge_role_tag_tl
@@ -516,7 +549,6 @@ without explicit \code{macrocode} environments.
     \int_gincr:N \c@g__tag_struct_abs_int
     \tl_set:Ne #3 { \int_use:N \c@g__tag_struct_abs_int }
     \__tag_prop_new:c { g__tag_struct_\tl_use:N #3 _prop }
-    \__tag_new_output_prop_handler:n { \tl_use:N #3 }
     \__tag_seq_new:c { g__tag_struct_kids_\tl_use:N #3 _seq }
     \pdf_object_new_indexed:nn { __tag/struct } { \tl_use:N #3 }
     \__tag_struct_prop_gput:nne { \tl_use:N #3 } { Type } { /StructElem }
@@ -532,10 +564,10 @@ without explicit \code{macrocode} environments.
       { \tl_set:Nn \l__tagpax_bridge_role_tag_tl {#1} }
     \tl_if_empty:NT \l__tagpax_bridge_role_ns_resolved_tl
       { \tl_set_eq:NN \l__tagpax_bridge_role_ns_resolved_tl \l__tagpax_bridge_role_ns_tl }
-    \__tag_struct_set_tag_info:eVV
+    \__tag_struct_set_tag_info:eoo
       { \tl_use:N #3 }
-      \l__tagpax_bridge_role_tag_tl
-      \l__tagpax_bridge_role_ns_resolved_tl
+      { \l__tagpax_bridge_role_tag_tl }
+      { \l__tagpax_bridge_role_ns_resolved_tl }
     \__tag_struct_prop_gput:nne
       { \tl_use:N #3 }
       { rolemap }
@@ -546,8 +578,8 @@ without explicit \code{macrocode} environments.
       { {\l__tagpax_bridge_role_tag_tl}{\l__tagpax_bridge_role_ns_resolved_tl} }
     \__tag_struct_prop_gput:nne
       { \tl_use:N #3 }
-      { P }
-      { \pdf_object_ref_indexed:nn {__tag/struct}{#2} }
+      { parentnum }
+      {#2}
     \__tag_struct_kid_struct_gput_right:ee {#2} {\tl_use:N #3}
   }
 
@@ -635,7 +667,12 @@ without explicit \code{macrocode} environments.
 \prop_new:N \g__tagpax_backend_node_prop
 \prop_new:N \g__tagpax_backend_form_prop
 \prop_new:N \g__tagpax_backend_page_stream_prop
+\prop_new:N \g__tagpax_backend_objr_prop
 \tl_new:N   \g__tagpax_backend_wrapper_tl
+\tl_new:N   \l__tagpax_backend_annotation_tl
+\tl_new:N   \l__tagpax_backend_annotation_parent_tl
+\tl_new:N   \l__tagpax_backend_annotation_action_tl
+\tl_new:N   \l__tagpax_backend_annotation_key_tl
 
 \cs_new_protected:Npn \TagPaxBackendForm #1#2#3
   {
@@ -643,21 +680,195 @@ without explicit \code{macrocode} environments.
     \prop_gput:Nnn \g__tagpax_backend_page_stream_prop {#1} {#3}
   }
 
-\cs_new_protected:Npn \TagPaxImportOnePage #1#2#3
+\cs_new_protected:Npn \TagPaxPageDestination #1#2
+  { \pdf_destination:nn {#1}{#2} }
+
+\cs_new_protected:Npn \TagPaxPointDestination #1#2#3#4#5
   {
-    \tagpax_tag_stream_new:nN {#3} \l_tmpa_tl
+    \kern-\dim_eval:n{#1sp}
+    \hbox_to_wd:nn {#1sp}
+      {
+        \kern#2sp
+        \raise#3sp\hbox{\pdf_destination:nn {#4}{#5}}
+        \hss
+      }
+  }
+
+\cs_new_protected:Npn \TagPaxRectangleDestination #1#2#3#4#5#6
+  {
+    \kern-\dim_eval:n{#1sp}
+    \hbox_to_wd:nn {#1sp}
+      {
+        \kern#2sp
+        \raise#3sp\hbox
+          {\pdf_destination:nnnn {#6}{#4sp}{#5sp}{0pt}}
+        \hss
+      }
+  }
+
+\cs_new_protected:Npn \TagPaxNavigationHeading #1#2#3
+  {
+    \int_compare:nNnT
+      {\__tagpax_heading_num:n{#1}}
+      <
+      {\l__tagpax_toc_depth_int+1}
+      {
+        \prop_get:NnNT \g__tagpax_heading_map_prop {#1}\l_tmpa_tl
+          {
+            \group_begin:
+              \cs_if_exist:NT \@currentHref {\tl_set:Nn\@currentHref{#3}}
+              \addcontentsline{toc}{\l_tmpa_tl}{#2}
+            \group_end:
+          }
+      }
+    \int_compare:nNnT
+      {\__tagpax_heading_num:n{#1}}
+      <
+      {\l__tagpax_bookmark_depth_int+1}
+      {
+        \cs_if_exist:NT \bookmark
+          {
+            \bookmark[
+              level=\int_eval:n{\__tagpax_heading_num:n{#1}-2},
+              dest={#3}
+            ]{#2}
+          }
+      }
+  }
+
+\NewTaggingSocketPlug{link/before}{tagpax-import}
+  {
+    \pdfannot_dict_put:nne
+      {link/\l__tagpax_backend_annotation_action_tl}
+      {StructParent}
+      {\l__tagpax_backend_annotation_key_tl}
+  }
+\NewTaggingSocketPlug{link/after}{tagpax-import}
+  {
+    \__tag_property_record:en
+      {@tagpax@objr@page@\l__tagpax_backend_annotation_key_tl}
+      {tagabspage}
+    \pdf_object_unnamed_write:ne {dict}
+      {
+        /Type/OBJR
+        /Obj~\pdfannot_link_ref_last:
+        /Pg~\pdf_pageobject_ref:n
+          {
+            \property_ref:enn
+              {@tagpax@objr@page@\l__tagpax_backend_annotation_key_tl}
+              {tagabspage}{1}
+          }
+      }
+    \prop_gput:Nee \g__tagpax_backend_objr_prop
+      {\l__tagpax_backend_annotation_tl}
+      {\pdf_object_ref_last:}
+    \__tag_parenttree_add_objr:nn
+      {\l__tagpax_backend_annotation_key_tl}
+      {
+        \pdf_object_ref_indexed:nn
+          {__tag/struct}{\l__tagpax_backend_annotation_parent_tl}
+      }
+    \int_gincr:N \c@g__tag_parenttree_obj_int
+  }
+
+\cs_new_protected:Npn \__tagpax_annotation_begin:nn #1#2
+  {
+    \tl_set:Nn \l__tagpax_backend_annotation_tl {#1}
+    \tl_set:Nn \l__tagpax_backend_annotation_action_tl {#2}
+    \prop_get:NnN \g__tagpax_backend_annotation_parent_prop
+      {#1}\l__tagpax_backend_annotation_parent_tl
+    \tl_set:Ne \l__tagpax_backend_annotation_key_tl
+      {\int_use:N \c@g__tag_parenttree_obj_int}
+    % The Lua link-splitting callback associates annotations from the current
+    % structure attribute.  Imported links already have an explicit source
+    % parent and are bound by the plugs below, so make the callback ignore
+    % these nodes; otherwise it creates a second OBJR in tagpdf's link bin.
+    \lua_now:n
+      {tex.setattribute(luatexbase.attributes.g__tag_structnum_attr,-1)}
+    \AssignTaggingSocketPlug{link/before}{tagpax-import}
+    \AssignTaggingSocketPlug{link/after}{tagpax-import}
+  }
+
+\cs_new_protected:Npn \TagPaxGotoOverlay #1#2#3#4#5#6#7
+  {
+    \group_begin:
+      \__tagpax_annotation_begin:nn {#6}{GoTo}
+      \kern-\dim_eval:n{#1sp}
+      \hbox_to_wd:nn {#1sp}
+        {
+          \kern#2sp
+          \raise#3sp\hbox
+            {
+              \pdfannot_link_goto_begin:nw {#7}
+                \hbox_to_wd:nn {#4sp}{\rule{0pt}{#5sp}\hfill}
+              \pdfannot_link_goto_end:
+            }
+          \hss
+        }
+    \group_end:
+  }
+
+\cs_new_protected:Npn \__tagpax_action_overlay:nnnnnnnn #1#2#3#4#5#6#7#8
+  {
+    \group_begin:
+      \__tagpax_annotation_begin:nn {#6}{#7}
+      \kern-\dim_eval:n{#1sp}
+      \hbox_to_wd:nn {#1sp}
+        {
+          \kern#2sp
+          \raise#3sp\hbox
+            {
+              \pdfannot_link_begin:nnw {#7}{#8}
+                \hbox_to_wd:nn {#4sp}{\rule{0pt}{#5sp}\hfill}
+              \pdfannot_link_end:n {#7}
+            }
+          \hss
+        }
+    \group_end:
+  }
+
+\cs_new_protected:Npn \TagPaxURIOverlay #1#2#3#4#5#6#7
+  {
+    \__tagpax_action_overlay:nnnnnnnn
+      {#1}{#2}{#3}{#4}{#5}{#6}{URI}
+      {/A~<</Type~/Action~/S~/URI~/URI~<#7>>>}
+  }
+
+\cs_new_protected:Npn \TagPaxGoToRNameOverlay #1#2#3#4#5#6#7#8
+  {
+    \__tagpax_action_overlay:nnnnnnnn
+      {#1}{#2}{#3}{#4}{#5}{#6}{GoToR}
+      {/A~<</Type~/Action~/S~/GoToR~/F~<#7>~/D~<#8>>>}
+  }
+
+\cs_new_protected:Npn \TagPaxGoToRPageOverlay #1#2#3#4#5#6#7#8#9
+  {
+    \__tagpax_action_overlay:nnnnnnnn
+      {#1}{#2}{#3}{#4}{#5}{#6}{GoToR}
+      {/A~<</Type~/Action~/S~/GoToR~/F~<#7>~/D~[#8~/#9]>>}
+  }
+
+\cs_new_protected:Npn \TagPaxImportOnePage #1#2#3#4#5
+  {
+    \tagpax_tag_stream_new:nN {#3} \l__tagpax_import_stream_key_tl
     \clearpage
     \thispagestyle{empty}
     \tl_use:N \l__tagpax_pagecommand_tl
+    \directlua{require('tagpax-native').emit_page_navigation(
+      [[\luaescapestring{#4}]],#2,[[\luaescapestring{#5}]])}
     \noindent\hbox to \linewidth
       {\hss\directlua{require('tagpax-luatex').write_page(
-        [[\luaescapestring{#1}]],#2,\l_tmpa_tl,[[\luaescapestring{#3}]],\number\textwidth,\number\textheight)}\hss}
+        [[\luaescapestring{#1}]],#2,\l__tagpax_import_stream_key_tl,[[\luaescapestring{#3}]],
+        [[\luaescapestring{#4}]],[[\luaescapestring{#5}]],
+        \number\textwidth,\number\textheight)}\hss}
     \clearpage
   }
 
 \cs_new_protected:Npn \TagPaxBackendDocumentBegin
   {
     \prop_gclear:N \g__tagpax_backend_node_prop
+    \prop_gclear:N \g__tagpax_backend_objr_prop
+    \prop_gclear:N \g__tagpax_backend_annotation_parent_prop
     \tl_set_eq:NN \l_tmpa_tl \g__tag_struct_stack_current_tl
     \tagpax_tag_struct_new:nnN {Part}{\l_tmpa_tl}\g__tagpax_backend_wrapper_tl
     \prop_gput:NnV \g__tagpax_backend_node_prop {@wrapper}\g__tagpax_backend_wrapper_tl
@@ -673,12 +884,31 @@ without explicit \code{macrocode} environments.
     \tagpax_tag_struct_new:nnN {#2}{\l_tmpa_tl}\l_tmpb_tl
     \prop_gput:NnV \g__tagpax_backend_node_prop {#1}\l_tmpb_tl
   }
-\cs_new_protected:Npn \TagPaxBackendMCR #1#2#3#4#5
+\prop_new:N \g__tagpax_backend_annotation_parent_prop
+\cs_new:Npn \__tagpax_backend_form_ref:n #1
+  { \prop_item:Nn \g__tagpax_backend_form_prop {#1} }
+\cs_new:Npn \__tagpax_backend_objr_ref:n #1
+  { \prop_item:Nn \g__tagpax_backend_objr_prop {#1} }
+\cs_new_protected:Npn \TagPaxBackendReserveMCR #1#2#3#4#5
   {
     \prop_get:NnN \g__tagpax_backend_node_prop {#5}\l_tmpa_tl
-    \prop_get:NnN \g__tagpax_backend_form_prop {#2}\l_tmpb_tl
-    \tagpax_tag_struct_append_mcr:nnn {\l_tmpa_tl}{\l_tmpb_tl}{#3}
+    \__tag_seq_gput_right:cn {g__tag_struct_kids_\l_tmpa_tl _seq}
+      {
+        <</Type~/MCR/MCID~\int_eval:n{#3}
+          /Stm~\__tagpax_backend_form_ref:n{#2}>>
+      }
+  }
+\cs_new_protected:Npn \TagPaxBackendBindMCR #1#2#3#4#5
+  {
+    \prop_get:NnN \g__tagpax_backend_node_prop {#5}\l_tmpa_tl
     \exp_args:NnnV \tagpax_tag_stream_register:nnn {#4}{#3}\l_tmpa_tl
+  }
+\cs_new_protected:Npn \TagPaxBackendReserveOBJR #1#2
+  {
+    \prop_get:NnN \g__tagpax_backend_node_prop {#2}\l_tmpa_tl
+    \prop_gput:NnV \g__tagpax_backend_annotation_parent_prop {#1}\l_tmpa_tl
+    \__tag_seq_gput_right:cn {g__tag_struct_kids_\l_tmpa_tl _seq}
+      {\__tagpax_backend_objr_ref:n{#1}}
   }
 \cs_new_protected:Npn \TagPaxBackendUnsupportedStream #1#2
   { \msg_error:nnn {tagpax}{bridge-stream-unknown}{#1} }

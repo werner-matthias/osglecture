@@ -1,0 +1,6 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+rotate=0 corners=0,0:400,200 rect=20,20,40,40
+rotate=90 corners=0,400:200,0 rect=20,340,40,40
+rotate=180 corners=400,200:0,0 rect=340,140,40,40
+rotate=270 corners=200,0:0,400 rect=140,20,40,40
