@@ -1,7 +1,17 @@
--- tagpax-import.lua -- build a target-independent import plan
+--[[
+  Package: tagpax
+  Date:
+  2026-07-23
+  Version:
+  v0.8.5-dev
+  Description:
+  build a target-independent import plan
+]]
+
 local validator = require("tagpax-validate")
 local M = {}
 
+-- Index ordered relations once; all later projections reuse source /K order.
 local function sorted_kids(ir)
   local by_parent = {}
   for _, kid in ipairs(ir.kids or {}) do
@@ -18,6 +28,7 @@ local function sorted_kids(ir)
 end
 
 local function root_nodes(ir)
+  -- Root records carry explicit indices because table iteration is unordered.
   local roots = {}
   table.sort(ir.roots, function(a, b)
     return tonumber(a.index or 0) < tonumber(b.index or 0)
@@ -39,6 +50,8 @@ end
 --   bindings.streams[stream-id]  -> target nested Form XObject handle
 -- The PDF backend is responsible for turning handles into indirect references.
 function M.plan(ir, bindings, options)
+  -- Refuse to plan malformed semantics. Backends should not need defensive
+  -- checks for dangling nodes, streams or navigation targets.
   local ok, errors = validator.validate(ir)
   if not ok then error("invalid tagpax IR: " .. table.concat(errors, "; "), 2) end
   bindings = bindings or {}
@@ -63,6 +76,8 @@ function M.plan(ir, bindings, options)
   local imported_roots = {}
 
   for _, id in ipairs(plan.source_roots) do
+    -- The imported contribution receives one synthetic Part wrapper. A source
+    -- Document root is omitted to avoid nesting a document inside a document.
     local node = ir.nodes[id]
     if unwrap and node and node.role == "Document" then
       for _, child in ipairs(source_children(ir, id, by_parent)) do
@@ -75,6 +90,7 @@ function M.plan(ir, bindings, options)
   plan.imported_roots = imported_roots
 
   for id, node in pairs(ir.nodes) do
+    -- Copy semantic attributes, but never source object numbers.
     local omit = unwrap and root_set[id] and node.role == "Document"
     if not omit then
       plan.nodes[#plan.nodes + 1] = {
@@ -104,6 +120,8 @@ function M.plan(ir, bindings, options)
           }
         end
       elseif kid.kind == "mcr" then
+        -- Binding handles are deliberately opaque. This layer decides which
+        -- source stream is needed; the PDF backend owns indirect references.
         local stream = ir.streams and ir.streams[kid.stream]
         local handle
         if stream and stream.kind == "page" then
@@ -150,6 +168,8 @@ function M.plan(ir, bindings, options)
 end
 
 function M.assert_resolved(plan)
+  -- Return diagnostics instead of throwing so callers can present all missing
+  -- explicit-stream bindings in one report.
   if #plan.unresolved == 0 then return true end
   local messages = {}
   for _, item in ipairs(plan.unresolved) do

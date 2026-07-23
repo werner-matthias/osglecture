@@ -22,8 +22,7 @@ typesetfiles = { "tagpax.dtx" }
 textfiles = {
   "README.md",
   "CHANGELOG.md",
-  "doc/*.md",
-  "roundtrip.lua"
+  "doc/*.md"
 }
 
 docfiles = {

@@ -1,8 +1,19 @@
--- tagpax-luatex.lua -- controlled LuaTeX page Form-XObject import
+--[[
+  Package: tagpax
+  Date:
+  2026-07-23
+  Version:
+  v0.8.5-dev
+  Description:
+  controlled LuaTeX page Form-XObject import
+]]
+
 local ir_reader = require("tagpax-ir")
 local M = { version = "0.8.3-dev" }
+-- LuaTeX image userdata must stay reachable until shipout has consumed it.
 local images = {}
 
+-- TeX/PDF boundary helpers -------------------------------------------------
 local function tex_escape(s)
   s = tostring(s or "")
   return (s:gsub("([{}%%#\\])", "\\%1"))
@@ -15,6 +26,7 @@ local function hex(s)
 end
 
 local function page_rotation(page)
+  -- Normalize inherited or direct /Rotate values to the four PDF quadrants.
   local rotation = tonumber(page and page.Rotate) or 0
   if pdfe.getinteger then
     local ok, first, second = pcall(pdfe.getinteger, page, "Rotate")
@@ -24,6 +36,8 @@ local function page_rotation(page)
 end
 
 local function page_geometry(media, rotation, target_width, target_height)
+  -- This is the single source-to-target transform. The same mapping must drive
+  -- link rectangles and destinations or clickable and visible areas diverge.
   local width, height = media[3] - media[1], media[4] - media[2]
   local displayed_width = (rotation == 90 or rotation == 270) and height or width
   local displayed_height = (rotation == 90 or rotation == 270) and width or height
@@ -43,6 +57,8 @@ local function page_geometry(media, rotation, target_width, target_height)
     return tx * scale_x, ty * scale_y
   end
   local function rectangle(llx, lly, urx, ury)
+    -- Rotate all corners: after a quarter turn the original lower-left and
+    -- upper-right are no longer sufficient to define the target rectangle.
     local x1, y1 = point(llx, lly)
     local x2, y2 = point(llx, ury)
     local x3, y3 = point(urx, lly)
@@ -58,6 +74,8 @@ end
 M.page_geometry = page_geometry
 
 local function emit_destination(destination, prefix, image_width, geometry, media, rotation)
+  -- Recreate the source view where LaTeX's destination primitives permit it.
+  -- `prefix` prevents equal source names in different imports from colliding.
   local name = string.format("tagpax.%s.dest.%s", prefix, destination.id)
   local view = destination.view or "Fit"
   local a1, a2, a3, a4 = tonumber(destination.arg1), tonumber(destination.arg2),
@@ -69,6 +87,8 @@ local function emit_destination(destination, prefix, image_width, geometry, medi
     return
   end
   if view == "XYZ" then
+    -- PDF null coordinates mean “retain current view”. LaTeX cannot express
+    -- that state, so missing values fall back to the corresponding page edge.
     local x, y = geometry.point(a1 or media[1], a2 or media[4])
     local kind = a3 and a3 > 0 and tostring(math.floor(a3 * 100 + 0.5)) or "xyz"
     tex.sprint(string.format("\\TagPaxPointDestination{%.0f}{%.0f}{%.0f}{%s}{%s}",
@@ -80,6 +100,7 @@ local function emit_destination(destination, prefix, image_width, geometry, medi
   if horizontal then
     local x, y = geometry.point(media[1], a1 or media[4])
     local kind = view == "FitBH" and "fitbh" or "fith"
+    -- A horizontal source constraint becomes vertical after a quarter turn.
     if rotation == 90 or rotation == 270 then
       kind = view == "FitBH" and "fitbv" or "fitv"
     end
@@ -107,6 +128,8 @@ end
 -- @param stream_id stable tagpax stream ID
 -- @return image userdata (also retained until the end of the run)
 function M.write_page(filename, page, structparents, stream_id, irfile, prefix, max_width, max_height)
+  -- Phase 1: scan and size the source page, injecting its reserved ParentTree
+  -- key into the Form dictionary before LuaTeX creates the object.
   local image = assert(img.scan {
     filename = assert(filename),
     page = assert(tonumber(page)),
@@ -127,6 +150,8 @@ function M.write_page(filename, page, structparents, stream_id, irfile, prefix, 
   assert(image.objnum and image.objnum > 0, "LuaTeX did not allocate an image object")
   images[#images + 1] = image
   local ir = ir_reader.read(irfile)
+  -- Phase 2: reopen only for MediaBox and /Rotate. Semantic objects always
+  -- come from the already extracted IR.
   local document = assert(pdfe.open(filename))
   local source_page = pdfe.getpage(document, page)
   local media = pdfe.getbox(source_page, "MediaBox")
@@ -145,6 +170,8 @@ function M.write_page(filename, page, structparents, stream_id, irfile, prefix, 
       end
     end
     for _, annotation in ipairs(ir.annotations or {}) do
+      -- Overlay annotations are target objects, not copied dictionaries. Their
+      -- action and transformed rectangle are emitted through the TeX bridge.
       if tonumber(annotation.page) == page then
         local destination = annotation.destination and ir.destinations[annotation.destination]
         if annotation.action ~= "GoTo" or destination then
@@ -188,6 +215,7 @@ function M.write_page(filename, page, structparents, stream_id, irfile, prefix, 
     end
   end
   pdfe.close(document)
+  -- Phase 3: publish the late Form object reference for MCR binding.
   tex.sprint(string.format(
     "\\TagPaxBackendForm{%s}{%d 0 R}{%s}",
     tex_escape(page), image.objnum, tex_escape(stream_id)

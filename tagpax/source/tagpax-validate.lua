@@ -2,6 +2,8 @@
 local M = {}
 
 function M.validate(ir)
+  -- Validation is cumulative and deterministic enough for build diagnostics:
+  -- report every independent defect rather than stopping at the first one.
   local errors = {}
   if not ir.header or tonumber(ir.header.version) ~= 1 then errors[#errors + 1] = "unsupported or missing IR version" end
   if not ir.source then errors[#errors + 1] = "missing source record" end
@@ -13,6 +15,8 @@ function M.validate(ir)
     if stream.kind ~= "page" and stream.kind ~= "object" then errors[#errors + 1] = "invalid stream kind " .. tostring(stream.kind) end
     if stream.kind == "page" and tonumber(stream.page) == nil then errors[#errors + 1] = "page stream has invalid page" end
   end
+  -- Relations are valid only if both their semantic parent and typed target
+  -- exist. MCID zero is valid, hence numeric conversion rather than truthiness.
   for _, kid in ipairs(ir.kids) do
     if not ir.nodes[kid.parent] then errors[#errors + 1] = "kid has missing parent " .. tostring(kid.parent) end
     if kid.kind == "node" and not ir.nodes[kid.ref] then errors[#errors + 1] = "kid references missing node " .. tostring(kid.ref) end
@@ -25,6 +29,7 @@ function M.validate(ir)
     if not node then errors[#errors + 1] = "heading references missing node " .. tostring(heading.node)
     elseif node.role ~= heading.role then errors[#errors + 1] = "heading role mismatch at " .. heading.node end
   end
+  -- Navigation is checked here, before page geometry is ever consulted.
   local page_count = ir.source and tonumber(ir.source.pages)
   for id, destination in pairs(ir.destinations or {}) do
     if destination.id ~= id then errors[#errors + 1] = "destination id mismatch " .. tostring(id) end
@@ -48,6 +53,7 @@ function M.validate(ir)
       errors[#errors + 1] = "FitR destination has incomplete rectangle " .. tostring(id)
     end
   end
+  -- The native writer intentionally supports a narrow, explicit action set.
   for _, annotation in ipairs(ir.annotations or {}) do
     if annotation.subtype ~= "Link"
       or (annotation.action ~= "GoTo"

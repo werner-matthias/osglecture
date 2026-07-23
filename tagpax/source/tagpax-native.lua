@@ -1,12 +1,26 @@
--- tagpax-native.lua -- TeX emission for native linear document import
+--[[
+  Package: tagpax
+  Date:
+  2026-07-23
+  Version:
+  v0.8.5-dev
+  Description:
+  TeX emission for native linear document import
+]]
+
 local ir_reader = require("tagpax-ir")
 local M = {}
 local catlatex = luatexbase.registernumber("catcodetable@latex")
+
+-- This is an orchestration adapter. It emits TeX operations but neither
+-- inspects source PDF objects nor constructs semantic structure.
 local function esc(s)
   s=tostring(s or "")
   return (s:gsub("([{}%%#\\])", "\\%1"))
 end
 function M.emit_page_imports(pdf, irfile, prefix)
+  -- Linear full-document import is the supported profile; page Forms are
+  -- created in source order after structure slots have been reserved.
   local ir=ir_reader.read(irfile)
   local pages=assert(ir.source and tonumber(ir.source.pages), "IR has no source page count")
   for page=1,pages do
@@ -19,6 +33,8 @@ function M.emit_page_imports(pdf, irfile, prefix)
 end
 
 function M.emit_page_navigation(irfile, page, prefix)
+  -- Generated TOC/bookmark entries use a stable page-level destination.
+  -- Precise source destinations are emitted independently by the page writer.
   local ir = ir_reader.read(irfile)
   local page_destination = string.format("tagpax.%s.page.%d", prefix, page)
   tex.sprint(catlatex, "\\TagPaxPageDestination{" .. esc(page_destination) .. "}{fit}")

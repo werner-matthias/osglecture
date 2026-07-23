@@ -1,40 +1,59 @@
-% \iffalse meta-comment
-%
-% Copyright (C) 2026 The tagpax project
-%
-% This work may be distributed and/or modified under the conditions of the
-% LaTeX Project Public License, either version 1.3c of this license or (at your
-% option) any later version. The latest version of this license is in
-%   https://www.latex-project.org/lppl.txt
-% and version 1.3c or later is part of all distributions of LaTeX version
-% 2008 or later.
-%
-% \fi
-%
-% \iffalse
 %<*driver>
-\ProvidesFile{tagpax.dtx}[2026-07-23 v0.8.3-dev Semantic tagged PDF document import]
-\providecommand\olsTargetLanguage{en}
-\DocumentMetadata{lang=\olsTargetLanguage}
-\documentclass[load-preamble+]{osgdoc}
+\def\nameofplainTeX{plain}
+\ifx\fmtname\nameofplainTeX
+\input l3docstrip.tex
+\preamble
 
-% Compatibility for LaTeX formats predating interfaces used by langselect.
-\providecommand\IfDocumentMetadataT[1]{}
-\ExplSyntaxOn
-\cs_if_exist:NF \regex_if_match:nnT
-  { \cs_new_eq:NN \regex_if_match:nnT \regex_match:nnT }
-\ExplSyntaxOff
+========================================================================
+ osgdoc tools - support for documentation
+
+ (C) 2022-2026 Matthias Werner
+ E-mail: matthias.werner@informatik.tu-chemnitz.de
+
+ Released under the LaTeX Project Public License v1.3c or later
+ See http://www.latex-project.org/lppl.txt
+======================================================================== 
+
+\endpreamble
+\postamble
+ This work is "maintained" (as per LPPL maintenance status) by
+ Matthias Werner.
+\endpostamble
+
+\generate{
+  \file{tagpax.sty}{\from{tagpax.dtx}{pkg}}
+}
+\expandafter\endbatchfile
+\fi
+%</driver>
+%<*pkg>
+\NeedsTeXFormat{LaTeX2e}[2024-11-01]
+\ProvidesExplPackage{tagpax}
+{2026/07/23}
+{v0.8.5-dev}
+{Native tagged PDF document import}
+%</pkg>
+%<*driver> 
+\DocumentMetadata{}
+\documentclass[
+load-preamble+
+]{osgdoc}
 
 \usepackage[
   languages={de,en},
-  map={de=ngerman,en=english}
+  map={de=german,en=english},
+  targetlang={job=2},
+  load babel
 ]{langselect}
 \usepackage{microtype}
 \usepackage{booktabs}
+\usepackage{enumitem}
 
 \newpackagename{\pdfpagespkg}{pdfpages}
 \newpackagename{\tagpdfpkg}{tagpdf}
 \newpackagename{\luatexname}{LuaTeX}
+\newpackagename{\thepkg}{tagpax}
+
 \newcommand{\luasig}[1]{\texttt{\detokenize{#1}}}
 \newenvironment{luafunctions}
   {\begin{cnltxlist}}
@@ -44,24 +63,27 @@
 
 \makeindex
 \setcnltx{
-  name        = tagpax,
   package     = tagpax,
-  version     = 0.7.2-dev,
-  date        = 2026-07-15,
+  version  = \UseVersionOf{\packagename.sty},
+  date     = \UseDateOf{\packagename.sty},  
   title       = {\ldeen{Das \pkg{tagpax}-Paket}{The \pkg{tagpax} package}},
   info        = {\ldeen{Semantischer Import getaggter PDF-Dokumente}{Semantic import of tagged PDF documents}},
-  authors     = {The tagpax project},
+  authors     = {Matthias Werner},
   abstract    = {\ldeen*{
-    @1 ist ein experimentelles LuaLaTeX-Paket zum Zusammenstellen vollständig
-    getaggter Beiträge. Es übernimmt Seiten, logische Dokumentstruktur und
-    Navigation in ein neues Masterdokument. Der Benutzerteil dieses Handbuchs
-    wird aus einer eng gekoppelten deutschen und englischen Quelle erzeugt.
+    @1 ist ein experimentelles Lua\LaTeX-Paket zum Zusammenstellen vollständig
+    getaggter PDF-Dokumente. Es übernimmt Seiten, logische Dokumentstruktur und
+    Navigation in ein neues Masterdokument.
+
+    Das Paket gehört zum \pkg*{osglecture}-Bundle, kann aber auch eigenständig
+    genutzt werden. 
   }{
-    @1 is an experimental LuaLaTeX package for assembling fully tagged
-    contributions. It imports pages, logical document structure and navigation
-    into a new master document. The user part of this manual is generated from
-    one tightly coupled German and English source.
-  }{\pkg{tagpax}}},
+    @1 is an experimental Lua\LaTeX package for assembling fully tagged
+    pdf documents. It imports pages, logical document structure and navigation
+    into a new master document. 
+
+    The package is part of the \pkg*{osglecture} bundle, but can also be used independently.
+  }{\thepkg}
+  },
   build-title
 }
 
@@ -72,33 +94,70 @@
 \section{\ldeen{Ziel und Anwendungsbereich}{Purpose and scope}}
 
 \ldeen*{
-  @1 richtet sich zunächst an Sammelbände und Proceedings, die aus vollständigen,
-  unabhängig getaggten Beitrags-PDFs aufgebaut werden. Jeder Beitrag wird in
-  ursprünglicher Seitenreihenfolge genau einmal importiert. Die äußere
-  @2-Struktur des Beitrags wird entfernt; ihre Kinder werden im Master unter
-  einem neuen @3 eingehängt. Vorhandene MCIDs bleiben erhalten.
+  Es gibt häufig den Fall, dass fertige PDF-Dokumente in andere eingebaut werden, beispielsweise bei Proceedings 
+  und Sammelbänden. Dafür hat sich \name{Andreas}{Matthias}' umfangreiches Paket \needpackage{pdfpages} bewährt.
+  Um aus den eingebundenen Dokumenten PDF-Annotationen zu übernehmen, beispielsweise zur Erstellung von gemeinsamen
+  Inhaltsverzeichnisen, kann zusätzlich \name{Ulrike}{Fischer}s \needpackage{newpax} oder dessen auf Java basierendes Vorgängerprojekt \needpackage{pax} von \name{Heiko}{Oberdiek} genutzt werden.
+
+  Jedoch gibt es aus der Perspektive der Barrierefreiheit ein Problem: Auch wenn die eingebundenen Dokumente
+  (über \cs{MetaDocumentdata}) korrekt getaggt sind, gehen diese Informationen beim Einbinden verloren.
+  Dies war der Anstoß für die Schaffung von \thepkg, das die Möglichkeit gibt, Tagging-Informationen in
+  das Gesamtdokument zu übernehmen.
 }{
-  @1 initially targets collected volumes and proceedings assembled from complete,
-  independently tagged contribution PDFs. Every contribution is imported once
-  in its original page order. The contribution's outer @2 structure is
-  unwrapped and its children are attached below a new @3 in the master. Existing
-  MCIDs are retained.
-}{\pkg{tagpax}}{\code{Document}}{\code{Part}}
+  It is often the case that finished PDF documents are embedded into others, for example in proceedings 
+  and anthologies. \name{Andreas}{Matthias}’s comprehensive package \needpackage{pdfpages} has proven useful for this purpose.
+  To extract PDF annotations from the embedded documents-—for example, to create combined
+  tables of contents-—you can also use \name{Ulrike}{Fischer}’s \needpackage{newpax} or its Java-based predecessor project, \needpackage{pax}, by \name{Heiko}{Oberdiek}.
+
+  However, there is a problem from an accessibility perspective: Even if the embedded documents
+  are correctly tagged (via \cs{MetaDocumentdata}), this information is lost during embedding.
+  This was the impetus for the creation of \thepkg, which allows tagging information to be
+  incorporated into the overall document.
+}
+
+\medskip
+\noindent
+\colorbox{cnltxblue!20!white}{\parbox{\linewidth}{
+\rule{\linewidth}{0pt}
+  \begin{quote}
+    \textbf{\ldeen{Achtung}{Note}!}\par
+    \ldeen{
+      Dieses Paket ist \textbf{kein} Ersatz für die oben genannten.
+      Es ist (zumindest derzeit) nur auf den Anwendungsfall der Inkludierung von vollständigen,
+      korrekt getaggten PDF-Dokumenten in der Originalreihenfolge der Seiten ausgelegt.
+      Die vielfältigen Möglichkeiten zu weiteren Manipulation sind in \thepkg{} nicht möglich.
+      }{
+      This package is \textbf{not} a substitute for the ones mentioned above.
+      It is (at least for now) designed only for the specific use case of including complete,
+      correctly tagged PDF documents in their original page order.
+      The various options for further manipulation are not available in \thepkg.
+    }
+  \end{quote}
+  }
+}
+\medskip
+
+
+\ldeen{Beim Einbinden eines Subdokuments wird seine äußere
+  @1-Struktur entfernt; ihre Kinder werden im Master unter
+  einem neuen @2 eingehängt. Vorhandene MCIDs bleiben dabei erhalten.
+}{When a subdocument is embedded, its outer
+  @1 structure is removed; its children are attached to the master under
+  a new @2. Existing MCIDs are preserved in the process.
+}{\code{Document}}{\code{Part}}
 
 \section{\ldeen{Voraussetzungen}{Requirements}}
 
 \ldeen*{
   Aktivieren Sie PDF-Management und automatisches Tagging vor der Dokumentklasse
-  mit @1. Die veraltete Option @2 ist auf aktuellen LaTeX-Formaten nicht nötig.
-  Der gegenwärtige Stand benötigt LuaLaTeX.
+  mit @1 sowohl in den Subdokumenten, als auch im Masterdokument.
 }{
   Activate PDF management and automatic tagging before the document class with
-  @1. The obsolete @2 option is not needed with current LaTeX formats. The
-  current implementation requires LuaLaTeX.
+  @1. 
 }{\cs{DocumentMetadata}\Marg{tagging=on}}{\code{testphase}}
 
 \begin{Verbatim}
-\DocumentMetadata{tagging=on,lang=de}
+%\DocumentMetadata{tagging=on,lang=de}
 \documentclass{book}
 \usepackage{tagpax}
 \end{Verbatim}
@@ -177,25 +236,36 @@
   independently. Heading roles in the imported structure tree are not changed.
 }{\option{heading-map}}{\option{toc-depth}}{\option{bookmark-depth}}
 
-\section{\ldeen{Beschränkte pdfpages-Oberfläche}{Restricted pdfpages frontend}}
+\section{\ldeen{Optionale pdfpages-Kompatibilität}{Optional pdfpages compatibility}}
 
 \ldeen*{
-  Für bestehende Arbeitsabläufe stellt @1 eine vertraute, aber bewusst schmale
-  Oberfläche bereit. Unterstützt werden der lineare Vollimport mit @2 und
-  @3. Die eigentliche Form-Erzeugung übernimmt weiterhin der native Importer.
+  Für eine schnelle Migration kann @1 die vertraute @2-Syntax bereitstellen.
+  Unterstützt werden nur der lineare Vollimport mit @3 und @4. Die Option lädt
+  @5 nicht; die eigentliche Form-Erzeugung übernimmt der native Importer.
 }{
-  For existing workflows, @1 provides a familiar but deliberately narrow
-  interface. It supports linear full-document import with @2 and @3. Actual
-  Form creation is still performed by the native importer.
-}{\pkg{tagpax-pdfpages}}{\keyis{pages}{-}}{\option{pagecommand}}
+  For a quick migration, @1 can provide the familiar @2 syntax. It supports
+  only linear full-document import with @3 and @4. The option does not load @5;
+  actual Form creation remains the responsibility of the native importer.
+}{\keyis{pdfpages}{true}}{\cs{includepdf}}{\keyis{pages}{-}}{\option{pagecommand}}{\pkg{pdfpages}}
 
 \begin{Verbatim}
-\usepackage{tagpax-pdfpages}
-\tagpaxincludepdf[
+\usepackage[pdfpages]{tagpax}
+\includepdf[
   pages=-,
   pagecommand={\thispagestyle{empty}}
 ]{paper.pdf}
 \end{Verbatim}
+
+\ldeen*{
+  Aktivieren Sie diese Option nicht zusammen mit dem echten @1-Paket. Wenn @2
+  dieses Paket erkennt, deaktiviert es seinen Kompatibilitätsbefehl und gibt
+  eine Warnung aus. Verwenden Sie in einem solchen Dokument ausschließlich @3
+  für semantische Importe.
+}{
+  Do not enable this option together with the real @1 package. If @2 detects
+  that package, it disables its compatibility command and issues a warning.
+  In such a document, use only @3 for semantic imports.
+}{\pkg{pdfpages}}{\pkg{tagpax}}{\cs{tagpaxinclude}}
 
 \ldeen*{
   Optionen wie @1, @2, @3, beliebige Seitenauswahlen und wiederholte Seiten
@@ -212,12 +282,14 @@
 \ldeen*{
   Der aktuelle Stand ist für Experimente mit selbst erzeugten, korrekt
   getaggten Dokumenten geeignet. Ein semantischer Roundtrip wird durch @1
-  geprüft. Noch experimentell sind insbesondere verschachtelte Form-XObjects,
-  Annotationen und die vollständige Linkrekonstruktion.
+  geprüft. Seitenstream-MCRs, Link-Annotationen und lokale Ziele werden
+  rekonstruiert. Explizite verschachtelte Form-XObjects bleiben außerhalb des
+  unterstützten Importprofils.
 }{
   The current state is suitable for experiments with self-generated, correctly
-  tagged documents. A semantic roundtrip is tested by @1. Nested Form XObjects,
-  annotations and complete link reconstruction remain experimental.
+  tagged documents. A semantic roundtrip is tested by @1. Page-stream MCRs,
+  link annotations and local destinations are reconstructed. Explicit nested
+  Form XObjects remain outside the supported import profile.
 }{\code{l3build check -c roundtrip}}
 
 \part{Developer manual}
@@ -225,8 +297,9 @@
 \section{Architecture}
 
 \pkg{tagpax} is organised as a semantic import platform rather than as a
-\pdfpagespkg{} extension. Only the inspector reads source PDF objects. All
-subsequent layers operate on the canonical IR.
+\pdfpagespkg{} extension. Source semantics are read once by the inspector and
+then passed through a canonical IR. The page writer reopens the PDF only for
+page content and geometry; it does not rediscover structure or navigation.
 
 \begin{center}
 \begin{tabular}{@{}lll@{}}
@@ -245,7 +318,7 @@ Backend & Backend plan & Emit Forms, StructElems, MCRs, OBJRs and ParentTree ent
 
 The architectural invariants are:
 \begin{itemize}
-  \item backend modules never inspect source PDFs directly;
+  \item semantic decisions after inspection use the canonical IR;
   \item PDF object numbers are not semantic identifiers;
   \item MCIDs are retained and remain local to their content stream;
   \item transformations are separated from PDF-writing operations;
@@ -300,6 +373,9 @@ otherwise. Callers should treat undocumented fields as private.
   \DescribeLuaFunction{luatex.write_page(filename, page, structparents, stream_id, max_width?, max_height?)}
     Writes one source page as a fresh Form XObject, adds
     \code{/StructParents}, and reports its target object reference.
+  \DescribeLuaFunction{luatex.page_geometry(filename, page, max_width?, max_height?)}
+    Returns the shared crop, scale and rotation transformation used for the
+    page Form, destination coordinates and annotation rectangles.
 \end{luafunctions}
 
 \subsection{Native importer: \code{tagpax-native}}
@@ -322,9 +398,9 @@ otherwise. Callers should treat undocumented fields as private.
 \section{Canonical intermediate representation}
 
 The IR is the normative semantic API. A \code{.tagpax} file is its canonical
-transport serialisation. IR version 1 currently contains source metadata,
-streams, structure nodes, ordered child relations, headings and roots. Planned
-extensions add destinations, annotations, metadata and resource records.
+transport serialisation. IR version 1 contains source metadata, streams,
+structure nodes, ordered child relations, roots, headings, destinations and
+supported link annotations.
 
 \begin{center}
 \begin{tabular}{@{}llp{.52\linewidth}@{}}
@@ -336,6 +412,8 @@ Record & Required fields & Meaning \\
 \code{node}    & \code{id}, \code{role} & structure element \\
 \code{kid}     & \code{parent}, \code{index}, \code{kind} & ordered child relation \\
 \code{heading} & \code{node}, \code{role}, \code{page}, \code{text} & navigation data \\
+\code{destination} & \code{id}, \code{page}, \code{view} & named target and view parameters \\
+\code{annotation} & \code{id}, \code{page}, \code{action}, \code{rect} & link geometry and action data \\
 \code{root}    & \code{index}, \code{node} & root ordering \\
 \bottomrule
 \end{tabular}
@@ -354,13 +432,16 @@ construction, but appending children only at that time would lose the source
 tagpdf's automatic replacement-Link mechanism is suppressed for these overlays.
 The bridge must not mutate the global \tagpdfpkg{} structure stack.
 
-\section{Architecture decisions}
+\section{Maintainer documentation}
 
-The repository records important decisions under \code{doc/adr}. In
-particular, the project uses canonical IR, has no hard \pdfpagespkg{}
-dependency, retains MCIDs, unwraps contribution \code{Document} roots into a
-master \code{Part}, and will own annotation import rather than depend on
-\pkg{newpax}.
+The maintained design documentation lives next to the sources:
+\code{doc/architecture.md} describes ownership and data flow,
+\code{doc/DESIGN.md} records the reasons for current design choices, and
+\code{doc/FORMATS.md} specifies the IR, import plan and private TeX backend
+protocol. \code{doc/PDF-MODEL.md} explains the PDF objects, tagging relations
+and coordinate systems on which those contracts rely. These documents describe
+the current contract; obsolete proposals and superseded decision logs are
+intentionally not retained.
 
 \section{Implementation}
 
@@ -370,8 +451,6 @@ without explicit \code{macrocode} environments.
 
 \subsection{Package}
 \AutoDocInput{tagpax.dtx}{package}
-\subsection{Restricted pdfpages frontend}
-\AutoDocInput{tagpax.dtx}{pdfpages-adapter}
 \subsection{Experimental \tagpdfpkg{} bridge}
 \AutoDocInput{tagpax.dtx}{tagpdf-bridge}
 
@@ -380,11 +459,15 @@ without explicit \code{macrocode} environments.
 % \fi
 %
 %<*package>
-\NeedsTeXFormat{LaTeX2e}[2024-11-01]
-\ProvidesExplPackage{tagpax}{2026-07-23}{0.8.3-dev}{Native tagged PDF document import}
-\RequirePackage{expl3,xparse}
 \RequirePackage{tagpax-tagpdf-bridge}
 \ExplSyntaxOn
+\bool_new:N \g__tagpax_pdfpages_compat_bool
+\keys_define:nn {tagpax/package}
+  {
+    pdfpages .bool_gset:N = \g__tagpax_pdfpages_compat_bool,
+    pdfpages .default:n = true,
+  }
+\ProcessKeyOptions[tagpax/package]
 \msg_new:nnn {tagpax}{luatex-required}{tagpax~currently~requires~LuaLaTeX.}
 \msg_new:nnn {tagpax}{metadata-required}{Activate~PDF~management/tagging~with~\string\DocumentMetadata{tagging=on}.}
 \msg_new:nnn {tagpax}{backend-missing}{External-MCR~backend~not~installed;~navigation~is~generated,~structure~attachment~is~not~yet~written.}
@@ -478,22 +561,24 @@ without explicit \code{macrocode} environments.
 
 \NewDocumentCommand\tagpaxroundtripinclude{O{}m}
   {\tagpaxinclude[#1]{#2}}
-\ExplSyntaxOff
-%</package>
 
-%<*pdfpages-adapter>
-\NeedsTeXFormat{LaTeX2e}[2024-11-01]
-\ProvidesExplPackage
-  {tagpax-pdfpages}
-  {2026-07-15}
-  {0.7.2-dev}
-  {Restricted pdfpages-compatible frontend for tagpax}
-\RequirePackage{tagpax}
-\ExplSyntaxOn
+% The migration alias is deliberately part of tagpax rather than a second
+% package: it cannot accidentally become another page-import implementation.
 \msg_new:nnn {tagpax}{pdfpages-pages}
-  {The~tagpax~pdfpages~frontend~supports~only~pages=-.}
+  {The~tagpax~pdfpages~compatibility~option~supports~only~pages=-.}
 \msg_new:nnn {tagpax}{pdfpages-option}
   {The~pdfpages~option~'#1'~is~not~supported~by~the~native~tagpax~importer.}
+\msg_new:nnn {tagpax}{pdfpages-conflict}
+  {
+    The~tagpax~pdfpages~compatibility~option~cannot~be~used~with~the~real~
+    pdfpages~package.~The~compatibility~\string\includepdf~is~disabled;~
+    use~\string\tagpaxinclude~for~semantic~imports.
+  }
+\msg_new:nnn {tagpax}{includepdf-defined}
+  {
+    Command~\string\includepdf~already~exists.~The~tagpax~pdfpages~
+    compatibility~option~is~disabled;~use~\string\tagpaxinclude.
+  }
 \tl_new:N \l__tagpax_pdfpages_pages_tl
 \tl_new:N \l__tagpax_pdfpages_pagecommand_tl
 \keys_define:nn {tagpax/pdfpages}
@@ -504,29 +589,65 @@ without explicit \code{macrocode} environments.
     booklet .code:n = \msg_error:nnn {tagpax}{pdfpages-option}{booklet},
     signature .code:n = \msg_error:nnn {tagpax}{pdfpages-option}{signature},
   }
-\NewDocumentCommand \tagpaxincludepdf { O{} m }
+
+\cs_new_protected:Npn \__tagpax_includepdf:nn #1#2
   {
     \group_begin:
       \tl_set:Nn \l__tagpax_pdfpages_pages_tl {-}
       \tl_clear:N \l__tagpax_pdfpages_pagecommand_tl
-      \keys_set:nn {tagpax/pdfpages}{#1}
+      \keys_set:nn {tagpax/pdfpages} {#1}
       \str_if_eq:VnF \l__tagpax_pdfpages_pages_tl {-}
         {\msg_error:nn {tagpax}{pdfpages-pages}}
-      \tagpaxinclude[pagecommand=\l__tagpax_pdfpages_pagecommand_tl]{#2}
+      \tagpaxinclude
+        [pagecommand=\l__tagpax_pdfpages_pagecommand_tl] {#2}
     \group_end:
   }
+
+\cs_new_protected:Npn \__tagpax_disable_includepdf:
+  {
+    \bool_if:NT \g__tagpax_pdfpages_compat_bool
+      {
+        \msg_warning:nn {tagpax}{pdfpages-conflict}
+        \cs_undefine:N \includepdf
+        \bool_gset_false:N \g__tagpax_pdfpages_compat_bool
+      }
+  }
+
+\bool_if:NT \g__tagpax_pdfpages_compat_bool
+  {
+    \IfPackageLoadedTF {pdfpages}
+      {
+        \msg_warning:nn {tagpax}{pdfpages-conflict}
+        \bool_gset_false:N \g__tagpax_pdfpages_compat_bool
+      }
+      {
+        \cs_if_exist:NTF \includepdf
+          {
+            \msg_warning:nn {tagpax}{includepdf-defined}
+            \bool_gset_false:N \g__tagpax_pdfpages_compat_bool
+          }
+          {
+            \NewDocumentCommand \includepdf { O{} m }
+              { \__tagpax_includepdf:nn {#1}{#2} }
+            % If pdfpages is loaded later, release the public command before
+            % that package defines its own version and retain only tagpax's
+            % unambiguous native interface.
+            \AddToHook {package/pdfpages/before}
+              { \__tagpax_disable_includepdf: }
+          }
+      }
+  }
 \ExplSyntaxOff
-%</pdfpages-adapter>
+%</package>
 %<*tagpdf-bridge>
 \NeedsTeXFormat{LaTeX2e}[2024-11-01]
-\ProvidesExplPackage
-  {tagpax-tagpdf-bridge}
-  {2026-07-15}
-  {0.7.2-dev}
-  {Experimental non-stack tagpdf bridge for tagpax}
+\ProvidesExplPackage{tagpax-tagpdf-bridge}
+{2026/07/23}
+{v0.8.5-dev}
+{Non-stack tagpdf bridge for tagpax}
 \ExplSyntaxOn
 \msg_new:nnn {tagpax}{bridge-incompatible}
-  {The~installed~tagpdf~does~not~provide~the~internals~required~by~the~experimental~bridge.}
+  {The~installed~tagpdf~does~not~provide~the~internals~required~by~the~tagpax~bridge.}
 \msg_new:nnn {tagpax}{bridge-stream-unknown}
   {External~stream~'#1'~has~not~been~allocated.}
 \msg_new:nnn {tagpax}{bridge-stream-committed}

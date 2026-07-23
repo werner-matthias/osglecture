@@ -3,13 +3,20 @@
   {\DocumentMetadata{tagging=on,lang=en-US}}
   {\DocumentMetadata{testphase={phase-III,title,table,math,firstaid},lang=en-US}}
 \documentclass{article}
+% Simulate an already loaded package without making the suite depend on it.
+\makeatletter
+\expandafter\def\csname ver@pdfpages.sty\endcsname{2099/01/01 test marker}
+\makeatother
 \usepackage[pdfpages]{tagpax}
 \begin{document}
 \START
 \ExplSyntaxOn
 \cs_if_exist:NTF \includepdf
-  {\TYPE{adapter-command=true}}
-  {\TYPE{adapter-command=false}}
+  {\TYPE{conflict-command=true}}
+  {\TYPE{conflict-command=false}}
+\cs_if_exist:NTF \tagpaxinclude
+  {\TYPE{native-command=true}}
+  {\TYPE{native-command=false}}
 \ExplSyntaxOff
 \END
 \end{document}

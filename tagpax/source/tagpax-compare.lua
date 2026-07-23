@@ -1,9 +1,20 @@
--- tagpax-compare.lua -- semantic IR comparison for roundtrip tests
+--[[
+  Package: tagpax
+  Date:
+  2026-07-23
+  Version:
+  v0.8.5-dev
+  Description:
+  semantic IR comparison for roundtrip tests
+]]
+
 local M = {}
 local default_role_map = {
   section = "H1", subsection = "H2", subsubsection = "H3",
   ["text-unit"] = "Part", text = "P", item = "LI",
 }
+-- Roundtrip comparison is semantic, not object-based. Normalize conventional
+-- role names used differently by source and target producers.
 local function role_of(role, options)
   local map = options and options.role_map or default_role_map
   return map[role] or role
@@ -22,6 +33,8 @@ local function roots(ir)
   local o={}; for _,x in ipairs(r) do o[#o+1]=x.node end; return o
 end
 local function signatures(ir, unwrap_document, options)
+  -- A depth-first event stream preserves nesting, child order, MCIDs and
+  -- annotation action kinds while ignoring unstable PDF object numbers.
   local bp=by_parent(ir); local out={}
   local function walk(id)
     local n=assert(ir.nodes[id],"missing node "..tostring(id))
@@ -45,6 +58,8 @@ local function signatures(ir, unwrap_document, options)
   return out
 end
 local function all_subtree_signatures(ir, role, options)
+  -- Master documents may contain unrelated material, so compare candidate
+  -- contribution wrappers instead of requiring whole-document equality.
   local bp=by_parent(ir); local result={}
   local function sig(id,out)
     local n=ir.nodes[id]; out[#out+1]="N:"..tostring(role_of(n.role, options))

@@ -1,9 +1,5 @@
 # tagpax
 
-Goal: Semantic import of tagged PDFs.
-
-Read this file, doc/ARCHITECTURE.md and doc/STATUS.md before starting development.
-
 `tagpax` extracts and reconstructs the logical structure of fully tagged
 contribution PDFs for proceedings assembled with LuaLaTeX.
 
@@ -20,33 +16,37 @@ source page, page-content MCIDs, and a new `Part` wrapper. Explicit nested
 writer until a reliable nested-XObject mapping is available.
 
 Named destinations and `/Link` annotations with `GoTo`, `URI`, and `GoToR`
-actions are imported. Internal targets currently resolve to the beginning of
-the corresponding included page; remote named and page targets are retained.
+actions are imported. Internal destination views and coordinates are
+transformed to the scaled whole page; remote named and page targets are
+retained.
 Extracted headings are added to the master table of contents and, when the
 `bookmark` interface is available, to the master PDF outline according to
 `toc-depth`, `bookmark-depth`, and `heading-map`.
 
-A restricted compatibility for `pdfpages` frontend is generated as `tagpax-pdfpages.sty`:
+For short migrations, package option `pdfpages` provides the familiar command
+name with a deliberately restricted option set:
 
 ```latex
-\usepackage{tagpax-pdfpages}
-\tagpaxincludepdf[pages=-]{paper.pdf}
+\usepackage[pdfpages]{tagpax}
+\includepdf[pages=-]{paper.pdf}
 ```
 
-This accepts only the linear full-document case and routes it through the native
-importer. It intentionally does not use `pdfpages` for Form creation.
+This accepts only the linear full-document case and routes it through the
+native importer. It neither loads nor depends on the real `pdfpages` package.
+Do not combine the compatibility option with that package. If `tagpax` detects
+it, the compatibility command is disabled with a warning; use
+`\tagpaxinclude` for semantic imports instead.
 
-## Modules
+## Developer documentation
 
-- `tagpax.lua`: extraction facade;
-- `tagpax-ir.lua`: IR and deserialization;
-- `tagpax-validate.lua`: semantic validation;
-- `tagpax-inspect.lua`: inspection API;
-- `tagpax-import.lua`: backend-independent import plan;
-- `tagpax-luatex.lua`: controlled page Form import;
-- `tagpax-native.lua`: native linear document emitter;
-- `tagpax-backend.lua`: TeX backend-plan emission;
-- `tagpax-compare.lua`: semantic roundtrip comparison.
+- [`doc/architecture.md`](doc/architecture.md): data flow, ownership,
+  invariants, backend phases and module boundaries;
+- [`doc/DESIGN.md`](doc/DESIGN.md): current design decisions and rationale;
+- [`doc/FORMATS.md`](doc/FORMATS.md): canonical IR, import-plan and private TeX
+  backend formats;
+- [`doc/PDF-MODEL.md`](doc/PDF-MODEL.md): PDF object, tagging, navigation and
+  coordinate structures used by the implementation;
+- [`doc/CONTRIBUTING.md`](doc/CONTRIBUTING.md): maintenance and verification.
 
 ## Build
 
@@ -59,4 +59,5 @@ l3build ctan
 ```
 
 The roundtrip test compiles a tagged contribution, extracts it, imports it with
-the native path, extracts the master PDF, and compares the semantic trees.
+the native path, extracts the master PDF, and compares the semantic trees,
+including MCR/OBJR order and precise internal destinations.

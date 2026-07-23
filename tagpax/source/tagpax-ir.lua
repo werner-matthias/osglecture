@@ -1,11 +1,23 @@
--- tagpax-ir.lua -- IR reader and in-memory helpers
+--[[
+  Package: tagpax
+  Date:
+  2026-07-23
+  Version:
+  v0.8.5-dev
+  Description:
+  IR reader and in-memory helpers
+]]
+
 local M = {}
 
+-- Decode only the transport layer. Semantic typing remains a consumer concern,
+-- which keeps the line format simple and forward-compatible.
 local function unpct(s)
   return (s:gsub("%%(%x%x)", function(h) return string.char(tonumber(h, 16)) end))
 end
 
 local function parse_line(line)
+  -- The first tab-separated column is the record discriminator.
   local cols = {}
   for col in line:gmatch("[^\t]+") do cols[#cols + 1] = col end
   local record = { record_type = cols[1] }
@@ -17,6 +29,7 @@ local function parse_line(line)
 end
 
 function M.new()
+  -- Annotation records become both an ordered sequence and an ID index.
   return {
     nodes = {}, kids = {}, roots = {}, headings = {}, streams = {},
     destinations = {}, annotations = {}, header = nil, source = nil,
@@ -36,6 +49,7 @@ function M.read(filename)
       elseif record.record_type == "stream" then ir.streams[record.id] = record
       elseif record.record_type == "destination" then ir.destinations[record.id] = record
       elseif record.record_type == "annotation" then
+        -- Order drives page emission; keyed access resolves OBJR references.
         ir.annotations[#ir.annotations + 1] = record
         ir.annotations[record.id] = record
       elseif record.record_type == "source" then ir.source = record end

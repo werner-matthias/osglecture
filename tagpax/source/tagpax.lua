@@ -1,19 +1,35 @@
--- tagpax.lua -- semantic tagged-PDF extractor and IR reader
--- LPPL 1.3c or later
-local M = { version = "0.8.3-dev", date = "2026-07-23" }
+--[[
+  Package: tagpax
+  Date:
+  2026-07-23
+  Version:
+  v0.8.5-dev
+  Description:
+  semantic tagged-PDF extractor
+]]
+
+-- determine version and date for compatibility check
+local function package_info(filename)
+  local local file, err = io.open(filename, "r")
+  if not err then
+    local header = content:match("^%s*%-%-%[%[(.-)%]%]")
+    if header then
+      return { version = header:match("\n%s*Version:%s*\n%s*([^\r\n]+)"), 
+              date = header:match("\n%s*Date:%s*\n%s*([^\r\n]+)")}
+    end
+  end
+end
+local M = package_info("tagpax.lua"}
 
 local pdfe = assert(pdfe, "tagpax requires LuaTeX's pdfe library")
 
+-- Transport encoding -------------------------------------------------------
+-- The format is line-oriented and diffable. Percent encoding prevents tabs,
+-- newlines and arbitrary PDF strings from changing record boundaries.
 local function pct(s)
   s = tostring(s or "")
   return (s:gsub("[^%w%-%._~]", function(c)
     return string.format("%%%02X", string.byte(c))
-  end))
-end
-
-local function unpct(s)
-  return (s:gsub("%%(%x%x)", function(h)
-    return string.char(tonumber(h, 16))
   end))
 end
 
@@ -30,12 +46,17 @@ local function write_record(f, kind, t)
   f:write(table.concat(fields, "\t"), "\n")
 end
 
+-- pdfe normalization -------------------------------------------------------
+-- These adapters contain LuaTeX's type-tag and reference conventions so the
+-- extraction code below can deal in semantic values.
 local function value(dict, key)
   local typ, val, detail = pdfe.getfromdictionary(dict, key)
   return typ, val, detail
 end
 
 local function decode_pdf_string(s, hexadecimal)
+  -- Hex and literal strings both represent bytes. Decode UTF-16BE when a BOM
+  -- identifies it; preserve other encodings for lossless transport.
   if hexadecimal then
     s = tostring(s or ""):gsub("%s+", "")
     s = s:gsub("(%x%x)", function(pair)
@@ -75,6 +96,7 @@ local function pdf_name(dict, key)
 end
 
 local function pdf_filespec(dict, key)
+  -- /UF is the Unicode spelling and /F the compatibility fallback.
   local _, item = value(dict, key)
   local current = item
   if type(current) == "string" then return current end
@@ -89,6 +111,7 @@ local function pdf_filespec(dict, key)
 end
 
 local function as_dict(v)
+  -- Structure entries may be direct objects or indirect references.
   if pdfe.type(v) == "pdfe.dictionary" then return v end
   if pdfe.type(v) == "pdfe.reference" then
     local _, resolved = pdfe.getfromreference(v)
@@ -114,6 +137,7 @@ local function ref_number(v)
 end
 
 local function page_map(doc)
+  -- IR records use stable one-based page numbers, never PDF object numbers.
   local pages = pdfe.pagestotable(doc)
   local map = {}
   for number, page in ipairs(pages) do map[page[3]] = number end
@@ -131,6 +155,7 @@ local function array_values(array)
 end
 
 local function name_tree(dict, target)
+  -- Flatten the balanced PDF name tree into one lookup table.
   if not dict then return end
   local names = pdfe.getarray(dict, "Names")
   if names then
@@ -172,6 +197,9 @@ local function min_page(a, b)
 end
 
 
+-- Page inference -----------------------------------------------------------
+-- A StructElem may omit /Pg. ParentTree arrays then reveal where it is used;
+-- retain the earliest page as a conservative heading/navigation target.
 local function build_struct_page_map(root)
   local result = {}
   local parent_tree = pdfe.getdictionary(root, "ParentTree")
@@ -217,6 +245,8 @@ local function build_struct_page_map(root)
 end
 
 function M.extract(filename, outname)
+  -- Extraction is one transaction: open the source, serialize a canonical
+  -- semantic snapshot, then close both handles.
   assert(type(filename) == "string" and filename ~= "", "missing PDF filename")
   outname = outname or filename:gsub("%.pdf$", "") .. ".tagpax"
 
@@ -237,6 +267,8 @@ function M.extract(filename, outname)
   local destinations, destination_by_key, annotations = {}, {}, {}
   local annotation_by_object = {}
 
+  -- Destinations and annotations ------------------------------------------
+  -- Destination operands may be arrays, references, dictionaries or names.
   local function destination_array(operand)
     local current = operand
     local guard = 0
@@ -260,6 +292,7 @@ function M.extract(filename, outname)
   end
 
   local function register_destination(operand, name)
+    -- IDs are contribution-local; the importer adds a unique namespace.
     local key = name and ("name:" .. name) or ("object:" .. tostring(operand))
     if destination_by_key[key] then return destination_by_key[key] end
     local array = destination_array(operand)
@@ -283,6 +316,7 @@ function M.extract(filename, outname)
   end
 
   local function extract_navigation()
+    -- Register the complete name tree, including targets with no source link.
     local names = {}
     for name in pairs(named_dests) do names[#names + 1] = name end
     table.sort(names)
@@ -363,6 +397,9 @@ function M.extract(filename, outname)
 
   extract_navigation()
 
+  -- Content-stream inventory ----------------------------------------------
+  -- MCIDs are local to a stream, so page streams and explicit /Stm objects
+  -- receive identities before any MCR record refers to them.
   local function emit_stream(id, kind, page, object_number, structparents, subtype)
     if streams[id] then return id end
     streams[id] = true
@@ -405,6 +442,7 @@ function M.extract(filename, outname)
   end
 
   local function emit_mcr(parent, index, dict, inherited_page)
+    -- Preserve both MCID and source /K index; changing either loses meaning.
     local mcid = select(2, value(dict, "MCID"))
     if mcid == nil then return nil end
     local page = page_from_ref(select(2, value(dict, "Pg")), inherited_page)
@@ -420,6 +458,7 @@ function M.extract(filename, outname)
 
   local walk
   local function walkkid(parent, index, kid, inherited_page)
+    -- Normalize the polymorphic /K grammar into explicit node/MCR/OBJR kids.
     local kid_type = pdfe.type(kid)
     if type(kid) == "number" then
       write_record(f, "kid", {
@@ -459,6 +498,7 @@ function M.extract(filename, outname)
   end
 
   walk = function(dict, inherited_page, supplied_object_number)
+    -- Preserve graph identity when an indirect StructElem is referenced twice.
     local object_number = supplied_object_number or ref_number(dict)
     if object_number and seen[object_number] then
       local id = seen[object_number]
@@ -508,6 +548,9 @@ function M.extract(filename, outname)
     return id, first_page
   end
 
+  -- Root and deferred records ---------------------------------------------
+  -- Navigation and annotations depend on traversal results and are written
+  -- after the structure graph without weakening their source ordering.
   local _, root_kids = value(root, "K")
   local roots, array = {}, as_array(root_kids)
   if array then
@@ -563,116 +606,19 @@ function M.extract(filename, outname)
   return outname
 end
 
-local function parse_line(line)
-  local cols = {}
-  for col in line:gmatch("[^\t]+") do cols[#cols + 1] = col end
-  local record = { record_type = cols[1] }
-  for index = 2, #cols do
-    local key, val = cols[index]:match("^([^=]+)=(.*)$")
-    if key then record[key] = unpct(val) end
-  end
-  return record
-end
-
+-- Compatibility facade ----------------------------------------------------
+-- Reading and validation have dedicated modules. These forwarding functions
+-- preserve the early public API without maintaining duplicate implementations.
 function M.read(filename)
-  local ir = {
-    nodes = {}, kids = {}, roots = {}, headings = {}, streams = {},
-    destinations = {}, annotations = {}, header = nil, source = nil,
-  }
-  for line in assert(io.lines(filename)) do
-    if line ~= "" and line:sub(1, 1) ~= "#" then
-      local record = parse_line(line)
-      if record.record_type == "tagpax" then ir.header = record
-      elseif record.record_type == "node" then ir.nodes[record.id] = record
-      elseif record.record_type == "kid" then ir.kids[#ir.kids + 1] = record
-      elseif record.record_type == "root" then ir.roots[#ir.roots + 1] = record
-      elseif record.record_type == "heading" then ir.headings[#ir.headings + 1] = record
-      elseif record.record_type == "stream" then ir.streams[record.id] = record
-      elseif record.record_type == "destination" then ir.destinations[record.id] = record
-      elseif record.record_type == "annotation" then
-        ir.annotations[#ir.annotations + 1] = record
-        ir.annotations[record.id] = record
-      elseif record.record_type == "source" then ir.source = record end
-    end
-  end
-  return ir
+  return require("tagpax-ir").read(filename)
 end
 
 function M.validate(ir)
-  local errors = {}
-  if not ir.header or tonumber(ir.header.version) ~= 1 then errors[#errors + 1] = "unsupported or missing IR version" end
-  if not ir.source then errors[#errors + 1] = "missing source record" end
-  for _, root in ipairs(ir.roots) do
-    if not ir.nodes[root.node] then errors[#errors + 1] = "root references missing node " .. tostring(root.node) end
-  end
-  for id, stream in pairs(ir.streams or {}) do
-    if stream.id ~= id then errors[#errors + 1] = "stream id mismatch " .. tostring(id) end
-    if stream.kind ~= "page" and stream.kind ~= "object" then errors[#errors + 1] = "invalid stream kind " .. tostring(stream.kind) end
-  end
-  for _, kid in ipairs(ir.kids) do
-    if not ir.nodes[kid.parent] then errors[#errors + 1] = "kid has missing parent " .. tostring(kid.parent) end
-    if kid.kind == "node" and not ir.nodes[kid.ref] then errors[#errors + 1] = "kid references missing node " .. tostring(kid.ref) end
-    if kid.kind == "objr" and not (ir.annotations or {})[kid.ref] then errors[#errors + 1] = "OBJR references missing annotation " .. tostring(kid.ref) end
-    if kid.kind == "mcr" and tonumber(kid.mcid) == nil then errors[#errors + 1] = "MCR has invalid MCID" end
-    if kid.kind == "mcr" and ir.streams and next(ir.streams) and not ir.streams[kid.stream] then errors[#errors + 1] = "MCR references missing stream " .. tostring(kid.stream) end
-  end
-  for _, heading in ipairs(ir.headings) do
-    local node = ir.nodes[heading.node]
-    if not node then errors[#errors + 1] = "heading references missing node " .. tostring(heading.node)
-    elseif node.role ~= heading.role then errors[#errors + 1] = "heading role mismatch at " .. heading.node end
-  end
-  for id, destination in pairs(ir.destinations or {}) do
-    if destination.id ~= id then errors[#errors + 1] = "destination id mismatch " .. tostring(id) end
-    local page = tonumber(destination.page)
-    if not page or page < 1 or (ir.source and page > tonumber(ir.source.pages)) then
-      errors[#errors + 1] = "destination has invalid page " .. tostring(destination.page)
-    end
-    local view = destination.view or "Fit"
-    local supported = { XYZ=true, Fit=true, FitH=true, FitV=true,
-      FitR=true, FitB=true, FitBH=true, FitBV=true }
-    if not supported[view] then errors[#errors + 1] = "destination has unsupported view " .. tostring(view) end
-    for index = 1, 4 do
-      local argument = destination["arg" .. index]
-      if argument ~= nil and tonumber(argument) == nil then
-        errors[#errors + 1] = "destination has invalid arg" .. index .. " " .. tostring(id)
-      end
-    end
-    if view == "FitR" and
-      (not tonumber(destination.arg1) or not tonumber(destination.arg2)
-        or not tonumber(destination.arg3) or not tonumber(destination.arg4)) then
-      errors[#errors + 1] = "FitR destination has incomplete rectangle " .. tostring(id)
-    end
-  end
-  for _, annotation in ipairs(ir.annotations or {}) do
-    if annotation.subtype ~= "Link"
-      or (annotation.action ~= "GoTo"
-        and annotation.action ~= "URI"
-        and annotation.action ~= "GoToR") then
-      errors[#errors + 1] = "unsupported annotation " .. tostring(annotation.id)
-    end
-    if annotation.action == "GoTo" and not ir.destinations[annotation.destination] then
-      errors[#errors + 1] = "annotation references missing destination " .. tostring(annotation.destination)
-    end
-    if annotation.action == "URI" and not annotation.uri then
-      errors[#errors + 1] = "URI annotation has no URI " .. tostring(annotation.id)
-    end
-    if annotation.action == "GoToR" and
-      (not annotation.file or
-        (not annotation["remote-destination"] and annotation["remote-page"] == nil)) then
-      errors[#errors + 1] = "GoToR annotation has incomplete target " .. tostring(annotation.id)
-    end
-    if annotation.parent and not ir.nodes[annotation.parent] then
-      errors[#errors + 1] = "annotation references missing parent " .. tostring(annotation.parent)
-    end
-    for _, key in ipairs({"page", "llx", "lly", "urx", "ury"}) do
-      if tonumber(annotation[key]) == nil then
-        errors[#errors + 1] = "annotation has invalid " .. key .. " " .. tostring(annotation.id)
-      end
-    end
-  end
-  return #errors == 0, errors
+  return require("tagpax-validate").validate(ir)
 end
 
+-- TeX navigation adapter ---------------------------------------------------
+-- Only validated heading records cross from Lua into macro arguments.
 local function tex_escape(s)
   return (tostring(s or ""):gsub("([%%#{}])", "\\%1"):gsub("\r?\n", " "))
 end

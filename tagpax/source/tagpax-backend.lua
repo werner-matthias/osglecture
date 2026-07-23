@@ -1,14 +1,26 @@
--- tagpax-backend.lua -- emit TeX instructions for the experimental tagpdf backend
+--[[
+  Package: tagpax
+  Date:
+  2026-07-23
+  Version:
+  v0.8.5-dev
+  Description:
+  emit TeX instructions for the tagpdf backend
+]]
+
 local ir_reader = require("tagpax-ir")
 local M = {}
 local catlatex = luatexbase.registernumber("catcodetable@latex")
 
+-- All output is executable TeX. Escape identifiers and select LaTeX catcodes
+-- explicitly so Lua's current callback context cannot reinterpret them.
 local function tex_escape(s)
   s = tostring(s or "")
   return (s:gsub("([{}%%#\\])", "\\%1"))
 end
 
 local function sorted_kids(ir)
+  -- Source /K order is semantic: nodes, MCRs and OBJRs may be interleaved.
   local by_parent = {}
   for _, kid in ipairs(ir.kids or {}) do
     local list = by_parent[kid.parent]
@@ -33,6 +45,9 @@ local function roots(ir)
 end
 
 local function walk_ir(filename, phase)
+  -- The same deterministic traversal drives two phases. “reserve” allocates
+  -- StructElems and kid slots; “bind” fills slots whose PDF objects exist only
+  -- after pages have been constructed.
   local ir = ir_reader.read(filename)
   local by_parent = sorted_kids(ir)
   local mcr_serial = 0
@@ -55,6 +70,7 @@ local function walk_ir(filename, phase)
         if stream and stream.kind ~= "page" then
           out("\\TagPaxBackendUnsupportedStream{" .. tex_escape(kid.stream) .. "}{" .. tex_escape(stream.kind) .. "}")
         else
+          -- A traversal serial is the stable rendezvous key between phases.
           mcr_serial = mcr_serial + 1
           local command = phase == "reserve"
             and "\\TagPaxBackendReserveMCR"
@@ -72,6 +88,8 @@ local function walk_ir(filename, phase)
   end
 
   if phase == "reserve" then out("\\TagPaxBackendDocumentBegin") end
+  -- A source Document is a transport wrapper. Its children attach directly to
+  -- the synthetic contribution Part; other roots remain explicit children.
   for _, root in ipairs(roots(ir)) do
     local node = ir.nodes[root.node]
     if node and node.role == "Document" then
