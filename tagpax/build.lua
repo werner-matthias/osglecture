@@ -10,7 +10,7 @@ sourcefiles = {
   "*.lua"
 }
 
-unpackfiles = { "*.ins" }
+unpackfiles = { "*.dtx" }
 
 installfiles = {
   "*.sty",

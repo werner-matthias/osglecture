@@ -10,16 +10,17 @@
 
 -- determine version and date for compatibility check
 local function package_info(filename)
-  local local file, err = io.open(filename, "r")
+  local file, err = io.open(filename, "r")
   if not err then
     local header = content:match("^%s*%-%-%[%[(.-)%]%]")
     if header then
-      return { version = header:match("\n%s*Version:%s*\n%s*([^\r\n]+)"), 
-              date = header:match("\n%s*Date:%s*\n%s*([^\r\n]+)")}
+      return {  version = header:match("\n%s*Version:%s*\n%s*([^\r\n]+)"), 
+                date = header:match("\n%s*Date:%s*\n%s*([^\r\n]+)")}
     end
   end
+  return nil
 end
-local M = package_info("tagpax.lua"}
+local M = package_info("tagpax.lua")
 
 local pdfe = assert(pdfe, "tagpax requires LuaTeX's pdfe library")
 
