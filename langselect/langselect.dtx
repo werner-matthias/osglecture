@@ -29,7 +29,16 @@ This work is "maintained" (as per LPPL maintenance status) by
 }
   \expandafter\endbatchfile
 \fi
-  
+%</driver>
+%<*pkg> 
+\NeedsTeXFormat{LaTeX2e}[2022/06/01]
+\def\packagename{langselect}
+\ProvidesExplPackage{langselect}
+{2025/09/04}
+{v0.5.0}
+{support for different languages versions from a common source}
+%</pkg>
+%<*driver> 
 \documentclass[
 load-preamble,
 ]{osgdoc}
@@ -829,10 +838,6 @@ Section~@1.%
 \end{document}
 %</driver>
 %<*pkg>
-\NeedsTeXFormat{LaTeX2e}[2022/06/01]
-\def\packagename{langselect}
-\ProvidesExplPackage{langselect}{2025/09/04}{v0.5.0}{support for different
-  languages versions from a common source}
 % \ldeen{\cs{olsIsoTags} enthält alle gültigen ISO
 % 639-1-Codestags.}{\cs{olsIsoTags} contains all valid ISO 639-1 code tags.}
 \seq_const_from_clist:cn{olsIsoTags}{aa,ab,ae,af,ak,am,an,ar,as,av,ay,az,ba,be,

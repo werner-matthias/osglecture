@@ -1,7 +1,9 @@
 bundle   = "osglecture"
 ctanpkg  = bundle
+maindir  = maindir or "."
 
 modules = {
+   "ollm",
    "langselect",
    "osgdoc",
    "lttheme",
@@ -22,7 +24,7 @@ stdengine    = "luatex"
 checkengines = { "luatex" }
 
 -- Dokumentation
-docfiledir = maindir.."/doc/"
+docfiledir = docfiledir or maindir.."/doc/"
 typesetexe = "lualatex"
 typesetopts = "-interaction=nonstopmode -shell-escape --synctex=10"
 maxruns    = 3
@@ -51,7 +53,7 @@ function typeset(file, dir, cmd)
    if ext == 'dtx' then 
       jobnames = {module.."-en", module.."-de"}
    else
-      local jobname = file:match("(%).[^.]*$")
+      local jobname = file:match("([^/]+)%.[^.]*$")
       jobnames = {jobname}
    end
    for _, job in ipairs(jobnames) do

@@ -16,4 +16,5 @@ test/standalone/main.synctex.gz
 **/*-cnltx*
 **/build/*
 /doc/*.pdf
+/doc/ollm/
 /oldcode
