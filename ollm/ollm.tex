@@ -6,6 +6,7 @@
 \usepackage{xcolor}
 \usepackage{hyperref}
 \usepackage{microtype}
+\usepackage{needspace}
 
 \setmainfont{Latin Modern Roman}
 \setsansfont{Latin Modern Sans}
@@ -157,6 +158,26 @@ enthält, nennt die Diagnose auch dessen Zeile. Technische Schemawerte sind
 unabhängig von der Bundleversion; bei einem Konflikt nennt OLLM gefundenes und
 unterstütztes Schema ausdrücklich.
 
+\section{Buildauftrag}
+
+Für einen konkreten Serienbuild normalisiert OLLM die Verzeichnisidentität und
+erzeugt einen an den Jobnamen gebundenen Auftrag:
+
+\begin{verbatim}
+<jobname>.osgbuild.tex
+\end{verbatim}
+
+Die Datei enthält unter anderem Dokumenttyp, Sprache, physische Einheit,
+Projektprofil und eine SHA-256-Konfigurationssignatur. Sie wird zunächst
+temporär im Zielverzeichnis geschrieben und nur bei verändertem Inhalt
+ersetzt. Dadurch lösen unveränderte Aufträge keinen unnötigen LaTeX-Neubau aus.
+
+Das Paket \texttt{osglecture-config} liest den Auftrag und lehnt ihn ab, wenn
+sein Schema nicht unterstützt wird oder die enthaltene Job-ID nicht mit dem
+aktuellen TeX-Jobnamen übereinstimmt. Die Klasse verwendet Dokumenttyp und
+Sprache aus diesem expliziten Auftrag; nur der Legacyzweig liest sie weiterhin
+aus dem Jobnamen.
+
 \section{TOML-Parser}
 
 OLLM liefert den reinen Leseweg von \texttt{TOML::Tiny} 0.22 mit. Nutzer
@@ -180,7 +201,7 @@ cpan TOML::Tiny
 OLLM verwendet weiterhin die mitgelieferte und getestete Fassung. Eine
 CPAN-Installation ist daher weder Voraussetzung noch Reparaturschritt.
 
-\clearpage
+\Needspace{10\baselineskip}
 \section{Entwicklungs-Build}
 
 Das OLLM-Modul ist in den Bundle-Build mit \texttt{l3build} integriert:

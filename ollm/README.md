@@ -92,3 +92,9 @@ Unknown standard keys, profiles, and targets are errors. Semantic diagnostics
 include the configuration file and source line whenever the offending key is
 present in the TOML source. The bundle-level minimal configuration example is
 in [`../examples/series-minimal`](../examples/series-minimal).
+
+For a concrete series build, the resolved configuration is normalized into a
+job-bound `<jobname>.osgbuild.tex`. The reader in
+`../osglecture/osglecture-config.sty` validates its schema and requires its
+`job-id` to match TeX's current job name. `--dry-run --format=json` exposes the
+same normalized `build_spec` without writing or starting LaTeX.

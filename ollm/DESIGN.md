@@ -566,6 +566,7 @@ artifact
 effective LaTeX configuration
 enforced LaTeX configuration
 shell-escape policy
+config-signature
 ```
 
 `--all` erzeugt ausschließlich die im Projektmanifest vorgesehenen Builds der
@@ -693,6 +694,20 @@ dass deren `job-id` mit `\jobname` übereinstimmt.
 **Rationale:** Die Namensbindung verhindert, dass bei einem manuellen Aufruf
 versehentlich der Jobname eines Builds mit dem Auftrag eines anderen kombiniert
 wird.
+
+Der erste implementierte Vertrag umfasst Schema, Job- und Serienidentität,
+physische Einheit, Rolle und Profil der Einheit, Target, Dokumenttyp, Sprache,
+Sprachmenge und -mapping, ausgewähltes Projektprofil sowie eine
+Konfigurationssignatur. Der LaTeX-Leser liegt getrennt in
+`osglecture-config.sty`, damit der Vertrag ohne die noch nicht vollständig
+geschlossene Hauptklasse getestet werden kann. `osglecture.cls` lädt diesen
+Baustein und bevorzugt eine passende Auftragsdatei gegenüber der bisherigen
+Ableitung von Dokumenttyp und Sprache aus dem Jobnamen.
+
+Die Konfigurationssignatur ist SHA-256 über das normalisierte Manifest, die
+aufgelösten Profil- und Targetdefinitionen sowie die für den konkreten Build
+relevante Einheit, Sprache und das Target. Rein lokale UI- oder
+Deploymentwerte gehen nicht ein.
 
 ### 10.2 Aktualisierung
 
