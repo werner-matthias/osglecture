@@ -73,6 +73,13 @@
 \newbool{osgllm}\boolfalse{osgllm}
 \newbool{osglangset}\boolfalse{osglangset}
 \newbool{osgdoctypeset}\boolfalse{osgdoctypeset}
+\RequirePackage{osglecture-config}
+\IfFileExists{\jobname.osgbuild.tex}{
+  \OsgLectureLoadBuildFileForJob
+  % The legacy code below uses the presence of \ollm as its series marker.
+  % Build-file values themselves are read through osglecture-config.
+  \providecommand\ollm{}
+}{}
 \begin{luacode*}
   -- lfs wird für currentdir() benötigt
   require("lfs")
@@ -441,30 +448,32 @@
   % ausgewertet. lectdates.tex wird also auch geladen, wenn OLLM korrekte
   % Verzeichnisstrukturen vorfindet und der Nutzer nicht 'standalone' 
   % als OLLM-Option übergibt, sondern nur als Klassenoption
-  \ollm % Definiert \OsgShareDataPath, \OsgLectConfig und \OsgFirstChapter
-  \expandafter\InputIfFileExists{\OsgLectConfig}{
-    \osg@makedelayed*{author}
-    \osg@makedelayed*{date}
-    \osg@makedelayed*{course}
-    \osg@makedelayed*{event}
-    \osg@makedelayed*{lehrveranstaltung}
-    \osg@makedelayed*{institute}
-    \osg@makedelayed*{tucurl}
-    \osg@makedelayed{input}
-    \let\SetGlobalClassOptions=\SetKeys
-  }{
-    \ClassWarning{\classname}{'\OsgLectConfig' not found.}
+  \OsgLectureBuildLoadedTF{}{
+    \ollm % Definiert \OsgShareDataPath, \OsgLectConfig und \OsgFirstChapter
+    \expandafter\InputIfFileExists{\OsgLectConfig}{
+      \osg@makedelayed*{author}
+      \osg@makedelayed*{date}
+      \osg@makedelayed*{course}
+      \osg@makedelayed*{event}
+      \osg@makedelayed*{lehrveranstaltung}
+      \osg@makedelayed*{institute}
+      \osg@makedelayed*{tucurl}
+      \osg@makedelayed{input}
+      \let\SetGlobalClassOptions=\SetKeys
+    }{
+      \ClassWarning{\classname}{'\OsgLectConfig' not found.}
+    }
+    \expandafter\IfFileExists{\OsgLectConfig}{
+      \osg@restoredelayed{author}
+      \osg@restoredelayed{date}
+      \osg@restoredelayed{course}
+      \osg@restoredelayed{event}
+      \osg@restoredelayed{lehrveranstaltung}
+      \osg@restoredelayed{institute}
+      \osg@restoredelayed{tucurl}
+      \osg@restoredelayed{input}
+    }{}
   }
-  \expandafter\IfFileExists{\OsgLectConfig}{
-    \osg@restoredelayed{author}
-    \osg@restoredelayed{date}
-    \osg@restoredelayed{course}
-    \osg@restoredelayed{event}
-    \osg@restoredelayed{lehrveranstaltung}
-    \osg@restoredelayed{institute}
-    \osg@restoredelayed{tucurl}
-    \osg@restoredelayed{input}
-  }{}
 }{}
 \undef\logo          % \logo wird wieder freigegeben, so dass Beamer es neu
                      % definieren kann,
@@ -476,13 +485,22 @@
                      % werden können, da im Hook \osg@forceoptionhook Key-Settings
                      % gesammelt worden, und hier *nach* \Processoptions ausgeführt werden.
 \IfBool{osgllm}{
-  % Bei OLLM werden Sprache und Dokumentart aus dem Jobnamen geholt, so sie noch
-  % nicht per Option gesetzt sind.
-  \IfBool{osglangset}{}{
-    \SetKeyEx{osgbeamer}{lang=\getfourfromjobname}
-  }
-  \IfBool{osgdoctypeset}{}{
-    \SetKeyEx{osgbeamer}{doctype=\getthreefromjobname}
+  \OsgLectureBuildLoadedTF{
+    % New builds use the explicit, job-bound request file.
+    \IfBool{osglangset}{}{
+      \SetKeyEx{osgbeamer}{lang=\OsgLectureBuildValue{language}}
+    }
+    \IfBool{osgdoctypeset}{}{
+      \SetKeyEx{osgbeamer}{doctype=\OsgLectureBuildValue{doctype}}
+    }
+  }{
+    % Legacy builds continue to derive both values from the jobname.
+    \IfBool{osglangset}{}{
+      \SetKeyEx{osgbeamer}{lang=\getfourfromjobname}
+    }
+    \IfBool{osgdoctypeset}{}{
+      \SetKeyEx{osgbeamer}{doctype=\getthreefromjobname}
+    }
   }
 }{}
 

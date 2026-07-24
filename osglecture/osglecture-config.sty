@@ -1,0 +1,99 @@
+\NeedsTeXFormat{LaTeX2e}[2022/06/01]
+\ProvidesExplPackage
+  {osglecture-config}
+  {2026/07/24}
+  {0.1.0}
+  {Build-request reader for osglecture}
+
+\ExplSyntaxOn
+
+\prop_new:N \g__osglecture_build_prop
+\bool_new:N \g__osglecture_build_loaded_bool
+
+\msg_new:nnnn { osglecture-config } { unsupported-schema }
+  { Unsupported~osglecture~build-file~schema~'#1'. }
+  { This~version~supports~build-file~schema~'1'. }
+\msg_new:nnnn { osglecture-config } { missing-key }
+  { The~osglecture~build~file~does~not~define~'#1'. }
+  { Regenerate~the~build~file~with~OLLM. }
+\msg_new:nnnn { osglecture-config } { job-mismatch }
+  { Build~file~job-id~'#1'~does~not~match~TeX~jobname~'#2'. }
+  { Use~the~build~file~generated~for~this~jobname. }
+\msg_new:nnnn { osglecture-config } { file-not-found }
+  { OSG~lecture~build~file~'#1'~was~not~found. }
+  { Generate~it~with~OLLM~or~use~standalone~class~options. }
+
+\cs_new_protected:Npn \__osglecture_build_put:nn #1#2
+  { \prop_gput:Nnn \g__osglecture_build_prop {#1} {#2} }
+
+\keys_define:nn { osglecture/build }
+  {
+    schema .code:n =
+      {
+        \int_compare:nNnTF {#1} = {1}
+          { \__osglecture_build_put:nn {schema} {#1} }
+          { \msg_error:nnn {osglecture-config}{unsupported-schema}{#1} }
+      },
+    job-id              .code:n = \__osglecture_build_put:nn {job-id} {#1},
+    context             .code:n = \__osglecture_build_put:nn {context} {#1},
+    series-id           .code:n = \__osglecture_build_put:nn {series-id} {#1},
+    physical-unit       .code:n = \__osglecture_build_put:nn {physical-unit} {#1},
+    physical-number     .code:n = \__osglecture_build_put:nn {physical-number} {#1},
+    unit-profile        .code:n = \__osglecture_build_put:nn {unit-profile} {#1},
+    unit-role           .code:n = \__osglecture_build_put:nn {unit-role} {#1},
+    unit-id             .code:n = \__osglecture_build_put:nn {unit-id} {#1},
+    target              .code:n = \__osglecture_build_put:nn {target} {#1},
+    doctype             .code:n = \__osglecture_build_put:nn {doctype} {#1},
+    language            .code:n = \__osglecture_build_put:nn {language} {#1},
+    available-languages .code:n =
+      \__osglecture_build_put:nn {available-languages} {#1},
+    language-map        .code:n = \__osglecture_build_put:nn {language-map} {#1},
+    profile             .code:n = \__osglecture_build_put:nn {profile} {#1},
+    config-signature    .code:n =
+      \__osglecture_build_put:nn {config-signature} {#1},
+  }
+
+\cs_new_protected:Npn \__osglecture_build_validate:
+  {
+    \clist_map_inline:nn
+      {schema,job-id,context,series-id,physical-unit,physical-number,
+       unit-role,unit-id,target,doctype,language,available-languages,profile,
+       config-signature}
+      {
+        \prop_if_in:NnF \g__osglecture_build_prop {##1}
+          { \msg_error:nnn {osglecture-config}{missing-key}{##1} }
+      }
+    \prop_get:NnN \g__osglecture_build_prop {job-id} \l_tmpa_tl
+    \str_if_eq:eeF {\l_tmpa_tl} {\c_sys_jobname_str}
+      {
+        \msg_error:nnee {osglecture-config}{job-mismatch}
+          {\l_tmpa_tl}{\c_sys_jobname_str}
+      }
+    \bool_gset_true:N \g__osglecture_build_loaded_bool
+  }
+
+\NewDocumentCommand \OsgLectureBuildSetup { m }
+  {
+    \prop_gclear:N \g__osglecture_build_prop
+    \bool_gset_false:N \g__osglecture_build_loaded_bool
+    \keys_set:nn {osglecture/build} {#1}
+    \__osglecture_build_validate:
+  }
+
+\NewExpandableDocumentCommand \OsgLectureBuildValue { m }
+  { \prop_item:Nn \g__osglecture_build_prop {#1} }
+
+\NewDocumentCommand \OsgLectureBuildLoadedTF { m m }
+  { \bool_if:NTF \g__osglecture_build_loaded_bool {#1} {#2} }
+
+\NewDocumentCommand \OsgLectureLoadBuildFile { m }
+  {
+    \file_if_exist:nTF {#1}
+      { \file_input:n {#1} }
+      { \msg_error:nnn {osglecture-config}{file-not-found}{#1} }
+  }
+
+\NewDocumentCommand \OsgLectureLoadBuildFileForJob { }
+  { \OsgLectureLoadBuildFile{\c_sys_jobname_str.osgbuild.tex} }
+
+\ExplSyntaxOff
