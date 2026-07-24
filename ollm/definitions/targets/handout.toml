@@ -1,0 +1,6 @@
+schema = 1
+kind = "target"
+name = "handout"
+version = "1.0"
+doctype = "handout"
+family = "presentation"

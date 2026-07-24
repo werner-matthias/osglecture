@@ -1,0 +1,6 @@
+schema = 1
+kind = "target"
+name = "script"
+version = "1.0"
+doctype = "script"
+family = "publication"

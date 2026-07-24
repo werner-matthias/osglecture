@@ -1,0 +1,211 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage{fontspec}
+\usepackage{etoolbox}
+\usepackage[margin=25mm]{geometry}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{microtype}
+
+\setmainfont{Latin Modern Roman}
+\setsansfont{Latin Modern Sans}
+\setmonofont[
+  BoldFont = LMMono10-Regular,
+  Scale = 0.9
+]{Latin Modern Mono}
+
+\emergencystretch=2em
+\AtBeginEnvironment{verbatim}{\linespread{1.0}\selectfont}
+
+\hypersetup{
+  pdftitle  = {OLLM -- OSG LaTeX Lecture Maker},
+  pdfauthor = {OSG},
+  colorlinks,
+  linkcolor = blue!50!black,
+  urlcolor  = blue!50!black
+}
+
+\title{OLLM\\OSG LaTeX Lecture Maker}
+\author{OSG}
+\date{Entwurfsstand}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+  OLLM ist das Build-Frontend des \texttt{osglecture}-Bundles. Es wählt
+  Dokument- und Sprachvarianten aus und übergibt den einzelnen LaTeX-Build an
+  \texttt{latexmk}. Dieses Handbuch entsteht parallel zur Neuimplementierung.
+\end{abstract}
+
+\tableofcontents
+
+\section{Status}
+
+Das ausgelieferte Programm \texttt{ollm} besitzt bereits den neuen portablen
+Kommandozeilen-Launcher. Kompatible Builds übergibt er zunächst an die
+erhaltene \texttt{latexmk}-Konfiguration \texttt{ollm-legacy.rc} in Version
+0.11.1. Ihre häufig verwendete Schnittstelle bildet die Kompatibilitätsbasis
+für die Überarbeitung.
+
+Die Zielarchitektur mit ihren Dateiverträgen und Rationales steht in
+\texttt{DESIGN.md}. Noch nicht implementierte Schnittstellen werden in diesem
+Handbuch nicht als verfügbar beschrieben.
+
+\section{Aufgabenteilung}
+
+\begin{description}
+  \item[OLLM] wählt und orchestriert konkrete Builds.
+  \item[\texttt{latexmk}] führt LuaLaTeX und benötigte Hilfsprogramme bis zum
+    stabilen Ergebnis aus.
+  \item[\texttt{osglecture}] interpretiert den Buildauftrag und bestimmt
+    Dokumentsemantik, Serienstruktur und Referenzverhalten.
+  \item[Deploymentwerkzeug] soll später geprüfte Artefakte veröffentlichen.
+\end{description}
+
+\section{Legacy-Aufruf}
+
+OLLM wird direkt aufgerufen. Der Launcher startet für kompatible Builds
+\texttt{latexmk} mit der Legacy-RC-Datei. Beispiele der bisherigen Oberfläche
+sind:
+
+\begin{verbatim}
+ollm slides
+ollm handout
+ollm script
+ollm +lang=en script
+ollm standalone
+\end{verbatim}
+
+Die genaue neue CLI wird erst dokumentiert, wenn ihr Verhalten durch Tests
+festgeschrieben ist.
+
+\section{Neue Grundfunktionen}
+
+Die normalisierte Auswahl kann bereits ohne LaTeX-Build ausgegeben werden:
+
+\begin{verbatim}
+ollm build script --language=en --dry-run
+ollm build script --language=en --dry-run --format=json
+\end{verbatim}
+
+\texttt{ollm doctor} prüft, ob Perl, \texttt{latexmk} und LuaLaTeX auffindbar
+sind. \texttt{ollm --version} gibt die Version des neuen Launchers aus.
+
+\section{Projektmanifest}
+
+Das Projektmanifest heißt \texttt{ollmconfig.toml} und markiert die
+Projektwurzel. OLLM sucht ausgehend vom Arbeitsverzeichnis aufwärts danach.
+Alternativ werden Manifest oder Projektwurzel ausdrücklich ausgewählt:
+
+\begin{verbatim}
+ollm build script --config=/path/to/ollmconfig.toml --dry-run
+ollm build script --project-root=/path/to/project --dry-run
+\end{verbatim}
+
+Existieren \texttt{ollmconfig.toml} und das alte \texttt{ollmconfig.pl} im
+selben Verzeichnis, bricht OLLM ab. Damit hängt die gewählte
+Konfigurationssemantik nicht von einer stillen Prioritätsregel ab.
+
+Ein minimales Serienmanifest enthält:
+
+{\small
+\begin{verbatim}
+schema = 1
+profile = "OSG lecture/1"
+
+[project]
+id = "bs"
+title = "Betriebssysteme"
+
+[languages]
+available = ["de", "en"]
+default = "de"
+
+[languages.map]
+de = "ngerman"
+en = "british"
+
+[targets.slides]
+languages = ["de"]
+
+[targets.script]
+languages = ["de", "en"]
+
+[security]
+shell_escape = "restricted"
+\end{verbatim}
+}
+
+\subsection*{Profile und Targets}
+
+Profile und Dokumenttargets sind versionierte Definitionen. OLLM löst sie
+zunächst aus dem mitgelieferten Bundle auf. Zusätzliche Suchpfade werden in
+der optionalen Datei \texttt{.ollmconfig.local.toml} eingetragen:
+
+\begin{verbatim}
+schema = 1
+
+[definitions]
+paths = ["configuration", "/opt/osglecture/definitions"]
+\end{verbatim}
+
+Relative Pfade beziehen sich auf die Projektwurzel. Unbekannte Schlüssel,
+Profile und Targets sind Fehler. Soweit die TOML-Quelle einen Schlüssel
+enthält, nennt die Diagnose auch dessen Zeile. Technische Schemawerte sind
+unabhängig von der Bundleversion; bei einem Konflikt nennt OLLM gefundenes und
+unterstütztes Schema ausdrücklich.
+
+\section{TOML-Parser}
+
+OLLM liefert den reinen Leseweg von \texttt{TOML::Tiny} 0.22 mit. Nutzer
+müssen daher kein CPAN-Modul nachinstallieren. \texttt{ollm doctor} berichtet
+Name, Version und Herkunft des aktiven Parsers.
+
+Diese Bündelung ist für TeX Live wichtig: Drittmodule werden für
+Anwendungsskripte nicht allgemein garantiert, und insbesondere das
+mitgelieferte Windows-Perl ist bewusst minimal. OLLM verwendet nur
+\texttt{Parser}, \texttt{Tokenizer} und \texttt{Grammar}; diese benötigen
+ausschließlich Perl-Core-Module.
+
+Für Entwicklung und Vergleich kann die vollständige Upstream-Distribution
+optional installiert werden:
+
+\begin{verbatim}
+cpanm TOML::Tiny
+cpan TOML::Tiny
+\end{verbatim}
+
+OLLM verwendet weiterhin die mitgelieferte und getestete Fassung. Eine
+CPAN-Installation ist daher weder Voraussetzung noch Reparaturschritt.
+
+\clearpage
+\section{Entwicklungs-Build}
+
+Das OLLM-Modul ist in den Bundle-Build mit \texttt{l3build} integriert:
+
+\begin{verbatim}
+l3build check
+l3build doc
+l3build install
+\end{verbatim}
+
+\texttt{check} prüft Perl-Syntax, CLI, Manifestvalidierung, lokale
+Definitionspfade sowie die Auflösung des bundleweiten Minimalbeispiels.
+
+\section{Weiterführende Dokumente}
+
+\begin{description}
+  \item[\texttt{README.md}] kurzer Einstieg und Entwicklungsbefehle;
+  \item[\texttt{DEPENDENCIES.md}] Laufzeitabhängigkeiten und
+    Installationshinweise;
+  \item[\texttt{DESIGN.md}] Architektur, Invarianten, Rationales und offene
+    Entscheidungen;
+  \item[\texttt{THIRD\_PARTY.md}] Herkunft und Lizenz mitgelieferter
+    Komponenten;
+  \item[dieses Handbuch] nutzerorientierte Beschreibung implementierter
+    Funktionen.
+\end{description}
+
+\end{document}

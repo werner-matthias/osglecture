@@ -1,0 +1,11 @@
+schema = 1
+kind = "profile"
+name = "OSG lecture"
+version = "1"
+
+[latex.defaults]
+presentation_backend = "beamer"
+identity_profile = "osg"
+theme = "osg"
+numbering = "chapter"
+references = "external-on-demand"

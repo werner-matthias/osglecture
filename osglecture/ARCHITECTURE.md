@@ -1,0 +1,386 @@
+# osglecture – Grundideen und Leitlinien für eine Überarbeitung
+
+**Arbeitsdokument · Stand 23. Juli 2026**
+
+## Zweck und Einordnung
+
+Dieses Dokument beschreibt die grundsätzlichen Ideen der Klasse `osglecture` in ihrer gegenwärtigen Form. Es ist bewusst weder Benutzerhandbuch noch vollständige API-Referenz. Sein Zweck ist, das fachliche Modell, die tragenden Entwurfsentscheidungen und die derzeitigen Spannungsfelder sichtbar zu machen. Nach fachlicher Überarbeitung soll es als Ausgangspunkt für eine Neustrukturierung der Klasse dienen.
+
+Die Aussagen beziehen sich auf `osglecture/osglecture.cls` in Version 0.6.0 vom 4. September 2025 sowie auf die begleitenden Dateien im Repository. Die Klasse ist derzeit als neuer, noch nicht vollständig integrierter Stand zu verstehen: Sie ist im Arbeitsbaum nicht versioniert, die zentrale README nennt sie noch nicht als aktiven Bestandteil, und das vorhandene Standalone-Beispiel verwendet weiterhin `osgbeamer`.
+
+> **Kernaussage:** `osglecture` soll eine gemeinsame fachliche Quelle in mehrere didaktische Darstellungen überführen. Die Klasse sollte deshalb künftig primär Moduswahl und Integration koordinieren; fachlich unabhängige Dienste und Darstellungsdetails sollten in getrennten Paketen liegen.
+
+## 1. Das fachliche Problem
+
+Eine Vorlesung besteht nicht aus voneinander unabhängigen Folien und Skriptseiten. Beide Darstellungen teilen Gliederung, Begriffe, Abbildungen, Quellen, Metadaten und Referenzen, unterscheiden sich aber in ihrem Gebrauch:
+
+- **Folien** unterstützen den Vortrag: knapp, visuell, schrittweise aufdeckbar und auf eine Projektionsfläche optimiert.
+- **Handouts** verdichten Folien für Ausdruck oder Nachbereitung.
+- **Skriptkapitel** sind eigenständig lesbar, ausführlicher, fortlaufend paginiert und in eine Vorlesungsreihe eingebettet.
+- **Standalone-Dokumente** sollen ohne die Infrastruktur einer Vorlesungsreihe funktionieren.
+- **Vortragsansichten** können zusätzliche Notizen oder eine zweite Anzeige benötigen.
+
+Die zentrale Idee von `osglecture` ist deshalb **Single Source, Multiple Representations**: Ein gemeinsamer LaTeX-Inhalt soll abhängig vom Ausgabemodus passend interpretiert werden, ohne dass Autorinnen und Autoren dieselbe fachliche Aussage mehrfach pflegen müssen.
+
+## 2. Das konzeptionelle Modell
+
+Die Klasse verarbeitet vier Arten von Eingaben und erzeugt daraus eine konkrete Dokumentkonfiguration:
+
+```text
+                         Vorlesungsquelle
+                               │
+              ┌────────────────┼────────────────┐
+              │                │                │
+        Klassenoptionen   Serienkonfiguration   Jobname
+              │          (OLLM / lectdates)     │
+              └────────────────┼────────────────┘
+                               ▼
+                    osglecture – Orchestrator
+                 Modus · Sprache · Metadaten · Pfade
+                               │
+          ┌────────────────────┼────────────────────┐
+          ▼                    ▼                    ▼
+    Präsentation           Handout              Skript
+      beamer          beamer + pgfpages   scrbook + beamerarticle
+          │                    │                    │
+          └────────────────────┼────────────────────┘
+                               ▼
+             gemeinsame Dienste und Darstellungsbausteine
+       Referenzen · Sprache · Bibliografie · Theme · Inhaltsmakros
+```
+
+Die Klasse übernimmt derzeit fünf Rollen:
+
+1. **Konfiguration ermitteln:** OLLM-Verzeichnisstruktur erkennen, Konfigurationsdatei auswerten und Informationen aus dem Jobnamen ableiten.
+2. **Ausgabemodus wählen:** `beamer` oder `scrbook` mit `beamerarticle` als Basisklasse laden.
+3. **Serienkontext integrieren:** kapitelübergreifende Metadaten, Referenzen, Bibliografie und Nummerierung einbinden.
+4. **Darstellung konfigurieren:** Theme, Schriften, Farben und Handout-Layout festlegen.
+5. **Autoren-API anbieten:** modusabhängige Textauszeichnung, Spalten, Bilder, Notizen und Kompatibilitätsmakros definieren.
+
+Diese Rollen erklären den heutigen Umfang der Klasse, markieren aber zugleich natürliche Modulgrenzen.
+
+## 3. Tragende Ideen
+
+### 3.1 Gemeinsame Quelle als oberstes Ziel
+
+Präsentation und Skript sind keine getrennten Produkte, sondern Projektionen derselben semantischen Quelle. Beamer-Modi und Overlay-Spezifikationen dienen als Selektionsmechanismus. Befehle wie `\osgpresart`, selektierbare Abstände, modusabhängige Fußnoten, `\stress`, `\outline`, `\centerpic` und `twocolumns` versuchen, Unterschiede lokal auszudrücken.
+
+Für eine Überarbeitung folgt daraus:
+
+- Semantische Autorenbefehle sind wertvoll, wenn sie eine didaktische Absicht benennen.
+- Reine Layout-Abkürzungen sollten nicht Teil der Kernklasse sein.
+- Präsentationsspezifische Overlay-Syntax darf im Skriptmodus weder Fehler noch unbeabsichtigte Leerräume erzeugen.
+- Die gemeinsame Quelle bleibt der Normalfall; explizite Modusvarianten sind ein kontrollierter Ausweg.
+
+### 3.2 Dokumenttyp ist eine fachliche Entscheidung
+
+Der Schlüssel `doctype` unterscheidet derzeit `slides`, `handout`, `script`/`article`, `screen` und `web`. Diese Auswahl bestimmt nicht nur das Layout, sondern die Basisklasse, Paketabhängigkeiten und Semantik des Dokuments.
+
+Die derzeitigen Typen sind unterschiedlich reif:
+
+- `slides`: reguläre Beamer-Präsentation.
+- `handout`: Beamer-Handout mit mehreren Folien pro A4-Seite.
+- `script` und `article`: derselbe Skriptpfad über `scrbook` und `beamerarticle`.
+- `screen`: experimentelle Zweitbildschirm-Konfiguration.
+- `web`: ausdrücklich nicht unterstützt.
+
+Für die Neufassung sollte eine kleine, ausdrücklich unterstützte Menge von Ausgabetypen definiert werden. Aliasnamen, experimentelle Typen und zukünftige Backends sollten außerhalb des stabilen Kerns liegen.
+
+### 3.3 Serie und Standalone sind zwei gleichwertige Kontexte
+
+Im Serienbetrieb liefert OLLM Informationen über Verzeichnisstruktur, Kapitel, Sprache, Dokumenttyp und gemeinsame Daten. Ohne erkannte OLLM-Konfiguration schaltet die Klasse automatisch in den Standalone-Modus. Die Option `noollm` erzwingt diesen Zustand.
+
+Das ist fachlich sinnvoll: Autoreninhalte sollen sowohl als Teil einer Vorlesungsreihe als auch isoliert übersetzbar sein. Der heutige Code behandelt Standalone jedoch teilweise als Rückfallpfad. Künftig sollten beide Kontexte klar spezifizierte, getestete Betriebsarten sein:
+
+- **Standalone:** alle erforderlichen Angaben kommen aus Dokumentoptionen und lokalen Metadaten.
+- **Serie:** eine externe Konfigurationsquelle ergänzt Defaults, Pfade und Kapitelkontext.
+
+Eine nicht vorhandene Serienkonfiguration darf keine impliziten Seiteneffekte außerhalb dieser Umschaltung haben.
+
+### 3.4 Konfiguration besitzt Herkunft und Priorität
+
+Die Klasse kennt drei Prioritätsstufen:
+
+1. globale Optionen aus der Vorlesungskonfiguration,
+2. lokale Klassenoptionen eines Kapitels,
+3. erzwungene globale Optionen.
+
+Daneben werden Sprache und Dokumenttyp bei Bedarf aus dem Jobnamen abgeleitet. Dieses Modell ist mächtig, aber nur dann beherrschbar, wenn Herkunft, Zeitpunkt und Priorität jedes Werts transparent sind.
+
+Für eine Neufassung bietet sich folgende Reihenfolge an:
+
+```text
+eingebaute Defaults
+    < Serienkonfiguration
+    < aus Jobname abgeleitete Werte
+    < lokale Dokumentoptionen
+    < ausdrücklich erzwungene Serienrichtlinien
+```
+
+Abweichungen von dieser Reihenfolge sollten nur für technisch frühe Optionen erlaubt und dokumentiert werden. Eine Diagnosefunktion sollte die effektive Konfiguration einschließlich ihrer Herkunft ausgeben können.
+
+### 3.5 Metadaten gehören zum Dokumentmodell
+
+Titel, Autor, Datum, Veranstaltung, Institution, URL und Logo werden teilweise sehr früh benötigt, obwohl ihre endgültigen Befehle erst nach dem Laden der Basisklasse existieren. Die Klasse löst dies durch verzögerte Ausführung: Sie sammelt Titelbefehle aus der Serienkonfiguration in einem Hook und führt sie später erneut aus.
+
+Die zugrunde liegende Idee ist richtig: Metadaten sind Daten, keine unmittelbaren Layoutaktionen. Die Überarbeitung sollte daraus ein explizites Metadatenmodell machen:
+
+- Metadaten werden zunächst gespeichert.
+- Validierung erfolgt unabhängig vom Ausgabemodus.
+- Beamer- und Skriptadapter übertragen die Werte in die jeweilige Basisklasse.
+- Kurz- und Langformen sowie modusspezifische Varianten haben eine einheitliche Syntax.
+
+Damit entfällt ein großer Teil des temporären Überschreibens und Wiederherstellens fremder Befehle.
+
+### 3.6 Kapitel sind die gemeinsame Struktureinheit
+
+Eine Lecture entspricht fachlich einem Kapitel. Deshalb werden im Präsentationsmodus `chapter` und `lecture`, im Artikelmodus `lecture` und `chapter` gekoppelt. Abschnittsnummern erhalten im Serienbetrieb eine Kapitelnummer; im Standalone-Betrieb bleiben sie lokal.
+
+Diese Abbildung ist zentral für Verweise zwischen Folien, Skript und Kapiteln. Sie sollte als eigenes Strukturmodell formuliert werden:
+
+- stabile Dokument-ID,
+- logische Kapitelnummer,
+- lokale Abschnittsnummer,
+- physische Seite oder Folie,
+- Zieltyp eines Verweises.
+
+Zähler-Aliase sind dann eine Implementierung dieses Modells, nicht das Modell selbst.
+
+### 3.7 Modusabhängigkeit soll semantisch bleiben
+
+Die Klasse macht zahlreiche Standardbefehle overlay-fähig und ändert Verhalten in `presentation` und `article`. Das erleichtert bestehende Quellen, greift aber tief in Kern- und Beamerbefehle ein. Besonders globale Änderungen an `\footnote`, `\vspace`, Schriftgrößen oder `\Roman` bergen Kompatibilitätsrisiken.
+
+Für die Überarbeitung sollte gelten:
+
+- Eigene semantische Befehle vor globalen Patches bevorzugen.
+- Patches nur in einem klar abgegrenzten Adapter und mit Tests einsetzen.
+- Der Artikelmodus muss auch ohne visuelle Beamer-Annahmen verständlich bleiben.
+- Gleiche Eingabe soll in jedem unterstützten Modus deterministisch sein.
+
+## 4. Aktuelle öffentliche Oberfläche
+
+Die folgende Gruppierung beschreibt die heute sichtbaren Konzepte, nicht notwendigerweise die künftig zu bewahrende API.
+
+### Konfiguration
+
+- `doctype`, `lang`, `standalone`, `noollm`
+- Weitergabe über `beamer`, `book`, `tuc`, `bib`
+- `aspectratio`, `handout format`, `continuation`, `docid`
+- `legacy`, `nobib`, `noforcetoc`, `osgdefaults`, `final`
+- `\SetGlobalClassOptions`, `\EnforceGlobalClassOptions`
+
+### Metadaten und Lebenszyklus
+
+- `\SetLogo`
+- verzögerte Titelbefehle wie `\author`, `\date`, `\course`, `\event`, `\institute`
+- `\AfterTitle`
+
+### Gemeinsamer Autoreninhalt
+
+- `\osgpresart{Präsentation}{Artikel}`
+- `\sbf`, `\newdef`, `\stress`, `\outline`
+- modusfähige Fußnoten und ausgewählte Abstands- und Schriftgrößenbefehle
+- `\sourceref`
+
+### Layout und Medien
+
+- Umgebung `twocolumns`
+- `\centerpic`
+- `\markword`
+- Pfeile und Smileys
+
+### Notizen und Hilfen
+
+- `specialitemize`, `noteitemize`
+- `\DebugFont`
+- Legacy-Kommandos mit Deprecation-Warnungen
+
+Ein wesentlicher Schritt der Überarbeitung ist die Entscheidung, welche dieser Gruppen zur Klasse, zu einem Autorenpaket, zu einem Theme oder ausschließlich in einen Kompatibilitätslayer gehören.
+
+## 5. Heutige Kopplungen und Risiken
+
+### 5.1 Konfiguration ist an Dateisystem und Perl-Syntax gekoppelt
+
+Lua-Code prüft einen festen relativen Pfad `../ollmconfig.pl` und extrahiert ausgewählte Perl-Zuweisungen mit regulären Ausdrücken. Damit sind Konfigurationsmodell, Dateiformat, Arbeitsverzeichnis und Ausführung eng gekoppelt. Fehlerhafte oder ungewöhnlich formatierte Konfigurationen können stillschweigend zu Defaults führen.
+
+**Leitlinie:** OLLM sollte die normalisierten Werte über eine kleine, dokumentierte Schnittstelle an LaTeX übergeben. Die Klasse sollte weder Perl parsen noch ein bestimmtes Arbeitsverzeichnis voraussetzen.
+
+### 5.2 Frühe und späte Optionen sind vermischt
+
+Optionen für die Basisklasse müssen vor `\LoadClass` feststehen; andere Optionen könnten später verarbeitet werden. Aktuell laufen Weitergabe, Defaultsetzung, Konfigurationseinlesen und Schlüsselverarbeitung durch mehrere Mechanismen aus LaTeX2e, expl3 und `etoolbox`.
+
+**Leitlinie:** Eine frühe Konfigurationsphase bestimmt ausschließlich Backend und früh benötigte Optionen. Nach dem Laden des Backends folgt eine zweite, klar benannte Initialisierungsphase.
+
+### 5.3 Die Klasse setzt nicht vorhandene Nachbarpakete voraus
+
+Die aktuelle Datei lädt unter anderem `osgbeamerref`, `osgbeamerlanguage`, `osgbeamerbib`, `beamerarticleosg` und das Theme `osg`. Ein Teil davon liegt nur unter `oldcode`, anderes ist im sichtbaren Baum nicht vorhanden. Dadurch ist die Klasse im aktuellen Repositoryzustand nicht als geschlossenes Produkt testbar.
+
+**Leitlinie:** Jede Abhängigkeit benötigt einen eindeutigen Besitzer, eine installierbare Quelle, eine minimale Versionsanforderung und einen Test. Optionale Funktionen müssen auch technisch optional sein.
+
+### 5.4 Kern, Theme und Komfortmakros sind nicht getrennt
+
+Schriftwahl, Farben, Emojis, Markierungen, zweispaltige Layouts, Quellenformatierung und Notiztransformation stehen neben Moduswahl und Klassenladen. Das erschwert Austauschbarkeit und Tests.
+
+**Leitlinie:** Die Kernklasse enthält nur Bootstrapping, Konfigurationsmodell, Backendwahl und stabile Integrationshooks. Visuelle Entscheidungen gehören in Themes; Autorenkomfort in ein unabhängiges Paket.
+
+### 5.5 Globale Patches erhöhen die Überraschung
+
+Mehrere Standardbefehle werden global umdefiniert. Besonders die Änderung von `\Roman` für den Zählerstand null ist fachlich sehr speziell, wirkt aber dokumentweit. Ähnliches gilt für `\footnote`, vertikale Abstände und Schriftgrößen.
+
+**Leitlinie:** Keine globale Änderung ohne eng formulierte Invariante, dokumentierte Motivation und Regressionstest. Wo möglich, neue Namen oder lokale Umgebungen verwenden.
+
+### 5.6 Unterstützungsstatus und API sind nicht eindeutig
+
+Kommentare nennen experimentelle oder nicht unterstützte Modi; `script` und `article` sind faktisch Aliase; `legacy` wird zugleich als noch ungenutzt und als umfangreicher Kompatibilitätszweig beschrieben. Einzelne Schlüsseldefinitionen wirken unfertig. Das bestehende Beispiel und die Bundle-README verweisen noch auf den Vorgänger.
+
+**Leitlinie:** Eine veröffentlichte Kompatibilitätsmatrix trennt stabil, experimentell, deprecated und entfernt. Nur stabile Funktionen prägen den Kernentwurf.
+
+## 6. Zielbild für die Architektur
+
+Die Klasse sollte langfristig eine dünne Fassade über klaren Komponenten sein:
+
+```text
+osglecture.cls
+│
+├── Konfigurationskern
+│   ├── Schlüssel, Defaults und Prioritäten
+│   ├── normalisierte OLLM-Eingabe
+│   └── Diagnose und Validierung
+│
+├── Backendadapter
+│   ├── presentation  → beamer
+│   ├── handout       → beamer + pgfpages
+│   └── script        → scrbook + beamerarticle
+│
+├── Domänendienste
+│   ├── Metadaten und Dokumentidentität
+│   ├── Kapitel- und Referenzmodell
+│   ├── Sprache
+│   └── Bibliografie
+│
+├── Darstellung
+│   ├── austauschbares Theme
+│   └── Artikel-/Skriptstil
+│
+└── optionale Pakete
+    ├── Autorenkomfort und didaktische Makros
+    ├── Notizen
+    └── Legacy-Kompatibilität
+```
+
+### Verantwortlichkeit der Kernklasse
+
+Die Kernklasse sollte:
+
+- den minimalen LaTeX- und Engine-Vertrag prüfen,
+- Konfiguration normalisieren,
+- genau einen Dokumenttyp auswählen,
+- die passende Basisklasse laden,
+- standardisierte Hooks für Komponenten bereitstellen,
+- erforderliche Kerndienste initialisieren,
+- verständliche Diagnosen ausgeben.
+
+Sie sollte nicht:
+
+- externe Konfigurationssprachen parsen,
+- konkrete Logos, Farben oder Schriften fest verdrahten,
+- allgemeine Layouthelfer sammeln,
+- Standardbefehle ohne zwingenden Grund global verändern,
+- nicht unterstützte Backends als scheinbar wählbare Optionen anbieten.
+
+## 7. Entwurfsprinzipien für die Überarbeitung
+
+1. **Semantik vor Layout.** Die API beschreibt didaktische Bedeutung; Themes entscheiden über Darstellung.
+2. **Explizite Zustände.** Dokumenttyp, Serienkontext und Sprache sind validierte Werte, keine lose Kombination von Booleans.
+3. **Eine Konfigurationssprache.** Neue öffentliche Schlüssel werden konsistent mit expl3/L3Keys implementiert.
+4. **Deterministische Prioritäten.** Jeder effektive Wert hat eine nachvollziehbare Herkunft.
+5. **Lose Kopplung an OLLM.** OLLM liefert Daten; die Klasse kennt nicht dessen interne Dateien oder Parser.
+6. **Austauschbare Darstellung.** TUC-/OSG-Branding ist ein Standardtheme, aber keine Voraussetzung der Kernklasse.
+7. **Optionale Dienste bleiben optional.** Bibliografie, Notizen und Komfortpakete dürfen den Minimalfall nicht belasten.
+8. **Keine stillen Rückfälle.** Ungültige Werte, fehlende Pflichtdaten und inkonsistente Kombinationen führen zu klaren Meldungen.
+9. **Migration ist ein eigenes Produktmerkmal.** Kompatibilität wird in einem abgegrenzten Layer mit Warnungen und Entfernungshorizont umgesetzt.
+10. **Testbarkeit prägt den Schnitt.** Komponenten müssen mit kleinen Beispielen isoliert testbar sein; visuelle Tests ergänzen semantische Logtests.
+
+## 8. Invarianten
+
+Eine spätere Implementierung sollte mindestens folgende Aussagen garantieren:
+
+- Genau ein unterstützter Dokumenttyp ist aktiv.
+- `script` und Präsentationsmodi erhalten dieselben fachlichen Metadaten.
+- Standalone benötigt keine Datei oberhalb des Dokumentverzeichnisses.
+- Der Serienmodus kann vollständig durch explizite Eingaben simuliert werden.
+- Lokale Dokumentoptionen und erzwungene Serienrichtlinien haben dokumentierte Priorität.
+- Fehlende optionale Pakete beeinträchtigen nur die zugehörige Funktion.
+- Kapitel-, Abschnitts- und Dokument-IDs sind in allen Modi stabil ableitbar.
+- Jede öffentliche Autorenfunktion ist für alle unterstützten Modi definiert oder weist den nicht unterstützten Modus ausdrücklich zurück.
+- Die Minimaldatei jedes stabilen Dokumenttyps übersetzt ohne Legacy-Layer.
+- Deprecated APIs erzeugen eine maschinenprüfbare Warnung und besitzen einen Migrationshinweis.
+
+## 9. Offene Entwurfsentscheidungen
+
+Vor einer Implementierung sollten folgende Fragen entschieden werden:
+
+### Produktumfang
+
+- Sind `slides`, `handout` und `script` die einzigen stabilen Dokumenttypen?
+- Ist `screen` weiterhin ein Ziel oder Aufgabe eines externen Präsentationswerkzeugs?
+- Soll eine Webausgabe Teil dieser Klasse sein oder ein separater Konverter?
+
+### Basisklassen und Theme
+
+- Bleibt `scrbook + beamerarticle` der gewünschte Skript-Backend?
+- Ist Beamer zwingender semantischer Kern der gemeinsamen Quelle?
+- Welche Teile des TUC-/OSG-Designs sind Default, welche Voraussetzung?
+
+### Konfiguration
+
+- Wie übergibt OLLM normalisierte Daten: generierte TeX-Datei, Kommandozeilenmakros oder ein stabiles Datenformat?
+- Dürfen erzwungene globale Optionen lokale Dokumentoptionen überschreiben?
+- Welche Werte müssen vor dem Laden der Basisklasse feststehen?
+
+### Autoren-API
+
+- Welche Makros drücken echte didaktische Semantik aus?
+- Soll `twocolumns` in ein allgemeines Moduspaket verschoben werden?
+- Sollen `\stress`, `\outline` und `\sourceref` Teil eines Autorenpakets werden?
+- Wie werden Notizen semantisch erfasst, ohne `itemize` umzudefinieren?
+
+### Kompatibilität
+
+- Welche reale Quellbasis muss ohne Änderungen weiter funktionieren?
+- Wird der alte Klassenname als Wrapper beibehalten?
+- Welche Übergangsfrist und welche automatisierbaren Migrationen sind vorgesehen?
+
+## 10. Vorgeschlagene Reihenfolge der Überarbeitung
+
+1. **Vertrag festlegen.** Stabile Dokumenttypen, unterstützte Engine, Minimalbeispiele und Kompatibilitätsziel definieren.
+2. **Konfigurationsmodell extrahieren.** Werte, Typen, Defaults, Prioritäten und Diagnoseausgabe spezifizieren.
+3. **OLLM-Grenze normalisieren.** Parsing aus der Klasse entfernen und eine kleine Eingabeschnittstelle schaffen.
+4. **Backendadapter isolieren.** Präsentation, Handout und Skript mit je einem minimalen Test aufbauen.
+5. **Metadaten- und Strukturmodell etablieren.** Titel, Kapitelidentität, Nummerierung und Referenzziele vereinheitlichen.
+6. **Dienste modularisieren.** Sprache, Referenzen und Bibliografie als getrennte Pakete mit expliziten Abhängigkeiten führen.
+7. **Darstellung auslagern.** Theme, Schriften, Farben und Skriptstil von der Kernklasse trennen.
+8. **Autorenkomfort sichten.** Nur semantisch tragfähige Befehle bewahren; Layouthelfer auslagern oder streichen.
+9. **Legacy-Layer bauen.** Alte Namen abbilden, Warnungen testen und einen Migrationsleitfaden erstellen.
+10. **Integration und visuelle Regression.** Reale Kapitel in allen stabilen Modi übersetzen und Ausgaben vergleichen.
+
+## 11. Prüfkriterien für den neuen Entwurf
+
+Die Architektur ist ausreichend klar, wenn sich folgende Fragen jeweils mit einem Satz beantworten lassen:
+
+- Wer entscheidet den Dokumenttyp?
+- Woher stammt jede Option und wer darf sie überschreiben?
+- Welche Komponente besitzt Metadaten, Kapitelidentität, Sprache und Referenzen?
+- Was ist die minimale installierbare Einheit?
+- Wie wird ein neues Theme ergänzt?
+- Wie wird ein weiterer Dokumenttyp ergänzt?
+- Welche öffentlichen Befehle dürfen Autoren verwenden?
+- Welche Abhängigkeiten sind für welchen Modus erforderlich?
+- Wie wird eine alte Quelle migriert?
+- Welche Tests beweisen semantische und visuelle Gleichwertigkeit?
+
+## Schlussfolgerung
+
+Die wertvollste Idee von `osglecture` ist nicht ein bestimmtes Theme oder eine Sammlung praktischer Makros, sondern das gemeinsame Dokumentmodell für eine Vorlesungsreihe: dieselbe fachliche Quelle, mehrere zielgerechte Darstellungen, stabile Kapitelidentität und serienweite Dienste.
+
+Die heutige Klasse beweist die Machbarkeit dieses Ansatzes, bündelt jedoch zu viele Verantwortlichkeiten. Die Überarbeitung sollte deshalb nicht mit einzelnen Makros beginnen, sondern mit einem expliziten Vertrag zwischen Konfiguration, Dokumentmodell, Backend, Diensten und Darstellung. Eine dünne Kernklasse mit klaren Adaptern bewahrt die Grundidee und schafft zugleich die Voraussetzung für Austauschbarkeit, Testbarkeit und schrittweise Migration.
