@@ -4,6 +4,8 @@ use v5.30;
 use strict;
 use warnings;
 
+use Cwd qw(getcwd);
+use File::Basename qw(dirname);
 use File::Spec;
 use JSON::PP;
 use OLLM::Config;
@@ -58,6 +60,7 @@ sub run {
       plan            => $plan,
       definitions_dir => $arg{definitions_dir}
         // File::Spec->catdir($arg{script_dir}, 'definitions'),
+      start_dir       => _source_directory($plan->{source}),
     );
   };
   if (!$resolved) {
@@ -277,6 +280,13 @@ sub _enum {
   return $value;
 }
 
+sub _source_directory {
+  my ($source) = @_;
+  return getcwd() if !defined $source;
+  my $absolute = File::Spec->rel2abs($source, getcwd());
+  return -f $absolute ? dirname($absolute) : getcwd();
+}
+
 sub _print_plan {
   my ($class, $plan, $resolved) = @_;
   if ($plan->{format} eq 'json') {
@@ -284,6 +294,7 @@ sub _print_plan {
       schema        => 'org.osglecture.ollm.build-request',
       version       => 1,
       configuration => $resolved->{configuration},
+      build_spec    => $resolved->{build_spec},
       request       => $resolved->{request},
     });
     return;
@@ -298,6 +309,8 @@ sub _print_plan {
   print "Source:   $request->{source}\n";
   print "Config:   ",
     ($configuration->{path} // $configuration->{kind}), "\n";
+  print "Job:      $resolved->{build_spec}{job_id}\n"
+    if defined $resolved->{build_spec};
   print "Mode:     dry-run\n";
 }
 

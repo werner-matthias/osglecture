@@ -5,9 +5,11 @@ use strict;
 use warnings;
 
 use Cwd qw(abs_path getcwd);
+use Digest::SHA qw(sha256_hex);
 use File::Basename qw(dirname);
 use File::Find qw(find);
 use File::Spec;
+use JSON::PP;
 
 our $VERSION = '0.1.0';
 our $MANIFEST_SCHEMA = 1;
@@ -114,7 +116,7 @@ sub resolve_request {
     }
   }
 
-  return {
+  my $resolved = {
     request => \%request,
     configuration => {
       kind    => 'toml',
@@ -125,6 +127,15 @@ sub resolve_request {
       parser  => $class->parser_info,
     },
   };
+  if (!$request{all}) {
+    require OLLM::BuildFile;
+    $resolved->{build_spec} = OLLM::BuildFile->build_spec(
+      resolved       => $resolved,
+      manifest       => $manifest,
+      unit_directory => $start,
+    );
+  }
+  return $resolved;
 }
 
 sub find_manifest {
@@ -340,22 +351,35 @@ sub resolve_definitions {
   }
 
   my %selected_targets;
+  my %selected_target_data;
   for my $name (sort keys %{ $manifest->{targets} }) {
     _fail_at($manifest_path, $manifest_lines, "targets.$name",
       "target '$name' was not found; searched: " . join(', ', @paths))
       if !exists $target{$name};
     $selected_targets{$name} = {
+      doctype => $target{$name}{data}{doctype},
+      family  => $target{$name}{data}{family},
       path    => $target{$name}{path},
       version => $target{$name}{data}{version},
     };
+    $selected_target_data{$name} = $target{$name}{data};
   }
+  my $signature = sha256_hex(
+    JSON::PP->new->canonical->encode({
+      manifest => $manifest,
+      profile  => $profile{$profile_name}{data},
+      targets  => \%selected_target_data,
+    }),
+  );
   return {
+    definition_signature => $signature,
     local_config => -f $local_path ? abs_path($local_path) : undef,
     profile => {
       name    => $profile{$profile_name}{data}{name},
       path    => $profile{$profile_name}{path},
       reference => $profile_name,
       version => $profile{$profile_name}{data}{version},
+      latex   => $profile{$profile_name}{data}{latex} // {},
     },
     search_paths => [map { abs_path($_) // $_ } @paths],
     targets      => \%selected_targets,
