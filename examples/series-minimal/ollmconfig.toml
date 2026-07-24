@@ -1,0 +1,23 @@
+schema = 1
+profile = "OSG lecture/1"
+
+[project]
+id = "example"
+title = "Minimal configuration example"
+
+[languages]
+available = ["de", "en"]
+default = "de"
+
+[languages.map]
+de = "ngerman"
+en = "british"
+
+[targets.slides]
+languages = ["de"]
+
+[targets.script]
+languages = ["de", "en"]
+
+[security]
+shell_escape = "restricted"
