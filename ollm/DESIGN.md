@@ -113,8 +113,10 @@ die Klasse ohne TOML-Abhängigkeit.
 ### 4.3 OLLM und Nachbarpakete
 
 - [`modeext`](../modeext/modeext.sty) stellt portable hierarchische
-  Dokumentmodi bereit. OLLM wählt einen Dokumenttyp; die Zuordnung zu Modi und
-  deren Hierarchie bleibt Aufgabe von `osglecture` und `modeext`.
+  Dokumentmodi bereit. Der kanonische Dokumenttyp ist zugleich der aktive
+  Blattmodus. OLLM transportiert die aufgelöste Modusmatrix; ihre Auswertung
+  und die bedingte Verarbeitung bleiben Aufgabe von `osglecture` und
+  `modeext`.
 - [`lttheme`](../lttheme/README.md) entwickelt Themes für `ltx-talk`.
   OLLM behandelt Beamer und `ltx-talk` normalerweise gleich, solange beide mit
   demselben LuaLaTeX-/latexmk-Verfahren gebaut werden.
@@ -155,7 +157,61 @@ web
 Stabil ist der Registrierungs- und Adaptervertrag, nicht eine geschlossene
 Liste von Typen.
 
-### 5.3 Buildidentität
+### 5.3 Target, Dokumenttyp, Modus und Backend
+
+Target und Dokumenttyp beschreiben dieselbe fachliche Auswahl an zwei
+Systemgrenzen:
+
+- `target` ist die Buildperspektive und wird von CLI, Manifest und OLLM
+  verwendet;
+- `doctype` ist die Dokumentperspektive und wird von `osglecture` verwendet.
+
+Für einen normalisierten konkreten Build gilt:
+
+```text
+target = doctype = aktiver Blattmodus
+```
+
+CLI-Aliase wie `presentation`, `beamer` oder `article` werden vor der
+BuildSpec-Erzeugung auf den kanonischen Targetnamen normalisiert und erscheinen
+nicht als abweichende Dokumenttypen im Auftrag. Targetdefinitionen führen
+`name` und `doctype` weiterhin explizit, damit beide Schnittstellen prüfbar
+bleiben; eine Abweichung benötigt einen ausdrücklich versionierten
+Adaptervertrag und ist kein gewöhnlicher Alias.
+
+Der Modus ist keine weitere unabhängige Builddimension. Er ergänzt den aktiven
+Dokumenttyp um dessen transitive Zugehörigkeit zu allgemeineren Modi. Die
+Modusmatrix ist ein gerichteter azyklischer Graph und darf mehrere Eltern
+enthalten:
+
+```text
+slides  -> presentation
+script  -> article
+handout -> presentation
+handout -> print
+```
+
+Damit ist bei `doctype = handout` sowohl `handout` als auch `presentation` und
+`print` aktiv. Die Matrix darf abstrakte Modi enthalten, die selbst kein
+baubares Target sind. Namen, Elternbeziehungen und Aliase werden strukturell
+validiert; unbekannte Knoten, unbekannte Eltern, Aliaszyklen und
+Hierarchiezyklen sind Fehler.
+
+Das Backend ist die technische Realisierung eines Dokumenttyps und wird aus
+dem Dokumenttyp sowie der effektiven Profil-/Projektpolicy gewählt:
+
+```text
+backend = adapter(doctype, profile, project-policy)
+```
+
+So darf beispielsweise `slides` durch `beamer` oder `ltx-talk` realisiert
+werden, ohne Target, Dokumenttyp oder Autorenmodus zu ändern. OLLM löst die
+deklarativen Definitionen und übergibt Dokumenttyp, Modusmatrix und effektive
+Backendwahl. `osglecture` prüft, dass der gewählte Adapter den Dokumenttyp
+unterstützt, und lädt ihn. Autorenquellen wählen Inhalte nach Dokumenttyp oder
+Obermodus, nicht nach Backendnamen.
+
+### 5.4 Buildidentität
 
 Ein Build wird mindestens durch folgende Werte identifiziert:
 
@@ -407,7 +463,7 @@ kind = "target"
 name = "slides"
 version = "1.0"
 doctype = "slides"
-family = "presentation"
+parents = ["presentation"]
 unit_profiles = ["b", "bs"]
 ```
 
@@ -420,6 +476,16 @@ Targetdefinitionen nennen mit `unit_profiles` die ein- oder zweibuchstabigen
 Einheitenprofile, auf die das Target eingeschränkt ist. Einheiten ohne Profil
 bleiben für alle konfigurierten Targets gültig. Damit bleibt die Filterung von
 `--all` erweiterbar und wird nicht aus Targetnamen abgeleitet.
+
+`parents` deklariert die direkten Obermodi des kanonischen Dokumenttyps.
+Weitere Zeilen der allgemeinen Modusmatrix, insbesondere abstrakte Modi, dürfen
+aus dem Bundleprofil stammen. OLLM normalisiert die aufgelöste Matrix in den
+BuildSpec; `modeext` wertet ihre transitive Hülle auf der LaTeX-Seite aus.
+
+Die derzeitige Implementierung der Targetdefinitionen verwendet noch das
+singuläre Feld `family`. Dies ist ein erkennbarer Übergangsstand: `family`
+bildet nur einen Elternmodus ab und wird zugunsten der allgemeinen
+`parents`-Matrix ersetzt.
 
 ### 7.4 Lokale Konfiguration
 
@@ -562,7 +628,10 @@ project-root
 series-id
 physical-unit
 unit-id
+target
 doctype
+mode matrix
+backend adapter
 language
 variant
 source
@@ -577,6 +646,13 @@ config-signature
 
 `--all` erzeugt ausschließlich die im Projektmanifest vorgesehenen Builds der
 aktuellen Einheit, zusätzlich gefiltert durch deren Profil und Rolle.
+
+Der derzeit erzeugte BuildSpec enthält bereits Target und Dokumenttyp sowie
+die Backendvorgabe des Profils innerhalb der effektiven LaTeX-Konfiguration,
+aber noch keine normalisierte Modusmatrix. Vor der Umstellung von
+`osglecture` auf den neuen Moduskern müssen Targetdefinition, BuildSpec und
+TeX-Auftragsdatei gemeinsam auf `parents` und den expliziten Backendadapter
+angehoben werden.
 
 ## 9. Jobname und Verzeichnisse
 

@@ -1,6 +1,6 @@
 # osglecture – Grundideen und Leitlinien für eine Überarbeitung
 
-**Arbeitsdokument · Stand 23. Juli 2026**
+**Arbeitsdokument · Stand 28. Juli 2026**
 
 ## Zweck und Einordnung
 
@@ -59,11 +59,78 @@ Die Klasse übernimmt derzeit fünf Rollen:
 
 Diese Rollen erklären den heutigen Umfang der Klasse, markieren aber zugleich natürliche Modulgrenzen.
 
+### 2.1 Vereinbartes Auswahlmodell
+
+Target, Dokumenttyp, Modus und Backend bilden keine vier unabhängigen
+Auswahldimensionen.
+
+```text
+BuildRequest wählt Target
+        │
+        ▼
+Targetdefinition liefert kanonischen Dokumenttyp
+        │
+        ▼
+aktiver Blattmodus ist dieser Dokumenttyp
+        │
+        ├── Modusmatrix liefert transitive Obermodi
+        │
+        ▼
+Profil-/Projektpolicy wählt einen Backendadapter
+```
+
+Target und Dokumenttyp sind zwei Perspektiven derselben fachlichen Auswahl:
+OLLM spricht von einem Target, die Klasse von einem Dokumenttyp. Nach
+Normalisierung von CLI-Aliasen gilt für den gewöhnlichen Build:
+
+```text
+target = doctype = aktiver Blattmodus
+```
+
+Eine Abweichung zwischen Targetname und Dokumenttyp benötigt einen
+ausdrücklich registrierten, versionierten Adaptervertrag. Sie ist kein
+gewöhnlicher Alias und darf nicht stillschweigend entstehen.
+
+Die Modusmatrix ergänzt den aktiven Dokumenttyp um allgemeinere
+Zugehörigkeiten. Sie ist ein gerichteter azyklischer Graph und darf mehrere
+Eltern pro Modus enthalten:
+
+```text
+slides  -> presentation
+script  -> article
+handout -> presentation
+handout -> print
+```
+
+Bei einem Handout sind damit `handout`, `presentation` und `print` aktiv.
+Abstrakte Obermodi müssen keine baubaren Dokumenttypen sein. `modeext`
+übernimmt die portable Auswertung der Matrix; `osglecture` registriert die
+aufgelöste Matrix und setzt den Blattmodus ausdrücklich, bevor
+modusabhängige Projektmetadaten verarbeitet werden.
+
+Der gegenwärtige experimentelle Stand von `modeext` speichert nur einen
+Elternmodus und löst den automatischen Modus erst vor Dokumentbeginn auf.
+Beides genügt diesem Vertrag noch nicht. Die Überarbeitung benötigt eine
+allgemeine Elternmatrix, Zyklus- und Aliasvalidierung sowie eine explizite
+frühe Aktivierung durch `osglecture`. Der `ltx-talk`-Scanner bleibt ein
+Backendadapter und ist nicht Teil des allgemeinen Moduskerns.
+
+Das Backend ist die technische Realisierung des Dokumenttyps:
+
+```text
+backend = adapter(doctype, profile, project-policy)
+```
+
+Insbesondere darf derselbe Dokumenttyp `slides` durch Beamer oder `ltx-talk`
+realisiert werden. Autoreninhalte und Metadaten selektieren deshalb nach
+Dokumenttyp oder Obermodus, nicht nach Backendnamen. Ein Backendadapter muss
+ausdrücklich erklären, welche Dokumenttypen er unterstützt.
+
 ## 3. Tragende Ideen
 
 ### 3.1 Gemeinsame Quelle als oberstes Ziel
 
-Präsentation und Skript sind keine getrennten Produkte, sondern Projektionen derselben semantischen Quelle. Beamer-Modi und Overlay-Spezifikationen dienen als Selektionsmechanismus. Befehle wie `\osgpresart`, selektierbare Abstände, modusabhängige Fußnoten, `\stress`, `\outline`, `\centerpic` und `twocolumns` versuchen, Unterschiede lokal auszudrücken.
+Präsentation und Skript sind keine getrennten Produkte, sondern Projektionen derselben semantischen Quelle. Die portable Modusmatrix dient als fachlicher Selektionsmechanismus; Overlay-Spezifikationen bleiben eine zusätzliche Fähigkeit geeigneter Präsentationsbackends. Befehle wie `\osgpresart`, selektierbare Abstände, modusabhängige Fußnoten, `\stress`, `\outline`, `\centerpic` und `twocolumns` versuchen, Unterschiede lokal auszudrücken.
 
 Für eine Überarbeitung folgt daraus:
 
@@ -74,17 +141,17 @@ Für eine Überarbeitung folgt daraus:
 
 ### 3.2 Dokumenttyp ist eine fachliche Entscheidung
 
-Der Schlüssel `doctype` unterscheidet derzeit `slides`, `handout`, `script`/`article`, `screen` und `web`. Diese Auswahl bestimmt nicht nur das Layout, sondern die Basisklasse, Paketabhängigkeiten und Semantik des Dokuments.
+Der Schlüssel `doctype` unterscheidet derzeit `slides`, `handout`, `script`/`article`, `screen` und `web`. Er bezeichnet die fachliche Ausgabe und ist zugleich der aktive Blattmodus. Er bestimmt die benötigte Semantik und schränkt die zulässigen Backendadapter ein; die konkrete Basisklasse folgt jedoch zusätzlich aus Profil- und Projektpolicy.
 
 Die derzeitigen Typen sind unterschiedlich reif:
 
-- `slides`: reguläre Beamer-Präsentation.
-- `handout`: Beamer-Handout mit mehreren Folien pro A4-Seite.
-- `script` und `article`: derselbe Skriptpfad über `scrbook` und `beamerarticle`.
+- `slides`: Präsentationsausgabe, derzeit regulär über Beamer.
+- `handout`: Präsentations-/Druckausgabe, derzeit über Beamer und `pgfpages`.
+- `script` und `article`: Longform-Ausgabe, derzeit über `scrbook` und `beamerarticle`.
 - `screen`: experimentelle Zweitbildschirm-Konfiguration.
 - `web`: ausdrücklich nicht unterstützt.
 
-Für die Neufassung sollte eine kleine, ausdrücklich unterstützte Menge von Ausgabetypen definiert werden. Aliasnamen, experimentelle Typen und zukünftige Backends sollten außerhalb des stabilen Kerns liegen.
+Für die Neufassung sollte eine kleine, ausdrücklich unterstützte Menge von Ausgabetypen definiert werden. Aliasnamen werden vor Eintritt in die Klasse normalisiert. Experimentelle Typen bleiben außerhalb des stabilen Kerns; zusätzliche Backends werden dagegen als Adapter eines unterstützten Dokumenttyps registriert und verändern dessen Autorenmodus nicht.
 
 ### 3.3 Serie und Standalone sind zwei gleichwertige Kontexte
 
@@ -129,6 +196,33 @@ Die zugrunde liegende Idee ist richtig: Metadaten sind Daten, keine unmittelbare
 - Validierung erfolgt unabhängig vom Ausgabemodus.
 - Beamer- und Skriptadapter übertragen die Werte in die jeweilige Basisklasse.
 - Kurz- und Langformen sowie modusspezifische Varianten haben eine einheitliche Syntax.
+
+Die öffentliche Oberfläche bleibt dabei bewusst LaTeX-typisch. Etablierte
+Befehle wie `\title`, `\author`, `\date` und `\institute` werden nicht durch
+einen umfassenden Metadaten-KV-Befehl ersetzt. `osglecture` fängt ihre Werte
+backendneutral ab; eigene semantische Befehle ergänzen nur Metadaten, für die
+keine etablierte Oberfläche existiert.
+
+Der Blattmodus und seine Modusmatrix stehen bereits beim Einlesen
+projektweiter Metadaten fest. Targetabhängige Angaben verwenden daher dieselbe
+portable Moduslogik wie Autoreninhalte:
+
+```tex
+\title{Betriebssysteme}
+
+\talkmode<presentation>{
+  \title[BS]{Betriebssysteme}
+}
+
+\talkmode<script>{
+  \title{Betriebssysteme -- Vorlesungsskript}
+}
+```
+
+Diese Auswahl wirkt ausschließlich auf Metadaten und Inhalt. Sie darf weder
+Dokumenttyp noch Backend nachträglich ändern. Eine spätere lokale
+Metadatenangabe im Hauptdokument überschreibt die projektweite Vorgabe nach der
+üblichen LaTeX-Reihenfolge.
 
 Damit entfällt ein großer Teil des temporären Überschreibens und Wiederherstellens fremder Befehle.
 
@@ -247,10 +341,15 @@ osglecture.cls
 │   ├── normalisierte OLLM-Eingabe
 │   └── Diagnose und Validierung
 │
+├── Dokumenttyp- und Moduskern
+│   ├── kanonischer Dokumenttyp als Blattmodus
+│   ├── validierte Modusmatrix
+│   └── portable Modusabfragen über modeext
+│
 ├── Backendadapter
-│   ├── presentation  → beamer
-│   ├── handout       → beamer + pgfpages
-│   └── script        → scrbook + beamerarticle
+│   ├── slides  → beamer oder ltx-talk
+│   ├── handout → beamer + pgfpages
+│   └── script  → scrbook + beamerarticle
 │
 ├── Domänendienste
 │   ├── Metadaten und Dokumentidentität
@@ -275,6 +374,8 @@ Die Kernklasse sollte:
 - den minimalen LaTeX- und Engine-Vertrag prüfen,
 - Konfiguration normalisieren,
 - genau einen Dokumenttyp auswählen,
+- diesen Dokumenttyp als aktiven Blattmodus setzen,
+- die azyklische Modusmatrix validieren und registrieren,
 - die passende Basisklasse laden,
 - standardisierte Hooks für Komponenten bereitstellen,
 - erforderliche Kerndienste initialisieren,
@@ -292,20 +393,24 @@ Sie sollte nicht:
 
 1. **Semantik vor Layout.** Die API beschreibt didaktische Bedeutung; Themes entscheiden über Darstellung.
 2. **Explizite Zustände.** Dokumenttyp, Serienkontext und Sprache sind validierte Werte, keine lose Kombination von Booleans.
-3. **Eine Konfigurationssprache.** Neue öffentliche Schlüssel werden konsistent mit expl3/L3Keys implementiert.
-4. **Deterministische Prioritäten.** Jeder effektive Wert hat eine nachvollziehbare Herkunft.
-5. **Lose Kopplung an OLLM.** OLLM liefert Daten; die Klasse kennt nicht dessen interne Dateien oder Parser.
-6. **Austauschbare Darstellung.** TUC-/OSG-Branding ist ein Standardtheme, aber keine Voraussetzung der Kernklasse.
-7. **Optionale Dienste bleiben optional.** Bibliografie, Notizen und Komfortpakete dürfen den Minimalfall nicht belasten.
-8. **Keine stillen Rückfälle.** Ungültige Werte, fehlende Pflichtdaten und inkonsistente Kombinationen führen zu klaren Meldungen.
-9. **Migration ist ein eigenes Produktmerkmal.** Kompatibilität wird in einem abgegrenzten Layer mit Warnungen und Entfernungshorizont umgesetzt.
-10. **Testbarkeit prägt den Schnitt.** Komponenten müssen mit kleinen Beispielen isoliert testbar sein; visuelle Tests ergänzen semantische Logtests.
+3. **Eine fachliche Typachse.** Target und Dokumenttyp sind Build- und Dokumentperspektive derselben kanonischen Auswahl; der Blattmodus ist keine zusätzliche unabhängige Dimension.
+4. **Eine Konfigurationssprache.** Neue öffentliche Schlüssel werden konsistent mit expl3/L3Keys implementiert.
+5. **Deterministische Prioritäten.** Jeder effektive Wert hat eine nachvollziehbare Herkunft.
+6. **Lose Kopplung an OLLM.** OLLM liefert Daten; die Klasse kennt nicht dessen interne Dateien oder Parser.
+7. **Austauschbare Darstellung.** TUC-/OSG-Branding ist ein Standardtheme, aber keine Voraussetzung der Kernklasse.
+8. **Optionale Dienste bleiben optional.** Bibliografie, Notizen und Komfortpakete dürfen den Minimalfall nicht belasten.
+9. **Keine stillen Rückfälle.** Ungültige Werte, fehlende Pflichtdaten und inkonsistente Kombinationen führen zu klaren Meldungen.
+10. **Migration ist ein eigenes Produktmerkmal.** Kompatibilität wird in einem abgegrenzten Layer mit Warnungen und Entfernungshorizont umgesetzt.
+11. **Testbarkeit prägt den Schnitt.** Komponenten müssen mit kleinen Beispielen isoliert testbar sein; visuelle Tests ergänzen semantische Logtests.
 
 ## 8. Invarianten
 
 Eine spätere Implementierung sollte mindestens folgende Aussagen garantieren:
 
 - Genau ein unterstützter Dokumenttyp ist aktiv.
+- Der aktive Blattmodus ist mit diesem Dokumenttyp identisch.
+- Alle aktiven Obermodi folgen ausschließlich aus der validierten azyklischen Modusmatrix.
+- Backendnamen sind keine Autorenmodi.
 - `script` und Präsentationsmodi erhalten dieselben fachlichen Metadaten.
 - Standalone benötigt keine Datei oberhalb des Dokumentverzeichnisses.
 - Der Serienmodus kann vollständig durch explizite Eingaben simuliert werden.
@@ -329,18 +434,22 @@ Vor einer Implementierung sollten folgende Fragen entschieden werden:
 ### Basisklassen und Theme
 
 - Bleibt `scrbook + beamerarticle` der gewünschte Skript-Backend?
-- Ist Beamer zwingender semantischer Kern der gemeinsamen Quelle?
+- Welche gemeinsame Semantik müssen Beamer- und `ltx-talk`-Adapter für
+  `slides` garantieren?
 - Welche Teile des TUC-/OSG-Designs sind Default, welche Voraussetzung?
 
 ### Konfiguration
 
-- Wie übergibt OLLM normalisierte Daten: generierte TeX-Datei, Kommandozeilenmakros oder ein stabiles Datenformat?
 - Dürfen erzwungene globale Optionen lokale Dokumentoptionen überschreiben?
 - Welche Werte müssen vor dem Laden der Basisklasse feststehen?
+- Welches Schema transportiert die allgemeine Modusmatrix in der generierten
+  TeX-Auftragsdatei?
 
 ### Autoren-API
 
 - Welche Makros drücken echte didaktische Semantik aus?
+- Welcher öffentliche Name kapselt die portable `modeext`-Abfrage, ohne
+  Beamers reichere `\mode`-Syntax vorzutäuschen?
 - Soll `twocolumns` in ein allgemeines Moduspaket verschoben werden?
 - Sollen `\stress`, `\outline` und `\sourceref` Teil eines Autorenpakets werden?
 - Wie werden Notizen semantisch erfasst, ohne `itemize` umzudefinieren?
