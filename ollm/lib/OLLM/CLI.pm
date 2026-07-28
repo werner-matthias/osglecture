@@ -75,8 +75,32 @@ sub run {
     return 0;
   }
 
+  if ($resolved->{configuration}{kind} eq 'toml') {
+    if ($plan->{resolve}) {
+      print STDERR
+        "ollm: --resolve is not implemented by the new build executor yet\n";
+      return 69;
+    }
+    require OLLM::Executor;
+    my $status = eval {
+      OLLM::Executor->execute(
+        resolved => $resolved,
+        latexmk_rc => File::Spec->catfile(
+          $arg{script_dir}, 'ollm-latexmk.rc',
+        ),
+      )
+    };
+    if (!defined $status) {
+      my $error = $@ || 'unknown build-executor error';
+      chomp $error;
+      print STDERR "ollm: $error\n";
+      return 2;
+    }
+    return $status;
+  }
+
   my @unsupported = grep { $plan->{$_} } qw(all resolve);
-  if (@unsupported || $resolved->{configuration}{kind} eq 'toml') {
+  if (@unsupported) {
     print STDERR
       "ollm: this build requires the new build engine; use --dry-run to inspect it\n";
     return 69;
@@ -290,13 +314,17 @@ sub _source_directory {
 sub _print_plan {
   my ($class, $plan, $resolved) = @_;
   if ($plan->{format} eq 'json') {
-    print JSON::PP->new->canonical->pretty->encode({
+    my $output = {
       schema        => 'org.osglecture.ollm.build-request',
       version       => 1,
       configuration => $resolved->{configuration},
-      build_spec    => $resolved->{build_spec},
       request       => $resolved->{request},
-    });
+    };
+    $output->{build_spec} = $resolved->{build_spec}
+      if $resolved->{build_spec};
+    $output->{build_specs} = $resolved->{build_specs}
+      if $resolved->{build_specs};
+    print JSON::PP->new->canonical->pretty->encode($output);
     return;
   }
 
@@ -309,8 +337,12 @@ sub _print_plan {
   print "Source:   $request->{source}\n";
   print "Config:   ",
     ($configuration->{path} // $configuration->{kind}), "\n";
-  print "Job:      $resolved->{build_spec}{job_id}\n"
-    if defined $resolved->{build_spec};
+  if ($resolved->{build_specs}) {
+    print "Builds:   ", scalar(@{ $resolved->{build_specs} }), "\n";
+    print "Job:      $_->{job_id}\n" for @{ $resolved->{build_specs} };
+  } elsif ($resolved->{build_spec}) {
+    print "Job:      $resolved->{build_spec}{job_id}\n";
+  }
   print "Mode:     dry-run\n";
 }
 

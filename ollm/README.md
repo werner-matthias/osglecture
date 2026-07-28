@@ -4,10 +4,11 @@ OLLM (OSG LaTeX Lecture Maker) is the build frontend of the `osglecture`
 bundle. It selects document and language variants and delegates individual
 LaTeX builds to `latexmk`.
 
-The program in `ollm` is the new portable command-line launcher. Compatible
-builds are currently delegated to the preserved `ollm-legacy.rc`, version
-0.11.1. Its command-line interface remains the compatibility baseline while
-the build engine is being redesigned.
+The program in `ollm` is the portable command-line launcher. Builds using
+`ollmconfig.toml` are executed by the new build executor. Projects using the
+old Perl manifest and explicit standalone invocations continue to be delegated
+to the preserved `ollm-legacy.rc`, version 0.11.1, so its command-line
+interface remains the compatibility baseline during migration.
 
 - [`DESIGN.md`](DESIGN.md) specifies the target architecture and records its
   rationale.
@@ -98,3 +99,35 @@ job-bound `<jobname>.osgbuild.tex`. The reader in
 `../osglecture/osglecture-config.sty` validates its schema and requires its
 `job-id` to match TeX's current job name. `--dry-run --format=json` exposes the
 same normalized `build_spec` without writing or starting LaTeX.
+
+## Build execution
+
+Each configured target/language pair is normalized to a concrete BuildSpec.
+The executor loads only the bundled `ollm-latexmk.rc`; personal and directory
+`latexmk` configuration files do not alter the controlled build contract.
+Series builds use:
+
+```text
+<project-root>/.osglecture/build/<physical-unit>/<target>/<language>/
+```
+
+for their PDF, recorder data, `latexmk` state, auxiliary files, and the
+job-bound `<jobname>.osgbuild.tex`. OLLM starts `latexmk` with LuaLaTeX,
+recorder mode, SyncTeX, an explicit job name, and controlled output paths.
+
+The manifest policy maps directly to the LuaLaTeX engine:
+
+```text
+off         --no-shell-escape
+restricted  --shell-restricted
+full        --shell-escape
+```
+
+If `[security].shell_escape` is omitted, the new executor uses `restricted`.
+Conflicting user-supplied output, job-name, engine, recorder, working-directory,
+or shell-escape options are rejected rather than silently overriding the
+BuildSpec.
+
+`--all` creates one BuildSpec for each configured target/language pair that
+applies to the current unit profile. Target definitions declare this
+applicability through `unit_profiles`.

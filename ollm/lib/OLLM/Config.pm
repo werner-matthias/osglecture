@@ -89,6 +89,10 @@ sub resolve_request {
     delete $request{language};
     my @builds;
     for my $target (sort keys %$targets) {
+      next if !_unit_allows_target(
+        $start,
+        $definitions->{targets}{$target}{unit_profiles},
+      );
       for my $language (@{ $targets->{$target}{languages} }) {
         push @builds, {
           target   => $target,
@@ -97,6 +101,9 @@ sub resolve_request {
         };
       }
     }
+    die "no configured target/language combination applies to unit "
+      . File::Basename::basename($start)
+      if !@builds;
     $request{builds} = \@builds;
   } else {
     my $target = $request{target};
@@ -127,8 +134,24 @@ sub resolve_request {
       parser  => $class->parser_info,
     },
   };
-  if (!$request{all}) {
-    require OLLM::BuildFile;
+  require OLLM::BuildFile;
+  if ($request{all}) {
+    my @specs = map {
+      OLLM::BuildFile->build_spec(
+        resolved       => $resolved,
+        manifest       => $manifest,
+        unit_directory => $start,
+        target          => $_->{target},
+        language        => $_->{language},
+      )
+    } @{ $request{builds} };
+    my %job;
+    for my $spec (@specs) {
+      die "build matrix produces duplicate job id '$spec->{job_id}'"
+        if $job{$spec->{job_id}}++;
+    }
+    $resolved->{build_specs} = \@specs;
+  } else {
     $resolved->{build_spec} = OLLM::BuildFile->build_spec(
       resolved       => $resolved,
       manifest       => $manifest,
@@ -136,6 +159,14 @@ sub resolve_request {
     );
   }
   return $resolved;
+}
+
+sub _unit_allows_target {
+  my ($directory, $profiles) = @_;
+  my $name = File::Basename::basename(File::Spec->rel2abs($directory));
+  return 1 if $name !~ /\A\d{3}([a-z]{1,2})-/;
+  my $profile = $1;
+  return scalar grep { $_ eq $profile } @{ $profiles // [] };
 }
 
 sub find_manifest {
@@ -360,7 +391,11 @@ sub resolve_definitions {
       doctype => $target{$name}{data}{doctype},
       family  => $target{$name}{data}{family},
       path    => $target{$name}{path},
+      signature => sha256_hex(
+        JSON::PP->new->canonical->encode($target{$name}{data}),
+      ),
       version => $target{$name}{data}{version},
+      unit_profiles => $target{$name}{data}{unit_profiles} // [],
     };
     $selected_target_data{$name} = $target{$name}{data};
   }
@@ -380,6 +415,9 @@ sub resolve_definitions {
       reference => $profile_name,
       version => $profile{$profile_name}{data}{version},
       latex   => $profile{$profile_name}{data}{latex} // {},
+      signature => sha256_hex(
+        JSON::PP->new->canonical->encode($profile{$profile_name}{data}),
+      ),
     },
     search_paths => [map { abs_path($_) // $_ } @paths],
     targets      => \%selected_targets,
@@ -407,7 +445,8 @@ sub _load_local_config {
 sub _load_definition {
   my ($class, $path) = @_;
   my ($data, $lines) = $class->_load_toml($path);
-  _known_keys($data, [qw(schema kind name version latex doctype family)],
+  _known_keys($data,
+    [qw(schema kind name version latex doctype family unit_profiles)],
     $path, $lines, '');
   if (!defined $data->{schema} || ref $data->{schema}
       || $data->{schema} != $DEFINITION_SCHEMA) {
@@ -427,9 +466,20 @@ sub _load_definition {
       if exists $data->{doctype};
     _fail_at($path, $lines, 'family', "profile must not define 'family'")
       if exists $data->{family};
+    _fail_at($path, $lines, 'unit_profiles',
+      "profile must not define 'unit_profiles'")
+      if exists $data->{unit_profiles};
   } else {
     _require_string($data, 'doctype', $path);
     _require_string($data, 'family', $path);
+    if (exists $data->{unit_profiles}) {
+      my $profiles = _require_string_array($data, 'unit_profiles', $path);
+      for my $profile (@$profiles) {
+        _fail_at($path, $lines, 'unit_profiles',
+          "invalid target unit profile '$profile'")
+          if $profile !~ /\A[a-z]{1,2}\z/;
+      }
+    }
     _fail_at($path, $lines, 'latex', "target must not define 'latex'")
       if exists $data->{latex};
   }

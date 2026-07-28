@@ -46,10 +46,26 @@ is_deeply $spec->{language_map}, { de => 'ngerman', en => 'british' },
   'language mapping reaches the build specification';
 like $spec->{config_signature}, qr/\A[0-9a-f]{64}\z/,
   'build specification carries a deterministic configuration signature';
+is $spec->{shell_escape}, 'restricted',
+  'manifest shell-escape policy reaches the build specification';
+is $spec->{latex}{theme}, 'osg',
+  'profile LaTeX defaults reach the build specification';
+like $spec->{build_directory},
+  qr{[.]osglecture/build/020-processes/script/de\z},
+  'build directory is isolated by unit, target, and language';
+is $spec->{aux_directory}, $spec->{build_directory},
+  'auxiliary state stays inside the isolated build directory';
+is $spec->{artifact},
+  File::Spec->catfile($spec->{build_directory}, "$spec->{job_id}.pdf"),
+  'artifact path is explicit';
 
 my $content = OLLM::BuildFile->render($spec);
 like $content, qr/job-id=\{bs-020-script-de-processes\}/,
   'rendered build file binds itself to the job id';
+like $content, qr/theme=\{osg\}/,
+  'rendered build file contains effective LaTeX defaults';
+like $content, qr/shell-escape=\{restricted\}/,
+  'rendered build file records the shell-escape policy';
 
 my $temporary = tempdir(CLEANUP => 1);
 my $build_file = File::Spec->catfile(

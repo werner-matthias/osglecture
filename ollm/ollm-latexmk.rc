@@ -1,0 +1,3 @@
+# Build-engine defaults owned by the new OLLM executor.
+$pdf_mode = 4;
+$recorder = 1;

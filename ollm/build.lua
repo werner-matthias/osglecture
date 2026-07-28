@@ -7,6 +7,7 @@ docfiledir = maindir .. "/doc/ollm"
 scriptfiles = {
   "ollm",
   "ollm.cmd",
+  "ollm-latexmk.rc",
   "ollm-legacy.rc",
 }
 installfiles = { }
@@ -22,12 +23,14 @@ tdsdirs = {
 tdslocations = {
   "scripts/osglecture/ollm",
   "scripts/osglecture/ollm.cmd",
+  "scripts/osglecture/ollm-latexmk.rc",
   "scripts/osglecture/ollm-legacy.rc",
 }
 
 sourcefiles = {
   "ollm",
   "ollm.cmd",
+  "ollm-latexmk.rc",
   "ollm-legacy.rc",
   "ollm.tex",
   "definitions/profiles/*.toml",
@@ -64,6 +67,10 @@ end
 -- even before there are stable CLI contracts to exercise.
 function checkinit_hook()
   local errorlevel = runcmd("perl -c ollm", ".", { })
+  if errorlevel ~= 0 then
+    return errorlevel
+  end
+  errorlevel = runcmd("perl -c ollm-latexmk.rc", ".", { })
   if errorlevel ~= 0 then
     return errorlevel
   end

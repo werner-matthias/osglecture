@@ -4,3 +4,4 @@ name = "slides"
 version = "1.0"
 doctype = "slides"
 family = "presentation"
+unit_profiles = ["b", "bs"]

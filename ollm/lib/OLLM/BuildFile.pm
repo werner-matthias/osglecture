@@ -5,7 +5,8 @@ use strict;
 use warnings;
 
 use Digest::SHA qw(sha256_hex);
-use File::Basename qw(basename);
+use File::Basename qw(basename dirname);
+use File::Path qw(make_path);
 use File::Spec;
 use File::Temp qw(tempfile);
 use JSON::PP;
@@ -20,27 +21,57 @@ sub build_spec {
   my $configuration = $resolved->{configuration};
   die "build files require series context"
     if $request->{context} ne 'series';
-  die "build files require one concrete target"
-    if !defined $request->{target} || $request->{all};
-  die "build files require one concrete language"
-    if !defined $request->{language};
+  my $target_name = $arg{target} // $request->{target};
+  my $language = $arg{language} // $request->{language};
+  die "build files require one concrete target" if !defined $target_name;
+  die "build files require one concrete language" if !defined $language;
 
   my $unit_directory = $arg{unit_directory} // '.';
-  my $physical_unit = basename(File::Spec->rel2abs($unit_directory));
+  $unit_directory = File::Spec->rel2abs($unit_directory);
+  my $physical_unit = basename($unit_directory);
   my ($number, $profile, $role, $slug) = _parse_unit($physical_unit);
-  my $target = $configuration->{definitions}{targets}{$request->{target}}
-    // die "resolved target '$request->{target}' has no definition";
+  my $target = $configuration->{definitions}{targets}{$target_name}
+    // die "resolved target '$target_name' has no definition";
   my $doctype = $target->{doctype};
+  _validate_job_atom('series id', $request->{series_id});
+  _validate_job_atom('document type', $doctype);
+  _validate_job_atom('language', $language);
+  _validate_job_atom('unit id', $slug, 1);
   my $job_id = join '-',
-    $request->{series_id}, $number, $doctype, $request->{language}, $slug;
+    $request->{series_id}, $number, $doctype, $language, $slug;
+  my $project_root = File::Spec->rel2abs($request->{project_root});
+  my $source = File::Spec->rel2abs($request->{source}, $unit_directory);
+  die "source file not found: $source" if !-f $source;
+  my $build_directory = File::Spec->catdir(
+    $project_root, '.osglecture', 'build', $physical_unit,
+    $target_name, $language,
+  );
+  my $artifact = File::Spec->catfile($build_directory, "$job_id.pdf");
+  my $latex = _effective_latex(
+    $configuration->{definitions}{profile}{latex} // {},
+    $arg{manifest}{latex} // {},
+  );
+  my $shell_escape = $arg{manifest}{security}{shell_escape} // 'restricted';
 
   my $config_signature = sha256_hex(
     JSON::PP->new->canonical->encode({
-      definitions => $configuration->{definitions}{definition_signature},
-      target      => $request->{target},
+      manifest    => {
+        schema    => $arg{manifest}{schema},
+        profile   => $arg{manifest}{profile},
+        project   => $arg{manifest}{project},
+        languages => $arg{manifest}{languages},
+        target    => $arg{manifest}{targets}{$target_name},
+        security  => $arg{manifest}{security} // {},
+        latex     => $arg{manifest}{latex} // {},
+      },
+      profile     => $configuration->{definitions}{profile}{signature},
+      target_definition => $target->{signature},
+      target      => $target_name,
       doctype     => $doctype,
-      language    => $request->{language},
+      language    => $language,
       physical_unit => $physical_unit,
+      latex       => $latex,
+      shell_escape => $shell_escape,
     }),
   );
   return {
@@ -53,12 +84,21 @@ sub build_spec {
     unit_profile        => $profile,
     unit_role           => $role,
     unit_id             => $slug,
-    target              => $request->{target},
+    target              => $target_name,
     doctype             => $doctype,
-    language            => $request->{language},
+    language            => $language,
     available_languages => $arg{manifest}{languages}{available},
     language_map        => $arg{manifest}{languages}{map} // {},
     profile             => $configuration->{definitions}{profile}{reference},
+    project_root        => $project_root,
+    source              => $source,
+    source_directory    => dirname($source),
+    build_directory     => $build_directory,
+    aux_directory       => $build_directory,
+    artifact            => $artifact,
+    latex               => $latex->{defaults},
+    latex_enforce       => $latex->{enforce},
+    shell_escape        => $shell_escape,
     config_signature    => $config_signature,
   };
 }
@@ -69,6 +109,20 @@ sub render {
   my @map = map {
     _tex_atom($_) . '=' . _tex_atom($spec->{language_map}{$_})
   } sort keys %{ $spec->{language_map} };
+  my %latex_key = (
+    identity_profile     => 'identity-profile',
+    numbering            => 'numbering',
+    presentation_backend => 'presentation-backend',
+    references           => 'references',
+    theme                => 'theme',
+  );
+  my @latex = map {
+    "  $latex_key{$_}={" . _tex_atom($spec->{latex}{$_}) . "},"
+  } sort keys %{ $spec->{latex} };
+  my @enforce = map {
+    "  $latex_key{$_}={" . _tex_atom($spec->{latex_enforce}{$_}) . "},"
+  } sort keys %{ $spec->{latex_enforce} };
+  $enforce[-1] =~ s/,\z// if @enforce;
   my @lines = (
     '% Generated by OLLM. Do not edit.',
     "\\OsgLectureBuildSetup{",
@@ -87,8 +141,13 @@ sub render {
     "  available-languages={" . join(',', @languages) . "},",
     "  language-map={" . join(',', @map) . "},",
     "  profile={" . _tex_atom($spec->{profile}) . "},",
+    @latex,
+    "  shell-escape={" . _tex_atom($spec->{shell_escape}) . "},",
     "  config-signature={" . _tex_atom($spec->{config_signature}) . "}",
     "}",
+    (@enforce
+      ? ("\\OsgLectureEnforceSetup{", @enforce, "}")
+      : ()),
     '',
   );
   return join "\n", @lines;
@@ -132,6 +191,16 @@ sub write_atomic {
   return 1;
 }
 
+sub write_for_spec {
+  my ($class, $spec) = @_;
+  make_path($spec->{build_directory});
+  my $path = File::Spec->catfile(
+    $spec->{build_directory}, "$spec->{job_id}.osgbuild.tex",
+  );
+  $class->write_atomic($path, $class->render($spec));
+  return $path;
+}
+
 sub _parse_unit {
   my ($name) = @_;
   die "invalid series unit directory '$name'; expected "
@@ -140,6 +209,32 @@ sub _parse_unit {
   my ($number, $profile, $role, $slug) = ($1, $2, $3 // 'content', $4);
   die "invalid empty unit slug in '$name'" if $slug eq '';
   return ($number, $profile, $role, $slug);
+}
+
+sub _effective_latex {
+  my ($profile, $project) = @_;
+  my %defaults = (
+    %{ $profile->{defaults} // {} },
+    %{ $project->{defaults} // {} },
+  );
+  my %enforce = (
+    %{ $profile->{enforce} // {} },
+    %{ $project->{enforce} // {} },
+  );
+  return {
+    defaults => \%defaults,
+    enforce  => \%enforce,
+  };
+}
+
+sub _validate_job_atom {
+  my ($label, $value, $allow_hyphen) = @_;
+  die "$label is missing" if !defined $value || $value eq '';
+  my $pattern = $allow_hyphen
+    ? qr/\A[A-Za-z0-9._]+(?:-[A-Za-z0-9._]+)*\z/
+    : qr/\A[A-Za-z0-9._]+\z/;
+  die "invalid $label '$value' for a portable job name"
+    if $value !~ $pattern;
 }
 
 sub _tex_atom {

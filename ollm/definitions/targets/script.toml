@@ -4,3 +4,4 @@ name = "script"
 version = "1.0"
 doctype = "script"
 family = "publication"
+unit_profiles = ["a", "as"]

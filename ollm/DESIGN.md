@@ -408,12 +408,18 @@ name = "slides"
 version = "1.0"
 doctype = "slides"
 family = "presentation"
+unit_profiles = ["b", "bs"]
 ```
 
 Weitere fachliche Tabellen werden bei Bedarf ergänzt. Stabil sind zunächst
 Schema, Art, registrierter Name, Version und die eindeutige Auflösung.
 Definitionen gleichen Namens an mehreren Suchorten sind ein Fehler und werden
 nicht stillschweigend überschrieben.
+
+Targetdefinitionen nennen mit `unit_profiles` die ein- oder zweibuchstabigen
+Einheitenprofile, auf die das Target eingeschränkt ist. Einheiten ohne Profil
+bleiben für alle konfigurierten Targets gültig. Damit bleibt die Filterung von
+`--all` erweiterbar und wird nicht aus Targetnamen abgeleitet.
 
 ### 7.4 Lokale Konfiguration
 
@@ -574,7 +580,7 @@ aktuellen Einheit, zusätzlich gefiltert durch deren Profil und Rolle.
 
 ## 9. Jobname und Verzeichnisse
 
-### 9.1 Vorläufige Grammatik
+### 9.1 Grammatik
 
 ```text
 <series>-<physical-number>-<doctype>[+<variant>]-<language>-<slug>
@@ -606,9 +612,11 @@ Slug von links, ohne eine Suche von hinten oder Wissen über registrierte
 Dokumenttypen zu verlangen. Die Zuordnung des Auftrags bleibt trotzdem durch
 den Jobnamen abgesichert.
 
-Serienkennung, Dokumenttyp, Variante und Sprache dürfen selbst kein `-`
-enthalten; Dokumenttyp und Variante dürfen außerdem kein `+` enthalten. Die
-weiteren Escaping- und Zeichensatzregeln sind noch festzulegen.
+Serienkennung, Dokumenttyp und Sprache verwenden für den ersten Executor
+ausschließlich ASCII-Buchstaben, Ziffern, Punkt und Unterstrich. Der Slug darf
+zusätzlich einzelne Bindestriche als Segmenttrenner enthalten. Leere Segmente,
+Pfadtrenner, Leerzeichen und sonstige Sonderzeichen sind unzulässig. Eine
+spätere Erweiterung benötigt ein stabiles, reversibles Escapingverfahren.
 
 Im Standalone-Kontext ist der Jobname opak. Dokumenttyp und Sprache werden dort
 über Klassenoptionen beziehungsweise einen expliziten Buildauftrag bestimmt,
@@ -635,11 +643,11 @@ der Klasse berechnen. Der Rückkanal vermeidet doppelte Discoverylogik.
 
 ### 9.3 Isolierte Builds
 
-Jeder Build besitzt ein eigenes Build- beziehungsweise Aux-Verzeichnis.
-Eine mögliche Struktur ist:
+Jeder Build besitzt ein eigenes Build- beziehungsweise Aux-Verzeichnis. Der
+erste Executor verwendet für Serienbuilds:
 
 ```text
-.osglecture/build/
+<project-root>/.osglecture/build/
 `- 020-processes/
    |- slides/de/
    |- handout/de/
@@ -647,8 +655,14 @@ Eine mögliche Struktur ist:
    `- script/en/
 ```
 
-Der endgültige Pfadvertrag ist offen. Er muss parallele Builds, SyncTeX und
-Viewerbetrieb unterstützen.
+Build- und Aux-Verzeichnis sind in dieser Stufe identisch; alle privaten
+`latexmk`-, Recorder- und TeX-Ausgaben eines Builds bleiben dadurch gemeinsam
+isoliert. `latexmk` wechselt mit `-cd` in das Quellverzeichnis, erhält aber
+absolute Ausgabewege. Das Buildverzeichnis wird für den Prozess zusätzlich
+über `TEXINPUTS` sichtbar gemacht, damit die Klasse die jobgebundene
+Auftragsdatei findet. SyncTeX bleibt aktiviert. Ein später getrenntes
+Artefaktverzeichnis darf diesen Vertrag erweitern, ohne die Buildidentität zu
+ändern.
 
 ## 10. Buildauftragsdatei
 
@@ -1168,8 +1182,9 @@ restricted
 full
 ```
 
-Der Default ist sicher (`off` oder `restricted`; endgültig vor Implementierung
-festzulegen). OLLM ändert keine globale Allowlist. `doctor` prüft, ob
+Der Default des neuen Executors ist `restricted`. Die Policies werden explizit
+auf `--no-shell-escape`, `--shell-restricted` beziehungsweise
+`--shell-escape` abgebildet. OLLM ändert keine globale Allowlist. `doctor` prüft, ob
 erforderliche Programme in der jeweiligen TeX-Distribution zulässig sind.
 
 Vollständiges Shell-Escape muss ausdrücklich aktiviert werden.
@@ -1322,15 +1337,12 @@ Vor der Implementierung sind noch festzulegen:
 2. genaue Profilfundorte;
 3. vollständiges Schema von `ollmconfig.toml` über den implementierten Kern
    hinaus;
-4. Jobnamen-Escaping und zulässiger Zeichensatz;
-5. endgültiger Build-/Aux-Verzeichnispfad;
-6. Strategie für Struktur- und Lua-Dateiabhängigkeiten;
-7. JSON- und Aux-Schemata einschließlich Generationsmodell;
-8. numerische Exitcodes;
-9. genaue Clean-Levelnamen;
-10. sicherer Default `off` oder `restricted`;
-11. lokale Konfigurationsdatei und Benutzerkonfiguration;
-12. Deploymentvertrag.
+4. Strategie für Struktur- und Lua-Dateiabhängigkeiten;
+5. JSON- und Aux-Schemata einschließlich Generationsmodell;
+6. numerische Exitcodes;
+7. genaue Clean-Levelnamen;
+8. Benutzerkonfiguration zusätzlich zur projektlokalen Konfiguration;
+9. Deploymentvertrag.
 
 Diese Punkte dürfen die in diesem Dokument festgelegten Verantwortungsgrenzen
 und Invarianten nicht aufweichen.

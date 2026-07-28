@@ -4,3 +4,4 @@ name = "handout"
 version = "1.0"
 doctype = "handout"
 family = "presentation"
+unit_profiles = ["b", "bh"]

@@ -8,6 +8,7 @@
 \ExplSyntaxOn
 
 \prop_new:N \g__osglecture_build_prop
+\prop_new:N \g__osglecture_enforce_prop
 \bool_new:N \g__osglecture_build_loaded_bool
 
 \msg_new:nnnn { osglecture-config } { unsupported-schema }
@@ -49,8 +50,31 @@
       \__osglecture_build_put:nn {available-languages} {#1},
     language-map        .code:n = \__osglecture_build_put:nn {language-map} {#1},
     profile             .code:n = \__osglecture_build_put:nn {profile} {#1},
+    presentation-backend .code:n =
+      \__osglecture_build_put:nn {presentation-backend} {#1},
+    identity-profile    .code:n =
+      \__osglecture_build_put:nn {identity-profile} {#1},
+    theme               .code:n = \__osglecture_build_put:nn {theme} {#1},
+    numbering           .code:n = \__osglecture_build_put:nn {numbering} {#1},
+    references          .code:n = \__osglecture_build_put:nn {references} {#1},
+    shell-escape        .code:n =
+      \__osglecture_build_put:nn {shell-escape} {#1},
     config-signature    .code:n =
       \__osglecture_build_put:nn {config-signature} {#1},
+  }
+
+\keys_define:nn { osglecture/enforce }
+  {
+    presentation-backend .code:n =
+      \prop_gput:Nnn \g__osglecture_enforce_prop {presentation-backend} {#1},
+    identity-profile .code:n =
+      \prop_gput:Nnn \g__osglecture_enforce_prop {identity-profile} {#1},
+    theme .code:n =
+      \prop_gput:Nnn \g__osglecture_enforce_prop {theme} {#1},
+    numbering .code:n =
+      \prop_gput:Nnn \g__osglecture_enforce_prop {numbering} {#1},
+    references .code:n =
+      \prop_gput:Nnn \g__osglecture_enforce_prop {references} {#1},
   }
 
 \cs_new_protected:Npn \__osglecture_build_validate:
@@ -82,6 +106,15 @@
 
 \NewExpandableDocumentCommand \OsgLectureBuildValue { m }
   { \prop_item:Nn \g__osglecture_build_prop {#1} }
+
+\NewDocumentCommand \OsgLectureEnforceSetup { m }
+  {
+    \prop_gclear:N \g__osglecture_enforce_prop
+    \keys_set:nn {osglecture/enforce} {#1}
+  }
+
+\NewExpandableDocumentCommand \OsgLectureEnforcedValue { m }
+  { \prop_item:Nn \g__osglecture_enforce_prop {#1} }
 
 \NewDocumentCommand \OsgLectureBuildLoadedTF { m m }
   { \bool_if:NTF \g__osglecture_build_loaded_bool {#1} {#2} }

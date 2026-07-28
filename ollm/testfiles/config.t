@@ -72,6 +72,53 @@ $resolved = OLLM::Config->resolve_request(
 );
 is scalar @{ $resolved->{request}{builds} }, 4,
   '--all expands only configured target/language pairs';
+is scalar @{ $resolved->{build_specs} }, 4,
+  '--all resolves every configured pair to a concrete BuildSpec';
+is_deeply(
+  [map { $_->{job_id} } @{ $resolved->{build_specs} }],
+  [
+    'bs-020-handout-de-processes',
+    'bs-020-script-de-processes',
+    'bs-020-script-en-processes',
+    'bs-020-slides-de-processes',
+  ],
+  '--all produces deterministic job identities',
+);
+
+my $profiled_root = tempdir(CLEANUP => 1);
+my $profiled_unit = File::Spec->catdir($profiled_root, '020as-processes');
+make_path($profiled_unit);
+open my $profiled_manifest, '>',
+  File::Spec->catfile($profiled_root, 'ollmconfig.toml') or die $!;
+open my $fixture_manifest, '<', $manifest_path or die $!;
+print {$profiled_manifest} $_ while <$fixture_manifest>;
+close $fixture_manifest;
+close $profiled_manifest;
+open my $profiled_source, '>',
+  File::Spec->catfile($profiled_unit, 'main.tex') or die $!;
+print {$profiled_source} "\\documentclass{article}\n";
+close $profiled_source;
+my $profiled = OLLM::Config->resolve_request(
+  start_dir       => $profiled_unit,
+  definitions_dir => $definitions,
+  plan => {
+    action => 'build',
+    all => 1,
+    dry_run => 1,
+    latexmk_args => [],
+    legacy_args => [],
+    non_interactive => 0,
+    rebuild => 0,
+    resolve => 0,
+    source => 'main.tex',
+    target => 'slides',
+  },
+);
+is_deeply(
+  [map { $_->{target} } @{ $profiled->{build_specs} }],
+  ['script', 'script'],
+  '--all filters target/language pairs through target unit profiles',
+);
 
 my $standalone = OLLM::Config->resolve_request(
   plan => {
