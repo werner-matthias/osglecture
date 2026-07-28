@@ -128,6 +128,36 @@ Conflicting user-supplied output, job-name, engine, recorder, working-directory,
 or shell-escape options are rejected rather than silently overriding the
 BuildSpec.
 
+Additional `latexmk` rc files and startup Perl code (`-r`, `-e`) are rejected,
+as are non-LuaLaTeX engines, `-out2dir`, injected `-latexoption` values, and
+`-use-make`. OLLM owns the normalized configuration, artifact location, and
+orchestration of dependent builds.
+
+Native `latexmk` clean and information actions such as `-c`, `-C`, `-help`,
+and `-version` are passed through. OLLM does not require a PDF after such an
+action. Options that still request an OLLM build or build matrix, such as
+`--rebuild` or `--all`, are rejected when they contradict the selected
+`latexmk` action. A future `ollm clean` implementation may expose the
+target-scoped `latexmk` cleanup through OLLM's own level and scope model.
+
 `--all` creates one BuildSpec for each configured target/language pair that
 applies to the current unit profile. Target definitions declare this
 applicability through `unit_profiles`.
+
+## Continuous builds and viewers
+
+OLLM delegates continuous compilation and preview to `latexmk`. Options such
+as `-pvc`, `-cc`, `-pv`, and `-view=none` are passed through. Continuous mode
+is restricted to one concrete BuildSpec because its `latexmk` process remains
+active; combining it with `--all` is therefore an error. Viewer or print
+actions are rejected under `--non-interactive`, while `-pvc -view=none` and
+`-cc` remain valid headless continuous-build modes.
+
+OLLM normalizes the manifest and writes the build-request file before starting
+`latexmk`. Changes to `ollmconfig.toml`, local configuration, or profile and
+target definitions therefore require restarting OLLM. LaTeX source changes
+continue to be handled normally by `latexmk`.
+
+Interrupting a build is passed through as a conventional signal exit status;
+in particular, Ctrl-C results in exit code 130 on platforms using POSIX wait
+status.

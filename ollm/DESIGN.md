@@ -1001,6 +1001,22 @@ Das historische `+`-Präfix für OLLM-Optionen bleibt unterstützt. Bekannte
 nackte Wörter werden kompatibel als OLLM-Aktionen oder Dokumenttypen erkannt.
 Normale unbekannte Minusoptionen werden an `latexmk` weitergereicht.
 
+Die Durchreichung endet an den von OLLM kontrollierten Verträgen. Zusätzliche
+RC-Dateien oder Perl-Startcode (`-r`, `-e`), andere Engines als LuaLaTeX,
+alternative Ausgabeformate, `-out2dir`, indirekte Engineoptionen und
+`-use-make` sind Fehler. OLLM besitzt Engine, Jobname, Recorder,
+Arbeits-/Ausgabepfade, Shell-Escape-Policy und die Orchestration abhängiger
+Builds. Diagnosen nennen den verletzten Vertrag und, soweit möglich, eine
+eindeutige Alternative.
+
+Eigenständige `latexmk`-Aktionen wie Clean, Help, Version oder
+Konfigurationsauskunft dürfen durchgereicht werden. Nach ihnen erwartet OLLM
+kein Buildartefakt. Widersprechen zusätzliche OLLM-Optionen der Aktion, etwa
+`--rebuild` zusammen mit `latexmk -C` oder `--all` zusammen mit einer reinen
+Informationsausgabe, wird der Aufruf vor dem Prozessstart abgewiesen. Das
+spätere `ollm clean` darf die targetbezogene `latexmk`-Bereinigung in das
+OLLM-Modell aus Level und Scope integrieren.
+
 `--` behält seine Unix-Bedeutung als Ende der Optionsauswertung. Nachfolgende
 Argumente sind Operanden, nicht pauschal `latexmk`-Optionen.
 
@@ -1200,6 +1216,21 @@ erfolgreichen Build einen konfigurierbaren Vieweradapter benachrichtigen.
 
 Der Adapter darf den Buildkern nicht voraussetzen und muss unter
 `--non-interactive` deaktiviert sein.
+
+Der erste Executor reicht die Watch- und Vieweroptionen von `latexmk` durch.
+Kontinuierlicher Betrieb ist auf genau einen konkreten BuildSpec beschränkt;
+mit `--all` wäre der erste dauerhafte Prozess andernfalls ein Blocker für alle
+folgenden Builds. Unter `--non-interactive` sind Viewer- und Druckaktionen
+unzulässig, während kontinuierliches Bauen mit `-view=none` zulässig bleibt.
+
+Projektmanifest, lokale Konfiguration sowie Profil- und Targetdefinitionen
+werden vor dem Start von `latexmk` normalisiert. Änderungen an diesen Dateien
+erfordern einen Neustart von OLLM. OLLM implementiert hierfür keinen zweiten
+Dateiwächter neben `latexmk`.
+
+Signalbedingte Prozessabbrüche werden von normalen Buildfehlern unterschieden.
+Auf Systemen mit POSIX-Waitstatus wird insbesondere ein Abbruch mit Ctrl-C als
+Exitcode 130 weitergegeben.
 
 Getrennte Buildverzeichnisse müssen SyncTeX und Vorwärts-/Rückwärtssuche
 erhalten. Dies ist ein Abnahmekriterium, kein optionales Komfortmerkmal.

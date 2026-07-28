@@ -70,6 +70,19 @@ sub run {
     return 2;
   }
 
+  if ($resolved->{configuration}{kind} eq 'toml') {
+    my $valid = eval {
+      require OLLM::Executor;
+      OLLM::Executor->validate_request($resolved);
+    };
+    if (!$valid) {
+      my $error = $@ || 'invalid build option combination';
+      chomp $error;
+      print STDERR "ollm: $error\n";
+      return 2;
+    }
+  }
+
   if ($plan->{dry_run}) {
     $class->_print_plan($plan, $resolved);
     return 0;
@@ -182,6 +195,7 @@ sub parse {
     if (exists $TARGET_ALIAS{$compat}) {
       die "more than one document target specified" if defined $plan{target};
       $plan{target} = $TARGET_ALIAS{$compat};
+      $plan{target_explicit} = 1;
       next;
     }
 
@@ -221,18 +235,22 @@ sub parse {
 
     if ($arg =~ /^(?:--language=|\+?lang=)(.+)$/) {
       $plan{language} = $1;
+      $plan{language_explicit} = 1;
       next;
     }
     if ($arg eq '--language') {
       $plan{language} = _take_value($arg, \@argv);
+      $plan{language_explicit} = 1;
       next;
     }
     if ($arg =~ /^--source=(.+)$/) {
       $plan{source} = $1;
+      $plan{source_explicit} = 1;
       next;
     }
     if ($arg eq '--source') {
       $plan{source} = _take_value($arg, \@argv);
+      $plan{source_explicit} = 1;
       next;
     }
     if ($arg =~ /^--config=(.+)$/) {
@@ -273,6 +291,12 @@ sub parse {
       next;
     }
 
+    if ($arg =~ /\A--?(?:e|r)\z/) {
+      die "latexmk option '$arg' is not accepted by OLLM because additional "
+        . "rc files or startup Perl code could override OLLM's controlled "
+        . "build configuration\n";
+    }
+
     if ($arg =~ /^-/) {
       push @{ $plan{latexmk_args} }, $arg;
       next;
@@ -285,6 +309,7 @@ sub parse {
     die "too many operands" if @{ $plan{operands} } > 1;
     die "source specified twice" if defined $plan{source};
     $plan{source} = $plan{operands}[0];
+    $plan{source_explicit} = 1;
   }
 
   $plan{target} //= 'slides' if $plan{action} eq 'build';

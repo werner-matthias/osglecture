@@ -48,6 +48,9 @@ sub resolve_request {
     resolve         => $plan->{resolve} ? 1 : 0,
     source          => $plan->{source} // 'main.tex',
     target          => $plan->{target},
+    target_explicit => $plan->{target_explicit} ? 1 : 0,
+    language_explicit => $plan->{language_explicit} ? 1 : 0,
+    source_explicit => $plan->{source_explicit} ? 1 : 0,
   );
   $request{language} = $plan->{language} if defined $plan->{language};
   $request{debug} = $plan->{debug} if defined $plan->{debug};

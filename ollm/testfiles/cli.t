@@ -44,4 +44,8 @@ is_deeply(
 eval { OLLM::CLI->parse(qw(slides script)) };
 like $@, qr/more than one document target/, 'conflicting targets rejected';
 
+eval { OLLM::CLI->parse(qw(script -r project.rc)) };
+like $@, qr/additional rc files.*controlled build configuration/,
+  'two-argument latexmk rc injection is rejected by the CLI parser';
+
 done_testing;
