@@ -161,3 +161,28 @@ continue to be handled normally by `latexmk`.
 Interrupting a build is passed through as a conventional signal exit status;
 in particular, Ctrl-C results in exit code 130 on platforms using POSIX wait
 status.
+
+## Path and process robustness
+
+Series units and project roots are canonicalized before a BuildSpec is
+created. A series unit must remain inside its project root. Build-state paths
+are checked again before directory creation so that a symlinked
+`.osglecture` directory cannot redirect writes outside the project.
+
+Job identities, configured languages, targets, and build directories are
+checked for collisions on case-insensitive filesystems even when OLLM runs on
+a case-sensitive Unix filesystem. Paths containing spaces remain individual
+process arguments. A build directory containing the platform's `TEXINPUTS`
+list separator is rejected because kpathsea cannot represent it
+unambiguously.
+
+Each concrete BuildSpec owns a `.ollm.lock` in its isolated build directory.
+The lock is held for the complete `latexmk` lifetime, including continuous
+mode. A second process targeting the same BuildSpec fails before writing or
+starting LaTeX. Different BuildSpecs share no writable registry or state file,
+so later parallel execution does not require changing this ownership model.
+
+Nonzero `latexmk` exits map to OLLM's build-failure exit code 1; tool-start
+failures remain environment error 69, while signal exits retain their
+conventional `128 + signal` status. A successful ordinary build additionally
+requires a nonempty regular PDF at the exact artifact path.

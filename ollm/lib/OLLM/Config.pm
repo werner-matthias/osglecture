@@ -22,7 +22,9 @@ our $PARSER_LOADED;
 sub resolve_request {
   my ($class, %arg) = @_;
   my $plan = $arg{plan} // die "missing CLI plan";
-  my $start = $arg{start_dir} // getcwd();
+  my $start = _absolute_directory(
+    $arg{start_dir} // getcwd(), 'request start directory',
+  );
   my $standalone = _has_legacy_arg($plan, '+standalone');
   my $located =
       $standalone
@@ -148,10 +150,18 @@ sub resolve_request {
         language        => $_->{language},
       )
     } @{ $request{builds} };
-    my %job;
+    my (%job, %directory);
     for my $spec (@specs) {
-      die "build matrix produces duplicate job id '$spec->{job_id}'"
-        if $job{$spec->{job_id}}++;
+      my $job_key = lc $spec->{job_id};
+      die "build matrix produces job ids that collide on "
+        . "case-insensitive filesystems: '$job{$job_key}' and "
+        . "'$spec->{job_id}'"
+        if exists $job{$job_key};
+      $job{$job_key} = $spec->{job_id};
+      my $directory_key = lc $spec->{build_directory};
+      die "build matrix assigns more than one build to directory "
+        . "'$spec->{build_directory}'"
+        if $directory{$directory_key}++;
     }
     $resolved->{build_specs} = \@specs;
   } else {
@@ -259,6 +269,10 @@ sub validate_manifest {
   my %available = map { $_ => 1 } @$available;
   die "$path: languages.available contains duplicates"
     if keys(%available) != @$available;
+  my %available_folded = map { lc($_) => 1 } @$available;
+  die "$path: languages.available contains values that collide on "
+    . "case-insensitive filesystems"
+    if keys(%available_folded) != @$available;
   my $default = _require_string(
     $manifest->{languages}, 'default', "$path: languages",
   );
@@ -277,6 +291,14 @@ sub validate_manifest {
 
   _require_table($manifest, 'targets', $path);
   die "$path: targets must not be empty" if !keys %{ $manifest->{targets} };
+  my %target_folded;
+  for my $target (sort keys %{ $manifest->{targets} }) {
+    my $folded = lc $target;
+    die "$path: target names '$target_folded{$folded}' and '$target' "
+      . "collide on case-insensitive filesystems"
+      if exists $target_folded{$folded};
+    $target_folded{$folded} = $target;
+  }
   for my $target (sort keys %{ $manifest->{targets} }) {
     my $definition = $manifest->{targets}{$target};
     die "$path: targets.$target must be a table"

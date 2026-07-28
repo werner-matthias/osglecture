@@ -4,6 +4,7 @@ use v5.30;
 use strict;
 use warnings;
 
+use Cwd qw(abs_path);
 use Digest::SHA qw(sha256_hex);
 use File::Basename qw(basename dirname);
 use File::Path qw(make_path);
@@ -27,7 +28,8 @@ sub build_spec {
   die "build files require one concrete language" if !defined $language;
 
   my $unit_directory = $arg{unit_directory} // '.';
-  $unit_directory = File::Spec->rel2abs($unit_directory);
+  $unit_directory = abs_path($unit_directory)
+    // die "unit directory not found: $unit_directory";
   my $physical_unit = basename($unit_directory);
   my ($number, $profile, $role, $slug) = _parse_unit($physical_unit);
   my $target = $configuration->{definitions}{targets}{$target_name}
@@ -39,9 +41,15 @@ sub build_spec {
   _validate_job_atom('unit id', $slug, 1);
   my $job_id = join '-',
     $request->{series_id}, $number, $doctype, $language, $slug;
-  my $project_root = File::Spec->rel2abs($request->{project_root});
-  my $source = File::Spec->rel2abs($request->{source}, $unit_directory);
-  die "source file not found: $source" if !-f $source;
+  my $project_root = abs_path($request->{project_root})
+    // die "project root not found: $request->{project_root}";
+  _require_within($unit_directory, $project_root, 'series unit directory');
+  my $source_candidate = File::Spec->rel2abs(
+    $request->{source}, $unit_directory,
+  );
+  my $source = abs_path($source_candidate)
+    // die "source file not found: $source_candidate";
+  die "source is not a regular file: $source" if !-f $source;
   my $build_directory = File::Spec->catdir(
     $project_root, '.osglecture', 'build', $physical_unit,
     $target_name, $language,
@@ -235,6 +243,14 @@ sub _validate_job_atom {
     : qr/\A[A-Za-z0-9._]+\z/;
   die "invalid $label '$value' for a portable job name"
     if $value !~ $pattern;
+}
+
+sub _require_within {
+  my ($path, $root, $label) = @_;
+  my $relative = File::Spec->abs2rel($path, $root);
+  die "$label '$path' is outside project root '$root'"
+    if File::Spec->file_name_is_absolute($relative)
+      || $relative =~ /\A\.\.(?:[\\\/]|\z)/;
 }
 
 sub _tex_atom {

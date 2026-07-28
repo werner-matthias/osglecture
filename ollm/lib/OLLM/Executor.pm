@@ -4,6 +4,10 @@ use v5.30;
 use strict;
 use warnings;
 
+use Cwd qw(abs_path);
+use Errno qw(EAGAIN EWOULDBLOCK);
+use Fcntl qw(:flock);
+use File::Basename qw(dirname);
 use File::Path qw(make_path);
 use File::Spec;
 use OLLM::BuildFile;
@@ -28,8 +32,17 @@ sub execute {
 
   for my $spec (@specs) {
     die "source file not found: $spec->{source}" if !-f $spec->{source};
+    my $lock;
+    if ($action ne 'information') {
+      _prepare_build_directory($spec);
+      $lock = _acquire_lock($spec);
+      if (!$lock) {
+        print STDERR "ollm: build '$spec->{job_id}' is already active in "
+          . "$spec->{build_directory}\n";
+        return 1;
+      }
+    }
     OLLM::BuildFile->write_for_spec($spec) if $action eq 'build';
-    make_path($spec->{build_directory}) if $action eq 'clean';
     my @command = $class->command_for_spec($spec, $request, $latexmk_rc);
     my $status;
     if ($arg{runner}) {
@@ -51,9 +64,10 @@ sub execute {
       return 128 + $signal;
     }
     my $exit_code = $status >> 8;
-    return $exit_code if $exit_code != 0;
+    return 1 if $exit_code != 0;
     die "latexmk reported success but artifact is missing: $spec->{artifact}"
-      if $action eq 'build' && !$arg{runner} && !-f $spec->{artifact};
+      if $action eq 'build' && !$arg{runner}
+        && (!-f $spec->{artifact} || !-s _);
   }
   return 0;
 }
@@ -67,8 +81,70 @@ sub validate_request {
     : $resolved->{build_spec} ? 1 : 0;
   die "resolved request contains no concrete build specifications"
     if !$build_count;
+  my $path_separator = $^O eq 'MSWin32' ? ';' : ':';
+  my @specs = $resolved->{build_specs}
+    ? @{ $resolved->{build_specs} }
+    : ($resolved->{build_spec});
+  for my $spec (@specs) {
+    for my $field (qw(source build_directory aux_directory artifact)) {
+      my $path = $spec->{$field};
+      die "BuildSpec $field path contains a line break: $path\n"
+        if $path =~ /[\r\n]/;
+    }
+    die "build directory '$spec->{build_directory}' contains the TEXINPUTS "
+      . "path separator '$path_separator' and cannot be represented safely\n"
+      if index($spec->{build_directory}, $path_separator) >= 0;
+  }
   _validate_latexmk_args($request, $build_count);
   return 1;
+}
+
+sub _acquire_lock {
+  my ($spec) = @_;
+  my $path = File::Spec->catfile($spec->{build_directory}, '.ollm.lock');
+  open my $handle, '>>', $path
+    or die "cannot open build lock '$path': $!\n";
+  if (!flock($handle, LOCK_EX | LOCK_NB)) {
+    return if $! == EAGAIN || $! == EWOULDBLOCK;
+    die "cannot lock build state '$path' on this platform: $!\n";
+  }
+  seek $handle, 0, 0;
+  truncate $handle, 0
+    or die "cannot update build lock '$path': $!\n";
+  print {$handle} "$$\n"
+    or die "cannot write build lock '$path': $!\n";
+  return $handle;
+}
+
+sub _prepare_build_directory {
+  my ($spec) = @_;
+  my $root = abs_path($spec->{project_root})
+    // die "project root not found: $spec->{project_root}\n";
+  my $ancestor = $spec->{build_directory};
+  while (!-e $ancestor) {
+    my $parent = dirname($ancestor);
+    die "cannot find an existing ancestor for build directory "
+      . "'$spec->{build_directory}'\n"
+      if $parent eq $ancestor;
+    $ancestor = $parent;
+  }
+  my $canonical_ancestor = abs_path($ancestor)
+    // die "cannot resolve build-directory ancestor '$ancestor'\n";
+  _require_within(
+    $canonical_ancestor, $root, 'existing build-directory ancestor',
+  );
+  make_path($spec->{build_directory});
+  my $canonical_build = abs_path($spec->{build_directory})
+    // die "cannot resolve build directory '$spec->{build_directory}'\n";
+  _require_within($canonical_build, $root, 'build directory');
+}
+
+sub _require_within {
+  my ($path, $root, $label) = @_;
+  my $relative = File::Spec->abs2rel($path, $root);
+  die "$label '$path' resolves outside project root '$root'\n"
+    if File::Spec->file_name_is_absolute($relative)
+      || $relative =~ /\A\.\.(?:[\\\/]|\z)/;
 }
 
 sub command_for_spec {

@@ -67,6 +67,23 @@ like $content, qr/theme=\{osg\}/,
 like $content, qr/shell-escape=\{restricted\}/,
   'rendered build file records the shell-escape policy';
 
+my $outside = tempdir(CLEANUP => 1);
+my $outside_unit = File::Spec->catdir($outside, '020-outside');
+mkdir $outside_unit or die $!;
+open my $outside_source, '>',
+  File::Spec->catfile($outside_unit, 'main.tex') or die $!;
+print {$outside_source} "\\documentclass{article}\n";
+close $outside_source;
+eval {
+  OLLM::BuildFile->build_spec(
+    resolved       => $resolved,
+    manifest       => $manifest,
+    unit_directory => $outside_unit,
+  );
+};
+like $@, qr/series unit directory .* is outside project root/,
+  'series build rejects a unit outside its canonical project root';
+
 my $temporary = tempdir(CLEANUP => 1);
 my $build_file = File::Spec->catfile(
   $temporary, "$spec->{job_id}.osgbuild.tex",

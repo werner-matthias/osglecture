@@ -1093,16 +1093,21 @@ vollständig beschriebene Clean-Aktionen benötigen dann keine zusätzliche
 
 ### 15.9 Exitcodes
 
-Eine kleine stabile Menge unterscheidet mindestens:
+Die stabile Grundmenge lautet:
 
-- Erfolg;
-- Build-/Checkfehler;
-- ungültigen Aufruf oder ungültige Konfiguration;
-- inkonsistente Dokumentabhängigkeiten;
-- fehlende Werkzeuge oder ungeeignete Umgebung.
+```text
+0    Erfolg
+1    Build-, Check- oder Doctor-Fehler
+2    ungültiger Aufruf oder ungültige Konfiguration
+3    inkonsistente Dokumentabhängigkeiten (für den späteren Check reserviert)
+69   fehlendes Werkzeug, nicht implementierte Aktion oder ungeeignete Umgebung
+```
 
-Die numerischen Werte werden vor Implementierung festgelegt und anschließend
-als öffentliche API behandelt.
+Signalbedingte Abbrüche verwenden auf Plattformen mit POSIX-Waitstatus
+`128 + Signalnummer`, insbesondere `130` für Ctrl-C. Der vorläufige
+Legacy-Execpfad bleibt hinsichtlich fremder Exitcodes kompatibel; der neue
+Executor normalisiert dagegen einen von `latexmk` gemeldeten Buildfehler auf
+Exitcode 1.
 
 ## 16. Report, Check und Doctor
 
@@ -1271,6 +1276,33 @@ Dabei gilt:
 - plattformneutrale Pfadbehandlung;
 - keine Abhängigkeit von `tput` oder anderen Unix-Hilfsprogrammen.
 
+Projektwurzel, Einheit und Quelle werden vor dem Build kanonisiert. Eine
+Serieneinheit muss innerhalb ihrer Projektwurzel liegen. Vor dem Anlegen des
+Buildverzeichnisses werden vorhandene Pfadvorfahren aufgelöst; insbesondere
+darf ein symbolischer Link den `.osglecture`-Zustand nicht unbemerkt aus der
+Projektwurzel herausleiten. Pfade mit Leerzeichen bleiben einzelne
+Prozessargumente. Ein im Buildpfad enthaltener `TEXINPUTS`-Listentrenner ist
+nicht eindeutig darstellbar und deshalb ein Fehler.
+
+Identitäten und Buildpfade werden vorsorglich auch nach
+case-insensitiver Faltung auf Kollisionen geprüft. Damit erzeugt ein unter Unix
+gültiges Projekt beim späteren Wechsel auf ein verbreitetes Windows- oder
+macOS-Dateisystem keinen überlappenden Zustand.
+
+Jeder konkrete BuildSpec hält während der vollständigen `latexmk`-Laufzeit
+eine exklusive `.ollm.lock` in seinem Buildverzeichnis. Verschiedene Specs
+besitzen keine gemeinsam beschriebene Registry und dürfen später parallel
+ausgeführt werden; zwei Prozesse derselben Identität werden dagegen vor jedem
+Schreibzugriff abgewiesen. Diese Eigentumsregel ist Voraussetzung für eine
+spätere Parallelisierung, ohne sie bereits zu implementieren.
+
+Unix und macOS sind die Referenzplattformen für Prozess- und
+Dateisystemverhalten. Windows verwendet denselben argumentlistenbasierten
+Vertrag, den `ollm.cmd`-Einstieg, den plattformspezifischen `TEXINPUTS`-
+Listentrenner und den gekapselten atomaren Dateiersatz. Wo eine Plattform den
+vollen Vertrag nicht zuverlässig anbieten kann, wird die Einschränkung
+diagnostiziert, statt das Unix-/macOS-Verhalten abzuschwächen.
+
 ## 22. Packaging
 
 Das Bundle soll mit `l3build` test-, dokumentier-, installier- und
@@ -1370,10 +1402,9 @@ Vor der Implementierung sind noch festzulegen:
    hinaus;
 4. Strategie für Struktur- und Lua-Dateiabhängigkeiten;
 5. JSON- und Aux-Schemata einschließlich Generationsmodell;
-6. numerische Exitcodes;
-7. genaue Clean-Levelnamen;
-8. Benutzerkonfiguration zusätzlich zur projektlokalen Konfiguration;
-9. Deploymentvertrag.
+6. genaue Clean-Levelnamen;
+7. Benutzerkonfiguration zusätzlich zur projektlokalen Konfiguration;
+8. Deploymentvertrag.
 
 Diese Punkte dürfen die in diesem Dokument festgelegten Verantwortungsgrenzen
 und Invarianten nicht aufweichen.

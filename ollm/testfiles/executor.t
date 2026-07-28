@@ -192,4 +192,84 @@ eval { OLLM::Executor::_validate_latexmk_args($resolved->{request}, 1) };
 like $@, qr/explicit OLLM target selection would not describe a build/,
   'information action reports an irrelevant explicit OLLM selection';
 
+$resolved->{request}{target_explicit} = 0;
+$resolved->{request}{latexmk_args} = [];
+my $runner_calls = 0;
+$status = OLLM::Executor->execute(
+  resolved => $resolved,
+  runner   => sub {
+    $runner_calls++;
+    return 12 << 8;
+  },
+);
+is $status, 1, 'latexmk failures map to the stable build-failure exit code';
+
+my $first_lock = OLLM::Executor::_acquire_lock($spec);
+ok $first_lock, 'first process acquires the per-BuildSpec lock';
+my $lock_diagnostic = '';
+{
+  local *STDERR;
+  open STDERR, '>', \$lock_diagnostic or die $!;
+  $status = OLLM::Executor->execute(
+    resolved => $resolved,
+    runner   => sub {
+      $runner_calls++;
+      return 0;
+    },
+  );
+}
+is $status, 1, 'a concurrent build of the same BuildSpec is rejected';
+like $lock_diagnostic, qr/build .* is already active/,
+  'lock conflict identifies the active build';
+is $runner_calls, 1, 'lock conflict occurs before another process is started';
+undef $first_lock;
+
+my %space_spec = (
+  %$spec,
+  build_directory => File::Spec->catdir($temporary, 'build with spaces'),
+  aux_directory   => File::Spec->catdir($temporary, 'build with spaces'),
+);
+my @space_command = OLLM::Executor->command_for_spec(
+  \%space_spec, $resolved->{request},
+);
+ok grep($_ eq "-outdir=$space_spec{build_directory}", @space_command),
+  'build directory containing spaces remains one process argument';
+
+if ($^O ne 'MSWin32') {
+  my %separator_spec = (
+    %$spec,
+    build_directory => File::Spec->catdir($temporary, 'bad:path'),
+    aux_directory   => File::Spec->catdir($temporary, 'bad:path'),
+  );
+  my %separator_resolved = (
+    %$resolved,
+    build_spec => \%separator_spec,
+  );
+  eval { OLLM::Executor->validate_request(\%separator_resolved) };
+  like $@, qr/contains the TEXINPUTS path separator ':'/,
+    'unrepresentable TEXINPUTS build path is rejected explicitly';
+}
+
+my $symlink_root = tempdir(CLEANUP => 1);
+my $symlink_target = tempdir(CLEANUP => 1);
+SKIP: {
+  skip 'symbolic links are unavailable', 1
+    if !symlink($symlink_target, File::Spec->catdir(
+      $symlink_root, '.osglecture',
+    ));
+  my %symlink_spec = (
+    %$spec,
+    project_root    => $symlink_root,
+    build_directory => File::Spec->catdir(
+      $symlink_root, '.osglecture', 'build', '020-processes', 'script', 'de',
+    ),
+    aux_directory => File::Spec->catdir(
+      $symlink_root, '.osglecture', 'build', '020-processes', 'script', 'de',
+    ),
+  );
+  eval { OLLM::Executor::_prepare_build_directory(\%symlink_spec) };
+  like $@, qr/resolves outside project root/,
+    'symlinked build-state directory cannot redirect writes outside project';
+}
+
 done_testing;

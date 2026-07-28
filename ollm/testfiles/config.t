@@ -168,6 +168,26 @@ eval { OLLM::Config->load_manifest($invalid_manifest) };
 like $@, qr/:1: unsupported project-manifest schema 9; .* schema 1/,
   'schema mismatch states actual and supported schema';
 
+open my $case_handle, '>', $invalid_manifest or die $!;
+print {$case_handle} <<'TOML';
+schema = 1
+profile = "OSG lecture/1"
+
+[project]
+id = "case"
+
+[languages]
+available = ["de", "DE"]
+default = "de"
+
+[targets.slides]
+languages = ["de"]
+TOML
+close $case_handle;
+eval { OLLM::Config->load_manifest($invalid_manifest) };
+like $@, qr/languages\.available contains values that collide on case-insensitive/,
+  'language identities are portable to case-insensitive filesystems';
+
 open my $missing_handle, '>', $invalid_manifest or die $!;
 print {$missing_handle} <<'TOML';
 schema = 1

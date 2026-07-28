@@ -400,7 +400,7 @@ sub _doctor {
       printf "%-10s NOT FOUND: %s\n", 'TOML', $parser->{error};
     }
   }
-  return $ok ? 0 : 1;
+  return $ok ? 0 : 69;
 }
 
 sub _find_program {
