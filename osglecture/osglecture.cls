@@ -32,7 +32,6 @@
 \tl_new:N \l__osglecture_language_tl
 \tl_new:N \l__osglecture_base_options_tl
 \tl_new:N \l__osglecture_selected_options_tl
-\tl_new:N \l__osglecture_modes_option_tl
 \tl_new:N \l__osglecture_setup_file_tl
 \tl_new:N \l__osglecture_mode_setup_file_tl
 \tl_new:N \l__osglecture_additional_modes_tl
@@ -41,9 +40,9 @@
 \bool_new:N \l__osglecture_language_explicit_bool
 \bool_new:N \l__osglecture_standalone_bool
 
-\msg_new:nnnn { osglecture } { unsupported-doctype }
-  { Unsupported~document~type~'#1'. }
-  { Choose~slides,~handout,~script,~or~article. }
+\msg_new:nnnn { osglecture } { profile-required }
+  { Document~type~'#1'~has~no~default~document~profile. }
+  { Select~a~profile~which~declares~this~document~type. }
 \msg_new:nnnn { osglecture } { profile-conflict }
   { Class~profile~'#1'~conflicts~with~build~profile~'#2'. }
   { Change~the~project~configuration~and~regenerate~the~build~file. }
@@ -135,12 +134,6 @@
 
 \tl_if_empty:NT \l__osglecture_doctype_tl
   { \tl_set:Nn \l__osglecture_doctype_tl {slides} }
-\str_case:VnF \l__osglecture_doctype_tl
-  { {slides}{} {handout}{} {script}{} {article}{} }
-  {
-    \msg_fatal:nnV {osglecture}{unsupported-doctype}
-      \l__osglecture_doctype_tl
-  }
 \tl_if_empty:NT \l__osglecture_document_profile_tl
   {
     \str_case:Vn \l__osglecture_doctype_tl
@@ -150,6 +143,11 @@
         {script}  { \tl_set:Nn \l__osglecture_document_profile_tl {scrbook} }
         {article} { \tl_set:Nn \l__osglecture_document_profile_tl {scrbook} }
       }
+  }
+\tl_if_empty:NT \l__osglecture_document_profile_tl
+  {
+    \msg_fatal:nnV {osglecture}{profile-required}
+      \l__osglecture_doctype_tl
   }
 
 \osglecture_profile_select:VV
@@ -203,19 +201,13 @@
   }
 \exp_args:NV \LoadClass \l__osglecture_base_class_tl
 
-\tl_set:Nx \l__osglecture_modes_option_tl
-  { mode=\tl_use:N \l__osglecture_doctype_tl }
-\exp_args:NV \PassOptionsToPackage
-  \l__osglecture_modes_option_tl {osglecture-modes}
 \RequirePackage{osglecture-modes}
-\str_case:VnF \l__osglecture_doctype_tl
-  {
-    {script}  { \SetLectureModes{script,article} }
-    {article} { \SetLectureModes{article,script} }
-  }
-  { \exp_args:NV \SetLectureModes \l__osglecture_doctype_tl }
-\str_if_eq:VnT \l__osglecture_backend_tl {beamer}
-  { \AddLectureModes{beamer} }
+\DeclareModeBehaviorClass{presentation-dynamic}
+\DeclareModeBehaviorClass{presentation-static}
+\DeclareModeBehaviorClass{longform}
+\AssignLectureModeBehavior{slides}{presentation-dynamic}
+\AssignLectureModeBehavior{handout}{presentation-static}
+\AssignLectureModeBehavior{script,article}{longform}
 \tl_set:Ne \l__osglecture_mode_setup_file_tl
   {
     \osglecture_profile_value:Vn
@@ -237,6 +229,14 @@
   { }
 \tl_if_empty:NF \l__osglecture_mode_setup_file_tl
   { \exp_args:NV \file_input:n \l__osglecture_mode_setup_file_tl }
+\str_case:VnF \l__osglecture_doctype_tl
+  {
+    {script}  { \SetLectureModes{script,article} }
+    {article} { \SetLectureModes{article,script} }
+  }
+  { \exp_args:NV \SetLectureModes \l__osglecture_doctype_tl }
+\str_if_eq:VnT \l__osglecture_backend_tl {beamer}
+  { \AddLectureModes{beamer} }
 \tl_set:Ne \l_tmpa_tl
   {
     \osglecture_profile_value:Vn

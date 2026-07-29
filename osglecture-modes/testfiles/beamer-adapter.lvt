@@ -1,6 +1,9 @@
 \input regression-test.tex
 \documentclass{beamer}
 \usepackage{osglecture-modes}
+\NewDocumentCommand\OverlayOptional{o}
+  {\IfNoValueTF{#1}{\TYPE{OVERLAY NONE}}{\TYPE{OVERLAY #1}}}
+\MakeOverlayAwareCommand[arguments={o}]{\OverlayOptional}
 \begin{document}
 \START
 \IfLectureModeTF{slides}{\TYPE{SLIDES YES}}{\TYPE{SLIDES NO}}
@@ -9,5 +12,7 @@
 \IfLectureModeTF{article}{\TYPE{ARTICLE YES}}{\TYPE{ARTICLE NO}}
 \mode<slides>{\TYPE{PORTABLE MODE YES}}
 \mode<unknown-native>{\TYPE{NATIVE MODE BODY}}
+\OverlayOptional<1>[ONE]
+\OverlayOptional<2>[HIDDEN]
 \END
 \end{document}

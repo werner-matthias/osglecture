@@ -163,6 +163,15 @@ ausdrücklich gesetzt werden.
   \command{IfLectureModeT}[\marg{expression}\marg{true}]
   \command{IfLectureModeF}[\marg{expression}\marg{false}]
   \command{lecturemode}[\oarg*{\meta{expression}}\marg{content}]
+  \command{DeclareModeBehaviorClass}[\marg{class}]
+  \command{AssignLectureModeBehavior}[\marg{modes}\marg{class}]
+  \command{DeclareModeAwareCommand}
+    [\marg{command}\marg{required classes}]
+  \command{DeclareModeAwareCommandImplementation}
+    [\marg{command}\marg{class}\marg{implementation command}]
+  \command{FinalizeModeAwareCommands}
+  \command{MakeOverlayAwareCommand}
+    [\oarg{default-mode=\meta{mode},fallback=\meta{strategy}}\marg{command}]
 \end{commands}
 
 \ldeen{
@@ -174,6 +183,305 @@ ausdrücklich gesetzt werden.
   A mode list is comma-separated. Queries and \cs{lecturemode} expressions may
   additionally use \code{|} for disjunction. \code{all} is always active. The
   first query automatically finalizes a graph that is still open.
+}
+
+\section{\ldeen{Modusabhängige Befehlsverträge}
+                 {Mode-aware command contracts}}
+
+\ldeen{
+  Ein semantischer Befehl muss für jede von ihm versprochene
+  Verhaltensklasse eine konkrete Implementierung besitzen. Die Registry prüft
+  diese Vollständigkeit unabhängig davon, welche Klasse im aktuellen Lauf
+  aktiv ist. Blattmodi wählen genau eine Verhaltensklasse; mehrere gleichzeitig
+  aktive Blattmodi dürfen dieselbe, aber keine widersprüchlichen Klassen
+  auswählen.
+}{
+  A semantic command must have a concrete implementation for every behavior
+  class in its contract. The registry checks this completeness independently
+  of the class active in the current run. Leaf modes select exactly one
+  behavior class; simultaneously active leaves may select the same class but
+  not conflicting classes.
+}
+
+\begin{verbatim}
+\DeclareModeBehaviorClass{dynamic}
+\DeclareModeBehaviorClass{longform}
+\AssignLectureModeBehavior{slides}{dynamic}
+\AssignLectureModeBehavior{script,article}{longform}
+
+\ExplSyntaxOn
+\cs_new_protected:Npn \example_dynamic:n  #1 { ... }
+\cs_new_protected:Npn \example_longform:n #1 { ... }
+\ExplSyntaxOff
+
+\DeclareModeAwareCommand{\Example}{dynamic,longform}
+\DeclareModeAwareCommandImplementation
+  {\Example}{dynamic}{\example_dynamic:n}
+\DeclareModeAwareCommandImplementation
+  {\Example}{longform}{\example_longform:n}
+\end{verbatim}
+
+\ldeen{
+  Die Implementierungsbefehle besitzen selbst die vollständige
+  Argumentsignatur. Beim ersten Gebrauch beziehungsweise spätestens vor
+  \cs{begin}\Marg{document} bindet die Registry den öffentlichen Befehl direkt
+  an die gewählte Implementierung. Dadurch unterstützt der Mechanismus
+  beliebige Signaturen, ohne Argumente nachzubauen. Ein bereits existierender
+  öffentlicher Befehl wird nicht stillschweigend überschrieben.
+}{
+  Implementation commands themselves own the complete argument signature. On
+  first use, or at the latest before \cs{begin}\Marg{document}, the registry
+  binds the public command directly to the selected implementation. This
+  supports arbitrary signatures without reconstructing arguments. An existing
+  public command is never overwritten silently.
+}
+
+\section{\ldeen{Minitutorial: ein zusätzlicher Dokumenttyp}{}}
+
+\ldeen{
+  Dieses Beispiel ergänzt die Langform \code{studyguide}. Sie soll wie
+  \code{script} auf \pkg*{scrbook} beruhen, darf aber später eine eigene
+  Semantik und Gestaltung erhalten. Das Beispiel führt deshalb durch alle
+  beteiligten Schichten. Ein Dokumenttyp ist dabei keine Klassenabkürzung:
+  OLLM wählt ein Target, dessen Definition den gleichnamigen Dokumenttyp
+  liefert; dieser wird zum aktiven Blattmodus. Erst das Dokumentprofil wählt
+  Backend und Basisklasse.
+}{}
+
+\begin{center}
+\code{Target} $\longrightarrow$ \code{doctype/Blattmodus}
+$\longrightarrow$ \code{Verhaltensklasse}
+$\longrightarrow$ \code{Dokumentprofil}
+$\longrightarrow$ \code{Backend/Basisklasse}
+\end{center}
+
+\subsection{\ldeen{1. Target und Dokumenttyp registrieren}{}}
+
+\ldeen{
+  Zuerst erhält OLLM in einem eingebundenen Definitionspfad eine
+  Targetdefinition \code{targets/studyguide.toml}. Der Targetname und
+  \code{doctype} bleiben im gewöhnlichen Fall identisch. Eine Abweichung wäre
+  ein eigener, versionierter Adaptervertrag und kein bloßer Alias.
+}{}
+
+\begin{verbatim}
+schema = 1
+kind = "target"
+name = "studyguide"
+version = "1.0"
+doctype = "studyguide"
+family = "publication"
+unit_scopes = ["a", "as"]
+\end{verbatim}
+
+\ldeen{
+  Anschließend kann das Projekt das Target und seine Sprachen wie jedes
+  eingebaute Target in \code{ollmconfig.toml} freigeben:
+}{}
+
+\begin{verbatim}
+[targets.studyguide]
+languages = ["de", "en"]
+\end{verbatim}
+
+\ldeen{
+  Der Definitionspfad gehört in die lokale OLLM-Konfiguration oder in ein
+  installierbares Bundle-Preset. Die Targetdefinition beschreibt weder eine
+  \LaTeX-Klasse noch Formatierung; diese Entscheidungen bleiben im
+  Dokumentprofil.
+}{}
+
+\subsection{\ldeen{2. Blattmodus und Obermodi festlegen}{}}
+
+\ldeen{
+  Die Modusmatrix ordnet den neuen Blattmodus seinen fachlichen Obermodi zu.
+  Für eine druckbare Langform sind dies zunächst \code{longform} und
+  \code{print}. Die Deklaration gehört in eine kleine, installierte
+  Modus-Setup-Datei, hier \code{osglecture-mode-studyguide.def}.
+}{}
+
+\begin{verbatim}
+\ProvidesFile{osglecture-mode-studyguide.def}
+  [2026-07-29 studyguide mode setup]
+\DeclareLectureMode[parents={longform,print}]{studyguide}
+\AssignLectureModeBehavior{studyguide}{longform}
+\end{verbatim}
+
+\ldeen{
+  Damit erbt \code{studyguide} die bereits vollständige Semantik der
+  Verhaltensklasse \code{longform}. Eine Abfrage auf \code{studyguide},
+  \code{longform} oder \code{print} ist in diesem Build wahr. Soll der neue
+  Dokumenttyp tatsächlich ein abweichendes Verhalten erhalten, wird
+  stattdessen beispielsweise \code{studyguide-longform} mit
+  \cs{DeclareModeBehaviorClass} deklariert und dem Blattmodus zugewiesen.
+  Dann muss jeder öffentliche Befehlsvertrag, der diese Klasse verspricht,
+  auch eine Implementierung für sie registrieren. Die
+  Vollständigkeitsprüfung macht fehlende Fälle zu Fehlern.
+}{}
+
+\subsection{\ldeen{3. Dokumentprofil und Backend anbinden}{}}
+
+\ldeen{
+  Das Dokumentprofil verbindet die fachliche Auswahl mit einer konkreten
+  Basisklasse. Die Datei
+  \code{osglecture-profile-studyguide-scrbook.def} kann so beginnen:
+}{}
+
+\begin{verbatim}
+\ProvidesFile{osglecture-profile-studyguide-scrbook.def}
+  [2026-07-29 studyguide scrbook profile]
+\DeclareOsgLectureProfile{studyguide-scrbook}
+  {
+    backend = scrbook,
+    class = scrbook,
+    doctypes = {script,article,studyguide},
+    mode-setup-file = osglecture-mode-studyguide.def,
+    setup-file = osglecture-studyguide.code.tex
+  }
+\DeclareOsgLectureProfileClassOptions
+  {studyguide-scrbook}{studyguide}{oneside}
+\end{verbatim}
+
+\ldeen{
+  \code{mode-setup-file} erweitert ausschließlich Modusgraph und
+  Verhaltenszuordnung. \code{setup-file} enthält dagegen den Adapter- und
+  Formatierungscode, der nach Klassen- und Moduswahl geladen werden darf.
+  Semantische öffentliche Befehle sollten dort nicht durch zufällige
+  Klassendetails ersetzt werden, sondern über die oben beschriebene Registry
+  ihre Implementierung erhalten. Dass das Profil auch \code{script} und
+  \code{article} aufführt, erlaubt es, das derzeitige projektweite
+  Langformprofil zu ersetzen, ohne bestehende Langform-Targets auszuschließen.
+}{}
+
+\ldeen{
+  Das Projekt beziehungsweise die Nutzervorgabe wählt anschließend dieses
+  Profil; eine einzelne Buildanforderung darf es nicht spontan austauschen:
+}{}
+
+\begin{verbatim}
+[latex.defaults]
+script_profile = "studyguide-scrbook"
+\end{verbatim}
+
+\subsection{\ldeen{4. Semantische Befehle prüfen}{}}
+
+\ldeen{
+  Für jeden bereits registrierten semantischen Befehl sind nun zwei Fragen
+  getrennt zu beantworten:
+}{}
+
+\begin{enumerate}
+  \item \ldeen{
+    Gilt für \code{studyguide} dieselbe fachliche Bedeutung wie für andere
+    Langformen? Dann genügt die Zuordnung zur vorhandenen Verhaltensklasse
+    \code{longform}; eine Kopie der Implementierung ist gerade nicht nötig.
+  }{}
+  \item \ldeen{
+    Ist die Bedeutung anders? Dann erhält der Blattmodus eine eigene
+    Verhaltensklasse. Diese wird in den Vertrag des betroffenen Befehls
+    aufgenommen und bekommt eine eigene Implementierung. Vor
+    \cs{begin}\Marg{document} prüft
+    \cs{FinalizeModeAwareCommands} die vollständige Matrix.
+  }{}
+\end{enumerate}
+
+\ldeen{
+  Ein nicht vorhandenes Backendmerkmal braucht ebenfalls eine definierte
+  Semantik. Beispielsweise kann eine Overlayanweisung in der Langform alle
+  Inhalte ohne schrittweise Aufdeckung ausgeben. Sie darf nicht nur deshalb
+  verschwinden, weil \pkg*{scrbook} keine nativen Overlays besitzt.
+}{}
+
+\subsection{\ldeen{5. Durchstich testen}{}}
+
+\ldeen{
+  Ein neuer Dokumenttyp ist erst vollständig, wenn nicht nur die einzelne
+  Setup-Datei, sondern der gesamte Durchstich geprüft ist. Ein sinnvoller
+  minimaler Testsatz umfasst:
+}{}
+
+\begin{itemize}
+  \item \ldeen{
+    OLLM löst \code{studyguide} mit jeder freigegebenen Sprache in einen
+    BuildSpec mit \code{target=studyguide},
+    \code{doctype=studyguide} und
+    \code{document-profile=studyguide-scrbook} auf.
+  }{}
+  \item \ldeen{
+    Die erzeugte Auftragsdatei wird vom tatsächlichen Jobnamen akzeptiert und
+    die Klasse lädt \pkg*{scrbook} sowie das gewählte Profil.
+  }{}
+  \item \ldeen{
+    \cs{IfLectureModeTF} erkennt \code{studyguide}, \code{longform} und
+    \code{print}, aber beispielsweise nicht \code{presentation}.
+  }{}
+  \item \ldeen{
+    Die Vollständigkeitsprüfung aller modusabhängigen Befehle läuft für den
+    neuen Dokumenttyp fehlerfrei; mindestens ein repräsentativer Befehl wird
+    bis zur Ausgabe getestet.
+  }{}
+  \item \ldeen{
+    Ein Standalone-Dokument mit explizitem \code{doctype} und \code{profile}
+    benötigt weder Projektmanifest noch Serienverzeichnis.
+  }{}
+\end{itemize}
+
+\subsection{\ldeen{Eingebaute Defaults und offene Erweiterung}{}}
+
+\ldeen{
+  \pkg*{osglecture} kennt für \code{slides}, \code{handout}, \code{script} und
+  \code{article} eingebaute Standardprofile. Diese Namen bilden keine
+  geschlossene Dokumenttypliste. Jeder andere Dokumenttyp ist zulässig, wenn
+  das Projekt beziehungsweise die Nutzervorgabe ein Profil auswählt, das ihn
+  deklariert. Dessen \code{mode-setup-file} wird nach den eingebauten
+  Verhaltensklassen, aber vor der Aktivierung des Blattmodus eingelesen. Damit
+  benötigt das hier beschriebene \code{studyguide} keine Änderung am Kern der
+  Klasse.
+}{}
+
+\section{\ldeen{Overlayfähige einfache Befehle}
+                 {Overlay-aware simple commands}}
+
+\ldeen{
+  \cs{MakeOverlayAwareCommand} ist der klar begrenzte Nachfolger des
+  experimentellen \cs{osgmakeselectable}. Er erweitert einen vorhandenen
+  Befehl um eine spitze Spezifikation. Registrierte
+  Dokumentmodi werden portabel ausgewertet. Andere Spezifikationen werden bei
+  vorhandenem Overlaybackend an dessen \cs{only} delegiert.
+}{
+  \cs{MakeOverlayAwareCommand} is the deliberately limited successor of the
+  experimental \cs{osgmakeselectable}. It augments an existing command with
+  an angle-bracket specification. Registered document modes are
+  evaluated portably. Other specifications are delegated to the overlay
+  backend's \cs{only}, if available.
+}
+
+\begin{verbatim}
+\MakeOverlayAwareCommand
+  [arguments={s o},default-mode=slides,fallback=flatten]
+  {\\}
+
+Text\\<slides>[3ex]
+\end{verbatim}
+
+\ldeen{
+  Ohne natives Overlaybackend bestimmt \code{fallback} die Semantik echter
+  Overlayspezifikationen: \code{flatten} führt den Befehl aus, \code{omit}
+  lässt ihn aus und \code{error} meldet die fehlende Fähigkeit. Der Standard
+  ist \code{flatten}. \code{arguments} enthält die \pkg*{xparse}-Signatur der
+  nach der Winkelspezifikation folgenden Argumente. Im aktiven Zweig liest der
+  Originalbefehl diese Argumente; im ausgelassenen Zweig konsumiert sie ein
+  automatisch erzeugter Gobbler. Ohne \code{arguments} wird eine leere
+  Signatur angenommen.
+}{
+  Without a native overlay backend, \code{fallback} defines the semantics of
+  genuine overlay specifications: \code{flatten} executes the command,
+  \code{omit} drops it, and \code{error} reports the missing capability. The
+  default is \code{flatten}. \code{arguments} contains the \pkg*{xparse}
+  signature of the arguments following the angle specification. In the active
+  branch the original command reads these arguments; in the omitted branch an
+  automatically generated gobbler consumes them. Omitting \code{arguments}
+  selects an empty signature.
 }
 
 \section{\ldeen{Zusammenspiel mit Backends}{Backend interaction}}
@@ -224,7 +532,7 @@ ausdrücklich gesetzt werden.
 %</driver>
 
 %<*package>
-\ProvidesExplPackage{osglecture-modes}{2026-07-29}{0.2.0}
+\ProvidesExplPackage{osglecture-modes}{2026-07-29}{0.3.0}
   {Portable document-mode graphs}
 
 \prop_new:N \g_osglecture_modes_parents_prop
@@ -477,6 +785,339 @@ ausdrücklich gesetzt werden.
       { \osglecture_modes_if_active:nT {#1} {#2} }
   }
 
+% Mode-aware command dispatch is deliberately based on implementation
+% commands.  The selected implementation reads the original argument stream,
+% so arbitrary command signatures remain possible without duplicating them in
+% this package.
+\seq_new:N  \g_osglecture_modes_behavior_classes_seq
+\prop_new:N \g_osglecture_modes_mode_behavior_prop
+\seq_new:N  \g_osglecture_modes_aware_commands_seq
+\prop_new:N \g_osglecture_modes_command_requirements_prop
+\prop_new:N \g_osglecture_modes_command_implementations_prop
+\bool_new:N \g_osglecture_modes_commands_frozen_bool
+\tl_new:N   \l_osglecture_modes_selected_behavior_tl
+\cs_generate_variant:Nn \prop_gput:Nnn { NxV, Nxx }
+\cs_generate_variant:Nn \prop_put:Nnn { NxV }
+\cs_generate_variant:Nn \prop_get:NnN { NxN }
+\cs_generate_variant:Nn \prop_get:NnNTF { NxNTF }
+
+\msg_new:nnn { osglecture_modes } { commands-frozen }
+  { The~mode-aware~command~registry~is~already~finalized. }
+\msg_new:nnn { osglecture_modes } { unknown-behavior }
+  { Unknown~mode~behavior~class~'#1'. }
+\msg_new:nnn { osglecture_modes } { command-exists }
+  {
+    Mode-aware~command~'\token_to_str:N #1'~already~exists.
+    ~Use~a~new~semantic~command~or~an~explicitly~saved~implementation.
+  }
+\msg_new:nnn { osglecture_modes } { unknown-aware-command }
+  { Mode-aware~command~'\token_to_str:N #1'~has~not~been~declared. }
+\msg_new:nnnn { osglecture_modes } { missing-implementation }
+  {
+    Mode-aware~command~'#1'~has~no~implementation
+    ~for~behavior~'#2'.
+  }
+  { Register~one~before~finalizing~the~mode-aware~command~registry. }
+\msg_new:nnnn { osglecture_modes } { undefined-implementation }
+  {
+    Implementation~'#2'~for~mode-aware~command~'#1'~is~undefined.
+  }
+  { Define~the~implementation~command~before~finalizing~the~registry. }
+\msg_new:nnn { osglecture_modes } { no-active-behavior }
+  { No~behavior~class~is~assigned~to~the~active~leaf~modes. }
+\msg_new:nnnn { osglecture_modes } { conflicting-behaviors }
+  { Active~leaf~modes~select~both~behavior~'#1'~and~'#2'. }
+  { Assign~all~simultaneously~active~leaf~modes~to~one~behavior~class. }
+
+\cs_new_protected:Npn \osglecture_modes_commands_if_mutable:T #1
+  {
+    \bool_if:NTF \g_osglecture_modes_commands_frozen_bool
+      { \msg_error:nn { osglecture_modes } { commands-frozen } }
+      {#1}
+  }
+
+\NewDocumentCommand \DeclareModeBehaviorClass { m }
+  {
+    \osglecture_modes_commands_if_mutable:T
+      {
+        \seq_if_in:NnF \g_osglecture_modes_behavior_classes_seq {#1}
+          { \seq_gput_right:Nn \g_osglecture_modes_behavior_classes_seq {#1} }
+      }
+  }
+
+\NewDocumentCommand \AssignLectureModeBehavior { m m }
+  {
+    \osglecture_modes_commands_if_mutable:T
+      {
+        \seq_if_in:NnTF \g_osglecture_modes_behavior_classes_seq {#2}
+          {
+            \clist_map_inline:nn {#1}
+              {
+                \osglecture_modes_resolve:nN {##1} \l_tmpa_tl
+                \seq_if_in:NVTF \g_osglecture_modes_known_seq \l_tmpa_tl
+                  {
+                    \prop_gput:NVn
+                      \g_osglecture_modes_mode_behavior_prop \l_tmpa_tl {#2}
+                  }
+                  {
+                    \msg_error:nnV
+                      { osglecture_modes } { unknown-mode } \l_tmpa_tl
+                  }
+              }
+          }
+          { \msg_error:nnn { osglecture_modes } { unknown-behavior } {#2} }
+      }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_use_aware_command:N #1
+  {
+    \osglecture_modes_finalize_commands:
+    #1
+  }
+
+\NewDocumentCommand \DeclareModeAwareCommand { m m }
+  {
+    \osglecture_modes_commands_if_mutable:T
+      {
+        \cs_if_exist:NTF #1
+          { \msg_error:nnN { osglecture_modes } { command-exists } #1 }
+          {
+            \seq_gput_right:Nx \g_osglecture_modes_aware_commands_seq
+              { \cs_to_str:N #1 }
+            \clist_set:Nn \l_tmpa_clist {#2}
+            \clist_remove_duplicates:N \l_tmpa_clist
+            \prop_gput:NxV \g_osglecture_modes_command_requirements_prop
+              { \cs_to_str:N #1 } \l_tmpa_clist
+            \cs_new_protected:Npn #1
+              { \osglecture_modes_use_aware_command:N #1 }
+          }
+      }
+  }
+
+\NewDocumentCommand \DeclareModeAwareCommandImplementation { m m m }
+  {
+    \osglecture_modes_commands_if_mutable:T
+      {
+        \seq_if_in:NxTF \g_osglecture_modes_aware_commands_seq
+          { \cs_to_str:N #1 }
+          {
+            \seq_if_in:NnTF \g_osglecture_modes_behavior_classes_seq {#2}
+              {
+                \prop_gput:Nxx
+                  \g_osglecture_modes_command_implementations_prop
+                  { \cs_to_str:N #1 / #2 } { \cs_to_str:N #3 }
+              }
+              {
+                \msg_error:nnn
+                  { osglecture_modes } { unknown-behavior } {#2}
+              }
+          }
+          {
+            \msg_error:nnN
+              { osglecture_modes } { unknown-aware-command } #1
+          }
+      }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_validate_aware_command:n #1
+  {
+    \prop_get:NnN \g_osglecture_modes_command_requirements_prop
+      {#1} \l_tmpa_tl
+    \clist_map_inline:Vn \l_tmpa_tl
+      {
+        \seq_if_in:NnTF \g_osglecture_modes_behavior_classes_seq {##1}
+          {
+            \prop_get:NnNTF \g_osglecture_modes_command_implementations_prop
+              {#1 / ##1} \l_tmpb_tl
+              {
+                \cs_if_exist:cF {\l_tmpb_tl}
+                  {
+                    \msg_error:nnxx
+                      { osglecture_modes } { undefined-implementation }
+                      {#1} {\l_tmpb_tl}
+                  }
+              }
+              {
+                \msg_error:nnxx
+                  { osglecture_modes } { missing-implementation }
+                  {#1} {##1}
+              }
+          }
+          { \msg_error:nnn { osglecture_modes } { unknown-behavior } {##1} }
+      }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_select_behavior:
+  {
+    \tl_clear:N \l_osglecture_modes_selected_behavior_tl
+    \seq_map_inline:Nn \g_osglecture_modes_seed_seq
+      {
+        \prop_get:NnNT \g_osglecture_modes_mode_behavior_prop
+          {##1} \l_tmpa_tl
+          {
+            \tl_if_empty:NTF \l_osglecture_modes_selected_behavior_tl
+              {
+                \tl_set_eq:NN
+                  \l_osglecture_modes_selected_behavior_tl \l_tmpa_tl
+              }
+              {
+                \str_if_eq:VVF
+                  \l_osglecture_modes_selected_behavior_tl \l_tmpa_tl
+                  {
+                    \msg_error:nnVV
+                      { osglecture_modes } { conflicting-behaviors }
+                      \l_osglecture_modes_selected_behavior_tl \l_tmpa_tl
+                  }
+              }
+          }
+      }
+    \tl_if_empty:NT \l_osglecture_modes_selected_behavior_tl
+      { \msg_error:nn { osglecture_modes } { no-active-behavior } }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_bind_aware_command:n #1
+  {
+    \prop_get:NxNTF \g_osglecture_modes_command_implementations_prop
+      {#1 / \l_osglecture_modes_selected_behavior_tl} \l_tmpa_tl
+      { \cs_gset_eq:cc {#1} {\l_tmpa_tl} }
+      {
+        \msg_error:nnxx { osglecture_modes } { missing-implementation }
+          {#1} {\l_osglecture_modes_selected_behavior_tl}
+      }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_finalize_commands:
+  {
+    \bool_if:NF \g_osglecture_modes_commands_frozen_bool
+      {
+        \osglecture_modes_finalize:
+        \seq_map_inline:Nn \g_osglecture_modes_aware_commands_seq
+          { \osglecture_modes_validate_aware_command:n {##1} }
+        \seq_if_empty:NF \g_osglecture_modes_aware_commands_seq
+          {
+            \osglecture_modes_select_behavior:
+            \seq_map_inline:Nn \g_osglecture_modes_aware_commands_seq
+              { \osglecture_modes_bind_aware_command:n {##1} }
+          }
+        \bool_gset_true:N \g_osglecture_modes_commands_frozen_bool
+      }
+  }
+
+\NewDocumentCommand \FinalizeModeAwareCommands { }
+  { \osglecture_modes_finalize_commands: }
+
+% Portable mode specifications are evaluated here. Genuine overlay
+% specifications use a native \cs{alt}, which selects either the original
+% command or a signature-aware gobbler before the remaining arguments are read.
+\tl_new:N \l_osglecture_modes_overlay_default_tl
+\tl_new:N \l_osglecture_modes_overlay_fallback_tl
+\tl_new:N \l_osglecture_modes_overlay_arguments_tl
+\prop_new:N \g_osglecture_modes_overlay_default_prop
+\prop_new:N \g_osglecture_modes_overlay_fallback_prop
+\msg_new:nnn { osglecture_modes } { overlay-fallback-error }
+  { Overlay~specification~'#1'~requires~a~native~overlay~backend. }
+\keys_define:nn { osglecture_modes / overlay-aware }
+  {
+    arguments .tl_set:N = \l_osglecture_modes_overlay_arguments_tl,
+    default-mode .tl_set:N = \l_osglecture_modes_overlay_default_tl,
+    fallback .choices:nn = { flatten, omit, error }
+      { \tl_set_eq:NN \l_osglecture_modes_overlay_fallback_tl \l_keys_choice_tl },
+    fallback .initial:n = flatten,
+  }
+
+\cs_new_protected:Npn \osglecture_modes_overlay_original:n #1
+  { \use:c { osglecture_modes_overlay_original_#1 } }
+
+\cs_new_protected:Npn \osglecture_modes_overlay_gobble:n #1
+  { \use:c { osglecture_modes_overlay_gobble_#1 } }
+
+\cs_new_protected:Npn \osglecture_modes_overlay_fallback:nn #1#2
+  {
+    \prop_get:NnN \g_osglecture_modes_overlay_fallback_prop {#1} \l_tmpa_tl
+    \str_case:Vn \l_tmpa_tl
+      {
+        {flatten}{ \osglecture_modes_overlay_original:n {#1} }
+        {omit}{ \osglecture_modes_overlay_gobble:n {#1} }
+        {error}{
+          \msg_error:nnn
+            { osglecture_modes } { overlay-fallback-error } {#2}
+          \osglecture_modes_overlay_gobble:n {#1}
+        }
+      }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_overlay_apply:nn #1#2
+  {
+    \osglecture_modes_if_portable_spec:nTF {#2}
+      {
+        \osglecture_modes_if_active:nTF {#2}
+          { \osglecture_modes_overlay_original:n {#1} }
+          { \osglecture_modes_overlay_gobble:n {#1} }
+      }
+      {
+        \cs_if_exist:NTF \alt
+          {
+            \alt<#2>
+              { \osglecture_modes_overlay_original:n {#1} }
+              { \osglecture_modes_overlay_gobble:n {#1} }
+          }
+          { \osglecture_modes_overlay_fallback:nn {#1} {#2} }
+      }
+  }
+
+\NewDocumentCommand \MakeOverlayAwareCommand { O{} m }
+  {
+    \tl_clear:N \l_osglecture_modes_overlay_default_tl
+    \tl_clear:N \l_osglecture_modes_overlay_arguments_tl
+    \tl_set:Nn \l_osglecture_modes_overlay_fallback_tl {flatten}
+    \keys_set:nn { osglecture_modes / overlay-aware } {#1}
+    \cs_if_exist:NTF #2
+      {
+        \cs_if_exist:cTF
+          { osglecture_modes_overlay_original_\cs_to_str:N #2 }
+          {
+            \exp_args:Nc \RenewCommandCopy
+              { osglecture_modes_overlay_original_\cs_to_str:N #2 } #2
+          }
+          {
+            \exp_args:Nc \NewCommandCopy
+              { osglecture_modes_overlay_original_\cs_to_str:N #2 } #2
+          }
+        \exp_args:NcV \DeclareDocumentCommand
+          { osglecture_modes_overlay_gobble_\cs_to_str:N #2 }
+          \l_osglecture_modes_overlay_arguments_tl
+          { }
+        \prop_put:NxV \g_osglecture_modes_overlay_default_prop
+          { \cs_to_str:N #2 } \l_osglecture_modes_overlay_default_tl
+        \prop_put:NxV \g_osglecture_modes_overlay_fallback_prop
+          { \cs_to_str:N #2 } \l_osglecture_modes_overlay_fallback_tl
+        \RenewDocumentCommand #2 { d<> }
+          {
+            \IfNoValueTF {##1}
+              {
+                \prop_get:NxN \g_osglecture_modes_overlay_default_prop
+                  { \cs_to_str:N #2 } \l_tmpa_tl
+                \tl_if_empty:NTF \l_tmpa_tl
+                  {
+                    \osglecture_modes_overlay_original:n
+                      { \cs_to_str:N #2 }
+                  }
+                  {
+                    \exp_args:Nx \osglecture_modes_overlay_apply:nV
+                      { \cs_to_str:N #2 }
+                      \l_tmpa_tl
+                  }
+              }
+              {
+                \exp_args:Nx \osglecture_modes_overlay_apply:nn
+                  { \cs_to_str:N #2 } {##1}
+              }
+          }
+      }
+      { \msg_error:nnN { kernel } { command-not-defined } #2 }
+  }
+\cs_generate_variant:Nn \osglecture_modes_overlay_apply:nn { nV }
+
 \prg_new_conditional:Npnn \osglecture_modes_if_portable_spec:n #1 { TF }
   {
     \bool_set_true:N \l_tmpa_bool
@@ -514,11 +1155,11 @@ ausdrücklich gesetzt werden.
   {
     \@ifclassloaded{beamer}
       {
-        \ifbeamer@handout
+        \str_if_eq:eeTF { \use:c { beamer@currentmode } } {handout}
+          {
           \SetLectureModes{handout,beamer}
-        \else
-          \SetLectureModes{slides,beamer}
-        \fi
+          }
+          { \SetLectureModes{slides,beamer} }
       }
       {
         \@ifclassloaded{ltx-talk}
@@ -579,7 +1220,7 @@ ausdrücklich gesetzt werden.
       }
   }
 
-\AddToHook{begindocument/before}{\osglecture_modes_finalize:}
+\AddToHook{begindocument/before}{\osglecture_modes_finalize_commands:}
 %</package>
 
 %<*ltxtalk>

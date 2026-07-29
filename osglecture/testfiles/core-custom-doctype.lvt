@@ -1,0 +1,33 @@
+\input regression-test
+\begin{filecontents*}{osglecture-profile-studyguide-scrbook.def}
+\DeclareOsgLectureProfile{studyguide-scrbook}
+  {
+    backend = scrbook,
+    class = scrbook,
+    doctypes = {studyguide},
+    mode-setup-file = osglecture-mode-studyguide.def
+  }
+\end{filecontents*}
+\begin{filecontents*}{osglecture-mode-studyguide.def}
+\DeclareLectureMode[parents={longform,print}]{studyguide}
+\AssignLectureModeBehavior{studyguide}{longform}
+\end{filecontents*}
+\documentclass
+  [doctype=studyguide,profile=studyguide-scrbook]
+  {osglecture}
+\begin{document}
+\START
+\TYPE{doctype=\OsgLectureDocumentType}
+\TYPE{profile=\OsgLectureDocumentProfile}
+\TYPE{backend=\OsgLectureBackend}
+\IfLectureModeTF{studyguide}
+  {\TYPE{studyguide-mode=true}}
+  {\TYPE{studyguide-mode=false}}
+\IfLectureModeTF{longform}
+  {\TYPE{longform-mode=true}}
+  {\TYPE{longform-mode=false}}
+\IfLectureModeTF{print}
+  {\TYPE{print-mode=true}}
+  {\TYPE{print-mode=false}}
+\END
+\end{document}

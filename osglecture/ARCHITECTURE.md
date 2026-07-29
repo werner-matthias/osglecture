@@ -213,6 +213,56 @@ Debugzwecken übersteuern. Bei einer Abweichung warnt die Klasse und weist
 darauf hin, dass der jobgebundene BuildSpec unverändert bleibt. Ein
 widersprechendes `profile` bleibt dagegen ein Fehler.
 
+### 2.2 Verhaltensklassen und vollständige Befehlssemantik
+
+„Vom Backend nicht nativ unterstützt“ darf nicht „ohne definierte Semantik“
+bedeuten. `osglecture-modes` stellt deshalb eine vom konkreten Dokumentmodell
+unabhängige Registry bereit:
+
+```tex
+\DeclareModeBehaviorClass{presentation-dynamic}
+\DeclareModeBehaviorClass{presentation-static}
+\DeclareModeBehaviorClass{longform}
+
+\AssignLectureModeBehavior{slides}{presentation-dynamic}
+\AssignLectureModeBehavior{handout}{presentation-static}
+\AssignLectureModeBehavior{script,article}{longform}
+```
+
+Ein semantischer öffentlicher Befehl nennt alle Verhaltensklassen seines
+Vertrags und erhält für jede Klasse ein Implementierungsmakro:
+
+```tex
+\DeclareModeAwareCommand
+  {\OsgSemanticCommand}
+  {presentation-dynamic,presentation-static,longform}
+\DeclareModeAwareCommandImplementation
+  {\OsgSemanticCommand}{longform}{\osg_semantic_longform:n}
+```
+
+Die Registry prüft alle versprochenen Klassen, nicht nur den aktuellen Build.
+Beim ersten Gebrauch oder spätestens vor Dokumentbeginn bindet sie den
+öffentlichen Befehl direkt an die ausgewählte Implementierung. Deren eigene
+Signatur verarbeitet die Argumente; die Registry muss daher keine
+Argumentlisten duplizieren. Ein neues Profil darf eine generische
+Implementierung übernehmen oder gezielt ersetzen, aber keine Vertragslücke
+offenlassen.
+
+Für vorhandene LaTeX-Befehle stellt `\MakeOverlayAwareCommand` einen engeren
+Overlayadapter bereit. Portable
+Modusspezifikationen werden durch die Modusmatrix ausgewertet; echte
+Overlayspezifikationen gehen an ein natives `\only`. Ohne Overlaybackend muss
+die Deklaration mit `fallback=flatten`, `omit` oder `error` eine ausdrückliche
+Semantik besitzen. Dies ersetzt den experimentellen Legacy-Helfer
+`\osgmakeselectable`, ohne Overlay- und Dokumentmodussemantik gleichzusetzen.
+Der Schlüssel `arguments` beschreibt die nach `<...>` verbleibende
+`xparse`-Signatur. Dadurch kann etwa
+`\\<slides>[3ex]` entweder den ursprünglichen Zeilenumbruch samt Abstand
+ausführen oder sowohl Stern- als auch Abstandsargument korrekt konsumieren.
+Die Sicherung des Originalbefehls benutzt die LaTeX-Kernel-Kopierschnittstelle
+und bleibt lokal, damit umgebungsabhängig neu definierte Befehle wie `\\`
+innerhalb ihres jeweiligen Kontexts adaptiert werden können.
+
 Das Backend ist die technische Realisierung des Dokumenttyps:
 
 ```text

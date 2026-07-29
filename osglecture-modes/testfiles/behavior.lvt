@@ -1,0 +1,74 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage[mode=script]{osglecture-modes}
+
+\DeclareModeBehaviorClass{dynamic}
+\DeclareModeBehaviorClass{longform}
+\AssignLectureModeBehavior{slides,handout}{dynamic}
+\AssignLectureModeBehavior{script,article}{longform}
+
+\ExplSyntaxOn
+\cs_new_protected:Npn \osg_test_dynamic:n #1
+  { \TYPE{DYNAMIC~#1} }
+\cs_new_protected:Npn \osg_test_longform:n #1
+  { \TYPE{LONGFORM~#1} }
+\ExplSyntaxOff
+
+\DeclareModeAwareCommand{\SemanticCommand}{dynamic,longform}
+\ExplSyntaxOn
+\DeclareModeAwareCommandImplementation
+  {\SemanticCommand}{dynamic}{\osg_test_dynamic:n}
+\DeclareModeAwareCommandImplementation
+  {\SemanticCommand}{longform}{\osg_test_longform:n}
+\cs_new_protected:Npn \osg_test_incomplete:n #1
+  { \TYPE{INCOMPLETE~ACTIVE~#1} }
+\ExplSyntaxOff
+
+\DeclareModeAwareCommand{\IncompleteCommand}{dynamic,longform}
+\ExplSyntaxOn
+\DeclareModeAwareCommandImplementation
+  {\IncompleteCommand}{longform}{\osg_test_incomplete:n}
+\msg_redirect_name:nnn
+  {osglecture_modes}{missing-implementation}{none}
+\ExplSyntaxOff
+
+\newcommand\SimpleCommand{\TYPE{SIMPLE}}
+\MakeOverlayAwareCommand[default-mode=presentation]{\SimpleCommand}
+
+\newcommand\FlattenedCommand{\TYPE{FLATTENED}}
+\MakeOverlayAwareCommand[fallback=flatten]{\FlattenedCommand}
+
+\newcommand\OmittedCommand{\TYPE{OMITTED}}
+\MakeOverlayAwareCommand[fallback=omit]{\OmittedCommand}
+
+\NewDocumentCommand\OptionalCommand{o}
+  {
+    \IfNoValueTF{#1}
+      {\TYPE{OPTIONAL NONE}}
+      {\TYPE{OPTIONAL #1}}
+  }
+\MakeOverlayAwareCommand
+  [arguments={o},default-mode=presentation,fallback=flatten]
+  {\OptionalCommand}
+
+\begin{document}
+\START
+\SemanticCommand{CONTENT}
+\IncompleteCommand{BRANCH}
+\SimpleCommand
+\SimpleCommand<script>
+\FlattenedCommand<2->
+\OmittedCommand<2->
+\OptionalCommand<presentation>[HIDDEN]
+\OptionalCommand<script>[VISIBLE]
+\OptionalCommand<2->[FLATTENED-ARGUMENT]
+\begingroup
+  \MakeOverlayAwareCommand
+    [arguments={s o},default-mode=script]
+    {\\}
+  First\\<script>[1ex]Second
+  \\<presentation>[4ex]Third
+\endgroup
+\TYPE{LINEBREAK ARGUMENTS CONSUMED}
+\END
+\end{document}
