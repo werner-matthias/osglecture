@@ -3,5 +3,5 @@ kind = "target"
 name = "handout"
 version = "1.0"
 doctype = "handout"
-parents = ["presentation", "print"]
+profile_class = "presentation"
 unit_scopes = ["b", "bh"]

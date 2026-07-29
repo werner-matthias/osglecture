@@ -3,5 +3,5 @@ kind = "target"
 name = "slides"
 version = "1.0"
 doctype = "slides"
-parents = ["presentation"]
+profile_class = "presentation"
 unit_scopes = ["b", "bs"]

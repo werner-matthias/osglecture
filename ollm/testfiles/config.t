@@ -286,7 +286,7 @@ kind = "target"
 name = "keynote"
 version = "1.0"
 doctype = "keynote"
-parents = ["presentation"]
+profile_class = "presentation"
 TOML
 close $extended_target;
 open my $extended_local, '>',
@@ -334,8 +334,8 @@ is $extended->{build_spec}{doctype}, 'keynote',
   'an extended target supplies its matching document type';
 is $extended->{build_spec}{document_profile}, 'beamer',
   'presentation parent selects the presentation document profile';
-is_deeply $extended->{build_spec}{parents}, ['presentation'],
-  'extended target parent modes remain available in the BuildSpec';
+is $extended->{build_spec}{profile_class}, 'presentation',
+  'extended target profile class remains available in the BuildSpec';
 
 open my $mismatched_target, '>',
   File::Spec->catfile($extended_targets, 'mismatch.toml') or die $!;
@@ -345,7 +345,7 @@ kind = "target"
 name = "mismatch"
 version = "1.0"
 doctype = "different"
-parents = ["longform"]
+profile_class = "longform"
 TOML
 close $mismatched_target;
 eval {

@@ -103,9 +103,10 @@ ollm build --target=studyguide --language=en
 ```
 
 A schema-1 target definition uses the same `name` and `doctype` and declares
-one or more parent modes. Exactly one of `presentation` and `longform` must be
-a direct parent so OLLM can select the corresponding project-wide document
-profile. Further parents such as `print` are allowed.
+`profile_class = "presentation"` or `profile_class = "longform"`. This value
+only selects the corresponding project-wide document profile. Mode parents
+and abstract modes belong to that profile's TeX-side `mode-setup-file`; OLLM
+does not merge or interpret the mode graph.
 
 For a concrete series build, the resolved configuration is normalized into a
 job-bound `<jobname>.osgbuild.tex`. The reader in

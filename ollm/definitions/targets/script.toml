@@ -3,5 +3,5 @@ kind = "target"
 name = "script"
 version = "1.0"
 doctype = "script"
-parents = ["longform", "print"]
+profile_class = "longform"
 unit_scopes = ["a", "as"]

@@ -378,7 +378,7 @@ sub validate_manifest {
       _known_keys(
         $values,
         [qw(theme numbering references presentation_backend identity_profile
-            presentation_profile script_profile modes mode_setup_file)],
+            presentation_profile script_profile)],
         $path, $lines, "latex.$level",
       );
       _require_string($values, $_, "$path: latex.$level")
@@ -436,7 +436,7 @@ sub load_user_defaults {
       die "$path: latex.defaults must be a table" if ref $values ne 'HASH';
       _known_keys($values,
         [qw(theme numbering references presentation_backend identity_profile
-            presentation_profile script_profile modes mode_setup_file)],
+            presentation_profile script_profile)],
         $path, $lines, 'latex.defaults');
       _require_string($values, $_, "$path: latex.defaults") for keys %$values;
     }
@@ -508,8 +508,8 @@ sub resolve_definitions {
       "target '$name' was not found; searched: " . join(', ', @paths))
       if !exists $target{$name};
     $selected_targets{$name} = {
-      doctype => $target{$name}{data}{doctype},
-      parents => $target{$name}{data}{parents},
+      doctype       => $target{$name}{data}{doctype},
+      profile_class => $target{$name}{data}{profile_class},
       path    => $target{$name}{path},
       signature => sha256_hex(
         JSON::PP->new->canonical->encode($target{$name}{data}),
@@ -566,7 +566,7 @@ sub _load_definition {
   my ($class, $path) = @_;
   my ($data, $lines) = $class->_load_toml($path);
   _known_keys($data,
-    [qw(schema kind name version latex doctype parents unit_scopes)],
+    [qw(schema kind name version latex doctype profile_class unit_scopes)],
     $path, $lines, '');
   if (!defined $data->{schema} || ref $data->{schema}
       || $data->{schema} != $DEFINITION_SCHEMA) {
@@ -585,27 +585,19 @@ sub _load_definition {
     _fail_at($path, $lines, 'doctype',
       "bundle preset must not define 'doctype'")
       if exists $data->{doctype};
-    _fail_at($path, $lines, 'parents',
-      "bundle preset must not define 'parents'")
-      if exists $data->{parents};
+    _fail_at($path, $lines, 'profile_class',
+      "bundle preset must not define 'profile_class'")
+      if exists $data->{profile_class};
     _fail_at($path, $lines, 'unit_scopes',
       "bundle preset must not define 'unit_scopes'")
       if exists $data->{unit_scopes};
   } else {
     _require_string($data, 'doctype', $path);
-    my $parents = _require_string_array($data, 'parents', $path);
-    _fail_at($path, $lines, 'parents',
-      "target parents must not be empty")
-      if !@$parents;
-    my %parent;
-    for my $parent (@$parents) {
-      _fail_at($path, $lines, 'parents',
-        "invalid parent mode '$parent'")
-        if $parent !~ /\A[A-Za-z0-9][A-Za-z0-9._-]*\z/;
-      _fail_at($path, $lines, 'parents',
-        "target parents contains duplicate mode '$parent'")
-        if $parent{$parent}++;
-    }
+    my $profile_class = _require_string($data, 'profile_class', $path);
+    _fail_at($path, $lines, 'profile_class',
+      "invalid target profile_class '$profile_class'; "
+      . "expected 'presentation' or 'longform'")
+      if $profile_class !~ /\A(?:presentation|longform)\z/;
     _fail_at($path, $lines, 'doctype',
       "target name '$data->{name}' and doctype '$data->{doctype}' differ; "
       . "schema 1 has no versioned target/doctype adapter contract")
@@ -631,7 +623,7 @@ sub _load_definition {
       die "$path: latex.$level must be a table" if ref $values ne 'HASH';
       _known_keys($values,
         [qw(theme numbering references presentation_backend identity_profile
-            presentation_profile script_profile modes mode_setup_file)],
+            presentation_profile script_profile)],
         $path, $lines, "latex.$level");
       _require_string($values, $_, "$path: latex.$level") for keys %$values;
     }

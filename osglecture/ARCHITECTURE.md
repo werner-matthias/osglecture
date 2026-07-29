@@ -166,14 +166,18 @@ BuildRequest wählt Target
         │
         ▼
 Targetdefinition liefert kanonischen Dokumenttyp
+und Profilklasse
         │
         ▼
-aktiver Blattmodus ist dieser Dokumenttyp
+Profil-/Projektpolicy wählt ein Dokumentprofil
         │
-        ├── Modusmatrix liefert transitive Obermodi
         │
         ▼
-Profil-/Projektpolicy wählt einen Backendadapter
+Profildeskriptor deklariert Backend und Modusgraph
+        │
+        ▼
+aktiver Blattmodus ist der Dokumenttyp;
+der Graph liefert transitive Obermodi
 ```
 
 Target und Dokumenttyp sind zwei Perspektiven derselben fachlichen Auswahl:
@@ -201,9 +205,11 @@ article -> longform, print
 
 Bei einem Handout sind damit `handout`, `presentation` und `print` aktiv.
 Abstrakte Obermodi müssen keine baubaren Dokumenttypen sein. `osglecture-modes`
-übernimmt die portable Auswertung der Matrix; `osglecture` registriert die
-aufgelöste Matrix und setzt den Blattmodus ausdrücklich, bevor
-modusabhängige Projektmetadaten verarbeitet werden.
+übernimmt die portable Auswertung der Matrix. Der ausgewählte
+Profildeskriptor beziehungsweise dessen `mode-setup-file` registriert sie auf
+der TeX-Seite; `osglecture` setzt anschließend den Dokumenttyp als Blattmodus,
+bevor modusabhängige Projektmetadaten verarbeitet werden. OLLM transportiert
+keine Modusmatrix.
 
 `osglecture-modes` bildet diesen Vertrag als Menge aktiver Blattmodi mit transitiver
 Elternhülle ab. Ein Modus kann mehrere Eltern besitzen. Aliase werden transitiv
@@ -233,15 +239,17 @@ versprochen.
 
 Die automatische Moduserkennung dient nur der Standalone-Kompatibilität und
 geschieht bereits beim Laden des Pakets. `osglecture` registriert und aktiviert
-die aufgelöste Matrix dagegen ausdrücklich vor dem Einlesen projektweiter
-Metadaten. Der `ltx-talk`-Scanner bleibt ein Backendadapter und ist nicht Teil
-des allgemeinen Moduskerns.
+die vom Dokumentprofil deklarierte Matrix dagegen ausdrücklich vor dem
+Einlesen projektweiter Metadaten. Der `ltx-talk`-Scanner bleibt ein
+Backendadapter und ist nicht Teil des allgemeinen Moduskerns.
 
 Bis zu einer fachlichen Aufspaltung aktiviert `osglecture` für `script` und
 `article` beide Blattmodi gemeinsam. Das ist absichtlich kein Graphalias und
-verbaut daher keine spätere getrennte Semantik. Vor dem Finalisieren kann ein
-Dokumentprofil oder Bundle-Preset den Graphen über `mode-setup-file` erweitern;
-`modes` ergänzt weitere aktive Modi.
+verbaut daher keine spätere getrennte Semantik. Vor dem Finalisieren kann das
+Dokumentprofil den Graphen über `mode-setup-file` erweitern; `modes` ergänzt
+weitere aktive Modi. Ein Bundle-Preset beeinflusst die Matrix nur mittelbar
+durch die Auswahl eines Dokumentprofils, nicht durch einen zweiten von OLLM
+zusammengeführten Graphen.
 
 Explizite Klassenoptionen für `doctype` und `lang` dürfen einen BuildSpec zu
 Debugzwecken übersteuern. Bei einer Abweichung warnt die Klasse und weist
@@ -800,8 +808,8 @@ Vor einer Implementierung sollten folgende Fragen entschieden werden:
 
 - Dürfen erzwungene globale Optionen lokale Dokumentoptionen überschreiben?
 - Welche Werte müssen vor dem Laden der Basisklasse feststehen?
-- Welches Schema transportiert die allgemeine Modusmatrix in der generierten
-  TeX-Auftragsdatei?
+- Welche Profildeskriptoren und `mode-setup-file`s bilden die stabile
+  Standardmatrix vollständig ab?
 
 ### Autoren-API
 

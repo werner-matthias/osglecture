@@ -119,9 +119,10 @@ die Klasse ohne TOML-Abhängigkeit.
 - [`osglecture-modes`](../osglecture-modes/osglecture-modes.dtx) stellt
   portable hierarchische
   Dokumentmodi bereit. Der kanonische Dokumenttyp ist zugleich der aktive
-  Blattmodus. OLLM transportiert die aufgelöste Modusmatrix; ihre Auswertung
-  und die bedingte Verarbeitung bleiben Aufgabe von `osglecture` und
-  `osglecture-modes`.
+  Blattmodus. OLLM transportiert diesen Blattmodus, aber keine Modusmatrix.
+  Dokumentprofile registrieren den Graphen auf der TeX-Seite; seine
+  Validierung, transitive Auswertung und die bedingte Verarbeitung bleiben
+  Aufgabe von `osglecture` und `osglecture-modes`.
 - [`lttheme`](../lttheme/README.md) entwickelt Themes für `ltx-talk`.
   OLLM behandelt Beamer und `ltx-talk` normalerweise gleich, solange beide mit
   demselben LuaLaTeX-/latexmk-Verfahren gebaut werden.
@@ -215,9 +216,10 @@ backend = adapter(doctype, document-profile, project-policy)
 ```
 
 So darf beispielsweise `slides` durch `beamer` oder `ltx-talk` realisiert
-werden, ohne Target, Dokumenttyp oder Autorenmodus zu ändern. OLLM löst die
-deklarativen Definitionen und übergibt Dokumenttyp, Modusmatrix und effektive
-Backendwahl. `osglecture` prüft, dass der gewählte Adapter den Dokumenttyp
+werden, ohne Target, Dokumenttyp oder Autorenmodus zu ändern. OLLM übergibt
+Dokumenttyp und effektives Dokumentprofil. Dessen Deskriptor registriert vor
+der Aktivierung des Blattmodus die benötigte Modusmatrix und deklariert den
+Backendadapter. `osglecture` prüft, dass der gewählte Adapter den Dokumenttyp
 unterstützt, und lädt ihn. Autorenquellen wählen Inhalte nach Dokumenttyp oder
 Obermodus, nicht nach Backendnamen.
 
@@ -477,7 +479,7 @@ kind = "target"
 name = "slides"
 version = "1.0"
 doctype = "slides"
-parents = ["presentation"]
+profile_class = "presentation"
 unit_scopes = ["b", "bs"]
 ```
 
@@ -491,18 +493,17 @@ Unit-Scopes, auf die das Target eingeschränkt ist. Einheiten ohne Scope-Code
 bleiben für alle konfigurierten Targets gültig. Damit bleibt die Filterung von
 `--all` erweiterbar und wird nicht aus Targetnamen abgeleitet.
 
-`parents` deklariert die direkten Obermodi des kanonischen Dokumenttyps.
-Weitere Zeilen der allgemeinen Modusmatrix, insbesondere abstrakte Modi, dürfen
-aus dem Bundle-Preset stammen. OLLM normalisiert die aufgelöste Matrix in den
-BuildSpec; `osglecture-modes` wertet ihre transitive Hülle auf der LaTeX-Seite
-aus.
+`profile_class` wählt ausschließlich den projektweiten Profilschlüssel. Schema
+1 kennt `presentation` und `longform`; daraus folgen
+`presentation_profile` beziehungsweise `script_profile`. Der Wert ist keine
+Moduskante und aktiviert keinen Autorenmodus.
 
-Die Implementierung der Targetdefinitionen verwendet `parents`. Für die
-gegenwärtige projektweite Dokumentprofilauswahl muss genau einer der direkten
-Elternmodi `presentation` und `longform` vorhanden sein. Weitere Eltern wie
-`print` sind zulässig. Die vollständige Auflösung zusätzlicher abstrakter
-Modusknoten aus dem Bundle-Preset bleibt Teil der noch ausstehenden
-Normalisierung der allgemeinen Modusmatrix.
+Die Modusmatrix ist kein Bestandteil einer Targetdefinition oder des
+BuildSpec. Sie gehört zum TeX-Integrationsvertrag des ausgewählten
+Dokumentprofils. Dessen `mode-setup-file` deklariert Blattmodus, Elternkanten
+und abstrakte Modi, bevor `osglecture` den kanonischen Dokumenttyp aktiviert
+und den Graphen finalisiert. Damit existiert für die Modussemantik nur eine
+Quelle und OLLM muss weder Graphen zusammenführen noch interpretieren.
 
 ### 7.4 Lokale Konfiguration
 
@@ -665,8 +666,7 @@ unit-scope
 unit-id
 target
 doctype
-mode matrix
-backend adapter
+profile class
 bundle preset
 document profile
 language
@@ -683,12 +683,11 @@ config-signature
 `--all` erzeugt ausschließlich die im Projektmanifest vorgesehenen Builds der
 aktuellen Einheit, zusätzlich gefiltert durch deren Profil und Rolle.
 
-Der derzeit erzeugte BuildSpec enthält bereits Target, Dokumenttyp und die
-direkten Elternmodi sowie die Backendvorgabe des Profils innerhalb der
-effektiven LaTeX-Konfiguration, aber noch keine aus Bundle-Preset und
-Targetdefinition normalisierte vollständige Modusmatrix. BuildSpec und
-TeX-Auftragsdatei müssen noch gemeinsam auf diese Matrix und den expliziten
-Backendadapter angehoben werden.
+Der BuildSpec enthält Target, Dokumenttyp, Profilklasse und das aufgelöste
+Dokumentprofil. Modusmatrix und Backendadapter sind bewusst keine
+OLLM-Builddimensionen: Beide werden durch den installierten
+Profildeskriptor auf der TeX-Seite festgelegt und dort gegen den Dokumenttyp
+validiert.
 
 ## 9. Jobname und Verzeichnisse
 
