@@ -8,15 +8,15 @@ modules = {
    "osgdoc",
    "lttheme",
    "osglecture-modes",
-   "tagpax",
-   -- "osglecture"
+   "osglecture",
+   -- "tagpax",
    -- "osgterminal",
    -- "osgref",
    -- "osglectbib",
    -- "osglisting"
  }
 
-textfiles = { "README.md", "GLOSSARY.md", "CHANGES.md", "LICENSE" }
+textfiles = { "README.md", "GLOSSARY.md" }
 
 unpackfiles = unpackfiles  or { "*.dtx" }
 
