@@ -3,8 +3,18 @@ module = "osglecture"
 
 maindir=".."
 
-installfiles = { "osglecture.cls", "osglecture-config.sty", "twocolumns.sty" }
-sourcefiles = { "osglecture.cls", "osglecture-config.sty", "twocolumns.sty" }
+installfiles = {
+  "osglecture.cls",
+  "osglecture-config.sty",
+  "osglecture-osgbeamer.code.tex",
+  "twocolumns.sty"
+}
+sourcefiles = {
+  "osglecture.cls",
+  "osglecture-config.sty",
+  "osglecture-osgbeamer.code.tex",
+  "twocolumns.sty"
+}
 typesetfiles = { }
 textfiles = { "README.md", "ARCHITECTURE.md" }
 

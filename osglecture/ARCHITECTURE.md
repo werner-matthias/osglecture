@@ -6,9 +6,28 @@
 
 Dieses Dokument beschreibt die grundsätzlichen Ideen der Klasse `osglecture` in ihrer gegenwärtigen Form. Es ist bewusst weder Benutzerhandbuch noch vollständige API-Referenz. Sein Zweck ist, das fachliche Modell, die tragenden Entwurfsentscheidungen und die derzeitigen Spannungsfelder sichtbar zu machen. Nach fachlicher Überarbeitung soll es als Ausgangspunkt für eine Neustrukturierung der Klasse dienen.
 
-Die Aussagen beziehen sich auf `osglecture/osglecture.cls` in Version 0.6.0 vom 4. September 2025 sowie auf die begleitenden Dateien im Repository. Die Klasse ist derzeit als neuer, noch nicht vollständig integrierter Stand zu verstehen: Sie ist im Arbeitsbaum nicht versioniert, die zentrale README nennt sie noch nicht als aktiven Bestandteil, und das vorhandene Standalone-Beispiel verwendet weiterhin `osgbeamer`.
+Die Aussagen beziehen sich auf die laufende Neustrukturierung von
+`osglecture/osglecture.cls` und die begleitenden Dateien im Repository. Seit
+Version 0.7.0 ist die Klasse standardmäßig ein schlanker Orchestrator. Die
+unveröffentlichte historische Implementierung bleibt während der Migration nur
+noch über die explizite Klassenoption `osgbeamer` erreichbar.
 
 > **Kernaussage:** `osglecture` soll eine gemeinsame fachliche Quelle in mehrere didaktische Darstellungen überführen. Die Klasse sollte deshalb künftig primär Moduswahl und Integration koordinieren; fachlich unabhängige Dienste und Darstellungsdetails sollten in getrennten Paketen liegen.
+
+### Gegenwärtige Migrationsgrenze
+
+Der Standardpfad von `osglecture.cls` enthält nur noch Engineprüfung,
+Auftragsdatei- und Optionsauswertung, Basisklassenwahl sowie die Initialisierung
+von `osglecture-modes`. Er lädt insbesondere keine historische Typografie,
+Farben, Themes, Literatur- oder Referenzpakete.
+
+Mit `\documentclass[osgbeamer,...]{osglecture}` wird stattdessen
+`osglecture-osgbeamer.code.tex` geladen. Diese Datei kapselt den bisherigen
+Gesamtstand einschließlich seiner Formatierungen und seiner Abhängigkeiten.
+Die Option ist eine bewusst explizite Migrationsbrücke, kein Bestandteil des
+neuen Kerns. Eine weitere Zerlegung dieses konservierten Codes kann später
+entlang fachlicher Paketgrenzen erfolgen, ohne den Standardpfad erneut zu
+belasten.
 
 ## 1. Das fachliche Problem
 
