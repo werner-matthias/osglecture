@@ -37,9 +37,21 @@ belasten.
 
 `bundle_preset` in der OLLM-Konfiguration bezeichnet das versionierte
 Bundle-Preset, beispielsweise `OSG lecture/1`. Davon getrennt bezeichnet
-`document-profile` die konkrete TeX-Integration. OLLM wählt sie aus
-Nutzerdefaults und einem möglichen Projekt-Override aus und schreibt das
-aufgelöste Ergebnis in den BuildSpec.
+`document-profile` die konkrete TeX-Integration. Die Targetdefinition wählt
+über ihre Profilklasse zunächst `presentation_profile` oder `script_profile`.
+OLLM löst diesen Schlüssel in folgender Priorität auf:
+
+```text
+eingebauter Fallback
+    < Bundle-Preset-Defaults
+    < Nutzerdefaults
+    < Projekt-latex.defaults
+    < Bundle-Preset-Enforcement
+    < Projekt-latex.enforce
+```
+
+Das Ergebnis wird in den BuildSpec geschrieben und kann nicht durch die CLI
+ausgewählt werden.
 
 Die Klasse lädt Profildeskriptoren vor der Basisklasse. Ein Deskriptor
 deklariert unterstützte Dokumenttypen, Backend, Basisklasse,
@@ -128,8 +140,8 @@ Die Klasse verarbeitet vier Arten von Eingaben und erzeugt daraus eine konkrete 
                                │
               ┌────────────────┼────────────────┐
               │                │                │
-        Klassenoptionen   Serienkonfiguration   Jobname
-              │          (OLLM / lectdates)     │
+        Klassenoptionen   Serienkonfiguration  Buildauftrag
+              │               (OLLM)            │
               └────────────────┼────────────────┘
                                ▼
                     osglecture – Orchestrator
@@ -148,7 +160,8 @@ Die Klasse verarbeitet vier Arten von Eingaben und erzeugt daraus eine konkrete 
 
 Die Klasse übernimmt derzeit fünf Rollen:
 
-1. **Konfiguration ermitteln:** OLLM-Verzeichnisstruktur erkennen, Konfigurationsdatei auswerten und Informationen aus dem Jobnamen ableiten.
+1. **Konfiguration ermitteln:** Klassenoptionen und den normalisierten,
+   jobgebundenen OLLM-Buildauftrag auswerten.
 2. **Ausgabemodus wählen:** `beamer` oder `scrbook` mit `beamerarticle` als Basisklasse laden.
 3. **Serienkontext integrieren:** kapitelübergreifende Metadaten, Referenzen, Bibliografie und Nummerierung einbinden.
 4. **Darstellung konfigurieren:** Theme, Schriften, Farben und Handout-Layout festlegen.
@@ -355,7 +368,11 @@ nicht.
 
 ### 3.3 Serie und Standalone sind zwei gleichwertige Kontexte
 
-Im Serienbetrieb liefert OLLM Informationen über Verzeichnisstruktur, Kapitel, Sprache, Dokumenttyp und gemeinsame Daten. Ohne erkannte OLLM-Konfiguration schaltet die Klasse automatisch in den Standalone-Modus. Die Option `noollm` erzwingt diesen Zustand.
+Im Serienbetrieb liefert OLLM Informationen über Verzeichnisstruktur, Kapitel,
+Sprache, Dokumenttyp und gemeinsame Daten. Ohne passende Auftragsdatei
+schaltet die Klasse automatisch in den Standalone-Modus. Die Klassenoption
+`standalone` erzwingt diesen Zustand und ignoriert eine vorhandene
+Auftragsdatei mit einer Warnung.
 
 Das ist fachlich sinnvoll: Autoreninhalte sollen sowohl als Teil einer Vorlesungsreihe als auch isoliert übersetzbar sein. Der heutige Code behandelt Standalone jedoch teilweise als Rückfallpfad. Künftig sollten beide Kontexte klar spezifizierte, getestete Betriebsarten sein:
 
@@ -366,25 +383,15 @@ Eine nicht vorhandene Serienkonfiguration darf keine impliziten Seiteneffekte au
 
 ### 3.4 Konfiguration besitzt Herkunft und Priorität
 
-Die Klasse kennt drei Prioritätsstufen:
+Im neuen Kern werden Doctype und Sprache zunächst aus expliziten
+Klassenoptionen übernommen. Eine geladene Auftragsdatei füllt nicht explizit
+gesetzte Werte. Explizite Abweichungen sind zu Debugzwecken erlaubt und
+erzeugen eine Warnung; der BuildSpec selbst bleibt unverändert.
 
-1. globale Optionen aus der Vorlesungskonfiguration,
-2. lokale Klassenoptionen eines Kapitels,
-3. erzwungene globale Optionen.
-
-Daneben werden Sprache und Dokumenttyp bei Bedarf aus dem Jobnamen abgeleitet. Dieses Modell ist mächtig, aber nur dann beherrschbar, wenn Herkunft, Zeitpunkt und Priorität jedes Werts transparent sind.
-
-Für eine Neufassung bietet sich folgende Reihenfolge an:
-
-```text
-eingebaute Defaults
-    < Serienkonfiguration
-    < aus Jobname abgeleitete Werte
-    < lokale Dokumentoptionen
-    < ausdrücklich erzwungene Serienrichtlinien
-```
-
-Abweichungen von dieser Reihenfolge sollten nur für technisch frühe Optionen erlaubt und dokumentiert werden. Eine Diagnosefunktion sollte die effektive Konfiguration einschließlich ihrer Herkunft ausgeben können.
+Das Dokumentprofil ist strenger: OLLM löst es nach der im Abschnitt
+„Dokumentprofile“ beschriebenen Priorität auf. Eine explizite Klassenoption
+darf diesen Wert bei einer Auftragsdatei nicht überschreiben, sondern muss
+identisch sein. Ein Widerspruch ist ein Fehler.
 
 ### 3.5 Metadaten gehören zum Dokumentmodell
 
@@ -570,7 +577,7 @@ Die folgende Gruppierung beschreibt die heute sichtbaren Konzepte, nicht notwend
 
 ### Konfiguration
 
-- `doctype`, `lang`, `standalone`, `noollm`
+- `doctype`, `lang`, `standalone`
 - Weitergabe über `beamer`, `book`, `tuc`, `bib`
 - `aspectratio`, `handout format`, `continuation`, `docid`
 - `legacy`, `nobib`, `noforcetoc`, `osgdefaults`, `final`
@@ -606,11 +613,13 @@ Ein wesentlicher Schritt der Überarbeitung ist die Entscheidung, welche dieser 
 
 ## 5. Heutige Kopplungen und Risiken
 
-### 5.1 Konfiguration ist an Dateisystem und Perl-Syntax gekoppelt
+### 5.1 Normalisierte OLLM-Grenze
 
-Lua-Code prüft einen festen relativen Pfad `../ollmconfig.pl` und extrahiert ausgewählte Perl-Zuweisungen mit regulären Ausdrücken. Damit sind Konfigurationsmodell, Dateiformat, Arbeitsverzeichnis und Ausführung eng gekoppelt. Fehlerhafte oder ungewöhnlich formatierte Konfigurationen können stillschweigend zu Defaults führen.
-
-**Leitlinie:** OLLM sollte die normalisierten Werte über eine kleine, dokumentierte Schnittstelle an LaTeX übergeben. Die Klasse sollte weder Perl parsen noch ein bestimmtes Arbeitsverzeichnis voraussetzen.
+Der neue Kern liest ausschließlich die jobgebundene
+`<jobname>.osgbuild.tex`. OLLM besitzt Manifest-Parsing, Discovery und
+Prioritätsauflösung; die Klasse validiert Schema und Jobbindung und übernimmt
+die normalisierten Werte. Damit setzt sie weder ein bestimmtes
+Arbeitsverzeichnis noch eine externe Konfigurationssyntax voraus.
 
 ### 5.2 Frühe und späte Optionen sind vermischt
 

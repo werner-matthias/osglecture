@@ -41,6 +41,27 @@ OLLM soll:
 8. unter Unix, macOS und Windows installierbar sein;
 9. mit `l3build` getestet und CTAN-/TeX-Live-tauglich paketiert werden können.
 
+### 2.1 Implementierungsstatus und TODO
+
+Der neue Executor implementiert derzeit normale und kontinuierliche Builds,
+`build --all`, `build --dry-run`, Standalone-Builds sowie die grundlegende
+Werkzeugprüfung durch `doctor`. Native Clean- und Informationsaktionen von
+`latexmk` können für einen aufgelösten Build durchgereicht werden.
+
+Folgende von der CLI bereits erkannte OLLM-Funktionen sind noch nicht
+implementiert und enden mit Exitcode 69:
+
+- **TODO:** `report`;
+- **TODO:** das rein lesende `check`;
+- **TODO:** OLLM-spezifisches `clean` mit Level und Scope;
+- **TODO:** `prune`;
+- **TODO:** Fixpunkt-Builds mit `build --resolve`.
+
+Ebenfalls TODO sind Resultat-Promotion, Auswertung der Referenzindizes und die
+vollständigen projekt- und backendabhängigen `doctor`-Prüfungen. Die
+entsprechenden späteren Abschnitte spezifizieren das Zielverhalten und sind
+nicht als Beschreibung bereits verfügbarer Funktionen zu lesen.
+
 ## 3. Nichtziele
 
 OLLM soll nicht:
@@ -355,9 +376,6 @@ ollmconfig.toml
 
 und liegt in der Serienwurzel. Es ist zugleich deren expliziter Marker.
 
-`ollmconfig.pl` bezeichnet ausschließlich das Legacyformat. Sind altes und
-neues Manifest gleichzeitig vorhanden, ist dies ein Fehler.
-
 Ohne explizite Auswahl sucht OLLM vom Arbeitsverzeichnis aufwärts. `--config`
 bezeichnet ausschließlich eine TOML-Datei; `--project-root` bezeichnet ein
 Verzeichnis, das `ollmconfig.toml` enthalten muss. Explizite Angaben werden
@@ -380,10 +398,27 @@ LaTeX-Schlüssel existiert zusätzlich eine erzwungene Projektpolicy mit höhere
 Priorität.
 
 Die Dokumentprofilauswahl bildet eine Ausnahme von der allgemeinen
-CLI-Buildauswahl: Sie darf nicht pro Auftrag überschrieben werden.
-Nutzerdefaults legen `presentation_profile` und `script_profile` fest; nur das
-Projektmanifest darf diese Auswahl überschreiben. Der aufgelöste Wert wird als
-`document-profile` im BuildSpec transportiert, dort aber nicht ausgewählt.
+CLI-Buildauswahl: Sie darf nicht pro Auftrag überschrieben werden. Die
+Profilklasse des Targets wählt `presentation_profile` oder `script_profile`.
+Für diesen Schlüssel gilt die implementierte Priorität:
+
+```text
+eingebauter Fallback
+        <
+Defaults des Bundle-Presets
+        <
+Nutzerdefaults
+        <
+latex.defaults des Projektmanifests
+        <
+effektives Enforcement
+```
+
+Beim Enforcement werden zuerst Werte des Bundle-Presets und danach
+`latex.enforce` des Projektmanifests zusammengeführt. Der aufgelöste Wert wird
+als `document-profile` im BuildSpec transportiert. Eine CLI-Buildauswahl kann
+ihn nicht ändern. Eine explizite TeX-Klassenoption `profile=...` muss bei
+geladener Auftragsdatei mit ihm übereinstimmen.
 
 ### 7.3 Bundle-Preset
 
@@ -791,7 +826,7 @@ Beispiel:
 ```tex
 \OsgLectureBuildSetup{
   schema               = 1,
-  job-id               = {bs-020-processes-slides-de},
+  job-id               = {bs-020-slides-de-processes},
   context              = series,
   series-id            = {bs},
   series-root          = {...},
@@ -878,7 +913,7 @@ eine der folgenden Strategien verwenden:
 Die endgültige Strategie ist offen. Sie muss sicherstellen, dass eine
 Verzeichnisumordnung einen notwendigen LaTeX-Lauf auslöst.
 
-## 12. Ergebnis- und Referenzdateien
+## 12. Ergebnis- und Referenzdateien (TODO)
 
 ### 12.1 Ergebnis
 
@@ -972,7 +1007,7 @@ konsumentenspezifische Projektionen möglich.
 Pseudoabhängigkeiten. Eine eigenschaftsgenaue Importdatei wäre präziser, würde
 die erste Implementierung aber deutlich verkomplizieren.
 
-## 13. Zustandslebenszyklus und Atomarität
+## 13. Zustandslebenszyklus und Atomarität (TODO)
 
 ### 13.1 Eigentum
 
@@ -1008,7 +1043,7 @@ Konfiguration gehört.
 `prune` entfernt Zustände, deren Dokumentidentität in der aktuellen
 Projektstruktur nicht mehr existiert. Es unterstützt `--dry-run`.
 
-## 14. Dokumentübergreifende Referenzen
+## 14. Dokumentübergreifende Referenzen (TODO)
 
 Lokale Referenzen verwenden die normale LaTeX-/Hyperref-API. Externe
 Referenzen erhalten eine eigene sichtbare API und adressieren:
@@ -1045,12 +1080,12 @@ ollm [globale Optionen] [Aktion] [Ziel] [Aktionsoptionen]
 Aktionen:
 
 ```text
-build      Defaultaktion
-report
-check
-clean
-prune
-doctor
+build      implementierte Defaultaktion
+report     TODO
+check      TODO
+clean      TODO
+prune      TODO
+doctor     grundlegende Werkzeugprüfung implementiert; Projekttests TODO
 ```
 
 Ein eigener `plan`-Befehl ist nicht vorgesehen. Stattdessen:
@@ -1107,7 +1142,8 @@ Mindestens:
 `--all` bezeichnet nur die im Manifest vorgesehenen Builds der aktuellen
 Einheit.
 
-`--resolve` gehört zu `build`; `check` bleibt rein lesend.
+`--resolve` gehört zu `build`, ist aber noch TODO; `check` bleibt im
+spezifizierten Zielverhalten rein lesend.
 
 ### 15.4 OLLM- und latexmk-Argumente
 
@@ -1117,11 +1153,13 @@ Normale unbekannte Minusoptionen werden an `latexmk` weitergereicht.
 
 Die Durchreichung endet an den von OLLM kontrollierten Verträgen. Zusätzliche
 RC-Dateien oder Perl-Startcode (`-r`, `-e`), andere Engines als LuaLaTeX,
-alternative Ausgabeformate, `-out2dir`, indirekte Engineoptionen und
-`-use-make` sind Fehler. OLLM besitzt Engine, Jobname, Recorder,
-Arbeits-/Ausgabepfade, Shell-Escape-Policy und die Orchestration abhängiger
-Builds. Diagnosen nennen den verletzten Vertrag und, soweit möglich, eine
-eindeutige Alternative.
+alternative Ausgabeformate, indirekte Engineoptionen und `-use-make` sind
+Fehler. In Serienbuilds ist außerdem `-out2dir` unzulässig, weil OLLM den
+Artefaktpfad besitzt. Nur im Standalone-Kontext bleiben `outdir`, `auxdir` und
+`out2dir` normale latexmk-Optionen. OLLM besitzt im Serienkontext Engine,
+Jobname, Recorder, Arbeits-/Ausgabepfade, Shell-Escape-Policy und die
+Orchestration abhängiger Builds. Diagnosen nennen den verletzten Vertrag und,
+soweit möglich, eine eindeutige Alternative.
 
 Eigenständige `latexmk`-Aktionen wie Clean, Help, Version oder
 Konfigurationsauskunft dürfen durchgereicht werden. Nach ihnen erwartet OLLM
@@ -1225,7 +1263,7 @@ Exitcode 1.
 
 ## 16. Report, Check und Doctor
 
-### 16.1 Report
+### 16.1 Report (TODO)
 
 `report` beschreibt vorhandene Builds:
 
@@ -1239,7 +1277,7 @@ externe Abhängigkeiten
 letzter gültiger Export
 ```
 
-### 16.2 Check
+### 16.2 Check (TODO)
 
 `check` baut nichts. Es prüft mindestens:
 
@@ -1258,7 +1296,9 @@ nicht.
 
 ### 16.3 Doctor
 
-`doctor` prüft die Umgebung. Immer relevant sind:
+`doctor` prüft derzeit die Auffindbarkeit von Perl, `latexmk` und LuaLaTeX
+sowie Verfügbarkeit, Version und Herkunft des TOML-Parsers. **TODO:** Die
+projekt- und backendabhängige Prüfung soll zusätzlich umfassen:
 
 - `latexmk`;
 - LuaLaTeX und Mindestversion;
@@ -1271,7 +1311,7 @@ Optionale Werkzeuge werden nur geprüft, wenn das effektive Projekt oder Backend
 sie deklariert. Xindy ist daher keine feste Voraussetzung; eine Lua-basierte
 Indexsortierung kann es ersetzen.
 
-## 17. Clean und Prune
+## 17. Clean und Prune (TODO)
 
 `clean` besitzt Level und Scope.
 
@@ -1306,8 +1346,8 @@ Projektstruktur.
 
 ## 18. Sicherheit
 
-Das Projektmanifest ist deklaratives TOML. Es ersetzt die Ausführung von
-`ollmconfig.pl` mittels Perl-`eval`.
+Das Projektmanifest ist deklaratives TOML und führt keinen Konfigurationscode
+aus.
 
 Shell-Escape ist projektseitig:
 
@@ -1503,15 +1543,9 @@ End-to-End-Tests.
 
 ## 24. Migration
 
-Die häufige CLI bleibt kompatibel. Gezielte Brüche:
-
-- neues Manifest `ollmconfig.toml` statt ausführbarem `ollmconfig.pl`;
-- alternative Konfiguration nur über `--config`;
-- Projektwurzel nur über `--project-root`.
-
-Ein Migrationswerkzeug oder Report soll alte Perl-Konfigurationen analysieren
-und einen TOML-Entwurf erzeugen, soweit die Werte deklarativ erkennbar sind.
-Beliebiger Perl-Code kann nicht automatisch migriert werden.
+Die häufige CLI bleibt kompatibel. Für alternative Konfigurationsorte und
+Projektwurzeln gelten ausschließlich `--config` beziehungsweise
+`--project-root`.
 
 Alte Verzeichnisnamen bleiben gültig:
 

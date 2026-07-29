@@ -51,8 +51,24 @@ erhaltene \texttt{latexmk}-Konfiguration \texttt{ollm-legacy.rc} in Version
 für die Überarbeitung.
 
 Die Zielarchitektur mit ihren Dateiverträgen und Rationales steht in
-\texttt{DESIGN.md}. Noch nicht implementierte Schnittstellen werden in diesem
-Handbuch nicht als verfügbar beschrieben.
+\texttt{DESIGN.md}.
+
+\subsection*{TODO: noch nicht implementiert}
+
+Die CLI erkennt die folgenden Funktionen bereits, sie sind im neuen Executor
+aber noch nicht implementiert und enden mit Exitcode 69:
+\begin{itemize}
+  \item \texttt{report},
+  \item das rein lesende \texttt{check},
+  \item OLLM-spezifisches \texttt{clean},
+  \item \texttt{prune},
+  \item Fixpunkt-Builds mit \texttt{build --resolve}.
+\end{itemize}
+Ebenfalls TODO sind Resultat-Promotion, Auswertung von Referenzindizes und die
+vollständigen projektabhängigen \texttt{doctor}-Prüfungen. Implementiert sind
+der normale und kontinuierliche Build, \texttt{build --all},
+\texttt{build --dry-run}, Standalone-Builds und die grundlegende
+\texttt{doctor}-Werkzeugprüfung.
 
 \section{Aufgabenteilung}
 
@@ -104,10 +120,6 @@ Alternativ werden Manifest oder Projektwurzel ausdrücklich ausgewählt:
 ollm build script --config=/path/to/ollmconfig.toml --dry-run
 ollm build script --project-root=/path/to/project --dry-run
 \end{verbatim}
-
-Existieren \texttt{ollmconfig.toml} und das alte \texttt{ollmconfig.pl} im
-selben Verzeichnis, bricht OLLM ab. Damit hängt die gewählte
-Konfigurationssemantik nicht von einer stillen Prioritätsregel ab.
 
 Ein minimales Serienmanifest enthält:
 

@@ -37,6 +37,25 @@ ollm build script --language=en --dry-run --format=json
 ollm doctor
 ```
 
+## Implementation status and TODO
+
+The new executor currently implements ordinary and continuous `build`,
+`build --all`, `build --dry-run`, standalone builds, and the basic `doctor`
+toolchain check. Native latexmk clean and information actions can be passed
+through to one resolved build.
+
+The following OLLM functions are accepted by the CLI but are not implemented
+yet and return exit code 69:
+
+- TODO: `report`;
+- TODO: read-only `check`;
+- TODO: OLLM-scoped `clean`;
+- TODO: `prune`;
+- TODO: dependency fixpoint builds with `build --resolve`.
+
+Result promotion, reference-index evaluation, and the extended project-aware
+`doctor` checks described in `DESIGN.md` are TODO as well.
+
 ## TOML parser
 
 OLLM ships the read-only parser from `TOML::Tiny` 0.22. No CPAN module has to
@@ -75,9 +94,6 @@ project root can be selected with:
 ollm build script --config=/path/to/ollmconfig.toml --dry-run
 ollm build script --project-root=/path/to/project --dry-run
 ```
-
-If `ollmconfig.toml` and the legacy `ollmconfig.pl` occur in the same
-directory, OLLM reports an error instead of choosing one implicitly.
 
 Bundle presets and targets are resolved from versioned definitions shipped
 with the bundle. Additional absolute or project-root-relative search paths can
@@ -147,12 +163,14 @@ uses `%APPDATA%\ollm\config.toml`. `OLLM_USER_CONFIG` selects an explicit file,
 which is also useful for testing. Without a file OLLM uses `OSG lecture/1`,
 `beamer`, and `scrbook`.
 
-`ollmconfig.toml` may override these values for one project. The selected
-bundle preset remains the `bundle_preset` field; the concrete TeX-side selection
-uses `latex.defaults.presentation_profile` and
-`latex.defaults.script_profile`. A CLI build request cannot select a document
-profile. The resolved `document-profile` is nevertheless recorded in the
-BuildSpec and its signed build file.
+The target's `profile_class` selects `presentation_profile` or
+`script_profile`. For that key, the implemented priority is: built-in fallback
+below bundle-preset defaults, user defaults, project `latex.defaults`, and
+finally effective enforcement (bundle preset followed by project
+`latex.enforce`). A CLI build request cannot select a document profile. The
+resolved `document-profile` is nevertheless recorded in the BuildSpec and its
+signed build file. An explicit TeX class option `profile=...` must match this
+resolved value when a build file is loaded.
 
 ## Build execution
 
@@ -189,9 +207,10 @@ or shell-escape options are rejected rather than silently overriding the
 BuildSpec.
 
 Additional `latexmk` rc files and startup Perl code (`-r`, `-e`) are rejected,
-as are non-LuaLaTeX engines, `-out2dir`, injected `-latexoption` values, and
-`-use-make`. OLLM owns the normalized configuration, artifact location, and
-orchestration of dependent builds.
+as are non-LuaLaTeX engines, injected `-latexoption` values, and `-use-make`.
+For series builds, `-out2dir` is also rejected because OLLM owns the artifact
+path. It is permitted only for standalone builds, where normal latexmk output
+directories remain under user control.
 
 Native `latexmk` clean and information actions such as `-c`, `-C`, `-help`,
 and `-version` are passed through. OLLM does not require a PDF after such an
