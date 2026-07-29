@@ -1,6 +1,6 @@
 # osglecture – Grundideen und Leitlinien für eine Überarbeitung
 
-**Arbeitsdokument · Stand 28. Juli 2026**
+**Arbeitsdokument · Stand 29. Juli 2026**
 
 ## Zweck und Einordnung
 
@@ -21,8 +21,9 @@ noch über die explizite Klassenoption `osgbeamer` erreichbar.
 
 Der Standardpfad von `osglecture.cls` enthält nur noch Engineprüfung,
 Auftragsdatei- und Optionsauswertung, Basisklassenwahl sowie die Initialisierung
-von `osglecture-modes`. Er lädt insbesondere keine historische Typografie,
-Farben, Themes, Literatur- oder Referenzpakete.
+von `osglecture-modes`, Dokumentprofil und generischer Metadatenhaltung. Er
+lädt insbesondere keine historische Typografie, Farben, Themes, Literatur-
+oder Referenzpakete.
 
 Mit `\documentclass[osgbeamer,...]{osglecture}` wird stattdessen
 `osglecture-osgbeamer.code.tex` geladen. Diese Datei kapselt den bisherigen
@@ -46,6 +47,12 @@ dokumenttypspezifische Klassenoptionen und optional eine Setup-Datei. Diese
 Setup-Datei wird erst nach Basisklasse und Moduskern geladen. Damit können
 weitere Profile ergänzt werden, ohne die Kernklasse um Backendfälle zu
 erweitern.
+
+Der stabile Deskriptorvertrag umfasst `backend`, `class`, `doctypes`,
+`class-options`, `document-metadata`, `modes`, `mode-setup-file`,
+`setup-file`, `course-target` und `event-target`.
+`mode-setup-file` wird vor Aktivierung und Finalisierung des Modusgraphen
+geladen; `setup-file` danach. Nur die erste Datei darf den Graphen erweitern.
 
 Mitgeliefert werden zunächst:
 
@@ -71,6 +78,34 @@ für den tatsächlichen Jobnamen eine Auftragsdatei, wird sie bewusst nicht
 geladen und eine Warnung ausgegeben. Ohne Auftragsdatei bleibt Standalone der
 implizite Zustand; die Option ist dann lediglich eine ausdrückliche
 Zusicherung.
+
+### Vertragsstatus für Folgearbeiten
+
+Als stabil und implementiert gelten derzeit:
+
+- Auftragsdatei, Jobbindung und Klassenoptionen für Doctype, Sprache, Profil
+  und Standalone,
+- der offene Dokumentprofilvertrag einschließlich der beiden Setup-Phasen,
+- Doctype als Blattmodus, Modusgraph und portable Modusabfragen,
+- die drei Standard-Verhaltensklassen und die Vollständigkeitsprüfung
+  semantischer Befehle,
+- die generische Titelmetadaten-API und ihre Profilabbildung.
+
+Als fachlich festgelegt, aber noch nicht implementiert gilt:
+
+- der Unit-/Lecture-/Chapter-Vertrag aus Abschnitt 3.6.
+
+Noch nicht als stabiler Autorenvertrag festgelegt sind insbesondere:
+
+- Referenzauflösung über Unitgrenzen,
+- die konkrete gemeinsame Bild- und Tabellen-API,
+- Notizen und Zweitbildschirmdarstellung,
+- spezialisierte optionale Fachpakete und deren jeweilige Autorenbefehle.
+
+Folgearbeiten dürfen auf den stabilen Contracts aufbauen. Bei den zuletzt
+genannten Bereichen muss der jeweilige Thread zuerst seinen fachlichen Vertrag
+festlegen; er darf dabei weder Modusnamen, Verhaltensklassen noch
+Profil-Ladereihenfolge nebenbei verändern.
 
 ## 1. Das fachliche Problem
 
@@ -103,7 +138,7 @@ Die Klasse verarbeitet vier Arten von Eingaben und erzeugt daraus eine konkrete 
           ┌────────────────────┼────────────────────┐
           ▼                    ▼                    ▼
     Präsentation           Handout              Skript
-      beamer          beamer + pgfpages   scrbook + beamerarticle
+  beamer/ltx-talk      beamer/ltx-talk          scrbook
           │                    │                    │
           └────────────────────┼────────────────────┘
                                ▼
@@ -289,7 +324,11 @@ Für eine Überarbeitung folgt daraus:
 
 ### 3.2 Dokumenttyp ist eine fachliche Entscheidung
 
-Der Schlüssel `doctype` unterscheidet derzeit `slides`, `handout`, `script`/`article`, `screen` und `web`. Er bezeichnet die fachliche Ausgabe und ist zugleich der aktive Blattmodus. Er bestimmt die benötigte Semantik und schränkt die zulässigen Backendadapter ein; die konkrete Basisklasse folgt jedoch zusätzlich aus Profil- und Projektpolicy.
+Der Schlüssel `doctype` bezeichnet die fachliche Ausgabe und ist zugleich der
+aktive Blattmodus. Er bestimmt die benötigte Semantik und schränkt die
+zulässigen Backendadapter ein; die konkrete Basisklasse folgt jedoch zusätzlich
+aus Profil- und Projektpolicy. `slides`, `handout`, `script` und `article`
+besitzen eingebaute Defaults, bilden aber keine geschlossene Liste.
 
 Die derzeitigen Typen sind unterschiedlich reif:
 
@@ -299,7 +338,12 @@ Die derzeitigen Typen sind unterschiedlich reif:
 - `screen`: experimentelle Zweitbildschirm-Konfiguration.
 - `web`: ausdrücklich nicht unterstützt.
 
-Für die Neufassung sollte eine kleine, ausdrücklich unterstützte Menge von Ausgabetypen definiert werden. Aliasnamen werden vor Eintritt in die Klasse normalisiert. Experimentelle Typen bleiben außerhalb des stabilen Kerns; zusätzliche Backends werden dagegen als Adapter eines unterstützten Dokumenttyps registriert und verändern dessen Autorenmodus nicht.
+Ein zusätzlicher Dokumenttyp benötigt eine registrierte Targetdefinition, ein
+ausdrücklich gewähltes Dokumentprofil, einen vor der Aktivierung geladenen
+Blattmodus und eine vollständige Verhaltenszuordnung. Aliasnamen werden vor
+Eintritt in die Klasse normalisiert. Ein zusätzliches Backend ist dagegen nur
+ein weiterer Adapter eines Dokumenttyps und verändert dessen Autorenmodus
+nicht.
 
 ### 3.3 Serie und Standalone sind zwei gleichwertige Kontexte
 
@@ -338,7 +382,9 @@ Abweichungen von dieser Reihenfolge sollten nur für technisch frühe Optionen e
 
 Titel, Autor, Datum, Veranstaltung, Institution, URL und Logo werden teilweise sehr früh benötigt, obwohl ihre endgültigen Befehle erst nach dem Laden der Basisklasse existieren. Die Klasse löst dies durch verzögerte Ausführung: Sie sammelt Titelbefehle aus der Serienkonfiguration in einem Hook und führt sie später erneut aus.
 
-Die zugrunde liegende Idee ist richtig: Metadaten sind Daten, keine unmittelbaren Layoutaktionen. Die Überarbeitung sollte daraus ein explizites Metadatenmodell machen:
+Die zugrunde liegende Idee ist richtig: Metadaten sind Daten, keine
+unmittelbaren Layoutaktionen. `osglecture-metadata` realisiert dafür den
+gemeinsamen Kern:
 
 - Metadaten werden zunächst gespeichert.
 - Validierung erfolgt unabhängig vom Ausgabemodus.
@@ -350,6 +396,45 @@ Befehle wie `\title`, `\author`, `\date` und `\institute` werden nicht durch
 einen umfassenden Metadaten-KV-Befehl ersetzt. `osglecture` fängt ihre Werte
 backendneutral ab; eigene semantische Befehle ergänzen nur Metadaten, für die
 keine etablierte Oberfläche existiert.
+
+Der Kern umfasst derzeit:
+
+```tex
+\title[Kurz]{Lang}
+\subtitle[Kurz]{Lang}
+\author[Kurz]{Lang}
+\institute[Kurz]{Lang}
+\date[Kurz]{Lang}
+\course[Kurz]{Lang}
+\event[Kurz]{Lang}
+```
+
+Ohne optionale Angabe wird die Langform zugleich als Kurzform gespeichert.
+Jeder Befehl akzeptiert außerdem vor der Kurzform eine portable
+Modusspezifikation, beispielsweise
+`\title<slides>[BS]{Betriebssysteme}`. Die expandierbaren Abfragen heißen
+entsprechend `\OsgLectureTitle`, `\OsgLectureShortTitle` und analog für die
+übrigen Felder. `\lehrveranstaltung` ist ein Kompatibilitätsalias für
+`\course`, `\conference` ein sprechender Alias für `\event`.
+
+`course` und `event` bleiben semantische Angaben und sind keine festen Aliase
+für `title` oder `subtitle`. Das Dokumentprofil legt mit `course-target` und
+`event-target` deren Darstellung als `title`, `subtitle` oder `none` fest. Die
+Standardprofile bilden sie wie folgt ab:
+
+| Profil | `course` | `event` |
+|---|---|---|
+| Beamer | Untertitel | Untertitel |
+| ltx-talk | Untertitel | Untertitel |
+| scrbook | Titel | Untertitel |
+
+Damit bleibt das osgbeamer-Modell erhalten: In einer Präsentation bezeichnet
+der Titel die einzelne Unit und der Kurs erscheint als Kontext; in der
+Langform ist der Kurs der Dokumenttitel und eine Unit wird später strukturell
+als Kapitel realisiert. Im Standalone-Fall kann `title` den Vortrag und
+`event` die Konferenz bezeichnen. Treffen mehrere Angaben auf dasselbe native
+Zielfeld, gilt wie bei gewöhnlichen LaTeX-Titelbefehlen die zuletzt
+ausgeführte Angabe.
 
 Der Blattmodus und seine Modusmatrix stehen bereits beim Einlesen
 projektweiter Metadaten fest. Targetabhängige Angaben verwenden daher dieselbe
@@ -376,17 +461,45 @@ Damit entfällt ein großer Teil des temporären Überschreibens und Wiederherst
 
 ### 3.6 Kapitel sind die gemeinsame Struktureinheit
 
-Eine Lecture entspricht fachlich einem Kapitel. Deshalb werden im Präsentationsmodus `chapter` und `lecture`, im Artikelmodus `lecture` und `chapter` gekoppelt. Abschnittsnummern erhalten im Serienbetrieb eine Kapitelnummer; im Standalone-Betrieb bleiben sie lokal.
+Eine Unit, eine Lecture und ein Kapitel sind drei Perspektiven derselben
+fachlichen Struktureinheit:
 
-Diese Abbildung ist zentral für Verweise zwischen Folien, Skript und Kapiteln. Sie sollte als eigenes Strukturmodell formuliert werden:
+- **Unit:** Projekt- und Buildperspektive,
+- **Lecture:** Autoren- und Präsentationsperspektive,
+- **Kapitel:** Langformperspektive.
 
-- stabile Dokument-ID,
-- logische Kapitelnummer,
-- lokale Abschnittsnummer,
-- physische Seite oder Folie,
-- Zieltyp eines Verweises.
+Die kanonische künftige Autorenoberfläche lautet
+`\lecture[Kurz]{Lang}`. Sie beginnt nicht mehrere unabhängige Strukturen,
+sondern beschreibt die aktuelle Unit. Im Präsentationsprofil liefert sie den
+Unit-Titel und die native Lecture-Information; im Langformprofil erzeugt sie
+die Kapitelüberschrift. Das Backendkommando `\chapter` beziehungsweise Beamers
+native `\lecture` ist Implementierungsziel, nicht die bundleweite Semantik.
 
-Zähler-Aliase sind dann eine Implementierung dieses Modells, nicht das Modell selbst.
+Die Identität ist vom sichtbaren Titel getrennt. Im Serienbetrieb stammt die
+stabile Unit-ID aus `unit-id` des BuildSpec; `physical-unit` und
+`physical-number` beschreiben Verzeichnis und Sortierung, sind aber keine
+Ersatz-ID. Ein Backendadapter darf aus der Unit-ID interne Labels ableiten.
+Standalone setzt weder Manifest noch Serienverzeichnis voraus; dort wird eine
+lokale Dokumentidentität verwendet, bis der Autor ausdrücklich eine Unit-ID
+angibt.
+
+Für den Strukturvertrag gelten folgende Invarianten:
+
+- Eine Unit besitzt genau eine stabile Unit-ID und beliebig übersetzte oder
+  gekürzte sichtbare Titel.
+- `\lecture[Kurz]{Lang}` ändert weder Doctype noch Dokumentprofil.
+- Präsentation und Langform verwenden dieselbe Unit-ID für Referenzen.
+- Abschnitts- und Objekt-IDs werden aus Unit-ID und lokaler Identität
+  abgeleitet, nicht aus sichtbaren Zählerständen.
+- Nummerierung und sichtbare Überschriften dürfen profilabhängig sein; die
+  Identität bleibt es nicht.
+- Im Standalone-Betrieb bleiben lokale Nummern und Referenzen ohne
+  übergeordnetes Serienverzeichnis funktionsfähig.
+
+Zähler-Aliase sind lediglich eine mögliche Backendimplementierung. Die
+Autorenoberfläche und die Adapter dieses Vertrags sind noch nicht
+implementiert; bis dahin darf kein Paket konkrete Beamer- oder KOMA-Zähler als
+bundleweite Unit-Identität voraussetzen.
 
 ### 3.7 Modusabhängigkeit soll semantisch bleiben
 
@@ -398,6 +511,50 @@ Für die Überarbeitung sollte gelten:
 - Patches nur in einem klar abgegrenzten Adapter und mit Tests einsetzen.
 - Der Artikelmodus muss auch ohne visuelle Beamer-Annahmen verständlich bleiben.
 - Gleiche Eingabe soll in jedem unterstützten Modus deterministisch sein.
+
+### 3.8 Paketgrenzen folgen semantischer Eigentümerschaft
+
+Doctype-Abhängigkeit entscheidet nicht, ob eine Funktion zur Kernklasse oder
+in ein eigenes Paket gehört. Sie ist für gemeinsame Quellen normal. Die
+verbindliche Abgrenzung lautet:
+
+> `osglecture` besitzt das gemeinsame Dokumentmodell. Ein Einzelpaket besitzt
+> eine optionale fachliche Funktion.
+
+Zum Kern beziehungsweise zu einem obligatorischen Kerndienst gehört eine
+Funktion, wenn sie Dokumentidentität, Grundstruktur oder die universelle
+Projektion derselben Quelle bestimmt. Dazu zählen insbesondere:
+
+- Doctype-, Profil- und Modusauswahl,
+- Metadaten und Dokumentidentität,
+- Unit-/Lecture-/Chapter-Struktur,
+- grundlegende Bild- und Tabellenstruktur einschließlich Beschriftung, Label
+  und Referenzidentität,
+- stabile Integrationshooks für andere Komponenten.
+
+Ein eigenes Paket ist angezeigt, wenn die Funktion einen abgrenzbaren,
+optionalen semantischen Gegenstand besitzt, unabhängig dokumentiert und
+getestet werden kann oder wesentliche eigene Abhängigkeiten mitbringt. Das gilt
+beispielsweise für Terminaldarstellungen, komplexe Bildraster,
+Messdatendiagramme oder spezielle Tabellenmodelle. Ein solches Paket darf
+doctype-abhängige Implementierungen besitzen; es wird dadurch nicht zum
+Bestandteil der Kernklasse.
+
+Für Grenzfälle werden die folgenden Fragen in dieser Reihenfolge beantwortet:
+
+1. Verliert das Dokument ohne die Funktion seine Identität oder
+   Grundstruktur? Dann gehört der Vertrag in den Kern.
+2. Ist der Gegenstand für viele Dokumente vollständig entbehrlich und dennoch
+   in sich kohärent? Dann gehört er in ein eigenes Paket.
+3. Sind nur Layout oder Branding betroffen? Dann gehört die Entscheidung in
+   Theme oder Profiladapter.
+4. Bestehen umfangreiche optionale Abhängigkeiten? Dann bleibt deren
+   Implementierung außerhalb des Kerns, auch wenn ein kleiner semantischer
+   Integrationshook im Kern erforderlich ist.
+
+„Bilder und Tabellen gehören zum Kern“ meint daher nur ihre grundlegende
+Dokumentsemantik. Galerien, annotierte Medien, Datenimport oder
+Tabellenautomatisierung bleiben eigenständige Fachpakete.
 
 ## 4. Aktuelle öffentliche Oberfläche
 
@@ -496,8 +653,8 @@ osglecture.cls
 │
 ├── Backendadapter
 │   ├── slides  → beamer oder ltx-talk
-│   ├── handout → beamer + pgfpages
-│   └── script  → scrbook + beamerarticle
+│   ├── handout → beamer oder ltx-talk
+│   └── script  → scrbook
 │
 ├── Domänendienste
 │   ├── Metadaten und Dokumentidentität
@@ -537,6 +694,58 @@ Sie sollte nicht:
 - Standardbefehle ohne zwingenden Grund global verändern,
 - nicht unterstützte Backends als scheinbar wählbare Optionen anbieten.
 
+### Stabiler Erweiterungsvertrag
+
+Folgende Namen und Phasen sind die öffentlichen Anknüpfungspunkte für
+Dokumentprofile und eigenständige Fachpakete:
+
+1. Das Dokumentprofil wird ausgewählt und lädt die Basisklasse.
+2. `osglecture-modes` deklariert die portable Grundmatrix.
+3. `osglecture` deklariert die stabilen Verhaltensklassen
+   `presentation-dynamic`, `presentation-static` und `longform`.
+4. `mode-setup-file` darf vor Aktivierung des Blattmodus zusätzliche Modi,
+   Elternkanten, Aliase und Verhaltenszuordnungen deklarieren.
+5. Die Klasse aktiviert den Doctype als Blattmodus, ergänzt Profilmodi und
+   finalisiert den Modusgraphen.
+6. `osglecture-metadata` bindet die Titelmetadaten an die nativen
+   Backendbefehle.
+7. `setup-file` darf Backendadapter, Formatierung und Implementierungen
+   semantischer Befehle registrieren. Der Modusgraph ist zu diesem Zeitpunkt
+   bereits unveränderlich.
+8. Spätestens zu `\begin{document}` prüft
+   `\FinalizeModeAwareCommands` die vollständigen Befehlsverträge.
+
+Für ein eigenständiges Fachpaket folgt daraus:
+
+- Es darf direkt von `osglecture-modes`, aber nicht von
+  `osglecture.cls` abhängen, sofern es keine Klassenintegration benötigt.
+- Es selektiert Autorenverhalten nach Doctype, Obermodus oder stabiler
+  Verhaltensklasse, nicht nach Profil- oder Backendnamen.
+- Es deklariert seine semantischen Autorenbefehle selbst und implementiert
+  jede versprochene Verhaltensklasse vollständig.
+- Backendspezifische Optimierungen liegen in einem schmalen Adapter und
+  besitzen eine portable Fallbacksemantik.
+- Der Kern kennt keine Liste optionaler Fachpakete. Integration geschieht
+  durch deren Registrierung an den öffentlichen Contracts.
+- Ein Paket mit unabhängiger Nutzung dokumentiert den Betrieb ohne
+  `osglecture.cls`; die automatische Moduserkennung ist dort lediglich ein
+  Default, explizite Moduswahl bleibt möglich.
+
+Die Abhängigkeitsrichtung ist damit:
+
+```text
+osglecture-modes
+      ↑
+Fachpaket ──→ optionaler Backendadapter
+      ↑
+osglecture-Integration beziehungsweise Dokumentprofil
+```
+
+Dieser Vertrag erlaubt doctype-abhängige Fachpakete, ohne den Kern von ihnen
+abhängig zu machen. Neue öffentliche Verhaltensklassen oder Änderungen der
+Ladereihenfolge sind deshalb API-Änderungen und müssen zusammen mit
+Profil- und Pakettests erfolgen.
+
 ## 7. Entwurfsprinzipien für die Überarbeitung
 
 1. **Semantik vor Layout.** Die API beschreibt didaktische Bedeutung; Themes entscheiden über Darstellung.
@@ -575,13 +784,14 @@ Vor einer Implementierung sollten folgende Fragen entschieden werden:
 
 ### Produktumfang
 
-- Sind `slides`, `handout` und `script` die einzigen stabilen Dokumenttypen?
+- Nach welchen Tests und Dokumentationsanforderungen wird ein zusätzlich
+  registrierter Dokumenttyp als stabil erklärt?
 - Ist `screen` weiterhin ein Ziel oder Aufgabe eines externen Präsentationswerkzeugs?
 - Soll eine Webausgabe Teil dieser Klasse sein oder ein separater Konverter?
 
 ### Basisklassen und Theme
 
-- Bleibt `scrbook + beamerarticle` der gewünschte Skript-Backend?
+- Bleibt `scrbook` das Standardbackend für die Langform?
 - Welche gemeinsame Semantik müssen Beamer- und `ltx-talk`-Adapter für
   `slides` garantieren?
 - Welche Teile des TUC-/OSG-Designs sind Default, welche Voraussetzung?

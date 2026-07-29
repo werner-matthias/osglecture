@@ -193,6 +193,37 @@ Eine **Einheit** ist ein Quellverzeichnis innerhalb einer Serie. Ihr
 Verzeichnisname kodiert Sortiernummer, optionalen Scope-Code, optionale Rolle
 und stabilen Slug.
 
+### Unit, Lecture und Kapitel
+
+**Unit**, **Lecture** und **Kapitel** sind Projekt-, Autoren- und
+Langformperspektive derselben fachlichen Struktureinheit.
+
+- `unit-id` ist ihre stabile, vom sichtbaren Titel unabhängige Identität.
+- `physical-unit` bezeichnet das physische Quellverzeichnis.
+- `physical-number` beschreibt die Sortierung.
+- Die vorgesehene Autorenoberfläche ist `\lecture[Kurz]{Lang}`.
+- Ein Präsentationsadapter realisiert daraus Unit-Titel und native
+  Lecture-Information; ein Langformadapter eine Kapitelüberschrift.
+
+Die Autorenoberfläche ist noch nicht implementiert. Bis dahin sind konkrete
+Backendzähler und sichtbare Titel keine bundleweite Unit-Identität.
+
+### Kerndienst
+
+Ein **Kerndienst** implementiert einen obligatorischen Teil des gemeinsamen
+Dokumentmodells, insbesondere Identität, Grundstruktur oder deren universelle
+Projektion. Er kann als eigenes technisches Paket vorliegen, gehört
+konzeptionell aber zu `osglecture`.
+
+### Fachpaket
+
+Ein **Fachpaket** implementiert einen optionalen, in sich kohärenten
+semantischen Gegenstand, beispielsweise Terminaldarstellungen. Es darf
+doctype-abhängige Semantik besitzen, verwendet dafür aber die stabilen
+Modus- und Verhaltenscontracts und bleibt unabhängig von konkreten
+Dokumentprofilen. Doctype-Abhängigkeit allein macht ein Fachpaket nicht zum
+Kerndienst.
+
 ### Standalone
 
 **Standalone** bezeichnet einen Build ohne vorausgesetztes Projektmanifest und
