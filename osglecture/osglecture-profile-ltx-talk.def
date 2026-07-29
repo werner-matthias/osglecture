@@ -5,6 +5,8 @@
     backend = ltx-talk,
     class = ltx-talk,
     doctypes = {slides,handout},
-    document-metadata = required
+    document-metadata = required,
+    course-target = subtitle,
+    event-target = subtitle
   }
 \DeclareOsgLectureProfileClassOptions{ltx-talk}{handout}{mode=handout}

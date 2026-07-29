@@ -247,14 +247,6 @@
   { \exp_args:NV \AddLectureModes \l__osglecture_additional_modes_tl }
 \FinalizeLectureModes
 
-\tl_set:Ne \l__osglecture_setup_file_tl
-  {
-    \osglecture_profile_value:Vn
-      \l__osglecture_document_profile_tl {setup-file}
-  }
-\tl_if_empty:NF \l__osglecture_setup_file_tl
-  { \exp_args:NV \file_input:n \l__osglecture_setup_file_tl }
-
 \NewExpandableDocumentCommand \OsgLectureDocumentType { }
   { \tl_use:N \l__osglecture_doctype_tl }
 \NewExpandableDocumentCommand \OsgLectureDocumentProfile { }
@@ -269,5 +261,24 @@
       {#1}
       { \OsgLectureBuildLoadedTF {#2} {#1} }
   }
+
+\RequirePackage{osglecture-metadata}
+\exp_args:Nx \OsgLectureConfigureMetadata
+  {
+    course-target =
+      \osglecture_profile_value:Vn
+        \l__osglecture_document_profile_tl {course-target},
+    event-target =
+      \osglecture_profile_value:Vn
+        \l__osglecture_document_profile_tl {event-target}
+  }
+
+\tl_set:Ne \l__osglecture_setup_file_tl
+  {
+    \osglecture_profile_value:Vn
+      \l__osglecture_document_profile_tl {setup-file}
+  }
+\tl_if_empty:NF \l__osglecture_setup_file_tl
+  { \exp_args:NV \file_input:n \l__osglecture_setup_file_tl }
 
 \ExplSyntaxOff

@@ -1,11 +1,10 @@
 This is a generated file for the l3build validation system.
 Don't change this file in any respect.
-doctype=slides
-profile=ltx-talk
-backend=ltx-talk
 course=Course long
 short-course=Course short
 title=Unit long
 short-title=Unit short
-author=Author long
-short-author=Author short
+event=Event long
+short-event=Event short
+native-title=Unit long
+native-subtitle=Event long

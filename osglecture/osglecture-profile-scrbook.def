@@ -4,5 +4,7 @@
   {
     backend = scrbook,
     class = scrbook,
-    doctypes = {script,article}
+    doctypes = {script,article},
+    course-target = title,
+    event-target = subtitle
   }

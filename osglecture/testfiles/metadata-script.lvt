@@ -1,0 +1,28 @@
+\input regression-test
+\documentclass[doctype=script]{osglecture}
+\course[Course short]{Course long}
+\author{Ada Author}
+\institute[Institute short]{Institute long}
+\date[Date short]{Date long}
+\title<slides>{Wrong mode}
+\event<script>[Event short]{Event long}
+\begin{document}
+\START
+\TYPE{course=\OsgLectureCourse}
+\TYPE{short-course=\OsgLectureShortCourse}
+\TYPE{author=\OsgLectureAuthor}
+\TYPE{short-author=\OsgLectureShortAuthor}
+\TYPE{institute=\OsgLectureInstitute}
+\TYPE{short-institute=\OsgLectureShortInstitute}
+\TYPE{date=\OsgLectureDate}
+\TYPE{short-date=\OsgLectureShortDate}
+\TYPE{title=\OsgLectureTitle}
+\TYPE{event=\OsgLectureEvent}
+\TYPE{short-event=\OsgLectureShortEvent}
+\makeatletter
+\TYPE{native-title=\@title}
+\TYPE{native-subtitle=\@subtitle}
+\TYPE{native-publishers=\@publishers}
+\makeatother
+\END
+\end{document}

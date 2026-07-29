@@ -1,0 +1,18 @@
+\input regression-test
+\documentclass[doctype=slides]{osglecture}
+\lehrveranstaltung[Course short]{Course long}
+\title[Unit short]{Unit long}
+\author[Author short]{Author long}
+\conference<slides>[Event short]{Event long}
+\begin{document}
+\START
+\TYPE{course=\OsgLectureCourse}
+\TYPE{short-course=\OsgLectureShortCourse}
+\TYPE{title=\OsgLectureTitle}
+\TYPE{short-title=\OsgLectureShortTitle}
+\TYPE{event=\OsgLectureEvent}
+\TYPE{short-event=\OsgLectureShortEvent}
+\TYPE{native-title=\inserttitle}
+\TYPE{native-subtitle=\insertsubtitle}
+\END
+\end{document}

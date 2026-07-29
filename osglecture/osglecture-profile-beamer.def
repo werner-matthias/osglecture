@@ -4,6 +4,8 @@
   {
     backend = beamer,
     class = beamer,
-    doctypes = {slides,handout}
+    doctypes = {slides,handout},
+    course-target = subtitle,
+    event-target = subtitle
   }
 \DeclareOsgLectureProfileClassOptions{beamer}{handout}{handout}

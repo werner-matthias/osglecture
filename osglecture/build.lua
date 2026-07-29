@@ -6,6 +6,7 @@ maindir=".."
 installfiles = {
   "osglecture.cls",
   "osglecture-config.sty",
+  "osglecture-metadata.sty",
   "osglecture-profiles.sty",
   "osglecture-profile-*.def",
   "osglecture-osgbeamer.code.tex",
@@ -14,6 +15,7 @@ installfiles = {
 sourcefiles = {
   "osglecture.cls",
   "osglecture-config.sty",
+  "osglecture-metadata.sty",
   "osglecture-profiles.sty",
   "osglecture-profile-*.def",
   "osglecture-osgbeamer.code.tex",

@@ -1,10 +1,19 @@
 \input regression-test
 \DocumentMetadata{}
 \documentclass[profile=ltx-talk]{osglecture}
+\course[Course short]{Course long}
+\title[Unit short]{Unit long}
+\author[Author short]{Author long}
 \begin{document}
 \START
 \TYPE{doctype=\OsgLectureDocumentType}
 \TYPE{profile=\OsgLectureDocumentProfile}
 \TYPE{backend=\OsgLectureBackend}
+\TYPE{course=\OsgLectureCourse}
+\TYPE{short-course=\OsgLectureShortCourse}
+\TYPE{title=\OsgLectureTitle}
+\TYPE{short-title=\OsgLectureShortTitle}
+\TYPE{author=\OsgLectureAuthor}
+\TYPE{short-author=\OsgLectureShortAuthor}
 \END
 \end{document}
