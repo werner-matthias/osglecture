@@ -497,10 +497,12 @@ aus dem Bundle-Preset stammen. OLLM normalisiert die aufgelöste Matrix in den
 BuildSpec; `osglecture-modes` wertet ihre transitive Hülle auf der LaTeX-Seite
 aus.
 
-Die derzeitige Implementierung der Targetdefinitionen verwendet noch das
-singuläre Feld `family`. Dies ist ein erkennbarer Übergangsstand: `family`
-bildet nur einen Elternmodus ab und wird zugunsten der allgemeinen
-`parents`-Matrix ersetzt.
+Die Implementierung der Targetdefinitionen verwendet `parents`. Für die
+gegenwärtige projektweite Dokumentprofilauswahl muss genau einer der direkten
+Elternmodi `presentation` und `longform` vorhanden sein. Weitere Eltern wie
+`print` sind zulässig. Die vollständige Auflösung zusätzlicher abstrakter
+Modusknoten aus dem Bundle-Preset bleibt Teil der noch ausstehenden
+Normalisierung der allgemeinen Modusmatrix.
 
 ### 7.4 Lokale Konfiguration
 
@@ -681,12 +683,12 @@ config-signature
 `--all` erzeugt ausschließlich die im Projektmanifest vorgesehenen Builds der
 aktuellen Einheit, zusätzlich gefiltert durch deren Profil und Rolle.
 
-Der derzeit erzeugte BuildSpec enthält bereits Target und Dokumenttyp sowie
-die Backendvorgabe des Profils innerhalb der effektiven LaTeX-Konfiguration,
-aber noch keine normalisierte Modusmatrix. Vor der Umstellung von
-`osglecture` auf den neuen Moduskern müssen Targetdefinition, BuildSpec und
-TeX-Auftragsdatei gemeinsam auf `parents` und den expliziten Backendadapter
-angehoben werden.
+Der derzeit erzeugte BuildSpec enthält bereits Target, Dokumenttyp und die
+direkten Elternmodi sowie die Backendvorgabe des Profils innerhalb der
+effektiven LaTeX-Konfiguration, aber noch keine aus Bundle-Preset und
+Targetdefinition normalisierte vollständige Modusmatrix. BuildSpec und
+TeX-Auftragsdatei müssen noch gemeinsam auf diese Matrix und den expliziten
+Backendadapter angehoben werden.
 
 ## 9. Jobname und Verzeichnisse
 
@@ -1088,6 +1090,7 @@ Mindestens:
 
 ```text
 --all
+--target
 --language
 --source
 --resolve

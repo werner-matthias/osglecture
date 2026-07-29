@@ -60,7 +60,12 @@ sub build_spec {
     $configuration->{user_defaults}{latex} // {},
     $arg{manifest}{latex} // {},
   );
-  my $profile_key = $doctype =~ /\A(?:slides|handout)\z/
+  my %parent = map { $_ => 1 } @{ $target->{parents} // [] };
+  my @profile_classes = grep { $parent{$_} } qw(presentation longform);
+  die "target '$target_name' must have exactly one of the parent modes "
+    . "'presentation' or 'longform' to select its document-profile class"
+    if @profile_classes != 1;
+  my $profile_key = $profile_classes[0] eq 'presentation'
     ? 'presentation_profile' : 'script_profile';
   my $document_profile =
        $latex->{enforce}{$profile_key}
@@ -132,6 +137,7 @@ sub build_spec {
     unit_id             => $slug,
     target              => $target_name,
     doctype             => $doctype,
+    parents             => $target->{parents},
     language            => $language,
     available_languages => $arg{manifest}{languages}{available},
     language_map        => $arg{manifest}{languages}{map} // {},

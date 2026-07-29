@@ -24,6 +24,18 @@ is $plan->{source}, 'main.tex', 'legacy source operand';
 $plan = OLLM::CLI->parse(qw(debug slides));
 is $plan->{debug}, 'tex', 'bare debug compatibility default';
 
+$plan = OLLM::CLI->parse(qw(build --target=keynote --language=en));
+is $plan->{target}, 'keynote',
+  'explicit target option accepts a registered extension name';
+ok $plan->{target_explicit}, 'extended target selection is marked explicit';
+
+$plan = OLLM::CLI->parse(qw(build --target presentation));
+is $plan->{target}, 'slides',
+  'explicit target option normalizes compatibility aliases';
+
+eval { OLLM::CLI->parse(qw(build --target=not/a/target)) };
+like $@, qr/invalid target/, 'non-portable explicit target is rejected';
+
 $plan = OLLM::CLI->parse(qw(--debug slides));
 is $plan->{debug}, 'tex', 'valueless new debug option defaults to TeX';
 

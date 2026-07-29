@@ -273,6 +273,89 @@ is $local_resolution->{bundle_preset}{reference},
   'Descriptive bundle preset/1',
   'project-relative local definition path resolves a descriptive bundle preset';
 
+my $extended_root = tempdir(CLEANUP => 1);
+my $extended_definitions = File::Spec->catdir($extended_root, 'definitions');
+my $extended_targets = File::Spec->catdir($extended_definitions, 'targets');
+my $extended_unit = File::Spec->catdir($extended_root, '010-opening');
+make_path($extended_targets, $extended_unit);
+open my $extended_target, '>',
+  File::Spec->catfile($extended_targets, 'keynote.toml') or die $!;
+print {$extended_target} <<'TOML';
+schema = 1
+kind = "target"
+name = "keynote"
+version = "1.0"
+doctype = "keynote"
+parents = ["presentation"]
+TOML
+close $extended_target;
+open my $extended_local, '>',
+  File::Spec->catfile($extended_root, '.ollmconfig.local.toml') or die $!;
+print {$extended_local} <<'TOML';
+schema = 1
+
+[definitions]
+paths = ["definitions"]
+TOML
+close $extended_local;
+open my $extended_manifest, '>',
+  File::Spec->catfile($extended_root, 'ollmconfig.toml') or die $!;
+print {$extended_manifest} <<'TOML';
+schema = 1
+bundle_preset = "OSG lecture/1"
+
+[project]
+id = "ext"
+
+[languages]
+available = ["en"]
+default = "en"
+
+[targets.keynote]
+languages = ["en"]
+TOML
+close $extended_manifest;
+open my $extended_source, '>',
+  File::Spec->catfile($extended_unit, 'main.tex') or die $!;
+print {$extended_source} "\\documentclass{osglecture}\n";
+close $extended_source;
+my $extended = OLLM::Config->resolve_request(
+  start_dir       => $extended_unit,
+  definitions_dir => $definitions,
+  plan => {
+    action => 'build', all => 0, dry_run => 1, latexmk_args => [],
+    legacy_args => [], non_interactive => 0, rebuild => 0, resolve => 0,
+    source => 'main.tex', target => 'keynote', target_explicit => 1,
+  },
+);
+is $extended->{build_spec}{target}, 'keynote',
+  'a project-provided target reaches the BuildSpec';
+is $extended->{build_spec}{doctype}, 'keynote',
+  'an extended target supplies its matching document type';
+is $extended->{build_spec}{document_profile}, 'beamer',
+  'presentation parent selects the presentation document profile';
+is_deeply $extended->{build_spec}{parents}, ['presentation'],
+  'extended target parent modes remain available in the BuildSpec';
+
+open my $mismatched_target, '>',
+  File::Spec->catfile($extended_targets, 'mismatch.toml') or die $!;
+print {$mismatched_target} <<'TOML';
+schema = 1
+kind = "target"
+name = "mismatch"
+version = "1.0"
+doctype = "different"
+parents = ["longform"]
+TOML
+close $mismatched_target;
+eval {
+  OLLM::Config->_load_definition(
+    File::Spec->catfile($extended_targets, 'mismatch.toml'),
+  );
+};
+like $@, qr/name 'mismatch' and doctype 'different' differ/,
+  'schema 1 rejects a silent target/doctype mismatch';
+
 my $bundle_example = abs_path('../examples/series-minimal');
 my $bundle_chapter = File::Spec->catdir($bundle_example, '010-introduction');
 my $bundle_manifest = OLLM::Config->find_manifest(start_dir => $bundle_chapter);

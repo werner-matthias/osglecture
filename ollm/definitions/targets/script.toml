@@ -3,5 +3,5 @@ kind = "target"
 name = "script"
 version = "1.0"
 doctype = "script"
-family = "publication"
+parents = ["longform", "print"]
 unit_scopes = ["a", "as"]

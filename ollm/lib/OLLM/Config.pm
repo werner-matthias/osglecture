@@ -509,7 +509,7 @@ sub resolve_definitions {
       if !exists $target{$name};
     $selected_targets{$name} = {
       doctype => $target{$name}{data}{doctype},
-      family  => $target{$name}{data}{family},
+      parents => $target{$name}{data}{parents},
       path    => $target{$name}{path},
       signature => sha256_hex(
         JSON::PP->new->canonical->encode($target{$name}{data}),
@@ -566,7 +566,7 @@ sub _load_definition {
   my ($class, $path) = @_;
   my ($data, $lines) = $class->_load_toml($path);
   _known_keys($data,
-    [qw(schema kind name version latex doctype family unit_scopes)],
+    [qw(schema kind name version latex doctype parents unit_scopes)],
     $path, $lines, '');
   if (!defined $data->{schema} || ref $data->{schema}
       || $data->{schema} != $DEFINITION_SCHEMA) {
@@ -585,15 +585,31 @@ sub _load_definition {
     _fail_at($path, $lines, 'doctype',
       "bundle preset must not define 'doctype'")
       if exists $data->{doctype};
-    _fail_at($path, $lines, 'family',
-      "bundle preset must not define 'family'")
-      if exists $data->{family};
+    _fail_at($path, $lines, 'parents',
+      "bundle preset must not define 'parents'")
+      if exists $data->{parents};
     _fail_at($path, $lines, 'unit_scopes',
       "bundle preset must not define 'unit_scopes'")
       if exists $data->{unit_scopes};
   } else {
     _require_string($data, 'doctype', $path);
-    _require_string($data, 'family', $path);
+    my $parents = _require_string_array($data, 'parents', $path);
+    _fail_at($path, $lines, 'parents',
+      "target parents must not be empty")
+      if !@$parents;
+    my %parent;
+    for my $parent (@$parents) {
+      _fail_at($path, $lines, 'parents',
+        "invalid parent mode '$parent'")
+        if $parent !~ /\A[A-Za-z0-9][A-Za-z0-9._-]*\z/;
+      _fail_at($path, $lines, 'parents',
+        "target parents contains duplicate mode '$parent'")
+        if $parent{$parent}++;
+    }
+    _fail_at($path, $lines, 'doctype',
+      "target name '$data->{name}' and doctype '$data->{doctype}' differ; "
+      . "schema 1 has no versioned target/doctype adapter contract")
+      if $data->{name} ne $data->{doctype};
     if (exists $data->{unit_scopes}) {
       my $unit_scopes = _require_string_array(
         $data, 'unit_scopes', $path,

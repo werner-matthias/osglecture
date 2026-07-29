@@ -96,6 +96,17 @@ offending key is present in the TOML source. The bundle-level minimal
 configuration example is in
 [`../examples/series-minimal`](../examples/series-minimal).
 
+Targets registered by additional definitions can be selected explicitly:
+
+```sh
+ollm build --target=studyguide --language=en
+```
+
+A schema-1 target definition uses the same `name` and `doctype` and declares
+one or more parent modes. Exactly one of `presentation` and `longform` must be
+a direct parent so OLLM can select the corresponding project-wide document
+profile. Further parents such as `print` are allowed.
+
 For a concrete series build, the resolved configuration is normalized into a
 job-bound `<jobname>.osgbuild.tex`. The reader in
 `../osglecture/osglecture-config.sty` validates its schema and requires its

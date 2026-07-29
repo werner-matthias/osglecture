@@ -218,6 +218,14 @@ sub parse {
       $plan{all} = 1;
       next;
     }
+    if ($arg =~ /^--target=(.+)$/) {
+      _set_target(\%plan, $1);
+      next;
+    }
+    if ($arg eq '--target') {
+      _set_target(\%plan, _take_value($arg, \@argv));
+      next;
+    }
     if ($arg eq '--resolve') {
       $plan{resolve} = 1;
       next;
@@ -322,6 +330,15 @@ sub _take_value {
   my ($option, $argv) = @_;
   die "$option requires a value" if !@$argv;
   return shift @$argv;
+}
+
+sub _set_target {
+  my ($plan, $target) = @_;
+  die "more than one document target specified" if defined $plan->{target};
+  die "invalid target '$target'; expected a portable target identifier"
+    if $target !~ /\A[A-Za-z0-9][A-Za-z0-9._-]*\z/;
+  $plan->{target} = $TARGET_ALIAS{$target} // $target;
+  $plan->{target_explicit} = 1;
 }
 
 sub _enum {
@@ -443,6 +460,7 @@ Targets:
   slides (aliases: beamer, presentation)
   handout
   script (alias: article)
+  Registered project targets can be selected with --target=NAME.
 
 Implemented commands:
   build                 execute a series build
@@ -458,6 +476,7 @@ General options:
   --non-interactive
 
 Build options:
+  --target=TARGET       select a registered project target
   --language=LANG       select a language
   --source=FILE         select the main TeX source
   --all
