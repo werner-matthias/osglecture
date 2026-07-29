@@ -70,6 +70,20 @@ ok grep($_ eq '-silent', @{ $calls[0]{command} }),
   'compatible latexmk arguments are preserved';
 ok grep($_ =~ /--shell-restricted/, @{ $calls[0]{command} }),
   'restricted shell escape is part of the controlled LuaLaTeX command';
+my %metadata_spec = (
+  %{ $resolved->{build_spec} },
+  document_metadata => {
+    path => File::Spec->catfile($temporary, 'shared metadata.tex'),
+  },
+);
+my @metadata_command = OLLM::Executor->command_for_spec(
+  \%metadata_spec, $resolved->{request},
+);
+ok grep(
+  $_ =~ /\A-usepretex=\\def\\OsgLectureRequestedLanguage\{de\}/
+    && index($_, '\\input{"') >= 0,
+  @metadata_command,
+), 'enforced metadata uses controlled pre-TeX with the normalized language';
 for my $policy (
   [off  => '--no-shell-escape'],
   [full => '--shell-escape'],
@@ -161,11 +175,46 @@ for my $conflict (
   ['-latexoption=--jobname=other', qr/unvalidated options/],
   ['-cd-', qr/required source working directory/],
   ['-recorder-', qr/required recorder dependency data/],
+  ['-usepretex=evil', qr/owns the pre-TeX hook/],
 ) {
   $resolved->{request}{latexmk_args} = [$conflict->[0]];
   eval { OLLM::Executor->validate_request($resolved) };
   like $@, $conflict->[1], "$conflict->[0] conflict explains the violated contract";
 }
+
+my $standalone_source = File::Spec->catfile($temporary, 'standalone.tex');
+open my $standalone_handle, '>', $standalone_source or die $!;
+print {$standalone_handle} "\\documentclass{article}\\begin{document}x\\end{document}\n";
+close $standalone_handle or die $!;
+my $standalone_resolved = {
+  request => {
+    action => 'build', context => 'standalone', latexmk_args => [
+      '-outdir=standalone-output', '-auxdir=standalone-aux',
+      '-out2dir=standalone-artifacts',
+    ],
+    non_interactive => 0, rebuild => 0,
+  },
+  configuration => {kind => 'none'},
+  standalone_spec => {
+    context => 'standalone', source => $standalone_source,
+    source_directory => $temporary, job_id => 'standalone',
+    shell_escape => 'restricted',
+  },
+};
+my @standalone_calls;
+$status = OLLM::Executor->execute(
+  resolved => $standalone_resolved,
+  runner => sub {
+    my ($command) = @_;
+    push @standalone_calls, [@$command];
+    return 0;
+  },
+);
+is $status, 0, 'standalone uses the new executor successfully';
+ok grep($_ eq '-out2dir=standalone-artifacts', @{ $standalone_calls[0] }),
+  'standalone passes normal latexmk artifact directory options through';
+ok !grep(/(?:jobname|\\.osgbuild\\.tex)/, @{ $standalone_calls[0] }),
+  'standalone imposes neither a series job name nor a build file';
 
 $resolved->{request}{latexmk_args} = ['-c'];
 $resolved->{request}{rebuild} = 1;

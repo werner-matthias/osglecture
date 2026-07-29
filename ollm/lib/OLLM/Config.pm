@@ -59,11 +59,41 @@ sub resolve_request {
   $request{debug} = $plan->{debug} if defined $plan->{debug};
 
   if ($located->{kind} eq 'none') {
+    if (!$standalone) {
+      return {
+        request => \%request,
+        configuration => {
+          kind   => 'none',
+          parser => $class->parser_info,
+        },
+      };
+    }
+    die "standalone builds take document type and language from "
+      . "osglecture class options; remove the explicit OLLM target/language"
+      if $request{target_explicit} || $request{language_explicit};
+    die "--all requires a series manifest and is not available in standalone mode"
+      if $request{all};
+    my $source_candidate = File::Spec->rel2abs($request{source}, $start);
+    my $source = abs_path($source_candidate)
+      // die "source file not found: $source_candidate";
+    die "source is not a regular file: $source" if !-f $source;
+    my ($volume, $directories, $filename) = File::Spec->splitpath($source);
+    (my $job_id = $filename) =~ s/\.[^.]+\z//;
+    die "cannot derive a job name from standalone source '$source'"
+      if $job_id eq '';
+    $request{source} = $source;
     return {
       request => \%request,
       configuration => {
         kind   => 'none',
         parser => $class->parser_info,
+      },
+      standalone_spec => {
+        context          => 'standalone',
+        source           => $source,
+        source_directory => dirname($source),
+        job_id           => $job_id,
+        shell_escape     => 'restricted',
       },
     };
   }
@@ -339,7 +369,7 @@ sub validate_manifest {
   }
   if (exists $manifest->{latex}) {
     die "$path: latex must be a table" if ref $manifest->{latex} ne 'HASH';
-    _known_keys($manifest->{latex}, [qw(defaults enforce)],
+    _known_keys($manifest->{latex}, [qw(defaults enforce document_metadata)],
       $path, $lines, 'latex');
     for my $level (qw(defaults enforce)) {
       next if !exists $manifest->{latex}{$level};
@@ -348,11 +378,25 @@ sub validate_manifest {
       _known_keys(
         $values,
         [qw(theme numbering references presentation_backend identity_profile
-            presentation_profile script_profile)],
+            presentation_profile script_profile modes mode_setup_file)],
         $path, $lines, "latex.$level",
       );
       _require_string($values, $_, "$path: latex.$level")
         for keys %$values;
+    }
+    if (exists $manifest->{latex}{document_metadata}) {
+      my $metadata = $manifest->{latex}{document_metadata};
+      die "$path: latex.document_metadata must be a table"
+        if ref $metadata ne 'HASH';
+      _known_keys($metadata, [qw(policy file)], $path, $lines,
+        'latex.document_metadata');
+      my $policy = _require_string(
+        $metadata, 'policy', "$path: latex.document_metadata",
+      );
+      die "$path: invalid latex.document_metadata.policy '$policy'"
+        if $policy !~ /\A(?:author|enforce)\z/;
+      _require_string($metadata, 'file', "$path: latex.document_metadata")
+        if $policy eq 'enforce' || exists $metadata->{file};
     }
   }
   return 1;
@@ -392,7 +436,7 @@ sub load_user_defaults {
       die "$path: latex.defaults must be a table" if ref $values ne 'HASH';
       _known_keys($values,
         [qw(theme numbering references presentation_backend identity_profile
-            presentation_profile script_profile)],
+            presentation_profile script_profile modes mode_setup_file)],
         $path, $lines, 'latex.defaults');
       _require_string($values, $_, "$path: latex.defaults") for keys %$values;
     }
@@ -571,7 +615,7 @@ sub _load_definition {
       die "$path: latex.$level must be a table" if ref $values ne 'HASH';
       _known_keys($values,
         [qw(theme numbering references presentation_backend identity_profile
-            presentation_profile script_profile)],
+            presentation_profile script_profile modes mode_setup_file)],
         $path, $lines, "latex.$level");
       _require_string($values, $_, "$path: latex.$level") for keys %$values;
     }

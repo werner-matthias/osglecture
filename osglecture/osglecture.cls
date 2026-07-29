@@ -34,6 +34,8 @@
 \tl_new:N \l__osglecture_selected_options_tl
 \tl_new:N \l__osglecture_modes_option_tl
 \tl_new:N \l__osglecture_setup_file_tl
+\tl_new:N \l__osglecture_mode_setup_file_tl
+\tl_new:N \l__osglecture_additional_modes_tl
 \bool_new:N \l__osglecture_doctype_explicit_bool
 \bool_new:N \l__osglecture_profile_explicit_bool
 \bool_new:N \l__osglecture_language_explicit_bool
@@ -52,6 +54,9 @@
 \msg_new:nnnn { osglecture } { standalone-ignores-build }
   { Standalone~mode~ignores~the~job-bound~build~file~'#1'. }
   { Remove~the~standalone~class~option~to~use~the~series~configuration. }
+\msg_new:nnnn { osglecture } { build-override }
+  { Explicit~class~#1~'#2'~overrides~build~value~'#3'. }
+  { This~is~intended~for~debugging;~the~job-bound~BuildSpec~remains~unchanged. }
 
 \keys_define:nn { osglecture }
   {
@@ -89,12 +94,28 @@
 
 \OsgLectureBuildLoadedTF
   {
-    \bool_if:NF \l__osglecture_doctype_explicit_bool
+    \bool_if:NTF \l__osglecture_doctype_explicit_bool
+      {
+        \tl_set:Ne \l_tmpa_tl { \OsgLectureBuildValue{doctype} }
+        \str_if_eq:VVF \l__osglecture_doctype_tl \l_tmpa_tl
+          {
+            \msg_warning:nnxxx {osglecture}{build-override}
+              {doctype}{\l__osglecture_doctype_tl}{\l_tmpa_tl}
+          }
+      }
       {
         \tl_set:Ne \l__osglecture_doctype_tl
           { \OsgLectureBuildValue{doctype} }
       }
-    \bool_if:NF \l__osglecture_language_explicit_bool
+    \bool_if:NTF \l__osglecture_language_explicit_bool
+      {
+        \tl_set:Ne \l_tmpa_tl { \OsgLectureBuildValue{language} }
+        \str_if_eq:VVF \l__osglecture_language_tl \l_tmpa_tl
+          {
+            \msg_warning:nnxxx {osglecture}{build-override}
+              {language}{\l__osglecture_language_tl}{\l_tmpa_tl}
+          }
+      }
       {
         \tl_set:Ne \l__osglecture_language_tl
           { \OsgLectureBuildValue{language} }
@@ -187,9 +208,43 @@
 \exp_args:NV \PassOptionsToPackage
   \l__osglecture_modes_option_tl {osglecture-modes}
 \RequirePackage{osglecture-modes}
-\exp_args:NV \SetLectureModes \l__osglecture_doctype_tl
+\str_case:VnF \l__osglecture_doctype_tl
+  {
+    {script}  { \SetLectureModes{script,article} }
+    {article} { \SetLectureModes{article,script} }
+  }
+  { \exp_args:NV \SetLectureModes \l__osglecture_doctype_tl }
 \str_if_eq:VnT \l__osglecture_backend_tl {beamer}
   { \AddLectureModes{beamer} }
+\tl_set:Ne \l__osglecture_mode_setup_file_tl
+  {
+    \osglecture_profile_value:Vn
+      \l__osglecture_document_profile_tl {mode-setup-file}
+  }
+\OsgLectureBuildLoadedTF
+  {
+    \tl_set:Ne \l_tmpa_tl { \OsgLectureBuildValue{mode-setup-file} }
+    \tl_set:Ne \l_tmpb_tl { \OsgLectureEnforcedValue{mode-setup-file} }
+    \tl_if_empty:NF \l_tmpb_tl { \tl_set_eq:NN \l_tmpa_tl \l_tmpb_tl }
+    \tl_if_empty:NF \l_tmpa_tl
+      { \tl_set_eq:NN \l__osglecture_mode_setup_file_tl \l_tmpa_tl }
+    \tl_set:Ne \l__osglecture_additional_modes_tl
+      { \OsgLectureBuildValue{modes} }
+    \tl_set:Ne \l_tmpa_tl { \OsgLectureEnforcedValue{modes} }
+    \tl_if_empty:NF \l_tmpa_tl
+      { \tl_set_eq:NN \l__osglecture_additional_modes_tl \l_tmpa_tl }
+  }
+  { }
+\tl_if_empty:NF \l__osglecture_mode_setup_file_tl
+  { \exp_args:NV \file_input:n \l__osglecture_mode_setup_file_tl }
+\tl_set:Ne \l_tmpa_tl
+  {
+    \osglecture_profile_value:Vn
+      \l__osglecture_document_profile_tl {modes}
+  }
+\tl_if_empty:NF \l_tmpa_tl { \exp_args:NV \AddLectureModes \l_tmpa_tl }
+\tl_if_empty:NF \l__osglecture_additional_modes_tl
+  { \exp_args:NV \AddLectureModes \l__osglecture_additional_modes_tl }
 \FinalizeLectureModes
 
 \tl_set:Ne \l__osglecture_setup_file_tl

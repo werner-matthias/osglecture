@@ -70,6 +70,31 @@ sub build_spec {
     . "profile identifier"
     if $document_profile !~ /\A[A-Za-z0-9][A-Za-z0-9.-]*\z/;
   my $shell_escape = $arg{manifest}{security}{shell_escape} // 'restricted';
+  my $document_metadata;
+  if (($arg{manifest}{latex}{document_metadata}{policy} // 'author')
+      eq 'enforce') {
+    my $configured = $arg{manifest}{latex}{document_metadata}{file};
+    die "latex.document_metadata.file is required for policy 'enforce'"
+      if !defined($configured) || $configured eq '';
+    die "latex.document_metadata.file must be project-root-relative"
+      if File::Spec->file_name_is_absolute($configured);
+    my $candidate = File::Spec->rel2abs($configured, $project_root);
+    my $canonical = abs_path($candidate)
+      // die "document metadata file not found: $candidate";
+    die "document metadata path is not a regular file: $canonical"
+      if !-f $canonical;
+    _require_within($canonical, $project_root, 'document metadata file');
+    open my $metadata_handle, '<:raw', $canonical
+      or die "cannot read document metadata file '$canonical': $!";
+    local $/;
+    my $metadata_source = <$metadata_handle>;
+    close $metadata_handle
+      or die "cannot close document metadata file '$canonical': $!";
+    $document_metadata = {
+      path      => $canonical,
+      signature => sha256_hex($metadata_source),
+    };
+  }
 
   my $config_signature = sha256_hex(
     JSON::PP->new->canonical->encode({
@@ -92,6 +117,7 @@ sub build_spec {
       latex       => $latex,
       document_profile => $document_profile,
       shell_escape => $shell_escape,
+      document_metadata => $document_metadata,
     }),
   );
   return {
@@ -121,6 +147,7 @@ sub build_spec {
     latex               => $latex->{defaults},
     latex_enforce       => $latex->{enforce},
     shell_escape        => $shell_escape,
+    document_metadata   => $document_metadata,
     config_signature    => $config_signature,
   };
 }
@@ -133,6 +160,8 @@ sub render {
   } sort keys %{ $spec->{language_map} };
   my %latex_key = (
     identity_profile     => 'identity-profile',
+    modes                => 'modes',
+    mode_setup_file      => 'mode-setup-file',
     numbering            => 'numbering',
     presentation_backend => 'presentation-backend',
     presentation_profile => 'presentation-profile',

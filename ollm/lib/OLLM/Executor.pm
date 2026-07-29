@@ -21,6 +21,11 @@ sub execute {
   die "latexmk configuration not found: $latexmk_rc"
     if defined($latexmk_rc) && !-f $latexmk_rc;
   my $request = $resolved->{request};
+  if ($request->{context} eq 'standalone') {
+    return $class->_execute_standalone(
+      $resolved, $latexmk_rc, $arg{runner},
+    );
+  }
   my @specs = $resolved->{build_specs}
     ? @{ $resolved->{build_specs} }
     : $resolved->{build_spec}
@@ -76,11 +81,18 @@ sub validate_request {
   my ($class, $resolved) = @_;
   my $request = $resolved->{request}
     // die "resolved build request has no request data";
-  my $build_count = $resolved->{build_specs}
+  my $build_count = $request->{context} eq 'standalone' ? 1
+    : $resolved->{build_specs}
     ? scalar @{ $resolved->{build_specs} }
     : $resolved->{build_spec} ? 1 : 0;
   die "resolved request contains no concrete build specifications"
     if !$build_count;
+  if ($request->{context} eq 'standalone') {
+    die "resolved standalone request has no execution specification"
+      if !$resolved->{standalone_spec};
+    _validate_latexmk_args($request, 1, standalone => 1);
+    return 1;
+  }
   my $path_separator = $^O eq 'MSWin32' ? ';' : ':';
   my @specs = $resolved->{build_specs}
     ? @{ $resolved->{build_specs} }
@@ -164,6 +176,19 @@ sub command_for_spec {
     '--halt-on-error',
     '%O',
     '%S';
+  my @pretex;
+  if ($spec->{document_metadata}) {
+    my $path = $spec->{document_metadata}{path};
+    die "document metadata path contains unsafe TeX filename characters: $path"
+      if $path =~ /[{}%#\r\n]/;
+    $path =~ s{\\}{/}g;
+    my $language = $spec->{language};
+    die "language '$language' cannot be represented safely in metadata pre-TeX"
+      if $language !~ /\A[A-Za-z0-9._+-]+\z/;
+    my $code = "\\def\\OsgLectureRequestedLanguage{$language}"
+      . "\\input{\"$path\"}";
+    @pretex = ("-usepretex=$code");
+  }
   return (
     'latexmk',
     '-norc',
@@ -175,6 +200,7 @@ sub command_for_spec {
     "-outdir=$spec->{build_directory}",
     "-auxdir=$spec->{aux_directory}",
     "-pdflualatex=$engine",
+    @pretex,
     ($request->{rebuild} ? ('-gg') : ()),
     @{ $request->{latexmk_args} // [] },
     $spec->{source},
@@ -182,7 +208,7 @@ sub command_for_spec {
 }
 
 sub _validate_latexmk_args {
-  my ($request, $build_count) = @_;
+  my ($request, $build_count, %arg) = @_;
   my $arguments = $request->{latexmk_args} // [];
   my $action = _latexmk_action($arguments);
   my ($continuous, $continuous_option, $preview, $preview_option, $print);
@@ -206,7 +232,7 @@ sub _validate_latexmk_args {
     die "latexmk option '$argument' is not allowed yet because '-out2dir' "
       . "would move the final artifact outside the BuildSpec path; a future "
       . "multi-artifact contract may add explicit support\n"
-      if $argument =~ /\A--?out2dir(?:=|\z)/;
+      if !$arg{standalone} && $argument =~ /\A--?out2dir(?:=|\z)/;
     die "latexmk option '$argument' is not allowed because OLLM, rather than "
       . "latexmk's use-make fallback, owns orchestration of missing inputs "
       . "and dependent builds\n"
@@ -222,14 +248,14 @@ sub _validate_latexmk_args {
       if $argument =~ /\A--?recorder-\z/;
     die "latexmk option '$argument' conflicts with the controlled build contract\n"
       if $argument =~ /\A--?(?:
-        auxdir | aux-directory |
-        outdir | output-directory |
-        jobname |
-        (?:pdf)?lualatex |
-        recorder |
-        cd |
-        e
-      )(?:=|\z)/x;
+          jobname | (?:pdf)?lualatex | recorder | cd | e
+        )(?:=|\z)/x
+      || !$arg{standalone} && $argument =~ /\A--?(?:
+          auxdir | aux-directory | outdir | output-directory
+        )(?:=|\z)/x;
+    die "latexmk option '$argument' is not allowed because OLLM owns the "
+      . "pre-TeX hook used for project metadata\n"
+      if $argument =~ /\A--?(?:pretex|usepretex)(?:=|\z)/;
     die "latexmk option '$argument' may not override shell-escape policy\n"
       if $argument =~ /shell-(?:escape|restricted)/;
     if ($option eq '-cc') {
@@ -302,6 +328,43 @@ sub _validate_latexmk_args {
     die "--non-interactive cannot be combined with latexmk option '-p', "
       . "which starts an external print action\n";
   }
+}
+
+sub _execute_standalone {
+  my ($class, $resolved, $latexmk_rc, $runner) = @_;
+  $class->validate_request($resolved);
+  my $request = $resolved->{request};
+  my $spec = $resolved->{standalone_spec};
+  my %shell_option = (
+    off        => '--no-shell-escape',
+    restricted => '--shell-restricted',
+    full       => '--shell-escape',
+  );
+  my $engine = join ' ',
+    'lualatex', $shell_option{$spec->{shell_escape}},
+    '--synctex=1', '--interaction=nonstopmode', '--halt-on-error', '%O', '%S';
+  my @command = (
+    'latexmk', '-norc',
+    (defined($latexmk_rc) ? ('-r', $latexmk_rc) : ()),
+    '-lualatex', '-recorder', '-cd', "-pdflualatex=$engine",
+    ($request->{rebuild} ? ('-gg') : ()),
+    @{ $request->{latexmk_args} // [] },
+    $spec->{source},
+  );
+  my $status = $runner
+    ? $runner->(\@command, $spec)
+    : system { $command[0] } @command;
+  if ($status == -1) {
+    print STDERR "ollm: cannot start latexmk: $!\n" if !$runner;
+    return 69;
+  }
+  my $signal = $status & 127;
+  if ($signal) {
+    print STDERR "ollm: latexmk terminated by signal $signal\n"
+      if !$runner && $signal != 2;
+    return 128 + $signal;
+  }
+  return ($status >> 8) == 0 ? 0 : 1;
 }
 
 sub _latexmk_action {

@@ -6,8 +6,8 @@ LaTeX builds to `latexmk`.
 
 The program in `ollm` is the portable command-line launcher. Builds using
 `ollmconfig.toml` are executed by the new build executor. Projects using the
-old Perl manifest and explicit standalone invocations continue to be delegated
-to the preserved `ollm-legacy.rc`, version 0.11.1, so its command-line
+old Perl manifests continue to be delegated to the preserved
+`ollm-legacy.rc`, version 0.11.1, so its command-line
 interface remains the compatibility baseline during migration.
 
 - [`DESIGN.md`](DESIGN.md) specifies the target architecture and records its
@@ -114,6 +114,21 @@ presentation_profile = "beamer"
 script_profile = "scrbook"
 ```
 
+A project may enforce one shared, project-root-relative metadata file:
+
+```toml
+[latex.document_metadata]
+policy = "enforce"
+file = "shared/document-metadata.tex"
+```
+
+OLLM inserts it before the main source through latexmk's controlled pre-TeX
+mechanism and first defines `\OsgLectureRequestedLanguage`. The file contents
+participate in the configuration signature. OLLM does not inspect or rewrite
+`main.tex`; a second `\DocumentMetadata` in the source remains a normal LaTeX
+conflict which the author must resolve. User `-pretex` and `-usepretex`
+options are reserved and rejected.
+
 OLLM reads `$XDG_CONFIG_HOME/ollm/config.toml`, or
 `$HOME/.config/ollm/config.toml` when `XDG_CONFIG_HOME` is unset. On Windows it
 uses `%APPDATA%\ollm\config.toml`. `OLLM_USER_CONFIG` selects an explicit file,
@@ -141,6 +156,12 @@ Series builds use:
 for their PDF, recorder data, `latexmk` state, auxiliary files, and the
 job-bound `<jobname>.osgbuild.tex`. OLLM starts `latexmk` with LuaLaTeX,
 recorder mode, SyncTeX, an explicit job name, and controlled output paths.
+
+`+standalone` uses the new executor without manifest discovery, a generated
+`.osgbuild.tex`, or a series job name. It defaults to `main.tex` in the current
+directory and passes normal latexmk output-directory options (`-outdir`,
+`-auxdir`, and `-out2dir`). Document type, language, and profile belong in
+`osglecture` class options in this mode.
 
 The manifest policy maps directly to the LuaLaTeX engine:
 

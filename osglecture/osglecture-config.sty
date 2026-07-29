@@ -61,6 +61,9 @@
       \__osglecture_build_put:nn {script-profile} {#1},
     identity-profile    .code:n =
       \__osglecture_build_put:nn {identity-profile} {#1},
+    modes               .code:n = \__osglecture_build_put:nn {modes} {#1},
+    mode-setup-file     .code:n =
+      \__osglecture_build_put:nn {mode-setup-file} {#1},
     theme               .code:n = \__osglecture_build_put:nn {theme} {#1},
     numbering           .code:n = \__osglecture_build_put:nn {numbering} {#1},
     references          .code:n = \__osglecture_build_put:nn {references} {#1},
@@ -80,6 +83,10 @@
       \prop_gput:Nnn \g__osglecture_enforce_prop {script-profile} {#1},
     identity-profile .code:n =
       \prop_gput:Nnn \g__osglecture_enforce_prop {identity-profile} {#1},
+    modes .code:n =
+      \prop_gput:Nnn \g__osglecture_enforce_prop {modes} {#1},
+    mode-setup-file .code:n =
+      \prop_gput:Nnn \g__osglecture_enforce_prop {mode-setup-file} {#1},
     theme .code:n =
       \prop_gput:Nnn \g__osglecture_enforce_prop {theme} {#1},
     numbering .code:n =

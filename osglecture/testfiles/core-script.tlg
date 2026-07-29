@@ -3,3 +3,7 @@ Don't change this file in any respect.
 doctype=script
 profile=scrbook
 backend=scrbook
+script-mode=true
+article-mode=true
+longform-mode=true
+print-mode=true

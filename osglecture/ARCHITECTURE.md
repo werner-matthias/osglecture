@@ -55,10 +55,12 @@ Mitgeliefert werden zunächst:
 
 Die gegenwärtige Version von `ltx-talk` verlangt `\DocumentMetadata{}` vor
 `\documentclass`. Ein Wrapper kann diese Initialisierung technisch nicht
-nachholen. Das `ltx-talk`-Profil deklariert diese Voraussetzung deshalb und
-`osglecture` gibt bei ihrem Fehlen eine gezielte Diagnose aus. Quellen, die
-zwischen Präsentationsprofilen umschaltbar bleiben sollen, setzen
-`\DocumentMetadata{}` daher unabhängig vom konkret gewählten Profil.
+nachholen. Sie darf im Autorenmodell weiterhin in der Quelle oder gemeinsamem
+Projektcode stehen. Alternativ erzwingt das Projekt mit
+`latex.document_metadata.policy = "enforce"` eine gemeinsame Datei: OLLM
+definiert vor dem Hauptdokument `\OsgLectureRequestedLanguage` und liest die
+Datei über latexmks kontrollierten PreTeX-Mechanismus ein. OLLM untersucht
+`main.tex` nicht; ein zusätzlicher Aufruf bleibt ein sichtbarer LaTeX-Konflikt.
 
 Im Standalone-Betrieb kann `profile=...` als Klassenoption verwendet werden.
 Bei einer OLLM-Auftragsdatei ist die Klassenoption nur zulässig, wenn sie dem
@@ -157,9 +159,9 @@ Eltern pro Modus enthalten:
 
 ```text
 slides  -> presentation
-script  -> article
-handout -> presentation
-handout -> print
+handout -> presentation, print
+script  -> longform, print
+article -> longform, print
 ```
 
 Bei einem Handout sind damit `handout`, `presentation` und `print` aktiv.
@@ -176,7 +178,7 @@ Schnittstelle lautet:
 
 ```tex
 \DeclareLectureMode{script}
-\DeclareLectureModeParents{script}{article,print}
+\DeclareLectureModeParents{script}{longform,print}
 \DeclareLectureModeAlias{reader}{script}
 \SetLectureModes{script}              % ersetzt die Blattmenge
 \AddLectureModes{backend-mode}        % ergänzt sie
@@ -199,6 +201,17 @@ geschieht bereits beim Laden des Pakets. `osglecture` registriert und aktiviert
 die aufgelöste Matrix dagegen ausdrücklich vor dem Einlesen projektweiter
 Metadaten. Der `ltx-talk`-Scanner bleibt ein Backendadapter und ist nicht Teil
 des allgemeinen Moduskerns.
+
+Bis zu einer fachlichen Aufspaltung aktiviert `osglecture` für `script` und
+`article` beide Blattmodi gemeinsam. Das ist absichtlich kein Graphalias und
+verbaut daher keine spätere getrennte Semantik. Vor dem Finalisieren kann ein
+Dokumentprofil oder Bundle-Preset den Graphen über `mode-setup-file` erweitern;
+`modes` ergänzt weitere aktive Modi.
+
+Explizite Klassenoptionen für `doctype` und `lang` dürfen einen BuildSpec zu
+Debugzwecken übersteuern. Bei einer Abweichung warnt die Klasse und weist
+darauf hin, dass der jobgebundene BuildSpec unverändert bleibt. Ein
+widersprechendes `profile` bleibt dagegen ein Fehler.
 
 Das Backend ist die technische Realisierung des Dokumenttyps:
 

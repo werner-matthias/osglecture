@@ -70,7 +70,8 @@ sub run {
     return 2;
   }
 
-  if ($resolved->{configuration}{kind} eq 'toml') {
+  if ($resolved->{configuration}{kind} eq 'toml'
+      || $resolved->{request}{context} eq 'standalone') {
     my $valid = eval {
       require OLLM::Executor;
       OLLM::Executor->validate_request($resolved);
@@ -88,7 +89,8 @@ sub run {
     return 0;
   }
 
-  if ($resolved->{configuration}{kind} eq 'toml') {
+  if ($resolved->{configuration}{kind} eq 'toml'
+      || $resolved->{request}{context} eq 'standalone') {
     if ($plan->{resolve}) {
       print STDERR
         "ollm: --resolve is not implemented by the new build executor yet\n";
@@ -442,7 +444,9 @@ Targets:
   handout
   script (alias: article)
 
-Implemented new commands:
+Implemented commands:
+  build                 execute a series build
+  +standalone           execute a manifest-free build
   build --dry-run       print the normalized request without building
   doctor                inspect the local Perl and TeX toolchain
 
@@ -467,7 +471,7 @@ Build options:
 
 Compatibility:
   Bare targets, lang=en, +lang=en, +script, and debug remain accepted.
-  Unknown minus options are passed to latexmk for legacy builds.
+  Compatible unknown minus options are passed to latexmk.
 HELP
 }
 

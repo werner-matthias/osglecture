@@ -5,5 +5,9 @@
 \TYPE{doctype=\OsgLectureDocumentType}
 \TYPE{profile=\OsgLectureDocumentProfile}
 \TYPE{backend=\OsgLectureBackend}
+\IfLectureModeTF{script}{\TYPE{script-mode=true}}{\TYPE{script-mode=false}}
+\IfLectureModeTF{article}{\TYPE{article-mode=true}}{\TYPE{article-mode=false}}
+\IfLectureModeTF{longform}{\TYPE{longform-mode=true}}{\TYPE{longform-mode=false}}
+\IfLectureModeTF{print}{\TYPE{print-mode=true}}{\TYPE{print-mode=false}}
 \END
 \end{document}

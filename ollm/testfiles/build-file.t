@@ -61,6 +61,29 @@ is $spec->{artifact},
   File::Spec->catfile($spec->{build_directory}, "$spec->{job_id}.pdf"),
   'artifact path is explicit';
 
+my %metadata_manifest = %$manifest;
+$metadata_manifest{latex} = {
+  %{ $manifest->{latex} // {} },
+  document_metadata => {
+    policy => 'enforce',
+    file   => 'shared/document-metadata.tex',
+  },
+};
+my $metadata_spec = OLLM::BuildFile->build_spec(
+  resolved       => $resolved,
+  manifest       => \%metadata_manifest,
+  unit_directory => $chapter,
+);
+is $metadata_spec->{document_metadata}{path},
+  abs_path(File::Spec->catfile(
+    $fixture, 'shared', 'document-metadata.tex',
+  )),
+  'enforced metadata file is normalized within the project root';
+like $metadata_spec->{document_metadata}{signature}, qr/\A[0-9a-f]{64}\z/,
+  'enforced metadata contents are signed into the build contract';
+isnt $metadata_spec->{config_signature}, $spec->{config_signature},
+  'metadata policy and contents affect the configuration signature';
+
 my $content = OLLM::BuildFile->render($spec);
 like $content, qr/job-id=\{bs-020-script-de-processes\}/,
   'rendered build file binds itself to the job id';

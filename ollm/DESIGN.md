@@ -145,7 +145,12 @@ standalone
 ```
 
 Im Serienkontext ist Verzeichnis-Discovery aktiviert. Im Standalone-Kontext
-werden keine Annahmen über Eltern- oder Nachbarverzeichnisse getroffen.
+werden keine Annahmen über Eltern- oder Nachbarverzeichnisse getroffen. Der
+neue Executor baut dort standardmäßig `main.tex` im Quellverzeichnis, erzeugt
+keine Auftragsdatei und erzwingt weder Serienjobnamen noch OLLM-Ausgabepfade.
+Normale latexmk-Optionen für `outdir`, `auxdir` und `out2dir` bleiben zulässig;
+Dokumenttyp, Sprache und Dokumentprofil werden ausschließlich als
+Klassenoptionen angegeben.
 
 ### 5.2 Dokumenttyp
 
@@ -191,9 +196,9 @@ enthalten:
 
 ```text
 slides  -> presentation
-script  -> article
-handout -> presentation
-handout -> print
+handout -> presentation, print
+script  -> longform, print
+article -> longform, print
 ```
 
 Damit ist bei `doctype = handout` sowohl `handout` als auch `presentation` und
@@ -583,6 +588,23 @@ Nicht erzwingbar sind Buildidentität, Dokumenttyp, Sprache, Titel, Rollen oder
 abgeleitete Nummern.
 
 Aktive Enforcement-Werte werden in Log und Report sichtbar gemacht.
+
+Eine Ausnahme ist die zeitlich vor `\documentclass` benötigte
+LaTeX-Kernel-Metadateninitialisierung:
+
+```toml
+[latex.document_metadata]
+policy = "enforce"
+file = "shared/document-metadata.tex"
+```
+
+OLLM prüft, dass die Datei innerhalb des Projektroots liegt, nimmt ihren Inhalt
+in die Konfigurationssignatur auf und liest sie über latexmks kontrollierten
+PreTeX-Mechanismus ein. Zuvor definiert es
+`\OsgLectureRequestedLanguage` aus der normalisierten Buildsprache. OLLM
+untersucht `main.tex` nicht; ein konkurrierender `\DocumentMetadata`-Aufruf ist
+bewusst ein vom Nutzer aufzulösender LaTeX-Fehler. Daher sind benutzerseitige
+`-pretex`- und `-usepretex`-Optionen reserviert.
 
 ### 7.7 TOML-Parser
 

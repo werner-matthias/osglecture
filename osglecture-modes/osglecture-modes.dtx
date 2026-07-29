@@ -501,10 +501,11 @@ ausdrücklich gesetzt werden.
 \DeclareLectureMode[parents=presentation]{projector}
 \DeclareLectureMode[parents={presentation,print}]{handout}
 \DeclareLectureMode[parents=presentation]{trans}
-\DeclareLectureMode{article}
-\DeclareLectureMode[parents=article]{script}
+\DeclareLectureMode{longform}
+\DeclareLectureMode[parents={longform,print}]{article}
+\DeclareLectureMode[parents={longform,print}]{script}
 \DeclareLectureMode{print}
-\DeclareLectureMode[parents=article]{web}
+\DeclareLectureMode[parents=longform]{web}
 \DeclareLectureModeAlias{slides}{projector}
 
 % Resolve the compatibility option immediately, so metadata in the preamble

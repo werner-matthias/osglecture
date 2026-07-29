@@ -137,6 +137,27 @@ is $standalone->{request}{context}, 'standalone',
   'standalone context is selected explicitly';
 is $standalone->{configuration}{kind}, 'none',
   'standalone does not discover a surrounding series manifest implicitly';
+is $standalone->{standalone_spec}{context}, 'standalone',
+  'standalone resolution produces a new-executor specification';
+is $standalone->{standalone_spec}{job_id}, 'main',
+  'standalone job name follows the source without imposing a series name';
+ok(File::Spec->file_name_is_absolute($standalone->{request}{source}),
+  'standalone source is normalized independently of a project manifest');
+
+eval {
+  OLLM::Config->resolve_request(
+    start_dir       => File::Spec->catdir($fixture, '020-processes'),
+    definitions_dir => abs_path('definitions'),
+    plan => {
+      action => 'build', all => 0, dry_run => 0, latexmk_args => [],
+      legacy_args => ['+standalone'], non_interactive => 0, rebuild => 0,
+      resolve => 0, source => 'main.tex', target => 'script',
+      target_explicit => 1,
+    },
+  );
+};
+like $@, qr/document type and language from osglecture class options/,
+  'standalone rejects misleading OLLM document selection';
 
 my $invalid = tempdir(CLEANUP => 1);
 my $invalid_manifest = File::Spec->catfile($invalid, 'ollmconfig.toml');

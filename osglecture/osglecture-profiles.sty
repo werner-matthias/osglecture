@@ -14,6 +14,8 @@
 \tl_new:N \l__osglecture_profile_options_tl
 \tl_new:N \l__osglecture_profile_setup_tl
 \tl_new:N \l__osglecture_profile_metadata_tl
+\tl_new:N \l__osglecture_profile_modes_tl
+\tl_new:N \l__osglecture_profile_mode_setup_tl
 \cs_generate_variant:Nn \clist_if_in:nnF { Vn }
 
 \msg_new:nnnn { osglecture-profiles } { unknown-profile }
@@ -33,6 +35,8 @@
     doctypes .clist_set:N = \l__osglecture_profile_doctypes_tl,
     class-options .tl_set:N = \l__osglecture_profile_options_tl,
     setup-file .tl_set:N = \l__osglecture_profile_setup_tl,
+    modes .clist_set:N = \l__osglecture_profile_modes_tl,
+    mode-setup-file .tl_set:N = \l__osglecture_profile_mode_setup_tl,
     document-metadata .choices:nn = { optional, required }
       { \tl_set_eq:NN \l__osglecture_profile_metadata_tl \l_keys_choice_tl },
     document-metadata .initial:n = optional,
@@ -45,6 +49,8 @@
     \tl_clear:N \l__osglecture_profile_doctypes_tl
     \tl_clear:N \l__osglecture_profile_options_tl
     \tl_clear:N \l__osglecture_profile_setup_tl
+    \tl_clear:N \l__osglecture_profile_modes_tl
+    \tl_clear:N \l__osglecture_profile_mode_setup_tl
     \tl_set:Nn \l__osglecture_profile_metadata_tl {optional}
     \keys_set:nn { osglecture/profile } {#2}
     \tl_if_empty:NT \l__osglecture_profile_backend_tl
@@ -63,6 +69,10 @@
       \l__osglecture_profile_options_tl
     \prop_gput:NnV \g__osglecture_profiles_prop {#1/setup-file}
       \l__osglecture_profile_setup_tl
+    \prop_gput:NnV \g__osglecture_profiles_prop {#1/modes}
+      \l__osglecture_profile_modes_tl
+    \prop_gput:NnV \g__osglecture_profiles_prop {#1/mode-setup-file}
+      \l__osglecture_profile_mode_setup_tl
     \prop_gput:NnV \g__osglecture_profiles_prop {#1/document-metadata}
       \l__osglecture_profile_metadata_tl
   }
