@@ -1,0 +1,109 @@
+\NeedsTeXFormat{LaTeX2e}[2022/06/01]
+\ProvidesExplPackage
+  {osglecture-profiles}
+  {2026/07/29}
+  {0.1.0}
+  {Profile registry for osglecture}
+
+\ExplSyntaxOn
+
+\prop_new:N \g__osglecture_profiles_prop
+\tl_new:N \l__osglecture_profile_backend_tl
+\tl_new:N \l__osglecture_profile_class_tl
+\tl_new:N \l__osglecture_profile_doctypes_tl
+\tl_new:N \l__osglecture_profile_options_tl
+\tl_new:N \l__osglecture_profile_setup_tl
+\tl_new:N \l__osglecture_profile_metadata_tl
+\cs_generate_variant:Nn \clist_if_in:nnF { Vn }
+
+\msg_new:nnnn { osglecture-profiles } { unknown-profile }
+  { Unknown~document~profile~'#1'. }
+  { Install~or~declare~the~profile~before~selecting~it. }
+\msg_new:nnnn { osglecture-profiles } { unsupported-doctype }
+  { Document~profile~'#1'~does~not~support~document~type~'#2'. }
+  { Select~a~profile~which~declares~that~document~type. }
+\msg_new:nnnn { osglecture-profiles } { incomplete-profile }
+  { Document~profile~'#1'~does~not~define~'#2'. }
+  { Every~profile~must~define~backend,~class,~and~doctypes. }
+
+\keys_define:nn { osglecture/profile }
+  {
+    backend .tl_set:N = \l__osglecture_profile_backend_tl,
+    class .tl_set:N = \l__osglecture_profile_class_tl,
+    doctypes .clist_set:N = \l__osglecture_profile_doctypes_tl,
+    class-options .tl_set:N = \l__osglecture_profile_options_tl,
+    setup-file .tl_set:N = \l__osglecture_profile_setup_tl,
+    document-metadata .choices:nn = { optional, required }
+      { \tl_set_eq:NN \l__osglecture_profile_metadata_tl \l_keys_choice_tl },
+    document-metadata .initial:n = optional,
+  }
+
+\NewDocumentCommand \DeclareOsgLectureProfile { m m }
+  {
+    \tl_clear:N \l__osglecture_profile_backend_tl
+    \tl_clear:N \l__osglecture_profile_class_tl
+    \tl_clear:N \l__osglecture_profile_doctypes_tl
+    \tl_clear:N \l__osglecture_profile_options_tl
+    \tl_clear:N \l__osglecture_profile_setup_tl
+    \tl_set:Nn \l__osglecture_profile_metadata_tl {optional}
+    \keys_set:nn { osglecture/profile } {#2}
+    \tl_if_empty:NT \l__osglecture_profile_backend_tl
+      { \msg_fatal:nnnn {osglecture-profiles}{incomplete-profile}{#1}{backend} }
+    \tl_if_empty:NT \l__osglecture_profile_class_tl
+      { \msg_fatal:nnnn {osglecture-profiles}{incomplete-profile}{#1}{class} }
+    \tl_if_empty:NT \l__osglecture_profile_doctypes_tl
+      { \msg_fatal:nnnn {osglecture-profiles}{incomplete-profile}{#1}{doctypes} }
+    \prop_gput:NnV \g__osglecture_profiles_prop {#1/backend}
+      \l__osglecture_profile_backend_tl
+    \prop_gput:NnV \g__osglecture_profiles_prop {#1/class}
+      \l__osglecture_profile_class_tl
+    \prop_gput:NnV \g__osglecture_profiles_prop {#1/doctypes}
+      \l__osglecture_profile_doctypes_tl
+    \prop_gput:NnV \g__osglecture_profiles_prop {#1/class-options}
+      \l__osglecture_profile_options_tl
+    \prop_gput:NnV \g__osglecture_profiles_prop {#1/setup-file}
+      \l__osglecture_profile_setup_tl
+    \prop_gput:NnV \g__osglecture_profiles_prop {#1/document-metadata}
+      \l__osglecture_profile_metadata_tl
+  }
+
+\NewDocumentCommand \DeclareOsgLectureProfileClassOptions { m m m }
+  { \prop_gput:Nnn \g__osglecture_profiles_prop {#1/class-options/#2} {#3} }
+
+\cs_new_protected:Npn \osglecture_profile_select:nn #1#2
+  {
+    \OsgLectureLoadProfile{#1}
+    \prop_if_in:NnF \g__osglecture_profiles_prop {#1/backend}
+      { \msg_fatal:nnn {osglecture-profiles}{unknown-profile}{#1} }
+    \prop_get:NnN \g__osglecture_profiles_prop {#1/doctypes} \l_tmpa_tl
+    \clist_if_in:VnF \l_tmpa_tl {#2}
+      { \msg_fatal:nnnn {osglecture-profiles}{unsupported-doctype}{#1}{#2} }
+  }
+
+\NewDocumentCommand \OsgLectureLoadProfile { m }
+  {
+    \prop_if_in:NnF \g__osglecture_profiles_prop {#1/backend}
+      {
+        \file_if_exist:nT {osglecture-profile-#1.def}
+          { \file_input:n {osglecture-profile-#1.def} }
+      }
+  }
+
+\cs_new:Npn \osglecture_profile_value:nn #1#2
+  { \prop_item:Nn \g__osglecture_profiles_prop {#1/#2} }
+
+\cs_new:Npn \osglecture_profile_class_options:nn #1#2
+  {
+    \prop_item:Nn \g__osglecture_profiles_prop {#1/class-options}
+    \prop_item:Nn \g__osglecture_profiles_prop {#1/class-options/#2}
+  }
+
+\cs_generate_variant:Nn \osglecture_profile_select:nn { VV }
+\cs_generate_variant:Nn \osglecture_profile_value:nn { Vn }
+\cs_generate_variant:Nn \osglecture_profile_class_options:nn { VV }
+
+\file_input:n {osglecture-profile-beamer.def}
+\file_input:n {osglecture-profile-ltx-talk.def}
+\file_input:n {osglecture-profile-scrbook.def}
+
+\ExplSyntaxOff

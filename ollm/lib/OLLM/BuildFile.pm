@@ -31,7 +31,7 @@ sub build_spec {
   $unit_directory = abs_path($unit_directory)
     // die "unit directory not found: $unit_directory";
   my $physical_unit = basename($unit_directory);
-  my ($number, $profile, $role, $slug) = _parse_unit($physical_unit);
+  my ($number, $unit_scope, $role, $slug) = _parse_unit($physical_unit);
   my $target = $configuration->{definitions}{targets}{$target_name}
     // die "resolved target '$target_name' has no definition";
   my $doctype = $target->{doctype};
@@ -56,29 +56,41 @@ sub build_spec {
   );
   my $artifact = File::Spec->catfile($build_directory, "$job_id.pdf");
   my $latex = _effective_latex(
-    $configuration->{definitions}{profile}{latex} // {},
+    $configuration->{definitions}{bundle_preset}{latex} // {},
+    $configuration->{user_defaults}{latex} // {},
     $arg{manifest}{latex} // {},
   );
+  my $profile_key = $doctype =~ /\A(?:slides|handout)\z/
+    ? 'presentation_profile' : 'script_profile';
+  my $document_profile =
+       $latex->{enforce}{$profile_key}
+    // $latex->{defaults}{$profile_key}
+    // ($doctype =~ /\A(?:slides|handout)\z/ ? 'beamer' : 'scrbook');
+  die "invalid document profile '$document_profile'; expected a portable "
+    . "profile identifier"
+    if $document_profile !~ /\A[A-Za-z0-9][A-Za-z0-9.-]*\z/;
   my $shell_escape = $arg{manifest}{security}{shell_escape} // 'restricted';
 
   my $config_signature = sha256_hex(
     JSON::PP->new->canonical->encode({
       manifest    => {
         schema    => $arg{manifest}{schema},
-        profile   => $arg{manifest}{profile},
+        bundle_preset => $arg{manifest}{bundle_preset},
         project   => $arg{manifest}{project},
         languages => $arg{manifest}{languages},
         target    => $arg{manifest}{targets}{$target_name},
         security  => $arg{manifest}{security} // {},
         latex     => $arg{manifest}{latex} // {},
       },
-      profile     => $configuration->{definitions}{profile}{signature},
+      bundle_preset =>
+        $configuration->{definitions}{bundle_preset}{signature},
       target_definition => $target->{signature},
       target      => $target_name,
       doctype     => $doctype,
       language    => $language,
       physical_unit => $physical_unit,
       latex       => $latex,
+      document_profile => $document_profile,
       shell_escape => $shell_escape,
     }),
   );
@@ -89,7 +101,7 @@ sub build_spec {
     series_id           => $request->{series_id},
     physical_unit       => $physical_unit,
     physical_number     => $number,
-    unit_profile        => $profile,
+    unit_scope          => $unit_scope,
     unit_role           => $role,
     unit_id             => $slug,
     target              => $target_name,
@@ -97,7 +109,9 @@ sub build_spec {
     language            => $language,
     available_languages => $arg{manifest}{languages}{available},
     language_map        => $arg{manifest}{languages}{map} // {},
-    profile             => $configuration->{definitions}{profile}{reference},
+    bundle_preset       =>
+      $configuration->{definitions}{bundle_preset}{reference},
+    document_profile    => $document_profile,
     project_root        => $project_root,
     source              => $source,
     source_directory    => dirname($source),
@@ -121,7 +135,9 @@ sub render {
     identity_profile     => 'identity-profile',
     numbering            => 'numbering',
     presentation_backend => 'presentation-backend',
+    presentation_profile => 'presentation-profile',
     references           => 'references',
+    script_profile       => 'script-profile',
     theme                => 'theme',
   );
   my @latex = map {
@@ -140,7 +156,7 @@ sub render {
     "  series-id={" . _tex_atom($spec->{series_id}) . "},",
     "  physical-unit={" . _tex_atom($spec->{physical_unit}) . "},",
     "  physical-number={" . _tex_atom($spec->{physical_number}) . "},",
-    "  unit-profile={" . _tex_atom($spec->{unit_profile}) . "},",
+    "  unit-scope={" . _tex_atom($spec->{unit_scope}) . "},",
     "  unit-role={" . _tex_atom($spec->{unit_role}) . "},",
     "  unit-id={" . _tex_atom($spec->{unit_id}) . "},",
     "  target={" . _tex_atom($spec->{target}) . "},",
@@ -148,7 +164,8 @@ sub render {
     "  language={" . _tex_atom($spec->{language}) . "},",
     "  available-languages={" . join(',', @languages) . "},",
     "  language-map={" . join(',', @map) . "},",
-    "  profile={" . _tex_atom($spec->{profile}) . "},",
+    "  bundle-preset={" . _tex_atom($spec->{bundle_preset}) . "},",
+    "  document-profile={" . _tex_atom($spec->{document_profile}) . "},",
     @latex,
     "  shell-escape={" . _tex_atom($spec->{shell_escape}) . "},",
     "  config-signature={" . _tex_atom($spec->{config_signature}) . "}",
@@ -212,21 +229,22 @@ sub write_for_spec {
 sub _parse_unit {
   my ($name) = @_;
   die "invalid series unit directory '$name'; expected "
-    . "<three digits><optional profile>-<optional role-><slug>"
+    . "<three digits><optional scope code>-<optional role-><slug>"
     if $name !~ /\A(\d{3})([a-z]{0,2})-(?:(a|e|i)-)?(.+)\z/;
-  my ($number, $profile, $role, $slug) = ($1, $2, $3 // 'content', $4);
+  my ($number, $unit_scope, $role, $slug) = ($1, $2, $3 // 'content', $4);
   die "invalid empty unit slug in '$name'" if $slug eq '';
-  return ($number, $profile, $role, $slug);
+  return ($number, $unit_scope, $role, $slug);
 }
 
 sub _effective_latex {
-  my ($profile, $project) = @_;
+  my ($preset, $user, $project) = @_;
   my %defaults = (
-    %{ $profile->{defaults} // {} },
+    %{ $preset->{defaults} // {} },
+    %{ $user->{defaults} // {} },
     %{ $project->{defaults} // {} },
   );
   my %enforce = (
-    %{ $profile->{enforce} // {} },
+    %{ $preset->{enforce} // {} },
     %{ $project->{enforce} // {} },
   );
   return {

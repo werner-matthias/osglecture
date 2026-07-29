@@ -15,6 +15,7 @@ our $VERSION = '0.1.0';
 our $MANIFEST_SCHEMA = 1;
 our $DEFINITION_SCHEMA = 1;
 our $LOCAL_SCHEMA = 1;
+our $USER_SCHEMA = 1;
 our $PARSER_NAME = 'TOML::Tiny::Parser';
 our $PARSER_ERROR;
 our $PARSER_LOADED;
@@ -78,6 +79,9 @@ sub resolve_request {
   }
 
   my $manifest = $class->load_manifest($located->{path});
+  my $user_defaults = $class->load_user_defaults;
+  $manifest->{bundle_preset} //=
+    $user_defaults->{bundle_preset} // 'OSG lecture/1';
   my $root = dirname($located->{path});
   my $definitions = $class->resolve_definitions(
     manifest       => $manifest,
@@ -96,7 +100,7 @@ sub resolve_request {
     for my $target (sort keys %$targets) {
       next if !_unit_allows_target(
         $start,
-        $definitions->{targets}{$target}{unit_profiles},
+        $definitions->{targets}{$target}{unit_scopes},
       );
       for my $language (@{ $targets->{$target}{languages} }) {
         push @builds, {
@@ -133,8 +137,9 @@ sub resolve_request {
     configuration => {
       kind    => 'toml',
       path    => $located->{path},
-      profile => $manifest->{profile},
+      bundle_preset => $manifest->{bundle_preset},
       definitions => $definitions,
+      user_defaults => $user_defaults,
       schema  => $manifest->{schema},
       parser  => $class->parser_info,
     },
@@ -175,11 +180,11 @@ sub resolve_request {
 }
 
 sub _unit_allows_target {
-  my ($directory, $profiles) = @_;
+  my ($directory, $unit_scopes) = @_;
   my $name = File::Basename::basename(File::Spec->rel2abs($directory));
   return 1 if $name !~ /\A\d{3}([a-z]{1,2})-/;
-  my $profile = $1;
-  return scalar grep { $_ eq $profile } @{ $profiles // [] };
+  my $unit_scope = $1;
+  return scalar grep { $_ eq $unit_scope } @{ $unit_scopes // [] };
 }
 
 sub find_manifest {
@@ -241,7 +246,8 @@ sub validate_manifest {
   $path //= '<manifest>';
   $lines //= {};
   die "$path: manifest root must be a table" if ref $manifest ne 'HASH';
-  _known_keys($manifest, [qw(schema profile project languages targets security latex)],
+  _known_keys($manifest,
+    [qw(schema bundle_preset project languages targets security latex)],
     $path, $lines, '');
   if (!defined $manifest->{schema} || ref $manifest->{schema}
       || $manifest->{schema} != $MANIFEST_SCHEMA) {
@@ -251,7 +257,8 @@ sub validate_manifest {
       "unsupported project-manifest schema $actual; "
       . "this OLLM supports project-manifest schema $MANIFEST_SCHEMA");
   }
-  _require_string($manifest, 'profile', $path);
+  _require_string($manifest, 'bundle_preset', $path)
+    if exists $manifest->{bundle_preset};
 
   _require_table($manifest, 'project', $path);
   _known_keys($manifest->{project}, [qw(id title)], $path, $lines, 'project');
@@ -340,7 +347,8 @@ sub validate_manifest {
       die "$path: latex.$level must be a table" if ref $values ne 'HASH';
       _known_keys(
         $values,
-        [qw(theme numbering references presentation_backend identity_profile)],
+        [qw(theme numbering references presentation_backend identity_profile
+            presentation_profile script_profile)],
         $path, $lines, "latex.$level",
       );
       _require_string($values, $_, "$path: latex.$level")
@@ -348,6 +356,49 @@ sub validate_manifest {
     }
   }
   return 1;
+}
+
+sub load_user_defaults {
+  my ($class) = @_;
+  my $path;
+  if (defined $ENV{OLLM_USER_CONFIG} && $ENV{OLLM_USER_CONFIG} ne '') {
+    $path = File::Spec->rel2abs($ENV{OLLM_USER_CONFIG});
+    die "OLLM user configuration not found: $path" if !-f $path;
+  } elsif ($^O eq 'MSWin32' && defined $ENV{APPDATA}) {
+    $path = File::Spec->catfile($ENV{APPDATA}, 'ollm', 'config.toml');
+  } elsif (defined $ENV{XDG_CONFIG_HOME} && $ENV{XDG_CONFIG_HOME} ne '') {
+    $path = File::Spec->catfile($ENV{XDG_CONFIG_HOME}, 'ollm', 'config.toml');
+  } elsif (defined $ENV{HOME} && $ENV{HOME} ne '') {
+    $path = File::Spec->catfile($ENV{HOME}, '.config', 'ollm', 'config.toml');
+  }
+  return {} if !defined $path || !-f $path;
+  my ($data, $lines) = $class->_load_toml($path);
+  _known_keys($data, [qw(schema bundle_preset latex)], $path, $lines, '');
+  if (!defined $data->{schema} || ref $data->{schema}
+      || $data->{schema} != $USER_SCHEMA) {
+    my $actual = defined($data->{schema}) && !ref($data->{schema})
+      ? $data->{schema} : '<missing or non-scalar>';
+    _fail_at($path, $lines, 'schema',
+      "unsupported user-configuration schema $actual; "
+      . "this OLLM supports user-configuration schema $USER_SCHEMA");
+  }
+  _require_string($data, 'bundle_preset', $path)
+    if exists $data->{bundle_preset};
+  if (exists $data->{latex}) {
+    die "$path: latex must be a table" if ref $data->{latex} ne 'HASH';
+    _known_keys($data->{latex}, [qw(defaults)], $path, $lines, 'latex');
+    if (exists $data->{latex}{defaults}) {
+      my $values = $data->{latex}{defaults};
+      die "$path: latex.defaults must be a table" if ref $values ne 'HASH';
+      _known_keys($values,
+        [qw(theme numbering references presentation_backend identity_profile
+            presentation_profile script_profile)],
+        $path, $lines, 'latex.defaults');
+      _require_string($values, $_, "$path: latex.defaults") for keys %$values;
+    }
+  }
+  $data->{path} = $path;
+  return $data;
 }
 
 sub resolve_definitions {
@@ -371,7 +422,7 @@ sub resolve_definitions {
   }
   push @paths, $arg{bundle_path} if defined $arg{bundle_path};
 
-  my (%profile, %target);
+  my (%preset, %target);
   for my $path (@paths) {
     die "definition search path not found: $path" if !-d $path;
     my @files;
@@ -381,8 +432,8 @@ sub resolve_definitions {
     );
     for my $file (sort @files) {
       my $definition = $class->_load_definition($file);
-      my $index = $definition->{kind} eq 'profile' ? \%profile : \%target;
-      my $reference = $definition->{kind} eq 'profile'
+      my $index = $definition->{kind} eq 'bundle-preset' ? \%preset : \%target;
+      my $reference = $definition->{kind} eq 'bundle-preset'
         ? "$definition->{name}/$definition->{version}"
         : $definition->{name};
       if (exists $index->{$reference}) {
@@ -396,14 +447,14 @@ sub resolve_definitions {
     }
   }
 
-  my $profile_name = $manifest->{profile};
-  if (!exists $profile{$profile_name}) {
-    my $available = keys(%profile)
-      ? join(', ', map { "'$_'" } sort keys %profile)
+  my $preset_name = $manifest->{bundle_preset};
+  if (!exists $preset{$preset_name}) {
+    my $available = keys(%preset)
+      ? join(', ', map { "'$_'" } sort keys %preset)
       : '<none>';
-    _fail_at($manifest_path, $manifest_lines, 'profile',
-      "requested profile '$profile_name' was not found; "
-      . "available profiles: $available; searched: " . join(', ', @paths));
+    _fail_at($manifest_path, $manifest_lines, 'bundle_preset',
+      "requested bundle preset '$preset_name' was not found; "
+      . "available bundle presets: $available; searched: " . join(', ', @paths));
   }
 
   my %selected_targets;
@@ -420,28 +471,28 @@ sub resolve_definitions {
         JSON::PP->new->canonical->encode($target{$name}{data}),
       ),
       version => $target{$name}{data}{version},
-      unit_profiles => $target{$name}{data}{unit_profiles} // [],
+      unit_scopes => $target{$name}{data}{unit_scopes} // [],
     };
     $selected_target_data{$name} = $target{$name}{data};
   }
   my $signature = sha256_hex(
     JSON::PP->new->canonical->encode({
       manifest => $manifest,
-      profile  => $profile{$profile_name}{data},
+      bundle_preset => $preset{$preset_name}{data},
       targets  => \%selected_target_data,
     }),
   );
   return {
     definition_signature => $signature,
     local_config => -f $local_path ? abs_path($local_path) : undef,
-    profile => {
-      name    => $profile{$profile_name}{data}{name},
-      path    => $profile{$profile_name}{path},
-      reference => $profile_name,
-      version => $profile{$profile_name}{data}{version},
-      latex   => $profile{$profile_name}{data}{latex} // {},
+    bundle_preset => {
+      name    => $preset{$preset_name}{data}{name},
+      path    => $preset{$preset_name}{path},
+      reference => $preset_name,
+      version => $preset{$preset_name}{data}{version},
+      latex   => $preset{$preset_name}{data}{latex} // {},
       signature => sha256_hex(
-        JSON::PP->new->canonical->encode($profile{$profile_name}{data}),
+        JSON::PP->new->canonical->encode($preset{$preset_name}{data}),
       ),
     },
     search_paths => [map { abs_path($_) // $_ } @paths],
@@ -471,7 +522,7 @@ sub _load_definition {
   my ($class, $path) = @_;
   my ($data, $lines) = $class->_load_toml($path);
   _known_keys($data,
-    [qw(schema kind name version latex doctype family unit_profiles)],
+    [qw(schema kind name version latex doctype family unit_scopes)],
     $path, $lines, '');
   if (!defined $data->{schema} || ref $data->{schema}
       || $data->{schema} != $DEFINITION_SCHEMA) {
@@ -483,26 +534,30 @@ sub _load_definition {
   }
   my $kind = _require_string($data, 'kind', $path);
   _fail_at($path, $lines, 'kind', "unknown definition kind '$kind'")
-    if $kind !~ /\A(?:profile|target)\z/;
+    if $kind !~ /\A(?:bundle-preset|target)\z/;
   _require_string($data, 'name', $path);
   _require_string($data, 'version', $path);
-  if ($kind eq 'profile') {
-    _fail_at($path, $lines, 'doctype', "profile must not define 'doctype'")
+  if ($kind eq 'bundle-preset') {
+    _fail_at($path, $lines, 'doctype',
+      "bundle preset must not define 'doctype'")
       if exists $data->{doctype};
-    _fail_at($path, $lines, 'family', "profile must not define 'family'")
+    _fail_at($path, $lines, 'family',
+      "bundle preset must not define 'family'")
       if exists $data->{family};
-    _fail_at($path, $lines, 'unit_profiles',
-      "profile must not define 'unit_profiles'")
-      if exists $data->{unit_profiles};
+    _fail_at($path, $lines, 'unit_scopes',
+      "bundle preset must not define 'unit_scopes'")
+      if exists $data->{unit_scopes};
   } else {
     _require_string($data, 'doctype', $path);
     _require_string($data, 'family', $path);
-    if (exists $data->{unit_profiles}) {
-      my $profiles = _require_string_array($data, 'unit_profiles', $path);
-      for my $profile (@$profiles) {
-        _fail_at($path, $lines, 'unit_profiles',
-          "invalid target unit profile '$profile'")
-          if $profile !~ /\A[a-z]{1,2}\z/;
+    if (exists $data->{unit_scopes}) {
+      my $unit_scopes = _require_string_array(
+        $data, 'unit_scopes', $path,
+      );
+      for my $unit_scope (@$unit_scopes) {
+        _fail_at($path, $lines, 'unit_scopes',
+          "invalid target unit scope '$unit_scope'")
+          if $unit_scope !~ /\A[a-z]{1,2}\z/;
       }
     }
     _fail_at($path, $lines, 'latex', "target must not define 'latex'")
@@ -515,7 +570,8 @@ sub _load_definition {
       my $values = $data->{latex}{$level};
       die "$path: latex.$level must be a table" if ref $values ne 'HASH';
       _known_keys($values,
-        [qw(theme numbering references presentation_backend identity_profile)],
+        [qw(theme numbering references presentation_backend identity_profile
+            presentation_profile script_profile)],
         $path, $lines, "latex.$level");
       _require_string($values, $_, "$path: latex.$level") for keys %$values;
     }

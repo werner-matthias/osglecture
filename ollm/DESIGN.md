@@ -10,6 +10,10 @@ Dieses Dokument spezifiziert die geplante Verantwortung, die öffentliche
 Schnittstelle und die Dateiverträge von OLLM. Es konsolidiert die bisher
 getroffenen Designentscheidungen und hält verbleibende Detailfragen sichtbar.
 
+Die bundleweit verbindlichen Kurzdefinitionen stehen im
+[`GLOSSARY.md`](../GLOSSARY.md). Dieses Dokument verwendet die dort
+festgelegten Begriffe und ergänzt ihre Rationales.
+
 OLLM ist Teil des `osglecture`-Bundles, aber nicht dessen Dokumentklasse. Die
 Grenze ist bewusst:
 
@@ -199,10 +203,10 @@ validiert; unbekannte Knoten, unbekannte Eltern, Aliaszyklen und
 Hierarchiezyklen sind Fehler.
 
 Das Backend ist die technische Realisierung eines Dokumenttyps und wird aus
-dem Dokumenttyp sowie der effektiven Profil-/Projektpolicy gewählt:
+dem Dokumenttyp sowie der effektiven Dokumentprofil-/Projektpolicy gewählt:
 
 ```text
-backend = adapter(doctype, profile, project-policy)
+backend = adapter(doctype, document-profile, project-policy)
 ```
 
 So darf beispielsweise `slides` durch `beamer` oder `ltx-talk` realisiert
@@ -223,7 +227,6 @@ unit-id
 physische Einheitenkennung
 doctype
 language
-variant, falls vorhanden
 ```
 
 Die logische Kapitelnummer gehört nicht zur stabilen Identität. Sie ist ein
@@ -270,9 +273,9 @@ Kapitelnummer.
 Reihenfolge, ohne die fachliche Identität `processes` zu ändern. Nach Filterung
 für einen Dokumenttyp wird die logische Nummer neu berechnet.
 
-### 6.3 Profile
+### 6.3 Unit-Scopes
 
-Die bestehenden Profile bleiben kompatibel:
+Die bestehenden Scope-Codes bleiben kompatibel:
 
 ```text
 leer   alle Dokumenttypen
@@ -280,7 +283,7 @@ a      Artikel-/Longform-Familie
 b      Präsentationsfamilie
 ```
 
-Ein zweites Zeichen darf ein Unterprofil bilden, beispielsweise:
+Ein zweites Zeichen darf einen engeren Subscope bilden, beispielsweise:
 
 ```text
 a
@@ -293,7 +296,8 @@ b
 ```
 
 Die konkreten zweiten Zeichen werden mit der Dokumenttypenregistry
-festgelegt. Unterprofile müssen eine Teilmenge ihres Oberprofils auswählen.
+festgelegt. Subscopes müssen eine Teilmenge ihres übergeordneten Scopes
+auswählen.
 
 ### 6.4 Rollen
 
@@ -355,13 +359,11 @@ nicht durch eine weitere Suche ergänzt.
 ### 7.2 Konfigurationsstufen
 
 ```text
-eingebaute sichere Defaults
+eingebaute sichere Defaults und ausgewähltes Bundle-Preset
         <
-ausgewähltes Projektprofil
+Nutzerdefaults
         <
 Projektmanifest
-        <
-lokale Maschinenkonfiguration
         <
 konkrete CLI-Buildauswahl
 ```
@@ -370,32 +372,38 @@ Lokale Klassenoptionen werden erst in LaTeX verarbeitet. Für ausgewählte
 LaTeX-Schlüssel existiert zusätzlich eine erzwungene Projektpolicy mit höherer
 Priorität.
 
-### 7.3 Projektprofil
+Die Dokumentprofilauswahl bildet eine Ausnahme von der allgemeinen
+CLI-Buildauswahl: Sie darf nicht pro Auftrag überschrieben werden.
+Nutzerdefaults legen `presentation_profile` und `script_profile` fest; nur das
+Projektmanifest darf diese Auswahl überschreiben. Der aufgelöste Wert wird als
+`document-profile` im BuildSpec transportiert, dort aber nicht ausgewählt.
 
-Das Manifest wählt ein wiederverwendbares Profil:
+### 7.3 Bundle-Preset
+
+Das Manifest kann ein wiederverwendbares, versioniertes Bundle-Preset wählen:
 
 ```toml
 schema = 1
-profile = "OSG lecture/1"
+bundle_preset = "OSG lecture/1"
 ```
 
-Profilnamen sind deskriptive, nicht auf kurze technische Bezeichner beschränkte
+Presetnamen sind deskriptive, nicht auf kurze technische Bezeichner beschränkte
 Zeichenketten. Leerzeichen, Bindestriche und Schrägstriche sind zulässig. Name
-und Hauptversion bilden zusammen die registrierte Identität eines Profils; OLLM
+und Hauptversion bilden zusammen die registrierte Identität eines Presets; OLLM
 behandelt die Angabe als opake Kennung und leitet keine Semantik aus ihrer
 Schreibweise ab.
 
-Profile enthalten selten geänderte Defaults, etwa:
+Bundle-Presets enthalten selten geänderte Defaults, etwa:
 
 - Backendzuordnung;
 - Corporate-Identity- und Themezuordnung;
 - portable Projektpfade;
 - Standardfeatures.
 
-Profile werden zunächst mit dem Bundle ausgeliefert. Zusätzliche Suchpfade
+Bundle-Presets werden zunächst mit dem Bundle ausgeliefert. Zusätzliche Suchpfade
 können in der lokalen Konfiguration angegeben werden. Dort eingetragene relative
 Pfade werden relativ zur Projektwurzel aufgelöst; absolute Pfade bleiben
-zulässig. Die aufgelöste Profildefinition und ihre Version gehen in die
+zulässig. Die aufgelöste Presetdefinition und ihre Version gehen in die
 Konfigurationssignatur ein.
 
 Das Projektmanifest enthält die tatsächlich projektspezifischen Angaben:
@@ -437,21 +445,21 @@ validiert.
 
 Targetnamen sind ebenfalls registrierte, erweiterbare Kennungen. OLLM besitzt
 keine abgeschlossene Liste von Dokumenttypen. Ein Target wird durch das
-gewählte Profil oder durch eine gefundene Targetdefinition registriert.
-Zusätzliche Targetdefinitionen verwenden denselben Suchraum wie Profile.
+gewählte Bundle-Preset oder durch eine gefundene Targetdefinition registriert.
+Zusätzliche Targetdefinitionen verwenden denselben Suchraum wie Bundle-Presets.
 Unbekannte Targetnamen sind ein Konfigurationsfehler.
 
 Alle Targets einer Einheit verwenden dieselbe Quelldatei. Inhaltlich
 auseinanderlaufende Fassungen werden durch getrennte Verzeichnisse und deren
-Profil-/Rollenfilter modelliert, nicht durch unterschiedliche `source`-Angaben
+Scope-/Rollenfilter modelliert, nicht durch unterschiedliche `source`-Angaben
 im Projektmanifest.
 
-Profil- und Targetdefinitionen besitzen zunächst nur eine kleine gemeinsame
+Bundle-Preset- und Targetdefinitionen besitzen zunächst nur eine kleine gemeinsame
 Hülle:
 
 ```toml
 schema = 1
-kind = "profile"
+kind = "bundle-preset"
 name = "OSG lecture"
 version = "1"
 ```
@@ -465,7 +473,7 @@ name = "slides"
 version = "1.0"
 doctype = "slides"
 parents = ["presentation"]
-unit_profiles = ["b", "bs"]
+unit_scopes = ["b", "bs"]
 ```
 
 Weitere fachliche Tabellen werden bei Bedarf ergänzt. Stabil sind zunächst
@@ -473,14 +481,14 @@ Schema, Art, registrierter Name, Version und die eindeutige Auflösung.
 Definitionen gleichen Namens an mehreren Suchorten sind ein Fehler und werden
 nicht stillschweigend überschrieben.
 
-Targetdefinitionen nennen mit `unit_profiles` die ein- oder zweibuchstabigen
-Einheitenprofile, auf die das Target eingeschränkt ist. Einheiten ohne Profil
+Targetdefinitionen nennen mit `unit_scopes` die ein- oder zweibuchstabigen
+Unit-Scopes, auf die das Target eingeschränkt ist. Einheiten ohne Scope-Code
 bleiben für alle konfigurierten Targets gültig. Damit bleibt die Filterung von
 `--all` erweiterbar und wird nicht aus Targetnamen abgeleitet.
 
 `parents` deklariert die direkten Obermodi des kanonischen Dokumenttyps.
 Weitere Zeilen der allgemeinen Modusmatrix, insbesondere abstrakte Modi, dürfen
-aus dem Bundleprofil stammen. OLLM normalisiert die aufgelöste Matrix in den
+aus dem Bundle-Preset stammen. OLLM normalisiert die aufgelöste Matrix in den
 BuildSpec; `osglecture-modes` wertet ihre transitive Hülle auf der LaTeX-Seite
 aus.
 
@@ -515,7 +523,7 @@ plattformüblichen Konfigurationsort. Falls beide Ebenen vorhanden sind, wird
 zuerst die benutzerspezifische und danach die projektspezifische lokale
 Konfiguration angewandt.
 
-Suchpfade für Profile und Targetdefinitionen dürfen relativ oder absolut sein.
+Suchpfade für Bundle-Presets und Targetdefinitionen dürfen relativ oder absolut sein.
 Relative Pfade beziehen sich unabhängig vom Fundort der lokalen
 Konfigurationsdatei immer auf die Projektwurzel. Damit bleibt eine lokale
 Konfiguration zwischen Arbeitsrechnern verständlich und ein Projekt kann
@@ -531,12 +539,12 @@ paths = ["configuration", "/opt/osglecture/definitions"]
 ```
 
 Lokale Suchpfade dürfen die Bedeutung eines Builds nicht unsichtbar machen:
-Identität, Version und Inhalt der tatsächlich aufgelösten Profil- und
+Identität, Version und Inhalt der tatsächlich aufgelösten Bundle-Preset- und
 Targetdefinitionen gehen in Bericht und Konfigurationssignatur ein.
 
 ### 7.5 Strikte Schlüssel und Erweiterungen
 
-Unbekannte Standardschlüssel, nicht auflösbare Profile oder Targets sowie
+Unbekannte Standardschlüssel, nicht auflösbare Bundle-Presets oder Targets sowie
 unbekannte Erweiterungsnamensräume sind Fehler. Diagnosen nennen mindestens
 Datei, Quellzeile, betroffenen Schlüssel, tatsächliche Anforderung und die von
 der installierten Fassung unterstützte Erwartung. Dazu führt der OLLM-Parser-
@@ -620,7 +628,7 @@ watch       = false
 
 ### 8.2 BuildSpec
 
-Nach Manifest-, Profil- und Pfadauflösung entsteht pro konkretem Ziel ein
+Nach Manifest-, Bundle-Preset- und Pfadauflösung entsteht pro konkretem Ziel ein
 `BuildSpec`:
 
 ```text
@@ -629,13 +637,15 @@ context
 project-root
 series-id
 physical-unit
+unit-scope
 unit-id
 target
 doctype
 mode matrix
 backend adapter
+bundle preset
+document profile
 language
-variant
 source
 build-directory
 aux-directory
@@ -661,7 +671,7 @@ angehoben werden.
 ### 9.1 Grammatik
 
 ```text
-<series>-<physical-number>-<doctype>[+<variant>]-<language>-<slug>
+<series>-<physical-number>-<doctype>-<language>-<slug>
 ```
 
 Beispiele:
@@ -669,13 +679,11 @@ Beispiele:
 ```text
 bs-020-script-de-processes
 bs-090-script-de-a-posix-reference
-bs-020-handout+notes-en-detailed-processes
 ```
 
 Die ersten vier mit `-` getrennten Felder werden von links gelesen. Der
 gesamte verbleibende Rest ist der Slug; Bindestriche innerhalb des Slugs sind
-daher eindeutig. Eine Variante wird mit `+` an den Dokumenttyp gebunden und
-konkurriert ebenfalls nicht mit der Feldtrennung.
+daher eindeutig.
 
 `physical-number` ist die dreistellige Ordnungsnummer des Verzeichnisses.
 Profil und Rolle werden nicht nochmals im Jobnamen codiert. Sie stehen
@@ -685,8 +693,8 @@ erhielten, ist das ein Konfigurationsfehler; OLLM muss die Kollision vor dem
 Start von `latexmk` melden.
 
 **Rationale:** Die Anordnung entspricht dem bisherigen OLLM-Modell mit dem
-Thema am Ende. Sie erlaubt das Rücklesen von Dokumenttyp, Variante, Sprache und
-Slug von links, ohne eine Suche von hinten oder Wissen über registrierte
+Thema am Ende. Sie erlaubt das Rücklesen von Dokumenttyp, Sprache und Slug von
+links, ohne eine Suche von hinten oder Wissen über registrierte
 Dokumenttypen zu verlangen. Die Zuordnung des Auftrags bleibt trotzdem durch
 den Jobnamen abgesichert.
 
@@ -764,10 +772,14 @@ Beispiel:
   context              = series,
   series-id            = {bs},
   series-root          = {...},
+  unit-scope           = b,
   doctype              = slides,
   language             = de,
   available-languages  = {de,en},
-  presentation-backend = beamer,
+  bundle-preset        = {OSG lecture/1},
+  document-profile     = beamer,
+  presentation-profile = beamer,
+  script-profile       = scrbook,
   identity-profile     = osg,
   theme                = osg,
   numbering            = chapter,
@@ -789,7 +801,7 @@ wird.
 
 Der erste implementierte Vertrag umfasst Schema, Job- und Serienidentität,
 physische Einheit, Rolle und Profil der Einheit, Target, Dokumenttyp, Sprache,
-Sprachmenge und -mapping, ausgewähltes Projektprofil sowie eine
+Sprachmenge und -mapping, ausgewähltes Bundle-Preset sowie eine
 Konfigurationssignatur. Der LaTeX-Leser liegt getrennt in
 `osglecture-config.sty`, damit der Vertrag ohne die noch nicht vollständig
 geschlossene Hauptklasse getestet werden kann. `osglecture.cls` lädt diesen
@@ -797,7 +809,7 @@ Baustein und bevorzugt eine passende Auftragsdatei gegenüber der bisherigen
 Ableitung von Dokumenttyp und Sprache aus dem Jobnamen.
 
 Die Konfigurationssignatur ist SHA-256 über das normalisierte Manifest, die
-aufgelösten Profil- und Targetdefinitionen sowie die für den konkreten Build
+aufgelösten Bundle-Preset- und Targetdefinitionen sowie die für den konkreten Build
 relevante Einheit, Sprache und das Target. Rein lokale UI- oder
 Deploymentwerte gehen nicht ein.
 
@@ -1209,7 +1221,7 @@ letzter gültiger Export
 
 - Auftrag, Jobname und Ergebnis stimmen überein;
 - Artefakt vorhanden;
-- Profile und Rollen gültig;
+- Unit-Scopes und Rollen gültig;
 - Exkurs besitzt ein Vorgängerkapitel;
 - externe Referenzen vorhanden und aktuell;
 - Generationskennungen konsistent;
@@ -1306,7 +1318,7 @@ mit `--all` wäre der erste dauerhafte Prozess andernfalls ein Blocker für alle
 folgenden Builds. Unter `--non-interactive` sind Viewer- und Druckaktionen
 unzulässig, während kontinuierliches Bauen mit `-view=none` zulässig bleibt.
 
-Projektmanifest, lokale Konfiguration sowie Profil- und Targetdefinitionen
+Projektmanifest, lokale Konfiguration sowie Bundle-Preset- und Targetdefinitionen
 werden vor dem Start von `latexmk` normalisiert. Änderungen an diesen Dateien
 erfordern einen Neustart von OLLM. OLLM implementiert hierfür keinen zweiten
 Dateiwächter neben `latexmk`.
@@ -1381,6 +1393,21 @@ Listentrenner und den gekapselten atomaren Dateiersatz. Wo eine Plattform den
 vollen Vertrag nicht zuverlässig anbieten kann, wird die Einschränkung
 diagnostiziert, statt das Unix-/macOS-Verhalten abzuschwächen.
 
+### 21.1 Spätere Editionen
+
+Eine künftig benötigte parallele Inhaltsausgabe desselben Targets, Doctypes
+und Dokumentprofils wird **Edition** genannt, beispielsweise `student` und
+`instructor`. Sie wäre eine orthogonale Builddimension und müsste daher in
+Buildidentität, Job-ID, Verzeichnissen, `--all` und Artefaktnamen gemeinsam
+eingeführt werden.
+
+Der aktuelle Entwurf reserviert dafür bewusst weder den früher erwogenen Namen
+`variant` noch ein CLI-, Schema-, BuildSpec- oder Auftragsdateifeld.
+Dokumentprofile sind kein Ersatz für Editionen: Sie beschreiben die technische
+TeX-Integration und werden projektweit gewählt, während mehrere Editionen
+desselben Dokumentprofils gleichzeitig baubar sein müssten. Solange kein
+konkreter Editionsbedarf vorliegt, bleibt diese Dimension unimplementiert.
+
 ## 22. Packaging
 
 Das Bundle soll mit `l3build` test-, dokumentier-, installier- und
@@ -1420,7 +1447,7 @@ Parser-Tests normalisieren insbesondere:
 Tests decken ab:
 
 - dreistellige Sortierung;
-- Profile und Unterprofile;
+- Unit-Scopes und Subscopes;
 - Rollen;
 - unterschiedliche Folgen pro Dokumenttyp;
 - Exkurse;

@@ -16,7 +16,7 @@ modules = {
    -- "osglisting"
  }
 
-textfiles = { "README.md", "CHANGES.md", "LICENSE" }
+textfiles = { "README.md", "GLOSSARY.md", "CHANGES.md", "LICENSE" }
 
 unpackfiles = unpackfiles  or { "*.dtx" }
 

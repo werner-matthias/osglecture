@@ -3,6 +3,7 @@
 \begin{document}
 \START
 \TYPE{doctype=\OsgLectureDocumentType}
+\TYPE{profile=\OsgLectureDocumentProfile}
 \TYPE{backend=\OsgLectureBackend}
 \END
 \end{document}

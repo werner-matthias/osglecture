@@ -49,8 +49,8 @@ is $resolved->{request}{language}, 'de', 'project default language selected';
 is $resolved->{request}{series_id}, 'bs', 'series id enters BuildRequest';
 is $resolved->{configuration}{parser}{version}, '0.22',
   'parser version is reported';
-is $resolved->{configuration}{definitions}{profile}{version}, '1',
-  'selected profile definition is resolved';
+is $resolved->{configuration}{definitions}{bundle_preset}{version}, '1',
+  'selected bundle-preset definition is resolved';
 is $resolved->{configuration}{definitions}{targets}{script}{version}, '1.0',
   'configured target definition is resolved';
 
@@ -85,21 +85,21 @@ is_deeply(
   '--all produces deterministic job identities',
 );
 
-my $profiled_root = tempdir(CLEANUP => 1);
-my $profiled_unit = File::Spec->catdir($profiled_root, '020as-processes');
-make_path($profiled_unit);
-open my $profiled_manifest, '>',
-  File::Spec->catfile($profiled_root, 'ollmconfig.toml') or die $!;
+my $scoped_root = tempdir(CLEANUP => 1);
+my $scoped_unit = File::Spec->catdir($scoped_root, '020as-processes');
+make_path($scoped_unit);
+open my $scoped_manifest, '>',
+  File::Spec->catfile($scoped_root, 'ollmconfig.toml') or die $!;
 open my $fixture_manifest, '<', $manifest_path or die $!;
-print {$profiled_manifest} $_ while <$fixture_manifest>;
+print {$scoped_manifest} $_ while <$fixture_manifest>;
 close $fixture_manifest;
-close $profiled_manifest;
-open my $profiled_source, '>',
-  File::Spec->catfile($profiled_unit, 'main.tex') or die $!;
-print {$profiled_source} "\\documentclass{article}\n";
-close $profiled_source;
-my $profiled = OLLM::Config->resolve_request(
-  start_dir       => $profiled_unit,
+close $scoped_manifest;
+open my $scoped_source, '>',
+  File::Spec->catfile($scoped_unit, 'main.tex') or die $!;
+print {$scoped_source} "\\documentclass{article}\n";
+close $scoped_source;
+my $scoped = OLLM::Config->resolve_request(
+  start_dir       => $scoped_unit,
   definitions_dir => $definitions,
   plan => {
     action => 'build',
@@ -115,9 +115,9 @@ my $profiled = OLLM::Config->resolve_request(
   },
 );
 is_deeply(
-  [map { $_->{target} } @{ $profiled->{build_specs} }],
+  [map { $_->{target} } @{ $scoped->{build_specs} }],
   ['script', 'script'],
-  '--all filters target/language pairs through target unit profiles',
+  '--all filters target/language pairs through target unit scopes',
 );
 
 my $standalone = OLLM::Config->resolve_request(
@@ -143,8 +143,8 @@ my $invalid_manifest = File::Spec->catfile($invalid, 'ollmconfig.toml');
 open my $invalid_handle, '>', $invalid_manifest or die $!;
 print {$invalid_handle} <<'TOML';
 schema = 1
-profiel = "OSG lecture/1"
-profile = "OSG lecture/1"
+bundle_presett = "OSG lecture/1"
+bundle_preset = "OSG lecture/1"
 
 [project]
 id = "bad"
@@ -158,7 +158,7 @@ languages = ["de"]
 TOML
 close $invalid_handle;
 eval { OLLM::Config->load_manifest($invalid_manifest) };
-like $@, qr/\Q$invalid_manifest\E:2: unknown key 'profiel'/,
+like $@, qr/\Q$invalid_manifest\E:2: unknown key 'bundle_presett'/,
   'semantic manifest errors report their source line';
 
 open my $schema_handle, '>', $invalid_manifest or die $!;
@@ -171,7 +171,7 @@ like $@, qr/:1: unsupported project-manifest schema 9; .* schema 1/,
 open my $case_handle, '>', $invalid_manifest or die $!;
 print {$case_handle} <<'TOML';
 schema = 1
-profile = "OSG lecture/1"
+bundle_preset = "OSG lecture/1"
 
 [project]
 id = "case"
@@ -191,7 +191,7 @@ like $@, qr/languages\.available contains values that collide on case-insensitiv
 open my $missing_handle, '>', $invalid_manifest or die $!;
 print {$missing_handle} <<'TOML';
 schema = 1
-profile = "OSG lecture/1"
+bundle_preset = "OSG lecture/1"
 
 [project]
 id = "missing"
@@ -218,17 +218,17 @@ like $@, qr/\Q$invalid_manifest\E:11: target 'ghost' was not found/,
 
 my $local_root = tempdir(CLEANUP => 1);
 my $local_definitions = File::Spec->catdir($local_root, 'project-definitions');
-make_path(File::Spec->catdir($local_definitions, 'profiles'));
-open my $profile_handle, '>',
-  File::Spec->catfile($local_definitions, 'profiles', 'custom.toml')
+make_path(File::Spec->catdir($local_definitions, 'bundle-presets'));
+open my $preset_handle, '>',
+  File::Spec->catfile($local_definitions, 'bundle-presets', 'custom.toml')
   or die $!;
-print {$profile_handle} <<'TOML';
+print {$preset_handle} <<'TOML';
 schema = 1
-kind = "profile"
-name = "Descriptive project profile"
+kind = "bundle-preset"
+name = "Descriptive bundle preset"
 version = "1"
 TOML
-close $profile_handle;
+close $preset_handle;
 open my $local_handle, '>',
   File::Spec->catfile($local_root, '.ollmconfig.local.toml')
   or die $!;
@@ -241,15 +241,16 @@ TOML
 close $local_handle;
 my $local_resolution = OLLM::Config->resolve_definitions(
   manifest => {
-    profile => 'Descriptive project profile/1',
+    bundle_preset => 'Descriptive bundle preset/1',
     targets => { slides => { languages => ['de'] } },
   },
   manifest_path => File::Spec->catfile($local_root, 'ollmconfig.toml'),
   project_root  => $local_root,
   bundle_path   => $definitions,
 );
-is $local_resolution->{profile}{reference}, 'Descriptive project profile/1',
-  'project-relative local definition path resolves a descriptive profile';
+is $local_resolution->{bundle_preset}{reference},
+  'Descriptive bundle preset/1',
+  'project-relative local definition path resolves a descriptive bundle preset';
 
 my $bundle_example = abs_path('../examples/series-minimal');
 my $bundle_chapter = File::Spec->catdir($bundle_example, '010-introduction');
@@ -264,8 +265,8 @@ my $bundle_definitions = OLLM::Config->resolve_definitions(
   project_root  => $bundle_example,
   bundle_path   => $definitions,
 );
-is $bundle_definitions->{profile}{reference}, 'OSG lecture/1',
-  'bundle-level example resolves its bundled profile';
+is $bundle_definitions->{bundle_preset}{reference}, 'OSG lecture/1',
+  'bundle-level example resolves its bundled preset';
 
 my $temporary = tempdir(CLEANUP => 1);
 open my $toml, '>', File::Spec->catfile($temporary, 'ollmconfig.toml')
@@ -279,5 +280,39 @@ close $legacy;
 eval { OLLM::Config->find_manifest(start_dir => $temporary) };
 like $@, qr/both ollmconfig\.toml and ollmconfig\.pl/,
   'mixed legacy and TOML manifests are rejected';
+
+my $user_root = tempdir(CLEANUP => 1);
+my $user_config = File::Spec->catfile($user_root, 'config.toml');
+open my $user_handle, '>', $user_config or die $!;
+print {$user_handle} <<'TOML';
+schema = 1
+bundle_preset = "OSG lecture/1"
+
+[latex.defaults]
+presentation_profile = "ltx-talk"
+script_profile = "scrbook"
+TOML
+close $user_handle;
+{
+  local $ENV{OLLM_USER_CONFIG} = $user_config;
+  my $user_resolved = OLLM::Config->resolve_request(
+    start_dir       => $chapter,
+    definitions_dir => $definitions,
+    plan => {
+      action => 'build',
+      all => 0,
+      dry_run => 1,
+      latexmk_args => [],
+      legacy_args => [],
+      non_interactive => 0,
+      rebuild => 0,
+      resolve => 0,
+      source => 'main.tex',
+      target => 'slides',
+    },
+  );
+  is $user_resolved->{build_spec}{document_profile}, 'ltx-talk',
+    'user defaults select the presentation document profile';
+}
 
 done_testing;

@@ -1,5 +1,6 @@
 \input regression-test
-\documentclass[doctype=script]{osglecture}
+\DocumentMetadata{}
+\documentclass[profile=ltx-talk]{osglecture}
 \begin{document}
 \START
 \TYPE{doctype=\OsgLectureDocumentType}

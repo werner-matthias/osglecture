@@ -74,10 +74,13 @@ for my $policy (
   [off  => '--no-shell-escape'],
   [full => '--shell-escape'],
 ) {
-  my %variant = (%{ $resolved->{build_spec} }, shell_escape => $policy->[0]);
+  my %policy_spec = (
+    %{ $resolved->{build_spec} },
+    shell_escape => $policy->[0],
+  );
   my $option = $policy->[1];
   my @command = OLLM::Executor->command_for_spec(
-    \%variant, $resolved->{request},
+    \%policy_spec, $resolved->{request},
   );
   ok grep($_ =~ /\Q$option\E/, @command),
     "$policy->[0] shell-escape policy maps to LuaLaTeX";

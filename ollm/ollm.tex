@@ -114,7 +114,7 @@ Ein minimales Serienmanifest enthält:
 {\small
 \begin{verbatim}
 schema = 1
-profile = "OSG lecture/1"
+bundle_preset = "OSG lecture/1"
 
 [project]
 id = "bs"
@@ -139,9 +139,9 @@ shell_escape = "restricted"
 \end{verbatim}
 }
 
-\subsection*{Profile und Targets}
+\subsection*{Bundle-Presets und Targets}
 
-Profile und Dokumenttargets sind versionierte Definitionen. OLLM löst sie
+Bundle-Presets und Dokumenttargets sind versionierte Definitionen. OLLM löst sie
 zunächst aus dem mitgelieferten Bundle auf. Zusätzliche Suchpfade werden in
 der optionalen Datei \texttt{.ollmconfig.local.toml} eingetragen:
 
@@ -153,7 +153,7 @@ paths = ["configuration", "/opt/osglecture/definitions"]
 \end{verbatim}
 
 Relative Pfade beziehen sich auf die Projektwurzel. Unbekannte Schlüssel,
-Profile und Targets sind Fehler. Soweit die TOML-Quelle einen Schlüssel
+Bundle-Presets und Targets sind Fehler. Soweit die TOML-Quelle einen Schlüssel
 enthält, nennt die Diagnose auch dessen Zeile. Technische Schemawerte sind
 unabhängig von der Bundleversion; bei einem Konflikt nennt OLLM gefundenes und
 unterstütztes Schema ausdrücklich.
@@ -168,7 +168,7 @@ erzeugt einen an den Jobnamen gebundenen Auftrag:
 \end{verbatim}
 
 Die Datei enthält unter anderem Dokumenttyp, Sprache, physische Einheit,
-Projektprofil und eine SHA-256-Konfigurationssignatur. Sie wird zunächst
+Bundle-Preset und eine SHA-256-Konfigurationssignatur. Sie wird zunächst
 temporär im Zielverzeichnis geschrieben und nur bei verändertem Inhalt
 ersetzt. Dadurch lösen unveränderte Aufträge keinen unnötigen LaTeX-Neubau aus.
 

@@ -1,0 +1,8 @@
+\ProvidesFile{osglecture-profile-scrbook.def}
+  [2026/07/29 v0.1.0 osglecture scrbook profile]
+\DeclareOsgLectureProfile{scrbook}
+  {
+    backend = scrbook,
+    class = scrbook,
+    doctypes = {script,article}
+  }

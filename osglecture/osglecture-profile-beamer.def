@@ -1,0 +1,9 @@
+\ProvidesFile{osglecture-profile-beamer.def}
+  [2026/07/29 v0.1.0 osglecture Beamer profile]
+\DeclareOsgLectureProfile{beamer}
+  {
+    backend = beamer,
+    class = beamer,
+    doctypes = {slides,handout}
+  }
+\DeclareOsgLectureProfileClassOptions{beamer}{handout}{handout}

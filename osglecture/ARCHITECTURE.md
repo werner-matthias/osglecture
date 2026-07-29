@@ -6,6 +6,9 @@
 
 Dieses Dokument beschreibt die grundsätzlichen Ideen der Klasse `osglecture` in ihrer gegenwärtigen Form. Es ist bewusst weder Benutzerhandbuch noch vollständige API-Referenz. Sein Zweck ist, das fachliche Modell, die tragenden Entwurfsentscheidungen und die derzeitigen Spannungsfelder sichtbar zu machen. Nach fachlicher Überarbeitung soll es als Ausgangspunkt für eine Neustrukturierung der Klasse dienen.
 
+Die bundleweit verbindlichen Kurzdefinitionen stehen im
+[`GLOSSARY.md`](../GLOSSARY.md).
+
 Die Aussagen beziehen sich auf die laufende Neustrukturierung von
 `osglecture/osglecture.cls` und die begleitenden Dateien im Repository. Seit
 Version 0.7.0 ist die Klasse standardmäßig ein schlanker Orchestrator. Die
@@ -28,6 +31,44 @@ Die Option ist eine bewusst explizite Migrationsbrücke, kein Bestandteil des
 neuen Kerns. Eine weitere Zerlegung dieses konservierten Codes kann später
 entlang fachlicher Paketgrenzen erfolgen, ohne den Standardpfad erneut zu
 belasten.
+
+### Dokumentprofile
+
+`bundle_preset` in der OLLM-Konfiguration bezeichnet das versionierte
+Bundle-Preset, beispielsweise `OSG lecture/1`. Davon getrennt bezeichnet
+`document-profile` die konkrete TeX-Integration. OLLM wählt sie aus
+Nutzerdefaults und einem möglichen Projekt-Override aus und schreibt das
+aufgelöste Ergebnis in den BuildSpec.
+
+Die Klasse lädt Profildeskriptoren vor der Basisklasse. Ein Deskriptor
+deklariert unterstützte Dokumenttypen, Backend, Basisklasse,
+dokumenttypspezifische Klassenoptionen und optional eine Setup-Datei. Diese
+Setup-Datei wird erst nach Basisklasse und Moduskern geladen. Damit können
+weitere Profile ergänzt werden, ohne die Kernklasse um Backendfälle zu
+erweitern.
+
+Mitgeliefert werden zunächst:
+
+- `beamer` für `slides` und `handout`,
+- `ltx-talk` für `slides` und `handout`,
+- `scrbook` für `script` und `article`.
+
+Die gegenwärtige Version von `ltx-talk` verlangt `\DocumentMetadata{}` vor
+`\documentclass`. Ein Wrapper kann diese Initialisierung technisch nicht
+nachholen. Das `ltx-talk`-Profil deklariert diese Voraussetzung deshalb und
+`osglecture` gibt bei ihrem Fehlen eine gezielte Diagnose aus. Quellen, die
+zwischen Präsentationsprofilen umschaltbar bleiben sollen, setzen
+`\DocumentMetadata{}` daher unabhängig vom konkret gewählten Profil.
+
+Im Standalone-Betrieb kann `profile=...` als Klassenoption verwendet werden.
+Bei einer OLLM-Auftragsdatei ist die Klassenoption nur zulässig, wenn sie dem
+aufgelösten `document-profile` entspricht; ein Widerspruch ist ein Fehler.
+
+Die Klassenoption `standalone` erzwingt den lokalen Konfigurationsweg. Existiert
+für den tatsächlichen Jobnamen eine Auftragsdatei, wird sie bewusst nicht
+geladen und eine Warnung ausgegeben. Ohne Auftragsdatei bleibt Standalone der
+implizite Zustand; die Option ist dann lediglich eine ausdrückliche
+Zusicherung.
 
 ## 1. Das fachliche Problem
 
@@ -162,7 +203,7 @@ des allgemeinen Moduskerns.
 Das Backend ist die technische Realisierung des Dokumenttyps:
 
 ```text
-backend = adapter(doctype, profile, project-policy)
+backend = adapter(doctype, document-profile, project-policy)
 ```
 
 Insbesondere darf derselbe Dokumenttyp `slides` durch Beamer oder `ltx-talk`

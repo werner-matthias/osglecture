@@ -33,7 +33,7 @@ sourcefiles = {
   "ollm-latexmk.rc",
   "ollm-legacy.rc",
   "ollm.tex",
-  "definitions/profiles/*.toml",
+  "definitions/bundle-presets/*.toml",
   "definitions/targets/*.toml",
   "lib/OLLM/*.pm",
   "vendor/TOML-Tiny-0.22/LICENSE",

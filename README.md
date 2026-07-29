@@ -3,6 +3,9 @@
 
 LaTeX bundle for generating lecture materials at the Operating Systems Group of the TU Chemnitz.
 
+The bundle-wide design terminology is defined in
+[`GLOSSARY.md`](GLOSSARY.md).
+
 Currently, the following packages are included:
 
 <!-- * ./osglecture: The **osglecture** basis class to generate different materials (slides, script) from a common source -->

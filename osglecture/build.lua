@@ -6,12 +6,16 @@ maindir=".."
 installfiles = {
   "osglecture.cls",
   "osglecture-config.sty",
+  "osglecture-profiles.sty",
+  "osglecture-profile-*.def",
   "osglecture-osgbeamer.code.tex",
   "twocolumns.sty"
 }
 sourcefiles = {
   "osglecture.cls",
   "osglecture-config.sty",
+  "osglecture-profiles.sty",
+  "osglecture-profile-*.def",
   "osglecture-osgbeamer.code.tex",
   "twocolumns.sty"
 }

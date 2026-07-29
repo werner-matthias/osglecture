@@ -49,7 +49,9 @@ like $spec->{config_signature}, qr/\A[0-9a-f]{64}\z/,
 is $spec->{shell_escape}, 'restricted',
   'manifest shell-escape policy reaches the build specification';
 is $spec->{latex}{theme}, 'osg',
-  'profile LaTeX defaults reach the build specification';
+  'bundle-preset LaTeX defaults reach the build specification';
+is $spec->{document_profile}, 'scrbook',
+  'doctype-specific document profile reaches the build specification';
 like $spec->{build_directory},
   qr{[.]osglecture/build/020-processes/script/de\z},
   'build directory is isolated by unit, target, and language';
@@ -64,6 +66,10 @@ like $content, qr/job-id=\{bs-020-script-de-processes\}/,
   'rendered build file binds itself to the job id';
 like $content, qr/theme=\{osg\}/,
   'rendered build file contains effective LaTeX defaults';
+like $content, qr/document-profile=\{scrbook\}/,
+  'rendered build file contains the resolved document profile';
+like $content, qr/bundle-preset=\{OSG lecture\/1\}/,
+  'rendered build file contains the resolved bundle preset';
 like $content, qr/shell-escape=\{restricted\}/,
   'rendered build file records the shell-escape policy';
 
@@ -101,6 +107,7 @@ print {$document_handle} <<'TEX';
 \OsgLectureLoadBuildFileForJob
 \begin{document}
 \typeout{OSGTEST:doctype=\OsgLectureBuildValue{doctype}}
+\typeout{OSGTEST:document-profile=\OsgLectureBuildValue{document-profile}}
 \typeout{OSGTEST:language=\OsgLectureBuildValue{language}}
 Configuration bridge.
 \end{document}
@@ -138,6 +145,8 @@ local $/;
 my $log = <$log_handle>;
 close $log_handle;
 like $log, qr/OSGTEST:doctype=script/, 'LaTeX receives the document type';
+like $log, qr/OSGTEST:document-profile=scrbook/,
+  'LaTeX receives the resolved document profile';
 like $log, qr/OSGTEST:language=de/, 'LaTeX receives the language';
 
 done_testing;

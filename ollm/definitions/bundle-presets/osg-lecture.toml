@@ -1,10 +1,11 @@
 schema = 1
-kind = "profile"
+kind = "bundle-preset"
 name = "OSG lecture"
 version = "1"
 
 [latex.defaults]
-presentation_backend = "beamer"
+presentation_profile = "beamer"
+script_profile = "scrbook"
 identity_profile = "osg"
 theme = "osg"
 numbering = "chapter"

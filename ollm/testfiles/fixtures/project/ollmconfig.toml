@@ -1,5 +1,5 @@
 schema = 1
-profile = "OSG lecture/1"
+bundle_preset = "OSG lecture/1"
 
 [project]
 id = "bs"
