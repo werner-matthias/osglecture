@@ -1,0 +1,12 @@
+\input regression-test.tex
+\documentclass{ltx-talk}
+\usepackage{osglecture-modes}
+\begin{document}
+\START
+\IfLectureModeTF{slides}{\TYPE{SLIDES YES}}{\TYPE{SLIDES NO}}
+\IfLectureModeTF{projector}{\TYPE{PROJECTOR YES}}{\TYPE{PROJECTOR NO}}
+\IfLectureModeTF{presentation}{\TYPE{PRESENTATION YES}}{\TYPE{PRESENTATION NO}}
+\IfLectureModeTF{article}{\TYPE{ARTICLE YES}}{\TYPE{ARTICLE NO}}
+\mode<slides>{\TYPE{PORTABLE MODE YES}}
+\END
+\end{document}

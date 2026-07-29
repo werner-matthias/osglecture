@@ -1,0 +1,928 @@
+%<*driver>
+\def\nameofplainTeX{plain}
+\ifx\fmtname\nameofplainTeX
+\input l3docstrip.tex
+\preamble
+
+========================================================================
+ osglecture-modes -- portable document-mode graphs
+
+ (C) 2026 Matthias Werner
+ E-mail: matthias.werner@informatik.tu-chemnitz.de
+
+ Released under the LaTeX Project Public License v1.3c or later
+ See https://www.latex-project.org/lppl.txt
+========================================================================
+
+\endpreamble
+\postamble
+
+This work is "maintained" (as per LPPL maintenance status) by
+Matthias Werner.
+\endpostamble
+
+\generate{
+  \file{osglecture-modes.sty}
+    {\from{osglecture-modes.dtx}{package}}
+  \file{osglecture-modes-ltxtalk.sty}
+    {\from{osglecture-modes.dtx}{ltxtalk}}
+  \file{osglecture-modes-ltxtalk.lua}
+    {\from{osglecture-modes.dtx}{lua}}
+}
+\expandafter\endbatchfile
+\fi
+
+\documentclass[load-preamble+]{osgdoc}
+
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage[
+  languages={de,en},
+  map={de=german,en=english},
+  targetlang={job=3},
+  load babel
+]{langselect}
+\usepackage{osglecture-modes}
+
+\def\pkgname{osglecture-modes}
+\def\thepkg{\pkg*{\pkgname}}
+
+\makeindex
+\setcnltx{
+  name     = osglecture-modes,
+  package  = osglecture-modes,
+  version  = \UseVersionOf{osglecture-modes.sty},
+  date     = \UseDateOf{osglecture-modes.sty},
+  title    = {\ldeen{Portable Dokumentmodi}{Portable Document Modes}},
+  info     = {\ldeen{Erweiterbare Modusgraphen für \LaTeX-Dokumente}
+                    {Extensible mode graphs for \LaTeX\ documents}},
+  authors  = {Matthias Werner[matthias.werner@informatik.tu-chemnitz.de]},
+  abstract = {
+    \ldeen{
+      Das Paket verwaltet Dokumentmodi als gerichteten azyklischen Graphen.
+      Es ergänzt die Modusschnittstellen von Beamer und \pkg*{ltx-talk},
+      funktioniert aber ebenso mit gewöhnlichen Dokumentklassen. Es gehört
+      zum \pkg*{osglecture}-Bundle, besitzt jedoch keine Laufzeitabhängigkeit
+      von dessen Klasse oder Buildprogramm.
+    }{
+      The package represents document modes as a directed acyclic graph.  It
+      augments the mode interfaces of Beamer and \pkg*{ltx-talk}, while also
+      working with ordinary document classes.  It is distributed as part of
+      the \pkg*{osglecture} bundle but has no runtime dependency on its class
+      or build program.
+    }
+  },
+  url = https://github.com/werner-matthias/osglecture,
+  build-title
+}
+
+\begin{document}
+
+\section{\ldeen{Überblick}{Overview}}
+
+\ldeen{
+  Ein konkreter Dokumentmodus kann mehreren allgemeineren Modi angehören.
+  Beispielsweise kann \code{handout} gleichzeitig \code{presentation} und
+  \code{print} aktivieren. Das Paket berechnet die transitive Elternhülle,
+  unterstützt Aliase und mehrere gleichzeitig aktive Blattmodi und prüft den
+  vollständigen Graphen auf ungültige Referenzen und Zyklen.
+}{
+  A concrete document mode may belong to several more general modes.  For
+  example, \code{handout} may activate both \code{presentation} and
+  \code{print}. The package computes the transitive parent closure, supports
+  aliases and multiple active leaf modes, and validates the complete graph
+  for invalid references and cycles.
+}
+
+\begin{verbatim}
+\usepackage[mode=script]{osglecture-modes}
+
+\DeclareLectureMode{reading}
+\DeclareLectureModeParents{reading}{article,print}
+\AddLectureModes{reading}
+\FinalizeLectureModes
+
+\lecturemode<article|presentation>{Common source text}
+\end{verbatim}
+
+\section{\ldeen{Voraussetzungen und eigenständige Nutzung}
+                 {Requirements and standalone use}}
+
+\ldeen{
+  Das Kernpaket benötigt nur einen aktuellen \LaTeX-Kernel. Weder
+  \cls*{osglecture} noch \code{ollm}, ein Projektmanifest oder eine bestimmte
+  Verzeichnisstruktur werden vorausgesetzt. Es erkennt eine bereits geladene
+  Beamer- oder \pkg*{ltx-talk}-Klasse, bleibt aber auch mit Artikel-, Buch- und
+  KOMA-Script-Klassen vollständig nutzbar.
+}{
+  The core package requires only a current \LaTeX\ kernel. It does not require
+  \cls*{osglecture}, \code{ollm}, a project manifest, or any directory layout.
+  It detects an already loaded Beamer or \pkg*{ltx-talk} class, but remains
+  fully usable with article, book, and KOMA-Script classes.
+}
+
+\ldeen{
+  Das optionale Paket \pkg*{osglecture-modes-ltxtalk} implementiert das
+  Überspringen von Text außerhalb von Frames für \pkg*{ltx-talk}. Nur dieser
+  Adapter und sein Lua-Helfer benötigen Lua\LaTeX.
+}{
+  The optional \pkg*{osglecture-modes-ltxtalk} package implements skipping
+  non-frame text for \pkg*{ltx-talk}. Only this adapter and its Lua helper
+  require Lua\LaTeX.
+}
+
+\section{\ldeen{Modell und Lebenszyklus}{Model and lifecycle}}
+
+\begin{enumerate}
+  \item \ldeen{Modi, Elternkanten und Aliase deklarieren.}
+               {Declare modes, parent edges, and aliases.}
+  \item \ldeen{Die aktiven Blattmodi setzen oder ergänzen.}
+               {Set or add the active leaf modes.}
+  \item \ldeen{Den Graphen abschließen. Danach ist er unveränderlich.}
+               {Finalize the graph. It is immutable afterwards.}
+  \item \ldeen{Modusabhängige Metadaten und Inhalte auswerten.}
+               {Evaluate mode-dependent metadata and content.}
+\end{enumerate}
+
+Die Paketoption \code{mode=\meta{name}} setzt einen einzelnen Blattmodus.
+\code{mode=auto} erkennt Beamer, \pkg*{ltx-talk} oder eine generische
+Artikelklasse bereits beim Laden. In integrierten Systemen sollte der Modus
+ausdrücklich gesetzt werden.
+
+\section{\ldeen{Schnittstelle}{Interface}}
+
+\begin{commands}
+  \command{DeclareLectureMode}[\oarg{parents=\meta{list}}\marg{mode}]
+  \command{DeclareLectureModeParents}[\marg{mode}\marg{list}]
+  \command{DeclareLectureModeAlias}[\marg{alias}\marg{mode}]
+  \command{SetLectureModes}[\marg{list}]
+  \command{AddLectureModes}[\marg{list}]
+  \command{FinalizeLectureModes}
+  \command{LectureModes}
+  \command{IfLectureModeTF}[\marg{expression}\marg{true}\marg{false}]
+  \command{IfLectureModeT}[\marg{expression}\marg{true}]
+  \command{IfLectureModeF}[\marg{expression}\marg{false}]
+  \command{lecturemode}[\oarg*{\meta{expression}}\marg{content}]
+\end{commands}
+
+\ldeen{
+  Eine Modusliste ist kommasepariert. In Ausdrücken für Abfragen und
+  \cs{lecturemode} kann zusätzlich \code{|} als Oder-Verknüpfung verwendet
+  werden. \code{all} ist immer aktiv. Die erste Abfrage finalisiert einen noch
+  offenen Graphen automatisch.
+}{
+  A mode list is comma-separated. Queries and \cs{lecturemode} expressions may
+  additionally use \code{|} for disjunction. \code{all} is always active. The
+  first query automatically finalizes a graph that is still open.
+}
+
+\section{\ldeen{Zusammenspiel mit Backends}{Backend interaction}}
+
+\ldeen{
+  Besitzt die geladene Klasse keinen Befehl \cs{mode}, stellt das Paket dessen
+  portable Inlineform bereit. Existiert bereits eine native Implementierung,
+  behandelt das Paket ausschließlich Inlineausdrücke aus registrierten Modi.
+  Unbekannte oder komplexe Spezifikationen, Beamers ungebundene Modusschalter
+  und \cs{mode*} werden unverändert an das Backend delegiert.
+}{
+  If the loaded class has no \cs{mode} command, the package provides its
+  portable inline form. If a native implementation already exists, the package
+  handles only inline expressions composed of registered modes. Unknown or
+  complex specifications, Beamer's unbraced mode switches, and \cs{mode*} are
+  delegated unchanged to the backend.
+}
+
+\section{\ldeen{Einschränkungen}{Limitations}}
+
+\begin{itemize}
+  \item \ldeen{
+    Frei registrierte Modi werden nicht automatisch in Overlaybefehle wie
+    \cs{only} eingebaut.
+  }{
+    Dynamically registered modes are not automatically added to overlay
+    commands such as \cs{only}.
+  }
+  \item \ldeen{
+    Eine Basisklasse muss vor \thepkg\ geladen sein, damit ihre Fähigkeiten
+    erkannt werden können.
+  }{
+    A base class must be loaded before \thepkg\ so that its capabilities can be
+    detected.
+  }
+\end{itemize}
+
+\section{Implementation}
+\subsection{\pkg*{osglecture-modes.sty}}
+\AutoDocInput{osglecture-modes.dtx}{package}
+\subsection{\pkg*{osglecture-modes-ltxtalk.sty}}
+\AutoDocInput{osglecture-modes.dtx}{ltxtalk}
+\subsection{\code{osglecture-modes-ltxtalk.lua}}
+\AutoDocInput{osglecture-modes.dtx}{lua}
+
+\printindex
+\end{document}
+%</driver>
+
+%<*package>
+\ProvidesExplPackage{osglecture-modes}{2026-07-29}{0.2.0}
+  {Portable document-mode graphs}
+
+\prop_new:N \g_osglecture_modes_parents_prop
+\prop_new:N \g_osglecture_modes_alias_prop
+\prop_new:N \g_osglecture_modes_active_prop
+\seq_new:N  \g_osglecture_modes_known_seq
+\seq_new:N  \g_osglecture_modes_seed_seq
+\bool_new:N \g_osglecture_modes_frozen_bool
+\tl_new:N   \g_osglecture_modes_option_mode_tl
+
+\msg_new:nnn { osglecture_modes } { frozen }
+  { The~mode~graph~is~already~finalized;~'#1'~cannot~be~changed. }
+\msg_new:nnn { osglecture_modes } { unknown-mode }
+  { Unknown~mode~'#1'.~Declare~it~before~using~or~finalizing~the~graph. }
+\msg_new:nnn { osglecture_modes } { unknown-parent }
+  { Mode~'#1'~has~unknown~parent~'#2'. }
+\msg_new:nnn { osglecture_modes } { unknown-alias-target }
+  { Mode~alias~'#1'~has~unknown~target~'#2'. }
+\msg_new:nnn { osglecture_modes } { alias-cycle }
+  { Mode~alias~cycle~detected~at~'#1'. }
+\msg_new:nnn { osglecture_modes } { graph-cycle }
+  { Mode~parent~cycle~detected~at~'#1'. }
+
+\keys_define:nn { osglecture_modes }
+  {
+    mode .tl_gset:N = \g_osglecture_modes_option_mode_tl,
+    mode .initial:n = auto,
+  }
+\ProcessKeyOptions [ osglecture_modes ]
+
+\prg_new_protected_conditional:Npnn \osglecture_modes_if_mutable:n #1 { TF }
+  {
+    \bool_if:NTF \g_osglecture_modes_frozen_bool
+      {
+        \msg_error:nnn { osglecture_modes } { frozen } {#1}
+        \prg_return_false:
+      }
+      { \prg_return_true: }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_declare:n #1
+  {
+    \osglecture_modes_if_mutable:nTF {#1}
+      {
+        \seq_if_in:NnF \g_osglecture_modes_known_seq {#1}
+          { \seq_gput_right:Nn \g_osglecture_modes_known_seq {#1} }
+      }
+      { }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_declare_parents:nn #1#2
+  {
+    \osglecture_modes_if_mutable:nTF {#1}
+      {
+        \osglecture_modes_declare:n {#1}
+        \clist_set:Nn \l_tmpa_clist {#2}
+        \clist_remove_duplicates:N \l_tmpa_clist
+        \prop_gput:NnV \g_osglecture_modes_parents_prop {#1} \l_tmpa_clist
+      }
+      { }
+  }
+
+\keys_define:nn { osglecture_modes / declare }
+  {
+    parent  .code:n = \osglecture_modes_declare_parents:Vn
+      \l_osglecture_modes_decl_mode_tl {#1},
+    parents .code:n = \osglecture_modes_declare_parents:Vn
+      \l_osglecture_modes_decl_mode_tl {#1},
+  }
+\tl_new:N \l_osglecture_modes_decl_mode_tl
+\cs_generate_variant:Nn \osglecture_modes_declare_parents:nn { Vn }
+\cs_generate_variant:Nn \clist_map_inline:nn { Vn }
+
+\NewDocumentCommand \DeclareLectureMode { O{} m }
+  {
+    \osglecture_modes_declare:n {#2}
+    \tl_set:Nn \l_osglecture_modes_decl_mode_tl {#2}
+    \keys_set:nn { osglecture_modes / declare } {#1}
+  }
+
+\NewDocumentCommand \DeclareLectureModeParents { m m }
+  { \osglecture_modes_declare_parents:nn {#1} {#2} }
+
+\NewDocumentCommand \DeclareLectureModeAlias { m m }
+  {
+    \osglecture_modes_if_mutable:nTF {#1}
+      { \prop_gput:Nnn \g_osglecture_modes_alias_prop {#1} {#2} }
+      { }
+  }
+
+\seq_new:N \l_osglecture_modes_alias_path_seq
+\cs_new_protected:Npn \osglecture_modes_resolve:nN #1#2
+  {
+    \seq_clear:N \l_osglecture_modes_alias_path_seq
+    \tl_set:Nn #2 {#1}
+    \osglecture_modes_resolve_loop:N #2
+  }
+\cs_new_protected:Npn \osglecture_modes_resolve_loop:N #1
+  {
+    \prop_get:NVNT \g_osglecture_modes_alias_prop #1 \l_tmpa_tl
+      {
+        \seq_if_in:NVTF \l_osglecture_modes_alias_path_seq #1
+          {
+            \msg_error:nnV { osglecture_modes } { alias-cycle } #1
+            \tl_clear:N #1
+          }
+          {
+            \seq_put_right:NV \l_osglecture_modes_alias_path_seq #1
+            \tl_set_eq:NN #1 \l_tmpa_tl
+            \osglecture_modes_resolve_loop:N #1
+          }
+      }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_activate:n #1
+  {
+    \osglecture_modes_if_mutable:nTF {#1}
+      {
+        \clist_map_inline:nn {#1}
+          {
+            \osglecture_modes_resolve:nN {##1} \l_tmpa_tl
+            \seq_if_in:NVTF \g_osglecture_modes_known_seq \l_tmpa_tl
+              {
+                \seq_if_in:NVF \g_osglecture_modes_seed_seq \l_tmpa_tl
+                  { \seq_gput_right:NV \g_osglecture_modes_seed_seq \l_tmpa_tl }
+              }
+              { \msg_error:nnV { osglecture_modes } { unknown-mode } \l_tmpa_tl }
+          }
+      }
+      { }
+  }
+
+\NewDocumentCommand \AddLectureModes { m }
+  { \osglecture_modes_activate:n {#1} }
+
+% Compatibility: setting a mode replaces the previous seed set.
+\NewDocumentCommand \SetLectureModes { m }
+  {
+    \osglecture_modes_if_mutable:nTF {#1}
+      {
+        \seq_gclear:N \g_osglecture_modes_seed_seq
+        \osglecture_modes_activate:n {#1}
+      }
+      { }
+  }
+
+\NewExpandableDocumentCommand \LectureModes { }
+  { \seq_use:Nn \g_osglecture_modes_seed_seq {,} }
+
+\prop_new:N \l_osglecture_modes_visiting_prop
+\prop_new:N \l_osglecture_modes_visited_prop
+\bool_new:N \l_osglecture_modes_mark_active_bool
+\cs_new_protected:Npn \osglecture_modes_visit:n #1
+  {
+    \prop_if_in:NnTF \l_osglecture_modes_visiting_prop {#1}
+      { \msg_error:nnn { osglecture_modes } { graph-cycle } {#1} }
+      {
+        \prop_if_in:NnF \l_osglecture_modes_visited_prop {#1}
+          {
+            \prop_put:Nnn \l_osglecture_modes_visiting_prop {#1} { }
+            \bool_if:NT \l_osglecture_modes_mark_active_bool
+              { \prop_gput:Nnn \g_osglecture_modes_active_prop {#1} { } }
+            \prop_get:NnNT \g_osglecture_modes_parents_prop {#1} \l_tmpa_tl
+              {
+                \clist_map_inline:Vn \l_tmpa_tl
+                  {
+                    \seq_if_in:NnTF \g_osglecture_modes_known_seq {##1}
+                      { \osglecture_modes_visit:n {##1} }
+                      {
+                        \msg_error:nnnn { osglecture_modes } { unknown-parent }
+                          {#1} {##1}
+                      }
+                  }
+              }
+            \prop_remove:Nn \l_osglecture_modes_visiting_prop {#1}
+            \prop_put:Nnn \l_osglecture_modes_visited_prop {#1} { }
+          }
+      }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_validate_aliases:
+  {
+    \prop_map_inline:Nn \g_osglecture_modes_alias_prop
+      {
+        \osglecture_modes_resolve:nN {##1} \l_tmpa_tl
+        \seq_if_in:NVF \g_osglecture_modes_known_seq \l_tmpa_tl
+          {
+            \msg_error:nnnn { osglecture_modes } { unknown-alias-target }
+              {##1} {\l_tmpa_tl}
+          }
+      }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_finalize:
+  {
+    \bool_if:NF \g_osglecture_modes_frozen_bool
+      {
+        \osglecture_modes_validate_aliases:
+        \prop_gclear:N \g_osglecture_modes_active_prop
+        \prop_clear:N \l_osglecture_modes_visiting_prop
+        \prop_clear:N \l_osglecture_modes_visited_prop
+        \bool_set_false:N \l_osglecture_modes_mark_active_bool
+        \seq_map_inline:Nn \g_osglecture_modes_known_seq
+          { \osglecture_modes_visit:n {##1} }
+        \prop_clear:N \l_osglecture_modes_visiting_prop
+        \prop_clear:N \l_osglecture_modes_visited_prop
+        \bool_set_true:N \l_osglecture_modes_mark_active_bool
+        \seq_map_inline:Nn \g_osglecture_modes_seed_seq
+          { \osglecture_modes_visit:n {##1} }
+        \bool_gset_true:N \g_osglecture_modes_frozen_bool
+      }
+  }
+\NewDocumentCommand \FinalizeLectureModes { } { \osglecture_modes_finalize: }
+
+\prg_new_conditional:Npnn \osglecture_modes_if_active:n #1 { T, F, TF }
+  {
+    \bool_if:NF \g_osglecture_modes_frozen_bool { \osglecture_modes_finalize: }
+    \bool_set_false:N \l_tmpa_bool
+    \tl_set:Nn \l_tmpa_tl {#1}
+    \tl_replace_all:Nnn \l_tmpa_tl {|} {,}
+    \clist_map_inline:Vn \l_tmpa_tl
+      {
+        \str_if_eq:nnTF {##1} {all}
+          { \bool_set_true:N \l_tmpa_bool }
+          {
+            \osglecture_modes_resolve:nN {##1} \l_tmpa_tl
+            \prop_if_in:NVTF \g_osglecture_modes_active_prop \l_tmpa_tl
+              { \bool_set_true:N \l_tmpa_bool }
+              {
+                \seq_if_in:NVF \g_osglecture_modes_known_seq \l_tmpa_tl
+                  { \msg_error:nnV { osglecture_modes } { unknown-mode } \l_tmpa_tl }
+              }
+          }
+      }
+    \bool_if:NTF \l_tmpa_bool
+      { \prg_return_true: } { \prg_return_false: }
+  }
+
+\NewDocumentCommand \IfLectureModeTF { m m m }
+  { \osglecture_modes_if_active:nTF {#1} {#2} {#3} }
+\NewDocumentCommand \IfLectureModeT { m m }
+  { \osglecture_modes_if_active:nT {#1} {#2} }
+\NewDocumentCommand \IfLectureModeF { m m }
+  { \osglecture_modes_if_active:nF {#1} {#2} }
+
+\NewDocumentCommand \lecturemode { d<> +m }
+  {
+    \IfNoValueTF {#1}
+      {#2}
+      { \osglecture_modes_if_active:nT {#1} {#2} }
+  }
+
+\prg_new_conditional:Npnn \osglecture_modes_if_portable_spec:n #1 { TF }
+  {
+    \bool_set_true:N \l_tmpa_bool
+    \tl_set:Nn \l_tmpa_tl {#1}
+    \tl_replace_all:Nnn \l_tmpa_tl {|} {,}
+    \clist_map_inline:Vn \l_tmpa_tl
+      {
+        \str_if_eq:nnF {##1} {all}
+          {
+            \osglecture_modes_resolve:nN {##1} \l_tmpb_tl
+            \seq_if_in:NVF \g_osglecture_modes_known_seq \l_tmpb_tl
+              { \bool_set_false:N \l_tmpa_bool }
+          }
+      }
+    \bool_if:NTF \l_tmpa_bool
+      { \prg_return_true: } { \prg_return_false: }
+  }
+
+% Defaults describe semantics, not a backend choice.
+\DeclareLectureMode{presentation}
+\DeclareLectureMode[parents=presentation]{beamer}
+\DeclareLectureMode[parents=presentation]{projector}
+\DeclareLectureMode[parents={presentation,print}]{handout}
+\DeclareLectureMode[parents=presentation]{trans}
+\DeclareLectureMode{article}
+\DeclareLectureMode[parents=article]{script}
+\DeclareLectureMode{print}
+\DeclareLectureMode[parents=article]{web}
+\DeclareLectureModeAlias{slides}{projector}
+
+% Resolve the compatibility option immediately, so metadata in the preamble
+% sees the selected mode. osglecture should pass an explicit leaf mode.
+\tl_if_eq:NnTF \g_osglecture_modes_option_mode_tl {auto}
+  {
+    \@ifclassloaded{beamer}
+      {
+        \ifbeamer@handout
+          \SetLectureModes{handout,beamer}
+        \else
+          \SetLectureModes{slides,beamer}
+        \fi
+      }
+      {
+        \@ifclassloaded{ltx-talk}
+          {
+            \cs_if_exist:NTF \l__talk_mode_str
+              {
+                \str_case:VnF \l__talk_mode_str
+                  {
+                    { handout }  { \SetLectureModes{handout} }
+                    { article }  { \SetLectureModes{article} }
+                    { projector }{ \SetLectureModes{slides} }
+                  }
+                  {
+                    \seq_if_in:NVTF \g_osglecture_modes_known_seq \l__talk_mode_str
+                      { \exp_args:NV \SetLectureModes \l__talk_mode_str }
+                      { \SetLectureModes{slides} }
+                  }
+              }
+              { \SetLectureModes{slides} }
+          }
+          { \SetLectureModes{article} }
+      }
+  }
+  { \exp_args:NV \SetLectureModes \g_osglecture_modes_option_mode_tl }
+
+% Add portable inline modes to an existing backend without taking over its
+% switching syntax or unknown/complex overlay specifications.
+\cs_if_exist:NTF \mode
+  {
+    \cs_new_eq:NN \osglecture_modes_native_mode \mode
+    \RenewDocumentCommand \mode { s d<> }
+      {
+        \IfBooleanTF {#1}
+          { \osglecture_modes_native_mode * }
+          {
+            \IfNoValueTF {#2}
+              { \osglecture_modes_native_mode }
+              {
+                \peek_meaning:NTF \c_group_begin_token
+                  { \osglecture_modes_mode_inline:n {#2} }
+                  { \osglecture_modes_native_mode <#2> }
+              }
+          }
+      }
+    \cs_new_protected:Npn \osglecture_modes_mode_inline:n #1#2
+      {
+        \osglecture_modes_if_portable_spec:nTF {#1}
+          { \osglecture_modes_if_active:nT {#1} {#2} }
+          { \osglecture_modes_native_mode <#1> {#2} }
+      }
+  }
+  {
+    \NewDocumentCommand \mode { d<> +m }
+      {
+        \IfNoValueTF {#1}
+          {#2}
+          { \osglecture_modes_if_active:nT {#1} {#2} }
+      }
+  }
+
+\AddToHook{begindocument/before}{\osglecture_modes_finalize:}
+%</package>
+
+%<*ltxtalk>
+\ProvidesExplPackage{osglecture-modes-ltxtalk}{2026-07-29}{0.1.0}
+  {ltx-talk adapter with ignore-non-frame-text}
+
+\RequirePackage{osglecture-modes}
+
+\ExplSyntaxOn
+
+\bool_new:N  \g_osglecture_modes_ltxtalk_ignore_bool
+\bool_new:N  \g_osglecture_modes_ltxtalk_after_structure_bool
+\clist_new:N \g_osglecture_modes_ltxtalk_raw_skip_envs_clist
+
+\clist_gset:Nn \g_osglecture_modes_ltxtalk_raw_skip_envs_clist
+  {
+    verbatim,
+    Verbatim,
+    lstlisting,
+    minted,
+    comment
+  }
+
+\keys_define:nn { osglecture_modes_ltxtalk }
+  {
+    mode .code:n =
+      { \SetLectureModes{#1} },
+
+    ignorenonframetext .bool_gset:N =
+      \g_osglecture_modes_ltxtalk_ignore_bool,
+
+    ignorenonframetext .default:n = true,
+
+    raw-skip-envs .clist_gset:N =
+      \g_osglecture_modes_ltxtalk_raw_skip_envs_clist,
+  }
+
+\ProcessKeyOptions [ osglecture_modes_ltxtalk ]
+
+\sys_if_engine_luatex:TF
+  {
+    \directlua{require("osglecture-modes-ltxtalk.lua")}
+  }
+  {
+    \bool_if:NT \g_osglecture_modes_ltxtalk_ignore_bool
+      {
+        \PackageWarning
+          {osglecture_modes_ltxtalk}
+          {ignorenonframetext with raw-skip support needs LuaLaTeX}
+      }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_lua_raw_skip:n #1
+  {
+    \sys_if_engine_luatex:T
+      {
+        \directlua{
+          osglecture_modes_ltxtalk.start_raw_skip("\luaescapestring{#1}")
+        }
+      }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_peek_if_exist:NTF #1#2#3
+  {
+    \cs_if_exist:NTF #1
+      { \peek_meaning_remove:NTF #1 {#2} {#3} }
+      {#3}
+  }
+  
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_start_scan:
+  {
+    \bool_if:NT \g_osglecture_modes_ltxtalk_ignore_bool
+    {
+      \typeout{>>> Ignore~mode~on}
+        \osglecture_modes_if_active:nT { presentation }
+        {
+          \typeout{>>> Start scan}
+          \osglecture_modes_ltxtalk_scan:
+        }
+      }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_scan:
+  {
+    \peek_meaning:NTF \begin
+      { \osglecture_modes_ltxtalk_scan_begin: }
+      {
+        \peek_meaning:NTF \end
+          { \osglecture_modes_ltxtalk_scan_end: }
+          { \osglecture_modes_ltxtalk_scan_token: }
+      }
+  }  
+
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_scan_begin:
+  {
+    %\peek_remove:NT \begin
+    \peek_meaning_remove:NT \begin
+    \osglecture_modes_ltxtalk_scan_begin_aux:n
+  }
+
+  
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_scan_begin_aux:n #1
+  {
+    \str_if_eq:nnTF {#1} {frame}
+      {
+        \begin{frame}
+      }
+      {
+        \clist_if_in:NnTF \g_osglecture_modes_ltxtalk_raw_skip_envs_clist {#1}
+          {
+            \osglecture_modes_ltxtalk_lua_raw_skip:n {#1}
+            \osglecture_modes_ltxtalk_scan:
+          }
+          {
+            \osglecture_modes_ltxtalk_skip_environment:n {#1}
+            \osglecture_modes_ltxtalk_scan:
+          }
+      }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_scan_end:
+  {
+    \peek_meaning_remove:NT \end
+    \osglecture_modes_ltxtalk_scan_end_aux:n
+  }
+
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_scan_end_aux:n #1
+  {
+    \str_if_eq:nnTF {#1} {document}
+      {
+        \end{document}
+      }
+      {
+        % fremdes \end{...} außerhalb von frames ignorieren
+        \osglecture_modes_ltxtalk_scan:
+      }
+  }
+  
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_skip_environment:n #1
+  {
+    \cs_set_protected:Npn \osglecture_modes_ltxtalk_skip:w ##1 \end ##2
+      {
+        \str_if_eq:nnF {#1} {##2}
+          { \osglecture_modes_ltxtalk_skip:w }
+      }
+    \osglecture_modes_ltxtalk_skip:w
+  }
+
+\prop_new:N \g_osglecture_modes_ltxtalk_dispatch_prop
+\bool_new:N \l_osglecture_modes_ltxtalk_dispatch_hit_bool
+
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_declare_allowed_command:nn #1#2
+  {
+    \prop_gput:Nnn \g_osglecture_modes_ltxtalk_dispatch_prop {#1} {#2}
+  }
+
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_scan_token:
+  {
+    \bool_set_false:N \l_osglecture_modes_ltxtalk_dispatch_hit_bool
+
+    \prop_map_inline:Nn \g_osglecture_modes_ltxtalk_dispatch_prop
+      {
+        \bool_if:NF \l_osglecture_modes_ltxtalk_dispatch_hit_bool
+          {
+            \cs_if_exist:cT {##1}
+              {
+                \exp_args:Nc \peek_meaning_remove:NTF {##1}
+                  {
+                    \bool_set_true:N \l_osglecture_modes_ltxtalk_dispatch_hit_bool
+                    \use:c {##2}
+                  }
+                  { }
+              }
+          }
+      }
+
+    \bool_if:NF \l_osglecture_modes_ltxtalk_dispatch_hit_bool
+      { \osglecture_modes_ltxtalk_discard_one: }
+   }
+
+% handler
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_keep_part:
+  { \osglecture_modes_ltxtalk_keep_structure:N \part }
+
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_keep_section:
+  { \osglecture_modes_ltxtalk_keep_structure:N \section }
+
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_keep_subsection:
+  { \osglecture_modes_ltxtalk_keep_structure:N \subsection }
+
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_keep_subsubsection:
+  { \osglecture_modes_ltxtalk_keep_structure:N \subsubsection }
+
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_keep_appendix:
+  {
+    \appendix
+    \bool_gset_true:N \g_osglecture_modes_ltxtalk_after_structure_bool
+    \osglecture_modes_ltxtalk_scan:
+  }
+
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_keep_label:
+  { \osglecture_modes_ltxtalk_keep_label:n }
+
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_keep_input:
+  { \osglecture_modes_ltxtalk_keep_input:n }
+
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_keep_include:
+  { \osglecture_modes_ltxtalk_keep_include:n }
+
+\NewDocumentCommand \osglecture_modes_ltxtalk_keep_lecturemode: { d<> +m }
+  {
+    \IfNoValueTF {#1}
+      { \lecturemode{#2} }
+      { \lecturemode<#1>{#2} }
+    \bool_gset_false:N \g_osglecture_modes_ltxtalk_after_structure_bool
+    \osglecture_modes_ltxtalk_scan:
+  }
+  
+\NewDocumentCommand \osglecture_modes_ltxtalk_keep_mode: { d<> +m }
+  {
+    \IfNoValueTF {#1}
+      { \mode{#2} }
+      { \mode<#1>{#2} }
+    \bool_gset_false:N \g_osglecture_modes_ltxtalk_after_structure_bool
+    \osglecture_modes_ltxtalk_scan:
+  }
+
+\osglecture_modes_ltxtalk_declare_allowed_command:nn { part }          { osglecture_modes_ltxtalk_keep_part: }
+\osglecture_modes_ltxtalk_declare_allowed_command:nn { section }       { osglecture_modes_ltxtalk_keep_section: }
+\osglecture_modes_ltxtalk_declare_allowed_command:nn { subsection }    { osglecture_modes_ltxtalk_keep_subsection: }
+\osglecture_modes_ltxtalk_declare_allowed_command:nn { subsubsection } { osglecture_modes_ltxtalk_keep_subsubsection: }
+\osglecture_modes_ltxtalk_declare_allowed_command:nn { appendix }      { osglecture_modes_ltxtalk_keep_appendix: }
+\osglecture_modes_ltxtalk_declare_allowed_command:nn { label }         { osglecture_modes_ltxtalk_keep_label: }
+\osglecture_modes_ltxtalk_declare_allowed_command:nn { input }         { osglecture_modes_ltxtalk_keep_input: }
+\osglecture_modes_ltxtalk_declare_allowed_command:nn { include }       { osglecture_modes_ltxtalk_keep_include: }
+\osglecture_modes_ltxtalk_declare_allowed_command:nn { lecturemode }   { osglecture_modes_ltxtalk_keep_lecturemode: }
+\osglecture_modes_ltxtalk_declare_allowed_command:nn { mode }          { osglecture_modes_ltxtalk_keep_mode: } 
+
+\NewDocumentCommand \osglecture_modes_ltxtalk_keep_structure:N { m s o m }
+  {
+    \IfBooleanTF {#2}
+      {
+        \IfNoValueTF {#3}
+          { #1*{#4} }
+          { #1*[#3]{#4} }
+      }
+      {
+        \IfNoValueTF {#3}
+          { #1{#4} }
+          { #1[#3]{#4} }
+      }
+    \bool_gset_true:N \g_osglecture_modes_ltxtalk_after_structure_bool
+    \osglecture_modes_ltxtalk_scan:
+  }
+
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_keep_label:n #1
+  {
+    \bool_if:NT \g_osglecture_modes_ltxtalk_after_structure_bool
+      { \label{#1} }
+    \bool_gset_false:N \g_osglecture_modes_ltxtalk_after_structure_bool
+    \osglecture_modes_ltxtalk_scan:
+  }
+
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_keep_input:n #1
+  {
+    \input{#1}
+    \bool_gset_false:N \g_osglecture_modes_ltxtalk_after_structure_bool
+    \osglecture_modes_ltxtalk_scan:
+  }
+
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_keep_include:n #1
+  {
+    \include{#1}
+    \bool_gset_false:N \g_osglecture_modes_ltxtalk_after_structure_bool
+    \osglecture_modes_ltxtalk_scan:
+  }
+
+
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_discard_one:
+  {
+    \osglecture_modes_ltxtalk_discard_one:n
+  }
+
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_discard_one:n #1
+  {
+    \bool_gset_false:N \g_osglecture_modes_ltxtalk_after_structure_bool
+    \osglecture_modes_ltxtalk_scan:
+  }
+
+\AddToHook{begindocument}
+  { \osglecture_modes_ltxtalk_start_scan: }
+
+\AddToHook{env/frame/after}
+  { \osglecture_modes_ltxtalk_start_scan: }
+%</ltxtalk>
+
+%<*lua>
+osglecture_modes_ltxtalk = osglecture_modes_ltxtalk or {}
+
+osglecture_modes_ltxtalk.raw_skip_env = nil
+
+local previous_callback = callback.find("process_input_buffer")
+
+local function escape_pattern(s)
+  return (s:gsub("([^%w])", "%%%1"))
+end
+
+function osglecture_modes_ltxtalk.start_raw_skip(env)
+  osglecture_modes_ltxtalk.raw_skip_env = env
+end
+
+local function raw_skip_line(line)
+  local env = osglecture_modes_ltxtalk.raw_skip_env
+  if not env then
+    return nil
+  end
+
+  local pattern =
+    "^%s*\\end%s*{%s*" .. escape_pattern(env) .. "%s*}"
+
+  if line:match(pattern) then
+    osglecture_modes_ltxtalk.raw_skip_env = nil
+  end
+
+  return ""
+end
+
+local function process_input_buffer(line)
+  local replacement = raw_skip_line(line)
+
+  if replacement ~= nil then
+    return replacement
+  end
+
+  if previous_callback then
+    return previous_callback(line)
+  end
+
+  return nil
+end
+
+luatexbase.add_to_callback(
+  "process_input_buffer",
+  process_input_buffer,
+  "osglecture-modes-ltxtalk raw skip"
+)
+%</lua>

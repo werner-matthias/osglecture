@@ -1,0 +1,13 @@
+\input regression-test.tex
+\documentclass{beamer}
+\usepackage{osglecture-modes}
+\begin{document}
+\START
+\IfLectureModeTF{slides}{\TYPE{SLIDES YES}}{\TYPE{SLIDES NO}}
+\IfLectureModeTF{beamer}{\TYPE{BEAMER YES}}{\TYPE{BEAMER NO}}
+\IfLectureModeTF{presentation}{\TYPE{PRESENTATION YES}}{\TYPE{PRESENTATION NO}}
+\IfLectureModeTF{article}{\TYPE{ARTICLE YES}}{\TYPE{ARTICLE NO}}
+\mode<slides>{\TYPE{PORTABLE MODE YES}}
+\mode<unknown-native>{\TYPE{NATIVE MODE BODY}}
+\END
+\end{document}

@@ -1,0 +1,21 @@
+\input regression-test.tex
+\documentclass{article}
+\makeatletter
+\def\mode{\@ifstar\test@star\test@mode}
+\def\test@star{\TYPE{NATIVE STAR}}
+\def\test@mode<#1>{%
+  \@ifnextchar\bgroup
+    {\test@inline{#1}}
+    {\TYPE{NATIVE SWITCH #1}}}
+\def\test@inline#1#2{\TYPE{NATIVE INLINE #1}}
+\makeatother
+\usepackage[mode=script]{osglecture-modes}
+\begin{document}
+\START
+\mode<script>{\TYPE{PORTABLE INLINE}}
+\mode<script|presentation>{\TYPE{PORTABLE OR}}
+\mode<backend-special>{ignored}
+\mode<backend-switch>
+\mode*
+\END
+\end{document}

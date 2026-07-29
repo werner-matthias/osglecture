@@ -1,0 +1,20 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage[mode=script]{osglecture-modes}
+\DeclareLectureMode{reading}
+\DeclareLectureModeParents{reading}{article,print}
+\DeclareLectureModeAlias{reader}{reading}
+\AddLectureModes{reader}
+\FinalizeLectureModes
+\begin{document}
+\START
+\IfLectureModeTF{script}{\TYPE{SCRIPT YES}}{\TYPE{SCRIPT NO}}
+\IfLectureModeTF{article}{\TYPE{ARTICLE YES}}{\TYPE{ARTICLE NO}}
+\IfLectureModeTF{print}{\TYPE{PRINT YES}}{\TYPE{PRINT NO}}
+\IfLectureModeTF{presentation}{\TYPE{PRESENTATION YES}}{\TYPE{PRESENTATION NO}}
+\IfLectureModeTF{reader}{\TYPE{READER YES}}{\TYPE{READER NO}}
+\IfLectureModeTF{script,reading}{\TYPE{OR YES}}{\TYPE{OR NO}}
+\lecturemode<article>{\TYPE{INLINE ARTICLE}}
+\mode<script>{\TYPE{INLINE MODE}}
+\END
+\end{document}

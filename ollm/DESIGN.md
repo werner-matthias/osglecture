@@ -112,11 +112,12 @@ die Klasse ohne TOML-Abhängigkeit.
 
 ### 4.3 OLLM und Nachbarpakete
 
-- [`modeext`](../modeext/modeext.sty) stellt portable hierarchische
+- [`osglecture-modes`](../osglecture-modes/osglecture-modes.dtx) stellt
+  portable hierarchische
   Dokumentmodi bereit. Der kanonische Dokumenttyp ist zugleich der aktive
   Blattmodus. OLLM transportiert die aufgelöste Modusmatrix; ihre Auswertung
   und die bedingte Verarbeitung bleiben Aufgabe von `osglecture` und
-  `modeext`.
+  `osglecture-modes`.
 - [`lttheme`](../lttheme/README.md) entwickelt Themes für `ltx-talk`.
   OLLM behandelt Beamer und `ltx-talk` normalerweise gleich, solange beide mit
   demselben LuaLaTeX-/latexmk-Verfahren gebaut werden.
@@ -480,7 +481,8 @@ bleiben für alle konfigurierten Targets gültig. Damit bleibt die Filterung von
 `parents` deklariert die direkten Obermodi des kanonischen Dokumenttyps.
 Weitere Zeilen der allgemeinen Modusmatrix, insbesondere abstrakte Modi, dürfen
 aus dem Bundleprofil stammen. OLLM normalisiert die aufgelöste Matrix in den
-BuildSpec; `modeext` wertet ihre transitive Hülle auf der LaTeX-Seite aus.
+BuildSpec; `osglecture-modes` wertet ihre transitive Hülle auf der LaTeX-Seite
+aus.
 
 Die derzeitige Implementierung der Targetdefinitionen verwendet noch das
 singuläre Feld `family`. Dies ist ein erkennbarer Übergangsstand: `family`

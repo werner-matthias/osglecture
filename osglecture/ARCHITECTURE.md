@@ -103,17 +103,42 @@ handout -> print
 ```
 
 Bei einem Handout sind damit `handout`, `presentation` und `print` aktiv.
-Abstrakte Obermodi müssen keine baubaren Dokumenttypen sein. `modeext`
+Abstrakte Obermodi müssen keine baubaren Dokumenttypen sein. `osglecture-modes`
 übernimmt die portable Auswertung der Matrix; `osglecture` registriert die
 aufgelöste Matrix und setzt den Blattmodus ausdrücklich, bevor
 modusabhängige Projektmetadaten verarbeitet werden.
 
-Der gegenwärtige experimentelle Stand von `modeext` speichert nur einen
-Elternmodus und löst den automatischen Modus erst vor Dokumentbeginn auf.
-Beides genügt diesem Vertrag noch nicht. Die Überarbeitung benötigt eine
-allgemeine Elternmatrix, Zyklus- und Aliasvalidierung sowie eine explizite
-frühe Aktivierung durch `osglecture`. Der `ltx-talk`-Scanner bleibt ein
-Backendadapter und ist nicht Teil des allgemeinen Moduskerns.
+`osglecture-modes` bildet diesen Vertrag als Menge aktiver Blattmodi mit transitiver
+Elternhülle ab. Ein Modus kann mehrere Eltern besitzen. Aliase werden transitiv
+aufgelöst; unbekannte Modi und Eltern sowie Alias- und Elternzyklen sind
+Fehler. Nach `\FinalizeLectureModes` ist der Graph unveränderlich. Die zentrale
+Schnittstelle lautet:
+
+```tex
+\DeclareLectureMode{script}
+\DeclareLectureModeParents{script}{article,print}
+\DeclareLectureModeAlias{reader}{script}
+\SetLectureModes{script}              % ersetzt die Blattmenge
+\AddLectureModes{backend-mode}        % ergänzt sie
+\FinalizeLectureModes
+```
+
+`\lecturemode<script|handout>{...}` und `\IfLectureModeTF` sind die garantiert
+portable Oberfläche. Bei einer generischen Basisklasse stellt `osglecture-modes`
+zusätzlich die entsprechende Inlineform von `\mode` bereit. Definiert ein
+Backend bereits `\mode`, übernimmt `osglecture-modes` nur Inlineausdrücke, die
+ausschließlich registrierte portable Modi enthalten; unbekannte Ausdrücke,
+Beamers ungebundene Modusschalter und `\mode*` werden unverändert an das
+Backend delegiert. Damit zieht sich die Erweiterung automatisch zurück, sobald
+ein Backend die betreffende Syntax selbst verwaltet. Eine Erweiterung aller
+Overlaybefehle um frei registrierte Modi ist damit ausdrücklich nicht
+versprochen.
+
+Die automatische Moduserkennung dient nur der Standalone-Kompatibilität und
+geschieht bereits beim Laden des Pakets. `osglecture` registriert und aktiviert
+die aufgelöste Matrix dagegen ausdrücklich vor dem Einlesen projektweiter
+Metadaten. Der `ltx-talk`-Scanner bleibt ein Backendadapter und ist nicht Teil
+des allgemeinen Moduskerns.
 
 Das Backend ist die technische Realisierung des Dokumenttyps:
 
@@ -210,11 +235,11 @@ portable Moduslogik wie Autoreninhalte:
 ```tex
 \title{Betriebssysteme}
 
-\talkmode<presentation>{
+\lecturemode<presentation>{
   \title[BS]{Betriebssysteme}
 }
 
-\talkmode<script>{
+\lecturemode<script>{
   \title{Betriebssysteme -- Vorlesungsskript}
 }
 ```
@@ -344,7 +369,7 @@ osglecture.cls
 ├── Dokumenttyp- und Moduskern
 │   ├── kanonischer Dokumenttyp als Blattmodus
 │   ├── validierte Modusmatrix
-│   └── portable Modusabfragen über modeext
+│   └── portable Modusabfragen über osglecture-modes
 │
 ├── Backendadapter
 │   ├── slides  → beamer oder ltx-talk
@@ -448,8 +473,6 @@ Vor einer Implementierung sollten folgende Fragen entschieden werden:
 ### Autoren-API
 
 - Welche Makros drücken echte didaktische Semantik aus?
-- Welcher öffentliche Name kapselt die portable `modeext`-Abfrage, ohne
-  Beamers reichere `\mode`-Syntax vorzutäuschen?
 - Soll `twocolumns` in ein allgemeines Moduspaket verschoben werden?
 - Sollen `\stress`, `\outline` und `\sourceref` Teil eines Autorenpakets werden?
 - Wie werden Notizen semantisch erfasst, ohne `itemize` umzudefinieren?

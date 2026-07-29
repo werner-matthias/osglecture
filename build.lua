@@ -7,7 +7,7 @@ modules = {
    "langselect",
    "osgdoc",
    "lttheme",
-   "modeext",
+   "osglecture-modes",
    "tagpax",
    -- "osglecture"
    -- "osgterminal",
