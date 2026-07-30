@@ -8,7 +8,7 @@
 * [ ] Übergreifende Links
 * [ ] Querreferenzen zwischen Folien und Script
 * [ ] Kapitelübergreifende Literaturreferenzen
-* [ ] Lang-/Kurzformunterstützung auf Sprachebene
+* [x] Lang-/Kurzformunterstützung auf Sprachebene
 
 # lttheme
 * [ ] TUC-Theme isolieren
@@ -17,7 +17,7 @@
 
 # tagpax
 * [ ] Test klären
-* [ ] 
+* [ ] Integrationsworkflow
 
 # Ergänzungspakete
 * [ ] ANSI-Terminal
