@@ -1,28 +1,26 @@
-# Allgemeine Ziele
 
-* Grundlage auf modernen Paketen (aktuelles KOMA, evtl. LaTeX3)
-* Script/Handout/standalone als First-Class-Citicens (Screen streichen?)
-    * Verbesserte Integration => Referenzen, Links, Kapitel
-* Vereinfachte Tool-Chain
-* Separierte, unabhängige Pakete
-* Kompatibilitätslayer?
+# OLLM
+* [ ] clean/prune
+* [ ] rosolve für Abhängigkeiten
+* [ ] report
 
-# Tool-Chain
-* [x] Verzicht auf Makefiles
-* [x] latexmk, ~~arara, scons?~~
-* [x] Komandozeilenorientierung
-* [ ] Flexible Configuration
-* [ ] Orthogonalisierung
-* [ ] einfaches Deployment
+# osglecture
+* [ ] Übergreifende Links
+* [ ] Querreferenzen zwischen Folien und Script
+* [ ] Kapitelübergreifende Literaturreferenzen
+* [ ] Lang-/Kurzformunterstützung auf Sprachebene
 
-# Script
-* [x] Kapitelweise Übersetzung
-* [x] Übergreifende Links
-* [x] Querreferenzen zwischen Folien und Script
-* [x] Kapitelübergreifende Literaturreferenzen
+# lttheme
+* [ ] TUC-Theme isolieren
+* [ ] Beispielthemen analog Beamer
+* [ ] Unterstützung für innere Themes
 
-# Features
-* [x] Sprachen ~~(Beamer-basiert?)~~
-* [x] Formatierung auf TUC-Klasse aufbauend (soll austauschbar sein)
+# tagpax
+* [ ] Test klären
+* [ ] 
+
+# Ergänzungspakete
+* [ ] ANSI-Terminal
+* [ ] termexec
 
 
