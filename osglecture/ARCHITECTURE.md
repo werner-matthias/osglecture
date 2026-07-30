@@ -527,6 +527,34 @@ Für die Überarbeitung sollte gelten:
 - Der Artikelmodus muss auch ohne visuelle Beamer-Annahmen verständlich bleiben.
 - Gleiche Eingabe soll in jedem unterstützten Modus deterministisch sein.
 
+Ein implementiertes Beispiel ist der obligatorische Kerndienst
+`osglecture-presitemize.code.tex`. Die Umgebung `presitemize` beschreibt eine
+flache Folge präsentationsgeeigneter Aussagen semantisch. Im
+Präsentationsmodus projiziert sie diese auf eine gewöhnliche Liste, in der
+Verhaltensklasse `longform` auf verbundenen Fließtext. Die kompakte
+Autorenoberfläche (`\anditem`, `\butitem`, `\thereforeitem`) und die
+gleichwertige Key-Oberfläche
+(`\presitem[relation=sentence|and|but|therefore,...]`) bilden denselben
+internen Vertrag ab.
+
+Die Sprachprofile `de`, `en` und `fr` besitzen Konnektoren,
+Interpunktion und die Stellung des markierten finiten Verbs. Die
+Sprachauflösung erfolgt lokal in der Reihenfolge explizite Umgebungsoption,
+Babel, Polyglossia, `langselect`, Klassenkonfiguration. Damit bleibt
+Sprachauswahl eine dokumentsemantische Entscheidung; sie wird nicht aus einem
+Backendnamen abgeleitet. Die Umgebung ist bewusst keine allgemeine
+Grammatikengine und kein verschachtelbares Listenmodell. Nicht reguläre Fälle
+bleiben über explizite Langform-/Präsentationsvarianten ausdrückbar.
+
+Ein künftiger proseartiger Doctype integriert sich ohne Änderung dieses
+Kerndienstes, indem sein Profil ihn vor Aktivierung des Blattmodus mit
+`\AssignLectureModeBehavior{<doctype>}{longform}` der bestehenden
+Verhaltensklasse zuordnet. Er erbt damit dieselbe `presitemize`-Projektion wie
+`script` und `article`. Eine Ausgabeform mit fachlich anderer
+Listensemantik darf nicht allein wegen ihres Umfangs `longform` heißen; dafür
+ist eine neue Verhaltensklasse samt expliziter Implementierung und Tests
+einzuführen.
+
 ### 3.8 Paketgrenzen folgen semantischer Eigentümerschaft
 
 Doctype-Abhängigkeit entscheidet nicht, ob eine Funktion zur Kernklasse oder
@@ -592,6 +620,10 @@ Die folgende Gruppierung beschreibt die heute sichtbaren Konzepte, nicht notwend
 ### Gemeinsamer Autoreninhalt
 
 - `\osgpresart{Präsentation}{Artikel}`
+- `presitemize` mit kompakter Item-Syntax und äquivalenter
+  `\presitem`-Key-Syntax
+- `\longform`, `\slides`, `\longslides`, `\prescase`, `\preskeepcase` und
+  `\finite` für semantische Varianten innerhalb von `presitemize`
 - `\sbf`, `\newdef`, `\stress`, `\outline`
 - modusfähige Fußnoten und ausgewählte Abstands- und Schriftgrößenbefehle
 - `\sourceref`
@@ -701,6 +733,7 @@ Die Kernklasse sollte:
 - die passende Basisklasse laden,
 - standardisierte Hooks für Komponenten bereitstellen,
 - erforderliche Kerndienste initialisieren,
+- die universelle Listen-/Fließtext-Projektion `presitemize` initialisieren,
 - verständliche Diagnosen ausgeben.
 
 Sie sollte nicht:
@@ -724,12 +757,15 @@ Dokumentprofile und eigenständige Fachpakete:
    Elternkanten, Aliase und Verhaltenszuordnungen deklarieren.
 5. Die Klasse aktiviert den Doctype als Blattmodus, ergänzt Profilmodi und
    finalisiert den Modusgraphen.
-6. `osglecture-metadata` bindet die Titelmetadaten an die nativen
+6. Der interne Kerndienst `osglecture-presitemize` bindet seine Projektion an
+   die stabile Verhaltensklasse `longform`, nicht an konkrete Doctypes oder
+   Profile.
+7. `osglecture-metadata` bindet die Titelmetadaten an die nativen
    Backendbefehle.
-7. `setup-file` darf Backendadapter, Formatierung und Implementierungen
+8. `setup-file` darf Backendadapter, Formatierung und Implementierungen
    semantischer Befehle registrieren. Der Modusgraph ist zu diesem Zeitpunkt
    bereits unveränderlich.
-8. Spätestens zu `\begin{document}` prüft
+9. Spätestens zu `\begin{document}` prüft
    `\FinalizeModeAwareCommands` die vollständigen Befehlsverträge.
 
 Für ein eigenständiges Fachpaket folgt daraus:

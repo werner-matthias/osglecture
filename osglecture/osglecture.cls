@@ -1,8 +1,8 @@
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
 \ProvidesExplClass
   {osglecture}
-  {2026/07/29}
-  {0.8.0}
+  {2026/07/30}
+  {0.9.0}
   {Profile-driven lecture documents}
 
 % The unpublished historical implementation remains available explicitly.
@@ -261,6 +261,9 @@
       {#1}
       { \OsgLectureBuildLoadedTF {#2} {#1} }
   }
+
+\file_input:n {osglecture-presitemize.code.tex}
+\ExplSyntaxOn
 
 \RequirePackage{osglecture-metadata}
 \exp_args:Nx \OsgLectureConfigureMetadata

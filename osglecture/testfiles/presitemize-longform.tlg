@@ -1,0 +1,13 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+de-longform=true
+de-language=de
+de-relation=therefore
+de-finite=m^^fcssen
+key-sentence-body=true
+en-language=en
+en-relation=therefore
+en-finite=inplace
+key-keep-body=true
+fr-language=fr
+fr-punctuation=manual

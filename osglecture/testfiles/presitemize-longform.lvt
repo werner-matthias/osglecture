@@ -1,0 +1,45 @@
+\input regression-test
+\documentclass[doctype=script,lang=de]{osglecture}
+\begin{document}
+\START
+\begin{presitemize}
+  \longform{\TYPE{de-longform=true}}
+  \slides{\TYPE{de-slides=true}}
+  \item Die Übersetzung \finite{funktioniert}
+  \anditem Das Programm \finite{liefert} das Ergebnis
+  \butitem Wir \finite{haben} etwas geschummelt
+  \thereforeitem Wir \finite{müssen}
+    \ExplSyntaxOn
+    \TYPE{de-language=\tl_use:N\l__osglecture_pres_language_tl}
+    \TYPE{de-relation=\tl_use:N\l__osglecture_pres_relation_tl}
+    \TYPE{de-finite=\tl_use:N\l__osglecture_pres_finite_tl}
+    \ExplSyntaxOff
+    den Text untersuchen
+\end{presitemize}
+\begin{presitemize}[language=en]
+  \presitem[relation=sentence]
+    \TYPE{key-sentence-body=true}The translation \finite{works}
+  \presitem[relation=and] The program \finite{delivers} the result
+  \presitem[relation=therefore] We \finite{must}
+    \ExplSyntaxOn
+    \TYPE{en-language=\tl_use:N\l__osglecture_pres_language_tl}
+    \TYPE{en-relation=\tl_use:N\l__osglecture_pres_relation_tl}
+    \tl_if_empty:NTF \l__osglecture_pres_finite_tl
+      {\TYPE{en-finite=inplace}}
+      {\TYPE{en-finite=stored}}
+    \ExplSyntaxOff
+    inspect the text
+\end{presitemize}
+\begin{presitemize}[language=fr,punctuation=manual]
+  \presitem[relation=sentence] La traduction fonctionne.
+  \presitem[relation=but,initial=keep]
+    \TYPE{key-keep-body=true}Mais le texte reste lisible.
+  \ExplSyntaxOn
+  \TYPE{fr-language=\tl_use:N\l__osglecture_pres_language_tl}
+  \bool_if:NTF \l__osglecture_pres_auto_punctuation_bool
+    {\TYPE{fr-punctuation=auto}}
+    {\TYPE{fr-punctuation=manual}}
+  \ExplSyntaxOff
+\end{presitemize}
+\END
+\end{document}

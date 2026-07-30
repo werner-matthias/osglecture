@@ -10,6 +10,7 @@ installfiles = {
   "osglecture-profiles.sty",
   "osglecture-profile-*.def",
   "osglecture-osgbeamer.code.tex",
+  "osglecture-presitemize.code.tex",
   "twocolumns.sty"
 }
 sourcefiles = {
@@ -19,6 +20,7 @@ sourcefiles = {
   "osglecture-profiles.sty",
   "osglecture-profile-*.def",
   "osglecture-osgbeamer.code.tex",
+  "osglecture-presitemize.code.tex",
   "twocolumns.sty"
 }
 typesetfiles = { }

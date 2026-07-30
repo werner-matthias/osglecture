@@ -1,0 +1,15 @@
+\input regression-test
+\documentclass[doctype=slides,lang=en]{osglecture}
+\begin{document}
+\START
+\begin{frame}
+  \begin{presitemize}[language=en]
+    \longform{\TYPE{presentation-longform=true}}
+    \slides{\TYPE{presentation-slides=true}}
+    \item<1-> A normal item
+    \anditem<2-> An item using compact syntax
+    \presitem[relation=therefore]<3-> An item using key syntax
+  \end{presitemize}
+\end{frame}
+\END
+\end{document}
