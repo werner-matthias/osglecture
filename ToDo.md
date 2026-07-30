@@ -16,7 +16,7 @@
 * [ ] Unterstützung für innere Themes
 
 # tagpax
-* [ ] Test klären
+* [x] Test klären
 * [ ] Integrationsworkflow
 
 # Ergänzungspakete

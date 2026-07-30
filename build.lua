@@ -9,7 +9,7 @@ modules = {
    "lttheme",
    "osglecture-modes",
    "osglecture",
-   -- "tagpax",
+   "tagpax",
    -- "osgterminal",
    -- "osgref",
    -- "osglectbib",

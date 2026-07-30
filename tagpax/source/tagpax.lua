@@ -10,15 +10,24 @@
 
 -- determine version and date for compatibility check
 local function package_info(filename)
-  local file, err = io.open(filename, "r")
-  if not err then
-    local header = content:match("^%s*%-%-%[%[(.-)%]%]")
-    if header then
-      return {  version = header:match("\n%s*Version:%s*\n%s*([^\r\n]+)"), 
-                date = header:match("\n%s*Date:%s*\n%s*([^\r\n]+)")}
-    end
+  local path = kpse and kpse.find_file(filename, "lua") or filename
+  local file, err = io.open(path or filename, "r")
+  if not file then
+    error("cannot read package metadata from " .. filename .. ": " .. tostring(err))
   end
-  return nil
+  local content, read_error = file:read("*all")
+  file:close()
+  if not content then
+    error("cannot read package metadata from " .. filename .. ": " .. tostring(read_error))
+  end
+  local header = content:match("^%s*%-%-%[%[(.-)%]%]")
+  if not header then
+    error("cannot find package metadata in " .. filename)
+  end
+  return {
+    version = header:match("\n%s*Version:%s*\n%s*([^\r\n]+)"),
+    date = header:match("\n%s*Date:%s*\n%s*([^\r\n]+)")
+  }
 end
 local M = package_info("tagpax.lua")
 

@@ -32,6 +32,7 @@ docfiles = {
 }
 
 checkruns = 1
+checkconfigs = { "build", "roundtrip" }
 excludetests = { "roundtrip" }
 checksuppfiles = { "*.tagpax", "*.tex" }
 
