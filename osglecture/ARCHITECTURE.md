@@ -103,9 +103,9 @@ Als stabil und implementiert gelten derzeit:
   semantischer Befehle,
 - die generische Titelmetadaten-API und ihre Profilabbildung.
 
-Als fachlich festgelegt, aber noch nicht implementiert gilt:
-
-- der Unit-/Lecture-/Chapter-Vertrag aus Abschnitt 3.6.
+Als stabil und implementiert gilt außerdem der explizite
+Unit-/Lecture-Vertrag aus Abschnitt 3.6. Die dort beschriebene optionale
+`\chapter`-plus-`\label`-Kurzform bleibt eine Zukunftsidee.
 
 Noch nicht als stabiler Autorenvertrag festgelegt sind insbesondere:
 
@@ -114,7 +114,8 @@ Noch nicht als stabiler Autorenvertrag festgelegt sind insbesondere:
 - spezialisierte optionale Fachpakete und deren jeweilige Autorenbefehle.
 
 Der Autoren- und Dateivertrag für Referenzen über Unitgrenzen ist inzwischen
-in Abschnitt 3.9 festgelegt. Seine OLLM-seitige Promotion und
+in Abschnitt 3.9 festgelegt. Seine OLLM-seitige atomare Promotion und der
+jobgebundene Registry-Snapshot sind implementiert; Check/Report und
 Fixpunktauflösung bleiben noch zu implementieren.
 
 Folgearbeiten dürfen auf den stabilen Contracts aufbauen. Bei den zuletzt
@@ -486,12 +487,13 @@ fachlichen Struktureinheit:
 - **Lecture:** Autoren- und Präsentationsperspektive,
 - **Kapitel:** Langformperspektive.
 
-Die kanonische künftige Autorenoberfläche lautet
+Die kanonische Autorenoberfläche lautet
 `\lecture[Kurz]{Lang}{unit-id}`. Sie beginnt nicht mehrere unabhängige Strukturen,
 sondern beschreibt die aktuelle Unit. Im Präsentationsprofil liefert sie den
 Unit-Titel und die native Lecture-Information; im Langformprofil erzeugt sie
 die Kapitelüberschrift. Das Backendkommando `\chapter` beziehungsweise Beamers
-native `\lecture` ist Implementierungsziel, nicht die bundleweite Semantik.
+native `\lecture` bleibt dabei ein internes Adapterdetail, nicht die
+bundleweite Semantik.
 
 Die Identität ist vom sichtbaren Titel getrennt. Die stabile Unit-ID stammt aus
 dem obligatorischen letzten Argument von `\lecture`; `physical-unit`,
@@ -501,12 +503,16 @@ Labels ableiten. Standalone setzt weder Manifest noch Serienverzeichnis voraus,
 verwendet aber für eine mit `\lecture` deklarierte Unit dieselbe explizite
 logische ID.
 
-Der derzeitige Schema-1-BuildSpec verlangt noch eine durch Discovery gefüllte
-`unit-id`. Dies ist eine erkennbare Implementierungslücke: Vor der
-Referenzpromotion darf eine unbekannte logische ID nicht mehr aus dem
-Verzeichnisslug abgeleitet werden. Der LaTeX-Lauf meldet die deklarierte ID im
-Ergebnis; ein späterer Build darf einen bereits bekannten Wert ausschließlich
-zur Konsistenzprüfung erhalten.
+Der Schema-1-BuildSpec enthält `unit-id` nur, wenn ein früherer validierter
+Zustand die Zuordnung bereits kennt. Der LaTeX-Lauf meldet die deklarierte ID
+im Ergebnis; ein späterer Build erhält diesen Wert ausschließlich zur
+Konsistenzprüfung.
+
+Eine kanonische `structure-signature` im BuildSpec bildet ausschließlich die
+sortierte physische Unit-Struktur relativ zur Serienwurzel ab. Sie sorgt dafür,
+dass Umbenennung und Umordnung einen später angeforderten Serienbuild
+invalidieren, ohne daraus eine logische ID abzuleiten. Absolute Projektpfade
+und Zeitstempel gehören nicht in diese Signatur.
 
 Für eine noch nie erfolgreich gebaute Unit existiert zunächst keine Zuordnung
 zwischen logischer ID und physischem Build. Diese Bootstrap-Lücke wird bewusst
@@ -529,10 +535,9 @@ Für den Strukturvertrag gelten folgende Invarianten:
 - Im Standalone-Betrieb bleiben lokale Nummern und Referenzen ohne
   übergeordnetes Serienverzeichnis funktionsfähig.
 
-Zähler-Aliase sind lediglich eine mögliche Backendimplementierung. Die
-Autorenoberfläche und die Adapter dieses Vertrags sind noch nicht
-implementiert; bis dahin darf kein Paket konkrete Beamer- oder KOMA-Zähler als
-bundleweite Unit-Identität voraussetzen.
+Zähler-Aliase sind lediglich eine mögliche Backendimplementierung. Kein Paket
+darf konkrete Beamer- oder KOMA-Zähler als bundleweite Unit-Identität
+voraussetzen.
 
 ### 3.7 Modusabhängigkeit soll semantisch bleiben
 

@@ -53,8 +53,19 @@ yet and return exit code 69:
 - TODO: `prune`;
 - TODO: dependency fixpoint builds with `build --resolve`.
 
-Result promotion, reference-index evaluation, and the extended project-aware
-`doctor` checks described in `DESIGN.md` are TODO as well.
+Series builds now assign a generation ID, validate the LaTeX result and
+reference envelopes, and atomically promote an immutable generation for each
+logical unit/document type/language projection. Before a following build OLLM
+writes a job-bound TeX registry of the last valid projections. The logical
+unit ID always comes from the explicit `\lecture` declaration; a directory
+slug is never promoted as its substitute.
+
+The `.osglecture` tree is OLLM-owned but deliberately inspectable and fully
+rebuildable. With no OLLM or latexmk process running, deleting it is a
+supported radical recovery procedure; this also discards all promoted logical
+mappings, so target units must be built directly again. Reference-index
+evaluation by `check`/`report`, dependency fixpoint builds, and the extended
+project-aware `doctor` checks remain TODO.
 
 ## TOML parser
 
@@ -186,6 +197,14 @@ Series builds use:
 for their PDF, recorder data, `latexmk` state, auxiliary files, and the
 job-bound `<jobname>.osgbuild.tex`. OLLM starts `latexmk` with LuaLaTeX,
 recorder mode, SyncTeX, an explicit job name, and controlled output paths.
+
+Every series resolution also computes a path-independent signature of the
+ordered physical unit structure. The signature is written to the BuildSpec and
+its `.osgbuild.tex` file, so a manual unit rename or reordering invalidates
+affected builds without guessing a logical identity. Unrelated directories,
+timestamps, and the absolute project location do not affect the signature.
+Future Cargo-like `ollm init` and `ollm unit ...` commands may make structural
+changes more convenient, but ordinary filesystem operations remain supported.
 
 `+standalone` uses the new executor without manifest discovery, a generated
 `.osgbuild.tex`, or a series job name. It defaults to `main.tex` in the current

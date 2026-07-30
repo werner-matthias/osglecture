@@ -27,10 +27,12 @@
 
 \prop_new:N \g__olref_documents_prop
 \prop_new:N \g__olref_imported_prop
+\prop_new:N \g__olref_used_prop
 \clist_new:N \g__olref_replace_clist
 \bool_new:N \g__olref_legacy_bool
 \bool_new:N \g__olref_replacements_installed_bool
 \iow_new:N \g__olref_export_iow
+\iow_new:N \g__olref_used_iow
 
 \tl_new:N \l__olref_unit_tl
 \tl_new:N \l__olref_type_tl
@@ -191,6 +193,11 @@
       { {\exp_not:V \l__olref_aux_tl}{\exp_not:V \l__olref_pdf_tl} }
   }
 
+\ProvideDocumentCommand \OsgLectureReferenceExport
+  { m m m m m m m } { }
+\ProvideDocumentCommand \OsgLectureReferenceUse
+  { m m m m m } { }
+
 \cs_new_protected:Npn \__olref_import:
   {
     \tl_set:Ne \l__olref_identity_tl
@@ -200,6 +207,26 @@
       }
     \tl_set:Ne \l__olref_prefix_tl
       { olr-\str_mdfive_hash:e {\l__olref_identity_tl}: }
+    \prop_if_in:NVF \g__olref_used_prop \l__olref_identity_tl
+      {
+        \OsgLectureBuildLoadedTF
+          {
+            \tl_if_empty:eF { \OsgLectureBuildValue{generation-id} }
+              {
+                \iow_now:Ne \g__olref_used_iow
+                  {
+                    \token_to_str:N \OsgLectureReferenceUse
+                    {\OsgLectureBuildValue{generation-id}}
+                    {\exp_not:V \l__olref_unit_tl}
+                    {\exp_not:V \l__olref_type_tl}
+                    {\exp_not:V \l__olref_lang_tl}
+                    {document}
+                  }
+              }
+          }
+          { }
+        \prop_gput:NVn \g__olref_used_prop \l__olref_identity_tl {true}
+      }
     \prop_if_in:NVF \g__olref_imported_prop \l__olref_identity_tl
       {
         \prop_get:NVNTF
@@ -217,7 +244,11 @@
   }
 
 \cs_new_protected:Npn \__olref_import_aux:nn #1#2
-  { \externaldocument[\l__olref_prefix_tl]{#1}[#2] }
+  {
+    \tl_set:Nn \l_tmpa_tl {#1}
+    \regex_replace_once:nnN { [.]aux \Z } { } \l_tmpa_tl
+    \externaldocument[\l__olref_prefix_tl]{\l_tmpa_tl}[#2]
+  }
 
 \cs_new_protected:Npn \__olref_target_set:nn #1#2
   {
@@ -389,15 +420,52 @@
       }
   }
 
+\cs_new_protected:Npn \__olref_export_finish:
+  {
+    \OsgLectureBuildLoadedTF
+      {
+        \tl_if_empty:eF { \OsgLectureBuildValue{generation-id} }
+          {
+            \iow_now:Ne \g__olref_export_iow
+              {
+                \token_to_str:N \OsgLectureReferenceExport
+                {\OsgLectureBuildValue{schema}}
+                {\OsgLectureBuildValue{generation-id}}
+                {\OsgLectureBuildValue{job-id}}
+                {\OsgLectureBuildValue{series-id}}
+                {\OsgLectureUnitId}
+                {\OsgLectureBuildValue{doctype}}
+                {\OsgLectureBuildValue{language}}
+              }
+          }
+      }
+      { }
+    \iow_close:N \g__olref_export_iow
+    \OsgLectureBuildLoadedTF
+      {
+        \tl_if_empty:eF { \OsgLectureBuildValue{generation-id} }
+          { \iow_close:N \g__olref_used_iow }
+      }
+      { }
+  }
+
 \AddToHook{begindocument/before}[osglecture-references/setup]
   {
+    \file_if_exist:nT {\jobname.osgrefs.tex}
+      { \file_input:n {\jobname.osgrefs.tex} }
     \iow_open:Nn \g__olref_export_iow {\jobname.osgref.aux}
+    \OsgLectureBuildLoadedTF
+      {
+        \tl_if_empty:eF { \OsgLectureBuildValue{generation-id} }
+          { \iow_open:Nn \g__olref_used_iow {\jobname.osgref-used.aux} }
+      }
+      { }
     \__olref_install_legacy:
     \__olref_install_replacements:
   }
 \AddToHookWithArguments{label}[osglecture-references/export]
   { \__olref_export_label:n {#1} }
 \AddToHook{enddocument/afterlastpage}[osglecture-references/export]
-  { \iow_close:N \g__olref_export_iow }
+  { \__olref_export_finish: }
 
 \ExplSyntaxOff

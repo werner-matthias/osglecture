@@ -57,10 +57,11 @@ implementiert und enden mit Exitcode 69:
 - **TODO:** `prune`;
 - **TODO:** Fixpunkt-Builds mit `build --resolve`.
 
-Ebenfalls TODO sind Resultat-Promotion, Auswertung der Referenzindizes und die
-vollständigen projekt- und backendabhängigen `doctor`-Prüfungen. Die
-entsprechenden späteren Abschnitte spezifizieren das Zielverhalten und sind
-nicht als Beschreibung bereits verfügbarer Funktionen zu lesen.
+Implementiert sind inzwischen der LaTeX-nahe Ergebnisrückkanal, atomare
+Resultat-/Referenzpromotion und der jobgebundene Snapshot der zuletzt
+promotierten Referenzexports. TODO bleiben deren Auswertung durch `check` und
+`report`, Fixpunktrunden sowie die vollständigen projekt- und
+backendabhängigen `doctor`-Prüfungen.
 
 ## 3. Nichtziele
 
@@ -94,7 +95,7 @@ ollmconfig.toml
   osglecture
       |
       | Serientopologie, Dokumentsemantik, Referenzen
-      | <jobname>.osgresult.json
+      | <jobname>.osgresult.aux
       | Referenzexporte
       v
      OLLM
@@ -384,6 +385,15 @@ existiert, wird nicht ersatzweise aus Slug, physischer Nummer, Jobname oder
 Verzeichnisnachbarschaft abgeleitet. OLLM durchsucht auch keine TeX-Quelle nach
 `\lecture`. Die Zuordnung wird erst durch einen erfolgreichen LaTeX-Lauf der
 betreffenden Unit bekannt.
+
+OLLM darf komfortable, Cargo-artige Verwaltungsbefehle wie `init`,
+`unit new`, `unit move` und `unit remove` später ergänzen. Sie können Gerüste
+erzeugen, Manifest- und Integrationsangaben konsistent ändern sowie gezielte
+Neubauten oder Prune-Schritte anbieten. Diese Befehle sind reine
+Komfortfunktionen: Umbenennen und Verschieben mit gewöhnlichen
+Dateisystemwerkzeugen muss korrekt bleiben. Eine physische UUID-Markierung
+kann später ergänzt werden, ist aber weder Bestandteil der logischen
+Unit-ID noch Voraussetzung der ersten Version.
 
 ## 7. Projektmanifest
 
@@ -745,12 +755,11 @@ OLLM-Builddimensionen: Beide werden durch den installierten
 Profildeskriptor auf der TeX-Seite festgelegt und dort gegen den Dokumenttyp
 validiert.
 
-Der derzeit implementierte Schema-1-Auftrag verlangt noch `unit-id` und füllt
-sie aus der Discovery. Das widerspricht dem inzwischen festgelegten logischen
-Unit-Vertrag. Vor der Referenzpromotion muss der Auftrag so revidiert werden,
-dass eine noch unbekannte logische ID nicht aus dem Verzeichnisslug erfunden
-wird. Die Klasse meldet die durch `\lecture` deklarierte ID im Ergebnis zurück;
-nachfolgende Builds dürfen den bekannten Wert zur Konsistenzprüfung erhalten.
+Der Schema-1-Auftrag enthält `unit-id` nur, wenn sie bereits aus einem
+validierten, promotierten Zustand bekannt ist. Beim ersten Build wird sie nicht
+aus dem Verzeichnisslug erfunden. Die Klasse meldet die durch `\lecture`
+deklarierte ID im Ergebnis zurück; nachfolgende Builds erhalten den bekannten
+Wert zur Konsistenzprüfung.
 
 ## 9. Jobname und Verzeichnisse
 
@@ -931,60 +940,78 @@ interpretiert noch erweitert.
 ### 11.3 Lua-gelesene und strukturelle Eingaben
 
 Direkt durch Lua gelesene Dateien und Verzeichnisänderungen erscheinen nicht
-zwangsläufig als normale Recorder-Eingaben. Die Implementierung muss deshalb
-eine der folgenden Strategien verwenden:
+zwangsläufig als normale Recorder-Eingaben. OLLM berechnet deshalb bei jeder
+Serienauflösung eine kanonische Struktursignatur. Ihre Eingabe ist die nach
+physischem Unit-Namen sortierte Liste der unmittelbar unter der Serienwurzel
+erkannten Units mit:
 
-- explizite Recorder-Registrierung;
-- TeX-lesbare Snapshot-Datei;
-- Struktursignatur in der Buildauftragsdatei.
+```text
+physical-unit
+physical-number
+unit-scope
+unit-role
+slug
+```
 
-Die endgültige Strategie ist offen. Sie muss sicherstellen, dass eine
-Verzeichnisumordnung einen notwendigen LaTeX-Lauf auslöst.
+Absolute Projektpfade, Zeitstempel und Dateisystem-Reihenfolge gehen nicht in
+die Signatur ein. Nicht als Unit benannte Nachbarverzeichnisse werden
+ignoriert. Die Signatur steht als `structure-signature` in jedem
+Serien-BuildSpec und geht zusätzlich in dessen `config-signature` ein. Dadurch
+verändert eine Umbenennung oder Umordnung die TeX-lesbare Buildauftragsdatei
+und wird für `latexmk` zu einer gewöhnlichen Dateiänderung.
 
-## 12. Ergebnis- und Referenzdateien (TODO)
+Nach einer Strukturänderung führt OLLM die Discovery vollständig neu aus.
+Eine unbekannte Zuordnung wird nicht heuristisch rekonstruiert; im Zweifel
+werden alle davon abhängigen Serienbuilds bei ihrem nächsten Auftrag
+invalidiert. Der separat promotierte logische Zustand bleibt bis zu einem
+erfolgreichen Ersatzbuild verfügbar. Ein Umzug der gesamten Serienwurzel bei
+identischer relativer Struktur ändert die Struktursignatur nicht. Die
+Behandlung weiterer direkt durch Lua gelesener Dateien bleibt separat
+festzulegen.
+
+## 12. Ergebnis- und Referenzdateien
 
 ### 12.1 Ergebnis
 
-Nach einem erfolgreichen Lauf erzeugt die Klasse:
+Für jeden Buildversuch erzeugt OLLM eine `generation-id` und übergibt sie in
+der Auftragsdatei. Nach einem erfolgreichen LaTeX-Lauf erzeugt die Klasse einen
+strikten, LaTeX-nahen Ergebnisumschlag:
 
 ```text
-<jobname>.osgresult.pending.json
+<jobname>.osgresult.aux
 ```
 
-Das Ergebnis enthält mindestens:
+Er enthält in Schema 1:
 
 ```text
 schema
+generation-id
 job-id
-config-signature
-context
 series-id
 unit-id
-sort-key
-role
+physical-unit
+unit-role
 doctype
 language
-logical-number
-title
-artifact
-Seiten-/Folienzahl
-Checks
-verwendete semantische Abhängigkeiten
 ```
 
-OLLM validiert die Pending-Datei nach erfolgreichem `latexmk` und veröffentlicht
-sie atomar als:
+Die LaTeX-Datei ist der normative Rückkanal. OLLM validiert sie zusammen mit
+Artefakt und Referenzexport und erzeugt daraus intern ein abgeleitetes
+`result.json`. Dieses JSON ist Zustand für Check, Report und Debugging, aber
+kein LaTeX-Laufzeitvertrag und keine zweite fachliche Quelle.
 
-```text
-<jobname>.osgresult.json
-```
+Normale Units der Rollen Inhalt, Anhang und Exkurs müssen genau ein
+`\lecture[short]{title}{unit-id}` deklarieren. Integrationsunits (`unit-role =
+i`) sind davon ausgenommen und veröffentlichen zunächst keinen eigenen
+Referenzzustand.
 
 ### 12.2 LaTeX-naher Referenzexport
 
-Der primäre Referenzexport ist eine dedizierte Aux-Datei:
+Der primäre Referenzexport ist eine dedizierte Aux-Datei im isolierten
+Buildverzeichnis:
 
 ```text
-<doctype>-<language>.osgref.aux
+<jobname>.osgref.aux
 ```
 
 Sie enthält ausschließlich die öffentliche Referenzoberfläche des Dokuments
@@ -994,23 +1021,23 @@ werden.
 Die normale Build-`.aux` wird nicht veröffentlicht, da sie backend- und
 paketabhängiger privater Zustand ist.
 
-### 12.3 Maschinenlesbarer Referenzindex
+Der Export trägt einen Umschlag mit Schema, Generation und vollständiger
+Dokumentidentität. Bei der Promotion wird er unverändert als
+`reference.osgref.aux` in die Generation kopiert.
 
-Zusätzlich entsteht:
+### 12.3 Jobgebundener Referenzsnapshot
 
-```text
-<doctype>-<language>.osgref.json
-```
-
-Er enthält Dokumentidentität, exportierte Properties und deren Signaturen.
-OLLM verwendet ihn für Check, Report und Abhängigkeitsauflösung.
-
-Aux- und JSON-Projektion entstehen aus demselben L3-Referenzmodell und tragen
-dieselbe Generationskennung.
+Vor jedem Build erzeugt OLLM `<jobname>.osgrefs.tex`. Diese nur gelesene
+Registry bildet alle aktuell promotierten logischen Dokumentidentitäten auf
+ihren Referenzexport und ihr PDF ab. Sie ist ein Snapshot, keine gemeinsam
+veränderte globale Datenbank. Noch nie gebaute Ziele fehlen und bleiben beim
+Import als gewöhnliche nicht auflösbare Referenzen sichtbar.
 
 ### 12.4 Semantische Abhängigkeiten
 
-Semantische Abhängigkeiten werden zunächst in `.osgresult.json` gespeichert.
+Tatsächliche externe Imports schreibt LaTeX kontrolliert nach
+`<jobname>.osgref-used.aux`. OLLM validiert die Generationskennung und
+übernimmt die Records in das abgeleitete `result.json`.
 Beispiele:
 
 ```text
@@ -1035,29 +1062,34 @@ konsumentenspezifische Projektionen möglich.
 Pseudoabhängigkeiten. Eine eigenschaftsgenaue Importdatei wäre präziser, würde
 die erste Implementierung aber deutlich verkomplizieren.
 
-## 13. Zustandslebenszyklus und Atomarität (TODO)
+## 13. Zustandslebenszyklus und Atomarität
 
 ### 13.1 Eigentum
 
 Ein Build schreibt:
 
 - ausschließlich in sein isoliertes Buildverzeichnis;
-- zusätzlich nur in State-Dateien seiner stabilen Dokumentidentität.
+- bei erfolgreicher Promotion zusätzlich nur in State-Dateien seiner stabilen
+  Dokumentidentität.
 
 Eine gemeinsam von mehreren Builds veränderte globale JSON-Registry ist
 ausgeschlossen.
 
 ### 13.2 Promotion
 
-LaTeX schreibt Pending-Dateien. OLLM:
+OLLM:
 
 1. wartet auf erfolgreichen Abschluss von `latexmk`;
-2. validiert Syntax, Schema, Job-ID und Generationskennung;
-3. prüft das erwartete Artefakt;
-4. ersetzt den vorherigen gültigen Zustand atomar.
+2. validiert Ergebnisumschlag, Referenzumschlag, Schema, Identitäten und
+   Generationskennung;
+3. prüft das erwartete PDF-Artefakt;
+4. schreibt eine unveränderliche Generation;
+5. ersetzt ausschließlich den kleinen Zeiger `current.tex` atomar.
 
-Temporär- und Zieldatei liegen auf demselben Dateisystem. Die
-plattformabhängige Ersetzung wird in OLLM gekapselt.
+Der Zustand ist für jedes Tupel `(series-id, unit-id, doctype, language)`
+getrennt. Generation und Zeiger liegen auf demselben Dateisystem. Damit kann
+ein beschädigter oder abgebrochener Versuch die letzte gültige Generation
+nicht teilweise überschreiben.
 
 ### 13.3 Fehlgeschlagene Builds
 
@@ -1066,7 +1098,21 @@ Ein fehlgeschlagener Build darf einen vorherigen gültigen Export nicht
 Versuch fehlgeschlagen ist oder der bestehende Export nicht zur aktuellen
 Konfiguration gehört.
 
-### 13.4 Prune
+### 13.4 Sichtbarkeit und Recovery
+
+`.osglecture` ist OLLM-eigener, nicht von Autoren zu editierender Zustand, aber
+bewusst kein opakes Binärformat. Zeiger sind kleine TeX-Dateien, abgeleitete
+Records lesbares JSON und Referenzexports lesbare Aux-Dateien.
+
+Der gesamte Zustand ist aus Quellen und direkten Builds rekonstruierbar. Wenn
+kein OLLM-/latexmk-Prozess läuft, ist deshalb das Löschen von `.osglecture` eine
+unterstützte radikale Recovery-Maßnahme. Dabei gehen Buildcaches und alle
+promotierten Zuordnungen verloren; Ziel-Units müssen zuerst direkt neu gebaut
+werden, und bis dahin erscheinen externe Referenzen als `??` mit Warnung.
+Normale Nutzerwege bleiben `check`, `clean`, `prune` und später eine gezielte
+`doctor`-Reparatur.
+
+### 13.5 Prune
 
 `prune` entfernt Zustände, deren Dokumentidentität in der aktuellen
 Projektstruktur nicht mehr existiert. Es unterstützt `--dry-run`.
@@ -1752,7 +1798,7 @@ Vor der Implementierung sind noch festzulegen:
 2. genaue Profilfundorte;
 3. vollständiges Schema von `ollmconfig.toml` über den implementierten Kern
    hinaus;
-4. Strategie für Struktur- und Lua-Dateiabhängigkeiten;
+4. Behandlung weiterer direkt durch Lua gelesener Dateien;
 5. JSON- und Aux-Schemata einschließlich Generationsmodell;
 6. genaue Clean-Levelnamen;
 7. Benutzerkonfiguration zusätzlich zur projektlokalen Konfiguration;

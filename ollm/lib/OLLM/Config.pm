@@ -113,6 +113,7 @@ sub resolve_request {
   $manifest->{bundle_preset} //=
     $user_defaults->{bundle_preset} // 'OSG lecture/1';
   my $root = dirname($located->{path});
+  my $structure = $class->structure_snapshot(project_root => $root);
   my $definitions = $class->resolve_definitions(
     manifest       => $manifest,
     manifest_path  => $located->{path},
@@ -169,6 +170,7 @@ sub resolve_request {
       path    => $located->{path},
       bundle_preset => $manifest->{bundle_preset},
       definitions => $definitions,
+      structure => $structure,
       user_defaults => $user_defaults,
       schema  => $manifest->{schema},
       parser  => $class->parser_info,
@@ -207,6 +209,44 @@ sub resolve_request {
     );
   }
   return $resolved;
+}
+
+sub structure_snapshot {
+  my ($class, %arg) = @_;
+  my $root = _absolute_directory(
+    $arg{project_root} // die("missing project root"),
+    'project root',
+  );
+  opendir my $directory, $root
+    or die "cannot read project root '$root': $!";
+  my @names = sort grep {
+    $_ ne '.' && $_ ne '..'
+      && -d File::Spec->catdir($root, $_)
+      && /\A\d{3}[a-z]{0,2}-(?:(?:a|e|i)-)?.+\z/
+  } readdir $directory;
+  closedir $directory
+    or die "cannot close project root '$root': $!";
+
+  my @units = map {
+    /\A(\d{3})([a-z]{0,2})-(?:(a|e|i)-)?(.+)\z/
+      or die "internal error while parsing series unit directory '$_'";
+    {
+      physical_unit   => $_,
+      physical_number => $1,
+      unit_scope      => $2,
+      unit_role       => $3 // 'content',
+      slug            => $4,
+    }
+  } @names;
+  my $canonical = JSON::PP->new->canonical->encode({
+    schema => 1,
+    units  => \@units,
+  });
+  return {
+    schema    => 1,
+    units     => \@units,
+    signature => sha256_hex($canonical),
+  };
 }
 
 sub _unit_allows_target {

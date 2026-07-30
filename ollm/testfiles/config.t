@@ -53,6 +53,55 @@ is $resolved->{configuration}{definitions}{bundle_preset}{version}, '1',
   'selected bundle-preset definition is resolved';
 is $resolved->{configuration}{definitions}{targets}{script}{version}, '1.0',
   'configured target definition is resolved';
+like $resolved->{configuration}{structure}{signature},
+  qr/\A[0-9a-f]{64}\z/,
+  'series discovery produces a canonical structure signature';
+is_deeply(
+  $resolved->{configuration}{structure}{units},
+  [{
+    physical_unit   => '020-processes',
+    physical_number => '020',
+    unit_scope      => '',
+    unit_role       => 'content',
+    slug            => 'processes',
+  }],
+  'structure snapshot records the physical ordering metadata only',
+);
+
+my $structure_root_a = tempdir(CLEANUP => 1);
+my $structure_root_b = tempdir(CLEANUP => 1);
+for my $root ($structure_root_a, $structure_root_b) {
+  make_path(
+    File::Spec->catdir($root, '020-introduction'),
+    File::Spec->catdir($root, '090a-a-posix'),
+    File::Spec->catdir($root, 'notes'),
+  );
+}
+my $structure_a = OLLM::Config->structure_snapshot(
+  project_root => $structure_root_a,
+);
+my $structure_b = OLLM::Config->structure_snapshot(
+  project_root => $structure_root_b,
+);
+is $structure_a->{signature}, $structure_b->{signature},
+  'structure signature is independent of the absolute project path';
+rename(
+  File::Spec->catdir($structure_root_b, '020-introduction'),
+  File::Spec->catdir($structure_root_b, '040-introduction'),
+) or die "cannot rename structure fixture: $!";
+my $renamed_structure = OLLM::Config->structure_snapshot(
+  project_root => $structure_root_b,
+);
+isnt $renamed_structure->{signature}, $structure_a->{signature},
+  'renaming or reordering a unit changes the structure signature';
+make_path(File::Spec->catdir($structure_root_b, 'unrelated-directory'));
+is(
+  OLLM::Config->structure_snapshot(
+    project_root => $structure_root_b,
+  )->{signature},
+  $renamed_structure->{signature},
+  'unmarked unrelated directories do not invalidate the series structure',
+);
 
 $resolved = OLLM::Config->resolve_request(
   start_dir => $chapter,

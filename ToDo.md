@@ -8,8 +8,8 @@ Featurewünsche.
 
 # osglecture
 * [ ] Übergreifende Links
-* [ ] Querreferenzen zwischen Folien und Script
-* [ ] Kapitelübergreifende Literaturreferenzen
+* [x] Querreferenzen zwischen Folien und Script
+* [x] Kapitelübergreifende Literaturreferenzen
 * [x] Lang-/Kurzformunterstützung auf Sprachebene
 * [ ] Integrationsworkflow
 

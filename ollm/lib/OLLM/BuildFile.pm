@@ -38,7 +38,7 @@ sub build_spec {
   _validate_job_atom('series id', $request->{series_id});
   _validate_job_atom('document type', $doctype);
   _validate_job_atom('language', $language);
-  _validate_job_atom('unit id', $slug, 1);
+  _validate_job_atom('unit slug', $slug, 1);
   my $job_id = join '-',
     $request->{series_id}, $number, $doctype, $language, $slug;
   my $project_root = abs_path($request->{project_root})
@@ -73,6 +73,7 @@ sub build_spec {
     if $document_profile !~ /\A[A-Za-z0-9][A-Za-z0-9.-]*\z/;
   my $shell_escape = $arg{manifest}{security}{shell_escape} // 'restricted';
   my $document_metadata;
+  my $document_metadata_contract;
   if (($arg{manifest}{latex}{document_metadata}{policy} // 'author')
       eq 'enforce') {
     my $configured = $arg{manifest}{latex}{document_metadata}{file};
@@ -96,7 +97,14 @@ sub build_spec {
       path      => $canonical,
       signature => sha256_hex($metadata_source),
     };
+    $document_metadata_contract = {
+      path      => File::Spec->canonpath($configured),
+      signature => $document_metadata->{signature},
+    };
   }
+  my $structure_signature =
+    $configuration->{structure}{signature}
+      // die "resolved configuration has no structure signature";
 
   my $config_signature = sha256_hex(
     JSON::PP->new->canonical->encode({
@@ -116,10 +124,11 @@ sub build_spec {
       doctype     => $doctype,
       language    => $language,
       physical_unit => $physical_unit,
+      structure_signature => $structure_signature,
       latex       => $latex,
       document_profile => $document_profile,
       shell_escape => $shell_escape,
-      document_metadata => $document_metadata,
+      document_metadata => $document_metadata_contract,
     }),
   );
   return {
@@ -131,7 +140,7 @@ sub build_spec {
     physical_number     => $number,
     unit_scope          => $unit_scope,
     unit_role           => $role,
-    unit_id             => $slug,
+    unit_id             => undef,
     target              => $target_name,
     doctype             => $doctype,
     profile_class       => $profile_class,
@@ -151,6 +160,7 @@ sub build_spec {
     latex_enforce       => $latex->{enforce},
     shell_escape        => $shell_escape,
     document_metadata   => $document_metadata,
+    structure_signature => $structure_signature,
     config_signature    => $config_signature,
   };
 }
@@ -188,7 +198,12 @@ sub render {
     "  physical-number={" . _tex_atom($spec->{physical_number}) . "},",
     "  unit-scope={" . _tex_atom($spec->{unit_scope}) . "},",
     "  unit-role={" . _tex_atom($spec->{unit_role}) . "},",
-    "  unit-id={" . _tex_atom($spec->{unit_id}) . "},",
+    (defined($spec->{unit_id})
+      ? "  unit-id={" . _tex_atom($spec->{unit_id}) . "},"
+      : ()),
+    (defined($spec->{generation_id})
+      ? "  generation-id={" . _tex_atom($spec->{generation_id}) . "},"
+      : ()),
     "  target={" . _tex_atom($spec->{target}) . "},",
     "  doctype={" . _tex_atom($spec->{doctype}) . "},",
     "  language={" . _tex_atom($spec->{language}) . "},",
@@ -198,6 +213,7 @@ sub render {
     "  document-profile={" . _tex_atom($spec->{document_profile}) . "},",
     @latex,
     "  shell-escape={" . _tex_atom($spec->{shell_escape}) . "},",
+    "  structure-signature={" . _tex_atom($spec->{structure_signature}) . "},",
     "  config-signature={" . _tex_atom($spec->{config_signature}) . "}",
     "}",
     (@enforce

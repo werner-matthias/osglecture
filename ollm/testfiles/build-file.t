@@ -4,6 +4,7 @@ use warnings;
 
 use Cwd qw(abs_path getcwd);
 use File::Spec;
+use File::Path qw(make_path);
 use File::Temp qw(tempdir);
 use Test::More;
 
@@ -46,6 +47,8 @@ is_deeply $spec->{language_map}, { de => 'ngerman', en => 'british' },
   'language mapping reaches the build specification';
 like $spec->{config_signature}, qr/\A[0-9a-f]{64}\z/,
   'build specification carries a deterministic configuration signature';
+like $spec->{structure_signature}, qr/\A[0-9a-f]{64}\z/,
+  'build specification carries the canonical project-structure signature';
 is $spec->{shell_escape}, 'restricted',
   'manifest shell-escape policy reaches the build specification';
 is $spec->{latex}{theme}, 'osg',
@@ -84,6 +87,45 @@ like $metadata_spec->{document_metadata}{signature}, qr/\A[0-9a-f]{64}\z/,
 isnt $metadata_spec->{config_signature}, $spec->{config_signature},
   'metadata policy and contents affect the configuration signature';
 
+my @moved_specs;
+for (1 .. 2) {
+  my $moved_root = tempdir(CLEANUP => 1);
+  my $moved_unit = File::Spec->catdir($moved_root, '020-processes');
+  my $moved_shared = File::Spec->catdir($moved_root, 'shared');
+  make_path($moved_unit, $moved_shared);
+  open my $moved_source, '>',
+    File::Spec->catfile($moved_unit, 'main.tex') or die $!;
+  print {$moved_source} "\\documentclass{article}\n";
+  close $moved_source;
+  open my $moved_metadata, '>',
+    File::Spec->catfile($moved_shared, 'document-metadata.tex') or die $!;
+  print {$moved_metadata} "\\DocumentMetadata{}\n";
+  close $moved_metadata;
+
+  my %moved_request = (
+    %{ $resolved->{request} },
+    project_root => $moved_root,
+  );
+  my %moved_configuration = (
+    %{ $resolved->{configuration} },
+    structure => OLLM::Config->structure_snapshot(
+      project_root => $moved_root,
+    ),
+  );
+  my %moved_resolved = (
+    %$resolved,
+    request       => \%moved_request,
+    configuration => \%moved_configuration,
+  );
+  push @moved_specs, OLLM::BuildFile->build_spec(
+    resolved       => \%moved_resolved,
+    manifest       => \%metadata_manifest,
+    unit_directory => $moved_unit,
+  );
+}
+is $moved_specs[0]{config_signature}, $moved_specs[1]{config_signature},
+  'moving an otherwise identical project does not change its build contract';
+
 my $content = OLLM::BuildFile->render($spec);
 like $content, qr/job-id=\{bs-020-script-de-processes\}/,
   'rendered build file binds itself to the job id';
@@ -95,6 +137,8 @@ like $content, qr/bundle-preset=\{OSG lecture\/1\}/,
   'rendered build file contains the resolved bundle preset';
 like $content, qr/shell-escape=\{restricted\}/,
   'rendered build file records the shell-escape policy';
+like $content, qr/structure-signature=\{[0-9a-f]{64}\}/,
+  'rendered build file makes directory-structure changes visible to TeX';
 
 my $outside = tempdir(CLEANUP => 1);
 my $outside_unit = File::Spec->catdir($outside, '020-outside');

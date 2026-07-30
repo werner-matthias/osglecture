@@ -43,6 +43,8 @@
     unit-scope          .code:n = \__osglecture_build_put:nn {unit-scope} {#1},
     unit-role           .code:n = \__osglecture_build_put:nn {unit-role} {#1},
     unit-id             .code:n = \__osglecture_build_put:nn {unit-id} {#1},
+    generation-id       .code:n =
+      \__osglecture_build_put:nn {generation-id} {#1},
     target              .code:n = \__osglecture_build_put:nn {target} {#1},
     doctype             .code:n = \__osglecture_build_put:nn {doctype} {#1},
     language            .code:n = \__osglecture_build_put:nn {language} {#1},
@@ -69,6 +71,8 @@
     references          .code:n = \__osglecture_build_put:nn {references} {#1},
     shell-escape        .code:n =
       \__osglecture_build_put:nn {shell-escape} {#1},
+    structure-signature .code:n =
+      \__osglecture_build_put:nn {structure-signature} {#1},
     config-signature    .code:n =
       \__osglecture_build_put:nn {config-signature} {#1},
   }
@@ -99,9 +103,10 @@
   {
     \clist_map_inline:nn
       {schema,job-id,context,series-id,physical-unit,physical-number,
-       unit-scope,unit-role,unit-id,target,doctype,language,available-languages,
+       unit-scope,unit-role,target,doctype,language,available-languages,
        bundle-preset,
        document-profile,
+       structure-signature,
        config-signature}
       {
         \prop_if_in:NnF \g__osglecture_build_prop {##1}

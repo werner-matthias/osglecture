@@ -11,6 +11,7 @@ use File::Basename qw(dirname);
 use File::Path qw(make_path);
 use File::Spec;
 use OLLM::BuildFile;
+use OLLM::State;
 
 our $VERSION = '0.1.0';
 
@@ -47,7 +48,10 @@ sub execute {
         return 1;
       }
     }
-    OLLM::BuildFile->write_for_spec($spec) if $action eq 'build';
+    if ($action eq 'build') {
+      OLLM::State->start_attempt($spec);
+      OLLM::BuildFile->write_for_spec($spec);
+    }
     my @command = $class->command_for_spec($spec, $request, $latexmk_rc);
     my $status;
     if ($arg{runner}) {
@@ -73,6 +77,8 @@ sub execute {
     die "latexmk reported success but artifact is missing: $spec->{artifact}"
       if $action eq 'build' && !$arg{runner}
         && (!-f $spec->{artifact} || !-s _);
+    OLLM::State->promote($spec)
+      if $action eq 'build' && !$arg{runner};
   }
   return 0;
 }

@@ -266,6 +266,7 @@
 \ExplSyntaxOn
 
 \RequirePackage{osglecture-metadata}
+\RequirePackage{osglecture-structure}
 \RequirePackage{osglecture-references}
 \exp_args:Nx \OsgLectureConfigureMetadata
   {
