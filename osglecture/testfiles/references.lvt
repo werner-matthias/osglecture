@@ -1,0 +1,62 @@
+\input regression-test
+\documentclass{article}
+\usepackage[ngerman,english]{babel}
+\usepackage[
+  legacy,
+  replace={ref,pageref}
+]{osglecture-references}
+\providecommand\OsgLectureDocumentType{script}
+\providecommand\OsgLectureLanguage{de}
+\OsgLectureReferenceDocument{
+  unit=other,
+  type=script,
+  lang=de,
+  aux=reference-source.osgref,
+  pdf=reference-source.pdf
+}
+\begin{document}
+\section{Local target}\label{local}
+\setbox0=\hbox{
+  \olref*[
+    type=wrong,
+    lang=en,
+    other,
+    type=script,
+    lang=de
+  ]{target}
+}
+\setbox1=\hbox{\xrefdist[near]{local}{on page}}
+\ExplSyntaxOn
+\selectlanguage{ngerman}
+\cs_set_eq:NN \__olref_test_de_current: \reftextcurrent
+\selectlanguage{english}
+\cs_set_eq:NN \__olref_test_en_current: \reftextcurrent
+\ExplSyntaxOff
+\START
+\ExplSyntaxOn
+\TYPE{registered-documents=\prop_count:N\g__olref_documents_prop}
+\TYPE{imported-documents=\prop_count:N\g__olref_imported_prop}
+\tl_set:Ne \l_tmpa_tl
+  {
+    olr-
+    \str_mdfive_hash:e{unit=other,type=script,lang=de}
+    :target
+  }
+\cs_if_exist:cTF {r@\l_tmpa_tl}
+  {\TYPE{external-label=defined}}
+  {\TYPE{external-label=missing}}
+\tl_set:Ne\l_tmpb_tl{\exp_args:NV\getrefnumber\l_tmpa_tl}
+\TYPE{external-value=\l_tmpb_tl}
+\TYPE{replace=\clist_use:Nn\g__olref_replace_clist{,}}
+\cs_if_exist:NTF\xref
+  {\TYPE{legacy=defined}}
+  {\TYPE{legacy=missing}}
+\cs_if_eq:NNTF \reftextcurrent \__olref_test_en_current:
+  {\TYPE{varioref-language=en}}
+  {\TYPE{varioref-language=en-missing}}
+\cs_if_eq:NNTF \__olref_test_de_current: \__olref_test_en_current:
+  {\TYPE{varioref-languages-not-distinct}}
+  {\TYPE{varioref-language=de}}
+\ExplSyntaxOff
+\END
+\end{document}

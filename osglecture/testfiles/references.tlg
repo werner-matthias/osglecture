@@ -1,0 +1,10 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+registered-documents=1
+imported-documents=1
+external-label=defined
+external-value=42
+replace=ref,pageref
+legacy=defined
+varioref-language=en
+varioref-language=de

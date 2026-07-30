@@ -109,10 +109,13 @@ Als fachlich festgelegt, aber noch nicht implementiert gilt:
 
 Noch nicht als stabiler Autorenvertrag festgelegt sind insbesondere:
 
-- Referenzauflösung über Unitgrenzen,
 - die konkrete gemeinsame Bild- und Tabellen-API,
 - Notizen und Zweitbildschirmdarstellung,
 - spezialisierte optionale Fachpakete und deren jeweilige Autorenbefehle.
+
+Der Autoren- und Dateivertrag für Referenzen über Unitgrenzen ist inzwischen
+in Abschnitt 3.9 festgelegt. Seine OLLM-seitige Promotion und
+Fixpunktauflösung bleiben noch zu implementieren.
 
 Folgearbeiten dürfen auf den stabilen Contracts aufbauen. Bei den zuletzt
 genannten Bereichen muss der jeweilige Thread zuerst seinen fachlichen Vertrag
@@ -484,25 +487,40 @@ fachlichen Struktureinheit:
 - **Kapitel:** Langformperspektive.
 
 Die kanonische künftige Autorenoberfläche lautet
-`\lecture[Kurz]{Lang}`. Sie beginnt nicht mehrere unabhängige Strukturen,
+`\lecture[Kurz]{Lang}{unit-id}`. Sie beginnt nicht mehrere unabhängige Strukturen,
 sondern beschreibt die aktuelle Unit. Im Präsentationsprofil liefert sie den
 Unit-Titel und die native Lecture-Information; im Langformprofil erzeugt sie
 die Kapitelüberschrift. Das Backendkommando `\chapter` beziehungsweise Beamers
 native `\lecture` ist Implementierungsziel, nicht die bundleweite Semantik.
 
-Die Identität ist vom sichtbaren Titel getrennt. Im Serienbetrieb stammt die
-stabile Unit-ID aus `unit-id` des BuildSpec; `physical-unit` und
-`physical-number` beschreiben Verzeichnis und Sortierung, sind aber keine
-Ersatz-ID. Ein Backendadapter darf aus der Unit-ID interne Labels ableiten.
-Standalone setzt weder Manifest noch Serienverzeichnis voraus; dort wird eine
-lokale Dokumentidentität verwendet, bis der Autor ausdrücklich eine Unit-ID
-angibt.
+Die Identität ist vom sichtbaren Titel getrennt. Die stabile Unit-ID stammt aus
+dem obligatorischen letzten Argument von `\lecture`; `physical-unit`,
+`physical-number` und Verzeichnisslug beschreiben Verzeichnis und Sortierung,
+sind aber keine Ersatz-ID. Ein Backendadapter darf aus der Unit-ID interne
+Labels ableiten. Standalone setzt weder Manifest noch Serienverzeichnis voraus,
+verwendet aber für eine mit `\lecture` deklarierte Unit dieselbe explizite
+logische ID.
+
+Der derzeitige Schema-1-BuildSpec verlangt noch eine durch Discovery gefüllte
+`unit-id`. Dies ist eine erkennbare Implementierungslücke: Vor der
+Referenzpromotion darf eine unbekannte logische ID nicht mehr aus dem
+Verzeichnisslug abgeleitet werden. Der LaTeX-Lauf meldet die deklarierte ID im
+Ergebnis; ein späterer Build darf einen bereits bekannten Wert ausschließlich
+zur Konsistenzprüfung erhalten.
+
+Für eine noch nie erfolgreich gebaute Unit existiert zunächst keine Zuordnung
+zwischen logischer ID und physischem Build. Diese Bootstrap-Lücke wird bewusst
+LaTeX-typisch behandelt: osglecture leitet die ID nicht aus Slug, Nummer,
+Jobname oder Nachbarverzeichnis ab, und OLLM durchsucht die Quelle nicht nach
+`\lecture`. Eine darauf gerichtete Referenz bleibt `??` und erzeugt eine
+Warnung. Erst ein erfolgreicher direkter Build der Ziel-Unit veröffentlicht
+ihre Zuordnung.
 
 Für den Strukturvertrag gelten folgende Invarianten:
 
 - Eine Unit besitzt genau eine stabile Unit-ID und beliebig übersetzte oder
   gekürzte sichtbare Titel.
-- `\lecture[Kurz]{Lang}` ändert weder Doctype noch Dokumentprofil.
+- `\lecture[Kurz]{Lang}{unit-id}` ändert weder Doctype noch Dokumentprofil.
 - Präsentation und Langform verwenden dieselbe Unit-ID für Referenzen.
 - Abschnitts- und Objekt-IDs werden aus Unit-ID und lokaler Identität
   abgeleitet, nicht aus sichtbaren Zählerständen.
@@ -598,6 +616,82 @@ Für Grenzfälle werden die folgenden Fragen in dieser Reihenfolge beantwortet:
 „Bilder und Tabellen gehören zum Kern“ meint daher nur ihre grundlegende
 Dokumentsemantik. Galerien, annotierte Medien, Datenimport oder
 Tabellenautomatisierung bleiben eigenständige Fachpakete.
+
+### 3.9 Referenzen über Unitgrenzen
+
+Der obligatorische, separat testbare Kerndienst
+`osglecture-references.sty` besitzt die Referenzsemantik. Hyperref erzeugt
+lokale Ziele und sichtbare Links; `xr` ist ein austauschbares internes
+Importdetail. Autoren verwenden weder physische Aux-Pfade noch Importpräfixe.
+
+Die kurze API lautet:
+
+```tex
+\olref{label}
+\olref[unit-label]{label}
+\olref[unit-label,type=script,lang=en]{label}
+```
+
+Ein schlüsselloser Eintrag der optionalen Liste ist stets die Unit; die
+expliziten Schlüssel heißen `unit`, `type` und `lang`. Ihre Reihenfolge ist
+beliebig und die letzte Mehrfachangabe zählt. Ohne Unit ist die Referenz lokal,
+ohne `type` oder `lang` gelten aktueller Dokumenttyp und aktuelle Sprache. Es
+gibt keinen stillen Sprach- oder Doctype-Fallback. Die parallelen Befehle
+`\olpageref`, `\olnameref` und `\olautoref` besitzen dieselbe Adresse.
+Sternvarianten geben wie bei Hyperref denselben Text ohne Link aus.
+
+Die Optionen
+
+```tex
+\usepackage[legacy,replace={ref,pageref}]{osglecture-references}
+```
+
+beziehungsweise `\OsgLectureReferencesSetup` konfigurieren ausschließlich die
+LaTeX-Oberfläche. `legacy` ist standardmäßig falsch und aktiviert
+Kompatibilitätsadapter für den alten xref-Befehlssatz. `replace` ist
+standardmäßig `none`, ohne Wert `all`, und akzeptiert `ref`, `pageref`,
+`nameref`, `autoref`, `all` und `none`. Projektweiter Shared Code darf dieselben
+Schlüssel setzen; sie gehören nicht in TOML.
+
+Für lokale, positionsabhängige Seitenverweise lädt das Modul außerdem
+`varioref` mit `nospace`. Dessen Befehle bleiben die öffentliche API; nur
+`\xrefdist` wird optional als Legacy-Adapter implementiert. Deutsche und
+englische `varioref`-Texte werden registriert und können über Babel gewechselt
+werden. Solche Distanzverweise werden nicht auf andere Units oder Doctypes
+ausgedehnt, weil ihre Aussage nach Einzelbuild und PDF-Komposition nicht
+dieselbe Bedeutung hätte.
+
+Alle gewöhnlichen Labels werden in eine kontrollierte `.osgref.aux` gespiegelt.
+Nur tatsächlich adressierte Fremddokumente werden importiert. Ein
+OLLM-generierter Snapshot bildet die logische Adresse aus Serie, Unit,
+Dokumenttyp und Sprache auf den letzten validen Export und dessen Artefakt ab.
+Fehlende Ziele ergeben `??` und eine Warnung; `ollm check` bleibt für
+Integritätsprüfungen streng.
+
+`build --resolve` arbeitet nur mit bereits bekannten Zuordnungen. Es darf eine
+unbekannte logische Unit weder heuristisch einem Verzeichnis zuordnen noch
+TeX-Quellen durchsuchen. `ollm check` listet unbekannte Unit-IDs, fehlende
+Doctype-/Sprachprojektionen und fehlende Labels vollständig als
+Serieninkonsistenzen auf.
+
+Der stabile Propertyvertrag unterscheidet `page`, die physische Seite des
+konkreten PDFs, und `slide`, die Frame-Nummer einer Präsentation. Damit kann
+ein Handout die ursprüngliche Foliennummer referenzieren, obwohl mehrere
+Folien auf einer physischen Seite liegen.
+
+Für Einzelprodukte können Links als `GoToR` auf ein auffindbares Serien-PDF
+zeigen. Nicht gemeinsam veröffentlichte Doctypes dürfen nur den Referenztext
+ausgeben. Ein Integrationsprodukt wählt Units mit `\includeunit` oder
+`\includeunits`; `...` bezeichnet einen inklusiven Bereich der logischen
+Serienfolge und ist deshalb in Unit-IDs verboten. `tagpax` internalisiert Links
+zwischen enthaltenen Units als `GoTo`, erhält dabei aber das vorhandene
+getaggte Link-Strukturelement und dessen OBJR. Das Integrationsprodukt
+reexportiert in der ersten Version keine Unitreferenzen.
+
+Mit aktivem `\DocumentMetadata` erzeugt der Dienst Links ausschließlich über
+Hyperref und LaTeX PDF Management. Er besitzt weder eine eigene
+Tagginginitialisierung noch direkte PDF-Linkprimitiven. Sternvarianten und
+fehlende Ziele erzeugen keine Annotation.
 
 ## 4. Aktuelle öffentliche Oberfläche
 

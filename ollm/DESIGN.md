@@ -246,18 +246,30 @@ Obermodus, nicht nach Backendnamen.
 
 ### 5.4 Buildidentität
 
-Ein Build wird mindestens durch folgende Werte identifiziert:
+Vor dem ersten erfolgreichen LaTeX-Lauf wird ein konkreter Buildauftrag durch
+folgende bereits auflösbare Werte identifiziert:
 
 ```text
 context
 series-id, falls vorhanden
-unit-id
 physische Einheitenkennung
 doctype
 language
 ```
 
-Die logische Kapitelnummer gehört nicht zur stabilen Identität. Sie ist ein
+Der veröffentlichte Dokument- und Referenzzustand verwendet dagegen die von
+`\lecture` deklarierte logische `unit-id`:
+
+```text
+series-id
+unit-id
+doctype
+language
+```
+
+Die physische Einheitenkennung bleibt Eigentümer von Buildverzeichnis und
+Lock, ist aber kein Bestandteil einer externen Referenz. Die logische
+Kapitelnummer gehört zu keiner der beiden stabilen Identitäten. Sie ist ein
 Ergebnis der für den konkreten Dokumenttyp gefilterten Serienfolge.
 
 **Rationale:** Dieselbe Einheit kann in den Folien Kapitel 3, im Skript aber
@@ -356,13 +368,22 @@ wird.
 
 ### 6.5 Identität bei Umbenennung
 
-Der Slug ist standardmäßig die `unit-id`. Eine Änderung des Slugs invalidiert
-die alte Identität und erzeugt eine neue Einheit. Alte Zustände werden durch
-`prune` entfernt.
+Der Verzeichnisslug ist keine logische `unit-id`. Die kanonische ID wird
+ausdrücklich durch die Lecture-/Kapitelstruktur in der Quelle deklariert. Eine
+Umbenennung oder Umordnung des Verzeichnisses verändert daher die öffentliche
+Dokument- und Referenzidentität nicht.
 
-**Rationale:** Automatisches Umbenennungs-Tracking wäre mehrdeutig; beispielsweise
-können `processes` und `process-management` gleichzeitig existieren. Sichtbar
-brechende Referenzen sind robuster als heuristische Identitätsübernahme.
+Der physische Buildzustand darf nach einer Verzeichnisumbenennung neu angelegt
+werden; `prune` entfernt den verwaisten alten physischen Zustand. OLLM versucht
+keine heuristische Zuordnung alter und neuer Verzeichnisse. Der letzte
+promotete logische Referenzzustand bleibt davon getrennt und wird durch einen
+erfolgreichen Build derselben logischen Unit-ID ersetzt.
+
+Eine logische Unit-ID, für die noch kein erfolgreich promotierter Zustand
+existiert, wird nicht ersatzweise aus Slug, physischer Nummer, Jobname oder
+Verzeichnisnachbarschaft abgeleitet. OLLM durchsucht auch keine TeX-Quelle nach
+`\lecture`. Die Zuordnung wird erst durch einen erfolgreichen LaTeX-Lauf der
+betreffenden Unit bekannt.
 
 ## 7. Projektmanifest
 
@@ -698,7 +719,7 @@ project-root
 series-id
 physical-unit
 unit-scope
-unit-id
+unit-id, sobald vorab aus einem validierten Zustand bekannt
 target
 doctype
 profile class
@@ -723,6 +744,13 @@ Dokumentprofil. Modusmatrix und Backendadapter sind bewusst keine
 OLLM-Builddimensionen: Beide werden durch den installierten
 Profildeskriptor auf der TeX-Seite festgelegt und dort gegen den Dokumenttyp
 validiert.
+
+Der derzeit implementierte Schema-1-Auftrag verlangt noch `unit-id` und füllt
+sie aus der Discovery. Das widerspricht dem inzwischen festgelegten logischen
+Unit-Vertrag. Vor der Referenzpromotion muss der Auftrag so revidiert werden,
+dass eine noch unbekannte logische ID nicht aus dem Verzeichnisslug erfunden
+wird. Die Klasse meldet die durch `\lecture` deklarierte ID im Ergebnis zurück;
+nachfolgende Builds dürfen den bekannten Wert zur Konsistenzprüfung erhalten.
 
 ## 9. Jobname und Verzeichnisse
 
@@ -1066,8 +1094,169 @@ mit aktuellen Referenzexports.
 Zyklen sind zulässig. `build --resolve` arbeitet deshalb gegebenenfalls in
 Runden bis zu einem Fixpunkt oder einer konfigurierten Obergrenze.
 
-Die genaue öffentliche Referenz-API wird in einem separaten
-`osglecture`-Design spezifiziert.
+### 14.1 Festgelegter Autorenvertrag
+
+Der Referenzdienst liegt in `osglecture-references.sty`. Sein kurzer
+Kernbefehl ist `\olref`. Ohne Dokumentadresse verhält er sich wie `\ref`;
+mit einer optionalen Adresse referenziert er ein Label einer anderen Unit
+derselben Serie:
+
+```tex
+\olref{sec:scheduling}
+\olref[processes]{sec:scheduling}
+\olref[processes,type=script,lang=en]{sec:scheduling}
+```
+
+In der optionalen kommagetrennten Liste gilt ein Eintrag ohne Schlüssel
+unabhängig von seiner Position als `unit`. Die gleichwertige explizite Form
+lautet `unit=processes`. `type` und `lang` überschreiben Dokumenttyp und
+Sprache; ohne Angabe gelten die Werte des aktuellen Builds. Die Reihenfolge ist
+beliebig, bei Wiederholung zählt der letzte Wert. Leerzeichen, Komma,
+Gleichheitszeichen und die für Integrationsbereiche reservierte Folge `...`
+sind in logischen Unit-IDs unzulässig.
+
+Die Befehlsfamilie umfasst zunächst `\olref`, `\olpageref`, `\olnameref` und
+`\olautoref`. Ihre Sternvarianten besitzen genau die Hyperref-Semantik: Sie
+erzeugen denselben Referenztext, aber keinen Hyperlink.
+
+Die rein LaTeX-seitige Paketkonfiguration kennt:
+
+```tex
+\OsgLectureReferencesSetup{
+  legacy = true,
+  replace = {ref,pageref}
+}
+```
+
+`legacy` ist boolesch, ohne Wert wahr und standardmäßig falsch. Es stellt den
+alten Autorenbefehlssatz einschließlich `\xref`, `\xrefchap`, `\xrefsmart`,
+`\xrefdist`, `\xarticleref` und `\xpresentationref` über Adapter bereit, nicht
+dessen alte zref-/Lua-Implementierung. `replace` akzeptiert die Symbolmenge
+`ref`, `pageref`, `nameref`, `autoref`, `all` und `none`; ohne Wert bedeutet
+es `all`, Default ist `none`. Sternvarianten werden nicht gesondert genannt.
+Dieselben Schlüssel stehen als Paketoptionen und für gemeinsamen Projektcode
+zur Verfügung; OLLM und TOML interpretieren sie nicht.
+
+Für positionsabhängige Seitenverweise lädt der Referenzdienst `varioref` mit
+`nospace` und stellt dessen öffentliche API unverändert zur Verfügung. Ein
+zusätzlicher osglecture-Wrapper ist nicht vorgesehen. Deutsch und Englisch
+werden als `varioref`-Sprachen registriert; bei Babel-Sprachwechseln folgen die
+Ausgabetexte der aktuellen Sprache. `\xrefdist` bleibt ausschließlich ein
+optionaler Legacy-Adapter auf `\vpageref`.
+
+Positionsabhängige Aussagen wie „auf der nächsten Seite“ sind nur für lokale
+Labels zulässig. Zwischen Units oder Doctypes besitzen Seitenabstände keine
+stabile Semantik und können insbesondere nach der PDF-Komposition nicht
+nachträglich neu berechnet werden. Eine spätere semantische Referenz-API muss
+Unit und Doctype ausdrücklich auswerten; `cleveref` beziehungsweise
+`zref-clever` sind dafür zunächst keine Kernabhängigkeiten.
+
+### 14.2 Logische Unit- und Labelidentität
+
+Die kanonische gemeinsame Strukturform lautet:
+
+```tex
+\lecture[Kurztitel]{Langer Titel}{processes}
+```
+
+Der letzte Parameter ist eine obligatorische logische Unit-ID. Sie stammt aus
+der Lecture-/Kapitelstruktur und wird weder aus Verzeichnisname, physischer
+Nummer noch Jobname abgeleitet. Präsentation und Langform derselben Unit
+verwenden dieselbe ID. Eine spätere optionale Longform-Kurzform darf
+`\chapter` erkennen, wenn unmittelbar, abgesehen von Whitespace, ein `\label`
+folgt. Sie ist nicht Teil der ersten Implementierungsstufe.
+
+Gewöhnliche `\label`-Befehle werden ohne besondere Autorenmarkierung in den
+dedizierten Referenzexport gespiegelt. Die normale Build-`.aux` bleibt privat.
+Externe Dokumente werden dagegen dokumentweise und erst bei tatsächlicher
+Anforderung importiert. Interne Importpräfixe und physische Exportpfade sind
+keine Autorenoberfläche.
+
+Lokale doppelte Labels bleiben gewöhnliche LaTeX-Warnungen. Mehrdeutige
+logische Unit-IDs oder mehrere gültige Exporte derselben vollständigen
+Dokumentidentität sind Serieninkonsistenzen und müssen spätestens durch
+`ollm check` erkannt werden.
+
+### 14.3 Fehler-, Link- und Propertyvertrag
+
+Ein fehlendes Dokument, Label oder nicht vorgesehener Doctype-/Sprachbuild
+erzeugt `??` und eine Warnung; es gibt keinen automatischen Fallback auf eine
+andere Sprache oder Projektion. Ein normaler Autorenbuild darf den letzten
+erfolgreich promoteten Export verwenden und bei erkennbarer Veraltung warnen.
+`ollm check` bewertet fehlende, mehrdeutige oder nachweislich inkonsistente
+Ziele streng.
+
+Dies gilt ausdrücklich auch für das Bootstrap-Problem einer noch nie
+erfolgreich gebauten Unit: Ist ihre explizite logische ID keinem physischen
+Build bekannt, bleibt die Referenz im LaTeX-Dokument als `??` sichtbar und
+erzeugt eine Warnung. `build --resolve` darf eine solche Zuordnung weder raten
+noch durch Quelltextsuche herstellen. Erst ein erfolgreicher direkter Build
+der Ziel-Unit veröffentlicht die Zuordnung. `ollm check` listet alle
+unbekannten logischen Units, fehlenden Doctype-/Sprachprojektionen und
+fehlenden Labels vollständig als Inkonsistenzen auf.
+
+Der Export führt mindestens Referenzwert, Name, physische PDF-Seite,
+stabile PDF-Destination und die optionale Property `slide`. Dabei ist `slide`
+in Präsentationsprodukten die Frame-Nummer, während `page` stets die physische
+Seite des konkreten PDFs bezeichnet. Ein Handout behält damit die ursprüngliche
+Foliennummer unabhängig von seiner Ausschießung.
+
+Die Linkpolicy unterscheidet:
+
+```text
+external      Link auf ein auffindbares einzelnes PDF
+internalized  Link auf die importierte Destination eines Gesamt-PDFs
+none          Referenztext ohne externen Link
+```
+
+Der endgültige Deploymentname ist noch offen. Referenzen melden deshalb die
+verwendete Property `artifact-name` als semantische Abhängigkeit. Langfristig
+ist ein von der physischen Nummer unabhängiger stabiler Referenzartefaktname
+anzustreben.
+
+### 14.4 Auflösung und Integration
+
+OLLM erzeugt aus den einzeln promoteten Resultat- und Referenzdateien einen
+jobgebundenen, nur lesbaren Snapshot, der logische Dokumentidentitäten auf
+validierte Exporte abbildet. Builds schreiben keine gemeinsame globale
+Registry. `build --resolve` stabilisiert Referenz-, Continuation- und andere
+semantische Abhängigkeiten in Runden. Die lokale Obergrenze lautet:
+
+```toml
+[build.resolve]
+max_rounds = 8
+```
+
+Der konkrete Default bleibt bei der Implementierung festzulegen. Der Name
+`max_rounds` bezeichnet bewusst Fixpunktrunden und nicht Graphentiefe.
+
+Integrationsverzeichnisse wählen ihre Quellen auf der LaTeX-Ebene nach
+logischen Unit-IDs:
+
+```tex
+\includeunit{processes}
+\includeunits{introduction,processes,appendix-posix}
+\includeunits{introduction...scheduling,appendix-posix}
+```
+
+`...` bezeichnet einen inklusiven Bereich in der logischen Serienreihenfolge.
+Anhänge und andere Rollen können ausdrücklich genannt werden. Die vollständige
+Integrationsmenge wird vor dem Schreiben der Seiten normalisiert. `tagpax`
+importiert Struktur, Seiten, Destinationen und Linkannotation; serieninterne
+`GoToR`-Aktionen zwischen enthaltenen Units werden auf namespacete interne
+`GoTo`-Ziele umgeschrieben, ohne Annotation oder zugehörigen OBJR zu ersetzen.
+Integrationsprodukte reexportieren in der ersten Version keine Unitreferenzen
+und dürfen nicht rekursiv als Unitquelle dienen.
+
+### 14.5 Tagged PDF
+
+`\DocumentMetadata` bleibt eine vor `\documentclass` auszuführende
+Projektinitialisierung. Der Referenzdienst setzt keine eigene PDF-Version oder
+Taggingpolicy. Sichtbare Links werden ausschließlich über Hyperref und LaTeX
+PDF Management erzeugt. Dadurch besitzen sie im Tagged PDF ein reguläres
+`Link`-Strukturelement samt OBJR. Sternvarianten und fehlende Ziele erzeugen
+keine Linkannotation. `tagpax` erhält bei der Integration die vorhandene
+Strukturzuordnung und ändert nur das Navigationsziel.
 
 ## 15. CLI
 

@@ -1,0 +1,403 @@
+\NeedsTeXFormat{LaTeX2e}[2024/06/01]
+\ProvidesExplPackage
+  {osglecture-references}
+  {2026/07/30}
+  {0.1.0}
+  {Logical cross-unit references for osglecture}
+
+\RequirePackage{expl3}
+\ExplSyntaxOn
+\tl_new:N \l__olref_initial_language_tl
+\cs_if_exist:NTF \OsgLectureLanguage
+  { \tl_set:Ne \l__olref_initial_language_tl { \OsgLectureLanguage } }
+  { \tl_set:Nn \l__olref_initial_language_tl { en } }
+\cs_if_exist:NF \extrasenglish { \cs_new:Npn \extrasenglish { } }
+\cs_if_exist:NF \extrasngerman { \cs_new:Npn \extrasngerman { } }
+\PassOptionsToPackage{nospace,ngerman}{varioref}
+\ExplSyntaxOff
+\RequirePackage{hyperref}
+\RequirePackage{varioref}
+\RequirePackage{xr}
+
+\ExplSyntaxOn
+
+\str_if_eq:VnTF \l__olref_initial_language_tl {de}
+  { \cs_if_exist:NT \extrasngerman { \extrasngerman } }
+  { \cs_if_exist:NT \extrasenglish { \extrasenglish } }
+
+\prop_new:N \g__olref_documents_prop
+\prop_new:N \g__olref_imported_prop
+\clist_new:N \g__olref_replace_clist
+\bool_new:N \g__olref_legacy_bool
+\bool_new:N \g__olref_replacements_installed_bool
+\iow_new:N \g__olref_export_iow
+
+\tl_new:N \l__olref_unit_tl
+\tl_new:N \l__olref_type_tl
+\tl_new:N \l__olref_lang_tl
+\tl_new:N \l__olref_aux_tl
+\tl_new:N \l__olref_pdf_tl
+\tl_new:N \l__olref_identity_tl
+\tl_new:N \l__olref_prefix_tl
+\tl_new:N \l__olref_label_tl
+
+\msg_new:nnn { osglecture-references } { invalid-unit }
+  {
+    Invalid~logical~unit~identifier~'#1'.~
+    Unit~identifiers~must~not~contain~whitespace,~comma,~equals,~or~'...'.
+  }
+\msg_new:nnn { osglecture-references } { unknown-option }
+  { Unknown~reference-address~key~'#1'. }
+\msg_new:nnn { osglecture-references } { missing-document }
+  { No~reference~export~is~registered~for~'#1';~using~an~undefined~reference. }
+\msg_new:nnn { osglecture-references } { missing-registration-key }
+  { Reference-document~registration~does~not~define~'#1'. }
+\msg_new:nnn { osglecture-references } { replace-standard }
+  {
+    Replacing~standard~reference~commands~with~the~osglecture~
+    optional-address~syntax:~#1.
+  }
+
+\cs_new_eq:NN \__olref_original_ref \ref
+\cs_new_eq:NN \__olref_original_pageref \pageref
+\cs_new_eq:NN \__olref_original_nameref \nameref
+\cs_new_eq:NN \__olref_original_autoref \autoref
+
+\cs_new_protected:Npn \__olref_replace_set:n #1
+  {
+    \clist_gclear:N \g__olref_replace_clist
+    \clist_map_inline:nn {#1}
+      {
+        \str_case:nnF {##1}
+          {
+            {none} { \clist_gclear:N \g__olref_replace_clist }
+            {all}
+              {
+                \clist_gset:Nn \g__olref_replace_clist
+                  {ref,pageref,nameref,autoref}
+              }
+            {ref}      { \clist_gput_right:Nn \g__olref_replace_clist {ref} }
+            {pageref}  { \clist_gput_right:Nn \g__olref_replace_clist {pageref} }
+            {nameref}  { \clist_gput_right:Nn \g__olref_replace_clist {nameref} }
+            {autoref}  { \clist_gput_right:Nn \g__olref_replace_clist {autoref} }
+          }
+          { \msg_error:nnn {osglecture-references}{unknown-option}{##1} }
+      }
+    \clist_gremove_duplicates:N \g__olref_replace_clist
+  }
+
+\keys_define:nn { osglecture/references }
+  {
+    legacy .bool_gset:N = \g__olref_legacy_bool,
+    legacy .default:n = true,
+    replace .code:n = \__olref_replace_set:n {#1},
+    replace .default:n = all,
+  }
+
+\ProcessKeyOptions [ osglecture/references ]
+
+\NewDocumentCommand \OsgLectureReferencesSetup { m }
+  { \keys_set:nn {osglecture/references} {#1} }
+
+\cs_new:Npn \__olref_current_type:
+  {
+    \cs_if_exist:NTF \OsgLectureDocumentType
+      { \OsgLectureDocumentType }
+      { }
+  }
+\cs_new:Npn \__olref_current_lang:
+  {
+    \cs_if_exist:NTF \OsgLectureLanguage
+      { \OsgLectureLanguage }
+      { }
+  }
+
+\keys_define:nn { osglecture/reference-address }
+  {
+    unit .tl_set:N = \l__olref_unit_tl,
+    type .tl_set:N = \l__olref_type_tl,
+    lang .tl_set:N = \l__olref_lang_tl,
+    unknown .code:n =
+      { \msg_error:nnn {osglecture-references}{unknown-option}{\l_keys_key_str} },
+  }
+
+\cs_new_protected:Npn \__olref_address_parse:n #1
+  {
+    \tl_clear:N \l__olref_unit_tl
+    \tl_set:Ne \l__olref_type_tl { \__olref_current_type: }
+    \tl_set:Ne \l__olref_lang_tl { \__olref_current_lang: }
+    \clist_map_inline:nn {#1}
+      {
+        \tl_if_in:nnTF {##1} {=}
+          { \keys_set:nn {osglecture/reference-address} {##1} }
+          { \tl_set:Nn \l__olref_unit_tl {##1} }
+      }
+    \tl_trim_spaces:N \l__olref_unit_tl
+    \tl_trim_spaces:N \l__olref_type_tl
+    \tl_trim_spaces:N \l__olref_lang_tl
+    \tl_if_empty:NF \l__olref_unit_tl
+      {
+        \regex_match:nVTF
+          { \A [^\s,=]+ \Z }
+          \l__olref_unit_tl
+          {
+            \tl_if_in:VnT \l__olref_unit_tl {...}
+              {
+                \msg_error:nnV {osglecture-references}{invalid-unit}
+                  \l__olref_unit_tl
+              }
+          }
+          {
+            \msg_error:nnV {osglecture-references}{invalid-unit}
+              \l__olref_unit_tl
+          }
+      }
+  }
+
+\keys_define:nn { osglecture/reference-document }
+  {
+    unit .tl_set:N = \l__olref_unit_tl,
+    type .tl_set:N = \l__olref_type_tl,
+    lang .tl_set:N = \l__olref_lang_tl,
+    aux .tl_set:N = \l__olref_aux_tl,
+    pdf .tl_set:N = \l__olref_pdf_tl,
+  }
+
+\cs_new:Npn \__olref_identity:nnn #1#2#3
+  { unit=#1,type=#2,lang=#3 }
+
+\NewDocumentCommand \OsgLectureReferenceDocument { m }
+  {
+    \tl_clear:N \l__olref_unit_tl
+    \tl_clear:N \l__olref_type_tl
+    \tl_clear:N \l__olref_lang_tl
+    \tl_clear:N \l__olref_aux_tl
+    \tl_clear:N \l__olref_pdf_tl
+    \keys_set:nn {osglecture/reference-document} {#1}
+    \clist_map_inline:nn {unit,type,lang,aux,pdf}
+      {
+        \tl_if_empty:cT {l__olref_##1_tl}
+          {
+            \msg_error:nnn {osglecture-references}{missing-registration-key}
+              {##1}
+          }
+      }
+    \tl_set:Ne \l__olref_identity_tl
+      {
+        \__olref_identity:nnn
+          {\l__olref_unit_tl}{\l__olref_type_tl}{\l__olref_lang_tl}
+      }
+    \prop_gput:NVx \g__olref_documents_prop \l__olref_identity_tl
+      { {\exp_not:V \l__olref_aux_tl}{\exp_not:V \l__olref_pdf_tl} }
+  }
+
+\cs_new_protected:Npn \__olref_import:
+  {
+    \tl_set:Ne \l__olref_identity_tl
+      {
+        \__olref_identity:nnn
+          {\l__olref_unit_tl}{\l__olref_type_tl}{\l__olref_lang_tl}
+      }
+    \tl_set:Ne \l__olref_prefix_tl
+      { olr-\str_mdfive_hash:e {\l__olref_identity_tl}: }
+    \prop_if_in:NVF \g__olref_imported_prop \l__olref_identity_tl
+      {
+        \prop_get:NVNTF
+          \g__olref_documents_prop \l__olref_identity_tl \l_tmpa_tl
+          {
+            \exp_after:wN \__olref_import_aux:nn \l_tmpa_tl
+          }
+          {
+            \msg_warning:nnV {osglecture-references}{missing-document}
+              \l__olref_identity_tl
+          }
+        \prop_gput:NVn
+          \g__olref_imported_prop \l__olref_identity_tl {true}
+      }
+  }
+
+\cs_new_protected:Npn \__olref_import_aux:nn #1#2
+  { \externaldocument[\l__olref_prefix_tl]{#1}[#2] }
+
+\cs_new_protected:Npn \__olref_target_set:nn #1#2
+  {
+    \__olref_address_parse:n {#1}
+    \tl_set:Nn \l__olref_label_tl {#2}
+    \tl_if_empty:NF \l__olref_unit_tl
+      {
+        \__olref_import:
+        \tl_put_left:NV \l__olref_label_tl \l__olref_prefix_tl
+      }
+  }
+
+\cs_new_protected:Npn \__olref_ref:n #1
+  { \__olref_original_ref {#1} }
+\cs_new_protected:Npn \__olref_ref_star:n #1
+  { \__olref_original_ref * {#1} }
+\cs_new_protected:Npn \__olref_pageref:n #1
+  { \__olref_original_pageref {#1} }
+\cs_new_protected:Npn \__olref_pageref_star:n #1
+  { \__olref_original_pageref * {#1} }
+\cs_new_protected:Npn \__olref_nameref:n #1
+  { \__olref_original_nameref {#1} }
+\cs_new_protected:Npn \__olref_nameref_star:n #1
+  { \__olref_original_nameref * {#1} }
+\cs_new_protected:Npn \__olref_autoref:n #1
+  { \__olref_original_autoref {#1} }
+\cs_new_protected:Npn \__olref_autoref_star:n #1
+  { \__olref_original_autoref * {#1} }
+
+\NewDocumentCommand \olref { s O{} m }
+  {
+    \__olref_target_set:nn {#2}{#3}
+    \IfBooleanTF{#1}
+      { \exp_args:NV \__olref_ref_star:n \l__olref_label_tl }
+      { \exp_args:NV \__olref_ref:n \l__olref_label_tl }
+  }
+\NewDocumentCommand \olpageref { s O{} m }
+  {
+    \__olref_target_set:nn {#2}{#3}
+    \IfBooleanTF{#1}
+      { \exp_args:NV \__olref_pageref_star:n \l__olref_label_tl }
+      { \exp_args:NV \__olref_pageref:n \l__olref_label_tl }
+  }
+\NewDocumentCommand \olnameref { s O{} m }
+  {
+    \__olref_target_set:nn {#2}{#3}
+    \IfBooleanTF{#1}
+      { \exp_args:NV \__olref_nameref_star:n \l__olref_label_tl }
+      { \exp_args:NV \__olref_nameref:n \l__olref_label_tl }
+  }
+\NewDocumentCommand \olautoref { s O{} m }
+  {
+    \__olref_target_set:nn {#2}{#3}
+    \IfBooleanTF{#1}
+      { \exp_args:NV \__olref_autoref_star:n \l__olref_label_tl }
+      { \exp_args:NV \__olref_autoref:n \l__olref_label_tl }
+  }
+
+\cs_new_protected:Npn \__olref_install_replacements:
+  {
+    \bool_if:NF \g__olref_replacements_installed_bool
+      {
+        \clist_if_empty:NF \g__olref_replace_clist
+          {
+            \msg_warning:nnx {osglecture-references}{replace-standard}
+              {\clist_use:Nn \g__olref_replace_clist {,~}}
+          }
+        \clist_if_in:NnT \g__olref_replace_clist {ref}
+          {
+            \RenewDocumentCommand \ref { s O{} m }
+              {
+                \IfBooleanTF{##1}
+                  {\olref*[##2]{##3}}
+                  {\olref[##2]{##3}}
+              }
+          }
+        \clist_if_in:NnT \g__olref_replace_clist {pageref}
+          {
+            \RenewDocumentCommand \pageref { s O{} m }
+              {
+                \IfBooleanTF{##1}
+                  {\olpageref*[##2]{##3}}
+                  {\olpageref[##2]{##3}}
+              }
+          }
+        \clist_if_in:NnT \g__olref_replace_clist {nameref}
+          {
+            \RenewDocumentCommand \nameref { s O{} m }
+              {
+                \IfBooleanTF{##1}
+                  {\olnameref*[##2]{##3}}
+                  {\olnameref[##2]{##3}}
+              }
+          }
+        \clist_if_in:NnT \g__olref_replace_clist {autoref}
+          {
+            \RenewDocumentCommand \autoref { s O{} m }
+              {
+                \IfBooleanTF{##1}
+                  {\olautoref*[##2]{##3}}
+                  {\olautoref[##2]{##3}}
+              }
+          }
+        \bool_gset_true:N \g__olref_replacements_installed_bool
+      }
+  }
+
+\cs_new_protected:Npn \__olref_install_legacy:
+  {
+    \bool_if:NT \g__olref_legacy_bool
+      {
+        \ProvideDocumentCommand \xref { O{} m } { \olref[##1]{##2} }
+        \ProvideDocumentCommand \xrefchap { m }
+          { \olref[##1]{osglecture} }
+        \ProvideDocumentCommand \xrefsmart { s O{} m }
+          {
+            \IfBooleanTF{##1}
+              { \olpageref*[##2]{##3} }
+              { \olpageref[##2]{##3} }
+          }
+        \ProvideDocumentCommand \xrefdist { s O{} m m }
+          { \__olref_legacy_dist:nnnn {##1}{##2}{##3}{##4} }
+        \ProvideDocumentCommand \xarticleref { O{} m }
+          { \olref[##1,type=script]{##2} }
+        \ProvideDocumentCommand \xpresentationref { O{} m }
+          { \olref[##1,type=slides]{##2} }
+      }
+  }
+
+\cs_new_protected:Npn \__olref_legacy_dist_text:nnn #1#2#3
+  {
+    \IfBooleanT{#1}{(}
+    #2~#3
+    \IfBooleanT{#1}{)}
+  }
+
+\cs_new_protected:Npn \__olref_legacy_dist:nnnn #1#2#3#4
+  {
+    \group_begin:
+      \cs_set:Npn \reftextfaceafter
+        { \__olref_legacy_dist_text:nnn {#1}{#4}{\thevpagerefnum} }
+      \cs_set_eq:NN \reftextafter \reftextfaceafter
+      \cs_set_eq:NN \reftextfacebefore \reftextfaceafter
+      \cs_set_eq:NN \reftextbefore \reftextfaceafter
+      \cs_set:Npn \reftextfaraway ##1
+        {
+          \__olref_legacy_dist_text:nnn
+            {#1}{#4}{\__olref_original_pageref{##1}}
+        }
+      \IfBooleanTF{#1}
+        { \vpageref*[#2]{#3} }
+        { \vpageref[#2]{#3} }
+    \group_end:
+  }
+
+\cs_new_protected:Npn \__olref_export_label:n #1
+  {
+    \iow_now:Ne \g__olref_export_iow
+      {
+        \token_to_str:N \newlabel
+        { \exp_not:n {#1} }
+          {
+            { \exp_not:o {\@currentlabel} }
+            { \thepage }
+            { \exp_not:o {\@currentlabelname} }
+            { \exp_not:o {\@currentHref} }
+            {}
+          }
+      }
+  }
+
+\AddToHook{begindocument/before}[osglecture-references/setup]
+  {
+    \iow_open:Nn \g__olref_export_iow {\jobname.osgref.aux}
+    \__olref_install_legacy:
+    \__olref_install_replacements:
+  }
+\AddToHookWithArguments{label}[osglecture-references/export]
+  { \__olref_export_label:n {#1} }
+\AddToHook{enddocument/afterlastpage}[osglecture-references/export]
+  { \iow_close:N \g__olref_export_iow }
+
+\ExplSyntaxOff

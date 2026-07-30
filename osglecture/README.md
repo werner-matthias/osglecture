@@ -92,3 +92,48 @@ lauten:
 l3build check
 l3build install
 ```
+
+## Referenzen
+
+`osglecture-references` ist der obligatorische Kerndienst für lokale und
+serieninterne Referenzen. Ohne optionale Dokumentadresse entsprechen seine
+Befehle den Hyperref-Befehlen:
+
+```latex
+\olref{sec:local}
+\olpageref{sec:local}
+```
+
+Eine Adresse wählt eine andere logische Unit derselben Serie:
+
+```latex
+\olref[processes]{sec:scheduling}
+\olautoref[processes,type=script,lang=en]{sec:scheduling}
+```
+
+Ein schlüsselloser Eintrag ist stets `unit`; `type` und `lang` übernehmen ohne
+Angabe den aktuellen Buildwert. Sternvarianten geben denselben Text ohne Link
+aus. Gemeinsamer Projektcode kann die optionale Kompatibilitätsoberfläche
+aktivieren:
+
+```latex
+\OsgLectureReferencesSetup{
+  legacy,
+  replace={ref,pageref}
+}
+```
+
+Das Modul lädt `varioref` mit der empfohlenen Option `nospace`; dessen
+öffentliche Befehle wie `\vref` und `\vpageref` können direkt verwendet werden.
+Deutsche und englische Texte werden registriert und folgen bei Verwendung von
+Babel der jeweils ausgewählten Sprache. Entfernungsabhängige Seitenangaben
+sind ausschließlich innerhalb des aktuellen Dokuments sinnvoll. Der alte
+Befehl `\xrefdist` ist ein Adapter auf `\vpageref` und wird nur durch
+`legacy=true` bereitgestellt.
+
+Alle gewöhnlichen Labels werden in `<jobname>.osgref.aux` gespiegelt. Der
+derzeitige erste Implementierungsschnitt erwartet, dass ein von OLLM später
+generierter Snapshot externe Exporte mit
+`\OsgLectureReferenceDocument{unit=...,type=...,lang=...,aux=...,pdf=...}`
+registriert. Promotion, Snapshot-Erzeugung, Fixpunktauflösung und die
+`tagpax`-Integrationsbefehle sind noch nicht implementiert.
