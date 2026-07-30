@@ -11,6 +11,7 @@ Featurewünsche.
 * [ ] Querreferenzen zwischen Folien und Script
 * [ ] Kapitelübergreifende Literaturreferenzen
 * [x] Lang-/Kurzformunterstützung auf Sprachebene
+* [ ] Integrationsworkflow
 
 # lttheme
 * [ ] TUC-Theme isolieren
@@ -19,7 +20,7 @@ Featurewünsche.
 
 # tagpax
 * [x] Test klären
-* [ ] Integrationsworkflow
+
 
 # Ergänzungspakete
 * [ ] ANSI-Terminal
