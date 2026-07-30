@@ -139,7 +139,9 @@ my ($consumer_result) = grep {
 } OLLM::State->_current_results($consumer_spec);
 is_deeply $consumer_result->{dependencies}, [{
   kind => 'external-reference', unit_id => 'processes',
-  doctype => 'script', language => 'de', property => 'document',
+  doctype => 'script', language => 'de', property => 'ref',
+  label => 'sec:scheduling',
+  target_generation => $resolved->{build_spec}{generation_id},
 }], 'the promoted consumer records its actual external document dependency';
 
 done_testing;

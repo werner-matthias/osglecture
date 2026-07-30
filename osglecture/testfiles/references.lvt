@@ -11,6 +11,7 @@
   unit=other,
   type=script,
   lang=de,
+  generation=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,
   aux=reference-source.osgref,
   pdf=reference-source.pdf
 }

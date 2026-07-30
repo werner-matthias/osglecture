@@ -11,6 +11,7 @@ use File::Copy qw(copy);
 use File::Find qw(find);
 use File::Path qw(make_path);
 use File::Spec;
+use Fcntl qw(:flock);
 use JSON::PP;
 use Time::HiRes qw(time);
 
@@ -22,6 +23,7 @@ my $attempt_counter = 0;
 
 sub start_attempt {
   my ($class, $spec) = @_;
+  my $lock = _state_lock($spec);
   my $known = $class->known_unit_id($spec);
   $spec->{unit_id} = $known if defined $known;
   $spec->{generation_id} = sha256_hex(join "\0",
@@ -61,6 +63,7 @@ sub write_registry {
       '  unit={' . _tex_value($result->{unit_id}) . '},',
       '  type={' . _tex_value($result->{doctype}) . '},',
       '  lang={' . _tex_value($result->{language}) . '},',
+      '  generation={' . _tex_value($result->{generation_id}) . '},',
       '  aux={' . _tex_value($aux) . '},',
       '  pdf={' . _tex_value($pdf) . '}',
       '}';
@@ -77,6 +80,7 @@ sub write_registry {
 sub promote {
   my ($class, $spec) = @_;
   return if ($spec->{unit_role} // '') eq 'i';
+  my $lock = _state_lock($spec);
   my $result_path = File::Spec->catfile(
     $spec->{build_directory}, "$spec->{job_id}.osgresult.aux",
   );
@@ -144,6 +148,18 @@ sub promote {
     die $error;
   };
   return $final;
+}
+
+sub _state_lock {
+  my ($spec) = @_;
+  my $directory = File::Spec->catdir($spec->{project_root}, '.osglecture');
+  make_path($directory);
+  my $path = File::Spec->catfile($directory, '.state.lock');
+  open my $handle, '>>', $path
+    or die "cannot open OLLM state lock '$path': $!\n";
+  flock($handle, LOCK_EX)
+    or die "cannot lock OLLM state '$path': $!\n";
+  return $handle;
 }
 
 sub _current_results {
@@ -291,16 +307,19 @@ sub _read_dependencies {
     next if $line !~ /\\OsgLectureReferenceUse/;
     my @match = $line =~
       /\\OsgLectureReferenceUse
-        \{([^{}]*)\}\{([^{}]*)\}\{([^{}]*)\}\{([^{}]*)\}\{([^{}]*)\}/x;
+        \{([^{}]*)\}\{([^{}]*)\}\{([^{}]*)\}\{([^{}]*)\}
+        \{([^{}]*)\}\{([^{}]*)\}\{([^{}]*)\}/x;
     die "invalid reference-use record in '$path'\n" if !@match;
     die "reference-use generation does not match the current build\n"
       if $match[0] ne $spec->{generation_id};
     push @dependencies, {
       kind     => 'external-reference',
-      unit_id  => $match[1],
-      doctype  => $match[2],
-      language => $match[3],
-      property => $match[4],
+      target_generation => $match[1],
+      unit_id  => $match[2],
+      doctype  => $match[3],
+      language => $match[4],
+      label    => $match[5],
+      property => $match[6],
     };
   }
   close $handle or die "cannot close reference-use file '$path': $!\n";

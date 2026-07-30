@@ -48,14 +48,9 @@ Der neue Executor implementiert derzeit normale und kontinuierliche Builds,
 Werkzeugprüfung durch `doctor`. Native Clean- und Informationsaktionen von
 `latexmk` können für einen aufgelösten Build durchgereicht werden.
 
-Folgende von der CLI bereits erkannte OLLM-Funktionen sind noch nicht
-implementiert und enden mit Exitcode 69:
-
-- **TODO:** `report`;
-- **TODO:** das rein lesende `check`;
-- **TODO:** OLLM-spezifisches `clean` mit Level und Scope;
-- **TODO:** `prune`;
-- **TODO:** Fixpunkt-Builds mit `build --resolve`.
+Als wesentliche von der CLI bereits erkannte OLLM-Funktion ist noch der
+Fixpunkt-Build mit `build --resolve` nicht implementiert und endet mit
+Exitcode 69.
 
 Implementiert sind inzwischen der LaTeX-nahe Ergebnisrückkanal, atomare
 Resultat-/Referenzpromotion und der jobgebundene Snapshot der zuletzt
@@ -149,9 +144,9 @@ die Klasse ohne TOML-Abhängigkeit.
   OLLM behandelt Beamer und `ltx-talk` normalerweise gleich, solange beide mit
   demselben LuaLaTeX-/latexmk-Verfahren gebaut werden.
 - [`tagpax`](../tagpax/doc/ARCHITECTURE.md) ermöglicht die semantische
-  Integration bereits erzeugter, getaggter PDFs. Ein Integrationsdokument kann
-  damit Quellen oder fertige Kapitelartefakte kombinieren; OLLM verfolgt nur
-  deren gemeldete Buildabhängigkeiten.
+  Integration bereits erzeugter, getaggter PDFs. Ein Integrationsdokument
+  kombiniert ausschließlich solche fertigen Kapitelartefakte; OLLM verfolgt
+  nur deren gemeldete Buildabhängigkeiten.
 - [`langselect`](../langselect/README.md) implementiert sprachabhängigen Inhalt.
   OLLM wählt die konkrete Sprachvariante, während `langselect` und
   `osglecture` den Inhalt umsetzen.
@@ -360,8 +355,16 @@ sichtbaren Content-Einheit zugeordnet. Ohne vorhergehende Content-Einheit ist
 er ungültig.
 
 Ein `integration`-Verzeichnis baut ein Gesamtprodukt und ist selbst kein
-nummeriertes Kapitel. Ein `appendix` gehört in einen eigenen strukturellen
-Abschnitt und verwendet die Appendix-Nummerierung des jeweiligen Backends.
+nummeriertes Kapitel. Für OLLM ist es dennoch eine gewöhnlich aufgelöste und
+durch `latexmk` übersetzte Unit mit Rolle `i` (`integration`): Target, Doctype,
+Sprache, Buildverzeichnis, Buildauftrag und Artefakt folgen demselben Vertrag
+wie bei anderen Units. OLLM interpretiert weder `\includeunit(s)` noch
+komponiert es PDFs selbst. Die Rolle bewirkt lediglich die festgelegten
+Abweichungen im Resultatvertrag, insbesondere keine obligatorische
+`\lecture`-Deklaration und zunächst keinen Reexport von Unitreferenzen.
+
+Ein `appendix` gehört in einen eigenen strukturellen Abschnitt und verwendet
+die Appendix-Nummerierung des jeweiligen Backends.
 
 Weitere Rollen benötigen eine Schemaänderung und eine Kollisionsprüfung, da ein
 einbuchstabiges Segment nach dem ersten Bindestrich als Rolle interpretiert
@@ -1037,7 +1040,11 @@ Import als gewöhnliche nicht auflösbare Referenzen sichtbar.
 
 Tatsächliche externe Imports schreibt LaTeX kontrolliert nach
 `<jobname>.osgref-used.aux`. OLLM validiert die Generationskennung und
-übernimmt die Records in das abgeleitete `result.json`.
+übernimmt die Records in das abgeleitete `result.json`. Ein externer
+Referenzrecord enthält Konsumenten- und Zielgeneration, Unit-ID, Doctype,
+Sprache, Label und die verwendete Property (`ref`, `page`, `name` oder
+`autoref`). Dadurch kann `check` fehlende Labels und gegenüber einer neuen
+Zielgeneration veraltete Konsumenten unterscheiden.
 Beispiele:
 
 ```text
@@ -1276,8 +1283,8 @@ max_rounds = 8
 Der konkrete Default bleibt bei der Implementierung festzulegen. Der Name
 `max_rounds` bezeichnet bewusst Fixpunktrunden und nicht Graphentiefe.
 
-Integrationsverzeichnisse wählen ihre Quellen auf der LaTeX-Ebene nach
-logischen Unit-IDs:
+Integrationsverzeichnisse wählen die zu integrierenden, bereits gebauten
+PDF-Artefakte auf der LaTeX-Ebene nach logischen Unit-IDs:
 
 ```tex
 \includeunit{processes}
@@ -1293,6 +1300,27 @@ importiert Struktur, Seiten, Destinationen und Linkannotation; serieninterne
 `GoTo`-Ziele umgeschrieben, ohne Annotation oder zugehörigen OBJR zu ersetzen.
 Integrationsprodukte reexportieren in der ersten Version keine Unitreferenzen
 und dürfen nicht rekursiv als Unitquelle dienen.
+
+Aus OLLM-Sicht bleibt der Build des Integrationsprodukts ein normaler
+Unit-Build. OLLM soll über den jobgebundenen Snapshot die promotierten PDFs,
+Referenzexports, Rollen und die logische Serienreihenfolge bereitstellen und
+verfolgt die vom LaTeX-Lauf gemeldeten Abhängigkeiten. Auswahl,
+Bereichsauswertung, PDF-Komposition und tagpax-Integration sind Aufgaben von
+`osglecture` beziehungsweise eines zugehörigen Integrationsmoduls. Dieses
+Modul ersetzt fachlich das frühere `osgcombinescript`, ohne dessen Abhängigkeit
+von physischen Verzeichnis- oder Dateinamen zu übernehmen.
+
+Die künftige Implementierung von `\includeunit` und `\includeunits` muss jede
+tatsächlich ausgewählte Unitprojektion in einer kontrollierten LaTeX-nahen
+Abhängigkeitsdatei melden. Der Record enthält mindestens logische Unit-ID,
+Doctype, Sprache und die beim Import verwendete Zielgeneration. Eine
+Bereichsangabe wird vor dem Schreiben der Records gegen den jobgebundenen
+Snapshot expandiert. OLLM durchsucht die TeX-Quelle nicht nach
+Integrationsbefehlen.
+
+Diese Records machen enthaltene Unitprojektionen für `check` und
+`build --resolve` erforderlich. Eine lediglich physisch entdeckte, aber weder
+referenzierte noch integrierte Unit erzeugt dagegen keine Buildpflicht.
 
 ### 14.5 Tagged PDF
 
@@ -1316,10 +1344,10 @@ Aktionen:
 
 ```text
 build      implementierte Defaultaktion
-report     TODO
-check      TODO
-clean      TODO
-prune      TODO
+report     implementiert
+check      implementiert
+clean      implementiert
+prune      implementiert
 doctor     grundlegende Werkzeugprüfung implementiert; Projekttests TODO
 ```
 
@@ -1498,7 +1526,7 @@ Exitcode 1.
 
 ## 16. Report, Check und Doctor
 
-### 16.1 Report (TODO)
+### 16.1 Report
 
 `report` beschreibt vorhandene Builds:
 
@@ -1512,7 +1540,27 @@ externe Abhängigkeiten
 letzter gültiger Export
 ```
 
-### 16.2 Check (TODO)
+`report` beschreibt Befunde, bewertet sie aber nicht als Freigabegate.
+Solange der Zustand lesbar ist, bleiben fehlende oder veraltete Projektionen
+Teil der Ausgabe und führen nicht allein zu einem Fehlerstatus. `check`
+verwendet dieselben Zustandsdaten, bewertet deren Integrität dagegen über
+Diagnosen und Exitcode.
+
+Für `report` und `check` hängt der Default-Scope vom Arbeitsverzeichnis ab:
+
+```text
+Projektroot                         series
+Unit-Verzeichnis oder Nachfahre    current
+```
+
+`unit` muss immer ausdrücklich mit `--scope=unit` gewählt werden. Ein anderes,
+nicht zu einer Unit gehörendes Unterverzeichnis ist ohne expliziten Scope ein
+Fehler. Bei einem von außerhalb mit `--project-root` oder `--config`
+ausgewählten Projekt gilt `series`. Beide Befehle nennen den effektiven Scope
+in Text- und JSON-Ausgabe. Da sie rein lesend sind, verlangt `series` keine
+Bestätigung.
+
+### 16.2 Check
 
 `check` baut nichts. Es prüft mindestens:
 
@@ -1524,6 +1572,36 @@ letzter gültiger Export
 - Generationskennungen konsistent;
 - erzwungene Optionen sichtbar;
 - vorgesehene Sprach-/Zielkombination zulässig.
+
+Für die Vollständigkeitsprüfung unterscheidet OLLM drei Mengen:
+
+```text
+discovered   physisch vorhandene Units
+available    erfolgreich promotierte Projektionen
+required     durch Auswahl oder semantische Abhängigkeiten benötigte Projektionen
+```
+
+Discovery allein erzeugt keine Buildpflicht. Eine Unit darf für eine mögliche
+spätere Nutzung angelegt, testweise nur in einzelnen Projektionen gebaut und
+ansonsten unreferenziert bleiben. Sie erscheint in `report` als ungebaut
+beziehungsweise ruhend, verhindert aber keinen erfolgreichen Serien-Check.
+
+Erforderlich wird eine Projektion durch eine explizite aktuelle Auswahl, eine
+tatsächlich protokollierte externe Referenz, `\includeunit(s)` eines
+Integrationsprodukts oder eine andere semantische Abhängigkeit wie
+Continuation. `check` verlangt Vollständigkeit nur für diese erforderliche
+Abhängigkeitshülle. Die Scopes wählen den untersuchten Ausgangsausschnitt,
+nicht automatisch die vollständige theoretische Target-/Sprachmatrix:
+
+```text
+current   ausgewählte Projektion und ihre Abhängigkeitshülle
+unit      vorhandene Projektionen der Unit und ihre Abhängigkeitshülle
+series    vorhandene Projektionen der Serie und die serienweit erforderliche Hülle
+```
+
+Eine spätere Deploymentpolicy darf zusätzliche Wurzelprodukte ausdrücklich
+als erforderlich markieren. Eine solche Manifestoberfläche gehört nicht zur
+ersten Check-Implementierung.
 
 Ein späteres Deployment ruft `check` auf. Qualitätsprobleme dürfen mit einer
 expliziten Force-Option übergangen werden; Integritäts- und Sicherheitsfehler
@@ -1546,7 +1624,7 @@ Optionale Werkzeuge werden nur geprüft, wenn das effektive Projekt oder Backend
 sie deklariert. Xindy ist daher keine feste Voraussetzung; eine Lua-basierte
 Indexsortierung kann es ersetzen.
 
-## 17. Clean und Prune (TODO)
+## 17. Clean und Prune
 
 `clean` besitzt Level und Scope.
 
@@ -1576,8 +1654,28 @@ scope = current
 
 Deploymentartefakte werden nie durch OLLM-Clean entfernt.
 
-`prune` entfernt ausschließlich verwaiste Zustände nach der aktuellen
-Projektstruktur.
+`current` wählt genau die aktuelle physische Unit sowie ein Target und eine
+Sprache. `unit` wählt alle vorhandenen Buildprojektionen beziehungsweise
+promotierten Zustände der aktuellen Unit. `series` wählt die gesamte Serie.
+Wird ein tatsächlich löschendes `--scope=series` innerhalb eines
+Unit-Verzeichnisses statt vom Projektroot aufgerufen, verlangt OLLM eine
+interaktive Bestätigung. Mit `--non-interactive` ist dieser Fall ein Fehler;
+vom Projektroot aus und bei `--dry-run` ist keine Rückfrage nötig.
+
+`--dry-run` gibt die konkreten Löschziele aus, ohne den Zustand zu verändern.
+`aux` entfernt den privaten Inhalt ausgewählter Buildverzeichnisse mit Ausnahme
+des lokalen PDF-Artefakts und des Build-Locks. `build` entfernt die
+ausgewählten isolierten Buildverzeichnisse. `state` entfernt die ausgewählten
+promotierten Projektionen. Vor einer wirklichen Bereinigung prüft OLLM die
+betroffenen Build-Locks.
+
+`prune` entfernt standardmäßig abgebrochene Pending-Verzeichnisse und
+unveränderliche Generationen, auf die kein `current.tex` mehr zeigt. Ein
+promotierter Zustand, dessen bisherige `physical-unit` nicht mehr in der
+aktuellen Projektstruktur vorkommt, kann lediglich aus einer Umbenennung
+stammen und wird deshalb standardmäßig nur gemeldet. Die ausdrückliche Option
+`--stale-units` entfernt auch solche Projektionen. Beide Aktionen werden mit
+der Resultat-Promotion durch einen projektweiten State-Lock serialisiert.
 
 ## 18. Sicherheit
 

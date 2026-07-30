@@ -60,4 +60,26 @@ eval { OLLM::CLI->parse(qw(script -r project.rc)) };
 like $@, qr/additional rc files.*controlled build configuration/,
   'two-argument latexmk rc injection is rejected by the CLI parser';
 
+$plan = OLLM::CLI->parse(qw(
+  clean --level=state --scope=unit --target=script --language=de --dry-run
+));
+is $plan->{action}, 'clean', 'clean is a first-class action';
+is $plan->{level}, 'state', 'clean level is parsed';
+is $plan->{scope}, 'unit', 'clean scope is parsed';
+is $plan->{target}, 'script', 'current projection target is parsed';
+
+$plan = OLLM::CLI->parse(qw(prune --stale-units --dry-run));
+ok $plan->{stale_units}, 'explicit stale-unit pruning is parsed';
+
+$plan = OLLM::CLI->parse(qw(report --scope=unit --format=json));
+is $plan->{action}, 'report', 'report is a first-class action';
+is $plan->{scope}, 'unit', 'report scope is parsed';
+
+$plan = OLLM::CLI->parse(qw(check --target=script --language=de));
+is $plan->{action}, 'check', 'check is a first-class action';
+is $plan->{target}, 'script', 'check current target is parsed';
+
+eval { OLLM::CLI->parse(qw(clean --level=unknown)) };
+like $@, qr/invalid --level/, 'unknown clean level is rejected';
+
 done_testing;

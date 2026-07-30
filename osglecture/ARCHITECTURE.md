@@ -693,6 +693,23 @@ zwischen enthaltenen Units als `GoTo`, erhält dabei aber das vorhandene
 getaggte Link-Strukturelement und dessen OBJR. Das Integrationsprodukt
 reexportiert in der ersten Version keine Unitreferenzen.
 
+Die Integration verarbeitet ausschließlich bereits gebaute, getaggte
+Unit-PDFs; eine alternative Quellintegration gehört nicht zu diesem Vertrag.
+Aus OLLM-Sicht ist das Integrationsverzeichnis eine gewöhnlich übersetzte Unit
+mit Rolle `i` (`integration`). OLLM soll den Snapshot der promotierten
+Artefakte, Rollen und Serienreihenfolge liefern, interpretiert aber weder
+`\includeunit(s)` noch komponiert es PDFs. Auswahl, Bereichsauswertung und
+tagpax-Import gehören in einen osglecture-Integrationsdienst. Dieser bildet den
+logischen, pfadunabhängigen Ersatz für das frühere `osgcombinescript`.
+
+Bei der künftigen Implementierung schreibt `\includeunit` beziehungsweise
+`\includeunits` für jede nach Bereichsexpansion tatsächlich ausgewählte
+Unitprojektion einen kontrollierten Abhängigkeitsrecord mit Unit-ID, Doctype,
+Sprache und verwendeter Zielgeneration. OLLM leitet die Auswahl nicht durch
+Quelltextsuche her. Nur diese gemeldeten Integrationen machen ein
+Unit-Artefakt für `check` und `build --resolve` erforderlich; eine bloß
+entdeckte, unreferenzierte und nicht integrierte Unit darf ungebaut bleiben.
+
 Mit aktivem `\DocumentMetadata` erzeugt der Dienst Links ausschließlich über
 Hyperref und LaTeX PDF Management. Er besitzt weder eine eigene
 Tagginginitialisierung noch direkte PDF-Linkprimitiven. Sternvarianten und

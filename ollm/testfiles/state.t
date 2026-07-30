@@ -61,7 +61,8 @@ close $reference;
 open my $used, '>:raw',
   File::Spec->catfile($build, "$job.osgref-used.aux") or die $!;
 print {$used}
-  "\\OsgLectureReferenceUse{$generation}{other}{script}{de}{document}\n";
+  "\\OsgLectureReferenceUse{$generation}{", ('d' x 64),
+  "}{other}{script}{de}{sec:other}{page}\n";
 close $used;
 
 my $published = OLLM::State->promote($spec);
@@ -81,7 +82,8 @@ is $record->{unit_id}, 'processes',
   'promoted state uses the explicit LaTeX unit-id';
 is_deeply $record->{dependencies}, [{
   kind => 'external-reference', unit_id => 'other',
-  doctype => 'script', language => 'de', property => 'document',
+  doctype => 'script', language => 'de', property => 'page',
+  label => 'sec:other', target_generation => 'd' x 64,
 }], 'actual external-document use is retained at document granularity';
 
 my %next = %$spec;

@@ -4,7 +4,7 @@ use v5.30;
 use strict;
 use warnings;
 
-use Cwd qw(getcwd);
+use Cwd qw(abs_path getcwd);
 use File::Basename qw(dirname);
 use File::Spec;
 use JSON::PP;
@@ -49,6 +49,14 @@ sub run {
 
   if ($plan->{action} eq 'doctor') {
     return $class->_doctor($plan);
+  }
+
+  if ($plan->{action} eq 'clean' || $plan->{action} eq 'prune') {
+    return $class->_maintenance($plan);
+  }
+
+  if ($plan->{action} eq 'report' || $plan->{action} eq 'check') {
+    return $class->_inspection($plan);
   }
 
   if ($plan->{action} ne 'build') {
@@ -242,6 +250,30 @@ sub parse {
       $plan{non_interactive} = 1;
       next;
     }
+    if ($arg =~ /^--level=(.+)$/) {
+      $plan{level} = _enum('level', $1, qw(aux build state all));
+      next;
+    }
+    if ($arg eq '--level') {
+      $plan{level} = _enum(
+        'level', _take_value($arg, \@argv), qw(aux build state all),
+      );
+      next;
+    }
+    if ($arg =~ /^--scope=(.+)$/) {
+      $plan{scope} = _enum('scope', $1, qw(current unit series));
+      next;
+    }
+    if ($arg eq '--scope') {
+      $plan{scope} = _enum(
+        'scope', _take_value($arg, \@argv), qw(current unit series),
+      );
+      next;
+    }
+    if ($arg eq '--stale-units') {
+      $plan{stale_units} = 1;
+      next;
+    }
 
     if ($arg =~ /^(?:--language=|\+?lang=)(.+)$/) {
       $plan{language} = $1;
@@ -324,6 +356,188 @@ sub parse {
 
   $plan{target} //= 'slides' if $plan{action} eq 'build';
   return \%plan;
+}
+
+sub _maintenance {
+  my ($class, $plan) = @_;
+  my $cwd = getcwd();
+  my $located = eval {
+    OLLM::Config->find_manifest(
+      start_dir => $cwd, config => $plan->{config},
+      project_root => $plan->{project_root},
+    );
+  };
+  if (!$located || $located->{kind} ne 'toml') {
+    my $error = $@ || 'clean and prune require an ollmconfig.toml project';
+    chomp $error;
+    print STDERR "ollm: $error\n";
+    return 2;
+  }
+  my $manifest = eval { OLLM::Config->load_manifest($located->{path}) };
+  if (!$manifest) {
+    my $error = $@ || 'cannot load project manifest';
+    chomp $error;
+    print STDERR "ollm: $error\n";
+    return 2;
+  }
+  my $root = dirname($located->{path});
+  my $start = $cwd;
+  my $relative = File::Spec->abs2rel($cwd, $root);
+  if ((defined($plan->{project_root}) || defined($plan->{config}))
+      && (File::Spec->file_name_is_absolute($relative)
+        || $relative =~ /\A\.\.(?:[\\\/]|\z)/)) {
+    $start = $root;
+  }
+  require OLLM::Maintenance;
+  my $request = eval {
+    OLLM::Maintenance->prepare(
+      plan => $plan, project_root => $root, start_dir => $start,
+      manifest => $manifest,
+      structure => OLLM::Config->structure_snapshot(project_root => $root),
+      default_language => $manifest->{languages}{default},
+    );
+  };
+  if (!$request) {
+    my $error = $@ || 'invalid maintenance request';
+    chomp $error;
+    print STDERR "ollm: $error\n";
+    return 2;
+  }
+  if ($request->{confirm_series}) {
+    if ($plan->{non_interactive} || !-t STDIN) {
+      print STDERR "ollm: --scope=series from inside a unit requires "
+        . "interactive confirmation; run it from the project root instead\n";
+      return 2;
+    }
+    print STDERR "Clean the entire series although the command was started "
+      . "inside unit '$request->{physical_unit}'? [y/j/N] ";
+    my $answer = <STDIN> // '';
+    if ($answer !~ /\A\s*(?:y|yes|j|ja)\s*\z/i) {
+      print STDERR "ollm: clean cancelled\n";
+      return 1;
+    }
+  }
+  my $report = eval { OLLM::Maintenance->execute($request) };
+  if (!$report) {
+    my $error = $@ || 'maintenance action failed';
+    chomp $error;
+    print STDERR "ollm: $error\n";
+    return 1;
+  }
+  _print_maintenance($plan, $report);
+  return 0;
+}
+
+sub _inspection {
+  my ($class, $plan) = @_;
+  for my $option (qw(all dry_run level rebuild resolve stale_units)) {
+    if ($plan->{$option}) {
+      print STDERR "ollm: --$option is not valid for $plan->{action}\n";
+      return 2;
+    }
+  }
+  if ($plan->{source_explicit} || @{ $plan->{latexmk_args} }) {
+    print STDERR "ollm: $plan->{action} does not accept a source or latexmk options\n";
+    return 2;
+  }
+  my $cwd = getcwd();
+  my $located = eval {
+    OLLM::Config->find_manifest(
+      start_dir => $cwd, config => $plan->{config},
+      project_root => $plan->{project_root},
+    );
+  };
+  if (!$located || $located->{kind} ne 'toml') {
+    my $error = $@ || 'report and check require an ollmconfig.toml project';
+    chomp $error;
+    print STDERR "ollm: $error\n";
+    return 2;
+  }
+  my $manifest = eval { OLLM::Config->load_manifest($located->{path}) };
+  if (!$manifest) {
+    my $error = $@ || 'cannot load project manifest';
+    chomp $error;
+    print STDERR "ollm: $error\n";
+    return 2;
+  }
+  my $root = dirname($located->{path});
+  my $start = $cwd;
+  my $relative = File::Spec->abs2rel($cwd, $root);
+  if ((defined($plan->{project_root}) || defined($plan->{config}))
+      && (File::Spec->file_name_is_absolute($relative)
+        || $relative =~ /\A\.\.(?:[\\\/]|\z)/)) {
+    $start = $root;
+  }
+  require OLLM::Inspection;
+  my $request = eval {
+    OLLM::Inspection->prepare(
+      plan => $plan, project_root => $root, start_dir => $start,
+      manifest => $manifest,
+      structure => OLLM::Config->structure_snapshot(project_root => $root),
+    );
+  };
+  if (!$request) {
+    my $error = $@ || 'invalid inspection request';
+    chomp $error;
+    print STDERR "ollm: $error\n";
+    return 2;
+  }
+  my $report = eval { OLLM::Inspection->analyze($request) };
+  if (!$report) {
+    my $error = $@ || 'cannot inspect OLLM state';
+    chomp $error;
+    print STDERR "ollm: $error\n";
+    return 1;
+  }
+  _print_inspection($plan, $report);
+  return 3 if $plan->{action} eq 'check' && !$report->{ok};
+  return 0;
+}
+
+sub _print_inspection {
+  my ($plan, $report) = @_;
+  if ($plan->{format} eq 'json') {
+    print JSON::PP->new->canonical->pretty->encode({
+      schema => 'org.osglecture.ollm.' . $plan->{action},
+      version => 1, %$report,
+      ok => $report->{ok} ? JSON::PP::true : JSON::PP::false,
+    });
+    return;
+  }
+  print "Scope: $report->{scope}\n";
+  for my $unit (@{ $report->{units} }) {
+    print "Unit:  $unit->{physical_unit} [$unit->{status}]\n";
+  }
+  for my $projection (@{ $report->{projections} }) {
+    print "Build: $projection->{identity} [$projection->{status}]",
+      $projection->{required} ? " required\n" : "\n";
+  }
+  for my $issue (@{ $report->{issues} }) {
+    print uc($issue->{severity}), " [$issue->{code}] $issue->{message}\n";
+  }
+  print $report->{ok} ? "Status: OK\n" : "Status: INCONSISTENT\n";
+}
+
+sub _print_maintenance {
+  my ($plan, $report) = @_;
+  if ($plan->{format} eq 'json') {
+    print JSON::PP->new->canonical->pretty->encode({
+      schema => 'org.osglecture.ollm.maintenance',
+      version => 1, action => $report->{action},
+      dry_run => $plan->{dry_run} ? JSON::PP::true : JSON::PP::false,
+      items => $report->{items},
+    });
+    return;
+  }
+  my $verb = $plan->{dry_run} ? 'would remove' : 'removed';
+  for my $item (@{ $report->{items} }) {
+    if ($item->{operation} eq 'report') {
+      print "stale unit: $item->{path}\n";
+    } else {
+      print "$verb [$item->{kind}] $item->{path}\n";
+    }
+  }
+  print "nothing to do\n" if !@{ $report->{items} };
 }
 
 sub _take_value {
@@ -466,6 +680,10 @@ Implemented commands:
   build                 execute a series build
   +standalone           execute a manifest-free build
   build --dry-run       print the normalized request without building
+  report                describe discovered units and promoted projections
+  check                 validate required projection dependencies
+  clean                 remove selected OLLM build or state data
+  prune                 remove superseded OLLM state generations
   doctor                inspect the local Perl and TeX toolchain
 
 General options:
@@ -483,6 +701,9 @@ Build options:
   --resolve
   --rebuild
   --dry-run
+  --level=aux|build|state|all
+  --scope=current|unit|series
+  --stale-units         let prune remove states for missing physical units
   --debug=tex|ollm|tex+ollm
   --warnings=all|important|none
   --config=FILE

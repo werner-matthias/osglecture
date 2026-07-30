@@ -39,6 +39,7 @@
 \tl_new:N \l__olref_lang_tl
 \tl_new:N \l__olref_aux_tl
 \tl_new:N \l__olref_pdf_tl
+\tl_new:N \l__olref_generation_tl
 \tl_new:N \l__olref_identity_tl
 \tl_new:N \l__olref_prefix_tl
 \tl_new:N \l__olref_label_tl
@@ -163,6 +164,7 @@
     lang .tl_set:N = \l__olref_lang_tl,
     aux .tl_set:N = \l__olref_aux_tl,
     pdf .tl_set:N = \l__olref_pdf_tl,
+    generation .tl_set:N = \l__olref_generation_tl,
   }
 
 \cs_new:Npn \__olref_identity:nnn #1#2#3
@@ -175,8 +177,9 @@
     \tl_clear:N \l__olref_lang_tl
     \tl_clear:N \l__olref_aux_tl
     \tl_clear:N \l__olref_pdf_tl
+    \tl_clear:N \l__olref_generation_tl
     \keys_set:nn {osglecture/reference-document} {#1}
-    \clist_map_inline:nn {unit,type,lang,aux,pdf}
+    \clist_map_inline:nn {unit,type,lang,aux,pdf,generation}
       {
         \tl_if_empty:cT {l__olref_##1_tl}
           {
@@ -190,24 +193,25 @@
           {\l__olref_unit_tl}{\l__olref_type_tl}{\l__olref_lang_tl}
       }
     \prop_gput:NVx \g__olref_documents_prop \l__olref_identity_tl
-      { {\exp_not:V \l__olref_aux_tl}{\exp_not:V \l__olref_pdf_tl} }
+      {
+        {\exp_not:V \l__olref_aux_tl}
+        {\exp_not:V \l__olref_pdf_tl}
+        {\exp_not:V \l__olref_generation_tl}
+      }
   }
 
 \ProvideDocumentCommand \OsgLectureReferenceExport
   { m m m m m m m } { }
 \ProvideDocumentCommand \OsgLectureReferenceUse
-  { m m m m m } { }
+  { m m m m m m m } { }
 
-\cs_new_protected:Npn \__olref_import:
+\cs_new_protected:Npn \__olref_use_write:nn #1#2
   {
-    \tl_set:Ne \l__olref_identity_tl
+    \tl_set:Ne \l_tmpa_tl
       {
-        \__olref_identity:nnn
-          {\l__olref_unit_tl}{\l__olref_type_tl}{\l__olref_lang_tl}
+        \l__olref_identity_tl,label=#1,property=#2
       }
-    \tl_set:Ne \l__olref_prefix_tl
-      { olr-\str_mdfive_hash:e {\l__olref_identity_tl}: }
-    \prop_if_in:NVF \g__olref_used_prop \l__olref_identity_tl
+    \prop_if_in:NVF \g__olref_used_prop \l_tmpa_tl
       {
         \OsgLectureBuildLoadedTF
           {
@@ -217,22 +221,36 @@
                   {
                     \token_to_str:N \OsgLectureReferenceUse
                     {\OsgLectureBuildValue{generation-id}}
+                    {\exp_not:V \l__olref_generation_tl}
                     {\exp_not:V \l__olref_unit_tl}
                     {\exp_not:V \l__olref_type_tl}
                     {\exp_not:V \l__olref_lang_tl}
-                    {document}
+                    {\exp_not:n {#1}}
+                    {\exp_not:n {#2}}
                   }
               }
           }
           { }
-        \prop_gput:NVn \g__olref_used_prop \l__olref_identity_tl {true}
+        \prop_gput:NVn \g__olref_used_prop \l_tmpa_tl {true}
       }
+  }
+
+\cs_new_protected:Npn \__olref_import:nn #1#2
+  {
+    \tl_set:Ne \l__olref_identity_tl
+      {
+        \__olref_identity:nnn
+          {\l__olref_unit_tl}{\l__olref_type_tl}{\l__olref_lang_tl}
+      }
+    \tl_set:Ne \l__olref_prefix_tl
+      { olr-\str_mdfive_hash:e {\l__olref_identity_tl}: }
+    \tl_clear:N \l__olref_generation_tl
     \prop_if_in:NVF \g__olref_imported_prop \l__olref_identity_tl
       {
         \prop_get:NVNTF
           \g__olref_documents_prop \l__olref_identity_tl \l_tmpa_tl
           {
-            \exp_after:wN \__olref_import_aux:nn \l_tmpa_tl
+            \exp_after:wN \__olref_import_aux:nnn \l_tmpa_tl
           }
           {
             \msg_warning:nnV {osglecture-references}{missing-document}
@@ -241,22 +259,29 @@
         \prop_gput:NVn
           \g__olref_imported_prop \l__olref_identity_tl {true}
       }
+    \prop_get:NVNT \g__olref_documents_prop \l__olref_identity_tl \l_tmpa_tl
+      { \exp_after:wN \__olref_generation_set:nnn \l_tmpa_tl }
+    \__olref_use_write:nn {#1}{#2}
   }
 
-\cs_new_protected:Npn \__olref_import_aux:nn #1#2
+\cs_new_protected:Npn \__olref_generation_set:nnn #1#2#3
+  { \tl_set:Nn \l__olref_generation_tl {#3} }
+
+\cs_new_protected:Npn \__olref_import_aux:nnn #1#2#3
   {
+    \tl_set:Nn \l__olref_generation_tl {#3}
     \tl_set:Nn \l_tmpa_tl {#1}
     \regex_replace_once:nnN { [.]aux \Z } { } \l_tmpa_tl
     \externaldocument[\l__olref_prefix_tl]{\l_tmpa_tl}[#2]
   }
 
-\cs_new_protected:Npn \__olref_target_set:nn #1#2
+\cs_new_protected:Npn \__olref_target_set:nnn #1#2#3
   {
     \__olref_address_parse:n {#1}
     \tl_set:Nn \l__olref_label_tl {#2}
     \tl_if_empty:NF \l__olref_unit_tl
       {
-        \__olref_import:
+        \__olref_import:nn {#2}{#3}
         \tl_put_left:NV \l__olref_label_tl \l__olref_prefix_tl
       }
   }
@@ -280,28 +305,28 @@
 
 \NewDocumentCommand \olref { s O{} m }
   {
-    \__olref_target_set:nn {#2}{#3}
+    \__olref_target_set:nnn {#2}{#3}{ref}
     \IfBooleanTF{#1}
       { \exp_args:NV \__olref_ref_star:n \l__olref_label_tl }
       { \exp_args:NV \__olref_ref:n \l__olref_label_tl }
   }
 \NewDocumentCommand \olpageref { s O{} m }
   {
-    \__olref_target_set:nn {#2}{#3}
+    \__olref_target_set:nnn {#2}{#3}{page}
     \IfBooleanTF{#1}
       { \exp_args:NV \__olref_pageref_star:n \l__olref_label_tl }
       { \exp_args:NV \__olref_pageref:n \l__olref_label_tl }
   }
 \NewDocumentCommand \olnameref { s O{} m }
   {
-    \__olref_target_set:nn {#2}{#3}
+    \__olref_target_set:nnn {#2}{#3}{name}
     \IfBooleanTF{#1}
       { \exp_args:NV \__olref_nameref_star:n \l__olref_label_tl }
       { \exp_args:NV \__olref_nameref:n \l__olref_label_tl }
   }
 \NewDocumentCommand \olautoref { s O{} m }
   {
-    \__olref_target_set:nn {#2}{#3}
+    \__olref_target_set:nnn {#2}{#3}{autoref}
     \IfBooleanTF{#1}
       { \exp_args:NV \__olref_autoref_star:n \l__olref_label_tl }
       { \exp_args:NV \__olref_autoref:n \l__olref_label_tl }

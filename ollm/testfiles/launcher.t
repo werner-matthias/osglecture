@@ -14,6 +14,18 @@ like $plan, qr/"schema"\s*:\s*"org\.osglecture\.ollm\.build-request"/,
   'JSON plan has a versioned schema';
 like $plan, qr/"target"\s*:\s*"script"/, 'JSON plan contains target';
 
+my $report = qx{$^X ollm report --project-root=../examples/series-minimal --format=json};
+is $?, 0, 'report describes a project with dormant units successfully';
+like $report, qr/"schema"\s*:\s*"org\.osglecture\.ollm\.report"/,
+  'report JSON has a versioned schema';
+like $report, qr/"status"\s*:\s*"dormant"/,
+  'report exposes an unused unbuilt unit without failing';
+
+my $check = qx{$^X ollm check --project-root=../examples/series-minimal --format=json};
+is $?, 0, 'series check does not require a dormant unit to be built';
+like $check, qr/"schema"\s*:\s*"org\.osglecture\.ollm\.check"/,
+  'check JSON has a versioned schema';
+
 open my $cmd, '<', 'ollm.cmd' or die "cannot read ollm.cmd: $!";
 my $wrapper = do { local $/; <$cmd> };
 close $cmd;

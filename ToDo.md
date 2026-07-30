@@ -2,9 +2,9 @@ Dieses Dokument enthält sowohl tatsächliche ToDos als auch längerfristige
 Featurewünsche.
 
 # OLLM
-* [ ] clean/prune
+* [x] clean/prune
 * [ ] resolve für Abhängigkeiten
-* [ ] report
+* [x] report/check
 
 # osglecture
 * [ ] Übergreifende Links
@@ -25,5 +25,3 @@ Featurewünsche.
 # Ergänzungspakete
 * [ ] ANSI-Terminal
 * [ ] termexec
-
-

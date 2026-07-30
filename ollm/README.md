@@ -44,14 +44,22 @@ The new executor currently implements ordinary and continuous `build`,
 toolchain check. Native latexmk clean and information actions can be passed
 through to one resolved build.
 
-The following OLLM functions are accepted by the CLI but are not implemented
-yet and return exit code 69:
+Dependency fixpoint builds with `build --resolve` remain the principal CLI
+function accepted but not yet implemented; they return exit code 69.
 
-- TODO: `report`;
-- TODO: read-only `check`;
-- TODO: OLLM-scoped `clean`;
-- TODO: `prune`;
-- TODO: dependency fixpoint builds with `build --resolve`.
+`report` describes discovered units, promoted projections, their generations,
+and semantic dependencies without using findings as a release gate. `check`
+uses the same analysis and returns exit code 3 for inconsistent required
+dependencies. A discovered but unused and unbuilt unit is reported as
+`dormant` and is not a check failure. At the project root both commands default
+to `series`; inside a unit they default to `current`. `unit` is always
+explicit.
+
+`clean` implements the documented `aux`, `build`, `state`, and `all` levels
+with `current`, `unit`, and `series` scopes. `prune` removes abandoned pending
+directories and superseded immutable generations. Potentially renamed units
+are reported but retained unless `--stale-units` is explicit. Both commands
+support `--dry-run`.
 
 Series builds now assign a generation ID, validate the LaTeX result and
 reference envelopes, and atomically promote an immutable generation for each
