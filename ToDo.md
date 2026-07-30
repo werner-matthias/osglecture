@@ -1,7 +1,9 @@
+Dieses Dokument enthält sowohl tatsächliche ToDos als auch längerfristige
+Featurewünsche.
 
 # OLLM
 * [ ] clean/prune
-* [ ] rosolve für Abhängigkeiten
+* [ ] resolve für Abhängigkeiten
 * [ ] report
 
 # osglecture
