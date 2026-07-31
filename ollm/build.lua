@@ -1,7 +1,6 @@
 bundle = "osglecture"
 module = "ollm"
 maindir = ".."
-docfiledir = maindir .. "/doc/ollm"
 
 -- OLLM is installed as a program, not as a TeX input file.
 scriptfiles = {
@@ -43,24 +42,13 @@ sourcefiles = {
 typesetfiles = { "ollm.tex" }
 
 textfiles = {
-  "README.md",
-  "DEPENDENCIES.md",
-  "DESIGN.md",
+  "README-ollm.md",
   "THIRD_PARTY.md",
 }
 
 docfiles = {
-  "DEPENDENCIES.md",
   "THIRD_PARTY.md",
 }
-
-function docinit_hook()
-  mkdir(docfiledir)
-  cp("README.md", ".", docfiledir)
-  cp("DEPENDENCIES.md", ".", docfiledir)
-  cp("THIRD_PARTY.md", ".", docfiledir)
-  return 0
-end
 
 -- The functional test suite will grow with the new implementation.  Keeping
 -- the syntax check in the normal l3build check path catches broken releases

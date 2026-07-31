@@ -1,0 +1,451 @@
+%<*driver>
+\def\nameofplainTeX{plain}
+\ifx\fmtname\nameofplainTeX
+\input l3docstrip.tex
+\preamble
+
+========================================================================
+ ltxtalk-theme - themes for ltxtalk
+
+ (C) 2026 Matthias Werner
+ E-mail: matthias.werner@informatik.tu-chemnitz.de
+
+ Released under the LaTeX Project Public License v1.3c or later
+ See http://www.latex-project.org/lppl.txt
+======================================================================== 
+
+\endpreamble
+\postamble
+
+ This work is "maintained" (as per LPPL maintenance status) by
+ Matthias Werner.
+\endpostamble
+
+\generate{
+  \file{ltxtalk-theme-tuc-2019.sty}{\from{lttheme.dtx}{tuc-2019}}
+}
+  \expandafter\endbatchfile
+\fi
+ \documentclass[
+load-preamble+
+]{osgdoc}
+
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage[
+languages={de,en},
+map={de=german,en=english},
+targetlang={job=2},
+load babel
+]{langselect}
+
+\def\pkgname{ltxtalk-theme-tuc-2019}
+\def\thepkg{\pkg{\pkgname}}
+
+\makeindex
+\setcnltx{
+  package  =  ltxtalk-theme-tuc-2019,
+  version  = \UseVersionOf{ltxtalk-theme-tuc-2019.sty},
+  date     = \UseDateOf{ltxtalk-theme-tuc-2019.sty},
+  title    = {TUC 2019 Theme \ldeen{für}{for} Ltx-Talk},
+  info     = {Ltx-Talk\ldeen{ Thema mit dem Corporate
+          Design der TU Chemnitz}{ theme with the corporate
+          design of the Chemnitz University of Technology}},
+  authors  = {Matthias Werner[matthias.werner@informatik.tu-chemnitz.de]},
+  abstract={
+  \ldeen{
+    Dies ist ein Thema für die Präsentationsklasse \cls{ltx-talk} 
+    und bildet (in etwa) das Corporate Design 2019 der TU Chemnitz nach. 
+    Das Paket benötigt die Themenengine \pkg{ltxtalk-theme}.
+    }{
+    This is a theme for the \cls{ltx-talk} presentation class 
+    and (roughly) replicates the 2019 corporate design of 
+    Chemnitz University of Technology. 
+    The package requires the \pkg{ltxtalk-theme} theme engine.
+    }
+  },
+  url      =https://github.com/werner-matthias/osglecture,
+  build-title
+}
+\begin{document}
+
+\section{\ldeen{Einführung}{Introduction}}
+
+\ldeen{
+Das Theme \code{tuc-2019} bildet das seit 2019 verwendete Corporate
+Design der TU Chemnitz für Präsentationen nach. 
+}{
+% TODO: English translation
+}
+
+\begin{sourcecode}
+  \usepackage{ltxtalk-theme-tuc-2019}
+  \useltxtalktheme{tuc-2019}
+\end{sourcecode}
+
+\subsubsection{Aufbau der Folien}
+
+\ldeen{
+Auf normalen Folien enthält das grüne Kopfband links das weiße
+Universitätslogo. Eine weiße Linie trennt es vom Veranstaltungskontext.
+Die erste Textzeile besteht aus Präsentationstitel und aktuellem Abschnitt,
+die zweite aus dem aktuellen Unterabschnitt. Die Angaben werden aus
+\cs*{title}, \cs*{section} und \cs*{subsection} übernommen.
+}{
+% TODO: English translation
+}
+
+\ldeen{
+Der Folientitel und ein optionaler Folienuntertitel stehen im Hauptbereich.
+Die Fußzeile ist durch eine dünne Linie abgesetzt und enthält den Autor links,
+die Foliennummer in der Seitenmitte und die Webadresse rechts. Alle drei
+Felder besitzen den im Corporate Design vorgesehenen Abstand zum Seitenrand.
+}{
+% TODO: English translation
+}
+
+\ldeen{
+Die Titelfolie unterscheidet sich bewusst von normalen Folien. Ihr Kopfband
+ist höher und zeigt neben dem größeren Universitätslogo den Titel und das
+Datum. Im Hauptbereich steht links ein zweites, veranstaltungsbezogenes Logo;
+dessen Seitenkanten fluchten mit denen des Universitätslogos. Der Titelblock
+beginnt unter dem Text des Kopfbandes. Eine Fußzeile wird auf der Titelfolie
+nicht ausgegeben.
+}{
+% TODO: English translation
+}
+
+\subsubsection{Logos und Webadresse}
+
+\ldeen{
+Das Universitätslogo, das Logo der Titelfolie und die Webadresse können vor
+\cs*{begin}\Marg{document} gesetzt werden. Die Pfade werden wie bei
+\cs*{includegraphics} relativ zur Hauptdatei der Präsentation aufgelöst.
+Für die mit dem Bundle ausgelieferten Dateien kann die Konfiguration zum
+Beispiel so aussehen:
+}{
+% TODO: English translation
+}
+
+\begin{sourcecode}
+  \settucthemelogo{images/logos/tuc_white.pdf}
+  \settucthemetitlelogo{images/logos/osg.png}
+  \settucthemeurl{https://www.tu-chemnitz.de/}
+\end{sourcecode}
+
+
+\subsubsection{Titelfolie}
+
+\ldeen{
+Die speziell gestaltete Titelfolie wird mit \cs*{maketuctitle} erzeugt. Der
+Befehl legt den benötigten Frame selbst an und darf daher nicht innerhalb
+einer \code{frame}-Umgebung stehen. Er verwendet die Angaben aus
+\cs*{title}, \cs*{subtitle}, \cs*{author}, \cs*{institute} und \cs*{date}.
+Nach der Titelfolie stellt er automatisch die Geometrie normaler Folien
+wieder her.
+}{
+% TODO: English translation
+}
+
+\subsubsection{Vollständiges Beispiel}
+
+\begin{example}[code-only]
+  \DocumentMetadata{}
+  \documentclass{ltx-talk}
+
+  \usepackage{ltxtalk-tuc-2019}
+  \settucthemelogo{tuc_white.pdf}
+  \settucthemetitlelogo{images/logos/osg.png}
+  \settucthemeurl{https://www.tu-chemnitz.de/}
+  \useltxtalktheme{tuc-2019}
+
+  \title{Echtzeitsysteme}
+  \subtitle{0. Kapitel\\Organisatorisches}
+  \author{Prof. Matthias Werner}
+  \institute{Professur Betriebssysteme}
+  \date{Sommersemester 2026}
+
+  \begin{document}
+  \maketuctitle
+
+  \section{Organisatorisches}
+  \subsection{Willkommen}
+  \begin{frame}
+    \frametitle{Willkommen zur Lehrveranstaltung}
+    \begin{itemize}
+      \item Informationen und Materialien
+      \item Termine und Ansprechpartner
+    \end{itemize}
+  \end{frame}
+  \end{document}
+\end{example}
+
+\ldeen{
+Eine ausführlichere Präsentation befindet sich in
+\code{example/example-tuc-2019.tex}.
+}{
+% TODO: English translation
+}
+
+
+
+\section{}
+
+\begin{commands}
+  \command{settucthemelogo}[\marg{Datei}]
+  \ldeen{
+    Setzt die Datei für das weiße TU-Chemnitz-Logo im Kopfband. Auf der
+    Titelfolie wird es größer dargestellt als auf normalen Folien. Ist die
+    Datei nicht auffindbar, gibt das Theme ersatzweise den Text
+    \code{TU CHEMNITZ} aus.
+  }{
+    % TODO: English translation
+  }
+
+  \command{settucthemetitlelogo}[\marg{Datei}]
+  \ldeen{
+    Setzt das veranstaltungsbezogene Logo im linken Bereich der Titelfolie.
+    Es wird auf die Breite des TU-Logos skaliert und oben bündig mit dem
+    Titelblock angeordnet. Ist die Datei nicht auffindbar, bleibt die
+    Logo-Spalte leer.
+  }{
+    % TODO: English translation
+  }
+
+  \command{settucthemetitlelogoraise}[\marg{Länge}]
+  \ldeen{
+    Verschiebt das sichtbare Logo der Titelfolie um die angegebene Länge nach
+    oben, um einen transparenten oberen Bildrand auszugleichen. Der Vorgabewert
+    \code{0.21cm} passt zum mitgelieferten OSG-Logo; für eng beschnittene
+    Logos ist gewöhnlich \code{0pt} richtig.
+  }{
+    % TODO: English translation
+  }
+
+  \command{settucthemeurl}[\marg{Webadresse}]
+  \ldeen{
+    Setzt den rechtsbündigen Text in der Fußzeile normaler Folien. Das
+    Argument wird unverändert gesetzt; soll die Adresse anklickbar sein, kann
+    daher beispielsweise \cs*{url} im Argument verwendet werden.
+  }{
+    % TODO: English translation
+  }
+
+  \command{maketuctitle}
+  \ldeen{
+    Erzeugt die vollständige Titelfolie des Themes. Der Befehl ist nach
+    \cs*{begin}\Marg{document}, aber außerhalb einer \code{frame}-Umgebung
+    aufzurufen. Die Titelfolie besitzt keine Fußzeile.
+  }{
+    % TODO: English translation
+  }
+\end{commands}
+
+
+% --------------------------------------------------------------------------
+% Implementation
+% --------------------------------------------------------------------------
+
+\section{Implementation}
+
+% \AutoDocInput{lttheeme-tuc-2019.dtx}{pkg} % comment out to during text development to speed up latex
+
+\end{document}
+
+%</driver>
+%<*pkg>
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage{ltxtalk-theme-tuc-2019}
+{2026/07/21}
+{0.1}
+{TU Chemnitz presentation design introduced in 2019}
+
+\RequirePackage{ltxtalk-theme-core}
+
+\tl_new:N \g__ltxtalk_tuc_logo_tl
+\tl_new:N \g__ltxtalk_tuc_title_logo_tl
+\tl_new:N \g__ltxtalk_tuc_url_tl
+\dim_new:N \g__ltxtalk_tuc_title_logo_raise_dim
+\bool_new:N \g__ltxtalk_tuc_title_bool
+\tl_gset:Nn \g__ltxtalk_tuc_logo_tl {tuc_white.pdf}
+\tl_gset:Nn \g__ltxtalk_tuc_title_logo_tl {osg.png}
+\tl_gset:Nn \g__ltxtalk_tuc_url_tl {https://www.tu-chemnitz.de/}
+\dim_gset:Nn \g__ltxtalk_tuc_title_logo_raise_dim {0.21cm}
+
+\NewDocumentCommand \settucthemelogo {m}
+  {\tl_gset:Nn \g__ltxtalk_tuc_logo_tl {#1}}
+\NewDocumentCommand \settucthemetitlelogo {m}
+  {\tl_gset:Nn \g__ltxtalk_tuc_title_logo_tl {#1}}
+\NewDocumentCommand \settucthemetitlelogoraise {m}
+  {\dim_gset:Nn \g__ltxtalk_tuc_title_logo_raise_dim {#1}}
+\NewDocumentCommand \settucthemeurl {m}
+  {\tl_gset:Nn \g__ltxtalk_tuc_url_tl {#1}}
+
+\cs_new_protected:Npn \__ltxtalk_tuc_logo:
+  {
+    \file_if_exist:VTF \g__ltxtalk_tuc_logo_tl
+      {
+        \includegraphics
+          [height=\bool_if:NTF \g__ltxtalk_tuc_title_bool {1.25cm}{0.82cm}]
+          {\g__ltxtalk_tuc_logo_tl}
+      }
+      {\sffamily\bfseries TU~CHEMNITZ}
+  }
+\cs_new_protected:Npn \__ltxtalk_tuc_title_logo:
+  {
+    \file_if_exist:VTF \g__ltxtalk_tuc_title_logo_tl
+      {
+        \includegraphics[width=2.485cm]{\g__ltxtalk_tuc_title_logo_tl}
+      }
+      {}
+  }
+\cs_new_protected:Npn \__ltxtalk_tuc_context:
+  {
+    \sffamily
+    \bool_if:NTF \g__ltxtalk_tuc_title_bool
+      {\large \@title \\[0.18cm] \normalsize \@date}
+      {
+        \@title
+        \tl_if_blank:VF \l__talk_section_tl
+          {~--~\tl_use:N \l__talk_section_tl}
+        \tl_if_blank:VF \l__talk_subsection_tl
+          {\\\tl_use:N \l__talk_subsection_tl}
+      }
+  }
+\cs_new_protected:Npn \__ltxtalk_tuc_header_line:
+  {
+    \hbox_to_wd:nn {\paperwidth}
+      {
+        \skip_horizontal:n {0.4cm}
+        \begin{minipage}[t]
+          {\bool_if:NTF \g__ltxtalk_tuc_title_bool {2.485cm}{1.63cm}}
+          \vspace{0pt}\__ltxtalk_tuc_logo:
+        \end{minipage}
+        \skip_horizontal:n {0.4cm}
+        \begin{minipage}[t]{0.4pt}
+          \vspace{0pt}\color{white}
+          \rule
+            {0.4pt}
+            {\bool_if:NTF \g__ltxtalk_tuc_title_bool {1.35cm}{0.82cm}}
+        \end{minipage}
+        \skip_horizontal:n {0.4cm}
+        \begin{minipage}[t]{0.62\paperwidth}
+          \vspace{0.08cm}\color{white}\__ltxtalk_tuc_context:
+        \end{minipage}
+        \hfil
+      }
+  }
+\cs_new_eq:NN \__ltxtalk_tuc_header: \__ltxtalk_tuc_header_line:
+
+\cs_new_protected:Npn \__ltxtalk_tuc_theme_setup:
+  {
+    \ltxtalksetup
+      {
+        header = true,
+        header-height = 1.45cm,
+        left-margin = false,
+        right-margin = false,
+        footer = true,
+        footer-height = 0.52cm
+      }
+    \setltxtalkcolors
+      {
+        primary = {HTML}{4E8749},
+        secondary = {HTML}{333333},
+        accent = {HTML}{F07D00},
+        text = {HTML}{202020},
+        background = {HTML}{FFFFFF}
+      }
+    \color_set:nnn { structure } { HTML } { 4E8749 }
+
+    \defineltxtalkslot{tuc-header}{header}{custom}{role=navigation}
+    \setltxtalkslotcontent{tuc-header}{\__ltxtalk_tuc_header:}
+    \positionltxtalkslot{tuc-header}{left}{0.38cm}{\paperwidth}{1.05cm}
+    \styleltxtalkslot{tuc-header}
+      {align=left,color=white,font=\footnotesize\sffamily}
+
+    \defineltxtalkslot{tuc-frametitle}{content}{frametitle}
+      {role=heading,heading-level=2}
+    \positionltxtalkslot{tuc-frametitle}{left}{top}{\textwidth}{0.9cm}
+    \styleltxtalkslot{tuc-frametitle}
+      {align=left,color=ltxtalk-primary,font=\Large\sffamily}
+
+    \defineltxtalkslot{tuc-framesubtitle}{content}{framesubtitle}
+      {role=heading,heading-level=3}
+    \positionltxtalkslot{tuc-framesubtitle}{left}{top}{\textwidth}{0.55cm}
+    \styleltxtalkslot{tuc-framesubtitle}
+      {align=left,color=ltxtalk-secondary,font=\normalsize\sffamily}
+
+    \defineltxtalkslot{tuc-author}{footer}{custom}{role=note}
+    \setltxtalkslotcontent{tuc-author}
+      {\makebox[0.36\paperwidth][l]{\@author}}
+    \positionltxtalkslot{tuc-author}{0.4cm}{center}{0.36\paperwidth}{0.32cm}
+    \styleltxtalkslot{tuc-author}
+      {align=left,color=ltxtalk-secondary,font=\tiny\sffamily}
+
+    \defineltxtalkslot{tuc-page}{footer}{custom}{role=navigation}
+    \setltxtalkslotcontent{tuc-page}
+      {\makebox[0.22\paperwidth][c]{N~--~\@framenumber\ von~\@totalframes}}
+    \positionltxtalkslot{tuc-page}{center}{center}{0.22\paperwidth}{0.32cm}
+    \styleltxtalkslot{tuc-page}
+      {align=center,color=ltxtalk-secondary,font=\tiny\sffamily}
+
+    \defineltxtalkslot{tuc-url}{footer}{custom}{role=note}
+    \setltxtalkslotcontent{tuc-url}
+      {\makebox[0.36\paperwidth][r]{\tl_use:N \g__ltxtalk_tuc_url_tl}}
+    \positionltxtalkslot{tuc-url}
+      {\dim_eval:n{\paperwidth-0.4cm-0.36\paperwidth}}
+      {center}{0.36\paperwidth}{0.32cm}
+    \styleltxtalkslot{tuc-url}
+      {align=right,color=ltxtalk-secondary,font=\tiny\sffamily}
+
+    \decorateltxtalkarea{header}
+      {background=ltxtalk-primary,frame=none,artifact-type=layout}
+    \decorateltxtalkarea{footer}
+      {
+        background=white,
+        frame=top,
+        rule-color=ltxtalk-secondary,
+        rule-thickness=0.35pt,
+        artifact-type=layout
+      }
+  }
+
+\NewDocumentCommand \maketuctitle {}
+  {
+    \bool_gset_true:N \g__ltxtalk_tuc_title_bool
+    \ltxtalksetup
+      {header-height=2.4cm,footer=false}
+    \positionltxtalkslot{tuc-header}{left}{0.45cm}{\paperwidth}{1.6cm}
+    \__ltxtalk_update_text_area:
+    \begin{frame}
+      \thispagestyle{lttheme}
+      \vspace*{0.7cm}
+      \noindent
+      \skip_horizontal:n {\dim_eval:n{0.4cm-\Gm@lmargin}}
+      \begin{minipage}[t]{2.485cm}
+        \vspace{0pt}\par
+        \vspace{\dim_eval:n{-\g__ltxtalk_tuc_title_logo_raise_dim}}
+        \centering\__ltxtalk_tuc_title_logo:
+      \end{minipage}
+      \skip_horizontal:n {0.4cm+0.4pt+0.4cm}
+      \begin{minipage}[t]{0.62\paperwidth}
+          \vspace{0pt}
+          \sffamily
+          \Large\bfseries \@title\par
+          \vspace{0.8cm}
+          \color{ltxtalk-primary}\large \@subtitle\par
+          \vspace{0.75cm}
+          \normalsize\color{ltxtalk-secondary}\@author\par
+          \small \@institute
+      \end{minipage}
+    \end{frame}
+    \bool_gset_false:N \g__ltxtalk_tuc_title_bool
+    \ltxtalksetup
+      {header-height=1.45cm,footer=true,footer-height=0.52cm}
+    \positionltxtalkslot{tuc-header}{left}{0.38cm}{\paperwidth}{1.05cm}
+    \__ltxtalk_update_text_area:
+  }
+
+\RegisterLTXTalkTheme{tuc-2019}{\__ltxtalk_tuc_theme_setup:}
+%</pkg>

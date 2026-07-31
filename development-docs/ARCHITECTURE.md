@@ -7,7 +7,7 @@
 Dieses Dokument beschreibt die grundsätzlichen Ideen der Klasse `osglecture` in ihrer gegenwärtigen Form. Es ist bewusst weder Benutzerhandbuch noch vollständige API-Referenz. Sein Zweck ist, das fachliche Modell, die tragenden Entwurfsentscheidungen und die derzeitigen Spannungsfelder sichtbar zu machen. Nach fachlicher Überarbeitung soll es als Ausgangspunkt für eine Neustrukturierung der Klasse dienen.
 
 Die bundleweit verbindlichen Kurzdefinitionen stehen im
-[`GLOSSARY.md`](../GLOSSARY.md).
+[`GLOSSARY.md`](./GLOSSARY.md).
 
 Die Aussagen beziehen sich auf die laufende Neustrukturierung von
 `osglecture/osglecture.cls` und die begleitenden Dateien im Repository. Seit

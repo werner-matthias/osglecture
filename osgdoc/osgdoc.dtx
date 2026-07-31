@@ -27,7 +27,17 @@
 }
   \expandafter\endbatchfile
 \fi
-
+%</driver>
+%<*cls>
+\NeedsTeXFormat{LaTeX2e}[2022/06/01]
+\ProvidesExplClass
+{osgdoc}
+{2026-06-11}
+{0.1.0}
+{A thin wrapper around cnltx-doc}
+\ExplSyntaxOff
+%</cls>
+%<*driver>
 \documentclass[
 load-preamble+
 ]{osgdoc}
@@ -180,11 +190,7 @@ load babel
 \end{document}
 %</driver>
 %<*cls>
-\ProvidesExplClass
-{osgdoc}
-{2026-06-11}
-{0.1.0}
-{A thin wrapper around cnltx-doc}
+\ExplSyntaxOn
 % \ldeen*{Zunächst müssen wir @1 patchen. Dazu muss aber der nicht mehr gültige @2-Ruf abgefangen 
 %   werden.
 % }{
@@ -241,6 +247,7 @@ load babel
 \def\gobble{\@gobble}
 %</cls>
 %<*pkg>
+\NeedsTeXFormat{LaTeX2e}[2022/06/01]
 \ProvidesExplPackage
 {osgdoc}
 {2026-06-11}

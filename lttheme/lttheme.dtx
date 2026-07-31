@@ -22,14 +22,12 @@
 \endpostamble
 
 \generate{
-  \file{ltxtalk-theme-core.sty}{\from{lttheme.dtx}{core}}
+  \file{ltxtalk-theme.sty}{\from{lttheme.dtx}{pkg}}
   \file{ltxtalk-theme-modern.sty}{\from{lttheme.dtx}{modern}}
   \file{ltxtalk-theme-minimal.sty}{\from{lttheme.dtx}{minimal}}
   \file{ltxtalk-theme-academic.sty}{\from{lttheme.dtx}{academic}}
   \file{ltxtalk-theme-corporate.sty}{\from{lttheme.dtx}{corporate}}
-  \file{ltxtalk-theme-tuc-2019.sty}{\from{lttheme.dtx}{tuc-2019}}
-  \file{ltxtalk-tuc-2019.sty}{\from{lttheme.dtx}{tuc-2019-alias}}
-}
+  }
   \expandafter\endbatchfile
 \fi
  \documentclass[
@@ -51,8 +49,8 @@ load babel
 \makeindex
 \setcnltx{
   name  =  ltxtalk-theme,
-  version  = \UseVersionOf{ltxtalk-theme-core.sty},
-  date     = \UseDateOf{ltxtalk-theme-core.sty},
+  version  = \UseVersionOf{ltxtalk-theme.sty},
+  date     = \UseDateOf{ltxtalk-theme.sty},
   title    = {\ldeen{Das \pkgname\ Paket}{The \pkgname\ Package}},
   info     = {Theme Engine \ldeen{für}{for} \cls{ltx-talk}},
   authors  = {Matthias Werner[matthias.werner@informatik.tu-chemnitz.de]},
@@ -127,111 +125,6 @@ Gruppen zum gezielten Nachschlagen dienen.
 }{\ref{sec:theme-model}}{\ref{sec:develop-themes}}{\ref{ref:reference}}
 
 
-\subsection{\ldeen{Designprinzipien}{Design principles}}
-\subsubsection{\ldeen{Semantische Elemente}{Semantic elements}}
-
-\ldeen{
-Themes arbeiten mit der Bedeutung von Elementen wie Titel, Autor,
-Abschnitt, Logo oder Foliennummer. Sie behandeln diese Elemente nicht
-lediglich als Text oder Grafik an einer festen Position.
-}{
-Themes operate on the meaning of elements such as the title, author,
-section, logo, or slide number. They do not treat these elements merely
-as text or graphics at fixed positions.
-}
-
-\ldeen{
-Die technische Repräsentation solcher Elemente durch Slots wird im
-Abschnitt über das Theme-Modell erläutert.
-}{
-The technical representation of such elements by slots is explained
-in the section on the theme model.
-}
-
-
-\subsubsection{
-  \ldeen
-    {Trennung von Anordnung und Erscheinungsbild}
-    {Separation of arrangement and appearance}
-}
-
-\ldeen{
-Die räumliche Anordnung eines Elements und seine visuelle Gestaltung
-sind unterschiedliche Eigenschaften. Ein Layout beantwortet vor allem
-die Frage, wo und in welcher Größe ein Element erscheint.
-}{
-The spatial arrangement of an element and its visual styling are
-different properties. A layout primarily answers where an element
-appears and how much space it occupies.
-}
-
-\ldeen{
-Farben, Schriften, Linien, Hintergründe und ähnliche Eigenschaften
-bestimmen dagegen sein Erscheinungsbild. Durch diese Trennung können
-Anordnung und Gestaltung weitgehend unabhängig voneinander entwickelt
-werden.
-}{
-Colours, fonts, rules, backgrounds, and similar properties determine
-its appearance. This separation allows arrangement and visual design
-to be developed largely independently.
-}
-
-
-\subsubsection{\ldeen{Erweiterbarkeit}{Extensibility}}
-
-\ldeen{
-Themes sollen nicht in jedem Fall vollständig neu erstellt werden
-müssen. Vorhandene Definitionen können als Ausgangspunkt dienen und
-gezielt verändert oder ergänzt werden.
-}{
-Themes should not always have to be created entirely from scratch.
-Existing definitions can serve as a starting point and be changed or
-extended selectively.
-}
-
-\ldeen{
-Auf diese Weise können verwandte Themes gemeinsame Eigenschaften
-verwenden und sich nur dort unterscheiden, wo dies tatsächlich
-erforderlich ist.
-}{
-In this way, related themes can share common properties and differ only
-where this is actually necessary.
-}
-
-
-\subsubsection{\ldeen{Barrierefreiheit}{Accessibility}}
-
-\ldeen{
-Die visuelle Gestaltung einer Präsentation darf ihre semantische
-Struktur und ihre Zugänglichkeit nicht unnötig beeinträchtigen.
-Barrierefreiheit wird deshalb als Bestandteil des Theme-Modells
-behandelt und nicht lediglich nachträglich ergänzt.
-}{
-The visual design of a presentation should not unnecessarily impair
-its semantic structure or accessibility. Accessibility is therefore
-treated as part of the theme model rather than being added only as an
-afterthought.
-}
-
-\ldeen{
-Das PDF-Tagging der tatsächlich ausgegebenen Folien übernimmt derzeit
-überwiegend die Klasse \cls{ltx-talk}. Ein Theme muss deren semantische
-Struktur bewahren; \thepkg{} konfiguriert dafür die öffentlichen Templates
-der Klasse. Die im Slot-Modell hinterlegten Angaben zur Barrierefreiheit
-beschreiben darüber hinaus die angestrebte Semantik der Slots. Sie sind noch
-nicht in allen Fällen unmittelbar mit der von \cls{ltx-talk} erzeugten
-Tag-Struktur verbunden.
-}{
-% TODO: English translation
-}
-
-\ldeen{
-Die dafür vorgesehenen Eigenschaften und Empfehlungen werden in einem
-eigenen Abschnitt beschrieben.
-}{
-The relevant properties and recommendations are described in a
-dedicated section.
-}
 
 
 % ==========================================================================
@@ -319,137 +212,6 @@ beschreibt der folgende Abschnitt.
 % - minimal
 % - academic
 % - corporate
-
-\subsection{TU Chemnitz 2019}
-
-\ldeen{
-Das Theme \code{tuc-2019} bildet das seit 2019 verwendete Corporate
-Design der TU Chemnitz für Präsentationen nach. Das kurze Paket
-\pkg{ltxtalk-tuc-2019} lädt die eigentliche Implementierung aus
-\pkg{ltxtalk-theme-tuc-2019}. Beide Paketnamen sind daher gleichwertig.
-Anschließend wird das Theme wie üblich aktiviert:
-}{
-% TODO: English translation
-}
-
-\begin{sourcecode}
-  \usepackage{ltxtalk-tuc-2019}
-  \useltxtalktheme{tuc-2019}
-\end{sourcecode}
-
-\subsubsection{Aufbau der Folien}
-
-\ldeen{
-Auf normalen Folien enthält das grüne Kopfband links das weiße
-Universitätslogo. Eine weiße Linie trennt es vom Veranstaltungskontext.
-Die erste Textzeile besteht aus Präsentationstitel und aktuellem Abschnitt,
-die zweite aus dem aktuellen Unterabschnitt. Die Angaben werden aus
-\cs*{title}, \cs*{section} und \cs*{subsection} übernommen.
-}{
-% TODO: English translation
-}
-
-\ldeen{
-Der Folientitel und ein optionaler Folienuntertitel stehen im Hauptbereich.
-Die Fußzeile ist durch eine dünne Linie abgesetzt und enthält den Autor links,
-die Foliennummer in der Seitenmitte und die Webadresse rechts. Alle drei
-Felder besitzen den im Corporate Design vorgesehenen Abstand zum Seitenrand.
-}{
-% TODO: English translation
-}
-
-\ldeen{
-Die Titelfolie unterscheidet sich bewusst von normalen Folien. Ihr Kopfband
-ist höher und zeigt neben dem größeren Universitätslogo den Titel und das
-Datum. Im Hauptbereich steht links ein zweites, veranstaltungsbezogenes Logo;
-dessen Seitenkanten fluchten mit denen des Universitätslogos. Der Titelblock
-beginnt unter dem Text des Kopfbandes. Eine Fußzeile wird auf der Titelfolie
-nicht ausgegeben.
-}{
-% TODO: English translation
-}
-
-\subsubsection{Logos und Webadresse}
-
-\ldeen{
-Das Universitätslogo, das Logo der Titelfolie und die Webadresse können vor
-\cs*{begin}\Marg{document} gesetzt werden. Die Pfade werden wie bei
-\cs*{includegraphics} relativ zur Hauptdatei der Präsentation aufgelöst.
-Für die mit dem Bundle ausgelieferten Dateien kann die Konfiguration zum
-Beispiel so aussehen:
-}{
-% TODO: English translation
-}
-
-\begin{sourcecode}
-  \settucthemelogo{images/logos/tuc_white.pdf}
-  \settucthemetitlelogo{images/logos/osg.png}
-  \settucthemeurl{https://www.tu-chemnitz.de/}
-\end{sourcecode}
-
-\ldeen{
-Das Logo im Kopfband wird über seine Höhe skaliert. Das zweite Logo wird auf
-die Breite der Logo-Spalte skaliert, so dass beide Logos dieselbe Breite und
-dieselben horizontalen Fluchten besitzen. Für das mitgelieferte OSG-Logo
-gleicht das Theme dessen transparenten oberen Bildrand aus. Bei einer anderen,
-bereits eng beschnittenen Datei kann dieser Ausgleich mit
-\cs*{settucthemetitlelogoraise}\Marg{0pt} abgeschaltet werden.
-}{
-% TODO: English translation
-}
-
-\subsubsection{Titelfolie}
-
-\ldeen{
-Die speziell gestaltete Titelfolie wird mit \cs*{maketuctitle} erzeugt. Der
-Befehl legt den benötigten Frame selbst an und darf daher nicht innerhalb
-einer \code{frame}-Umgebung stehen. Er verwendet die Angaben aus
-\cs*{title}, \cs*{subtitle}, \cs*{author}, \cs*{institute} und \cs*{date}.
-Nach der Titelfolie stellt er automatisch die Geometrie normaler Folien
-wieder her.
-}{
-% TODO: English translation
-}
-
-\subsubsection{Vollständiges Beispiel}
-
-\begin{example}[code-only]
-  \DocumentMetadata{}
-  \documentclass{ltx-talk}
-
-  \usepackage{ltxtalk-tuc-2019}
-  \settucthemelogo{images/logos/tuc_white.pdf}
-  \settucthemetitlelogo{images/logos/osg.png}
-  \settucthemeurl{https://www.tu-chemnitz.de/}
-  \useltxtalktheme{tuc-2019}
-
-  \title{Echtzeitsysteme}
-  \subtitle{0. Kapitel\\Organisatorisches}
-  \author{Prof. Matthias Werner}
-  \institute{Professur Betriebssysteme}
-  \date{Sommersemester 2026}
-
-  \begin{document}
-  \maketuctitle
-
-  \section{Organisatorisches}
-  \subsection{Willkommen}
-  \begin{frame}
-    \frametitle{Willkommen zur Lehrveranstaltung}
-    \begin{itemize}
-      \item Informationen und Materialien
-      \item Termine und Ansprechpartner
-    \end{itemize}
-  \end{frame}
-  \end{document}
-\end{example}
-
-\ldeen{
-Eine ausführlichere Präsentation befindet sich in
-\code{example/example-tuc-2019.tex}.
-}{
-% TODO: English translation
-}
 
 
 \section{\ldeen{Themes anpassen}{Customizing themes}}
@@ -657,6 +419,113 @@ unter anderem die von \cls{ltx-talk} erzeugte Überschriftenstruktur prüfen.
 
 \section{\ldeen{Das Theme-Modell}{The theme model}}
 \label{sec:theme-model}
+
+\subsection{\ldeen{Designprinzipien}{Design principles}}
+\subsubsection{\ldeen{Semantische Elemente}{Semantic elements}}
+
+\ldeen{
+Themes arbeiten mit der Bedeutung von Elementen wie Titel, Autor,
+Abschnitt, Logo oder Foliennummer. Sie behandeln diese Elemente nicht
+lediglich als Text oder Grafik an einer festen Position.
+}{
+Themes operate on the meaning of elements such as the title, author,
+section, logo, or slide number. They do not treat these elements merely
+as text or graphics at fixed positions.
+}
+
+\ldeen{
+Die technische Repräsentation solcher Elemente durch Slots wird im
+Abschnitt über das Theme-Modell erläutert.
+}{
+The technical representation of such elements by slots is explained
+in the section on the theme model.
+}
+
+
+\subsubsection{
+  \ldeen
+    {Trennung von Anordnung und Erscheinungsbild}
+    {Separation of arrangement and appearance}
+}
+
+\ldeen{
+Die räumliche Anordnung eines Elements und seine visuelle Gestaltung
+sind unterschiedliche Eigenschaften. Ein Layout beantwortet vor allem
+die Frage, wo und in welcher Größe ein Element erscheint.
+}{
+The spatial arrangement of an element and its visual styling are
+different properties. A layout primarily answers where an element
+appears and how much space it occupies.
+}
+
+\ldeen{
+Farben, Schriften, Linien, Hintergründe und ähnliche Eigenschaften
+bestimmen dagegen sein Erscheinungsbild. Durch diese Trennung können
+Anordnung und Gestaltung weitgehend unabhängig voneinander entwickelt
+werden.
+}{
+Colours, fonts, rules, backgrounds, and similar properties determine
+its appearance. This separation allows arrangement and visual design
+to be developed largely independently.
+}
+
+
+\subsubsection{\ldeen{Erweiterbarkeit}{Extensibility}}
+
+\ldeen{
+Themes sollen nicht in jedem Fall vollständig neu erstellt werden
+müssen. Vorhandene Definitionen können als Ausgangspunkt dienen und
+gezielt verändert oder ergänzt werden.
+}{
+Themes should not always have to be created entirely from scratch.
+Existing definitions can serve as a starting point and be changed or
+extended selectively.
+}
+
+\ldeen{
+Auf diese Weise können verwandte Themes gemeinsame Eigenschaften
+verwenden und sich nur dort unterscheiden, wo dies tatsächlich
+erforderlich ist.
+}{
+In this way, related themes can share common properties and differ only
+where this is actually necessary.
+}
+
+
+\subsubsection{\ldeen{Barrierefreiheit}{Accessibility}}
+
+\ldeen{
+Die visuelle Gestaltung einer Präsentation darf ihre semantische
+Struktur und ihre Zugänglichkeit nicht unnötig beeinträchtigen.
+Barrierefreiheit wird deshalb als Bestandteil des Theme-Modells
+behandelt und nicht lediglich nachträglich ergänzt.
+}{
+The visual design of a presentation should not unnecessarily impair
+its semantic structure or accessibility. Accessibility is therefore
+treated as part of the theme model rather than being added only as an
+afterthought.
+}
+
+\ldeen{
+Das PDF-Tagging der tatsächlich ausgegebenen Folien übernimmt derzeit
+überwiegend die Klasse \cls{ltx-talk}. Ein Theme muss deren semantische
+Struktur bewahren; \thepkg{} konfiguriert dafür die öffentlichen Templates
+der Klasse. Die im Slot-Modell hinterlegten Angaben zur Barrierefreiheit
+beschreiben darüber hinaus die angestrebte Semantik der Slots. Sie sind noch
+nicht in allen Fällen unmittelbar mit der von \cls{ltx-talk} erzeugten
+Tag-Struktur verbunden.
+}{
+% TODO: English translation
+}
+
+\ldeen{
+Die dafür vorgesehenen Eigenschaften und Empfehlungen werden in einem
+eigenen Abschnitt beschrieben.
+}{
+The relevant properties and recommendations are described in a
+dedicated section.
+}
+
 \subsection{\ldeen{Bereiche}{Areas}}
 
 Ein Theme ordnet Seitenelemente den fünf Bereichen \texttt{header},
@@ -717,7 +586,7 @@ die additive Slot-Schnittstelle.
 \subsection{\ldeen{Aufbau eines Themes}{Structure of a theme}}
 
 \ldeen{
-Ein Theme-Paket lädt zunächst \pkg{ltxtalk-theme-core}, definiert eine
+Ein Theme-Paket lädt zunächst \pkg{ltxtalk-theme}, definiert eine
 Setup-Anweisung und registriert diese unter einem eindeutigen Namen. Die
 Setup-Anweisung wird nicht beim Laden, sondern erst durch
 \cs*{useltxtalktheme} ausgeführt. Dadurch können mehrere Theme-Pakete geladen
@@ -727,7 +596,7 @@ und später gezielt aktiviert werden.
 }
 
 \begin{sourcecode}
-  \RequirePackage{ltxtalk-theme-core}
+  \RequirePackage{ltxtalk-theme}
   \ExplSyntaxOn
   \cs_new_protected:Npn \__my_theme_setup:
     {
@@ -1121,58 +990,6 @@ Slots eines Teilthemes implementiert werden.
 % TODO: English translation
 }
 
-\subsection{TU Chemnitz 2019}
-
-\begin{commands}
-  \command{settucthemelogo}[\marg{Datei}]
-  \ldeen{
-    Setzt die Datei für das weiße TU-Chemnitz-Logo im Kopfband. Auf der
-    Titelfolie wird es größer dargestellt als auf normalen Folien. Ist die
-    Datei nicht auffindbar, gibt das Theme ersatzweise den Text
-    \code{TU CHEMNITZ} aus.
-  }{
-    % TODO: English translation
-  }
-
-  \command{settucthemetitlelogo}[\marg{Datei}]
-  \ldeen{
-    Setzt das veranstaltungsbezogene Logo im linken Bereich der Titelfolie.
-    Es wird auf die Breite des TU-Logos skaliert und oben bündig mit dem
-    Titelblock angeordnet. Ist die Datei nicht auffindbar, bleibt die
-    Logo-Spalte leer.
-  }{
-    % TODO: English translation
-  }
-
-  \command{settucthemetitlelogoraise}[\marg{Länge}]
-  \ldeen{
-    Verschiebt das sichtbare Logo der Titelfolie um die angegebene Länge nach
-    oben, um einen transparenten oberen Bildrand auszugleichen. Der Vorgabewert
-    \code{0.21cm} passt zum mitgelieferten OSG-Logo; für eng beschnittene
-    Logos ist gewöhnlich \code{0pt} richtig.
-  }{
-    % TODO: English translation
-  }
-
-  \command{settucthemeurl}[\marg{Webadresse}]
-  \ldeen{
-    Setzt den rechtsbündigen Text in der Fußzeile normaler Folien. Das
-    Argument wird unverändert gesetzt; soll die Adresse anklickbar sein, kann
-    daher beispielsweise \cs*{url} im Argument verwendet werden.
-  }{
-    % TODO: English translation
-  }
-
-  \command{maketuctitle}
-  \ldeen{
-    Erzeugt die vollständige Titelfolie des Themes. Der Befehl ist nach
-    \cs*{begin}\Marg{document}, aber außerhalb einer \code{frame}-Umgebung
-    aufzurufen. Die Titelfolie besitzt keine Fußzeile.
-  }{
-    % TODO: English translation
-  }
-\end{commands}
-
 
 % --------------------------------------------------------------------------
 % Implementation
@@ -1180,9 +997,9 @@ Slots eines Teilthemes implementiert werden.
 
 \section{Implementation}
 
-\subsection{ltxtalk-theme-core}
+\subsection{ltxtalk-theme}
 
-% \AutoDocInput{lttheme.dtx}{core} % comment out to during text development to speed up latex
+% \AutoDocInput{lttheme.dtx}{pkg} % comment out to during text development to speed up latex
 
 
 % \section{\ldeen{Referenz}{Reference}}
@@ -1350,18 +1167,17 @@ Slots eines Teilthemes implementiert werden.
 \end{document}
 
 %</driver>
-%<*core>
+%<*pkg>
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesExplPackage{ltxtalk-theme-core}{2026-07-15}{0.2}
+\ProvidesExplPackage{ltxtalk-theme}{2026-07-15}{0.2}
   {Theme engine for ltx-talk}
 
 \RequirePackage{xcoffins}
 \RequirePackage{xcolor}
 
-% \ldeen{Das Paket ist nur sinnvoll, wenn \cls{}}{}
-% ==========================================
-% KLASSENPRÜFUNG
-% ==========================================
+% \ldeen*{Das Paket ist nur sinnvoll, wenn @1 geladen ist.}{
+%  The package is only useful, if @1 is loaded. 
+% }{\cls*{ltx-talk}}
 \@ifclassloaded{ltx-talk}
   {}
   { 
@@ -1372,7 +1188,7 @@ Slots eines Teilthemes implementiert werden.
 
 \msg_new:nnnn { ltxtalk } { missing-class }
   { Missing~document~class }
-  { The~ltxtalk-theme-core~package~requires~ltx-talk. }
+  { The~ltxtalk-theme~package~requires~ltx-talk. }
 
 % ==========================================
 % NACHRICHTEN
@@ -2946,11 +2762,7 @@ Slots eines Teilthemes implementiert werden.
       {\__ltxtalk_update_text_area:}
   }
 
-%</core>
-%<core>\endinput
-% \end{macrocode}
-% \subsection{Modern theme}
-% \begin{macrocode}
+%</pkg>
 %<*modern>
 % ltxtalk-theme-modern.sty
 % Version 0.2 - 2026/07/15
@@ -2963,7 +2775,7 @@ Slots eines Teilthemes implementiert werden.
 \ProvidesExplPackage{ltxtalk-theme-modern}{2026/07/15}{0.2}
   {Modern theme for ltx-talk}
 
-\RequirePackage{ltxtalk-theme-core}
+\RequirePackage{ltxtalk-theme}
 
 \cs_new_protected:Npn \__ltxtalk_modern_theme_setup:
   {
@@ -3099,9 +2911,7 @@ Slots eines Teilthemes implementiert werden.
 \RegisterLTXTalkTheme{modern}{\__ltxtalk_modern_theme_setup:}
 %</modern>
 %<modern>\endinput
-% \end{macrocode}
 % \subsection{Minimal theme}
-% \begin{macrocode}
 %<*minimal>
 % ltxtalk-theme-minimal.sty
 % Version 0.2 - 2026/07/15
@@ -3114,7 +2924,7 @@ Slots eines Teilthemes implementiert werden.
 \ProvidesExplPackage{ltxtalk-theme-minimal}{2026/07/15}{0.2}
   {Minimal theme for ltx-talk}
 
-\RequirePackage{ltxtalk-theme-core}
+\RequirePackage{ltxtalk-theme}
 
 \cs_new_protected:Npn \__ltxtalk_minimal_theme_setup:
   {
@@ -3227,10 +3037,7 @@ Slots eines Teilthemes implementiert werden.
 \RegisterLTXTalkTheme{minimal}{\__ltxtalk_minimal_theme_setup:}
 
 %</minimal>
-%<minimal>\endinput
-% \end{macrocode}
 % \subsection{Academic theme}
-% \begin{macrocode}
 %<*academic>
 % ltxtalk-theme-academic.sty
 % Version 0.2 - 2026/07/15
@@ -3427,9 +3234,7 @@ Slots eines Teilthemes implementiert werden.
 
 %</academic>
 %<academic>\endinput
-% \end{macrocode}
 % \subsection{Corporate theme}
-% \begin{macrocode}
 %<*corporate>
 % ltxtalk-theme-corporate.sty
 % Version 0.2 - 2026/07/15
@@ -3635,209 +3440,3 @@ Slots eines Teilthemes implementiert werden.
 
 %</corporate>
 %<corporate>\endinput
-% \end{macrocode}
-% \subsection{TU Chemnitz 2019 theme}
-% \begin{macrocode}
-%<*tuc-2019>
-\NeedsTeXFormat{LaTeX2e}
-\ProvidesExplPackage{ltxtalk-theme-tuc-2019}{2026/07/21}{0.1}
-  {TU Chemnitz presentation design introduced in 2019}
-
-\RequirePackage{ltxtalk-theme-core}
-
-\tl_new:N \g__ltxtalk_tuc_logo_tl
-\tl_new:N \g__ltxtalk_tuc_title_logo_tl
-\tl_new:N \g__ltxtalk_tuc_url_tl
-\dim_new:N \g__ltxtalk_tuc_title_logo_raise_dim
-\bool_new:N \g__ltxtalk_tuc_title_bool
-\tl_gset:Nn \g__ltxtalk_tuc_logo_tl {tuc_white.pdf}
-\tl_gset:Nn \g__ltxtalk_tuc_title_logo_tl {osg.png}
-\tl_gset:Nn \g__ltxtalk_tuc_url_tl {https://www.tu-chemnitz.de/}
-\dim_gset:Nn \g__ltxtalk_tuc_title_logo_raise_dim {0.21cm}
-
-\NewDocumentCommand \settucthemelogo {m}
-  {\tl_gset:Nn \g__ltxtalk_tuc_logo_tl {#1}}
-\NewDocumentCommand \settucthemetitlelogo {m}
-  {\tl_gset:Nn \g__ltxtalk_tuc_title_logo_tl {#1}}
-\NewDocumentCommand \settucthemetitlelogoraise {m}
-  {\dim_gset:Nn \g__ltxtalk_tuc_title_logo_raise_dim {#1}}
-\NewDocumentCommand \settucthemeurl {m}
-  {\tl_gset:Nn \g__ltxtalk_tuc_url_tl {#1}}
-
-\cs_new_protected:Npn \__ltxtalk_tuc_logo:
-  {
-    \file_if_exist:VTF \g__ltxtalk_tuc_logo_tl
-      {
-        \includegraphics
-          [height=\bool_if:NTF \g__ltxtalk_tuc_title_bool {1.25cm}{0.82cm}]
-          {\g__ltxtalk_tuc_logo_tl}
-      }
-      {\sffamily\bfseries TU~CHEMNITZ}
-  }
-\cs_new_protected:Npn \__ltxtalk_tuc_title_logo:
-  {
-    \file_if_exist:VTF \g__ltxtalk_tuc_title_logo_tl
-      {
-        \includegraphics[width=2.485cm]{\g__ltxtalk_tuc_title_logo_tl}
-      }
-      {}
-  }
-\cs_new_protected:Npn \__ltxtalk_tuc_context:
-  {
-    \sffamily
-    \bool_if:NTF \g__ltxtalk_tuc_title_bool
-      {\large \@title \\[0.18cm] \normalsize \@date}
-      {
-        \@title
-        \tl_if_blank:VF \l__talk_section_tl
-          {~--~\tl_use:N \l__talk_section_tl}
-        \tl_if_blank:VF \l__talk_subsection_tl
-          {\\\tl_use:N \l__talk_subsection_tl}
-      }
-  }
-\cs_new_protected:Npn \__ltxtalk_tuc_header_line:
-  {
-    \hbox_to_wd:nn {\paperwidth}
-      {
-        \skip_horizontal:n {0.4cm}
-        \begin{minipage}[t]
-          {\bool_if:NTF \g__ltxtalk_tuc_title_bool {2.485cm}{1.63cm}}
-          \vspace{0pt}\__ltxtalk_tuc_logo:
-        \end{minipage}
-        \skip_horizontal:n {0.4cm}
-        \begin{minipage}[t]{0.4pt}
-          \vspace{0pt}\color{white}
-          \rule
-            {0.4pt}
-            {\bool_if:NTF \g__ltxtalk_tuc_title_bool {1.35cm}{0.82cm}}
-        \end{minipage}
-        \skip_horizontal:n {0.4cm}
-        \begin{minipage}[t]{0.62\paperwidth}
-          \vspace{0.08cm}\color{white}\__ltxtalk_tuc_context:
-        \end{minipage}
-        \hfil
-      }
-  }
-\cs_new_eq:NN \__ltxtalk_tuc_header: \__ltxtalk_tuc_header_line:
-
-\cs_new_protected:Npn \__ltxtalk_tuc_theme_setup:
-  {
-    \ltxtalksetup
-      {
-        header = true,
-        header-height = 1.45cm,
-        left-margin = false,
-        right-margin = false,
-        footer = true,
-        footer-height = 0.52cm
-      }
-    \setltxtalkcolors
-      {
-        primary = {HTML}{4E8749},
-        secondary = {HTML}{333333},
-        accent = {HTML}{F07D00},
-        text = {HTML}{202020},
-        background = {HTML}{FFFFFF}
-      }
-    \color_set:nnn { structure } { HTML } { 4E8749 }
-
-    \defineltxtalkslot{tuc-header}{header}{custom}{role=navigation}
-    \setltxtalkslotcontent{tuc-header}{\__ltxtalk_tuc_header:}
-    \positionltxtalkslot{tuc-header}{left}{0.38cm}{\paperwidth}{1.05cm}
-    \styleltxtalkslot{tuc-header}
-      {align=left,color=white,font=\footnotesize\sffamily}
-
-    \defineltxtalkslot{tuc-frametitle}{content}{frametitle}
-      {role=heading,heading-level=2}
-    \positionltxtalkslot{tuc-frametitle}{left}{top}{\textwidth}{0.9cm}
-    \styleltxtalkslot{tuc-frametitle}
-      {align=left,color=ltxtalk-primary,font=\Large\sffamily}
-
-    \defineltxtalkslot{tuc-framesubtitle}{content}{framesubtitle}
-      {role=heading,heading-level=3}
-    \positionltxtalkslot{tuc-framesubtitle}{left}{top}{\textwidth}{0.55cm}
-    \styleltxtalkslot{tuc-framesubtitle}
-      {align=left,color=ltxtalk-secondary,font=\normalsize\sffamily}
-
-    \defineltxtalkslot{tuc-author}{footer}{custom}{role=note}
-    \setltxtalkslotcontent{tuc-author}
-      {\makebox[0.36\paperwidth][l]{\@author}}
-    \positionltxtalkslot{tuc-author}{0.4cm}{center}{0.36\paperwidth}{0.32cm}
-    \styleltxtalkslot{tuc-author}
-      {align=left,color=ltxtalk-secondary,font=\tiny\sffamily}
-
-    \defineltxtalkslot{tuc-page}{footer}{custom}{role=navigation}
-    \setltxtalkslotcontent{tuc-page}
-      {\makebox[0.22\paperwidth][c]{N~--~\@framenumber\ von~\@totalframes}}
-    \positionltxtalkslot{tuc-page}{center}{center}{0.22\paperwidth}{0.32cm}
-    \styleltxtalkslot{tuc-page}
-      {align=center,color=ltxtalk-secondary,font=\tiny\sffamily}
-
-    \defineltxtalkslot{tuc-url}{footer}{custom}{role=note}
-    \setltxtalkslotcontent{tuc-url}
-      {\makebox[0.36\paperwidth][r]{\tl_use:N \g__ltxtalk_tuc_url_tl}}
-    \positionltxtalkslot{tuc-url}
-      {\dim_eval:n{\paperwidth-0.4cm-0.36\paperwidth}}
-      {center}{0.36\paperwidth}{0.32cm}
-    \styleltxtalkslot{tuc-url}
-      {align=right,color=ltxtalk-secondary,font=\tiny\sffamily}
-
-    \decorateltxtalkarea{header}
-      {background=ltxtalk-primary,frame=none,artifact-type=layout}
-    \decorateltxtalkarea{footer}
-      {
-        background=white,
-        frame=top,
-        rule-color=ltxtalk-secondary,
-        rule-thickness=0.35pt,
-        artifact-type=layout
-      }
-  }
-
-\NewDocumentCommand \maketuctitle {}
-  {
-    \bool_gset_true:N \g__ltxtalk_tuc_title_bool
-    \ltxtalksetup
-      {header-height=2.4cm,footer=false}
-    \positionltxtalkslot{tuc-header}{left}{0.45cm}{\paperwidth}{1.6cm}
-    \__ltxtalk_update_text_area:
-    \begin{frame}
-      \thispagestyle{lttheme}
-      \vspace*{0.7cm}
-      \noindent
-      \skip_horizontal:n {\dim_eval:n{0.4cm-\Gm@lmargin}}
-      \begin{minipage}[t]{2.485cm}
-        \vspace{0pt}\par
-        \vspace{\dim_eval:n{-\g__ltxtalk_tuc_title_logo_raise_dim}}
-        \centering\__ltxtalk_tuc_title_logo:
-      \end{minipage}
-      \skip_horizontal:n {0.4cm+0.4pt+0.4cm}
-      \begin{minipage}[t]{0.62\paperwidth}
-          \vspace{0pt}
-          \sffamily
-          \Large\bfseries \@title\par
-          \vspace{0.8cm}
-          \color{ltxtalk-primary}\large \@subtitle\par
-          \vspace{0.75cm}
-          \normalsize\color{ltxtalk-secondary}\@author\par
-          \small \@institute
-      \end{minipage}
-    \end{frame}
-    \bool_gset_false:N \g__ltxtalk_tuc_title_bool
-    \ltxtalksetup
-      {header-height=1.45cm,footer=true,footer-height=0.52cm}
-    \positionltxtalkslot{tuc-header}{left}{0.38cm}{\paperwidth}{1.05cm}
-    \__ltxtalk_update_text_area:
-  }
-
-\RegisterLTXTalkTheme{tuc-2019}{\__ltxtalk_tuc_theme_setup:}
-%</tuc-2019>
-%<tuc-2019>\endinput
-%<*tuc-2019-alias>
-\NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{ltxtalk-tuc-2019}[2026/07/21 v0.1 TU Chemnitz 2019 theme]
-\RequirePackage{ltxtalk-theme-tuc-2019}
-%</tuc-2019-alias>
-%<tuc-2019-alias>\endinput
-% \end{macrocode}
-% \Finale

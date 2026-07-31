@@ -2,6 +2,10 @@ bundle = "osglecture"
 module = "lttheme"
 maindir = ".."
 
+textfiles = {
+    "README-lttheme.md"
+}
+
 -- ltx-talk removes a temporary final page on the second LaTeX run.
 -- PDF-based visual tests must therefore compare the settled output.
 checkruns = 2

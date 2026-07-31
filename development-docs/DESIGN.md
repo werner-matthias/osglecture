@@ -11,7 +11,7 @@ Schnittstelle und die Dateiverträge von OLLM. Es konsolidiert die bisher
 getroffenen Designentscheidungen und hält verbleibende Detailfragen sichtbar.
 
 Die bundleweit verbindlichen Kurzdefinitionen stehen im
-[`GLOSSARY.md`](../GLOSSARY.md). Dieses Dokument verwendet die dort
+[`GLOSSARY.md`](./GLOSSARY.md). Dieses Dokument verwendet die dort
 festgelegten Begriffe und ergänzt ihre Rationales.
 
 OLLM ist Teil des `osglecture`-Bundles, aber nicht dessen Dokumentklasse. Die

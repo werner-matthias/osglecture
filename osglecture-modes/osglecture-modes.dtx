@@ -5,7 +5,7 @@
 \preamble
 
 ========================================================================
- osglecture-modes -- portable document-mode graphs
+ osglecture-modes - generalized portable document modes
 
  (C) 2026 Matthias Werner
  E-mail: matthias.werner@informatik.tu-chemnitz.de
@@ -59,17 +59,24 @@ Matthias Werner.
   authors  = {Matthias Werner[matthias.werner@informatik.tu-chemnitz.de]},
   abstract = {
     \ldeen{
-      Das Paket verwaltet Dokumentmodi als gerichteten azyklischen Graphen.
-      Es ergänzt die Modusschnittstellen von Beamer und \pkg*{ltx-talk},
+      \LaTeX-Pakete wie \needpkg{beamer} und \needpkg{ltx-talk} bieten das 
+      Konzept von \emph{Modi} an, bei dem, abhängig vom Dokumentmodus,
+      nur bestimmte Dokumentteile gezielt übersetzt werden.
+
+      Dieses Paket erweitert das Konzept und verwaltet Dokumentmodi 
+      als gerichteten azyklischen Graphen. 
+      Es ergänzt die Modusschnittstellen von \pkg*{beamer} und \pkg*{ltx-talk},
       funktioniert aber ebenso mit gewöhnlichen Dokumentklassen. Es gehört
-      zum \pkg*{osglecture}-Bundle, besitzt jedoch keine Laufzeitabhängigkeit
-      von dessen Klasse oder Buildprogramm.
+      zum \pkg*{osglecture}-Bundle, ist jedoch auch unabhängig davon nutzbar.
     }{
-      The package represents document modes as a directed acyclic graph.  It
-      augments the mode interfaces of Beamer and \pkg*{ltx-talk}, while also
-      working with ordinary document classes.  It is distributed as part of
-      the \pkg*{osglecture} bundle but has no runtime dependency on its class
-      or build program.
+       \LaTeX packages such as \needpkg{beamer} and \needpkg{ltx-talk} offer 
+       the concept of \emph{modes}, in which, depending on the document mode, 
+       only specific parts of the document are rendered.
+      
+      This package extends this concept and manages document modes as directed 
+      acyclic graphs. It complements the mode interfaces of \pkg*{beamer}  and 
+      \pkg*{ltx-talk}, but also works with standard document classes. 
+      It is part of the \pkg*{osglecture} bundle, but can also be used independently of it.
     }
   },
   url = https://github.com/werner-matthias/osglecture,
@@ -81,12 +88,33 @@ Matthias Werner.
 \section{\ldeen{Überblick}{Overview}}
 
 \ldeen{
+  \LaTeX-Pakete wie \needpkg{beamer} und \needpkg{ltx-talk} und in einem
+  etwas allgemeineren Sinne auch Pakete wie \pkg{comment}, \pkg{xcomment}, 
+  \pkg{multiaudience} etc.\ bieten das 
+  Konzept von \emph{Modi} an, bei dem, abhängig vom Dokumentmodus,
+  nur bestimmte Dokumentteile gezielt übersetzt werden.
+
+  Dieses Paket erweitert das Konzept und verwaltet Dokumentmodi 
+  als gerichteten azyklischen Graphen. 
+  Es ergänzt die Modusschnittstellen von \pkg*{beamer} und \pkg*{ltx-talk},
+  funktioniert aber ebenso mit gewöhnlichen Dokumentklassen.  
+
   Ein konkreter Dokumentmodus kann mehreren allgemeineren Modi angehören.
   Beispielsweise kann \code{handout} gleichzeitig \code{presentation} und
   \code{print} aktivieren. Das Paket berechnet die transitive Elternhülle,
   unterstützt Aliase und mehrere gleichzeitig aktive Blattmodi und prüft den
   vollständigen Graphen auf ungültige Referenzen und Zyklen.
 }{
+  \LaTeX packages such as \needpkg{beamer} and \needpkg{ltx-talk}, and in a
+  slightly more general sense, packages such as \pkg{comment}, \pkg{xcomment}, 
+  \pkg{multiaudience}, etc., offer the 
+  concept of \emph{modes}, in which, depending on the document mode,
+  only specific parts of the document are rendered.
+
+  This package extends this concept and manages document modes as directed 
+  acyclic graphs. It complements the mode interfaces of \pkg*{beamer} and 
+  \pkg*{ltx-talk}, but also works with standard document classes. 
+
   A concrete document mode may belong to several more general modes.  For
   example, \code{handout} may activate both \code{presentation} and
   \code{print}. The package computes the transitive parent closure, supports
@@ -529,8 +557,8 @@ Text\\<slides>[3ex]
 
 \printindex
 \end{document}
-%</driver>
 
+%</driver>
 %<*package>
 \ProvidesExplPackage{osglecture-modes}{2026-07-29}{0.3.0}
   {Portable document-mode graphs}
@@ -1224,8 +1252,10 @@ Text\\<slides>[3ex]
 %</package>
 
 %<*ltxtalk>
-\ProvidesExplPackage{osglecture-modes-ltxtalk}{2026-07-29}{0.1.0}
-  {ltx-talk adapter with ignore-non-frame-text}
+\ProvidesExplPackage{osglecture-modes-ltxtalk}
+{2026-07-29}
+{0.1.0}
+{ltx-talk adapter with ignore-non-frame-text}
 
 \RequirePackage{osglecture-modes}
 
@@ -1316,7 +1346,6 @@ Text\\<slides>[3ex]
 
 \cs_new_protected:Npn \osglecture_modes_ltxtalk_scan_begin:
   {
-    %\peek_remove:NT \begin
     \peek_meaning_remove:NT \begin
     \osglecture_modes_ltxtalk_scan_begin_aux:n
   }
@@ -1354,7 +1383,7 @@ Text\\<slides>[3ex]
         \end{document}
       }
       {
-        % fremdes \end{...} außerhalb von frames ignorieren
+        % fremdes \cs{end}\code{\{...\}} außerhalb von frames ignorieren
         \osglecture_modes_ltxtalk_scan:
       }
   }

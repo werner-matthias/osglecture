@@ -3,6 +3,13 @@ module = "osgdoc"
 
 maindir=".."
 
-installfiles = { "osgdoc.cls", "osgdoc.sty" }
+textfiles = {
+    "README-osgdoc.md"
+}
+
+installfiles = { 
+    "osgdoc.cls", 
+    "osgdoc.sty" 
+}
 
 dofile("../build.lua")

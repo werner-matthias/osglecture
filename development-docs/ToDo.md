@@ -21,6 +21,8 @@ Featurewünsche.
 # tagpax
 * [x] Test klären
 
+# osglecture-modes
+* [ ] Automatische Übername neuer Modes für Beamer-/Ltx-Talk-Befehle wie \only
 
 # Ergänzungspakete
 * [ ] ANSI-Terminal
