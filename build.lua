@@ -4,19 +4,17 @@ maindir  = maindir or "."
 
 modules = {
    "ollm",
-   "langselect",
    "osgdoc",
+   "langselect",
    "lttheme",
    "osglecture-modes",
    "osglecture",
    "tagpax",
-   -- "osgterminal",
-   -- "osgref",
-   -- "osglectbib",
-   -- "osglisting"
  }
 
-textfiles = { "README.md", "GLOSSARY.md" }
+textfiles = textfiles or { 
+  "README-*.md"
+ }
 
 unpackfiles = unpackfiles  or { "*.dtx" }
 
@@ -39,6 +37,9 @@ cleanfiles={
     "*.ind"
 }
 
+-- It is (mainly) a luatex package
+tdsroot = "luatex"
+
 --[[ 
 The documentation is in two languages, English and German.
 I.e., each .dtx file has to be compiled twice.
@@ -50,6 +51,7 @@ function typeset(file, dir, cmd)
    dir = dir or "."
    local jobnames
    local ext = file:match("%.([^.]*)$")
+   print(" typeset called")
    if ext == 'dtx' then 
       jobnames = {module.."-en", module.."-de"}
    else
@@ -72,7 +74,7 @@ function typeset(file, dir, cmd)
 	 end
       end
       --[[ Actually, doc() is responsible to save the results.
-	   However, it can't cope with changed file stems.
+	         However, it can't cope with changed file stems.
       --]]
       cp(job..".pdf", typesetdir, docfiledir)
    end
@@ -114,17 +116,10 @@ target_list.cleanall = {
   func = stdclean,
 }
 
-
--- Script-Auslieferung (landet in TEXMF/scripts/osglecture/)
--- scriptfiles = {
---  "scripts/ollm",
---  "scripts/ollm.bat",   -- optional; für Windows
---}
-
 docfiles     = docfiles or {
   "*.dtx",
   "*.pdf",
-  "README.md"
+  "README-*.md"
 }
 
 sourcefiles  = sourcefiles  or { "*.dtx"}
@@ -189,31 +184,3 @@ function update_tag(file, content, tagname, tagdate)
 
   return content
 end
-
---[[
--- Tests: Standard-Lauf (Unit je Modul) + Integrations-Lauf (siehe config-integ.lua)
--- checkconfigs = { "build", "config-integ" }
-checkconfigs = { "build"}
-
--- Integration hängt von allen Modulen ab (sorgt für Entpacken/Build vor dem Test)
-checkdeps = {
-  --"./osglecture",
-  "./langselect",
-  --"./osgterminal",
-  "./osglecturebib"
-  --"./osgcombine",
-  --"./osglisting",
-}
-
--- Tagging (optional)
-tagfiles = {
-  -- "osglecture/osglecture.dtx",
-  -- "multibabel/multibabel.dtx",
-  -- "osgterminal/osgterminal.dtx",
-  -- "osgbib/osgbib.dtx",
-  -- "osgcombine/osgcombine.dtx",
-  -- "osglisting/osglisting.dtx",
-  "scripts/ollm",
-}
-tagfmt = "v%Y-%m-%d"
---]]

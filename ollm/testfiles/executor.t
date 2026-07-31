@@ -9,8 +9,8 @@ use File::Spec;
 use File::Temp qw(tempdir);
 use Test::More;
 
-use lib 'vendor/TOML-Tiny-0.22/lib';
-use lib 'lib';
+use lib 'scripts/vendor/TOML-Tiny-0.22/lib';
+use lib 'scripts/lib';
 
 use OLLM::Config;
 use OLLM::Executor;
@@ -29,7 +29,7 @@ copy(
 ) or die $!;
 my $resolved = OLLM::Config->resolve_request(
   start_dir       => $chapter,
-  definitions_dir => abs_path('definitions'),
+  definitions_dir => abs_path('scripts/definitions'),
   plan => {
     action          => 'build',
     all             => 0,
@@ -47,7 +47,7 @@ my $resolved = OLLM::Config->resolve_request(
 my @calls;
 my $status = OLLM::Executor->execute(
   resolved => $resolved,
-  latexmk_rc => abs_path('ollm-latexmk.rc'),
+  latexmk_rc => abs_path('scripts/ollm-latexmk.rc'),
   runner => sub {
     my ($command, $spec) = @_;
     push @calls, {
@@ -60,7 +60,7 @@ my $status = OLLM::Executor->execute(
 is $status, 0, 'executor reports a successful runner';
 is scalar @calls, 1, 'executor starts one process for one BuildSpec';
 is $calls[0]{command}[0], 'latexmk', 'executor invokes latexmk directly';
-ok grep($_ eq abs_path('ollm-latexmk.rc'), @{ $calls[0]{command} }),
+ok grep($_ eq abs_path('scripts/ollm-latexmk.rc'), @{ $calls[0]{command} }),
   'executor loads only its explicit latexmk configuration';
 ok grep($_ eq '-recorder', @{ $calls[0]{command} }),
   'recorder mode is explicit';

@@ -8,8 +8,8 @@ use File::Path qw(make_path);
 use File::Temp qw(tempdir);
 use Test::More;
 
-use lib 'vendor/TOML-Tiny-0.22/lib';
-use lib 'lib';
+use lib 'scripts/vendor/TOML-Tiny-0.22/lib';
+use lib 'scripts/lib';
 
 use OLLM::BuildFile;
 use OLLM::Config;
@@ -20,7 +20,7 @@ my $manifest_path = File::Spec->catfile($fixture, 'ollmconfig.toml');
 my $manifest = OLLM::Config->load_manifest($manifest_path);
 my $resolved = OLLM::Config->resolve_request(
   start_dir       => $chapter,
-  definitions_dir => abs_path('definitions'),
+  definitions_dir => abs_path('scripts/definitions'),
   plan => {
     action          => 'build',
     all             => 0,

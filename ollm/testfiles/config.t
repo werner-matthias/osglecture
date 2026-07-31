@@ -8,15 +8,15 @@ use File::Spec;
 use File::Temp qw(tempdir);
 use Test::More;
 
-use lib 'vendor/TOML-Tiny-0.22/lib';
-use lib 'lib';
+use lib 'scripts/vendor/TOML-Tiny-0.22/lib';
+use lib 'scripts/lib';
 
 use OLLM::Config;
 
 my $fixture = abs_path('testfiles/fixtures/project');
 my $chapter = File::Spec->catdir($fixture, '020-processes');
 my $manifest_path = File::Spec->catfile($fixture, 'ollmconfig.toml');
-my $definitions = abs_path('definitions');
+my $definitions = abs_path('scripts/definitions');
 
 my $located = OLLM::Config->find_manifest(start_dir => $chapter);
 is $located->{kind}, 'toml', 'manifest found by upward search';

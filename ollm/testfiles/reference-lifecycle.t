@@ -9,8 +9,8 @@ use File::Spec;
 use File::Temp qw(tempdir);
 use Test::More;
 
-use lib 'vendor/TOML-Tiny-0.22/lib';
-use lib 'lib';
+use lib 'scripts/vendor/TOML-Tiny-0.22/lib';
+use lib 'scripts/lib';
 
 use OLLM::Config;
 use OLLM::Executor;
@@ -59,7 +59,7 @@ close $source;
 
 my $resolved = OLLM::Config->resolve_request(
   start_dir       => $unit,
-  definitions_dir => abs_path('definitions'),
+  definitions_dir => abs_path('scripts/definitions'),
   plan => {
     action => 'build', all => 0, dry_run => 0, latexmk_args => ['-silent'],
     legacy_args => [], non_interactive => 1, rebuild => 0, resolve => 0,
@@ -76,7 +76,7 @@ local $ENV{TEXINPUTS} = $texinputs . $separator
 local $ENV{TEXMFVAR} = $ENV{TEXMFVAR} // '/tmp/osglecture-texmf-var';
 my $status = OLLM::Executor->execute(
   resolved    => $resolved,
-  latexmk_rc  => abs_path('ollm-latexmk.rc'),
+  latexmk_rc  => abs_path('scripts/ollm-latexmk.rc'),
 );
 is $status, 0, 'a real LuaLaTeX build completes and promotes its state';
 is(
@@ -113,7 +113,7 @@ TEX
 close $consumer_source;
 my $consumer_resolved = OLLM::Config->resolve_request(
   start_dir       => $consumer,
-  definitions_dir => abs_path('definitions'),
+  definitions_dir => abs_path('scripts/definitions'),
   plan => {
     action => 'build', all => 0, dry_run => 0, latexmk_args => ['-silent'],
     legacy_args => [], non_interactive => 1, rebuild => 0, resolve => 0,
@@ -122,7 +122,7 @@ my $consumer_resolved = OLLM::Config->resolve_request(
 );
 my $consumer_status = OLLM::Executor->execute(
   resolved    => $consumer_resolved,
-  latexmk_rc  => abs_path('ollm-latexmk.rc'),
+  latexmk_rc  => abs_path('scripts/ollm-latexmk.rc'),
 );
 is $consumer_status, 0,
   'a second unit resolves and promotes an external reference';

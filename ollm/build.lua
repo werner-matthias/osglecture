@@ -2,51 +2,33 @@ bundle = "osglecture"
 module = "ollm"
 maindir = ".."
 
--- OLLM is installed as a program, not as a TeX input file.
-scriptfiles = {
-  "ollm",
-  "ollm.cmd",
-  "ollm-latexmk.rc",
-  "ollm-legacy.rc",
+docfiles = {
+  "ollm-en.pdf",
+  "ollm-de.pdf",
 }
+
 installfiles = { }
 
 tdsdirs = {
-  ["definitions"] = "scripts/osglecture/definitions",
-  ["lib"] = "scripts/osglecture/lib",
-  ["vendor"] = "scripts/osglecture/vendor",
-}
-
--- Keep the bundle name in the TDS script path.  Without this explicit
--- location l3build would use scripts/ollm/ollm for a module named "ollm".
-tdslocations = {
-  "scripts/osglecture/ollm",
-  "scripts/osglecture/ollm.cmd",
-  "scripts/osglecture/ollm-latexmk.rc",
-  "scripts/osglecture/ollm-legacy.rc",
+  ["scripts"] = "scripts/osglecture",
+  ["scripts/definitions"] = "scripts/osglecture/definitions",
+  ["scripts/lib"] = "scripts/osglecture/lib",
+  ["scripts/vendor"] = "scripts/osglecture/vendor",
 }
 
 sourcefiles = {
-  "ollm",
-  "ollm.cmd",
-  "ollm-latexmk.rc",
-  "ollm-legacy.rc",
   "ollm.tex",
-  "definitions/bundle-presets/*.toml",
-  "definitions/targets/*.toml",
-  "lib/OLLM/*.pm",
-  "vendor/TOML-Tiny-0.22/LICENSE",
-  "vendor/TOML-Tiny-0.22/lib/TOML/Tiny/*.pm",
+  "ollm-en.tex",
+  "ollm-de.tex",
 }
 
-typesetfiles = { "ollm.tex" }
+typesetfiles = { 
+  "ollm-en.tex",
+  "ollm-de.tex"
+}
 
 textfiles = {
   "README-ollm.md",
-  "THIRD_PARTY.md",
-}
-
-docfiles = {
   "THIRD_PARTY.md",
 }
 
@@ -54,23 +36,24 @@ docfiles = {
 -- the syntax check in the normal l3build check path catches broken releases
 -- even before there are stable CLI contracts to exercise.
 function checkinit_hook()
-  local errorlevel = runcmd("perl -c ollm", ".", { })
+  local errorlevel = runcmd("perl -c ollm", "scripts", { })
   if errorlevel ~= 0 then
     return errorlevel
   end
-  errorlevel = runcmd("perl -c ollm-latexmk.rc", ".", { })
+  errorlevel = runcmd("perl -c ollm-latexmk.rc", "scripts", { })
   if errorlevel ~= 0 then
     return errorlevel
   end
-  errorlevel = runcmd("perl -c ollm-legacy.rc", ".", { })
+  errorlevel = runcmd("perl -c ollm-legacy.rc", "scripts", { })
   if errorlevel ~= 0 then
     return errorlevel
   end
+  -- [[
   return runcmd(
-    "prove -Ilib -Ivendor/TOML-Tiny-0.22/lib testfiles",
+    "prove -Iscripts/lib -Iscripts/vendor/TOML-Tiny-0.22/lib testfiles",
     ".",
     { }
   )
+--]]
 end
-
 dofile("../build.lua")

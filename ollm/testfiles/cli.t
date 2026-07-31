@@ -3,8 +3,8 @@ use strict;
 use warnings;
 
 use Test::More;
-use lib 'vendor/TOML-Tiny-0.22/lib';
-use lib 'lib';
+use lib 'scripts/vendor/TOML-Tiny-0.22/lib';
+use lib 'scripts/lib';
 
 use OLLM::CLI;
 
