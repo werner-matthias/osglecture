@@ -124,23 +124,19 @@ Gruppen zum gezielten Nachschlagen dienen.
 }{
 }{\ref{sec:theme-model}}{\ref{sec:develop-themes}}{\ref{ref:reference}}
 
-
-
-
-% ==========================================================================
-% For users
-% ==========================================================================
-
 \section{\ldeen{Schnelleinstieg}{Quick start}}
 \label{sec:quick-start}
 
-\ldeen{
-Das folgende Beispiel ist eine vollständige, lauffähige Präsentation.
-Es lädt das mitgelieferte Theme \code{modern}, erzeugt eine Titelfolie
-und eine weitere Folie mit einfachem Inhalt.
+\ldeen*{
+  Das folgende Beispiel zeigt eine kleine, aber vollständige und 
+  lauffähige Präsentation.
+  Es lädt das mitgelieferte Theme @1, erzeugt eine Titelfolie
+  und eine weitere Folie mit einfachem Inhalt.
 }{
-% TODO: English translation
-}
+  The following example demostrates a mall but complete and executable
+  presentation. It loads the provided theme @1, generates a title
+  slide and an additional slide with simple content.
+}{\code{modern}}
 
 \begin{example}[code-only]
   \DocumentMetadata{}
@@ -149,8 +145,8 @@ und eine weitere Folie mit einfachem Inhalt.
   \usepackage{ltxtalk-theme-modern}
   \useltxtalktheme{modern}
 
-  \title{Meine Präsentation}
-  \author{Max Mustermann}
+  \title{My Presentation}
+  \author{Joe Doe}
   \date{\today}
 
   \begin{document}
@@ -160,7 +156,7 @@ und eine weitere Folie mit einfachem Inhalt.
   \end{frame}
 
   \begin{frame}
-    \frametitle{Ein erstes Thema}
+    \frametitle{}
     \begin{itemize}
       \item Eine Präsentation enthält den Inhalt.
       \item Das Theme bestimmt dessen Darstellung.
@@ -990,7 +986,45 @@ Slots eines Teilthemes implementiert werden.
 % TODO: English translation
 }
 
+\begin{table}[ht]
+\centering
+\begin{tabular}{lll}
+\hline
+\textbf{Type} & \textbf{Description} & \textbf{Default Role} \\
+\hline
+\texttt{frametitle}    & Frame title        & heading (H2)     \\
+\texttt{framesubtitle} & Frame subtitle     & heading (H3)     \\
+\texttt{title}         & Presentation title & heading (H1)     \\
+\texttt{section}       & Current section    & heading (H2)     \\
+\texttt{subsection}    & Current subsection & heading (H3)     \\
+\texttt{author}        & Author name        & note             \\
+\texttt{date}          & Date               & note             \\
+\texttt{institute}     & Institute name     & note             \\
+\texttt{pagenumber}    & Page number        & navigation       \\
+\texttt{logo}          & Logo               & graphic artifact \\
+\texttt{custom}        & User-defined       & artifact         \\
+\hline
+\end{tabular}
+\caption{Available Template Variables}
+\label{tab:template-variables}
+\end{table}
 
+\begin{table}[ht]
+\centering
+\begin{tabular}{ll}
+\hline
+\textbf{Area} & \textbf{Description} \\
+\hline
+\texttt{header}  & Top of the frame     \\
+\texttt{left}    & Left margin          \\
+\texttt{content} & Main content area    \\
+\texttt{right}   & Right margin         \\
+\texttt{footer}  & Bottom of the frame  \\
+\hline
+\end{tabular}
+\caption{Available Areas}
+\label{tab:available-areas}
+\end{table}
 % --------------------------------------------------------------------------
 % Implementation
 % --------------------------------------------------------------------------
@@ -2250,9 +2284,9 @@ Slots eines Teilthemes implementiert werden.
 % ==========================================
 % GENERIC PAGE-STYLE ADAPTER
 % ==========================================
-
-% The page style is the integration point with ltx-talk.  Themes only add
-% slots and configure areas; this adapter deliberately knows no theme names.
+% \ldeen{Als Schnittstelle zu \pkg*{ltx-talk} dient der Seitenstil.
+% }{
+% The page style constitutes the interface to \pkg*{ltx-talk}.}
 \seq_new:N \g__ltxtalk_header_slots_seq
 \seq_new:N \g__ltxtalk_left_slots_seq
 \seq_new:N \g__ltxtalk_content_slots_seq
@@ -2439,7 +2473,9 @@ Slots eines Teilthemes implementiert werden.
           {\l__ltxtalk_current_area_height_dim}
       }
   }
-
+% \ldeen{Über Sockets können die einzelnen Bereichebehandlungen gezielt ersetzt werden.
+% }{
+% The different area handler can be specificaly replcaced by means of sockets.}
 \NewSocket { lttheme/page/background } { 0 }
 \NewSocket { lttheme/area/header } { 0 }
 \NewSocket { lttheme/area/left } { 0 }
@@ -2509,61 +2545,57 @@ Slots eines Teilthemes implementiert werden.
     \dim_gset_eq:NN \hsize \textwidth
   }
 
-\RenewDocumentCommand \defineltxtalkslot { m m m m }
-  {
-    \prop_gput:Nnn \g__ltxtalk_slot_areas_prop {#1} {#2}
-    \prop_gput:Nnn \g__ltxtalk_slot_types_prop {#1} {#3}
-    \prop_gput:Nnn \g__ltxtalk_slot_accessibility_prop {#1} {#4}
-    \seq_if_exist:cF { g__ltxtalk_#2_slots_seq }
-      { \seq_new:c { g__ltxtalk_#2_slots_seq } }
-    \seq_gput_right:cn { g__ltxtalk_#2_slots_seq } {#1}
-    \IfInstanceExistsTF { lttheme-slot } {#1}
-      { \EditInstance { lttheme-slot } {#1} { } }
-      { \DeclareInstance { lttheme-slot } {#1} { standard } { } }
-  }
+\RenewDocumentCommand \defineltxtalkslot { m m m m } {
+  \prop_gput:Nnn \g__ltxtalk_slot_areas_prop {#1} {#2}
+  \prop_gput:Nnn \g__ltxtalk_slot_types_prop {#1} {#3}
+  \prop_gput:Nnn \g__ltxtalk_slot_accessibility_prop {#1} {#4}
+  \seq_if_exist:cF { g__ltxtalk_#2_slots_seq }
+    { \seq_new:c { g__ltxtalk_#2_slots_seq } }
+  \seq_gput_right:cn { g__ltxtalk_#2_slots_seq } {#1}
+  \IfInstanceExistsTF { lttheme-slot } {#1}
+    { \EditInstance { lttheme-slot } {#1} { } }
+    { \DeclareInstance { lttheme-slot } {#1} { standard } { } }
+}
 
-\NewDocumentCommand \setltxtalkslotcontent { m m }
-  { \prop_gput:Nnn \g__ltxtalk_slot_contents_prop {#1} {#2} }
+\NewDocumentCommand \setltxtalkslotcontent { m m } {
+  \prop_gput:Nnn \g__ltxtalk_slot_contents_prop {#1} {#2} 
+}
 
-\RenewDocumentCommand \styleltxtalkslot { m m }
-  {
-    \prop_gput:Nnn \g__ltxtalk_slot_styles_prop {#1} {#2}
-    \EditInstance { lttheme-slot } {#1} {#2}
-  }
+\RenewDocumentCommand \styleltxtalkslot { m m } {
+  \prop_gput:Nnn \g__ltxtalk_slot_styles_prop {#1} {#2}
+  \EditInstance { lttheme-slot } {#1} {#2}
+}
 
-\RenewDocumentCommand \decorateltxtalkarea { m m }
-  {
-    \prop_gput:Nnn \g__ltxtalk_area_decorations_prop {#1} {#2}
-    \EditInstance { lttheme-area } {#1} {#2}
-  }
+\RenewDocumentCommand \decorateltxtalkarea { m m } {
+  \prop_gput:Nnn \g__ltxtalk_area_decorations_prop {#1} {#2}
+  \EditInstance { lttheme-area } {#1} {#2}
+}
 
-\RenewDocumentCommand \useltxtalktheme { m }
-  {
-    \str_if_eq:nnTF {#1} {default}
-      {
-        \__ltxtalk_clear_theme_state:
-        \tl_gset:Nn \g__ltxtalk_active_theme_tl {default}
-        \__ltxtalk_update_text_area:
-        \pagestyle{talk}
-      }
-      {
-        \prop_get:NnNTF \g__ltxtalk_themes_prop {#1} \l_tmpa_tl
-          {
-            \__ltxtalk_clear_theme_state:
-            \tl_gset:Nn \g__ltxtalk_active_theme_tl {#1}
-            \l_tmpa_tl
-            \__ltxtalk_apply_class_templates:
-          }
-          { \msg_error:nnn {ltxtalk}{unknown-theme}{#1} }
-      }
-  }
+\RenewDocumentCommand \useltxtalktheme { m } {
+  \str_if_eq:nnTF {#1} {default}
+    {
+      \__ltxtalk_clear_theme_state:
+      \tl_gset:Nn \g__ltxtalk_active_theme_tl {default}
+      \__ltxtalk_update_text_area:
+      \pagestyle{talk}
+    }
+    {
+      \prop_get:NnNTF \g__ltxtalk_themes_prop {#1} \l_tmpa_tl
+        {
+          \__ltxtalk_clear_theme_state:
+          \tl_gset:Nn \g__ltxtalk_active_theme_tl {#1}
+          \l_tmpa_tl
+          \__ltxtalk_apply_class_templates:
+        }
+        { \msg_error:nnn {ltxtalk}{unknown-theme}{#1} }
+    }
+}
 
-\NewDocumentCommand \addltxtalktheme { m }
-  {
-    \prop_get:NnNTF \g__ltxtalk_themes_prop {#1} \l_tmpa_tl
-      { \l_tmpa_tl \__ltxtalk_apply_class_templates: }
-      { \msg_error:nnn {ltxtalk}{unknown-theme}{#1} }
-  }
+\NewDocumentCommand \addltxtalktheme { m } {
+  \prop_get:NnNTF \g__ltxtalk_themes_prop {#1} \l_tmpa_tl
+    { \l_tmpa_tl \__ltxtalk_apply_class_templates: }
+    { \msg_error:nnn {ltxtalk}{unknown-theme}{#1} }
+}
 
 \cs_new_protected:Npn \__ltxtalk_slot_content:n #1
   {
@@ -2636,11 +2668,18 @@ Slots eines Teilthemes implementiert werden.
       {\__ltxtalk_render_slot:n {##1}}
     \coffin_typeset:Nnnnn \l__ltxtalk_area_coffin {l}{t}{0pt}{0pt}
   }
-
-% Content slots belong to the frame's text stream, not to the page furniture.
-% This narrow adapter preserves the class command and adds all matching slots
-% in declaration order.  Consequently a theme may place a title in the main
-% block, in the header, or in both areas without the core knowing the theme.
+% \ldeen{
+%   Inhalts-Slots gehören zum Textstrom des Frames und nicht zum Seitenlayout.
+%   Dieser schmale Adapter behält das Klassenkommando bei und fügt alle passenden 
+%   Slots in der Reihenfolge ihrer Deklaration hinzu. Folglich kann ein Theme einen 
+%   Titel im Hauptblock, in der Kopfzeile oder in beiden Bereichen platzieren, ohne 
+%   dass die Themenengine das Theme kennt.
+% }{
+%   Content slots belong to the frame's text stream, not to the page layout.
+%   This narrow adapter preserves the class command and adds all matching slots
+%   in declaration order.  Consequently a theme may place a title in the main
+%   block, in the header, or in both areas without the theme engine knowing the theme.
+% }
 \cs_new_protected:Npn \__ltxtalk_render_content_slots:n #1
   {
     \seq_map_inline:Nn \g__ltxtalk_content_slots_seq
@@ -2921,8 +2960,10 @@ Slots eines Teilthemes implementiert werden.
 % Licence: LPPL 1.3c
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesExplPackage{ltxtalk-theme-minimal}{2026/07/15}{0.2}
-  {Minimal theme for ltx-talk}
+\ProvidesExplPackage{ltxtalk-theme-minimal}
+{2026/07/15}
+{0.2}
+{Minimal theme for ltx-talk}
 
 \RequirePackage{ltxtalk-theme}
 
