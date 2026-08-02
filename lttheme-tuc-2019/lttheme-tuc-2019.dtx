@@ -260,6 +260,73 @@ Eine ausführlichere Präsentation befindet sich in
 {0.1}
 {TU Chemnitz presentation design introduced in 2019}
 
+\color_set:nnn {tuccolor@black@rgb}{RGB}{0,0,0}
+\color_set:nnn{tuccolor@tuc@rgb}{RGB}{0,95,80}
+\color_set:nnn{tuccolor@natwi@rgb}{RGB}{112,112,111}
+\color_set:nnn{tuccolor@ma@rgb}{RGB}{161,11,112}
+\color_set:nnn{tuccolor@mb@rgb}{RGB}{18,51,117}
+\color_set:nnn{tuccolor@etit@rgb}{RGB}{228,3,45}
+\color_set:nnn{tuccolor@if@rgb}{RGB}{74,130,70}
+\color_set:nnn{tuccolor@wiwi@rgb}{RGB}{157,7,54}
+\color_set:nnn{tuccolor@phil@rgb}{RGB}{198,83,6}
+\color_set:nnn{tuccolor@hsw@rgb}{RGB}{0,117,191}
+\color_set:nnn{tuccolor@gold@rgb}{RGB}{141,104,49}
+\color_set:nnn{tuccolor@silver@rgb}{RGB}{157,156,156}
+\color_set:nnn{tuccolor@info@rgb}{RGB}{85,85,85}
+\color_set:nnn{tuccolor@warning@rgb}{RGB}{255,153,0}
+\color_set:nnn{tuccolor@danger@rgb}{RGB}{255,0,0}
+
+\color_set:nnn{tuccolor@black@cmyk}{cmyk}{0.00,0.00,0.00,1.00}
+\color_set:nnn{tuccolor@tuc@cmyk}{cmyk}{1.00,0.34,0.69,0.30}
+\color_set:nnn{tuccolor@natwi@cmyk}{cmyk}{0.00,0.00,0.00,0.70}
+\color_set:nnn{tuccolor@ma@cmyk}{cmyk}{0.30,1.00,0.00,0.17}
+\color_set:nnn{tuccolor@mb@cmyk}{cmyk}{1.00,0.80,0.00,0.29}
+\color_set:nnn{tuccolor@etit@cmyk}{cmyk}{0.00,1.00,0.81,0.00}
+\color_set:nnn{tuccolor@if@cmyk}{cmyk}{0.74,0.28,0.85,0.13}
+\color_set:nnn{tuccolor@wiwi@cmyk}{cmyk}{0.00,1.00,0.50,0.41}
+\color_set:nnn{tuccolor@phil@cmyk}{cmyk}{0.17,0.75,1.00,0.06}
+\color_set:nnn{tuccolor@hsw@cmyk}{cmyk}{1.00,0.40,0.00,0.00}
+\color_set:nnn{tuccolor@gold@cmyk}{cmyk}{0.29,0.48,0.81,0.36}
+\color_set:nnn{tuccolor@silver@cmyk}{cmyk}{0.00,0.00,0.00,0.50}
+\color_set:nnn{tuccolor@info@cmyk}{cmyk}{0.00,0.00,0.00,0.76}
+\color_set:nnn{tuccolor@warning@cmyk}{cmyk}{0,0.40,1.00,0.00}
+\color_set:nnn{tuccolor@danger@cmyk}{cmyk}{0.0,1.00,1.00,0.00}
+
+\tl_new:N \g_ltxtalk_tuc_fak_color
+\tl_new:N \g_ltxtalk_tuc_color_space
+
+\msg_new:nnnn { tuc-2019 } { unknown-choice }
+  { Unknown~value~'#3'~for~key~'#1'. }
+  { Valid~values~are~#2. }
+
+\DeclareKeys{
+  fakcolor .choices:nn = {
+    tuc, natwi, ma, mb, etit, if, wiwi, phil, hsw
+  }{
+    \tl_set:Ne \g_ltxtalk_tuc_fak_color \l_keys_choice_str
+  },
+  fakcolor / unknown .code:n = 
+   \msg_error:nneee { tuc-2019 } { unknown-choice }
+   { fakcolor } { tuc, natwi, ma, mb, etit, if, wiwi, phil, hsw } % Valid choices
+   { \exp_not:n {#1} } % Name of choice key
+  ,
+  fakcolor .initial:n = tuc,
+  colorspace .choices:nn = {
+    rgb,cmyk
+  }{
+    \tl_set:Ne \g_ltxtalk_tuc_color_space \l_keys_choice_str
+  },
+  colorspace / unknown .code:n =
+   \msg_error:nneee { tuc-2019 } { unknown-choice }
+   { colorspace } { rgb,cmyk } % Valid choices
+   { \exp_not:n {#1} } % Name of choice key
+  ,
+  colorspace .initial:n = rgb
+}
+\ProcessKeyOptions\relax
+\tl_new:N \g_ltxtalk_tuc_main_color
+\exp_args:Nne \tl_set:Nn \g_ltxtalk_tuc_main_color { tuccolor@ \g_ltxtalk_tuc_fak_color @ \g_ltxtalk_tuc_color_space }
+
 \RequirePackage{ltxtalk-theme}
 
 \tl_new:N \g__ltxtalk_tuc_logo_tl
@@ -348,15 +415,18 @@ Eine ausführlichere Präsentation befindet sich in
         footer = true,
         footer-height = 0.52cm
       }
+    
     \setltxtalkcolors
       {
-        primary = {HTML}{4E8749},
         secondary = {HTML}{333333},
         accent = {HTML}{F07D00},
         text = {HTML}{202020},
         background = {HTML}{FFFFFF}
       }
-    \color_set:nnn { structure } { HTML } { 4E8749 }
+
+    \exp_args:NnV \color_set:nn {ltxtalk-primary} {\g_ltxtalk_tuc_main_color}  
+    \exp_args:NnV  \color_set:nn { structure }   { \g_ltxtalk_tuc_main_color }
+    
     \setltxtalktitleplacement{frametitle=content,section=none}
 
     \defineltxtalkslot{tuc-header}{header}{custom}{role=artifact}

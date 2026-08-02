@@ -6,6 +6,21 @@ maindir = ".."
 checkdeps = { "../lttheme" }
 typesetdeps = { "../lttheme" }
 
+
+sourcefiles = {
+    "example-tuc-2019.tex",
+    "lttheme-tuc-2019.dtx"
+}
+
+unpackfiles = {
+    "lttheme-tuc-2019.dtx"
+}
+
+typesetfiles = {
+    "example-tuc-2019.tex"
+}
+
+
 -- ltx-talk removes a temporary final page on the second LaTeX run.
 checkruns = 2
 
