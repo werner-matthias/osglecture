@@ -667,7 +667,7 @@ sub _unavailable {
 sub _help {
   return <<'HELP';
 Usage:
-  ollm [global options] [build] [target] [build options] [latexmk options]
+  ollm [global options] [build] [[+]target| | --target=<target>] [build options] [latexmk options]
   ollm [global options] <report|check|clean|prune|doctor>
 
 Targets:
@@ -678,8 +678,7 @@ Targets:
 
 Implemented commands:
   build                 execute a series build
-  +standalone           execute a manifest-free build
-  build --dry-run       print the normalized request without building
+  standalone            execute a manifest-free build
   report                describe discovered units and promoted projections
   check                 validate required projection dependencies
   clean                 remove selected OLLM build or state data
@@ -700,7 +699,7 @@ Build options:
   --all
   --resolve
   --rebuild
-  --dry-run
+  --dry-run.            print the normalized request without building
   --level=aux|build|state|all
   --scope=current|unit|series
   --stale-units         let prune remove states for missing physical units

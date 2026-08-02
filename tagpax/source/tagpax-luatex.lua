@@ -9,7 +9,7 @@
 ]]
 
 local ir_reader = require("tagpax-ir")
-local M = { version = "0.8.3-dev" }
+local M = { version = "0.8.5-dev" }
 -- LuaTeX image userdata must stay reachable until shipout has consumed it.
 local images = {}
 

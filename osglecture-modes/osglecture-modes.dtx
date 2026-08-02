@@ -177,6 +177,14 @@ Die Paketoption \code{mode=\meta{name}} setzt einen einzelnen Blattmodus.
 Artikelklasse bereits beim Laden. In integrierten Systemen sollte der Modus
 ausdrücklich gesetzt werden.
 
+Die standardmäßig aktive Option
+\code{full=\meta{boolean}} integriert den Modusgraphen
+in die nativen Modus- und Overlaybefehle von Beamer und \pkg*{ltx-talk}.
+Mit \code{full=false} bleiben diese Backendbefehle
+vollständig unverändert; dann werten nur \cs{lecturemode} und die
+\cs{IfLectureMode...}-Befehle die portablen Modi aus. Die gleichnamige Option
+der Klasse \cls*{osglecture} wird an dieses Paket weitergereicht.
+
 \section{\ldeen{Schnittstelle}{Interface}}
 
 \begin{commands}
@@ -518,25 +526,31 @@ Text\\<slides>[3ex]
   Besitzt die geladene Klasse keinen Befehl \cs{mode}, stellt das Paket dessen
   portable Inlineform bereit. Existiert bereits eine native Implementierung,
   behandelt das Paket ausschließlich Inlineausdrücke aus registrierten Modi.
-  Unbekannte oder komplexe Spezifikationen, Beamers ungebundene Modusschalter
-  und \cs{mode*} werden unverändert an das Backend delegiert.
+  Außerdem erkennen die nativen Overlaybefehle und -Environments von Beamer
+  und \pkg*{ltx-talk} reine Ausdrücke aus registrierten Modi. Unbekannte oder
+  komplexe Spezifikationen, Beamers ungebundene Modusschalter und \cs{mode*}
+  werden unverändert an das Backend delegiert. Diese Eingriffe lassen sich
+  mit \code{native-mode-compatibility=false} abschalten.
 }{
   If the loaded class has no \cs{mode} command, the package provides its
   portable inline form. If a native implementation already exists, the package
-  handles only inline expressions composed of registered modes. Unknown or
-  complex specifications, Beamer's unbraced mode switches, and \cs{mode*} are
-  delegated unchanged to the backend.
+  handles only inline expressions composed of registered modes. The native
+  overlay commands and environments of Beamer and \pkg*{ltx-talk} also accept
+  pure expressions composed of registered modes. Unknown or complex
+  specifications, Beamer's unbraced mode switches, and \cs{mode*} are
+  delegated unchanged to the backend. Set
+  \code{native-mode-compatibility=false} to disable these patches.
 }
 
 \section{\ldeen{Einschränkungen}{Limitations}}
 
 \begin{itemize}
   \item \ldeen{
-    Frei registrierte Modi werden nicht automatisch in Overlaybefehle wie
-    \cs{only} eingebaut.
+    Gemischte native Spezifikationen wie \code{slides:2-} bleiben Sache des
+    Backends. Portable Modusausdrücke müssen die gesamte Spezifikation bilden.
   }{
-    Dynamically registered modes are not automatically added to overlay
-    commands such as \cs{only}.
+    Mixed native specifications such as \code{slides:2-} remain backend
+    syntax. A portable mode expression must occupy the complete specification.
   }
   \item \ldeen{
     Eine Basisklasse muss vor \thepkg\ geladen sein, damit ihre Fähigkeiten
@@ -560,7 +574,7 @@ Text\\<slides>[3ex]
 
 %</driver>
 %<*package>
-\ProvidesExplPackage{osglecture-modes}{2026-07-29}{0.3.0}
+\ProvidesExplPackage{osglecture-modes}{2026-08-02}{0.4.0}
   {Portable document-mode graphs}
 
 \prop_new:N \g_osglecture_modes_parents_prop
@@ -569,6 +583,7 @@ Text\\<slides>[3ex]
 \seq_new:N  \g_osglecture_modes_known_seq
 \seq_new:N  \g_osglecture_modes_seed_seq
 \bool_new:N \g_osglecture_modes_frozen_bool
+\bool_new:N \g_osglecture_modes_native_compatibility_bool
 \tl_new:N   \g_osglecture_modes_option_mode_tl
 
 \msg_new:nnn { osglecture_modes } { frozen }
@@ -588,6 +603,9 @@ Text\\<slides>[3ex]
   {
     mode .tl_gset:N = \g_osglecture_modes_option_mode_tl,
     mode .initial:n = auto,
+    full .bool_gset:N =
+      \g_osglecture_modes_native_compatibility_bool,
+    native-mode-compatibility .initial:n = true,
   }
 \ProcessKeyOptions [ osglecture_modes ]
 
@@ -1213,30 +1231,73 @@ Text\\<slides>[3ex]
   }
   { \exp_args:NV \SetLectureModes \g_osglecture_modes_option_mode_tl }
 
+% Let the native overlay decoders recognize a pure portable mode expression.
+% Everything else, especially mixed mode/overlay syntax, remains untouched.
+\bool_if:NT \g_osglecture_modes_native_compatibility_bool
+  {
+    \cs_if_exist:NT \beamer@masterdecode
+      {
+        \cs_new_eq:NN \osglecture_modes_native_beamer_masterdecode
+          \beamer@masterdecode
+        \cs_set_protected:Npn \beamer@masterdecode #1
+          {
+            \osglecture_modes_if_portable_spec:nTF {#1}
+              {
+                \osglecture_modes_if_active:nTF {#1}
+                  { \osglecture_modes_native_beamer_masterdecode {all} }
+                  { \osglecture_modes_native_beamer_masterdecode {0} }
+              }
+              { \osglecture_modes_native_beamer_masterdecode {#1} }
+          }
+      }
+    \cs_if_exist:NT \__talk_decode_parse:n
+      {
+        \cs_new_eq:NN \osglecture_modes_native_talk_decode_parse:n
+          \__talk_decode_parse:n
+        \cs_set_protected:Npn \__talk_decode_parse:n #1
+          {
+            \osglecture_modes_if_portable_spec:nTF {#1}
+              {
+                \osglecture_modes_if_active:nTF {#1}
+                  { \osglecture_modes_native_talk_decode_parse:n {all} }
+                  {
+                    \str_if_eq:VnTF \l__talk_mode_str {article}
+                      { \osglecture_modes_native_talk_decode_parse:n {projector} }
+                      { \osglecture_modes_native_talk_decode_parse:n {article} }
+                  }
+              }
+              { \osglecture_modes_native_talk_decode_parse:n {#1} }
+          }
+      }
+  }
+
 % Add portable inline modes to an existing backend without taking over its
 % switching syntax or unknown/complex overlay specifications.
 \cs_if_exist:NTF \mode
   {
-    \cs_new_eq:NN \osglecture_modes_native_mode \mode
-    \RenewDocumentCommand \mode { s d<> }
+    \bool_if:NT \g_osglecture_modes_native_compatibility_bool
       {
-        \IfBooleanTF {#1}
-          { \osglecture_modes_native_mode * }
+        \cs_new_eq:NN \osglecture_modes_native_mode \mode
+        \RenewDocumentCommand \mode { s d<> }
           {
-            \IfNoValueTF {#2}
-              { \osglecture_modes_native_mode }
+            \IfBooleanTF {#1}
+              { \osglecture_modes_native_mode * }
               {
-                \peek_meaning:NTF \c_group_begin_token
-                  { \osglecture_modes_mode_inline:n {#2} }
-                  { \osglecture_modes_native_mode <#2> }
+                \IfNoValueTF {#2}
+                  { \osglecture_modes_native_mode }
+                  {
+                    \peek_meaning:NTF \c_group_begin_token
+                      { \osglecture_modes_mode_inline:n {#2} }
+                      { \osglecture_modes_native_mode <#2> }
+                  }
               }
           }
-      }
-    \cs_new_protected:Npn \osglecture_modes_mode_inline:n #1#2
-      {
-        \osglecture_modes_if_portable_spec:nTF {#1}
-          { \osglecture_modes_if_active:nT {#1} {#2} }
-          { \osglecture_modes_native_mode <#1> {#2} }
+        \cs_new_protected:Npn \osglecture_modes_mode_inline:n #1#2
+          {
+            \osglecture_modes_if_portable_spec:nTF {#1}
+              { \osglecture_modes_if_active:nT {#1} {#2} }
+              { \osglecture_modes_native_mode <#1> {#2} }
+          }
       }
   }
   {

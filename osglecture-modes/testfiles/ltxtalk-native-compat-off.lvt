@@ -1,0 +1,12 @@
+\input regression-test.tex
+\DocumentMetadata{}
+\documentclass{ltx-talk}
+\usepackage[native-mode-compatibility=false]{osglecture-modes}
+\begin{document}
+\START
+\lecturemode<slides>{\TYPE{PORTABLE COMMAND YES}}
+\mode<slides>{\TYPE{NATIVE MODE NO}}
+\only<slides>{\TYPE{NATIVE ONLY NO}}
+\only<projector>{\TYPE{NATIVE PROJECTOR YES}}
+\END
+\end{document}

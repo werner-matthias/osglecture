@@ -12,6 +12,10 @@
 \IfLectureModeTF{article}{\TYPE{ARTICLE YES}}{\TYPE{ARTICLE NO}}
 \mode<slides>{\TYPE{PORTABLE MODE YES}}
 \mode<unknown-native>{\TYPE{NATIVE MODE BODY}}
+\only<slides>{\TYPE{ONLY SLIDES YES}}
+\only<article>{\TYPE{ONLY ARTICLE NO}}
+\uncover<slides>{\TYPE{UNCOVER SLIDES YES}}
+\begin{onlyenv}<slides>\TYPE{ONLYENV SLIDES YES}\end{onlyenv}
 \OverlayOptional<1>[ONE]
 \OverlayOptional<2>[HIDDEN]
 \END

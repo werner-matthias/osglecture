@@ -1,0 +1,11 @@
+\input regression-test.tex
+\documentclass{beamer}
+\usepackage[native-mode-compatibility=false]{osglecture-modes}
+\begin{document}
+\START
+\lecturemode<slides>{\TYPE{PORTABLE COMMAND YES}}
+\mode<slides>{\TYPE{NATIVE MODE NO}}
+\only<slides>{\TYPE{NATIVE ONLY NO}}
+\only<presentation>{\TYPE{NATIVE PRESENTATION YES}}
+\END
+\end{document}

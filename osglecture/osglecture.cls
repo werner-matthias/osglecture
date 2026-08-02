@@ -1,8 +1,8 @@
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
 \ProvidesExplClass
   {osglecture}
-  {2026/07/30}
-  {0.9.0}
+  {2026/08/02}
+  {0.9.1}
   {Profile-driven lecture documents}
 
 % The unpublished historical implementation remains available explicitly.
@@ -39,6 +39,8 @@
 \bool_new:N \l__osglecture_profile_explicit_bool
 \bool_new:N \l__osglecture_language_explicit_bool
 \bool_new:N \l__osglecture_standalone_bool
+\bool_new:N \l__osglecture_native_mode_compatibility_bool
+\bool_set_true:N \l__osglecture_native_mode_compatibility_bool
 
 \msg_new:nnnn { osglecture } { profile-required }
   { Document~type~'#1'~has~no~default~document~profile. }
@@ -77,6 +79,8 @@
         \bool_set_true:N \l__osglecture_language_explicit_bool
       },
     class-options .tl_set:N = \l__osglecture_base_options_tl,
+    native-mode-compatibility .bool_set:N =
+      \l__osglecture_native_mode_compatibility_bool,
   }
 
 \ProcessKeyOptions [ osglecture ]
@@ -201,6 +205,8 @@
   }
 \exp_args:NV \LoadClass \l__osglecture_base_class_tl
 
+\bool_if:NF \l__osglecture_native_mode_compatibility_bool
+  { \PassOptionsToPackage{native-mode-compatibility=false}{osglecture-modes} }
 \RequirePackage{osglecture-modes}
 \DeclareModeBehaviorClass{presentation-dynamic}
 \DeclareModeBehaviorClass{presentation-static}

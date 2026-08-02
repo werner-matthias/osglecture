@@ -14,15 +14,15 @@ Featurewünsche.
 * [ ] Integrationsworkflow
 
 # lttheme
-* [ ] TUC-Theme isolieren
-* [ ] Beispielthemen analog Beamer
+* [x] TUC-Theme isolieren
+* [x] Beispielthemen analog Beamer
 * [ ] Unterstützung für innere Themes
 
 # tagpax
 * [x] Test klären
 
 # osglecture-modes
-* [ ] Automatische Übername neuer Modes für Beamer-/Ltx-Talk-Befehle wie \only
+* [x] Automatische Übername neuer Modes für Beamer-/Ltx-Talk-Befehle wie \only
 
 # Ergänzungspakete
 * [ ] ANSI-Terminal
