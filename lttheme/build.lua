@@ -11,13 +11,13 @@ textfiles = {
 checkruns = 2
 
 installfiles = {
-    "ltxtalk-theme-core.sty",
-    "ltxtalk-theme-academic.sty",
+    "ltxtalk-theme.sty",
     "ltxtalk-theme-minimal.sty",
-    "ltxtalk-theme-modern.sty",
-    "ltxtalk-theme-corporate.sty",
-    "ltxtalk-theme-tuc-2019.sty",
-    "ltxtalk-tuc-2019.sty",
+    "ltxtalk-theme-magpie.sty",
+    "ltxtalk-theme-hawk.sty",
+    "ltxtalk-theme-sparrow.sty",
+    "ltxtalk-theme-anchovy.sty",
+    "ltxtalk-theme-carp.sty",
 }
 
 dofile("../build.lua")

@@ -5,8 +5,10 @@
 \documentclass{ltx-talk}
 
 % Mehrere Themes laden
-\usepackage{ltxtalk-theme-modern}
-\usepackage{ltxtalk-theme-academic}
+\usepackage{ltxtalk-theme-magpie}
+\usepackage{ltxtalk-theme-hawk}
+\usepackage{ltxtalk-theme-sparrow}
+\usepackage{ltxtalk-theme-anchovy}
 \usepackage{ltxtalk-theme-minimal}
 \ExplSyntaxOn
 \cs_new_protected:Npn \example_progress_theme:
@@ -22,8 +24,9 @@
   }
 \RegisterLTXTalkTheme{progress}{\example_progress_theme:}
 \ExplSyntaxOff
-\useltxtalktheme{modern}
+\useltxtalktheme{magpie}
 \addltxtalktheme{progress}
+\addltxtalktheme{anchovy}
 
 \title{Theme-Wechsel Demonstration}
 \author{Max Mustermann}
@@ -31,10 +34,10 @@
 
 \begin{document}
 
-% Start mit Modern
+% Start mit Magpie und dem Nur-Farb-Theme Anchovy
 \begin{frame}
-  \frametitle{Modern Theme}
-  Diese Folie verwendet das Modern-Theme.
+  \frametitle{Magpie Theme mit Anchovy-Farben}
+  Diese Folie verwendet das von Madrid inspirierte Magpie-Theme.
   \begin{itemize}
     \item Header mit Titel und Navigation
     \item Linke Seitenleiste mit Logo
@@ -43,25 +46,25 @@
   \end{itemize}
 \end{frame}
 
-% Wechsel zu Academic
-\useltxtalktheme{academic}
+% Wechsel zu Hawk
+\useltxtalktheme{hawk}
 
 \begin{frame}
-  \frametitle{Academic Theme}
-  Diese Folie verwendet das Academic-Theme.
+  \frametitle{Hawk Theme}
+  Diese Folie verwendet das von Hannover inspirierte Hawk-Theme.
   \begin{itemize}
-    \item Mehrzeiliger Header
-    \item Goldener Akzentbalken
-    \item Traditionelles Layout
+    \item Linke Navigationsleiste
+    \item Rechtsbündiger Folientitel
+    \item Semantisch ausgezeichnete Navigation
   \end{itemize}
 \end{frame}
 
-% Wechsel zu Minimal
-\useltxtalktheme{minimal}
+% Wechsel zu Sparrow
+\useltxtalktheme{sparrow}
 
 \begin{frame}
-  \frametitle{Minimal Theme}
-  Diese Folie verwendet das Minimal-Theme.
+  \frametitle{Sparrow Theme}
+  Diese Folie verwendet das von Szeged inspirierte Sparrow-Theme.
   \begin{itemize}
     \item Nur das Nötigste
     \item Dezente Linien

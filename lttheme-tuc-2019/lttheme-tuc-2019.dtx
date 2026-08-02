@@ -22,7 +22,7 @@
 \endpostamble
 
 \generate{
-  \file{ltxtalk-theme-tuc-2019.sty}{\from{lttheme.dtx}{tuc-2019}}
+  \file{ltxtalk-theme-tuc-2019.sty}{\from{lttheme-tuc-2019.dtx}{pkg}}
 }
   \expandafter\endbatchfile
 \fi
@@ -153,7 +153,7 @@ wieder her.
   \DocumentMetadata{}
   \documentclass{ltx-talk}
 
-  \usepackage{ltxtalk-tuc-2019}
+  \usepackage{ltxtalk-theme-tuc-2019}
   \settucthemelogo{tuc_white.pdf}
   \settucthemetitlelogo{images/logos/osg.png}
   \settucthemeurl{https://www.tu-chemnitz.de/}
@@ -260,7 +260,7 @@ Eine ausführlichere Präsentation befindet sich in
 {0.1}
 {TU Chemnitz presentation design introduced in 2019}
 
-\RequirePackage{ltxtalk-theme-core}
+\RequirePackage{ltxtalk-theme}
 
 \tl_new:N \g__ltxtalk_tuc_logo_tl
 \tl_new:N \g__ltxtalk_tuc_title_logo_tl
@@ -357,8 +357,9 @@ Eine ausführlichere Präsentation befindet sich in
         background = {HTML}{FFFFFF}
       }
     \color_set:nnn { structure } { HTML } { 4E8749 }
+    \setltxtalktitleplacement{frametitle=content,section=none}
 
-    \defineltxtalkslot{tuc-header}{header}{custom}{role=navigation}
+    \defineltxtalkslot{tuc-header}{header}{custom}{role=artifact}
     \setltxtalkslotcontent{tuc-header}{\__ltxtalk_tuc_header:}
     \positionltxtalkslot{tuc-header}{left}{0.38cm}{\paperwidth}{1.05cm}
     \styleltxtalkslot{tuc-header}
@@ -377,22 +378,20 @@ Eine ausführlichere Präsentation befindet sich in
       {align=left,color=ltxtalk-secondary,font=\normalsize\sffamily}
 
     \defineltxtalkslot{tuc-author}{footer}{custom}{role=note}
-    \setltxtalkslotcontent{tuc-author}
-      {\makebox[0.36\paperwidth][l]{\@author}}
+    \setltxtalkslotcontent{tuc-author}{\@author}
     \positionltxtalkslot{tuc-author}{0.4cm}{center}{0.36\paperwidth}{0.32cm}
     \styleltxtalkslot{tuc-author}
       {align=left,color=ltxtalk-secondary,font=\tiny\sffamily}
 
     \defineltxtalkslot{tuc-page}{footer}{custom}{role=navigation}
     \setltxtalkslotcontent{tuc-page}
-      {\makebox[0.22\paperwidth][c]{N~--~\@framenumber\ von~\@totalframes}}
+      {N~--~\@framenumber\ von~\@totalframes}
     \positionltxtalkslot{tuc-page}{center}{center}{0.22\paperwidth}{0.32cm}
     \styleltxtalkslot{tuc-page}
       {align=center,color=ltxtalk-secondary,font=\tiny\sffamily}
 
     \defineltxtalkslot{tuc-url}{footer}{custom}{role=note}
-    \setltxtalkslotcontent{tuc-url}
-      {\makebox[0.36\paperwidth][r]{\tl_use:N \g__ltxtalk_tuc_url_tl}}
+    \setltxtalkslotcontent{tuc-url}{\tl_use:N \g__ltxtalk_tuc_url_tl}
     \positionltxtalkslot{tuc-url}
       {\dim_eval:n{\paperwidth-0.4cm-0.36\paperwidth}}
       {center}{0.36\paperwidth}{0.32cm}

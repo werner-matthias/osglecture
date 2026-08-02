@@ -1,8 +1,8 @@
 \DocumentMetadata{}
 \documentclass{ltx-talk}
 
-\usepackage{ltxtalk-theme-corporate}
-\useltxtalktheme{corporate}
+\usepackage{ltxtalk-theme-sparrow}
+\useltxtalktheme{sparrow}
 
 \title[PDF-Sichttest]{PDF-Sichttest für lttheme}
 \subtitle{Feste Referenzfolie}

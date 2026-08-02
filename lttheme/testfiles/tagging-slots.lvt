@@ -2,9 +2,9 @@
 \DocumentMetadata{tagging=on,lang=de-DE}
 \documentclass{ltx-talk}
 
-\usepackage{ltxtalk-theme-modern}
-\usepackage{ltxtalk-theme-academic}
-\useltxtalktheme{modern}
+\usepackage{ltxtalk-theme-magpie}
+\usepackage{ltxtalk-theme-hawk}
+\useltxtalktheme{magpie}
 
 \title[Tagging-Test]{Tagging des Slot-Systems}
 \subtitle{Semantische Struktur}
@@ -32,7 +32,7 @@
   \end{block}
 \end{frame}
 
-\useltxtalktheme{academic}
+\useltxtalktheme{hawk}
 \begin{frame}
   \frametitle{Überschrift der Inhaltsfolie (Fortsetzung)}
   Ein explizit gekennzeichneter Fortsetzungsframe mit Titel im Header.

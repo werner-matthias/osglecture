@@ -1,8 +1,8 @@
 \DocumentMetadata{}
 \documentclass{ltx-talk}
 
-\usepackage{ltxtalk-theme-academic}
-\useltxtalktheme{academic}
+\usepackage{ltxtalk-theme-hawk}
+\useltxtalktheme{hawk}
 
 \title[PDF-Sichttest]{PDF-Sichttest für lttheme}
 \subtitle{Feste Referenzfolie}

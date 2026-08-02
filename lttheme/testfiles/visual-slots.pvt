@@ -1,7 +1,7 @@
 \DocumentMetadata{}
 \documentclass{ltx-talk}
 
-\usepackage{ltxtalk-theme-core}
+\usepackage{ltxtalk-theme}
 
 \ExplSyntaxOn
 \cs_new_protected:Npn \__lttheme_test_slot_showcase:

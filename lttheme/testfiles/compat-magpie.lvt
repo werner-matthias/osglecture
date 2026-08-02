@@ -1,8 +1,8 @@
 \DocumentMetadata{}
 \input regression-test.tex
 \documentclass{ltx-talk}
-\usepackage{ltxtalk-theme-modern}
-\useltxtalktheme{modern}
+\usepackage{ltxtalk-theme-magpie}
+\useltxtalktheme{magpie}
 \title{Compatibility test}
 \author{Test author}
 \date{2026-07-21}
@@ -17,6 +17,6 @@
   Test content.
 \end{frame}
 \START
-\TYPE{compat-modern: passed}
+\TYPE{compat-magpie: passed}
 \END
 \end{document}

@@ -23,10 +23,12 @@
 
 \generate{
   \file{ltxtalk-theme.sty}{\from{lttheme.dtx}{pkg}}
-  \file{ltxtalk-theme-modern.sty}{\from{lttheme.dtx}{modern}}
   \file{ltxtalk-theme-minimal.sty}{\from{lttheme.dtx}{minimal}}
-  \file{ltxtalk-theme-academic.sty}{\from{lttheme.dtx}{academic}}
-  \file{ltxtalk-theme-corporate.sty}{\from{lttheme.dtx}{corporate}}
+  \file{ltxtalk-theme-magpie.sty}{\from{lttheme.dtx}{magpie}}
+  \file{ltxtalk-theme-hawk.sty}{\from{lttheme.dtx}{hawk}}
+  \file{ltxtalk-theme-sparrow.sty}{\from{lttheme.dtx}{sparrow}}
+  \file{ltxtalk-theme-anchovy.sty}{\from{lttheme.dtx}{anchovy}}
+  \file{ltxtalk-theme-carp.sty}{\from{lttheme.dtx}{carp}}
   }
   \expandafter\endbatchfile
 \fi
@@ -136,14 +138,14 @@ Gruppen zum gezielten Nachschlagen dienen.
   The following example demostrates a mall but complete and executable
   presentation. It loads the provided theme @1, generates a title
   slide and an additional slide with simple content.
-}{\code{modern}}
+}{\code{magpie}}
 
 \begin{example}[code-only]
   \DocumentMetadata{}
   \documentclass{ltx-talk}
 
-  \usepackage{ltxtalk-theme-modern}
-  \useltxtalktheme{modern}
+  \usepackage{ltxtalk-theme-magpie}
+  \useltxtalktheme{magpie}
 
   \title{My Presentation}
   \author{Joe Doe}
@@ -168,8 +170,8 @@ Gruppen zum gezielten Nachschlagen dienen.
 
 \ldeen{
 Ein Theme wird in zwei Schritten ausgewählt. Zunächst lädt
-\cs*{usepackage}\Marg{ltxtalk-theme-modern} die Definition des Themes.
-Anschließend aktiviert \cs*{useltxtalktheme}\Marg{modern} diese
+\cs*{usepackage}\Marg{ltxtalk-theme-magpie} die Definition des Themes.
+Anschließend aktiviert \cs*{useltxtalktheme}\Marg{magpie} diese
 Definition für die Präsentation. Der Name des Pakets und der Name des
 Themes gehören dabei zusammen.
 }{
@@ -224,7 +226,7 @@ und schaltet den rechten Randbereich ab:
 }
 
 \begin{sourcecode}
-  \useltxtalktheme{academic}
+  \useltxtalktheme{hawk}
   \ltxtalksetup{
     header-height = 2.8cm,
     footer-height = 0.8cm,
@@ -2383,6 +2385,7 @@ Slots eines Teilthemes implementiert werden.
             { \colorbox{\l__ltxtalk_slot_bg_tl}{\color{\l__ltxtalk_slot_color_tl}#1} }
           \str_if_eq:VnT \l__ltxtalk_slot_bg_tl { none } {#1}
         }
+      \par
     \group_end:
   }
 
@@ -2483,21 +2486,67 @@ Slots eines Teilthemes implementiert werden.
 \NewSocket { lttheme/area/footer } { 0 }
 \NewSocket { lttheme/page/foreground } { 0 }
 \NewSocketPlug { lttheme/page/background } { standard } { }
+\NewSocketPlug { lttheme/page/background } { magpie-title }
+  {
+    \int_compare:nNnT {\@framenumber} = {1}
+      {
+        \tag_mc_begin:n {artifact}
+        \raisebox{-2.05cm}[0pt][0pt]
+          {\color{ltxtalk-primary}\rule{\paperwidth}{1.55cm}}
+        \tag_mc_end:
+      }
+  }
 \NewSocketPlug { lttheme/area/header } { standard }
   { \__ltxtalk_render_area:nnn {header}{\paperwidth}{\l__ltxtalk_header_height_dim} }
 \NewSocketPlug { lttheme/area/left } { standard }
   { \__ltxtalk_render_area:nnn {left}{\l__ltxtalk_margin_dim}{\textheight} }
+\NewSocketPlug { lttheme/area/left } { hawk }
+  { \__ltxtalk_render_area:nnn {left}{\l__ltxtalk_margin_dim}{\paperheight} }
 \NewSocketPlug { lttheme/area/right } { standard }
   { \__ltxtalk_render_area:nnn {right}{\l__ltxtalk_margin_dim}{\textheight} }
 \NewSocketPlug { lttheme/area/footer } { standard }
   { \__ltxtalk_render_area:nnn {footer}{\paperwidth}{\l__ltxtalk_footer_height_dim} }
 \NewSocketPlug { lttheme/page/foreground } { standard } { }
+\NewSocketPlug { lttheme/page/foreground } { magpie-title }
+  {
+    \int_compare:nNnT {\@framenumber} = {1}
+      {
+        \tag_mc_begin:n {artifact}
+        \raisebox{-1.42cm}[0pt][0pt]
+          {\parbox[c][1.25cm][c]{\paperwidth}
+            {\centering\color{white}\sffamily
+             \Large\bfseries\@title\par
+             \small\mdseries\@subtitle}}
+        \tag_mc_end:
+      }
+  }
+\NewSocketPlug { lttheme/page/foreground } { sparrow-bars }
+  {
+    \tag_mc_begin:n {artifact}
+    \raisebox{\Gm@tmargin}[0pt][0pt]
+      {\vbox to 0pt
+        {
+          \color{ltxtalk-primary!35}\rlap{\rule{\paperwidth}{0.35pt}}
+          \vskip 0.42cm
+          \color{ltxtalk-primary!20}\rlap{\rule{\paperwidth}{0.35pt}}
+          \vskip 0.30cm
+          \color{ltxtalk-primary!45}\rlap{\rule{\paperwidth}{0.7pt}}
+          \vss
+        }}
+    \tag_mc_end:
+  }
 \clist_map_inline:nn
   { page/background, area/header, area/left, area/right, area/footer, page/foreground }
   { \AssignSocketPlug { lttheme/#1 } { standard } }
 
 \cs_new_protected:Npn \__ltxtalk_clear_theme_state:
   {
+    \AssignSocketPlug { lttheme/page/background } { standard }
+    \AssignSocketPlug { lttheme/area/header } { standard }
+    \AssignSocketPlug { lttheme/area/left } { standard }
+    \AssignSocketPlug { lttheme/area/right } { standard }
+    \AssignSocketPlug { lttheme/area/footer } { standard }
+    \AssignSocketPlug { lttheme/page/foreground } { standard }
     \prop_gclear:N \g__ltxtalk_slot_types_prop
     \prop_gclear:N \g__ltxtalk_slot_positions_prop
     \prop_gclear:N \g__ltxtalk_slot_styles_prop
@@ -2728,11 +2777,21 @@ Slots eines Teilthemes implementiert werden.
         \hbox_to_wd:nn {0pt}
           {
             \skip_horizontal:n {-\Gm@lmargin}
+            \UseSocket{lttheme/page/background}
+            \hss
+          }
+        \hbox_to_wd:nn {0pt}
+          {
+            \skip_horizontal:n {-\Gm@lmargin}
             \bool_if:NT \l__ltxtalk_show_left_margin_bool
               {
-                \raisebox
-                  {-\dim_eval:n{\l__ltxtalk_header_height_dim-\Gm@tmargin}}
-                  [0pt][0pt]{\UseSocket{lttheme/area/left}}
+                \str_if_eq:VnTF \g__ltxtalk_active_theme_tl {hawk}
+                  { \raisebox{\Gm@tmargin}[0pt][0pt]{\UseSocket{lttheme/area/left}} }
+                  {
+                    \raisebox
+                      {-\dim_eval:n{\l__ltxtalk_header_height_dim-\Gm@tmargin}}
+                      [0pt][0pt]{\UseSocket{lttheme/area/left}}
+                  }
               }
             \hss
           }
@@ -2756,10 +2815,27 @@ Slots eines Teilthemes implementiert werden.
           {
             \bool_if:NT \l__ltxtalk_show_header_bool
               {
-                \skip_horizontal:n {-\Gm@lmargin}
-                \raisebox{\Gm@tmargin}[0pt][0pt]
-                  {\UseSocket{lttheme/area/header}}
+                \str_if_eq:VnTF \g__ltxtalk_active_theme_tl {magpie}
+                  {
+                    \int_compare:nNnF {\@framenumber} = {1}
+                      {
+                        \skip_horizontal:n {-\Gm@lmargin}
+                        \raisebox{\Gm@tmargin}[0pt][0pt]
+                          {\UseSocket{lttheme/area/header}}
+                      }
+                  }
+                  {
+                    \skip_horizontal:n {-\Gm@lmargin}
+                    \raisebox{\Gm@tmargin}[0pt][0pt]
+                      {\UseSocket{lttheme/area/header}}
+                  }
               }
+            \hss
+          }
+        \hbox_to_wd:nn {0pt}
+          {
+            \skip_horizontal:n {-\Gm@lmargin}
+            \UseSocket{lttheme/page/foreground}
             \hss
           }
         \hfil
@@ -3007,13 +3083,14 @@ Slots eines Teilthemes implementiert werden.
     }
     
     % === POSITIONIERUNG ===
-    \positionltxtalkslot{min-title}{left}{0.3cm}{0.4\paperwidth}{0.6cm}
+    \positionltxtalkslot{min-title}{0.18cm}{0.3cm}{0.4\paperwidth}{0.6cm}
     \positionltxtalkslot{min-section}{center}{0.3cm}{0.3\paperwidth}{0.6cm}
     \positionltxtalkslot{min-page}{right}{0.3cm}{0.1\paperwidth}{0.6cm}
     \positionltxtalkslot{min-ftitle}{left}{1cm}{0.9\paperwidth}{2cm}
     \positionltxtalkslot{min-fsubtitle}{left}{3cm}{0.9\paperwidth}{1cm}
-    \positionltxtalkslot{min-author}{left}{bottom}{0.4\paperwidth}{0.4cm}
-    \positionltxtalkslot{min-footer-page}{right}{bottom}{0.1\paperwidth}{0.4cm}
+    \positionltxtalkslot{min-author}{0.18cm}{bottom}{0.4\paperwidth}{0.4cm}
+    \positionltxtalkslot{min-footer-page}
+      {\dim_eval:n{0.9\paperwidth-0.18cm}}{bottom}{0.1\paperwidth}{0.4cm}
     
     % === FORMATIERUNG ===
     \styleltxtalkslot{min-title}{
@@ -3033,10 +3110,12 @@ Slots eines Teilthemes implementiert werden.
     \styleltxtalkslot{min-ftitle}{
       font = \LARGE\bfseries,
       color = ltxtalk-primary,
+      align = left,
     }
     \styleltxtalkslot{min-fsubtitle}{
       font = \large\itshape,
       color = ltxtalk-secondary,
+      align = left,
     }
     \styleltxtalkslot{min-author}{
       font = \tiny\itshape,
@@ -3481,3 +3560,195 @@ Slots eines Teilthemes implementiert werden.
 
 %</corporate>
 %<corporate>\endinput
+
+% \subsection{Magpie theme (inspired by Beamer Madrid)}
+%<*magpie>
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage{ltxtalk-theme-magpie}{2026/08/01}{0.3}
+  {Magpie theme for ltx-talk, inspired by Beamer Madrid}
+\RequirePackage{ltxtalk-theme}
+\cs_new_protected:Npn \__ltxtalk_magpie_theme_setup:
+  {
+    \ltxtalksetup{header=true,header-height=1.15cm,footer=true,footer-height=0.48cm}
+    \setltxtalktitleplacement{frametitle=header,section=none}
+    \defineltxtalkslot{magpie-frametitle}{header}{frametitle}
+      {role=heading,heading-level=2}
+    \defineltxtalkslot{magpie-framesubtitle}{header}{framesubtitle}
+      {role=heading,heading-level=3}
+    \defineltxtalkslot{magpie-author}{footer}{custom}{role=note}
+    \defineltxtalkslot{magpie-title}{footer}{custom}{role=note}
+    \defineltxtalkslot{magpie-page}{footer}{custom}{role=navigation}
+    \setltxtalkslotcontent{magpie-author}{\@shortauthor\ (\@shortinstitute)}
+    \setltxtalkslotcontent{magpie-title}{\@shorttitle}
+    \setltxtalkslotcontent{magpie-page}{\@shortdate\quad\@framenumber}
+    \positionltxtalkslot{magpie-frametitle}{0.22cm}{0.22cm}
+      {\dim_eval:n{\paperwidth-0.44cm}}{0.62cm}
+    \positionltxtalkslot{magpie-framesubtitle}{0.22cm}{0.72cm}
+      {\dim_eval:n{\paperwidth-0.44cm}}{0.38cm}
+    \positionltxtalkslot{magpie-author}{0.18cm}{center}{0.30\paperwidth}{0.42cm}
+    \positionltxtalkslot{magpie-title}{center}{center}{0.34\paperwidth}{0.42cm}
+    \positionltxtalkslot{magpie-page}
+      {\dim_eval:n{0.88\paperwidth-0.18cm}}{center}{0.12\paperwidth}{0.42cm}
+    \styleltxtalkslot{magpie-frametitle}{font=\Large\bfseries\sffamily,color=white,
+      align=left,padding=3pt}
+    \styleltxtalkslot{magpie-framesubtitle}
+      {font=\small\sffamily,color=white,align=left}
+    \styleltxtalkslot{magpie-author}{font=\tiny\sffamily,color=white,align=left,
+      background=ltxtalk-secondary}
+    \styleltxtalkslot{magpie-title}{font=\tiny\sffamily,color=white,align=center,
+      background=ltxtalk-primary!85!black}
+    \styleltxtalkslot{magpie-page}{font=\tiny\sffamily,color=white,align=right}
+    \decorateltxtalkarea{header}{background=ltxtalk-primary,artifact-type=layout}
+    \decorateltxtalkarea{footer}{background=ltxtalk-primary!70!black,artifact-type=layout}
+    \AssignSocketPlug { lttheme/page/background } { magpie-title }
+    \AssignSocketPlug { lttheme/page/foreground } { magpie-title }
+    \EditTemplateDefaults {titlepage}{talk}
+      {framestyle=lttheme,vertical-alignment=top}
+    \EditInstance {titlepage-element}{title}
+      {color=white,font=\Large\sffamily,before-skip=1.35cm,after-skip=0.1em}
+    \EditInstance {titlepage-element}{subtitle}
+      {color=white,font=\small\sffamily,before-skip=0pt,after-skip=0.8em}
+    \EditInstance {titlepage-element}{author}
+      {color=ltxtalk-text,before-skip=0.8em,after-skip=0.7em}
+    \EditInstance {titlepage-element}{institute}
+      {color=ltxtalk-text,font=\scriptsize,after-skip=0.7em}
+    \EditInstance {titlepage-element}{date}{color=ltxtalk-text}
+    \setltxtalkcolors{primary={rgb}{0.2,0.2,0.7},secondary={rgb}{0.15,0.15,0.525},
+      accent={rgb}{0.2,0.2,0.7},text={HTML}{000000},background={HTML}{FFFFFF}}
+  }
+\RegisterLTXTalkTheme{magpie}{\__ltxtalk_magpie_theme_setup:}
+%</magpie>
+%<magpie>\endinput
+
+% \subsection{Hawk theme (inspired by Beamer Hannover)}
+%<*hawk>
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage{ltxtalk-theme-hawk}{2026/08/01}{0.3}
+  {Hawk theme for ltx-talk, inspired by Beamer Hannover}
+\RequirePackage{ltxtalk-theme}
+\cs_new_protected:Npn \__ltxtalk_hawk_theme_setup:
+  {
+    \ltxtalksetup{header=true,header-height=1.05cm,left-margin=true,
+      margin-width=1.6cm,footer=false}
+    \setltxtalktitleplacement{frametitle=header,section=none}
+    \defineltxtalkslot{hawk-title}{left}{custom}{role=note}
+    \defineltxtalkslot{hawk-author}{left}{custom}{role=note}
+    \defineltxtalkslot{hawk-section}{left}{section}{role=navigation}
+    \defineltxtalkslot{hawk-subsection}{left}{subsection}{role=navigation}
+    \defineltxtalkslot{hawk-frametitle}{header}{frametitle}{role=heading,heading-level=2}
+    \defineltxtalkslot{hawk-framesubtitle}{header}{framesubtitle}{role=heading,heading-level=3}
+    \setltxtalkslotcontent{hawk-title}{\@shorttitle}
+    \setltxtalkslotcontent{hawk-author}{\@shortauthor}
+    \positionltxtalkslot{hawk-title}{center}{0.25cm}{1.45cm}{0.55cm}
+    \positionltxtalkslot{hawk-author}{center}{0.9cm}{1.45cm}{0.5cm}
+    \positionltxtalkslot{hawk-section}{0.12cm}{1.8cm}{1.36cm}{0.7cm}
+    \positionltxtalkslot{hawk-subsection}{0.12cm}{2.65cm}{1.36cm}{0.7cm}
+    \positionltxtalkslot{hawk-frametitle}
+      {\dim_eval:n{0.58\paperwidth-2cm}}{0.12cm}{0.42\paperwidth}{0.72cm}
+    \positionltxtalkslot{hawk-framesubtitle}
+      {\dim_eval:n{0.58\paperwidth-2cm}}{0.78cm}{0.42\paperwidth}{0.42cm}
+    \styleltxtalkslot{hawk-title}{font=\fontsize{5}{6}\selectfont\sffamily,
+      color=ltxtalk-text,align=center}
+    \styleltxtalkslot{hawk-author}{font=\tiny\sffamily,color=ltxtalk-secondary,align=center}
+    \styleltxtalkslot{hawk-section}{font=\small\bfseries\sffamily,color=ltxtalk-primary,align=left}
+    \styleltxtalkslot{hawk-subsection}{font=\scriptsize\sffamily,color=ltxtalk-secondary,align=left}
+    \styleltxtalkslot{hawk-frametitle}{font=\Large\sffamily,color=ltxtalk-primary,align=right}
+    \styleltxtalkslot{hawk-framesubtitle}{font=\small\sffamily,color=ltxtalk-secondary,align=right}
+    \decorateltxtalkarea{left}{background=ltxtalk-primary!20,artifact-type=layout}
+    \AssignSocketPlug { lttheme/area/left } { hawk }
+    \EditTemplateDefaults {titlepage}{talk}{framestyle=lttheme,vertical-alignment=center}
+    \EditInstance {titlepage-element}{title}
+      {color=ltxtalk-primary,font=\Large\sffamily,after-skip=0.15em}
+    \EditInstance {titlepage-element}{subtitle}
+      {color=ltxtalk-primary,font=\small\sffamily,before-skip=0pt,after-skip=0.9em}
+    \EditInstance {titlepage-element}{author}{color=ltxtalk-text,before-skip=0.8em}
+    \EditInstance {titlepage-element}{institute}{color=ltxtalk-text,font=\scriptsize}
+    \EditInstance {titlepage-element}{date}{color=ltxtalk-text}
+    \setltxtalkcolors{primary={rgb}{0.2,0.2,0.7},secondary={rgb}{0.15,0.15,0.525},
+      accent={rgb}{0.2,0.2,0.7},text={HTML}{000000},background={HTML}{FFFFFF}}
+  }
+\RegisterLTXTalkTheme{hawk}{\__ltxtalk_hawk_theme_setup:}
+%</hawk>
+%<hawk>\endinput
+
+% \subsection{Sparrow theme (inspired by Beamer Szeged)}
+%<*sparrow>
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage{ltxtalk-theme-sparrow}{2026/08/01}{0.3}
+  {Sparrow theme for ltx-talk, inspired by Beamer Szeged}
+\RequirePackage{ltxtalk-theme}
+\cs_new_protected:Npn \__ltxtalk_sparrow_theme_setup:
+  {
+    \ltxtalksetup{header=true,header-height=1.35cm,footer=true,footer-height=0.42cm}
+    \setltxtalktitleplacement{frametitle=content,section=header}
+    \defineltxtalkslot{sparrow-section}{header}{section}{role=navigation}
+    \defineltxtalkslot{sparrow-subsection}{header}{subsection}{role=navigation}
+    \defineltxtalkslot{sparrow-frametitle}{header}{frametitle}{role=heading,heading-level=2}
+    \defineltxtalkslot{sparrow-framesubtitle}{header}{framesubtitle}{role=heading,heading-level=3}
+    \defineltxtalkslot{sparrow-institute}{footer}{institute}{role=note}
+    \defineltxtalkslot{sparrow-title}{footer}{title}{role=note}
+    \defineltxtalkslot{sparrow-page}{footer}{pagenumber}{role=navigation}
+    \positionltxtalkslot{sparrow-section}{0.18cm}{0.02cm}{0.44\paperwidth}{0.3cm}
+    \positionltxtalkslot{sparrow-subsection}
+      {\dim_eval:n{0.56\paperwidth-0.18cm}}{0.02cm}{0.44\paperwidth}{0.3cm}
+    \positionltxtalkslot{sparrow-frametitle}{0.25cm}{1.38cm}
+      {\dim_eval:n{\paperwidth-0.5cm}}{0.58cm}
+    \positionltxtalkslot{sparrow-framesubtitle}{0.25cm}{1.84cm}
+      {\dim_eval:n{\paperwidth-0.5cm}}{0.35cm}
+    \positionltxtalkslot{sparrow-institute}{0.18cm}{center}{0.3\paperwidth}{0.45cm}
+    \positionltxtalkslot{sparrow-title}{center}{center}{0.4\paperwidth}{0.45cm}
+    \positionltxtalkslot{sparrow-page}
+      {\dim_eval:n{0.88\paperwidth-0.18cm}}{center}{0.12\paperwidth}{0.45cm}
+    \styleltxtalkslot{sparrow-section}{font=\scriptsize\bfseries\sffamily,color=ltxtalk-primary,align=left}
+    \styleltxtalkslot{sparrow-subsection}{font=\scriptsize\sffamily,color=ltxtalk-secondary,align=right}
+    \styleltxtalkslot{sparrow-frametitle}
+      {font=\Large\sffamily,color=ltxtalk-primary,align=left}
+    \styleltxtalkslot{sparrow-framesubtitle}
+      {font=\small\sffamily,color=ltxtalk-secondary,align=left}
+    \styleltxtalkslot{sparrow-institute}{font=\tiny\sffamily,color=ltxtalk-secondary,align=left}
+    \styleltxtalkslot{sparrow-title}{font=\tiny\sffamily,color=ltxtalk-primary,align=center}
+    \styleltxtalkslot{sparrow-page}{font=\tiny\sffamily,color=ltxtalk-secondary,align=right}
+    \decorateltxtalkarea{header}{background=white,artifact-type=layout}
+    \decorateltxtalkarea{footer}{frame=top,rule-color=ltxtalk-primary!50,
+      rule-thickness=1pt,background=ltxtalk-primary!5,artifact-type=layout}
+    \AssignSocketPlug { lttheme/page/foreground } { sparrow-bars }
+    \EditTemplateDefaults {titlepage}{talk}{framestyle=lttheme,vertical-alignment=center}
+    \EditInstance {titlepage-element}{title}
+      {color=ltxtalk-primary,font=\Large\sffamily,after-skip=0.15em}
+    \EditInstance {titlepage-element}{subtitle}
+      {color=ltxtalk-primary,font=\small\sffamily,before-skip=0pt,after-skip=0.9em}
+    \EditInstance {titlepage-element}{author}{color=ltxtalk-text,before-skip=0.8em}
+    \EditInstance {titlepage-element}{institute}{color=ltxtalk-text,font=\scriptsize}
+    \EditInstance {titlepage-element}{date}{color=ltxtalk-text}
+    \setltxtalkcolors{primary={rgb}{0.2,0.2,0.7},secondary={rgb}{0.15,0.15,0.525},
+      accent={rgb}{0.2,0.2,0.7},text={HTML}{000000},background={HTML}{FFFFFF}}
+  }
+\RegisterLTXTalkTheme{sparrow}{\__ltxtalk_sparrow_theme_setup:}
+%</sparrow>
+%<sparrow>\endinput
+
+% \subsection{Anchovy colour theme (colours inspired by Beamer AnnArbor)}
+%<*anchovy>
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage{ltxtalk-theme-anchovy}{2026/08/01}{0.3}
+  {Anchovy colour theme for ltx-talk, inspired by Beamer AnnArbor}
+\RequirePackage{ltxtalk-theme}
+\cs_new_protected:Npn \__ltxtalk_anchovy_theme_setup:
+  {\setltxtalkcolors{primary={rgb}{0,0,0.8},secondary={HTML}{65500A},
+    accent={HTML}{B45309},text={HTML}{111827},background={HTML}{FFF7D6}}}
+\RegisterLTXTalkTheme{anchovy}{\__ltxtalk_anchovy_theme_setup:}
+%</anchovy>
+%<anchovy>\endinput
+
+% \subsection{Carp colour theme (colours inspired by Beamer CambridgeUS)}
+%<*carp>
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage{ltxtalk-theme-carp}{2026/08/01}{0.3}
+  {Carp colour theme for ltx-talk, inspired by Beamer CambridgeUS}
+\RequirePackage{ltxtalk-theme}
+\cs_new_protected:Npn \__ltxtalk_carp_theme_setup:
+  {\setltxtalkcolors{primary={rgb}{0.8,0,0},secondary={HTML}{7F1D1D},
+    accent={HTML}{991B1B},text={HTML}{111111},background={HTML}{FFFFFF}}}
+\RegisterLTXTalkTheme{carp}{\__ltxtalk_carp_theme_setup:}
+%</carp>
+%<carp>\endinput

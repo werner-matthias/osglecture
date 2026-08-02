@@ -7,6 +7,7 @@ modules = {
    "osgdoc",
    "langselect",
    "lttheme",
+   "lttheme-tuc-2019",
    "osglecture-modes",
    "osglecture",
    "tagpax",

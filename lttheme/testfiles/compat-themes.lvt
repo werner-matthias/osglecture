@@ -1,18 +1,19 @@
 \DocumentMetadata{}
 \input regression-test.tex
 \documentclass{ltx-talk}
-\usepackage{ltxtalk-theme-modern}
+\usepackage{ltxtalk-theme-magpie}
 \usepackage{ltxtalk-theme-minimal}
-\usepackage{ltxtalk-theme-academic}
-\usepackage{ltxtalk-theme-corporate}
-\usepackage{ltxtalk-tuc-2019}
-\useltxtalktheme{modern}
+\usepackage{ltxtalk-theme-hawk}
+\usepackage{ltxtalk-theme-sparrow}
+\usepackage{ltxtalk-theme-anchovy}
+\usepackage{ltxtalk-theme-carp}
+\useltxtalktheme{magpie}
 \title{Compatibility test}
 \author{Test author}
 \date{2026-07-21}
 \begin{document}
 \ExplSyntaxOn
-\clist_map_inline:nn { modern, minimal, academic, corporate, tuc-2019 }
+\clist_map_inline:nn { magpie, minimal, hawk, sparrow }
   {
     \useltxtalktheme{#1}
     \begin{frame}
@@ -20,12 +21,16 @@
       Test content.
     \end{frame}
   }
+\useltxtalktheme{magpie}
+\addltxtalktheme{anchovy}
+\addltxtalktheme{carp}
 \START
-\TYPE{compat-modern:passed}
+\TYPE{compat-anchovy:passed}
+\TYPE{compat-carp:passed}
+\TYPE{compat-magpie:passed}
 \TYPE{compat-minimal:passed}
-\TYPE{compat-academic:passed}
-\TYPE{compat-corporate:passed}
-\TYPE{compat-tuc-2019:passed}
+\TYPE{compat-hawk:passed}
+\TYPE{compat-sparrow:passed}
 \ExplSyntaxOff
 \END
 \end{document}

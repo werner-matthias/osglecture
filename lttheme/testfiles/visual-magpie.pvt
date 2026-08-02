@@ -1,8 +1,8 @@
 \DocumentMetadata{}
 \documentclass{ltx-talk}
 
-\usepackage{ltxtalk-theme-modern}
-\useltxtalktheme{modern}
+\usepackage{ltxtalk-theme-magpie}
+\useltxtalktheme{magpie}
 
 \title[PDF-Sichttest]{PDF-Sichttest für lttheme}
 \subtitle{Feste Referenzfolie}
