@@ -2,7 +2,7 @@
 \ProvidesExplClass
   {osglecture}
   {2026/08/02}
-  {0.9.1}
+  {0.10.0}
   {Profile-driven lecture documents}
 
 % The unpublished historical implementation remains available explicitly.
@@ -268,7 +268,8 @@
       { \OsgLectureBuildLoadedTF {#2} {#1} }
   }
 
-\file_input:n {osglecture-presitemize.code.tex}
+\RequirePackage{osglecture-presitemize}
+\RequirePackage{osglecture-twocolumns}
 \ExplSyntaxOn
 
 \RequirePackage{osglecture-metadata}

@@ -1,8 +1,10 @@
-\ProvidesExplFile
-  {osglecture-presitemize.code.tex}
-  {2026/07/30}
+\ProvidesExplPackage
+  {osglecture-presitemize}
+  {2026/08/02}
   {0.1.0}
   {Prose-aware presentation lists for osglecture}
+
+\RequirePackage{osglecture-modes}
 
 \ExplSyntaxOn
 
@@ -133,8 +135,12 @@
                 \cs_if_exist:NTF \olsTargetLanguage
                   { \tl_set:Ne \l__osglecture_pres_language_tl
                       {\olsTargetLanguage} }
-                  { \tl_set:Ne \l__osglecture_pres_language_tl
-                      {\OsgLectureLanguage} }
+                  {
+                    \cs_if_exist:NTF \OsgLectureLanguage
+                      { \tl_set:Ne \l__osglecture_pres_language_tl
+                          {\OsgLectureLanguage} }
+                      { \tl_set:Nn \l__osglecture_pres_language_tl {en} }
+                  }
               }
           }
       }

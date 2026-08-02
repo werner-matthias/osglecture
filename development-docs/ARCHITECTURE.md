@@ -550,8 +550,11 @@ Für die Überarbeitung sollte gelten:
 - Der Artikelmodus muss auch ohne visuelle Beamer-Annahmen verständlich bleiben.
 - Gleiche Eingabe soll in jedem unterstützten Modus deterministisch sein.
 
-Ein implementiertes Beispiel ist der obligatorische Kerndienst
-`osglecture-presitemize.code.tex`. Die Umgebung `presitemize` beschreibt eine
+Ein implementiertes Beispiel ist das obligatorische, von der Kernklasse
+automatisch geladene Klassenpaket `osglecture-presitemize.sty`. Es hängt auf
+Paketebene nur von `osglecture-modes` ab; die Kernklasse bleibt Eigentümerin
+des Dienstes, obwohl dessen Implementation eine eigene Styledatei besitzt.
+Die Umgebung `presitemize` beschreibt eine
 flache Folge präsentationsgeeigneter Aussagen semantisch. Im
 Präsentationsmodus projiziert sie diese auf eine gewöhnliche Liste, in der
 Verhaltensklasse `longform` auf verbundenen Fließtext. Die kompakte
@@ -577,6 +580,17 @@ Verhaltensklasse zuordnet. Er erbt damit dieselbe `presitemize`-Projektion wie
 Listensemantik darf nicht allein wegen ihres Umfangs `longform` heißen; dafür
 ist eine neue Verhaltensklasse samt expliziter Implementierung und Tests
 einzuführen.
+
+Das ebenfalls obligatorische Klassenpaket `osglecture-twocolumns.sty`
+projiziert zwei mit `\nextcolumn` getrennte Inhalte entweder auf echte Spalten
+oder auf eine lineare Folge. Die Modusauswahl gehört zu dieser Semantik, die
+Box- und Ausrichtungslogik zum Paket. Ohne expliziten Ausdruck ist
+`presentation` der Selektor; ein Winkelausdruck ersetzt diesen Default.
+Dadurch bleiben Langformen grundsätzlich linear, können aber mit
+`<longform>`, `<presentation|longform>` oder `<all>` ausdrücklich
+zweispaltig gesetzt werden. Das Paket hängt direkt von `osglecture-modes` ab;
+es besitzt kein zweites, von der Ladereihenfolge abhängiges Verhalten ohne
+Modussystem.
 
 ### 3.8 Paketgrenzen folgen semantischer Eigentümerschaft
 
@@ -746,7 +760,8 @@ Die folgende Gruppierung beschreibt die heute sichtbaren Konzepte, nicht notwend
 
 ### Layout und Medien
 
-- Umgebung `twocolumns`
+- mode-aware Umgebung `twocolumns` mit Defaultselector `presentation` und
+  expliziter Spaltenauswahl für `longform`
 - `\centerpic`
 - `\markword`
 - Pfeile und Smileys
@@ -850,6 +865,7 @@ Die Kernklasse sollte:
 - standardisierte Hooks für Komponenten bereitstellen,
 - erforderliche Kerndienste initialisieren,
 - die universelle Listen-/Fließtext-Projektion `presitemize` initialisieren,
+- die Spalten-/Folge-Projektion `twocolumns` initialisieren,
 - verständliche Diagnosen ausgeben.
 
 Sie sollte nicht:
@@ -873,9 +889,9 @@ Dokumentprofile und eigenständige Fachpakete:
    Elternkanten, Aliase und Verhaltenszuordnungen deklarieren.
 5. Die Klasse aktiviert den Doctype als Blattmodus, ergänzt Profilmodi und
    finalisiert den Modusgraphen.
-6. Der interne Kerndienst `osglecture-presitemize` bindet seine Projektion an
-   die stabile Verhaltensklasse `longform`, nicht an konkrete Doctypes oder
-   Profile.
+6. Die Klassenpakete `osglecture-presitemize` und
+   `osglecture-twocolumns` binden ihre Projektionen an den finalisierten
+   Modusgraphen, nicht an konkrete Profile oder Backends.
 7. `osglecture-metadata` bindet die Titelmetadaten an die nativen
    Backendbefehle.
 8. `setup-file` darf Backendadapter, Formatierung und Implementierungen
@@ -975,7 +991,6 @@ Vor einer Implementierung sollten folgende Fragen entschieden werden:
 ### Autoren-API
 
 - Welche Makros drücken echte didaktische Semantik aus?
-- Soll `twocolumns` in ein allgemeines Moduspaket verschoben werden?
 - Sollen `\stress`, `\outline` und `\sourceref` Teil eines Autorenpakets werden?
 - Wie werden Notizen semantisch erfasst, ohne `itemize` umzudefinieren?
 

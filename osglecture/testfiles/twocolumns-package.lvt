@@ -1,0 +1,24 @@
+\input regression-test
+\documentclass{article}
+\usepackage[mode=script]{osglecture-modes}
+\DeclareModeBehaviorClass{longform}
+\AssignLectureModeBehavior{script}{longform}
+\usepackage{osglecture-twocolumns}
+\ExplSyntaxOn
+\cs_new_eq:NN \osg_test_twocol_columns:nn \twocol_typeset_columns:nn
+\cs_new_eq:NN \osg_test_twocol_plain:n \twocol_typeset_plain:n
+\cs_set_protected:Npn \twocol_typeset_columns:nn #1#2
+  { \TYPE{PACKAGE~COLUMNS} \osg_test_twocol_columns:nn {#1}{#2} }
+\cs_set_protected:Npn \twocol_typeset_plain:n #1
+  { \TYPE{PACKAGE~STACKED} \osg_test_twocol_plain:n {#1} }
+\ExplSyntaxOff
+\begin{document}
+\START
+\begin{twocolumns}
+  Default left\nextcolumn Default right
+\end{twocolumns}
+\begin{twocolumns}<longform>
+  Longform left\nextcolumn Longform right
+\end{twocolumns}
+\END
+\end{document}

@@ -8,8 +8,11 @@ Architekturvertrag ist in `ARCHITECTURE.md` beschrieben.
 
 Die Umgebung `presitemize` setzt ihre Einträge in Präsentationen als normale
 Liste und verbindet sie in der Verhaltensklasse `longform` zu Fließtext. Sie
-gehört als interner Kerndienst zur Klasse und wird nicht als separates Paket
-geladen.
+ist im obligatorischen Klassenpaket `osglecture-presitemize.sty`
+implementiert. `osglecture.cls` lädt dieses Paket automatisch; Autoren müssen
+es bei Verwendung der Klasse nicht zusätzlich laden. Das Stylefile hängt nur
+von `osglecture-modes` ab und kann von einer anderen Klasse direkt geladen
+werden, wenn diese zuvor ihre Blattmodi und Verhaltensklassen konfiguriert.
 
 Die kompakte Schreibweise ist für häufige Fälle gedacht:
 
@@ -82,6 +85,42 @@ Sonderfall in `presitemize` dieselbe Fließtextprojektion. Benötigt eine
 künftige Ausgabeform eine andere Semantik, wird dafür eine eigene
 Verhaltensklasse definiert, statt `presitemize` an konkrete Doctype-Namen zu
 koppeln.
+
+## Zwei Inhalte als Spalten oder Folge
+
+Das obligatorische Klassenpaket `osglecture-twocolumns.sty` stellt die
+Umgebung `twocolumns` bereit. Die Klasse lädt es automatisch. Ohne
+Modusausdruck werden echte Spalten nur in Präsentationsmodi gesetzt; in allen
+anderen Modi erscheinen die mit `\nextcolumn` getrennten Inhalte
+untereinander:
+
+```latex
+\begin{twocolumns}[t,.4]
+  Linker Inhalt
+  \nextcolumn
+  Rechter Inhalt
+\end{twocolumns}
+```
+
+Der Winkelausdruck ersetzt den Default `presentation`. Zweispaltige Ausgabe
+nur in Langformen beziehungsweise in beiden Modusfamilien wird daher so
+gewählt:
+
+```latex
+\begin{twocolumns}<longform>[t,.4]
+  ... \nextcolumn ...
+\end{twocolumns}
+
+\begin{twocolumns}<presentation|longform>[t,.4]
+  ... \nextcolumn ...
+\end{twocolumns}
+```
+
+`<all>` erzwingt die Spaltendarstellung in jedem Modus. Das optionale Argument
+behält die bisherige kompakte Syntax: eine Zahl zwischen null und eins legt
+den Anteil der ersten Spalte fest, ein oder zwei Werte aus `t`, `c` und `b`
+bestimmen die vertikale Ausrichtung. Das Paket kann mit einem zuvor
+konfigurierten `osglecture-modes` auch ohne die Klasse geladen werden.
 
 ## Build
 

@@ -1,0 +1,22 @@
+\input regression-test
+\documentclass[doctype=slides]{osglecture}
+\ExplSyntaxOn
+\cs_new_eq:NN \osg_test_twocol_columns:nn \twocol_typeset_columns:nn
+\cs_new_eq:NN \osg_test_twocol_plain:n \twocol_typeset_plain:n
+\cs_set_protected:Npn \twocol_typeset_columns:nn #1#2
+  { \TYPE{COLUMNS~options=#1} \osg_test_twocol_columns:nn {#1}{#2} }
+\cs_set_protected:Npn \twocol_typeset_plain:n #1
+  { \TYPE{STACKED} \osg_test_twocol_plain:n {#1} }
+\ExplSyntaxOff
+\begin{document}
+\START
+\begin{frame}
+  \begin{twocolumns}
+    Default left\nextcolumn Default right
+  \end{twocolumns}
+  \begin{twocolumns}<longform>
+    Longform left\nextcolumn Longform right
+  \end{twocolumns}
+\end{frame}
+\END
+\end{document}

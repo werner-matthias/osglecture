@@ -1,0 +1,20 @@
+\input regression-test
+\documentclass{article}
+\usepackage[mode=script]{osglecture-modes}
+\DeclareModeBehaviorClass{longform}
+\AssignLectureModeBehavior{script}{longform}
+\usepackage{osglecture-presitemize}
+\begin{document}
+\START
+\begin{presitemize}
+  \longform{\TYPE{package-longform=true}}
+  \ExplSyntaxOn
+  \TYPE{package-language=\tl_use:N\l__osglecture_pres_language_tl}
+  \ExplSyntaxOff
+  \item Das Paket \finite{funktioniert}
+  \presitem[relation=therefore] Wir \finite{können}
+    \TYPE{package-key-independent=true}
+    es unabhängig laden
+\end{presitemize}
+\END
+\end{document}
