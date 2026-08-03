@@ -430,9 +430,10 @@ open my $legacy, '>', File::Spec->catfile($temporary, 'ollmconfig.pl')
   or die $!;
 close $legacy;
 
-eval { OLLM::Config->find_manifest(start_dir => $temporary) };
-like $@, qr/both ollmconfig\.toml and ollmconfig\.pl/,
-  'mixed legacy and TOML manifests are rejected';
+my $mixed = OLLM::Config->find_manifest(start_dir => $temporary);
+is $mixed->{kind}, 'toml', 'TOML wins when both manifest formats exist';
+$mixed = OLLM::Config->find_manifest(start_dir => $temporary, legacy => 1);
+is $mixed->{kind}, 'legacy', '--legacy explicitly selects the Perl manifest';
 
 my $user_root = tempdir(CLEANUP => 1);
 my $user_config = File::Spec->catfile($user_root, 'config.toml');

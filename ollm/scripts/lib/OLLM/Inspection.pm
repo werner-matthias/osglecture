@@ -69,12 +69,17 @@ sub analyze {
   my @all = OLLM::State->_current_results($spec);
   my %by_identity;
   my %physical_ids;
+  my %integration;
   for my $result (@all) {
     my $key = _key($result);
     die "duplicate promoted document identity '" . _identity($result) . "'\n"
       if exists $by_identity{$key};
     $by_identity{$key} = $result;
-    $physical_ids{$result->{unit_id}}{$result->{physical_unit}} = 1;
+    if (($result->{unit_role} // '') eq 'i') {
+      $integration{$result->{doctype}}{$result->{physical_unit}} = 1;
+    } else {
+      $physical_ids{$result->{unit_id}}{$result->{physical_unit}} = 1;
+    }
   }
 
   my @projections = grep {
@@ -122,6 +127,14 @@ sub analyze {
       severity => 'error', code => 'unit-id-ambiguous',
       message => "logical unit '$unit_id' maps to multiple physical units",
       unit_id => $unit_id, physical_units => \@physical,
+    } if @physical > 1;
+  }
+  for my $doctype (sort keys %integration) {
+    my @physical = sort keys %{ $integration{$doctype} };
+    push @issues, {
+      severity => 'error', code => 'integration-unit-ambiguous',
+      message => "document type '$doctype' has more than one integration unit",
+      doctype => $doctype, physical_units => \@physical,
     } if @physical > 1;
   }
 
@@ -211,7 +224,10 @@ sub analyze {
 sub _validate_projection {
   my ($spec, $result, $issues) = @_;
   my $generation = OLLM::State->_generation_directory($spec, $result);
-  for my $file (qw(result.json reference.osgref.aux document.pdf)) {
+  my @files = qw(result.json document.pdf);
+  push @files, 'reference.osgref.aux'
+    if ($result->{unit_role} // '') ne 'i';
+  for my $file (@files) {
     my $path = File::Spec->catfile($generation, $file);
     push @$issues, {
       severity => 'error', code => 'artifact-missing',

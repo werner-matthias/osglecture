@@ -79,6 +79,22 @@ $plan = OLLM::CLI->parse(qw(check --target=script --language=de));
 is $plan->{action}, 'check', 'check is a first-class action';
 is $plan->{target}, 'script', 'check current target is parsed';
 
+$plan = OLLM::CLI->parse(qw(--legacy +build +script));
+ok $plan->{legacy}, '--legacy is explicit in the normalized plan';
+is $plan->{target}, 'script', 'plus-prefixed command and target are accepted';
+
+$plan = OLLM::CLI->parse(qw(--enforce+ +build +script));
+ok $plan->{enforce_plus}, '--enforce+ enables mandatory prefixes';
+is $plan->{action}, 'build', 'prefixed action is recognized under enforcement';
+is $plan->{target}, 'script', 'prefixed target is recognized under enforcement';
+
+$plan = OLLM::CLI->parse(qw(+enforce+ +script slides));
+is $plan->{target}, 'script', '+enforce+ enables the same mode';
+is $plan->{source}, 'slides', 'bare target word becomes a source under enforcement';
+
+$plan = OLLM::CLI->parse(qw(+convertconfig));
+is $plan->{action}, 'convertconfig', 'migration command accepts a plus prefix';
+
 eval { OLLM::CLI->parse(qw(clean --level=unknown)) };
 like $@, qr/invalid --level/, 'unknown clean level is rejected';
 

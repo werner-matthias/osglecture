@@ -12,7 +12,9 @@ use OLLM::Config;
 
 our $VERSION = '0.12.0-dev';
 
-my %ACTION = map { $_ => 1 } qw(build report check clean prune doctor);
+my %ACTION = map { $_ => 1 }
+  qw(build report check clean prune doctor convertconfig newtoml);
+  $ACTION{deploy} = 1;
 my %TARGET_ALIAS = (
   article      => 'script',
   beamer       => 'slides',
@@ -45,6 +47,20 @@ sub run {
   if ($plan->{version}) {
     print "ollm $VERSION\n";
     return 0;
+  }
+
+  if ($plan->{action} ne 'deploy'
+      && ($plan->{overwrite} || ($plan->{scope} // '') eq 'collection')) {
+    print STDERR "ollm: deployment options are only valid for deploy\n";
+    return 2;
+  }
+
+  if ($plan->{action} eq 'convertconfig' || $plan->{action} eq 'newtoml') {
+    return $class->_migration($plan);
+  }
+
+  if ($plan->{action} eq 'deploy') {
+    return $class->_deployment($plan);
   }
 
   if ($plan->{action} eq 'doctor') {
@@ -135,7 +151,9 @@ sub run {
     return 69;
   }
 
-  my @command = $class->_legacy_command($plan, $rc);
+  my @command = $class->_legacy_command(
+    $plan, $rc, $resolved->{configuration}{path},
+  );
   {
     no warnings 'exec';
     exec { $command[0] } @command;
@@ -145,11 +163,14 @@ sub run {
 }
 
 sub _legacy_command {
-  my ($class, $plan, $rc) = @_;
+  my ($class, $plan, $rc, $config_path) = @_;
   my @legacy;
   push @legacy, '+' . $plan->{target} if defined $plan->{target};
   push @legacy, '+lang=' . $plan->{language} if defined $plan->{language};
   push @legacy, '+debug' if defined $plan->{debug};
+  push @legacy, '+ollmconfig=' . ($config_path // $plan->{config})
+    if defined($config_path) || defined($plan->{config});
+  push @legacy, '+enforce+' if $plan->{enforce_plus};
   push @legacy, '-gg' if $plan->{rebuild};
   push @legacy, @{ $plan->{legacy_args} };
   push @legacy, @{ $plan->{latexmk_args} };
@@ -159,6 +180,12 @@ sub _legacy_command {
 
 sub parse {
   my ($class, @argv) = @_;
+  my $enforce_plus = 0;
+  for my $arg (@argv) {
+    last if $arg eq '--';
+    $enforce_plus = 1
+      if $arg eq '+enforce+' || $arg eq '--enforce+' || $arg eq '+force+';
+  }
   my %plan = (
     action       => 'build',
     color        => 'auto',
@@ -167,6 +194,7 @@ sub parse {
     latexmk_args => [],
     operands     => [],
     warnings     => 'important',
+    enforce_plus => $enforce_plus,
   );
   my $options = 1;
   my $action_seen = 0;
@@ -184,6 +212,11 @@ sub parse {
       next;
     }
 
+    if ($arg eq '+enforce+' || $arg eq '--enforce+' || $arg eq '+force+') {
+      $plan{deprecated_force} = 1 if $arg eq '+force+';
+      next;
+    }
+
     if ($arg eq '--help' || $arg eq '-h' || $arg eq '+help' || $arg eq '+h') {
       $plan{help} = 1;
       next;
@@ -193,16 +226,18 @@ sub parse {
       next;
     }
 
-    if ($ACTION{$arg}) {
+    my $prefixed = $arg =~ /^\+(.+)\z/ ? 1 : 0;
+    my $word = $prefixed ? $1 : $arg;
+    if ($ACTION{$word} && (!$enforce_plus || $prefixed)) {
       die "more than one action specified" if $action_seen;
-      $plan{action} = $arg;
+      $plan{action} = $word;
       $action_seen = 1;
       next;
     }
 
     my $compat = $arg;
     $compat =~ s/^\+//;
-    if (exists $TARGET_ALIAS{$compat}) {
+    if (exists $TARGET_ALIAS{$compat} && (!$enforce_plus || $prefixed)) {
       die "more than one document target specified" if defined $plan{target};
       $plan{target} = $TARGET_ALIAS{$compat};
       $plan{target_explicit} = 1;
@@ -213,8 +248,8 @@ sub parse {
       push @{ $plan{legacy_args} }, '+' . $compat;
       next;
     }
-    if ($arg eq '+force+') {
-      push @{ $plan{legacy_args} }, $arg;
+    if ($arg eq '--legacy') {
+      $plan{legacy} = 1;
       next;
     }
     if ($compat =~ /^classpath=(.+)$/) {
@@ -261,17 +296,21 @@ sub parse {
       next;
     }
     if ($arg =~ /^--scope=(.+)$/) {
-      $plan{scope} = _enum('scope', $1, qw(current unit series));
+      $plan{scope} = _enum('scope', $1, qw(current unit series collection));
       next;
     }
     if ($arg eq '--scope') {
       $plan{scope} = _enum(
-        'scope', _take_value($arg, \@argv), qw(current unit series),
+        'scope', _take_value($arg, \@argv), qw(current unit series collection),
       );
       next;
     }
     if ($arg eq '--stale-units') {
       $plan{stale_units} = 1;
+      next;
+    }
+    if ($arg eq '--overwrite') {
+      $plan{overwrite} = 1;
       next;
     }
 
@@ -356,6 +395,107 @@ sub parse {
 
   $plan{target} //= 'slides' if $plan{action} eq 'build';
   return \%plan;
+}
+
+sub _migration {
+  my ($class, $plan) = @_;
+  for my $option (qw(all dry_run legacy level rebuild resolve scope stale_units)) {
+    if ($plan->{$option}) {
+      print STDERR "ollm: --$option is not valid for $plan->{action}\n";
+      return 2;
+    }
+  }
+  if ($plan->{source_explicit} || defined $plan->{target_explicit}
+      || defined $plan->{language} || @{ $plan->{latexmk_args} }) {
+    print STDERR "ollm: $plan->{action} accepts only --config and --project-root\n";
+    return 2;
+  }
+  require OLLM::Migration;
+  my $result = eval {
+    OLLM::Migration->execute(
+      action => $plan->{action}, start_dir => getcwd(),
+      config => $plan->{config}, project_root => $plan->{project_root},
+    );
+  };
+  if (!$result) {
+    my $error = $@ || 'configuration migration failed';
+    chomp $error;
+    print STDERR "ollm: $error\n";
+    return 2;
+  }
+  print "Created $result->{path}",
+    $result->{converted} ? " from legacy configuration\n" : "\n";
+  print STDERR "ollm: conversion warning: $_\n" for @{ $result->{warnings} };
+  return 0;
+}
+
+sub _deployment {
+  my ($class, $plan) = @_;
+  for my $option (qw(dry_run legacy level rebuild resolve stale_units)) {
+    if ($plan->{$option}) {
+      print STDERR "ollm: --$option is not valid for deploy\n";
+      return 2;
+    }
+  }
+  if ($plan->{source_explicit} || @{ $plan->{latexmk_args} }) {
+    print STDERR "ollm: deploy does not accept a source or latexmk options\n";
+    return 2;
+  }
+  my $cwd = getcwd();
+  my $located = eval {
+    OLLM::Config->find_manifest(
+      start_dir => $cwd, config => $plan->{config},
+      project_root => $plan->{project_root},
+    );
+  };
+  if (!$located || $located->{kind} ne 'toml') {
+    my $error = $@ || 'deploy requires an ollmconfig.toml project';
+    chomp $error; print STDERR "ollm: $error\n"; return 2;
+  }
+  my $manifest = eval { OLLM::Config->load_manifest($located->{path}) };
+  if (!$manifest) {
+    my $error = $@ || 'cannot load project manifest'; chomp $error;
+    print STDERR "ollm: $error\n"; return 2;
+  }
+  my $root = dirname($located->{path});
+  my $start = $cwd;
+  my $relative = File::Spec->abs2rel($cwd, $root);
+  if ((defined($plan->{project_root}) || defined($plan->{config}))
+      && (File::Spec->file_name_is_absolute($relative)
+        || $relative =~ /\A\.\.(?:[\\\/]|\z)/)) {
+    $start = $root;
+  }
+  require OLLM::Deployment;
+  my $request = eval {
+    OLLM::Deployment->prepare(
+      plan => $plan, project_root => $root, start_dir => $start,
+      manifest => $manifest,
+      structure => OLLM::Config->structure_snapshot(project_root => $root),
+    );
+  };
+  if (!$request) {
+    my $error = $@ || 'invalid deployment request'; chomp $error;
+    print STDERR "ollm: $error\n"; return 2;
+  }
+  my $report = eval { OLLM::Deployment->execute($request) };
+  if (!$report) {
+    my $error = $@ || 'deployment failed'; chomp $error;
+    print STDERR "ollm: $error\n"; return 1;
+  }
+  if ($plan->{format} eq 'json') {
+    print JSON::PP->new->canonical->pretty->encode({
+      schema => 'org.osglecture.ollm.deployment', version => 1,
+      ok => $report->{ok} ? JSON::PP::true : JSON::PP::false,
+      scope => $request->{scope}, items => $report->{items},
+    });
+  } else {
+    for my $item (@{ $report->{items} }) {
+      my $message = defined $item->{message} ? ": $item->{message}" : '';
+      print uc($item->{status}), " ", ($item->{path} // $item->{source}),
+        "$message\n";
+    }
+  }
+  return $report->{ok} ? 0 : 1;
 }
 
 sub _maintenance {
@@ -668,7 +808,7 @@ sub _help {
   return <<'HELP';
 Usage:
   ollm [global options] [build] [[+]target| | --target=<target>] [build options] [latexmk options]
-  ollm [global options] <report|check|clean|prune|doctor>
+  ollm [global options] <report|check|clean|prune|doctor|deploy|convertconfig|newtoml>
 
 Targets:
   slides (aliases: beamer, presentation)
@@ -684,6 +824,9 @@ Implemented commands:
   clean                 remove selected OLLM build or state data
   prune                 remove superseded OLLM state generations
   doctor                inspect the local Perl and TeX toolchain
+  deploy                copy promoted PDF artifacts to configured targets
+  convertconfig         convert a legacy ollmconfig.pl to TOML where possible
+  newtoml               create TOML, converting ollmconfig.pl when present
 
 General options:
   --help                show this help
@@ -691,6 +834,9 @@ General options:
   --format=text|json    select human- or machine-readable output
   --color=auto|always|never
   --non-interactive
+  --legacy              explicitly build with ollmconfig.pl
+  +enforce+|--enforce+  require '+' on command and target words
+  --overwrite           permit replacement when project policy is explicit
 
 Build options:
   --target=TARGET       select a registered project target
@@ -701,7 +847,7 @@ Build options:
   --rebuild
   --dry-run.            print the normalized request without building
   --level=aux|build|state|all
-  --scope=current|unit|series
+  --scope=current|unit|series|collection
   --stale-units         let prune remove states for missing physical units
   --debug=tex|ollm|tex+ollm
   --warnings=all|important|none
@@ -710,6 +856,7 @@ Build options:
 
 Compatibility:
   Bare targets, lang=en, +lang=en, +script, and debug remain accepted.
+  Commands may also use '+'. The deprecated +force+ aliases +enforce+.
   Compatible unknown minus options are passed to latexmk.
 HELP
 }

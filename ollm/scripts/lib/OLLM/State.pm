@@ -55,6 +55,7 @@ sub write_registry {
     || $a->{doctype} cmp $b->{doctype}
     || $a->{language} cmp $b->{language}
   } $class->_current_results($spec)) {
+    next if ($result->{unit_role} // '') eq 'i';
     my $generation = $class->_generation_directory($spec, $result);
     my $aux = File::Spec->catfile($generation, 'reference.osgref.aux');
     my $pdf = File::Spec->catfile($generation, 'document.pdf');
@@ -79,7 +80,6 @@ sub write_registry {
 
 sub promote {
   my ($class, $spec) = @_;
-  return if ($spec->{unit_role} // '') eq 'i';
   my $lock = _state_lock($spec);
   my $result_path = File::Spec->catfile(
     $spec->{build_directory}, "$spec->{job_id}.osgresult.aux",
@@ -92,7 +92,8 @@ sub promote {
   );
   my $result = _read_result($result_path);
   _validate_result($spec, $result);
-  _validate_reference($spec, $result, $reference_path);
+  _validate_reference($spec, $result, $reference_path)
+    if ($spec->{unit_role} // '') ne 'i';
   my $dependencies = _read_dependencies($spec, $used_path);
   die "build artifact is missing or empty: $spec->{artifact}\n"
     if !-f $spec->{artifact} || !-s _;
@@ -109,9 +110,11 @@ sub promote {
   );
   mkdir $temporary or die "cannot create pending generation '$temporary': $!\n";
   eval {
-    copy($reference_path, File::Spec->catfile(
-      $temporary, 'reference.osgref.aux',
-    )) or die "cannot copy reference export: $!\n";
+    if (($spec->{unit_role} // '') ne 'i') {
+      copy($reference_path, File::Spec->catfile(
+        $temporary, 'reference.osgref.aux',
+      )) or die "cannot copy reference export: $!\n";
+    }
     copy($spec->{artifact}, File::Spec->catfile(
       $temporary, 'document.pdf',
     )) or die "cannot copy document artifact: $!\n";
@@ -127,6 +130,8 @@ sub promote {
       language         => $spec->{language},
       config_signature => $spec->{config_signature},
       dependencies     => $dependencies,
+      chapter          => $result->{chapter},
+      ordinal          => $result->{ordinal},
     };
     my $json = JSON::PP->new->canonical->pretty->encode($record);
     OLLM::BuildFile->write_atomic(
@@ -217,9 +222,12 @@ sub _series_directory {
 
 sub _projection_directory {
   my ($class, $spec, $result) = @_;
+  my $identity = ($result->{unit_role} // '') eq 'i'
+    ? 'integration:' . ($result->{physical_unit} // '')
+    : $result->{unit_id};
   return File::Spec->catdir(
     $class->_series_directory($spec),
-    'unit-' . sha256_hex($result->{unit_id}),
+    'unit-' . sha256_hex($identity),
     $result->{doctype}, $result->{language},
   );
 }
@@ -244,6 +252,8 @@ sub _read_result {
       \{([^{}]*)\}\{([^{}]*)\}\{([^{}]*)\}\{([^{}]*)\}
       \{([^{}]*)\}\{([^{}]*)\}\{([^{}]*)\}\{([^{}]*)\}\{([^{}]*)\}/x;
   die "invalid LaTeX result envelope in '$path'\n" if !@match;
+  my ($chapter, $ordinal) = $content =~
+    /\\OsgLectureDeploymentResult\{([^{}]*)\}\{([^{}]*)\}/;
   return {
     schema        => $match[0],
     generation_id => $match[1],
@@ -254,6 +264,8 @@ sub _read_result {
     unit_role     => $match[6],
     doctype       => $match[7],
     language      => $match[8],
+    chapter       => defined($chapter) ? $chapter : '',
+    ordinal       => defined($ordinal) ? $ordinal : '',
   };
 }
 
@@ -268,8 +280,14 @@ sub _validate_result {
       if ($result->{$field} // '') ne ($spec->{$field} // '');
   }
   die "invalid logical unit-id '$result->{unit_id}' in LaTeX result\n"
-    if $result->{unit_id} !~ /\A[^\s,=]+\z/
-      || index($result->{unit_id}, '...') >= 0;
+    if ($spec->{unit_role} // '') ne 'i'
+      && ($result->{unit_id} !~ /\A[^\s,=]+\z/
+        || index($result->{unit_id}, '...') >= 0);
+  die "integration result must not declare a logical unit-id\n"
+    if ($spec->{unit_role} // '') eq 'i' && $result->{unit_id} ne '';
+  die "LaTeX result ordinal '$result->{ordinal}' does not match BuildSpec "
+    . "'$spec->{logical_ordinal}'\n"
+    if ($result->{ordinal} // '') ne ($spec->{logical_ordinal} // '');
   die "LaTeX result unit-id '$result->{unit_id}' conflicts with known "
     . "unit-id '$spec->{unit_id}'\n"
     if defined($spec->{unit_id}) && $spec->{unit_id} ne $result->{unit_id};

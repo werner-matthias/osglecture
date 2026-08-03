@@ -1,4 +1,4 @@
-# osglecture
+# OSG Lecture
 
 LaTeX bundle for generating lecture materials at the Operating Systems Group at the TU Chemnitz.
 

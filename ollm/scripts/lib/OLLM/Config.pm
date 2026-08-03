@@ -36,6 +36,7 @@ sub resolve_request {
         start_dir    => $start,
         config       => $plan->{config},
         project_root => $plan->{project_root},
+        legacy       => $plan->{legacy},
       );
 
   my %request = (
@@ -57,6 +58,12 @@ sub resolve_request {
   );
   $request{language} = $plan->{language} if defined $plan->{language};
   $request{debug} = $plan->{debug} if defined $plan->{debug};
+
+  die "--legacy was requested, but no ollmconfig.pl was found"
+    if $plan->{legacy} && !$standalone && $located->{kind} eq 'none';
+  die "legacy manifest found at $located->{path}; use --legacy to build it "
+    . "or run 'ollm convertconfig' to create ollmconfig.toml"
+    if $located->{kind} eq 'legacy-unselected';
 
   if ($located->{kind} eq 'none') {
     if (!$standalone) {
@@ -264,7 +271,12 @@ sub find_manifest {
   if (defined $arg{config}) {
     my $path = File::Spec->rel2abs($arg{config}, $start);
     die "configuration file not found: $path" if !-f $path;
-    die "--config accepts only a TOML manifest, not '$path'"
+    if ($arg{legacy}) {
+      die "--legacy --config requires a Perl manifest, not '$path'"
+        if $path !~ /\.pl\z/i;
+      return { kind => 'legacy', path => abs_path($path) };
+    }
+    die "--config accepts only a TOML manifest; use --legacy for '$path'"
       if $path !~ /\.toml\z/i;
     return { kind => 'toml', path => abs_path($path) };
   }
@@ -274,12 +286,12 @@ sub find_manifest {
       File::Spec->rel2abs($arg{project_root}, $start),
       'project root',
     );
-    return _manifest_in($root, 1);
+    return _manifest_in($root, 1, $arg{legacy});
   }
 
   my $directory = $start;
   while (1) {
-    my $found = _manifest_in($directory, 0);
+    my $found = _manifest_in($directory, 0, $arg{legacy});
     return $found if $found->{kind} ne 'none';
     my $parent = dirname($directory);
     last if $parent eq $directory;
@@ -317,7 +329,7 @@ sub validate_manifest {
   $lines //= {};
   die "$path: manifest root must be a table" if ref $manifest ne 'HASH';
   _known_keys($manifest,
-    [qw(schema bundle_preset project languages targets security latex)],
+    [qw(schema bundle_preset project languages targets security latex deployment)],
     $path, $lines, '');
   if (!defined $manifest->{schema} || ref $manifest->{schema}
       || $manifest->{schema} != $MANIFEST_SCHEMA) {
@@ -397,7 +409,7 @@ sub validate_manifest {
   if (exists $manifest->{security}) {
     die "$path: security must be a table"
       if ref $manifest->{security} ne 'HASH';
-    _known_keys($manifest->{security}, [qw(shell_escape)],
+    _known_keys($manifest->{security}, [qw(shell_escape deployment)],
       $path, $lines, 'security');
     if (exists $manifest->{security}{shell_escape}) {
       my $policy = _require_string(
@@ -405,6 +417,18 @@ sub validate_manifest {
       );
       die "$path: invalid security.shell_escape '$policy'"
         if $policy !~ /\A(?:off|restricted|full)\z/;
+    }
+    if (exists $manifest->{security}{deployment}) {
+      my $security = $manifest->{security}{deployment};
+      die "$path: security.deployment must be a table"
+        if ref $security ne 'HASH';
+      _known_keys($security, [qw(overwrite)], $path, $lines,
+        'security.deployment');
+      my $overwrite = _require_string(
+        $security, 'overwrite', "$path: security.deployment",
+      );
+      die "$path: invalid security.deployment.overwrite '$overwrite'"
+        if $overwrite !~ /\A(?:explicit|automatic)\z/;
     }
   }
   if (exists $manifest->{latex}) {
@@ -439,7 +463,68 @@ sub validate_manifest {
         if $policy eq 'enforce' || exists $metadata->{file};
     }
   }
+  _validate_deployment($manifest, $path, $lines) if exists $manifest->{deployment};
   return 1;
+}
+
+sub _validate_deployment {
+  my ($manifest, $path, $lines) = @_;
+  my $deployment = $manifest->{deployment};
+  die "$path: deployment must be a table" if ref $deployment ne 'HASH';
+  _known_keys($deployment, [qw(series roles types)], $path, $lines, 'deployment');
+  if (exists $deployment->{series}) {
+    my $series = _require_string($deployment, 'series', "$path: deployment");
+    die "$path: invalid deployment.series '$series'"
+      if $series !~ /\A(?:units|collection|both)\z/;
+  }
+  if (exists $deployment->{roles}) {
+    my $roles = $deployment->{roles};
+    die "$path: deployment.roles must be a table" if ref $roles ne 'HASH';
+    for my $role (keys %$roles) {
+      die "$path: deployment.roles.$role must be a string"
+        if !defined($roles->{$role}) || ref($roles->{$role});
+    }
+  }
+  my $types = _require_table($deployment, 'types', "$path: deployment");
+  for my $doctype (sort keys %$types) {
+    die "$path: invalid deployment document type '$doctype'"
+      if $doctype !~ /\A[A-Za-z0-9][A-Za-z0-9._-]*\z/;
+    my $rule = $types->{$doctype};
+    die "$path: deployment.types.$doctype must be a table"
+      if ref $rule ne 'HASH';
+    _known_keys($rule, [qw(paths filename collection_filename series units)], $path, $lines,
+      "deployment.types.$doctype");
+    my $paths = _require_string_array(
+      $rule, 'paths', "$path: deployment.types.$doctype",
+    );
+    die "$path: deployment.types.$doctype.paths must not be empty" if !@$paths;
+    _require_string($rule, 'filename', "$path: deployment.types.$doctype");
+    _require_string($rule, 'collection_filename',
+      "$path: deployment.types.$doctype")
+      if exists $rule->{collection_filename};
+    if (exists $rule->{series}) {
+      my $series = _require_string(
+        $rule, 'series', "$path: deployment.types.$doctype",
+      );
+      die "$path: invalid deployment.types.$doctype.series '$series'"
+        if $series !~ /\A(?:units|collection|both)\z/;
+    }
+    next if !exists $rule->{units};
+    my $units = $rule->{units};
+    die "$path: deployment.types.$doctype.units must be a table"
+      if ref $units ne 'HASH';
+    for my $unit (sort keys %$units) {
+      die "$path: invalid deployment unit-id '$unit'"
+        if $unit !~ /\A[^\s,=]+\z/ || index($unit, '...') >= 0;
+      my $override = $units->{$unit};
+      die "$path: deployment.types.$doctype.units.$unit must be a table"
+        if ref $override ne 'HASH';
+      _known_keys($override, [qw(filename)], $path, $lines,
+        "deployment.types.$doctype.units.$unit");
+      _require_string($override, 'filename',
+        "$path: deployment.types.$doctype.units.$unit");
+    }
+  }
 }
 
 sub load_user_defaults {
@@ -722,15 +807,18 @@ sub _load_parser {
 }
 
 sub _manifest_in {
-  my ($directory, $required) = @_;
+  my ($directory, $required, $legacy) = @_;
   my $toml = File::Spec->catfile($directory, 'ollmconfig.toml');
   my $perl = File::Spec->catfile($directory, 'ollmconfig.pl');
-  die "both ollmconfig.toml and ollmconfig.pl exist in $directory"
-    if -f $toml && -f $perl;
+  if ($legacy) {
+    return { kind => 'legacy', path => abs_path($perl) } if -f $perl;
+    die "no ollmconfig.pl found in project root $directory" if $required;
+    return { kind => 'none' };
+  }
   return { kind => 'toml', path => abs_path($toml) } if -f $toml;
   die "no ollmconfig.toml found in project root $directory"
     if $required;
-  return { kind => 'legacy', path => abs_path($perl) } if -f $perl;
+  return { kind => 'legacy-unselected', path => abs_path($perl) } if -f $perl;
   return { kind => 'none' };
 }
 

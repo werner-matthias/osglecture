@@ -5,10 +5,10 @@ bundle. It selects document and language variants and delegates individual
 LaTeX builds to `latexmk`.
 
 The program in `ollm` is the portable command-line launcher. Builds using
-`ollmconfig.toml` are executed by the new build executor. Projects using the
-old Perl manifests continue to be delegated to the preserved
-`ollm-legacy.rc`, version 0.11.1, so its command-line
-interface remains the compatibility baseline during migration.
+`ollmconfig.toml` are executed by the new build executor. Old Perl manifests
+are delegated to the preserved `ollm-legacy.rc`, version 0.11.1, only when
+`--legacy` is explicit. A TOML and Perl manifest may coexist; TOML is the
+normal selection.
 
 - [`DESIGN.md`](DESIGN.md) specifies the target architecture and records its
   rationale.
@@ -35,6 +35,8 @@ ollm --version
 ollm build script --language=en --dry-run
 ollm build script --language=en --dry-run --format=json
 ollm doctor
+ollm convertconfig
+ollm newtoml
 ```
 
 ## Implementation status and TODO
@@ -60,6 +62,16 @@ with `current`, `unit`, and `series` scopes. `prune` removes abandoned pending
 directories and superseded immutable generations. Potentially renamed units
 are reported but retained unless `--stale-units` is explicit. Both commands
 support `--dry-run`.
+
+`deploy` copies already promoted PDF artifacts; it never starts an implicit
+build. Its default scope is `series` at the project root and `current` inside
+any unit. `--scope=collection` selects the integration artifact for a document
+type. Missing destinations are not created and produce a failing status; later
+attempts to the same unavailable path are skipped while other destinations
+continue. Existing different files follow
+`security.deployment.overwrite = "explicit" | "automatic"`; the explicit
+policy requires `--overwrite`. Installation uses a temporary file in the
+destination and prefers an atomic rename.
 
 Series builds now assign a generation ID, validate the LaTeX result and
 reference envelopes, and atomically promote an immutable generation for each
@@ -113,6 +125,50 @@ project root can be selected with:
 ollm build script --config=/path/to/ollmconfig.toml --dry-run
 ollm build script --project-root=/path/to/project --dry-run
 ```
+
+For migration, `ollmconfig.pl` may coexist with the TOML manifest. Normal
+commands select TOML; `ollm --legacy ...` explicitly selects Perl. If only the
+Perl file exists, `ollm convertconfig` creates a conservative TOML translation
+without executing arbitrary Perl. `ollm newtoml` creates a generic manifest,
+or performs that conversion when it discovers a Perl file. Neither command
+overwrites an existing TOML file. Statically recognizable legacy deployment
+rules are translated; unsupported dynamic, restriction, path, or computed
+settings are reported for manual review.
+
+Commands and built-in targets accept the historical leading `+`. With
+`+enforce+` or `--enforce+`, that prefix becomes mandatory for command and
+target words, allowing files named for example `slides` to remain operands.
+`+force+` is retained as a deprecated compatibility alias.
+
+Deployment rules are optional and apply to generated artifacts only:
+
+```toml
+[deployment]
+series = "both" # units | collection | both
+
+[deployment.roles]
+content = ""
+appendix = "A"
+
+[deployment.types.handout]
+paths = ["/srv/lecture/handouts", "/srv/lecture/archive"]
+filename = "{role}{chapter:02}-{unit}-{lang}.pdf"
+collection_filename = "{series}-{lang}.pdf"
+
+[deployment.types.handout.units.introduction]
+filename = "{chapter:02}-intro-{lang}.pdf"
+
+[security.deployment]
+overwrite = "explicit"
+```
+
+Filename templates support `series`, `unit`, `ordinal`, `chapter`, `doctype`,
+`lang`, and mapped `role` placeholders. Decimal values accept a minimum width,
+for example `{ordinal:02}`. LaTeX reports the actual chapter representation;
+`\OsgLectureDeploymentChapter{...}` overrides it explicitly. A generic
+`newtoml` file contains commented deployment examples. `convertconfig`
+translates statically recognizable legacy `deploy_path` and `deploy_file`
+assignments and reports unsupported dynamic or restriction settings.
 
 Bundle presets and targets are resolved from versioned definitions shipped
 with the bundle. Additional absolute or project-root-relative search paths can

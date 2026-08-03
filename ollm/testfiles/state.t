@@ -115,4 +115,33 @@ like $@, qr/generation_id .* does not match BuildSpec/,
 ok -f File::Spec->catfile($published, 'result.json'),
   'failed promotion preserves the last valid generation';
 
+my $integration_build = File::Spec->catdir(
+  $root, '.osglecture', 'build', '090-i-collection', 'script', 'de',
+);
+make_path($integration_build);
+my $integration_job = 'bs-090-script-de-collection';
+my $integration_spec = {
+  %$spec, job_id => $integration_job, build_directory => $integration_build,
+  artifact => File::Spec->catfile($integration_build, "$integration_job.pdf"),
+  physical_unit => '090-i-collection', unit_role => 'i',
+  logical_ordinal => '',
+};
+delete $integration_spec->{unit_id};
+my $integration_generation = OLLM::State->start_attempt($integration_spec);
+open my $integration_pdf, '>:raw', $integration_spec->{artifact} or die $!;
+print {$integration_pdf} "%PDF-collection\n"; close $integration_pdf;
+open my $integration_result, '>:raw', File::Spec->catfile(
+  $integration_build, "$integration_job.osgresult.aux",
+) or die $!;
+print {$integration_result}
+  "\\OsgLectureResult{1}{$integration_generation}{$integration_job}{bs}{}"
+  . "{090-i-collection}{i}{script}{de}\n"
+  . "\\OsgLectureDeploymentResult{}{}\n";
+close $integration_result;
+my $integration_published = OLLM::State->promote($integration_spec);
+ok -f File::Spec->catfile($integration_published, 'document.pdf'),
+  'integration PDF is promoted for collection deployment';
+ok !-e File::Spec->catfile($integration_published, 'reference.osgref.aux'),
+  'integration promotion does not create a reference export';
+
 done_testing;

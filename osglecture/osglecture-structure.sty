@@ -10,6 +10,7 @@
 \tl_new:N \g__osglecture_unit_id_tl
 \tl_new:N \g__osglecture_unit_title_tl
 \tl_new:N \g__osglecture_unit_short_title_tl
+\tl_new:N \g__osglecture_deployment_chapter_tl
 \bool_new:N \g__osglecture_unit_declared_bool
 \bool_new:N \g__osglecture_unit_valid_bool
 \iow_new:N \g__osglecture_result_iow
@@ -92,7 +93,15 @@
           { \__osglecture_native_lecture{#2}{#3} }
           { \__osglecture_native_lecture[#1]{#2}{#3} }
       }
+    \tl_if_empty:NT \g__osglecture_deployment_chapter_tl
+      {
+        \cs_if_exist:NT \thechapter
+          { \tl_gset:Ne \g__osglecture_deployment_chapter_tl {\thechapter} }
+      }
   }
+
+\NewDocumentCommand \OsgLectureDeploymentChapter { m }
+  { \tl_gset:Nn \g__osglecture_deployment_chapter_tl {#1} }
 
 \cs_if_exist:NTF \lecture
   {
@@ -113,21 +122,27 @@
         \tl_set:Ne \l_tmpa_tl { \OsgLectureBuildValue{generation-id} }
         \tl_if_empty:NF \l_tmpa_tl
           {
-            \str_if_eq:eeTF
+            \str_if_eq:eeF
               { \OsgLectureBuildValue{unit-role} } {i}
-              { }
               {
                 \bool_if:NF \g__osglecture_unit_declared_bool
                   {
                     \bool_gset_false:N \g__osglecture_unit_valid_bool
                     \msg_error:nn {osglecture-structure}{missing-unit}
                   }
-                \bool_if:NT \g__osglecture_unit_valid_bool
+              }
+            \bool_if:NT \g__osglecture_unit_valid_bool
+              {
+                \str_if_eq:eeT
+                  { \OsgLectureBuildValue{unit-role} } {i}
                   {
-                    \iow_open:Nn \g__osglecture_result_iow
-                      {\jobname.osgresult.aux}
-                    \iow_now:Ne \g__osglecture_result_iow
-                      {
+                    \tl_gclear:N \g__osglecture_unit_id_tl
+                    \tl_gclear:N \g__osglecture_deployment_chapter_tl
+                  }
+                \iow_open:Nn \g__osglecture_result_iow
+                  {\jobname.osgresult.aux}
+                \iow_now:Ne \g__osglecture_result_iow
+                  {
                         \token_to_str:N \OsgLectureResult
                         {\OsgLectureBuildValue{schema}}
                         {\OsgLectureBuildValue{generation-id}}
@@ -138,11 +153,16 @@
                         {\OsgLectureBuildValue{unit-role}}
                         {\OsgLectureBuildValue{doctype}}
                         {\OsgLectureBuildValue{language}}
-                      }
-                    \iow_close:N \g__osglecture_result_iow
                   }
+                \iow_now:Ne \g__osglecture_result_iow
+                  {
+                    \token_to_str:N \OsgLectureDeploymentResult
+                    {\exp_not:V \g__osglecture_deployment_chapter_tl}
+                    {\OsgLectureBuildValue{logical-ordinal}}
+                  }
+                \iow_close:N \g__osglecture_result_iow
               }
-          }
+            }
       }
       { }
   }

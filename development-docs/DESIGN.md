@@ -21,7 +21,7 @@ Grenze ist bewusst:
   Darstellung und Referenzverhalten.
 - OLLM wählt und orchestriert konkrete Builds.
 - `latexmk` führt jeden einzelnen LaTeX-Build bis zum stabilen Ergebnis aus.
-- Ein späteres Deploymentwerkzeug veröffentlicht geprüfte Artefakte.
+- OLLMs getrennte Deploymentphase kopiert geprüfte Artefakte an Projektziele.
 
 Dieses Dokument beschreibt die Schnittstellen zu diesen Komponenten, nicht
 deren vollständige interne Implementierung.
@@ -97,7 +97,7 @@ ollmconfig.toml
       |
       | Check, Report, Status
       v
-Deploymentwerkzeug
+OLLM-Deploymentphase
 ```
 
 ### 4.1 OLLM und latexmk
@@ -414,6 +414,13 @@ Ohne explizite Auswahl sucht OLLM vom Arbeitsverzeichnis aufwärts. `--config`
 bezeichnet ausschließlich eine TOML-Datei; `--project-root` bezeichnet ein
 Verzeichnis, das `ollmconfig.toml` enthalten muss. Explizite Angaben werden
 nicht durch eine weitere Suche ergänzt.
+
+Während der Migration dürfen `ollmconfig.toml` und `ollmconfig.pl` in derselben
+Projektwurzel liegen. Im normalen Betrieb wird ausschließlich TOML gewählt.
+Die Perl-Konfiguration wird nur mit `--legacy` wirksam; dann wählt auch
+`--config` ausdrücklich eine `.pl`-Datei. Eine allein gefundene Perl-Datei
+wird ohne `--legacy` niemals ausgeführt, sondern führt zu einer Diagnose mit
+Hinweis auf `convertconfig`.
 
 ### 7.2 Konfigurationsstufen
 
@@ -1349,6 +1356,8 @@ check      implementiert
 clean      implementiert
 prune      implementiert
 doctor     grundlegende Werkzeugprüfung implementiert; Projekttests TODO
+convertconfig  konservative Migration von ollmconfig.pl nach TOML
+newtoml    neues generisches TOML oder Migration einer gefundenen Perl-Datei
 ```
 
 Ein eigener `plan`-Befehl ist nicht vorgesehen. Stattdessen:
@@ -1413,6 +1422,12 @@ spezifizierten Zielverhalten rein lesend.
 Das historische `+`-Präfix für OLLM-Optionen bleibt unterstützt. Bekannte
 nackte Wörter werden kompatibel als OLLM-Aktionen oder Dokumenttypen erkannt.
 Normale unbekannte Minusoptionen werden an `latexmk` weitergereicht.
+
+Auch Aktionen dürfen ein `+` tragen. `+enforce+` und `--enforce+` schalten
+die historische Entschärfung von Dateinamenkollisionen ein: Aktionen und
+Dokumenttargets werden dann nur mit vorangestelltem `+` erkannt. Die alte
+Schreibweise `+force+` bleibt als veralteter Alias erhalten. Reguläre
+Langoptionen mit `--` sind davon nicht betroffen.
 
 Die Durchreichung endet an den von OLLM kontrollierten Verträgen. Zusätzliche
 RC-Dateien oder Perl-Startcode (`-r`, `-e`), andere Engines als LuaLaTeX,
@@ -1729,13 +1744,90 @@ erhalten. Dies ist ein Abnahmekriterium, kein optionales Komfortmerkmal.
 
 ## 20. Deployment
 
-Deployment wird aus dem OLLM-Buildkern ausgelagert. Die endgültige API bleibt
-offen.
+Deployment bedeutet ausschließlich die Weitergabe bereits erfolgreich
+erzeugter und promotierter Dokumentartefakte, zunächst PDFs. Gemeinsame
+Metadaten, LaTeX-Konfigurationen und projektspezifische Styles sind Eingaben
+des Builds und keine Deploymentartefakte. Die Deploymentphase bleibt vom
+Buildkern getrennt, wird aber durch `ollm deploy` aufgerufen. Sie startet
+keinen impliziten Build.
 
-Die Legacyform `ollm publish ...` kann später an das separate Werkzeug
-delegieren. Das Deployment konsumiert geprüfte Resultat- und
-Referenzinformationen und darf Dateinamen mit tatsächlichen logischen
-Kapitelnummern bilden.
+Pro Dokumenttyp enthält das Manifest eine geordnete Liste vorhandener
+Zielverzeichnisse und eine Dateinamenschablone:
+
+```toml
+[deployment]
+series = "both" # units | collection | both
+
+[deployment.roles]
+content = ""
+appendix = "A"
+excursus = "E"
+integration = ""
+
+[deployment.types.handout]
+paths = ["/srv/lecture/handouts", "/srv/lecture/archive"]
+filename = "{role}{chapter:02}-{unit}-{lang}.pdf"
+series = "units"
+
+[deployment.types.script]
+paths = ["/srv/lecture/scripts"]
+filename = "{ordinal:02}-{unit}-{lang}.pdf"
+collection_filename = "{series}-{lang}.pdf"
+series = "collection"
+
+[deployment.types.script.units.processes]
+filename = "{chapter:02}-processes-{lang}.pdf"
+
+[security.deployment]
+overwrite = "explicit" # explicit | automatic
+```
+
+Unit-Overrides dürfen ausschließlich `filename` ersetzen. Eine
+Integrationsunit besitzt keine öffentliche Unit-ID; ihre doctypeweite
+`collection_filename` ersetzt daher die normale Schablone. Pro Dokumenttyp
+darf höchstens ein physisches Integrationsverzeichnis eine Collection
+erzeugen; dieselbe Integration darf mehrere Dokumenttypen und Sprachen
+bedienen. Collections werden niemals erneut integriert und exportieren keine
+Unitreferenzen.
+
+Deployment verwendet die Scopes `current`, `unit`, `series` und
+`collection`. Im Projektverzeichnis ist `series` der Default, innerhalb jeder
+Unit einschließlich eines Integrationsverzeichnisses `current`.
+`collection` wählt die Integrationsdatei unabhängig vom Arbeitsverzeichnis.
+Für `series` bestimmt der globale Wert `deployment.series`, doctypeweise durch
+`deployment.types.<type>.series` überschreibbar, ob Einzel-Units, Collection
+oder beide deployt werden. `--all` bleibt davon unabhängig die Auswahl aller
+konfigurierten Dokumenttyp-/Sprachprojektionen.
+
+Schablonen kennen `{series}`, `{unit}`, `{ordinal}`, `{chapter}`, `{doctype}`,
+`{lang}` und `{role}`. `ordinal` ist die doctypegefilterte logische
+Unit-Ordnungsnummer. `chapter` wird nach dem LaTeX-Lauf als tatsächliche kurze
+Kapitelnummer gemeldet; Autoren können sie mit
+`\OsgLectureDeploymentChapter{...}` ausdrücklich setzen. Rollen werden durch
+`deployment.roles` in einen Dateinamensbestandteil übersetzt. Eine rein
+dezimale Nummer kann mit beispielsweise `{chapter:02}` oder `{ordinal:03}`
+links mit Nullen auf eine Mindestbreite aufgefüllt werden. Numerische
+Formatierung eines nichtdezimalen Wertes ist ein Fehler.
+
+OLLM mountet nichts und legt keinerlei Zielverzeichnisse an. Ein fehlender
+Pfad erzeugt einen Fehlerstatus mit Mount-Hinweis; alle weiteren Versuche zum
+gleichen normalisierten Pfad werden in diesem Lauf übersprungen, andere Ziele
+aber weiter bearbeitet. Damit bleibt das Ergebnis für CI negativ, ohne an
+demselben Netzpfad wiederholt zu hängen.
+
+Identische vorhandene Dateien gelten als unverändert. Bei
+`overwrite = "explicit"` benötigt eine abweichende vorhandene Datei
+`--overwrite`; `automatic` erlaubt die regelmäßige Aktualisierung. OLLM
+kopiert zunächst in eine temporäre Datei im Zielverzeichnis und installiert
+sie bevorzugt atomar durch Umbenennen. Unterstützt das Zielsystem kein
+atomares Ersetzen, darf OLLM zugunsten eines erfolgreichen Deployments auf
+ein nichtatomares Ersetzen zurückfallen.
+
+`convertconfig` übernimmt statisch erkennbare Legacylisten aus
+`deploy_path` und Namensschablonen aus `deploy_file`; nicht sicher abbildbare
+dynamische Regeln, PDF-Restriktionen und Kennwörter werden gemeldet.
+`newtoml` schreibt nur kommentierte Deploymentbeispiele, weil ein generisches
+Werkzeug keinen gültigen externen Zielpfad annehmen kann.
 
 ## 21. Implementierung und Portabilität
 
@@ -1880,6 +1972,19 @@ Die häufige CLI bleibt kompatibel. Für alternative Konfigurationsorte und
 Projektwurzeln gelten ausschließlich `--config` beziehungsweise
 `--project-root`.
 
+`ollm convertconfig` erzeugt neben einer gefundenen `ollmconfig.pl` eine
+`ollmconfig.toml`, ohne die Perl-Datei auszuführen. Statisch erkennbare,
+semantisch abbildbare Werte werden übernommen. Frei programmierte Logik sowie
+alte Deployment-, Pfad- und Kapitelnummerierungswerte werden nicht geraten;
+die Konvertierung nennt sie als nachzuarbeitende Punkte. Ein vorhandenes TOML
+wird niemals überschrieben.
+
+`ollm newtoml` erzeugt bei fehlender Konfiguration ein generisches Manifest.
+Findet es beim Aufwärtssuchen eine alte Perl-Konfiguration, verhält es sich wie
+`convertconfig`. Ein bereits vorhandenes TOML führt ebenfalls zum Abbruch.
+Die aus dem Verzeichnisnamen abgeleitete Projekt-ID ist nur ein Bootstrapwert
+im neu erzeugten Manifest und keine Unit- oder Referenzidentität.
+
 Alte Verzeichnisnamen bleiben gültig:
 
 ```text
@@ -1900,7 +2005,7 @@ Vor der Implementierung sind noch festzulegen:
 5. JSON- und Aux-Schemata einschließlich Generationsmodell;
 6. genaue Clean-Levelnamen;
 7. Benutzerkonfiguration zusätzlich zur projektlokalen Konfiguration;
-8. Deploymentvertrag.
+8. spätere Erweiterung des Deploymentvertrags über PDF-Artefakte hinaus.
 
 Diese Punkte dürfen die in diesem Dokument festgelegten Verantwortungsgrenzen
 und Invarianten nicht aufweichen.

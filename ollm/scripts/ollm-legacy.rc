@@ -95,7 +95,8 @@ Getopt::Long::Configure("pass_through"); # all unknown options will be passed to
 
 my $forceoptplus=0;
 foreach ( @ARGV ) {
-  if ($_ eq '+force+') {                 # this option enforces '+' prefix for ollm options
+  if ($_ eq '+force+' || $_ eq '+enforce+' || $_ eq '--enforce+') {
+                                         # enforce '+' prefix for ollm options
                                          # in this way, file names like 'slides' are possible
     $forceoptplus=1;
   }
@@ -422,8 +423,8 @@ sub ollm_print_help {
 	" ", colored("Generate documents:\n","faint"),
 	"  latexmk [<ollm options>] [<doctype>] [<latexmk options>] [<file>]\n",
 	"  <doctype>: '+slides'|'+beamer'|'+handout'|'+script'|'+article' (default: '+slides')\n\n",
-	"  <ollm options> (prefix '+' may be skipped if +force+ is not set)\n",
-	"   +force+:            enforces use of '+' prefix for ollm options\n",
+	"  <ollm options> (prefix '+' may be skipped unless enforcement is active)\n",
+	"   +enforce+:          enforces use of '+' prefix for ollm options\n",
 	"   +standalone:        disable most features of OLLM\n",
 	"   +debug|+verbose:    additional information\n",
 	"   +lang=[de|en]:      select language\n",

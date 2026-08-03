@@ -44,6 +44,10 @@ sub build_spec {
   my $project_root = abs_path($request->{project_root})
     // die "project root not found: $request->{project_root}";
   _require_within($unit_directory, $project_root, 'series unit directory');
+  my $logical_ordinal = _logical_ordinal(
+    $configuration->{structure}{units}, $physical_unit,
+    $target->{unit_scopes} // [],
+  );
   my $source_candidate = File::Spec->rel2abs(
     $request->{source}, $unit_directory,
   );
@@ -138,6 +142,7 @@ sub build_spec {
     series_id           => $request->{series_id},
     physical_unit       => $physical_unit,
     physical_number     => $number,
+    logical_ordinal     => $logical_ordinal,
     unit_scope          => $unit_scope,
     unit_role           => $role,
     unit_id             => undef,
@@ -196,6 +201,7 @@ sub render {
     "  series-id={" . _tex_atom($spec->{series_id}) . "},",
     "  physical-unit={" . _tex_atom($spec->{physical_unit}) . "},",
     "  physical-number={" . _tex_atom($spec->{physical_number}) . "},",
+    "  logical-ordinal={" . _tex_atom($spec->{logical_ordinal}) . "},",
     "  unit-scope={" . _tex_atom($spec->{unit_scope}) . "},",
     "  unit-role={" . _tex_atom($spec->{unit_role}) . "},",
     (defined($spec->{unit_id})
@@ -222,6 +228,23 @@ sub render {
     '',
   );
   return join "\n", @lines;
+}
+
+sub _logical_ordinal {
+  my ($units, $physical, $scopes) = @_;
+  my %scope = map { $_ => 1 } @$scopes;
+  my $ordinal = 0;
+  for my $unit (@$units) {
+    my $applies = ($unit->{unit_scope} // '') eq ''
+      || $scope{$unit->{unit_scope} // ''};
+    next if !$applies;
+    return '' if $unit->{physical_unit} eq $physical
+      && ($unit->{unit_role} // '') eq 'i';
+    next if ($unit->{unit_role} // '') eq 'i';
+    ++$ordinal;
+    return $ordinal if $unit->{physical_unit} eq $physical;
+  }
+  die "cannot determine logical ordinal for physical unit '$physical'";
 }
 
 sub write_atomic {

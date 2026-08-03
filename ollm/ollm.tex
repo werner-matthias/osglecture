@@ -83,20 +83,69 @@ der normale und kontinuierliche Build, \texttt{build --all},
 
 \section{Legacy-Aufruf}
 
-OLLM wird direkt aufgerufen. Der Launcher startet für kompatible Builds
-\texttt{latexmk} mit der Legacy-RC-Datei. Beispiele der bisherigen Oberfläche
-sind:
+OLLM wird direkt aufgerufen. Der Launcher startet nur mit der ausdrücklichen
+Option \texttt{--legacy} \texttt{latexmk} mit der Legacy-RC-Datei. Eine
+\texttt{ollmconfig.pl} und eine \texttt{ollmconfig.toml} dürfen während der
+Migration nebeneinander liegen; ohne \texttt{--legacy} wird TOML gewählt.
+Beispiele der bisherigen Oberfläche sind:
 
 \begin{verbatim}
-ollm slides
-ollm handout
-ollm script
-ollm +lang=en script
-ollm standalone
+ollm --legacy slides
+ollm --legacy handout
+ollm --legacy +lang=en script
 \end{verbatim}
 
-Die genaue neue CLI wird erst dokumentiert, wenn ihr Verhalten durch Tests
-festgeschrieben ist.
+Aktionen und Targets verstehen weiterhin ein vorangestelltes \texttt{+}.
+\texttt{+enforce+} oder \texttt{--enforce+} macht dieses Präfix für Aktionen
+und Targets verpflichtend; dadurch kann beispielsweise \texttt{slides} als
+Dateiname verwendet werden. \texttt{+force+} bleibt ein veralteter Alias.
+
+\subsection*{Konfigurationsmigration}
+
+\texttt{ollm convertconfig} erzeugt aus einer gefundenen
+\texttt{ollmconfig.pl} soweit möglich eine \texttt{ollmconfig.toml}, ohne den
+Perl-Code auszuführen. Statisch erkennbare Deploymentregeln werden übernommen;
+nicht abbildbare dynamische, Restriktions-, Pfad- oder berechnete Werte werden
+als Warnung ausgegeben. \texttt{ollm newtoml} erzeugt andernfalls
+eine generische TOML-Datei; bei vorhandener Perl-Datei konvertiert es diese.
+Ein bestehendes TOML wird von beiden Befehlen niemals überschrieben.
+
+\section{Deployment}
+
+\texttt{ollm deploy} kopiert bereits promotierte PDF-Artefakte und startet
+keinen Build. In der Projektwurzel gilt standardmäßig der Scope
+\texttt{series}, in jeder Unit \texttt{current};
+\texttt{--scope=collection} wählt die Integrationsdatei eines Dokumenttyps.
+Fehlende Zielverzeichnisse werden niemals angelegt und führen zu einem
+Fehlerstatus. Weitere Versuche zum selben nicht verfügbaren Pfad werden
+übersprungen, andere Ziele aber weiter verarbeitet.
+
+\begin{verbatim}
+[deployment]
+series = "both"
+
+[deployment.roles]
+content = ""
+appendix = "A"
+
+[deployment.types.handout]
+paths = ["/srv/lecture/handouts", "/srv/lecture/archive"]
+filename = "{role}{chapter:02}-{unit}-{lang}.pdf"
+collection_filename = "{series}-{lang}.pdf"
+
+[security.deployment]
+overwrite = "explicit"
+\end{verbatim}
+
+Dateinamenschablonen kennen \texttt{series}, \texttt{unit},
+\texttt{ordinal}, \texttt{chapter}, \texttt{doctype}, \texttt{lang} und
+\texttt{role}. Dezimalwerte können wie in \texttt{\{chapter:02\}} mit
+führenden Nullen auf eine Mindestbreite aufgefüllt werden. Die tatsächliche
+Kapitelnummer stammt aus dem LaTeX-Ergebnis und kann mit
+\verb|\OsgLectureDeploymentChapter{...}| ausdrücklich gesetzt werden.
+Abweichende vorhandene Dateien benötigen bei der Policy \texttt{explicit}
+die Option \texttt{--overwrite}. OLLM kopiert zunächst in eine temporäre
+Zieldatei und bevorzugt eine atomare Installation.
 
 \section{Neue Grundfunktionen}
 
