@@ -104,6 +104,14 @@ load babel
 
 \ldeen*{Die Optionen und zur Verfügung gestellten Befehle der Basisklasse @1 entnehmen Sie bitte der Dokumentation des @2-Pakets.}{
   For a documentation of options and provided commands of the base class @1, please see the @2 package documentation.}{\cnltx}{\needpackage{cnltx}}
+
+\ldeen*{
+  Die Klasse lädt @1 und definiert darüber zwei Kästchen-Umgebungen mit Überschrift:
+  @2 und @3.
+}{
+  The class loads @1 and uses it to define two box environments with headings:
+  @2 and @3
+}{\needpackage{tcolorbox}}{\env{infobox}}{\env{warnbox}}
 \ldeen*{Zusätzlich stehen noch die im Abschnitt~@1 beschriebenen Befehle zur Verfügung.}{%
   In addition, the commands described in Section @1 are available.}{\ref{sec:usage:sty}}
 
@@ -116,7 +124,8 @@ load babel
       A lightweight option for including documented source code,  similar to the @1 mechanism. 
       }{\needpackage{doc}/\needpackage{docstrip}}
   \ldeen*{
-    Im Unterschied zu diesem sind jedoch (wie in @1) kein @2 notweendig, und es kann auch Lua-Code dokumentiert werden.}{
+    Im Unterschied zu diesem sind jedoch (wie in @1) keine @2 notwendig, und es 
+    kann auch Lua-Code dokumentiert werden.}{
     Unlike the latter, however (as in @1), @2 is not required, and Lua code can also be documented.
   }{\pkg{gmdoc}}{\cs*{begin}\Marg{macrocode}\ldots \cs*{end}\Marg{macrocode}}
 
@@ -132,8 +141,8 @@ load babel
       \begin{tabular}{lll}
         \textbf{Mode}&\textbf{Guard\ldeen{stil}{ style}}&\textbf{\ldeen{Kommentarstil}{Comment style}}\\\hline
         \code{tex}&\code{\%<*\meta{Guard}>} / \code{\%</\meta{Guard}>} &\code{\% \meta{\ldeen{Kommentar}{comment}}}\\
-        \code{lua}&\code{--<*\meta{Guard}>} / \code{--</\meta{Guard}>} &\code{-- \meta{\ldeen{Kommentar}{comment}}} / \code{--[[ \meta{\ldeen{Kommentar}{comment}} --]]}\\
-        \code{tex/lua}&\code{\%<*\meta{Guard}>} / \code{\%</\meta{Guard}>} &\code{-- \meta{\ldeen{Kommentar}{comment}}} / \code{--[[ \meta{\ldeen{Kommentar}{comment}} --]]}\\\hline
+        \code{lua}&\code{--<*\meta{Guard}>} / \code{--</\meta{Guard}>} &\code{-- \meta{\ldeen{Kommentar}{comment}}} / \code{--[[ \meta{\ldeen{Kommentar}{comment}} ]]}\\
+        \code{tex/lua}&\code{\%<*\meta{Guard}>} / \code{\%</\meta{Guard}>} &\code{-- \meta{\ldeen{Kommentar}{comment}}} / \code{--[[ \meta{\ldeen{Kommentar}{comment}} ]]}\\\hline
       \end{tabular}
       \opt{file}\ldeen{Name der Datei, die eingebunden werden soll.}{Name of file to include.}
       \opt{guard}\ldeen{
@@ -157,7 +166,7 @@ load babel
   experimental at this stage, as the version number indicates.}
 \item \ldeen{
     Die \osgdoc-Klasse ist nur ein dünner Wrapper für die
-    {\cnltx-doc}-Klasse aus dem \pkg{cnltx}-Paket. Sie sorgt nur für
+    {\cnltx}-Klasse aus dem \pkg{cnltx}-Paket. Sie sorgt nur für
     syntaktische Korrektheit im 
     Standardfall. Es ist durchaus möglich, dass bei der Vielzahl von Optionen
     und Möglichkeiten, die \cnltx\ bietet, weitere Probleme mit dem
@@ -223,6 +232,7 @@ load babel
   color-scheme=blue
   }
 \RequirePackage[hidelinks]{hyperref}
+\RequirePackage{tcolorbox}
 \RequirePackage{osgdoc}
 \RequirePackage[oldstyle]{libertine}
 \setmonofont[
@@ -243,6 +253,24 @@ load babel
 }
 \renewcommand{\CTANurl}[2][pkg] {
   on~\ctan\ as~\cnltx@weblink@font{#2}:~\url{https://ctan.org/#1/#2/}
+}
+\newtcolorbox{warnbox}[1]{
+  colback=red!5!white,
+  colframe=red!75!black,fonttitle=\bfseries,
+  title={#1}
+}
+\newtcolorbox{infobox}[1]{
+  colback=cnltx!5!white,
+  colframe=cnltxformalblue,fonttitle=\bfseries,
+  title={#1}
+}
+% \ldeen{
+%   Da die Titellei symbolische Fußnotenzeichen nutzt, wird die Nummer zurück gesetzt.
+% }{
+%   Since the title uses symbolic footnote signs, we reset the number.
+% }
+\AddToHook{cmd/cnltx@title@information/after}{
+  \setcounter{footnote}{0}
 }
 \def\gobble{\@gobble}
 %</cls>
