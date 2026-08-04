@@ -1,0 +1,17 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{polyglossia}
+\setdefaultlanguage{english}
+\usepackage[
+  languages={en,de},
+  targetlang=en,
+  map={en=english,de=german},
+  unified shorthands=true
+]{langselect}
+\begin{document}
+\START
+\renewcommand\openautoquote{\TYPE{OPEN}}
+\renewcommand\closeautoquote{\TYPE{CLOSE}}
+"`text"'
+\END
+\end{document}

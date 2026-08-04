@@ -34,8 +34,8 @@ This work is "maintained" (as per LPPL maintenance status) by
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
 \def\packagename{langselect}
 \ProvidesExplPackage{langselect}
-{2025/09/04}
-{v0.5.0}
+{2026/08/04}
+{0.6.0}
 {support for different languages versions from a common source}
 \ExplSyntaxOff
 %</pkg>
@@ -47,7 +47,7 @@ load-preamble,
 \usepackage[
 languages={de,en},
 map={de=ngerman,en=english},
-targetlang={job=2}
+targetlang={job=2},
 ]{langselect}
 \usepackage{enumitem}
 
@@ -549,10 +549,8 @@ Section~@1.%
   is discarded.
   With the target language "`de"', it is the other way
   around.}{\ref{sec:targetlang}}
-\begin{mdframed}[style=cnltxmdframed]
-    \textbf{\ldeen{Achtung}{Attention}!}\par
 
-    \noindent
+\begin{warnbox}{\ldeen{Achtung}{Attention}!}
     \ldeen{Die automatische Generierung der Sprachmakros kann manchmal zu
       Problemen führen. Beispielsweise ergibt Abchasisch (Code: "`ab"' ) als Erst- und
       Griechisch (Code: "`el"') als Zweisprache den automatischen Namen \cs{label}, was zu
@@ -561,7 +559,7 @@ Section~@1.%
       problems. For example, Abkhaz (code: "`ab"')  as the first language and
       Greek (Code: "`el"') as the second language results in the automatic name \cs{label}, which leads to
       error messages. In such cases, use the features described in section~\ref{sec:own-names}.}
-\end{mdframed}
+\end{warnbox}
 \subsection{\ldeen{Sternvariante}{Starred Variant}}
 \label{sec:start-var}
 \ldeen{Ein häufiges Problem bei mehreren Sprachversionen ist die Konsistenz
@@ -1360,22 +1358,30 @@ Section~@1.%
   }
 }
 \cs_if_exist:cT{ver@polyglossia.sty}{
-  \bool_if:NTF\ols_shorthands{
-   \setdefaultlanguage[babelshorthands=true]{\ols_mapped_target_lang}
-  }{
-    \setdefaultlanguage{\ols_mapped_target_lang}
-  }
+  \setdefaultlanguage{\ols_mapped_target_lang}
 }
 \bool_if:NT\ols_shorthands {
   \RequirePackage[autostyle=true]{csquotes}
+% \ldeen{Die Babel-Shorthand-Infrastruktur ist bei Babel bereits vorhanden,
+% bei Polyglossia muss sie explizit initialisiert und ohne Sprachpaket direkt
+% geladen werden.}{Babel's shorthand infrastructure is already available with
+% Babel; with Polyglossia it has to be initialized explicitly, and without a
+% language package it has to be loaded directly.}
+  \ExplSyntaxOff
+  \@ifpackageloaded{babel}{}{%
+    \@ifpackageloaded{polyglossia}
+      {\InitializeBabelShorthands}
+      {\input{babelsh.def}}%
+  }
+  \ExplSyntaxOn
   \AtBeginDocument{
-    \cs_if_exist:cT{useshorthands}{
-      \useshorthands*{"}
-      \defineshorthand{"`}{\openautoquote}
-      \defineshorthand{"'}{\closeautoquote}
-      \defineshorthand{"/}{\textormath{\bbl@allowhyphens
-          \discretionary{/}{}{/}\bbl@allowhyphens}{}}
-    }
+    \@ifpackageloaded{babel}
+      {\useshorthands*{"}}
+      {\useshorthands{"}}
+    \defineshorthand{"`}{\openautoquote}
+    \defineshorthand{"'}{\closeautoquote}
+    \defineshorthand{"/}{\textormath{\bbl@allowhyphens
+        \discretionary{/}{}{/}\bbl@allowhyphens}{}}
   }
 }
 %</pkg>

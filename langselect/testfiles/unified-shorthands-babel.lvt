@@ -1,0 +1,16 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage[english,ngerman]{babel}
+\usepackage[
+  languages={en,de},
+  targetlang=en,
+  map={en=english,de=ngerman},
+  unified shorthands=true
+]{langselect}
+\begin{document}
+\START
+\renewcommand\openautoquote{\TYPE{OPEN}}
+\renewcommand\closeautoquote{\TYPE{CLOSE}}
+"`text"'
+\END
+\end{document}
