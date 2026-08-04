@@ -277,7 +277,7 @@ mechanisms for selecting the target language.
       Die Sprache, in der Textteile oder einzelne Wörter tatsächlich geschrieben
       sind und die beispielsweise bei der Worttrennung berücksichtigt wird.
       Dies ist das Konzept von Sprache, das Pakete wie Babel oder
-      Polyglossia haben.\footnote{Wobei auch in diesen Pakten "`Sprache"' auch
+      Polyglossia haben.\footnote{Wobei auch in diesen Pakten "`Sprache"' ebenfalls
         für mehrere unterschiedliche und z.\,T. voneinander unabhängige Konzepte
         wie Trennungsmuster, zu nutzende Fonts etc. steht}
       Bitte beachten Sie, dass ein mehrsprachiges Dokument aus der Sicht von
@@ -687,7 +687,7 @@ Section~@1.%
 \ldeen{Um solche Probleme zu vermeiden, bieten \thepkg\ verschiedene
   Möglichkeiten}{To avoid such problems, \thepkg\ offers some options}:
 \begin{enumerate}
-  \item \ldeen{Wie oben erwähnt kann man die Paketoption
+  \item \ldeen{Wie oben erwähnt, kann man die Paketoption
       \keyis-{targetlang}{babel} nutzen. Dann wird die Zielsprache durch die
       Hauptsprache von Babel bestimmt. Allerdings muss man dann auf die
       Möglichkeit verzichten, die Zielsprache "`von außen"' (also mit
@@ -1245,7 +1245,7 @@ Section~@1.%
 % \ldeen{Falls die automatische Erzeugung nicht deaktivert ist, werden die
 % konkreten Sprachmakros angelegt. Der Name sind
 % \cs*{\meta{Prefix}\meta{Sprache$_{1}$}\meta{Sprache$_{2}$}}
-% bzw. \cs*{\meta{Prefix}\meta{Sprache$_{1}$}\meta{Sprache$_{2}$}\meta{Sprache$_{2}$}}.}{%
+% bzw. \cs*{\meta{Prefix}\meta{Sprache$_{1}$}\meta{Sprache$_{2}$}\meta{Sprache$_{3}$}}.}{%
 % If automatic generation is not disabled, the
 % specific language commands are created. The names are
 % \cs*{\meta{prefix}\meta{language$_{1}$}\meta{language$_{2}$}}
@@ -1262,19 +1262,13 @@ Section~@1.%
   Use~\string\olsMakeBilangualMacro~or~\string\olsMakeTrilangualMacro~to~generate.}
 }
 % \ldeen{Für die Sternvarianten der Sprachmakros legen wir uns ein Makro an,
-% dass die folgenden Argumente verarbeitet.}{For the starred variants of the
+% das die folgenden Argumente verarbeitet.}{For the starred variants of the
 % language commands, we create a command that processes the subsequent
 % arguments.}
 
 \seq_new:N \ols_args_seq 
 \int_new:N \ols_num_of_args
 \tl_new:N \ols_format_str_tl
-
-% \ldeen{Da das Platzhalterzeichen @ im folgendem Code als Literal auftritt,
-% muss es den gleichen Catcode wie im Dokument haben.}{Since the placeholder
-% character @ appears as a literal in the following code, 
-% it must have the same catcode as in the document.}
-\makeatother
 \NewDocumentCommand \olsProcessArgs { +m } {
   \tl_gset:Nn \ols_format_str_tl{#1\UseHook{langselect/language/after}}
   \int_zero:N \ols_num_of_args
@@ -1301,8 +1295,9 @@ Section~@1.%
 % verbleibenden Ersetzungstexte. Es konsumiert aber \emph{zwei}
 % Argumente. Dieses zweite holt es sich aus dem nach dem Makro liegenden
 % Tokenstrom, wo es den jeweilig nächsten Ersetzungstext findet.
-% Dieser wird in einer Tokensequent gespeichert und @1 erneut aufgerufen.}{@1
-% receives \emph{one} argument, namely the number of remaining replacement
+% Dieser wird in einer Tokensequenz gespeichert und @1 erneut aufgerufen.
+% }{
+% @1 receives \emph{one} argument, namely the number of remaining replacement
 % texts. However, it consumes \emph{two} arguments. It obtains the second one
 % from the token stream following the command, where it finds the next replacement
 % text. This is stored in a token sequence and @1 is called again.}{\cs{ols\_collect\_replace}}
@@ -1334,7 +1329,6 @@ Section~@1.%
     \ols_collect_replace:n { \int_eval:n { #1 - 1 } }
   }
 }
-\makeatletter
 % \ldeen{Wenn gewünscht, wird Babel oder Polyglossia geladen und die Zielsprache
 % als Hauptsprache gesetzt.}{If desired, Babel or Polyglossia is loaded and the
 % target language is set as the main language.} 
@@ -1350,8 +1344,8 @@ Section~@1.%
   \RequirePackage{polyglossia}
 }
 % \ldeen{Unabhängig davon, wann ein Sprachpaket geladen wurde, wird versucht,
-% die Zielsprache zu aktivieren.}{Regardless of when a language pack was loaded, an attempt will be made to
-% activate the target language.} 
+% die Zielsprache zu aktivieren.}{Regardless of when a language pack was loaded, 
+% an attempt will be made to activate the target language.} 
 \cs_if_exist:cT{ver@babel.sty}{
   \AtBeginDocument{
     \selectlanguage{\ols_mapped_target_lang}
