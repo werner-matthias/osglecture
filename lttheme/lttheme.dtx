@@ -100,26 +100,51 @@ load babel
   Gestaltung häufig einem einheitlichen Erscheinungsbild oder einem
   vorgegebenen Corporate Design. Dieses Erscheinungsbild wird in der Regel \emph{Thema} genannt.
 }{
-}
+}\medskip
 
 \ldeen{
   Es ist ausdrücklich \emph{kein} Ziel von \cls{ltx-talk}, Themen zur Verfügung zu stellen.
-  Damit bleibt es einzelnen Themen-Autoren überlassen, Themen für 
-  Diese Lücke soll das Paket \lttheme{} ein Stück weit ausfüllen. Es stellt ein Theme-System für die Dokumentklasse
-\cls{ltx-talk} bereit. 
+  Damit bleibt es einzelnen Entwicklern überlassen, Themen für \lttalk{} zu schreiben.
+  Bei dieser Arbeit will sie das Paket \lttheme{} ein Stück weit unterstützen.%
+  \footnote{Tatsächlich ist \lttheme{} bei dem Versuch entstanden, ein eigenes Thema für
+  \lttalk{} im Corporate Design der Universität des Autors zu schreiben.}
+  Es stellt ein Theme-System für die Dokumentklasse
+  \lttalk{} bereit.  
 }{
+  It is expressly \emph{not} the goal of \cls{ltx-talk} to provide themes.
+  This leaves it up to individual developers to write themes for \lttalk{}.
+  The \lttheme{} package is intended to provide some support for this work.%
+  \footnote{In fact, \lttheme{} was created while attempting to write a custom theme for
+  \lttalk{} in the corporate design of the author's university.}
+  It provides a theme engine for the document class \lttalk.
 }
+
 \ldeen{
   Ein Thema umfasst dabei mehr als Farben und Schriftarten. Es legt fest,
   welche Informationen dargestellt werden, wie sie auf einer Folie
   angeordnet sind und wie ihre visuelle Gestaltung erfolgt.
+  Diese Dinge sind derzeit in \lttalk{} (absichtlich) nur eingeschränkt gestaltbar.
 }{
+  A theme involves more than just colors and fonts. It determines
+  what information is displayed, how it is arranged on a slide,
+  and how it is visually designed.
+  Currently, these elements can (intentionally) only be customized to a limited extent in \lttalk{}.
 }
 
-\ldeen{Es soll ausdrücklich darauf hingewiesen werden, dass dieses Paket experimentell ist, noch über das Maß 
-  hinaus, was häufig experimentelle Pakete haben: Schließlich hängt es von der experimentellen, sich noch in 
-  Entwicklung befindenden Klasse \cls{ltx-talk} ab. Änderungen dort können zu einer sofortigen Nichtnutzbarkeit von 
-  \lttheme{} führen.}{}
+
+\begin{warnbox}{\ldeen{Warnung}{Warning}}
+  \ldeen{
+    Es soll ausdrücklich darauf hingewiesen werden, dass dieses Paket experimentell ist, 
+    noch über das Maß hinaus, was häufig experimentelle Pakete haben: Schließlich hängt es von 
+    der experimentellen, sich noch in Entwicklung befindenden Klasse \lttalk{} ab. 
+    Änderungen dort können zu einer sofortigen Nichtnutzbarkeit von \lttheme{} führen.
+  }{
+    It should be explicitly noted that this package is experimental, even more so 
+    than most experimental packages: After all, it depends on the experimental class \lttalk,
+    which is still under development. Changes to that class may immediately render 
+    \lttheme{} unusable.
+  }
+\end{warnbox}
 
 \subsection{\ldeen{Wer sollte diese Dokumentation lesen?}{Who sould read this documentation?}}
 
@@ -142,10 +167,13 @@ Für erstere Gruppe ist Teil~@1 gedacht.
 }{\ref{part:user}}
 \ldeen*{
 Wer dagegen ein eigenes Theme erstellen möchte, sollte anschließend auch
-die Abschnitte @1 lesen. Die Referenz (Abschnitt @2) kann beiden
+den Teil~@1 lesen. Die Referenz (Teil~@2) kann beiden
 Gruppen zum gezielten Nachschlagen dienen.
 }{
-}{\ref{part:develop-themes}}{\ref{sec:develop-themes}}{\ref{ref:reference}}
+  On the other hand, anyone who wants to create their own theme should also
+  read Part~@1. The reference (Part~@2) can serve as a handy reference for both
+  groups.
+}{\ref{part:develop-themes}}{\ref{ref:reference}}
 
 \part{\ldeen{Nutzerhandbuch}{User Manual}}
 \label{part:user}
@@ -164,7 +192,22 @@ Gruppen zum gezielten Nachschlagen dienen.
   slide and an additional slide with simple content.
 }{\code{magpie}}
 
-\begin{example}[code-only]
+\begin{example}[
+  compile,
+  program=lualatex,
+  runs=2,
+  pages={1,2},
+  graphics={width=.46\linewidth},
+  pre-output={\begin{mdframed}[
+    backgroundcolor=white,
+    hidealllines=true,
+    innerleftmargin=0pt,
+    innerrightmargin=0pt,
+    innertopmargin=4pt,
+    innerbottommargin=4pt
+  ]},
+  after-output={\end{mdframed}}
+]
   \DocumentMetadata{}
   \documentclass{ltx-talk}
 
@@ -184,31 +227,34 @@ Gruppen zum gezielten Nachschlagen dienen.
   \begin{frame}
     \frametitle{}
     \begin{itemize}
-      \item Eine Präsentation enthält den Inhalt.
-      \item Das Theme bestimmt dessen Darstellung.
+      \item A presentation contains the content.
+      \item The theme determines how it is displayed.
     \end{itemize}
   \end{frame}
 
   \end{document}
 \end{example}
 
-\ldeen{
+\section{\ldeen{Themes verwenden}{Using themes}}
+\label{sec:use-themes}
+\ldeen*{
 Ein Theme wird in zwei Schritten ausgewählt. Zunächst lädt
-\cs*{usepackage}\Marg{ltxtalk-theme-magpie} die Definition des Themes.
-Anschließend aktiviert \cs*{useltxtalktheme}\Marg{magpie} diese
-Definition für die Präsentation. Der Name des Pakets und der Name des
-Themes gehören dabei zusammen.
+@1 die Themendatei.
+Anschließend aktiviert @2 das Thema für die Präsentation. 
 }{
-% TODO: English translation
-}
+A theme is selected in two steps. First,
+@1 loads the theme file.
+Then, @2 activates the theme for the presentation. 
+}{\cs*{usepackage}\Marg{ltxtalk-theme-magpie}}{\cs*{useltxtalktheme}\Marg{magpie}}
 
 \ldeen{
 Die Befehle für Titel, Autor und Datum sowie die Umgebung \code{frame}
-gehören zur Dokumentklasse \cls{ltx-talk}. Das Theme konfiguriert deren
+gehören zur Dokumentklasse \cls{ltx-talk}. 
+Das Thema konfiguriert deren
 öffentliche Templates und legt damit fest, wo und in welcher Form diese
 Angaben auf den Folien erscheinen. Das Setzen und semantische Taggen der
 Inhalte bleibt Aufgabe der Klasse. Der eigentliche Inhalt bleibt dadurch
-unabhängig vom gewählten Theme.
+unabhängig vom gewählten Thema.
 }{
 % TODO: English translation
 }
@@ -224,17 +270,7 @@ beschreibt der folgende Abschnitt.
 }
 
 
-\section{\ldeen{Themes verwenden}{Using themes}}
-\label{sec:use-themes}
 % - Selecting and switching a theme
-
-% - Provided themes
-% TODO:
-% - modern
-% - minimal
-% - academic
-% - corporate
-
 
 \section{\ldeen{Themes anpassen}{Customizing themes}}
 \label{sec:customizing-themes}
@@ -861,11 +897,69 @@ Slots, Templates und den Seitenstil bereitstellt.
     \code{header}, \code{left-margin}, \code{right-margin} und \code{footer}
     schalten Bereiche ein oder aus. \code{header-height},
     \code{footer-height} und \code{margin-width} erwarten Längen.
+    Für asymmetrische Layouts können sichtbare Bereichsbreite und
+    Inhaltseinzug getrennt mit \code{left-area-width},
+    \code{right-area-width}, \code{content-inset-left} und
+    \code{content-inset-right} gesetzt werden.
     \code{header-rows} erwartet eine ganze Zahl; \code{header-columns} und
     \code{footer-columns} erwarten kommagetrennte Anteile. Die beiden letzten
     Spaltenangaben gehören zur älteren Layoutschnittstelle und beeinflussen
     die frei positionierten Slots derzeit nicht.
   }{% TODO: English translation
+  }
+
+  \command{DeclareLTXTalkLayout}[\marg{Name}\marg{Optionen}]
+  \command{UseLTXTalkLayout}[\marg{Name}]
+  \ldeen{
+    Registriert eine wiederverwendbare Layoutkonfiguration und aktiviert sie.
+    \cs*{UseLTXTalkLayout} darf unmittelbar vor einem \env*{frame} oder als
+    erste Anweisung darin stehen. Damit bleiben Theme-Layouts unabhängig von
+    der optionalen Argument-Schnittstelle der Klasse.
+  }{
+    Registers and activates a reusable layout configuration.
+    \cs*{UseLTXTalkLayout} may be used immediately before a \env*{frame} or
+    as its first command. Theme layouts therefore remain independent of the
+    class's optional frame argument interface.
+  }
+
+  \command{LTXTalkBaseLeftMargin}
+  \command{LTXTalkBaseRightMargin}
+  \command{LTXTalkCurrentLeftMargin}
+  \command{LTXTalkCurrentRightMargin}
+  \ldeen{
+    Expandierbare Längen für die ursprünglichen beziehungsweise aktuell
+    wirksamen Seitenränder. Theme-Code kann damit ohne Zugriff auf interne
+    Variablen an der Textkante ausrichten.
+  }{
+    Expandable lengths for the original and currently effective page margins.
+    Theme code can use them to align content without accessing internals.
+  }
+\end{commands}
+
+\subsection{\ldeen{Metadaten}{Metadata}}
+
+\begin{commands}
+  \command{LTXTalkMetadata}[\marg{Feld}]
+  \command{UseLTXTalkMetadata}[\oarg{Optionen}\marg{Feld}]
+  \ldeen{
+    Liefert Präsentationsmetadaten über eine öffentliche Schnittstelle.
+    Verfügbare Felder sind \code{title}, \code{short-title}, \code{subtitle},
+    \code{short-subtitle}, \code{author}, \code{short-author},
+    \code{institute}, \code{short-institute}, \code{date},
+    \code{short-date}, \code{section}, \code{subsection},
+    \code{frametitle}, \code{framesubtitle}, \code{framenumber} und
+    \code{totalframes}. Die zweite Form akzeptiert \code{lines=1}, um
+    erzwungene Zeilenumbrüche durch \code{linebreak} (standardmäßig ein
+    Leerzeichen) zu ersetzen.
+  }{
+    Provides presentation metadata through a public interface. Available
+    fields are \code{title}, \code{short-title}, \code{subtitle},
+    \code{short-subtitle}, \code{author}, \code{short-author},
+    \code{institute}, \code{short-institute}, \code{date},
+    \code{short-date}, \code{section}, \code{subsection},
+    \code{frametitle}, \code{framesubtitle}, \code{framenumber}, and
+    \code{totalframes}. The second form accepts \code{lines=1} to replace
+    forced line breaks with \code{linebreak}, which defaults to a space.
   }
 \end{commands}
 
@@ -948,6 +1042,47 @@ Slots, Templates und den Seitenstil bereitstellt.
     Länge. Positive Längen werden von der linken beziehungsweise oberen Kante
     gemessen.
   }{% TODO: English translation
+  }
+
+  \command{DeclareLTXTalkAreaGrid}
+    [\marg{Bereich}\marg{Spalten}\marg{Zeilen}]
+  \command{PositionLTXTalkSlotInGrid}
+    [\marg{Name}\marg{Spalte}\marg{Zeile}\marg{Spaltenbreite}\marg{Zeilenhöhe}]
+  \command{SetLTXTalkAreaGridRows}[\marg{Bereich}\marg{Zeilen}]
+  \ldeen{
+    Definiert ein Raster für einen Bereich und positioniert Slots darin.
+    Spalten sind kommagetrennte Längen; \code{*} verteilt den verbleibenden
+    Platz gleichmäßig auf alle Sternspalten. Spalten und Zeilen werden ab eins
+    gezählt. Der letzte Befehl ändert die Zeilenzahl lokal und eignet sich
+    daher für Umschalter am Anfang eines Frames.
+  }{
+    Defines a grid for an area and positions slots in it. Columns are a
+    comma-separated list of lengths; \code{*} distributes the remaining
+    width equally among all star columns. Columns and rows are one-based. The
+    final command changes the row count locally and is therefore suitable for
+    switches at the beginning of a frame.
+  }
+\end{commands}
+
+\subsection{\ldeen{Titelseiten}{Title pages}}
+
+\begin{commands}
+  \command{DeclareLTXTalkTitleLayout}
+    [\marg{Name}\marg{Layoutoptionen}\marg{Inhalt}]
+  \command{UseLTXTalkTitleLayout}[\marg{Name}]
+  \command{MakeLTXTalkTitle}[\oarg{Name}]
+  \ldeen{
+    Registriert eine Titelseitenvariante aus temporären Layoutoptionen und
+    ihrem Inhalt. \cs*{UseLTXTalkTitleLayout} wählt die Vorgabe;
+    \cs*{MakeLTXTalkTitle} erzeugt den Frame und kann optional eine Variante
+    nur für diesen Aufruf wählen. Nach der Titelseite wird die vorherige
+    Geometrie wiederhergestellt.
+  }{
+    Registers a title-page variant consisting of temporary layout options and
+    its contents. \cs*{UseLTXTalkTitleLayout} selects the default;
+    \cs*{MakeLTXTalkTitle} creates the frame and can optionally select a
+    variant for that invocation. The previous geometry is restored after the
+    title page.
   }
 \end{commands}
 
@@ -1251,21 +1386,23 @@ Slots eines Teilthemes implementiert werden.
 %
 \part{Implementation}
 \section{lttheme.sty}
-\AutoDocInput{lttheme.dtx}{pkg}
+%\AutoDocInput{lttheme.dtx}{pkg}
 \section{\ldeen{Enthaltene Themen}{Includes Themes}}
-\AutoDocInput{lttheme.dtx}{minimal}
-\AutoDocInput{lttheme.dtx}{magpie}
-\AutoDocInput{lttheme.dtx}{hawk}
-\AutoDocInput{lttheme.dtx}{sparrow}
-\section{\ldeen{Farbthemen}{Color Themes}}
-\AutoDocInput{lttheme.dtx}{anchovy}
-\AutoDocInput{lttheme.dtx}{carp}
+%\AutoDocInput{lttheme.dtx}{minimal}
+%\AutoDocInput{lttheme.dtx}{magpie}
+%\AutoDocInput{lttheme.dtx}{hawk}
+%\AutoDocInput{lttheme.dtx}{sparrow}
+%\section{\ldeen{Farbthemen}{Color Themes}}
+%\AutoDocInput{lttheme.dtx}{anchovy}
+%\AutoDocInput{lttheme.dtx}{carp}
 \end{document}
 %</driver>
 %<*pkg>
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesExplPackage{ltxtalk-theme}{2026-08-05}{0.3}
-  {Theme engine for ltx-talk}
+\ProvidesExplPackage{ltxtalk-theme}
+{2026-08-05}
+{0.3}
+{Theme engine for ltx-talk}
 
 \RequirePackage{xcoffins}
 \RequirePackage{xcolor}
@@ -1297,6 +1434,12 @@ Slots eines Teilthemes implementiert werden.
 
 \msg_new:nnn { ltxtalk } { theme-not-activated }
   { Theme~'#1'~loaded~but~not~activated.~Use~\token_to_str:N \useltxtalktheme{#1}~to~activate. }
+\msg_new:nnnn { ltxtalk } { unknown-layout }
+  { Unknown~layout~'#1'. }
+  { Declare~it~with~\token_to_str:N\DeclareLTXTalkLayout. }
+\msg_new:nnnn { ltxtalk } { unknown-title-layout }
+  { Unknown~title~layout~'#1'. }
+  { Declare~it~with~\token_to_str:N\DeclareLTXTalkTitleLayout. }
 
 % ==========================================
 % INTERNE COFFINS (VERSTECKT VOR NUTZER)
@@ -1356,6 +1499,10 @@ Slots eines Teilthemes implementiert werden.
 % ==========================================
 
 \dim_new:N \l__ltxtalk_margin_dim
+\dim_new:N \l__ltxtalk_left_area_width_dim
+\dim_new:N \l__ltxtalk_right_area_width_dim
+\dim_new:N \l__ltxtalk_content_inset_left_dim
+\dim_new:N \l__ltxtalk_content_inset_right_dim
 \dim_new:N \l__ltxtalk_header_height_dim
 \dim_new:N \l__ltxtalk_footer_height_dim
 \dim_new:N \l__ltxtalk_area_width_dim
@@ -1376,6 +1523,7 @@ Slots eines Teilthemes implementiert werden.
 
 \clist_new:N \l__ltxtalk_header_columns_clist
 \clist_new:N \l__ltxtalk_footer_columns_clist
+\prop_new:N \g__ltxtalk_layouts_prop
 
 \keys_define:nn { ltxtalk / layout }
   {
@@ -1393,8 +1541,23 @@ Slots eines Teilthemes implementiert werden.
     footer         .initial:n = false,
     footer-height  .dim_set:N = \l__ltxtalk_footer_height_dim,
     footer-height  .initial:n = 1cm,
-    margin-width   .dim_set:N = \l__ltxtalk_margin_dim,
+    margin-width   .code:n =
+      {
+        \dim_set:Nn \l__ltxtalk_margin_dim {#1}
+        \dim_set:Nn \l__ltxtalk_left_area_width_dim {#1}
+        \dim_set:Nn \l__ltxtalk_right_area_width_dim {#1}
+        \dim_set:Nn \l__ltxtalk_content_inset_left_dim {#1}
+        \dim_set:Nn \l__ltxtalk_content_inset_right_dim {#1}
+      },
     margin-width   .initial:n = 2.5cm,
+    left-area-width .dim_set:N = \l__ltxtalk_left_area_width_dim,
+    left-area-width .initial:n = 2.5cm,
+    right-area-width .dim_set:N = \l__ltxtalk_right_area_width_dim,
+    right-area-width .initial:n = 2.5cm,
+    content-inset-left .dim_set:N = \l__ltxtalk_content_inset_left_dim,
+    content-inset-left .initial:n = 2.5cm,
+    content-inset-right .dim_set:N = \l__ltxtalk_content_inset_right_dim,
+    content-inset-right .initial:n = 2.5cm,
     
     header-columns .clist_set:N = \l__ltxtalk_header_columns_clist,
     header-columns .initial:n = { 0.2, 0.6, 0.2 },
@@ -1405,6 +1568,51 @@ Slots eines Teilthemes implementiert werden.
 \NewDocumentCommand \ltxtalksetup { m }
   {
     \keys_set:nn { ltxtalk / layout } { #1 }
+    \__ltxtalk_update_text_area:
+  }
+
+\NewDocumentCommand \DeclareLTXTalkLayout { m m }
+  { \prop_gput:Nnn \g__ltxtalk_layouts_prop {#1} {#2} }
+
+\NewDocumentCommand \UseLTXTalkLayout { m }
+  {
+    \prop_get:NnNTF \g__ltxtalk_layouts_prop {#1} \l_tmpa_tl
+      { \keys_set:nV {ltxtalk/layout} \l_tmpa_tl \__ltxtalk_update_text_area: }
+      { \msg_error:nnn {ltxtalk}{unknown-layout}{#1} }
+  }
+
+\prop_new:N \g__ltxtalk_title_layout_options_prop
+\prop_new:N \g__ltxtalk_title_layout_code_prop
+\tl_new:N \g__ltxtalk_title_layout_tl
+
+\NewDocumentCommand \DeclareLTXTalkTitleLayout { m m m }
+  {
+    \prop_gput:Nnn \g__ltxtalk_title_layout_options_prop {#1} {#2}
+    \prop_gput:Nnn \g__ltxtalk_title_layout_code_prop {#1} {#3}
+  }
+
+\NewDocumentCommand \UseLTXTalkTitleLayout { m }
+  { \tl_gset:Nn \g__ltxtalk_title_layout_tl {#1} }
+
+\NewDocumentCommand \MakeLTXTalkTitle {O{}}
+  {
+    \tl_if_blank:nTF {#1}
+      {\tl_set_eq:NN \l_tmpa_tl \g__ltxtalk_title_layout_tl}
+      {\tl_set:Nn \l_tmpa_tl {#1}}
+    \prop_get:NVNTF \g__ltxtalk_title_layout_code_prop \l_tmpa_tl \l_tmpb_tl
+      {
+        \prop_get:NVN \g__ltxtalk_title_layout_options_prop \l_tmpa_tl \l_tmpc_tl
+        \group_begin:
+          \keys_set:nV {ltxtalk/layout} \l_tmpc_tl
+          \__ltxtalk_update_text_area:
+          \begin{frame}[vertical-alignment=top]
+            \thispagestyle{lttheme}
+            \tl_use:N \l_tmpb_tl
+          \end{frame}
+        \group_end:
+        \__ltxtalk_update_text_area:
+      }
+      {\msg_error:nnV {ltxtalk}{unknown-title-layout}\l_tmpa_tl}
   }
 
 % ==========================================
@@ -1568,6 +1776,9 @@ Slots eines Teilthemes implementiert werden.
 \prop_new:N \g__ltxtalk_slot_styles_prop
 \prop_new:N \g__ltxtalk_slot_areas_prop
 \prop_new:N \g__ltxtalk_slot_accessibility_prop
+\prop_new:N \g__ltxtalk_area_grid_columns_prop
+\prop_new:N \g__ltxtalk_area_grid_rows_prop
+\prop_new:N \g__ltxtalk_slot_grid_positions_prop
 
 \tl_new:N \l__ltxtalk_current_slot_name_tl
 \tl_new:N \l__ltxtalk_slot_type_tl
@@ -1617,6 +1828,19 @@ Slots eines Teilthemes implementiert werden.
     \prop_gput:Nnn \g__ltxtalk_slot_positions_prop { #1 } 
       { { #2 } { #3 } { #4 } { #5 } }
   }
+
+\NewDocumentCommand \DeclareLTXTalkAreaGrid { m m m }
+  {
+    \prop_gput:Nnn \g__ltxtalk_area_grid_columns_prop {#1} {#2}
+    \prop_gput:Nnn \g__ltxtalk_area_grid_rows_prop {#1} {#3}
+  }
+
+\NewDocumentCommand \PositionLTXTalkSlotInGrid { m m m m m }
+  {\prop_gput:Nnn \g__ltxtalk_slot_grid_positions_prop {#1}
+    {{#2}{#3}{#4}{#5}}}
+
+\NewDocumentCommand \SetLTXTalkAreaGridRows { m m }
+  {\prop_put:Nnn \g__ltxtalk_area_grid_rows_prop {#1}{#2}}
 
 % ==========================================
 % SLOT-FORMATIERUNG
@@ -1999,6 +2223,56 @@ Slots eines Teilthemes implementiert werden.
 % SLOT-CONTENT-RESOLVER
 % ==========================================
 
+\tl_new:N \l__ltxtalk_metadata_lines_tl
+\tl_new:N \l__ltxtalk_metadata_linebreak_tl
+\keys_define:nn {ltxtalk/metadata-use}
+  {
+    lines .choice:,
+    lines / all .code:n = \tl_set:Nn \l__ltxtalk_metadata_lines_tl {all},
+    lines / 1 .code:n = \tl_set:Nn \l__ltxtalk_metadata_lines_tl {1},
+    lines .initial:n = all,
+    linebreak .tl_set:N = \l__ltxtalk_metadata_linebreak_tl,
+    linebreak .initial:n = {~}
+  }
+
+\cs_new:Npn \__ltxtalk_metadata:n #1
+  {
+    \str_case:nnF {#1}
+      {
+        {title}{\@title}
+        {short-title}{\@shorttitle}
+        {subtitle}{\@subtitle}
+        {short-subtitle}{\@shortsubtitle}
+        {author}{\@author}
+        {short-author}{\@shortauthor}
+        {institute}{\@institute}
+        {short-institute}{\@shortinstitute}
+        {date}{\@date}
+        {short-date}{\@shortdate}
+        {section}{\tl_use:N \g__talk_section_tl}
+        {subsection}{\tl_use:N \g__talk_subsection_tl}
+        {frametitle}{\tl_use:N \g__talk_frame_title_tl}
+        {framesubtitle}{\tl_use:N \g__talk_frame_subtitle_tl}
+        {framenumber}{\@framenumber}
+        {totalframes}{\@totalframes}
+      }
+      { }
+  }
+
+\NewExpandableDocumentCommand \LTXTalkMetadata {m}
+  {\__ltxtalk_metadata:n {#1}}
+
+\NewDocumentCommand \UseLTXTalkMetadata {O{} m}
+  {
+    \group_begin:
+      \keys_set:nn {ltxtalk/metadata-use}{#1}
+      \tl_set:Ne \l_tmpa_tl {\__ltxtalk_metadata:n {#2}}
+      \str_if_eq:VnT \l__ltxtalk_metadata_lines_tl {1}
+        {\tl_replace_all:NnV \l_tmpa_tl {\\} \l__ltxtalk_metadata_linebreak_tl}
+      \tl_use:N \l_tmpa_tl
+    \group_end:
+  }
+
 \cs_new_protected:Npn \__ltxtalk_resolve_slot_content:Nn #1 #2
   {
     % 
@@ -2009,18 +2283,11 @@ Slots eines Teilthemes implementiert werden.
     
     \str_case:nn { #1 }
       {
-        { title }      { 
-          \cs_if_exist:NTF \insertshorttitle
-            { \tl_set:Nn #2 { \insertshorttitle } }
-            { \tl_set:Nn #2 { \inserttitle } }
-        }
-        { author }     { 
-          \cs_if_exist:NTF \insertshortauthor
-            { \tl_set:Nn #2 { \insertshortauthor } }
-            { \tl_set:Nn #2 { \insertauthor } }
-        }
-        { date }       { \tl_set:Nn #2 { \insertdate } }
-        { institute }  { \tl_set:Nn #2 { \insertinstitute } }
+        { title }      { \tl_set:Nn #2 { \LTXTalkMetadata{short-title} } }
+        { subtitle }   { \tl_set:Nn #2 { \LTXTalkMetadata{short-subtitle} } }
+        { author }     { \tl_set:Nn #2 { \LTXTalkMetadata{short-author} } }
+        { date }       { \tl_set:Nn #2 { \LTXTalkMetadata{date} } }
+        { institute }  { \tl_set:Nn #2 { \LTXTalkMetadata{short-institute} } }
         { section }    { \tl_set:Nn #2 { \g__ltxtalk_current_section_tl } }
         { subsection } { \tl_set:Nn #2 { \g__ltxtalk_current_subsection_tl } }
         { frametitle } { \tl_set:Nn #2 { \g__ltxtalk_current_frametitle_tl } }
@@ -2484,12 +2751,25 @@ Slots eines Teilthemes implementiert werden.
 \dim_new:N \l__ltxtalk_current_slot_height_dim
 \dim_new:N \l__ltxtalk_current_slot_x_dim
 \dim_new:N \l__ltxtalk_current_slot_y_dim
+\dim_new:N \l__ltxtalk_grid_star_width_dim
+\dim_new:N \l__ltxtalk_grid_column_width_dim
+\tl_new:N \l__ltxtalk_current_area_tl
+\int_new:N \l__ltxtalk_grid_star_count_int
 \dim_new:N \g__ltxtalk_base_left_margin_dim
 \dim_new:N \g__ltxtalk_base_right_margin_dim
 \dim_new:N \g__ltxtalk_current_left_margin_dim
 \dim_new:N \g__ltxtalk_current_right_margin_dim
 \dim_gset:Nn \g__ltxtalk_base_left_margin_dim {\Gm@lmargin}
 \dim_gset:Nn \g__ltxtalk_base_right_margin_dim {\Gm@rmargin}
+
+\NewExpandableDocumentCommand \LTXTalkBaseLeftMargin {}
+  {\dim_use:N \g__ltxtalk_base_left_margin_dim}
+\NewExpandableDocumentCommand \LTXTalkBaseRightMargin {}
+  {\dim_use:N \g__ltxtalk_base_right_margin_dim}
+\NewExpandableDocumentCommand \LTXTalkCurrentLeftMargin {}
+  {\dim_use:N \g__ltxtalk_current_left_margin_dim}
+\NewExpandableDocumentCommand \LTXTalkCurrentRightMargin {}
+  {\dim_use:N \g__ltxtalk_current_right_margin_dim}
 
 \NewTemplateType { lttheme-slot } { 1 }
 \DeclareTemplateInterface { lttheme-slot } { standard } { 1 }
@@ -2679,11 +2959,11 @@ Slots eines Teilthemes implementiert werden.
 \NewSocketPlug { lttheme/area/header } { standard }
   { \__ltxtalk_render_area:nnn {header}{\paperwidth}{\l__ltxtalk_header_height_dim} }
 \NewSocketPlug { lttheme/area/left } { standard }
-  { \__ltxtalk_render_area:nnn {left}{\l__ltxtalk_margin_dim}{\textheight} }
+  { \__ltxtalk_render_area:nnn {left}{\l__ltxtalk_left_area_width_dim}{\textheight} }
 \NewSocketPlug { lttheme/area/left } { hawk }
-  { \__ltxtalk_render_area:nnn {left}{\l__ltxtalk_margin_dim}{\paperheight} }
+  { \__ltxtalk_render_area:nnn {left}{\l__ltxtalk_left_area_width_dim}{\paperheight} }
 \NewSocketPlug { lttheme/area/right } { standard }
-  { \__ltxtalk_render_area:nnn {right}{\l__ltxtalk_margin_dim}{\textheight} }
+  { \__ltxtalk_render_area:nnn {right}{\l__ltxtalk_right_area_width_dim}{\textheight} }
 \NewSocketPlug { lttheme/area/footer } { standard }
   { \__ltxtalk_render_area:nnn {footer}{\paperwidth}{\l__ltxtalk_footer_height_dim} }
 \NewSocketPlug { lttheme/page/foreground } { standard } { }
@@ -2732,6 +3012,9 @@ Slots eines Teilthemes implementiert werden.
     \prop_gclear:N \g__ltxtalk_slot_styles_prop
     \prop_gclear:N \g__ltxtalk_slot_areas_prop
     \prop_gclear:N \g__ltxtalk_slot_accessibility_prop
+    \prop_gclear:N \g__ltxtalk_area_grid_columns_prop
+    \prop_gclear:N \g__ltxtalk_area_grid_rows_prop
+    \prop_gclear:N \g__ltxtalk_slot_grid_positions_prop
     \prop_gclear:N \g__ltxtalk_slot_contents_prop
     \prop_gclear:N \g__ltxtalk_area_decorations_prop
     \seq_gclear:N \g__ltxtalk_header_slots_seq
@@ -2750,12 +3033,12 @@ Slots eines Teilthemes implementiert werden.
     \bool_if:NT \l__ltxtalk_show_left_margin_bool
       {
         \dim_gadd:Nn \g__ltxtalk_current_left_margin_dim
-          {\l__ltxtalk_margin_dim}
+          {\l__ltxtalk_content_inset_left_dim}
       }
     \bool_if:NT \l__ltxtalk_show_right_margin_bool
       {
         \dim_gadd:Nn \g__ltxtalk_current_right_margin_dim
-          {\l__ltxtalk_margin_dim}
+          {\l__ltxtalk_content_inset_right_dim}
       }
     \cs_gset:Npx \Gm@lmargin
       {\dim_use:N \g__ltxtalk_current_left_margin_dim}
@@ -2831,27 +3114,82 @@ Slots eines Teilthemes implementiert werden.
     \prop_get:NnN \g__ltxtalk_slot_types_prop {#1} \l__ltxtalk_slot_type_tl
     \str_case:VnF \l__ltxtalk_slot_type_tl
       {
-        {title}         {\@title}
-        {author}        {\@author}
-        {date}          {\@date}
-        {institute}     {\@institute}
-        {section}       {\tl_use:N \g__talk_section_tl}
-        {subsection}    {\tl_use:N \g__talk_subsection_tl}
+        {title}         {\LTXTalkMetadata{short-title}}
+        {subtitle}      {\LTXTalkMetadata{short-subtitle}}
+        {author}        {\LTXTalkMetadata{short-author}}
+        {date}          {\LTXTalkMetadata{date}}
+        {institute}     {\LTXTalkMetadata{short-institute}}
+        {section}       {\LTXTalkMetadata{section}}
+        {subsection}    {\LTXTalkMetadata{subsection}}
         {frametitle}
           {\__talk_frame_title:n {\tl_use:N \g__talk_frame_title_tl}}
         {framesubtitle} {\tl_use:N \g__talk_frame_subtitle_tl}
-        {pagenumber}    {\@framenumber}
+        {pagenumber}    {\LTXTalkMetadata{framenumber}}
       }
       { \prop_item:Nn \g__ltxtalk_slot_contents_prop {#1} }
   }
 
 \cs_new_protected:Npn \__ltxtalk_render_slot:n #1
   {
-    \prop_get:NnNT \g__ltxtalk_slot_positions_prop {#1} \l_tmpa_tl
+    \prop_get:NnNTF \g__ltxtalk_slot_grid_positions_prop {#1} \l_tmpa_tl
+      {\exp_after:wN \__ltxtalk_render_grid_slot_aux:w
+        \l_tmpa_tl \q_stop {#1}}
+      {\prop_get:NnNT \g__ltxtalk_slot_positions_prop {#1} \l_tmpa_tl
+        {\exp_after:wN \__ltxtalk_render_slot_aux:w
+          \l_tmpa_tl \q_stop {#1}}}
+  }
+\cs_new_protected:Npn \__ltxtalk_render_grid_slot_aux:w
+  #1#2#3#4 \q_stop #5
+  {\__ltxtalk_render_grid_slot:nnnnn {#5}{#1}{#2}{#3}{#4}}
+\cs_new_protected:Npn \__ltxtalk_render_grid_slot:nnnnn #1#2#3#4#5
+  {
+    \prop_get:NVN \g__ltxtalk_area_grid_columns_prop
+      \l__ltxtalk_current_area_tl \l_tmpa_tl
+    \prop_get:NVN \g__ltxtalk_area_grid_rows_prop
+      \l__ltxtalk_current_area_tl \l_tmpb_tl
+    \clist_set:NV \l_tmpa_clist \l_tmpa_tl
+    \dim_zero:N \l_tmpa_dim
+    \int_zero:N \l__ltxtalk_grid_star_count_int
+    \clist_map_inline:Nn \l_tmpa_clist
+      {\str_if_eq:nnTF {##1}{*}
+        {\int_incr:N \l__ltxtalk_grid_star_count_int}
+        {\dim_add:Nn \l_tmpa_dim {##1}}}
+    \int_compare:nNnTF {\l__ltxtalk_grid_star_count_int} > {0}
       {
-        \exp_after:wN \__ltxtalk_render_slot_aux:w
-          \l_tmpa_tl \q_stop {#1}
+        \dim_set_eq:NN \l__ltxtalk_grid_star_width_dim
+          \l__ltxtalk_current_area_width_dim
+        \dim_sub:Nn \l__ltxtalk_grid_star_width_dim {\l_tmpa_dim}
+        \dim_set:Nn \l__ltxtalk_grid_star_width_dim
+          {\l__ltxtalk_grid_star_width_dim/\l__ltxtalk_grid_star_count_int}
       }
+      {\dim_zero:N \l__ltxtalk_grid_star_width_dim}
+    \dim_zero:N \l__ltxtalk_current_slot_x_dim
+    \dim_zero:N \l__ltxtalk_current_slot_width_dim
+    \int_zero:N \l_tmpa_int
+    \clist_map_inline:Nn \l_tmpa_clist
+      {
+        \int_incr:N \l_tmpa_int
+        \str_if_eq:nnTF {##1}{*}
+          {\dim_set_eq:NN \l__ltxtalk_grid_column_width_dim
+             \l__ltxtalk_grid_star_width_dim}
+          {\dim_set:Nn \l__ltxtalk_grid_column_width_dim {##1}}
+        \int_compare:nNnT {\l_tmpa_int} < {#2}
+          {\dim_add:Nn \l__ltxtalk_current_slot_x_dim
+            {\l__ltxtalk_grid_column_width_dim}}
+        \int_compare:nT {\l_tmpa_int >= #2}
+          {\int_compare:nT {\l_tmpa_int < #2+#4}
+            {\dim_add:Nn \l__ltxtalk_current_slot_width_dim
+              {\l__ltxtalk_grid_column_width_dim}}}
+      }
+    \dim_set:Nn \l_tmpa_dim
+      {\l__ltxtalk_current_area_height_dim/\l_tmpb_tl}
+    \dim_set:Nn \l__ltxtalk_current_slot_y_dim
+      {\int_eval:n {#3-1}\l_tmpa_dim}
+    \dim_set:Nn \l__ltxtalk_current_slot_height_dim
+      {#5\l_tmpa_dim}
+    \__ltxtalk_render_slot:nnnnn {#1}
+      {\l__ltxtalk_current_slot_x_dim}{\l__ltxtalk_current_slot_y_dim}
+      {\l__ltxtalk_current_slot_width_dim}{\l__ltxtalk_current_slot_height_dim}
   }
 \cs_new_protected:Npn \__ltxtalk_render_slot_aux:w #1#2#3#4 \q_stop #5
   { \__ltxtalk_render_slot:nnnnn {#5}{#1}{#2}{#3}{#4} }
@@ -2889,6 +3227,7 @@ Slots eines Teilthemes implementiert werden.
 
 \cs_new_protected:Npn \__ltxtalk_render_area:nnn #1#2#3
   {
+    \tl_set:Nn \l__ltxtalk_current_area_tl {#1}
     \dim_set:Nn \l__ltxtalk_current_area_width_dim {#2}
     \dim_set:Nn \l__ltxtalk_current_area_height_dim {#3}
     \vcoffin_set:Nnn \l__ltxtalk_area_coffin {#2}
@@ -2982,7 +3321,7 @@ Slots eines Teilthemes implementiert werden.
                 \skip_horizontal:n
                   {
                     \dim_eval:n
-                      {-\Gm@lmargin+\paperwidth-\l__ltxtalk_margin_dim}
+                      {-\Gm@lmargin+\paperwidth-\l__ltxtalk_right_area_width_dim}
                   }
                 \raisebox
                   {-\dim_eval:n{\l__ltxtalk_header_height_dim-\Gm@tmargin}}
