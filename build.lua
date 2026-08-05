@@ -161,9 +161,9 @@ function update_tag(file, content, tagname, tagdate)
   if file:match("%.dtx$") then
     local package_date = iso_date:gsub("-", "/")
     local updated = content:gsub(
-      "(\\ProvidesExpl%a*%s*{[%a_-]*}%s*\n%s*{)"
+      "(\\ProvidesExpl%a*%s*{[%a_-]*}%s*\n?%s*{)"
         .. "%d%d%d%d[/-]%d%d[/-]%d%d"
-        .. "(}%s*\n%s*{)[^}%s]+(})",
+        .. "(}%s*\n?%s*{)[^}%s]+(})",
       "%1" .. package_date .. "%2" .. tagname .. "%3"
     )
 
