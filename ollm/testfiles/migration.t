@@ -31,6 +31,8 @@ ok $result->{converted}, 'convertconfig reports a legacy conversion';
 ok -f $result->{path}, 'convertconfig creates ollmconfig.toml';
 my $manifest = OLLM::Config->load_manifest($result->{path});
 is $manifest->{languages}{default}, 'en', 'legacy default language is converted';
+ok !exists $manifest->{languages}{map},
+  'conversion leaves language-variant mapping to TeX';
 is $manifest->{security}{shell_escape}, 'full', 'legacy shell escape is converted';
 is $manifest->{project}{tex}{directory}, 'Include',
   'legacy shared source directory becomes the shared TeX directory';

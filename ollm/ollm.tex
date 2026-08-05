@@ -179,7 +179,6 @@ bundle_preset = "OSG lecture/1"
 
 [project]
 id = "bs"
-title = "Betriebssysteme"
 
 [project.tex]
 directory = "Include"
@@ -188,10 +187,6 @@ config = "projectconfig.tex"
 [languages]
 available = ["de", "en"]
 default = "de"
-
-[languages.map]
-de = "ngerman"
-en = "british"
 
 [targets.slides]
 languages = ["de"]
@@ -212,6 +207,25 @@ Konfigurationssignatur auf. \texttt{osglecture} lädt sie nach Aufbau des
 Modusgraphen und der Metadatenoberfläche. Damit sind dort beispielsweise
 \verb|\author<presentation>[M.~M.]{Max Mustermann}| und entsprechende
 Langformwerte zulässig.
+
+Der fachliche Projekttitel und die Abbildung kurzer Sprachkennungen auf
+LaTeX-Sprachvarianten sind ausschließlich TeX-Eigenschaften. Sie werden für
+Serien- und Standalone-Dokumente an derselben Stelle konfiguriert:
+
+\begin{verbatim}
+\title{Betriebssysteme}
+\usepackage[
+  languages={de,en},
+  targetlang={\OsgLectureLanguage},
+  map={de=ngerman,en=british}
+]{langselect}
+\end{verbatim}
+
+Das Manifest enthält unter \texttt{project} daher nur die technische ID und
+den optionalen TeX-Fundort. \texttt{languages} enthält ausschließlich die für
+die Buildmatrix benötigten Werte \texttt{available} und \texttt{default}.
+Die bewusst überschreibbaren beziehungsweise erzwingbaren LaTeX-Policies in
+\texttt{latex.defaults} und \texttt{latex.enforce} bleiben davon unberührt.
 
 \subsection*{Bundle-Presets und Targets}
 

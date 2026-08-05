@@ -192,7 +192,6 @@ sub build_spec {
     profile_class       => $profile_class,
     language            => $language,
     available_languages => $arg{manifest}{languages}{available},
-    language_map        => $arg{manifest}{languages}{map} // {},
     bundle_preset       =>
       $configuration->{definitions}{bundle_preset}{reference},
     document_profile    => $document_profile,
@@ -218,9 +217,6 @@ sub build_spec {
 sub render {
   my ($class, $spec) = @_;
   my @languages = map { _tex_atom($_) } @{ $spec->{available_languages} };
-  my @map = map {
-    _tex_atom($_) . '=' . _tex_atom($spec->{language_map}{$_})
-  } sort keys %{ $spec->{language_map} };
   my %latex_key = (
     identity_profile     => 'identity-profile',
     numbering            => 'numbering',
@@ -259,7 +255,6 @@ sub render {
     "  doctype={" . _tex_atom($spec->{doctype}) . "},",
     "  language={" . _tex_atom($spec->{language}) . "},",
     "  available-languages={" . join(',', @languages) . "},",
-    "  language-map={" . join(',', @map) . "},",
     "  bundle-preset={" . _tex_atom($spec->{bundle_preset}) . "},",
     "  document-profile={" . _tex_atom($spec->{document_profile}) . "},",
     "  shared-tex-directory={" . _tex_path($spec->{shared_tex_directory}) . "},",

@@ -225,6 +225,23 @@ profile setup. Mode-specific metadata is therefore valid, for example:
 \author<longform>[Mustermann]{Max Mustermann}
 ```
 
+Project titles and language-variant mappings are TeX properties rather than
+manifest values. Put the title and the `langselect` mapping in TeX
+configuration; a standalone document can input the same file explicitly:
+
+```latex
+\title{Operating Systems}
+\usepackage[
+  languages={de,en},
+  targetlang={\OsgLectureLanguage},
+  map={de=ngerman,en=british}
+]{langselect}
+```
+
+The TOML `[project]` table therefore contains only the technical `id` and its
+optional `tex` locator. `[languages]` contains only the build-matrix values
+`available` and `default`.
+
 For a concrete series build, the resolved configuration is normalized into a
 job-bound `<jobname>.osgbuild.tex`. The reader in
 `../osglecture/osglecture-config.sty` validates its schema and requires its

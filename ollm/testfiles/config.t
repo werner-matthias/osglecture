@@ -32,6 +32,43 @@ is $manifest->{project}{tex}{config}, 'projectconfig.tex',
 is_deeply $manifest->{languages}{available}, ['de', 'en'],
   'language list parsed';
 
+my $obsolete_title = File::Spec->catfile(tempdir(CLEANUP => 1), 'ollmconfig.toml');
+open my $obsolete_title_handle, '>:raw', $obsolete_title or die $!;
+print {$obsolete_title_handle} <<'TOML';
+schema = 1
+[project]
+id = "test"
+title = "TeX metadata"
+[languages]
+available = ["de"]
+default = "de"
+[targets.slides]
+languages = ["de"]
+TOML
+close $obsolete_title_handle;
+eval { OLLM::Config->load_manifest($obsolete_title) };
+like $@, qr/unknown key 'project\.title'/,
+  'project title is rejected as a TeX-side property';
+
+my $obsolete_map = File::Spec->catfile(tempdir(CLEANUP => 1), 'ollmconfig.toml');
+open my $obsolete_map_handle, '>:raw', $obsolete_map or die $!;
+print {$obsolete_map_handle} <<'TOML';
+schema = 1
+[project]
+id = "test"
+[languages]
+available = ["de"]
+default = "de"
+[languages.map]
+de = "ngerman"
+[targets.slides]
+languages = ["de"]
+TOML
+close $obsolete_map_handle;
+eval { OLLM::Config->load_manifest($obsolete_map) };
+like $@, qr/unknown key 'languages\.map'/,
+  'language mapping is rejected as a langselect-side property';
+
 my $resolved = OLLM::Config->resolve_request(
   start_dir => $chapter,
   definitions_dir => $definitions,

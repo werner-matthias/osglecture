@@ -343,10 +343,8 @@ sub validate_manifest {
     if exists $manifest->{bundle_preset};
 
   _require_table($manifest, 'project', $path);
-  _known_keys($manifest->{project}, [qw(id title tex)], $path, $lines, 'project');
+  _known_keys($manifest->{project}, [qw(id tex)], $path, $lines, 'project');
   _require_string($manifest->{project}, 'id', "$path: project");
-  _require_string($manifest->{project}, 'title', "$path: project")
-    if exists $manifest->{project}{title};
   if (exists $manifest->{project}{tex}) {
     my $tex = $manifest->{project}{tex};
     die "$path: project.tex must be a table" if ref $tex ne 'HASH';
@@ -370,7 +368,7 @@ sub validate_manifest {
   }
 
   _require_table($manifest, 'languages', $path);
-  _known_keys($manifest->{languages}, [qw(available default map)],
+  _known_keys($manifest->{languages}, [qw(available default)],
     $path, $lines, 'languages');
   my $available = _require_string_array(
     $manifest->{languages}, 'available', "$path: languages",
@@ -388,17 +386,6 @@ sub validate_manifest {
   );
   die "$path: default language '$default' is not listed in languages.available"
     if !$available{$default};
-  if (exists $manifest->{languages}{map}) {
-    my $map = $manifest->{languages}{map};
-    die "$path: languages.map must be a table" if ref $map ne 'HASH';
-    for my $language (sort keys %$map) {
-      _require_string($map, $language, "$path: languages.map");
-      _fail_at($path, $lines, "languages.map.$language",
-        "language map uses unavailable language '$language'")
-        if !$available{$language};
-    }
-  }
-
   _require_table($manifest, 'targets', $path);
   die "$path: targets must not be empty" if !keys %{ $manifest->{targets} };
   my %target_folded;

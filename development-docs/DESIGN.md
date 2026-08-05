@@ -494,7 +494,6 @@ Das Projektmanifest enthält die tatsächlich projektspezifischen Angaben:
 ```toml
 [project]
 id = "bs"
-title = "Betriebssysteme"
 
 [project.tex]
 directory = "Include"
@@ -503,10 +502,6 @@ config = "projectconfig.tex"
 [languages]
 available = ["de", "en"]
 default = "de"
-
-[languages.map]
-de = "ngerman"
-en = "british"
 
 [targets.slides]
 languages = ["de"]
@@ -522,13 +517,19 @@ shell_escape = "restricted"
 ```
 
 Die auswählbaren Sprachen verwenden die kurzen BCP-47-Kennungen, die auch
-`langselect` verwendet, beispielsweise `de`, `en` oder `ru`. Mit
-`languages.map` kann optional die an die konkrete LaTeX-Sprachschicht
-weiterzureichende Langform beziehungsweise Variante angegeben werden. So kann
-etwa `en` auf `british` statt `english` abgebildet werden. OLLM prüft nur
-Konsistenz und Eindeutigkeit der Kennungen. Ob eine Variante von Babel,
-Polyglossia und `langselect` unterstützt wird, wird auf der LaTeX-Seite
-validiert.
+`langselect` verwendet, beispielsweise `de`, `en` oder `ru`. OLLM prüft deren
+Konsistenz und Eindeutigkeit für die Buildmatrix. Die Abbildung auf
+LaTeX-Sprachvarianten wie `ngerman` oder `british` gehört dagegen ausschließlich
+in die TeX-Konfiguration, typischerweise als `map`-Option von `langselect` in
+`projectconfig.tex`. Damit verwendet ein Serien- und ein Standalone-Dokument
+dieselbe Schnittstelle und Autoren müssen keine kontextabhängigen Mappingorte
+unterscheiden.
+
+Auch der fachliche Projekttitel ist ausschließlich LaTeX-Metadatum und wird mit
+`\title` in `projectconfig.tex` gesetzt. `[project]` enthält nur die technische
+Serien-ID. Im Unterschied dazu bleiben `latex.defaults` und `latex.enforce`
+bewusst Manifestbestandteile: Sie bilden eine überschreibbare beziehungsweise
+verbindliche Projektpolicy und keine zweite Metadatenquelle.
 
 Projektweit gemeinsam genutztes TeX-Material liegt nicht lose im
 Projektroot, sondern standardmäßig in `Include`. `[project.tex]` kann sowohl

@@ -139,16 +139,11 @@ sub _manifest {
   my $languages = join(', ', map { _quote($_) } @{ $arg{languages} });
   my $default = _quote($arg{default});
   my $tex_directory = _quote($arg{tex_directory} // 'Include');
-  my $map = join('', map {
-    my $babel = $_ eq 'de' ? 'ngerman' : $_ eq 'en' ? 'british' : $_;
-    _key($_) . ' = ' . _quote($babel) . "\n";
-  } @{ $arg{languages} });
   return "schema = 1\nbundle_preset = \"OSG lecture/1\"\n\n"
     . "[project]\nid = " . _quote($id) . "\n\n"
     . "[project.tex]\ndirectory = $tex_directory\n"
     . "config = \"projectconfig.tex\"\n\n"
     . "[languages]\navailable = [$languages]\ndefault = $default\n\n"
-    . "[languages.map]\n$map\n"
     . join('', map { "[targets.$_]\nlanguages = [$languages]\n\n" }
         qw(slides handout script))
     . "[security]\nshell_escape = " . _quote($arg{shell_escape}) . "\n\n"

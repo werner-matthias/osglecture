@@ -16,7 +16,7 @@ Featurewünsche.
 # lttheme
 * [x] TUC-Theme isolieren
 * [x] Beispielthemen analog Beamer
-* [ ] Unterstützung für innere Themes
+* [x] Unterstützung für innere Themes
 
 # tagpax
 * [x] Test klären

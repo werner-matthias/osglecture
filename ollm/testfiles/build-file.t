@@ -43,8 +43,6 @@ my $spec = OLLM::BuildFile->build_spec(
 is $spec->{job_id}, 'bs-020-script-de-processes',
   'job id follows the series identity grammar';
 is $spec->{unit_role}, 'content', 'omitted role becomes content';
-is_deeply $spec->{language_map}, { de => 'ngerman', en => 'british' },
-  'language mapping reaches the build specification';
 like $spec->{config_signature}, qr/\A[0-9a-f]{64}\z/,
   'build specification carries a deterministic configuration signature';
 like $spec->{structure_signature}, qr/\A[0-9a-f]{64}\z/,
