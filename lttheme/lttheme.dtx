@@ -47,18 +47,29 @@ load babel
 
 \def\pkgname{ltxtalk-theme}
 \def\thepkg{\pkg{\pkgname}}
+\newpackagename{\lttheme}{\pkgname}
+\newpackagename{\lttalk}{ltx-talk}
+\newpackagename{\beamer}{beamer}
 
 \makeindex
 \setcnltx{
-  name  =  ltxtalk-theme,
+  name  =  \pkgname,
   version  = \UseVersionOf{ltxtalk-theme.sty},
   date     = \UseDateOf{ltxtalk-theme.sty},
-  title    = {\ldeen{Das \pkgname\ Paket}{The \pkgname\ Package}},
-  info     = {Theme Engine \ldeen{für}{for} \cls{ltx-talk}},
+  title    = {\ldeen{Das \lttheme\ Paket}{The \lttheme\ Package}},
+  info     = {\ldeen{Themen-}{Theme }Engine \ldeen{für}{for} \lttalk},
   authors  = {Matthias Werner[matthias.werner@informatik.tu-chemnitz.de]},
   abstract={
   \ldeen{   
+      Die Klasse \lttalk{} ist eine \LaTeX-Klasse für Präsentationen und soll 
+      mittelfristig die verbreitete Klasse \beamer{} ablösen, um PDF-Tagging 
+      für Präsentationen zu ermöglichen.
+      Das Package \lttheme\ unterstützt Entwickler, die Themen für \lttalk{} schreiben.
     }{
+      The \lttalk{} class is a \LaTeX class for presentations and is intended 
+      to eventually replace the widely used \beamer{} class in order to enable PDF tagging 
+      for presentations.
+      The \lttheme\ package supports developers who write themes for \lttalk.  
     }
   },
   url      =https://github.com/werner-matthias/osglecture,
@@ -73,10 +84,18 @@ load babel
 
 \subsection{\ldeen{Ziel des Pakets}{Purpose of the package}}
 
-\ldeen{
-  Die Klasse \needclass{ltx-talk} ist eine \LaTeX-Klasse für Präsentationen und soll mittelfristig die verbreitete Klasse \needclass{beamer} ablösen, um PDF-Tagging für Präsentationen zu ermöglichen.
-}{}
-\ldeen{Bei Präsentationsfolien spielen (wie bei vielen Texten) eine konzeptionelle Trennung  zwischen ihrem Inhalt 
+\ldeen*{
+  Die Klasse @1 ist eine \LaTeX-Klasse für Präsentationen und soll 
+  mittelfristig die verbreitete Klasse @2 ablösen, um PDF-Tagging 
+  für Präsentationen zu ermöglichen.
+}{
+  The @1 class is a \LaTeX class for presentations and is intended 
+  to eventually replace the widely used @2 class in order to enable PDF tagging 
+  for presentations.
+}{\lttalk\footnote{\CTANurl{ltx-talk}}}{\beamer\footnote{\CTANurl{beamer}}}
+
+\ldeen{Bei Präsentationsfolien spielen (wie bei vielen Texten) eine konzeptionelle Trennung  
+  zwischen ihrem Inhalt 
   und  dessen visueller Darstellung. Während sich der Inhalt von Vortrag zu Vortrag ändert, folgt die
   Gestaltung häufig einem einheitlichen Erscheinungsbild oder einem
   vorgegebenen Corporate Design. Dieses Erscheinungsbild wird in der Regel \emph{Thema} genannt.
@@ -84,8 +103,9 @@ load babel
 }
 
 \ldeen{
-  Es ist ausdrücklich \emph{kein} Ziel von \cls{ltx-talk}, Unterstützung für Themen zur Verfügung zu stellen.
-  Diese Lücke soll das Paket \thepkg{} ein Stück weit ausfüllen. Es stellt ein Theme-System für die Dokumentklasse
+  Es ist ausdrücklich \emph{kein} Ziel von \cls{ltx-talk}, Themen zur Verfügung zu stellen.
+  Damit bleibt es einzelnen Themen-Autoren überlassen, Themen für 
+  Diese Lücke soll das Paket \lttheme{} ein Stück weit ausfüllen. Es stellt ein Theme-System für die Dokumentklasse
 \cls{ltx-talk} bereit. 
 }{
 }
@@ -99,7 +119,7 @@ load babel
 \ldeen{Es soll ausdrücklich darauf hingewiesen werden, dass dieses Paket experimentell ist, noch über das Maß 
   hinaus, was häufig experimentelle Pakete haben: Schließlich hängt es von der experimentellen, sich noch in 
   Entwicklung befindenden Klasse \cls{ltx-talk} ab. Änderungen dort können zu einer sofortigen Nichtnutzbarkeit von 
-  \thepkg{} führen.}{}
+  \lttheme{} führen.}{}
 
 \subsection{\ldeen{Wer sollte diese Dokumentation lesen?}{Who sould read this documentation?}}
 
@@ -116,15 +136,19 @@ an existing one.
 }
 
 \ldeen*{
-Für erstere Gruppe sind die Abschnitte @1 bis @2 hinreichend.
+Für erstere Gruppe ist Teil~@1 gedacht.
 }{
-}{\ref{sec:quick-start}}{\ref{sec:accessibility}}
+  Part~@1 is intended for the former group.
+}{\ref{part:user}}
 \ldeen*{
 Wer dagegen ein eigenes Theme erstellen möchte, sollte anschließend auch
-die Abschnitte @1 bis @2 lesen. Die Referenz (Abschnitt @3) kann beiden
+die Abschnitte @1 lesen. Die Referenz (Abschnitt @2) kann beiden
 Gruppen zum gezielten Nachschlagen dienen.
 }{
-}{\ref{sec:theme-model}}{\ref{sec:develop-themes}}{\ref{ref:reference}}
+}{\ref{part:develop-themes}}{\ref{sec:develop-themes}}{\ref{ref:reference}}
+
+\part{\ldeen{Nutzerhandbuch}{User Manual}}
+\label{part:user}
 
 \section{\ldeen{Schnelleinstieg}{Quick start}}
 \label{sec:quick-start}
@@ -392,7 +416,7 @@ Theme-Logo einsetzen.
 \ldeen{
 Für getaggte PDF-Ausgabe sollte die Präsentation mit \cs*{DocumentMetadata}
 beginnen. Das eigentliche Tagging von Frame-Inhalt und Überschriften übernimmt
-gegenwärtig überwiegend \cls{ltx-talk}. \thepkg{} bewahrt diese Anbindung,
+gegenwärtig überwiegend \cls{ltx-talk}. \lttheme{} bewahrt diese Anbindung,
 indem Folientitel im Inhaltsbereich über die öffentlichen Klassenbefehle
 gesetzt werden. Die Accessibility-Angaben der Slot-Schnittstelle dokumentieren
 zusätzlich die beabsichtigte Rolle; sie werden noch nicht in jedem Fall in
@@ -414,6 +438,10 @@ unter anderem die von \cls{ltx-talk} erzeugte Überschriftenstruktur prüfen.
 % ==========================================================================
 % For theme authors
 % ==========================================================================
+
+
+\part{\ldeen{Eigene Themes entwickeln}{Developing custom themes}}
+\label{part:develop-themes}
 
 \section{\ldeen{Das Theme-Modell}{The theme model}}
 \label{sec:theme-model}
@@ -507,7 +535,7 @@ afterthought.
 \ldeen{
 Das PDF-Tagging der tatsächlich ausgegebenen Folien übernimmt derzeit
 überwiegend die Klasse \cls{ltx-talk}. Ein Theme muss deren semantische
-Struktur bewahren; \thepkg{} konfiguriert dafür die öffentlichen Templates
+Struktur bewahren; \lttheme{} konfiguriert dafür die öffentlichen Templates
 der Klasse. Die im Slot-Modell hinterlegten Angaben zur Barrierefreiheit
 beschreiben darüber hinaus die angestrebte Semantik der Slots. Sie sind noch
 nicht in allen Fällen unmittelbar mit der von \cls{ltx-talk} erzeugten
@@ -572,15 +600,12 @@ Bereichsdekorationen sind von den Slots unabhängig. Das Template
 zeichnen. Eine obere Linie des Footers ist daher eine Eigenschaft des
 Footer-Bereichs und kein künstlicher Footer-Slot.
 
-Der Seitenstil bildet die stabile Verbindung zu \pkg{ltx-talk}. Sockets teilen
+Der Seitenstil bildet die stabile Verbindung zu \lttalk. Sockets teilen
 seine Ausgabe zusätzlich in Hintergrund, die vier Seitenbereiche und
 Vordergrund. Ein vollständiges Theme muss diese Sockets nicht anfassen; sie
 sind Erweiterungspunkte für austauschbare Layoutphasen, nicht der Ersatz für
 die additive Slot-Schnittstelle.
 
-
-\section{\ldeen{Eigene Themes entwickeln}{Developing custom themes}}
-\label{sec:develop-themes}
 \subsection{\ldeen{Aufbau eines Themes}{Structure of a theme}}
 
 \ldeen{
@@ -1027,18 +1052,9 @@ Slots eines Teilthemes implementiert werden.
 \caption{Available Areas}
 \label{tab:available-areas}
 \end{table}
-% --------------------------------------------------------------------------
-% Implementation
-% --------------------------------------------------------------------------
 
-\section{Implementation}
-
-\subsection{ltxtalk-theme}
-
-% \AutoDocInput{lttheme.dtx}{pkg} % comment out to during text development to speed up latex
-
-
-% \section{\ldeen{Referenz}{Reference}}
+\part{\ldeen{Referenz}{Reference}}
+\label{part:reference}
 
 % bisherige API-Referenz
 
@@ -1199,9 +1215,18 @@ Slots eines Teilthemes implementiert werden.
 % Die englische API-Referenz wurde zunächst unverändert übernommen.
 % \end{lang}
 %
-
+\part{Implementation}
+\section{lttheme.sty}
+\AutoDocInput{lttheme.dtx}{pkg}
+\section{\ldeen{Enthaltene Themen}{Includes Themes}}
+\AutoDocInput{lttheme.dtx}{minimal}
+\AutoDocInput{lttheme.dtx}{magpie}
+\AutoDocInput{lttheme.dtx}{hawk}
+\AutoDocInput{lttheme.dtx}{sparrow}
+\section{\ldeen{Farbthemen}{Color Themes}}
+\AutoDocInput{lttheme.dtx}{anchovy}
+\AutoDocInput{lttheme.dtx}{carp}
 \end{document}
-
 %</driver>
 %<*pkg>
 \NeedsTeXFormat{LaTeX2e}
@@ -2878,163 +2903,8 @@ Slots eines Teilthemes implementiert werden.
   }
 
 %</pkg>
-%<*modern>
-% ltxtalk-theme-modern.sty
-% Version 0.2 - 2026/07/15
-% Modern theme for ltx-talk
-%
-% Copyright 2026
-% Licence: LPPL 1.3c
-
-\NeedsTeXFormat{LaTeX2e}
-\ProvidesExplPackage{ltxtalk-theme-modern}{2026/07/15}{0.2}
-  {Modern theme for ltx-talk}
-
-\RequirePackage{ltxtalk-theme}
-
-\cs_new_protected:Npn \__ltxtalk_modern_theme_setup:
-  {
-    % === LAYOUT ===
-    \ltxtalksetup{
-      header = true,
-      header-height = 2cm,
-      left-margin = true,
-      footer = true,
-      margin-width = 3cm,
-    }
-    
-    % === TITEL-PLATZIERUNG ===
-    \setltxtalktitleplacement{
-      frametitle = content,
-      section = header,
-    }
-    
-    % === SLOTS ===
-    \defineltxtalkslot{mod-title}{header}{title}{
-      role = heading, heading-level = 1
-    }
-    \defineltxtalkslot{mod-section}{header}{section}{
-      role = navigation
-    }
-    \defineltxtalkslot{mod-page}{header}{pagenumber}{
-      role = navigation
-    }
-    \defineltxtalkslot{mod-logo}{left}{logo}{
-      role = artifact, alt-text = Logo
-    }
-    \setltxtalkslotcontent{mod-logo}
-      {\fbox{\rule{0pt}{1.2cm}\sffamily LT}}
-    \defineltxtalkslot{mod-author}{left}{author}{
-      role = note
-    }
-    \defineltxtalkslot{mod-ftitle}{content}{frametitle}{
-      role = heading, heading-level = 2
-    }
-    \defineltxtalkslot{mod-fsubtitle}{content}{framesubtitle}{
-      role = heading, heading-level = 3
-    }
-    \defineltxtalkslot{mod-institute}{footer}{institute}{
-      role = note
-    }
-    \defineltxtalkslot{mod-date}{footer}{date}{
-      role = note
-    }
-    
-    % === POSITIONIERUNG ===
-    \positionltxtalkslot{mod-title}{center}{0.5cm}{0.6\paperwidth}{1cm}
-    \positionltxtalkslot{mod-section}{left}{1.5cm}{0.3\paperwidth}{0.5cm}
-    \positionltxtalkslot{mod-page}{right}{1.5cm}{0.1\paperwidth}{0.5cm}
-    \positionltxtalkslot{mod-logo}{0.5cm}{0.5cm}{2cm}{2cm}
-    \positionltxtalkslot{mod-author}{0.5cm}{3cm}{2cm}{2cm}
-    \positionltxtalkslot{mod-ftitle}{center}{2cm}{0.8\paperwidth}{1.5cm}
-    \positionltxtalkslot{mod-fsubtitle}{center}{3.5cm}{0.8\paperwidth}{1cm}
-    \positionltxtalkslot{mod-institute}{left}{bottom}{0.5\paperwidth}{0.5cm}
-    \positionltxtalkslot{mod-date}{right}{bottom}{0.3\paperwidth}{0.5cm}
-    
-    % === FORMATIERUNG ===
-    \styleltxtalkslot{mod-title}{
-      font = \Large\bfseries\sffamily,
-      color = ltxtalk-primary,
-    }
-    \styleltxtalkslot{mod-section}{
-      font = \small\sffamily,
-      color = ltxtalk-accent,
-    }
-    \styleltxtalkslot{mod-page}{
-      font = \tiny\sffamily,
-      color = ltxtalk-secondary!50,
-    }
-    \styleltxtalkslot{mod-author}{
-      font = \footnotesize\itshape,
-      color = ltxtalk-secondary,
-      align = center,
-    }
-    \styleltxtalkslot{mod-ftitle}{
-      font = \LARGE\bfseries,
-      color = ltxtalk-primary,
-      frame = bottom,
-      rule-color = ltxtalk-primary,
-      rule-thick = 2pt,
-      padding = 5pt,
-    }
-    \styleltxtalkslot{mod-fsubtitle}{
-      font = \large\itshape,
-      color = ltxtalk-secondary,
-    }
-    \styleltxtalkslot{mod-institute}{
-      font = \tiny,
-      color = ltxtalk-secondary!70,
-      align = left,
-    }
-    \styleltxtalkslot{mod-date}{
-      font = \tiny,
-      color = ltxtalk-secondary!70,
-      align = right,
-    }
-    
-    % === BEREICHSDEKORATIONEN ===
-    \decorateltxtalkarea{header}{
-      frame = bottom,
-      rule-color = ltxtalk-primary,
-      rule-thickness = 1pt,
-      background = ltxtalk-primary!5,
-      artifact-type = layout,
-    }
-    \decorateltxtalkarea{footer}{
-      frame = top,
-      rule-color = ltxtalk-primary!20,
-      rule-thickness = 0.5pt,
-      artifact-type = decorative,
-    }
-    \decorateltxtalkarea{left}{
-      frame = right,
-      rule-color = ltxtalk-primary!15,
-      rule-thickness = 0.5pt,
-      background = ltxtalk-primary!3,
-      artifact-type = decorative,
-    }
-    
-    % === FARBEN ===
-    \setltxtalkcolors{
-      primary   = {HTML}{2B3A67},
-      secondary = {HTML}{496A81},
-      accent    = {HTML}{66999B},
-      background = {HTML}{F5F5F5},
-    }
-  }
-
-\RegisterLTXTalkTheme{modern}{\__ltxtalk_modern_theme_setup:}
-%</modern>
-%<modern>\endinput
-% \subsection{Minimal theme}
 %<*minimal>
-% ltxtalk-theme-minimal.sty
-% Version 0.2 - 2026/07/15
-% Minimal theme for ltx-talk
-%
-% Copyright 2026
-% Licence: LPPL 1.3c
-
+% \subsection{Minimal theme}
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage{ltxtalk-theme-minimal}
 {2026/07/15}
@@ -3157,412 +3027,8 @@ Slots eines Teilthemes implementiert werden.
 \RegisterLTXTalkTheme{minimal}{\__ltxtalk_minimal_theme_setup:}
 
 %</minimal>
-% \subsection{Academic theme}
-%<*academic>
-% ltxtalk-theme-academic.sty
-% Version 0.2 - 2026/07/15
-% Academic theme for ltx-talk
-%
-% Copyright 2026
-% Licence: LPPL 1.3c
-
-\NeedsTeXFormat{LaTeX2e}
-\ProvidesExplPackage{ltxtalk-theme-academic}{2026/07/15}{0.2}
-  {Academic theme for ltx-talk}
-
-\RequirePackage{ltxtalk-theme-core}
-
-\cs_new_protected:Npn \__ltxtalk_academic_theme_setup:
-  {
-    % === LAYOUT ===
-    \ltxtalksetup{
-      header = true,
-      header-height = 3cm,
-      header-rows = 2,
-      left-margin = true,
-      footer = true,
-      footer-height = 1cm,
-      margin-width = 3.5cm,
-    }
-    
-    % === TITEL-PLATZIERUNG ===
-    \setltxtalktitleplacement{
-      frametitle = header,
-      section = header,
-    }
-    
-    % === HEADING-VERHALTEN ===
-    \setltxtalkheadingbehavior{
-      auto-section-title = true,
-      detect-continuation = true,
-      header-as-navigation = true,
-    }
-    
-    % === SLOTS ===
-    \defineltxtalkslot{acad-institute}{header}{institute}{
-      role = note
-    }
-    \defineltxtalkslot{acad-title}{header}{title}{
-      role = heading, heading-level = 1
-    }
-    \defineltxtalkslot{acad-date}{header}{date}{
-      role = note
-    }
-    \defineltxtalkslot{acad-section}{header}{section}{
-      role = navigation
-    }
-    \defineltxtalkslot{acad-subsection}{header}{subsection}{
-      role = navigation
-    }
-    \defineltxtalkslot{acad-page}{header}{pagenumber}{
-      role = navigation
-    }
-    \defineltxtalkslot{acad-logo}{left}{logo}{
-      role = artifact, alt-text = Logo
-    }
-    \defineltxtalkslot{acad-author}{left}{author}{
-      role = note
-    }
-    \defineltxtalkslot{acad-ftitle}{header}{frametitle}{
-      role = heading, heading-level = 2
-    }
-    \defineltxtalkslot{acad-fsubtitle}{content}{framesubtitle}{
-      role = heading, heading-level = 3
-    }
-    \defineltxtalkslot{acad-footer-page}{footer}{pagenumber}{
-      role = navigation
-    }
-    
-    % === POSITIONIERUNG ===
-    \positionltxtalkslot{acad-institute}{left}{0.3cm}{0.3\paperwidth}{0.8cm}
-    \positionltxtalkslot{acad-title}{center}{0.3cm}{0.4\paperwidth}{1cm}
-    \positionltxtalkslot{acad-date}{right}{0.3cm}{0.3\paperwidth}{0.8cm}
-    \positionltxtalkslot{acad-section}{left}{1.5cm}{0.35\paperwidth}{0.8cm}
-    \positionltxtalkslot{acad-subsection}{center}{1.5cm}{0.3\paperwidth}{0.8cm}
-    \positionltxtalkslot{acad-page}{right}{1.5cm}{0.15\paperwidth}{0.8cm}
-    \positionltxtalkslot{acad-logo}{0.5cm}{0.5cm}{2.5cm}{2.5cm}
-    \positionltxtalkslot{acad-author}{0.5cm}{3.5cm}{2.5cm}{2cm}
-    \positionltxtalkslot{acad-ftitle}{center}{1.5cm}{0.5\paperwidth}{1cm}
-    \positionltxtalkslot{acad-fsubtitle}{center}{2.5cm}{0.8\paperwidth}{1cm}
-    \positionltxtalkslot{acad-footer-page}{center}{bottom}{0.3\paperwidth}{0.6cm}
-    \setltxtalkslotcontent{acad-logo}
-      {\fbox{\rule{0pt}{1.2cm}\sffamily UNI}}
-    
-    % === FORMATIERUNG ===
-    \styleltxtalkslot{acad-institute}{
-      font = \small\scshape,
-      color = ltxtalk-secondary!80,
-      align = left,
-    }
-    \styleltxtalkslot{acad-title}{
-      font = \large\bfseries\sffamily,
-      color = ltxtalk-primary,
-      frame = bottom,
-      rule-color = ltxtalk-accent,
-      rule-thick = 2pt,
-      padding = 3pt,
-    }
-    \styleltxtalkslot{acad-date}{
-      font = \small,
-      color = ltxtalk-secondary!60,
-      align = right,
-    }
-    \styleltxtalkslot{acad-section}{
-      font = \normalsize\bfseries\scshape,
-      color = ltxtalk-accent,
-      rule-color = ltxtalk-primary!30,
-      rule-thick = 0.5pt,
-      frame = bottom,
-    }
-    \styleltxtalkslot{acad-subsection}{
-      font = \small\scshape,
-      color = ltxtalk-accent!80,
-    }
-    \styleltxtalkslot{acad-page}{
-      font = \tiny\sffamily,
-      color = ltxtalk-secondary!50,
-    }
-    \styleltxtalkslot{acad-logo}{
-      frame = box,
-      rule-color = ltxtalk-primary!30,
-      padding = 5pt,
-      background = white,
-    }
-    \styleltxtalkslot{acad-author}{
-      font = \footnotesize\itshape,
-      color = ltxtalk-secondary,
-      align = center,
-      rule-color = ltxtalk-primary,
-      rule-thick = 1pt,
-      frame = top,
-    }
-    \styleltxtalkslot{acad-ftitle}{
-      font = \LARGE\bfseries,
-      color = ltxtalk-primary,
-      frame = bottom,
-      rule-color = ltxtalk-primary,
-      rule-thick = 3pt,
-      padding = 5pt,
-    }
-    \styleltxtalkslot{acad-fsubtitle}{
-      font = \large\itshape,
-      color = ltxtalk-secondary,
-    }
-    \styleltxtalkslot{acad-footer-page}{
-      font = \tiny\sffamily,
-      color = ltxtalk-secondary!50,
-      frame = top,
-      rule-color = ltxtalk-primary!20,
-      rule-thick = 0.5pt,
-    }
-    
-    % === BEREICHSDEKORATIONEN ===
-    \decorateltxtalkarea{header}{
-      frame = bottom,
-      rule-color = ltxtalk-accent,
-      rule-thickness = 4pt,
-      background = ltxtalk-primary!5,
-      padding = 5pt,
-      artifact-type = layout,
-    }
-    \decorateltxtalkarea{footer}{
-      frame = topbottom,
-      rule-color = ltxtalk-primary!30,
-      rule-thickness = 0.5pt,
-      background = ltxtalk-primary!3,
-      artifact-type = decorative,
-    }
-    \decorateltxtalkarea{left}{
-      frame = right,
-      rule-color = ltxtalk-accent,
-      rule-thickness = 2pt,
-      background = ltxtalk-primary!5,
-      artifact-type = decorative,
-    }
-    
-    % === FARBEN ===
-    \setltxtalkcolors{
-      primary   = {RGB}{139,0,0},
-      secondary = {RGB}{70,70,70},
-      accent    = {RGB}{180,150,0},
-      text      = {RGB}{30,30,30},
-      background = {RGB}{255,255,255},
-    }
-  }
-
-\RegisterLTXTalkTheme{academic}{\__ltxtalk_academic_theme_setup:}
-
-%</academic>
-%<academic>\endinput
-% \subsection{Corporate theme}
-%<*corporate>
-% ltxtalk-theme-corporate.sty
-% Version 0.2 - 2026/07/15
-% Corporate theme for ltx-talk
-%
-% Copyright 2026
-% Licence: LPPL 1.3c
-
-\NeedsTeXFormat{LaTeX2e}
-\ProvidesExplPackage{ltxtalk-theme-corporate}{2026/07/15}{0.2}
-  {Corporate theme for ltx-talk}
-
-\RequirePackage{ltxtalk-theme-core}
-
-\cs_new_protected:Npn \__ltxtalk_corporate_theme_setup:
-  {
-    % === LAYOUT ===
-    \ltxtalksetup{
-      header = true,
-      header-height = 2.5cm,
-      left-margin = true,
-      right-margin = true,
-      footer = true,
-      footer-height = 0.8cm,
-      margin-width = 2.8cm,
-    }
-    
-    % === TITEL-PLATZIERUNG ===
-    \setltxtalktitleplacement{
-      frametitle = content,
-      section = header,
-    }
-    
-    % === SLOTS ===
-    \defineltxtalkslot{corp-logo-header}{header}{logo}{
-      role = artifact, alt-text = Firmenlogo
-    }
-    \defineltxtalkslot{corp-title}{header}{title}{
-      role = heading, heading-level = 1
-    }
-    \defineltxtalkslot{corp-section}{header}{section}{
-      role = navigation
-    }
-    \defineltxtalkslot{corp-logo-left}{left}{logo}{
-      role = artifact, alt-text = Logo
-    }
-    \defineltxtalkslot{corp-author}{left}{author}{
-      role = note
-    }
-    \defineltxtalkslot{corp-ftitle}{content}{frametitle}{
-      role = heading, heading-level = 2
-    }
-    \defineltxtalkslot{corp-fsubtitle}{content}{framesubtitle}{
-      role = heading, heading-level = 3
-    }
-    \defineltxtalkslot{corp-date}{right}{date}{
-      role = note
-    }
-    \defineltxtalkslot{corp-page}{right}{pagenumber}{
-      role = navigation
-    }
-    \defineltxtalkslot{corp-path}{right}{custom}{
-      role = navigation
-    }
-    \defineltxtalkslot{corp-institute}{footer}{institute}{
-      role = note
-    }
-    \setltxtalkslotcontent{corp-logo-header}
-      {\fbox{\rule{0pt}{0.8cm}\sffamily ACME}}
-    \setltxtalkslotcontent{corp-logo-left}
-      {\fbox{\rule{0pt}{1.2cm}\sffamily A}}
-    \setltxtalkslotcontent{corp-path}
-      {Start\\$\triangleright$ Bereich\\$\triangleright$ \textbf{Folie}}
-    
-    % === POSITIONIERUNG ===
-    \positionltxtalkslot{corp-logo-header}{left}{center}{0.2\paperwidth}{2cm}
-    \positionltxtalkslot{corp-title}{center}{center}{0.6\paperwidth}{1.5cm}
-    \positionltxtalkslot{corp-section}{right}{bottom}{0.2\paperwidth}{0.8cm}
-    \positionltxtalkslot{corp-logo-left}{center}{1cm}{2cm}{2cm}
-    \positionltxtalkslot{corp-author}{center}{3.5cm}{2cm}{1.5cm}
-    \positionltxtalkslot{corp-ftitle}{left}{1cm}{0.9\paperwidth}{2cm}
-    \positionltxtalkslot{corp-fsubtitle}{left}{3cm}{0.9\paperwidth}{1cm}
-    \positionltxtalkslot{corp-date}{center}{1cm}{2cm}{1cm}
-    \positionltxtalkslot{corp-page}{center}{2.5cm}{2cm}{1cm}
-    \positionltxtalkslot{corp-path}{center}{4cm}{2.4cm}{2cm}
-    \positionltxtalkslot{corp-institute}{center}{bottom}{0.5\paperwidth}{0.6cm}
-    
-    % === FORMATIERUNG ===
-    \styleltxtalkslot{corp-logo-header}{
-      frame = box,
-      rule-color = ltxtalk-primary!30,
-      background = white,
-      padding = 8pt,
-    }
-    \styleltxtalkslot{corp-title}{
-      font = \huge\bfseries\sffamily,
-      color = white,
-      background = ltxtalk-primary,
-      padding = 10pt,
-      frame = box,
-      rule-color = ltxtalk-primary,
-    }
-    \styleltxtalkslot{corp-section}{
-      font = \small\sffamily,
-      color = ltxtalk-primary,
-      align = right,
-      rule-color = ltxtalk-accent,
-      rule-thick = 1.5pt,
-      frame = bottom,
-    }
-    \styleltxtalkslot{corp-logo-left}{
-      frame = box,
-      rule-color = ltxtalk-primary!20,
-      padding = 5pt,
-    }
-    \styleltxtalkslot{corp-author}{
-      font = \footnotesize\itshape,
-      color = ltxtalk-secondary,
-      align = center,
-    }
-    \styleltxtalkslot{corp-ftitle}{
-      font = \LARGE\bfseries\sffamily,
-      color = ltxtalk-primary,
-      frame = left,
-      rule-color = ltxtalk-accent,
-      rule-thick = 5pt,
-      padding = 8pt,
-    }
-    \styleltxtalkslot{corp-fsubtitle}{
-      font = \large,
-      color = ltxtalk-secondary,
-    }
-    \styleltxtalkslot{corp-date}{
-      font = \small\sffamily,
-      color = ltxtalk-secondary!60,
-      align = center,
-    }
-    \styleltxtalkslot{corp-page}{
-      font = \tiny\sffamily,
-      color = ltxtalk-secondary!50,
-      align = center,
-      frame = top,
-      rule-color = ltxtalk-primary!20,
-      rule-thick = 0.5pt,
-    }
-    \styleltxtalkslot{corp-path}{
-      font = \scriptsize\sffamily,
-      color = ltxtalk-secondary,
-      align = left,
-      frame = left,
-      rule-color = ltxtalk-accent,
-      rule-thick = 1pt,
-      padding = 3pt,
-    }
-    \styleltxtalkslot{corp-institute}{
-      font = \tiny\sffamily,
-      color = ltxtalk-secondary!60,
-      align = center,
-    }
-    
-    % === BEREICHSDEKORATIONEN ===
-    \decorateltxtalkarea{header}{
-      frame = bottom,
-      rule-color = ltxtalk-accent,
-      rule-thickness = 0pt,
-      background = ltxtalk-primary,
-      background-opacity = 0.95,
-      shadow = true,
-      shadow-color = black!20,
-      shadow-offset = 4pt,
-      artifact-type = layout,
-    }
-    \decorateltxtalkarea{footer}{
-      frame = top,
-      rule-color = ltxtalk-primary!20,
-      rule-thickness = 0.5pt,
-      artifact-type = decorative,
-    }
-    \decorateltxtalkarea{left}{
-      frame = right,
-      rule-color = ltxtalk-primary!15,
-      rule-thickness = 0.5pt,
-      artifact-type = decorative,
-    }
-    \decorateltxtalkarea{right}{
-      frame = left,
-      rule-color = ltxtalk-primary!15,
-      rule-thickness = 0.5pt,
-      artifact-type = decorative,
-    }
-    
-    % === FARBEN ===
-    \setltxtalkcolors{
-      primary   = {HTML}{003366},
-      secondary = {HTML}{555555},
-      accent    = {HTML}{CC6600},
-      text      = {HTML}{333333},
-      background = {HTML}{FAFAFA},
-    }
-  }
-
-\RegisterLTXTalkTheme{corporate}{\__ltxtalk_corporate_theme_setup:}
-
-%</corporate>
-%<corporate>\endinput
-
-% \subsection{Magpie theme (inspired by Beamer Madrid)}
 %<*magpie>
+% \subsection{Magpie theme (inspired by Beamer Madrid)}
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage{ltxtalk-theme-magpie}{2026/08/01}{0.3}
   {Magpie theme for ltx-talk, inspired by Beamer Madrid}
@@ -3618,10 +3084,8 @@ Slots eines Teilthemes implementiert werden.
   }
 \RegisterLTXTalkTheme{magpie}{\__ltxtalk_magpie_theme_setup:}
 %</magpie>
-%<magpie>\endinput
-
-% \subsection{Hawk theme (inspired by Beamer Hannover)}
 %<*hawk>
+% \subsection{Hawk theme (inspired by Beamer Hannover)}
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage{ltxtalk-theme-hawk}{2026/08/01}{0.3}
   {Hawk theme for ltx-talk, inspired by Beamer Hannover}
@@ -3725,10 +3189,8 @@ Slots eines Teilthemes implementiert werden.
   }
 \RegisterLTXTalkTheme{sparrow}{\__ltxtalk_sparrow_theme_setup:}
 %</sparrow>
-%<sparrow>\endinput
-
-% \subsection{Anchovy colour theme (colours inspired by Beamer AnnArbor)}
 %<*anchovy>
+% \subsection{Anchovy colour theme (colours inspired by Beamer AnnArbor)}
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage{ltxtalk-theme-anchovy}{2026/08/01}{0.3}
   {Anchovy colour theme for ltx-talk, inspired by Beamer AnnArbor}
@@ -3738,10 +3200,8 @@ Slots eines Teilthemes implementiert werden.
     accent={HTML}{B45309},text={HTML}{111827},background={HTML}{FFF7D6}}}
 \RegisterLTXTalkTheme{anchovy}{\__ltxtalk_anchovy_theme_setup:}
 %</anchovy>
-%<anchovy>\endinput
-
-% \subsection{Carp colour theme (colours inspired by Beamer CambridgeUS)}
 %<*carp>
+% \subsection{Carp colour theme (colours inspired by Beamer CambridgeUS)}
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage{ltxtalk-theme-carp}{2026/08/01}{0.3}
   {Carp colour theme for ltx-talk, inspired by Beamer CambridgeUS}
