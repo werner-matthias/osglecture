@@ -35,7 +35,7 @@ load-preamble+
 \usepackage[
 languages={de,en},
 map={de=german,en=english},
-targetlang={job=2},
+targetlang={job=4},
 load babel
 ]{langselect}
 
@@ -68,177 +68,348 @@ load babel
   build-title
 }
 \begin{document}
+\newcommand*\tucdocslide[1]{%
+  \begin{center}
+    \IfFileExists{example-tuc-2019.pdf}
+      {\fbox{\includegraphics[page=#1,width=.82\linewidth]
+        {example-tuc-2019.pdf}}}
+      {\fbox{\parbox[c][.30\textheight][c]{.80\linewidth}{\centering
+        \ldeen{Beispielpräsentation zuerst übersetzen.}
+        {Compile the example presentation first.}}}}
+  \end{center}}
 
-\section{\ldeen{Einführung}{Introduction}}
+\section{\ldeen{Schnellstart}{Quick start}}
 
-\ldeen{
-Das Theme \code{tuc-2019} bildet das seit 2019 verwendete Corporate
-Design der TU Chemnitz für Präsentationen nach. 
-}{
-% TODO: English translation
-}
-
-\begin{sourcecode}
-  \usepackage{ltxtalk-theme-tuc-2019}
-  \useltxtalktheme{tuc-2019}
-\end{sourcecode}
-
-\subsubsection{Aufbau der Folien}
-
-\ldeen{
-Auf normalen Folien enthält das grüne Kopfband links das weiße
-Universitätslogo. Eine weiße Linie trennt es vom Veranstaltungskontext.
-Die erste Textzeile besteht aus Präsentationstitel und aktuellem Abschnitt,
-die zweite aus dem aktuellen Unterabschnitt. Die Angaben werden aus
-\cs*{title}, \cs*{section} und \cs*{subsection} übernommen.
-}{
-% TODO: English translation
-}
-
-\ldeen{
-Der Folientitel und ein optionaler Folienuntertitel stehen im Hauptbereich.
-Die Fußzeile ist durch eine dünne Linie abgesetzt und enthält den Autor links,
-die Foliennummer in der Seitenmitte und die Webadresse rechts. Alle drei
-Felder besitzen den im Corporate Design vorgesehenen Abstand zum Seitenrand.
-}{
-% TODO: English translation
-}
-
-\ldeen{
-Die Titelfolie unterscheidet sich bewusst von normalen Folien. Ihr Kopfband
-ist höher und zeigt neben dem größeren Universitätslogo den Titel und das
-Datum. Im Hauptbereich steht links ein zweites, veranstaltungsbezogenes Logo;
-dessen Seitenkanten fluchten mit denen des Universitätslogos. Der Titelblock
-beginnt unter dem Text des Kopfbandes. Eine Fußzeile wird auf der Titelfolie
-nicht ausgegeben.
-}{
-% TODO: English translation
-}
-
-\subsubsection{Logos und Webadresse}
-
-\ldeen{
-Das Universitätslogo, das Logo der Titelfolie und die Webadresse können vor
-\cs*{begin}\Marg{document} gesetzt werden. Die Pfade werden wie bei
-\cs*{includegraphics} relativ zur Hauptdatei der Präsentation aufgelöst.
-Für die mit dem Bundle ausgelieferten Dateien kann die Konfiguration zum
-Beispiel so aussehen:
-}{
-% TODO: English translation
-}
+\ldeen{Das Theme wird nach der Klasse geladen und anschließend aktiviert.
+Paketoptionen gehören an \cs*{usepackage}; alle späteren Umschaltungen gelten
+ab dem jeweils folgenden Frame.}{Load the theme after the class and activate
+it. Package options belong on \cs*{usepackage}; subsequent switches apply to
+the next frame.}
 
 \begin{sourcecode}
-  \settucthemelogo{images/logos/tuc_white.pdf}
-  \settucthemetitlelogo{images/logos/osg.png}
-  \settucthemeurl{https://www.tu-chemnitz.de/}
-\end{sourcecode}
-
-
-\subsubsection{Titelfolie}
-
-\ldeen{
-Die speziell gestaltete Titelfolie wird mit \cs*{maketuctitle} erzeugt. Der
-Befehl legt den benötigten Frame selbst an und darf daher nicht innerhalb
-einer \code{frame}-Umgebung stehen. Er verwendet die Angaben aus
-\cs*{title}, \cs*{subtitle}, \cs*{author}, \cs*{institute} und \cs*{date}.
-Nach der Titelfolie stellt er automatisch die Geometrie normaler Folien
-wieder her.
-}{
-% TODO: English translation
-}
-
-\subsubsection{Vollständiges Beispiel}
-
-\begin{example}[code-only]
   \DocumentMetadata{}
   \documentclass{ltx-talk}
-
-  \usepackage{ltxtalk-theme-tuc-2019}
-  \settucthemelogo{tuc_white.pdf}
-  \settucthemetitlelogo{images/logos/osg.png}
-  \settucthemeurl{https://www.tu-chemnitz.de/}
+  \usepackage[fakcolor=if,funccolor=adapted]{ltxtalk-theme-tuc-2019}
   \useltxtalktheme{tuc-2019}
 
-  \title{Echtzeitsysteme}
-  \subtitle{0. Kapitel\\Organisatorisches}
-  \author{Prof. Matthias Werner}
-  \institute{Professur Betriebssysteme}
-  \date{Sommersemester 2026}
+  \title[Kurztitel]{Titel der Präsentation}
+  \subtitle{Untertitel}
+  \author{Vorname Nachname}
+  \institute{Institut oder Professur}
+  \date{5. August 2026}
 
   \begin{document}
-  \maketuctitle
-
-  \section{Organisatorisches}
-  \subsection{Willkommen}
+  \maketitle[osg]
   \begin{frame}
-    \frametitle{Willkommen zur Lehrveranstaltung}
-    \begin{itemize}
-      \item Informationen und Materialien
-      \item Termine und Ansprechpartner
-    \end{itemize}
+    \frametitle{Erste Folie}
+    Inhalt
   \end{frame}
   \end{document}
-\end{example}
+\end{sourcecode}
 
-\ldeen{
-Eine ausführlichere Präsentation befindet sich in
-\code{example/example-tuc-2019.tex}.
-}{
-% TODO: English translation
-}
+\subsection{\ldeen{Paketoptionen}{Package options}}
 
+\begin{description}[style=nextline,leftmargin=3.5cm]
+  \item[\code{fakcolor=...}] \code{tuc}, \code{natwi}, \code{ma},
+    \code{mb}, \code{etit}, \code{if}, \code{wiwi}, \code{phil} oder
+    \code{hsw}; Vorgabe ist \code{tuc}.
+  \item[\code{funccolor=...}] \code{original}, \code{adapted} oder
+    \code{uniq}; Vorgabe ist \code{adapted}.
+  \item[\code{chemnitz2025}] Verwendet das Jubiläumslogo. Bei englischer
+    Dokumentsprache wird automatisch \code{tuckhseng\_white} gewählt.
+\end{description}
 
+\begin{sourcecode}
+  % Fakultät Informatik, angepasste Funktionsfarben, Jubiläumslogo
+  \usepackage[
+    fakcolor=if,
+    funccolor=adapted,
+    chemnitz2025
+  ]{ltxtalk-theme-tuc-2019}
+\end{sourcecode}
 
-\section{}
+\section{\ldeen{Farben auswählen}{Selecting colors}}
+
+\ldeen{Die Fakultätsfarbe wird ausschließlich über \code{fakcolor}
+gewählt. Das Theme stellt sie zusätzlich als \code{tuccolor},
+\code{ltxtalk-primary} und \code{structure} bereit; die aufgehellte Farbe
+heißt \code{ltxtalk-secondary}.}{Select the faculty color with
+\code{fakcolor}. The theme also exposes it as \code{tuccolor},
+\code{ltxtalk-primary}, and \code{structure}; the light variant is
+\code{ltxtalk-secondary}.}
+
+\definecolor{tucdoc-tuc}{RGB}{0,95,80}
+\definecolor{tucdoc-natwi}{RGB}{112,112,111}
+\definecolor{tucdoc-ma}{RGB}{161,11,112}
+\definecolor{tucdoc-mb}{RGB}{18,51,117}
+\definecolor{tucdoc-etit}{RGB}{228,3,45}
+\definecolor{tucdoc-if}{RGB}{74,130,70}
+\definecolor{tucdoc-wiwi}{RGB}{157,7,54}
+\definecolor{tucdoc-phil}{RGB}{198,83,6}
+\definecolor{tucdoc-hsw}{RGB}{0,117,191}
+\newcommand*\tucswatch[3]{\colorbox{#2}{\rule{1.8cm}{0pt}\rule{0pt}{1.1em}}%
+  \quad\code{#1}\quad\texttt{#3}}
+
+\begin{center}\small
+\begin{tabular}{@{}ll@{}}
+\tucswatch{tuc}{tucdoc-tuc}{0,95,80} &
+\tucswatch{natwi}{tucdoc-natwi}{112,112,111}\\[2pt]
+\tucswatch{ma}{tucdoc-ma}{161,11,112} &
+\tucswatch{mb}{tucdoc-mb}{18,51,117}\\[2pt]
+\tucswatch{etit}{tucdoc-etit}{228,3,45} &
+\tucswatch{if}{tucdoc-if}{74,130,70}\\[2pt]
+\tucswatch{wiwi}{tucdoc-wiwi}{157,7,54} &
+\tucswatch{phil}{tucdoc-phil}{198,83,6}\\[2pt]
+\tucswatch{hsw}{tucdoc-hsw}{0,117,191} &
+\end{tabular}
+\end{center}
+
+\subsection{\ldeen{Fakultätsschemata mit adapted}
+  {Faculty schemes with adapted}}
+
+\ldeen{Jedes Schema zeigt die tatsächlich verwendeten Farben für
+\code{structure}, \code{ltxtalk-secondary}, \code{tuccolor@info},
+\code{tuccolor@warning} und \code{tuccolor@danger}.}{Each scheme shows the
+colors actually used for \code{structure}, \code{ltxtalk-secondary},
+\code{tuccolor@info}, \code{tuccolor@warning}, and
+\code{tuccolor@danger}.}
+
+\newcommand*\tucfacultyscheme[6]{%
+  \definecolor{tucdoc-#1-structure}{RGB}{#2}%
+  \definecolor{tucdoc-#1-secondary}{RGB}{#3}%
+  \definecolor{tucdoc-#1-info}{RGB}{#4}%
+  \definecolor{tucdoc-#1-warning}{RGB}{#5}%
+  \definecolor{tucdoc-#1-danger}{RGB}{#6}%
+  \parbox[t]{.30\linewidth}{\centering\small\textbf{\code{#1}}\par\medskip
+    \begin{tabular}{@{}ll@{}}\scriptsize
+      structure & \colorbox{tucdoc-#1-structure}{\rule{1.15cm}{0pt}\rule{0pt}{1em}}\\[2pt]
+      2nd & \colorbox{tucdoc-#1-secondary}{\rule{1.15cm}{0pt}\rule{0pt}{1em}}\\[2pt]
+      info & \colorbox{tucdoc-#1-info}{\rule{1.15cm}{0pt}\rule{0pt}{1em}}\\[2pt]
+      warning & \colorbox{tucdoc-#1-warning}{\rule{1.15cm}{0pt}\rule{0pt}{1em}}\\[2pt]
+      danger & \colorbox{tucdoc-#1-danger}{\rule{1.15cm}{0pt}\rule{0pt}{1em}}
+    \end{tabular}}}
+
+\begin{center}
+\tucfacultyscheme{tuc}{0,95,80}{98,170,160}{70,85,82}{230,180,40}{180,35,45}\hfill
+\tucfacultyscheme{natwi}{112,112,111}{170,170,168}{80,80,80}{215,170,60}{170,45,45}\hfill
+\tucfacultyscheme{ma}{161,11,112}{205,125,185}{90,70,85}{230,175,70}{150,20,60}
+
+\medskip
+\tucfacultyscheme{mb}{18,51,117}{110,145,205}{60,70,90}{235,180,60}{175,40,55}\hfill
+\tucfacultyscheme{etit}{228,3,45}{245,120,145}{95,70,75}{255,185,0}{140,0,35}\hfill
+\tucfacultyscheme{if}{74,130,70}{145,195,140}{70,85,70}{220,180,55}{170,40,45}
+
+\medskip
+\tucfacultyscheme{wiwi}{157,7,54}{205,110,140}{90,70,75}{235,175,55}{120,10,35}\hfill
+\tucfacultyscheme{phil}{198,83,6}{235,170,105}{90,80,70}{255,195,40}{170,45,35}\hfill
+\tucfacultyscheme{hsw}{0,117,191}{120,190,235}{65,85,100}{235,185,50}{180,35,50}
+\end{center}
+
+\ldeen{Für Hinweise, Warnungen und Gefahren kann zwischen den unveränderten
+Originalfarben, fakultätsabhängigen Farben und einem einheitlichen,
+harmonisierten Satz gewählt werden. Im Inhalt sind die Resultate als
+\code{tuccolor@info}, \code{tuccolor@warning}, \code{tuccolor@danger},
+\code{example} und \code{alert} verfügbar.}{For notices, warnings and danger,
+choose the original colors, faculty-specific colors, or one harmonized set.
+The results are available as \code{tuccolor@info},
+\code{tuccolor@warning}, \code{tuccolor@danger}, \code{example}, and
+\code{alert}.}
+
+\definecolor{tucdoc-info-original}{RGB}{85,85,85}
+\definecolor{tucdoc-warning-original}{RGB}{255,153,0}
+\definecolor{tucdoc-danger-original}{RGB}{255,0,0}
+\definecolor{tucdoc-info-uniq}{RGB}{79,89,99}
+\definecolor{tucdoc-warning-uniq}{RGB}{221,161,0}
+\definecolor{tucdoc-danger-uniq}{RGB}{173,28,44}
+\begin{center}\small
+\begin{tabular}{@{}llll@{}}
+& \textbf{Info} & \textbf{Warnung} & \textbf{Gefahr}\\
+\code{original} & \colorbox{tucdoc-info-original}{\rule{1.15cm}{0pt}\rule{0pt}{1em}}
+ & \colorbox{tucdoc-warning-original}{\rule{1.15cm}{0pt}\rule{0pt}{1em}}
+ & \colorbox{tucdoc-danger-original}{\rule{1.15cm}{0pt}\rule{0pt}{1em}}\\[2pt]
+\code{uniq} & \colorbox{tucdoc-info-uniq}{\rule{1.15cm}{0pt}\rule{0pt}{1em}}
+ & \colorbox{tucdoc-warning-uniq}{\rule{1.15cm}{0pt}\rule{0pt}{1em}}
+ & \colorbox{tucdoc-danger-uniq}{\rule{1.15cm}{0pt}\rule{0pt}{1em}}
+\end{tabular}
+\end{center}
+
+\clearpage
+\begin{sourcecode}
+  \begin{block}{Information} ... \end{block}
+  {\color{example} Beispieltext}
+  {\color{alert} Warntext}
+\end{sourcecode}
+
+\section{\ldeen{Kopfzeile konfigurieren}{Configuring the header}}
+
+\ldeen{Zuerst wird eine Inhaltsinstanz gewählt, danach die Zeilenzahl. Beide
+Befehle können unmittelbar vor einem Frame stehen.}{First select a content
+instance, then the number of lines. Both commands may appear immediately
+before a frame.}
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\textbf{Instanz} & \textbf{zwei Zeilen} & \textbf{drei Zeilen}\\\hline
+\code{title} & Titel / Untertitel & Titel / Untertitel / Institut\\
+\code{section} & Section / Subsection & Titel / Section / Subsection\\
+\code{teaching} & Kurs--Vorlesung / Section & Kurs / Vorlesung / Section\\
+\code{custom} & Zeile 1 / Zeile 2 & Zeile 1 / Zeile 2 / Zeile 3
+\end{tabular}
+\end{center}
+
+\begin{sourcecode}
+  \settucthemeheader{section}
+  \tucthreeheader
+  \begin{frame}
+    \frametitle{Dreizeiliger Section-Header}
+  \end{frame}
+
+  \settucthemeheaderlines{Projektname}{Arbeitspaket 2}{Statusbericht}
+  \tucthreeheader
+  \begin{frame}
+    \frametitle{Explizite Kopfzeilen}
+  \end{frame}
+\end{sourcecode}
+
+\tucdocslide{3}
+
+\section{\ldeen{Inhaltsbreite und linke Logos}{Content width and left logos}}
+
+\ldeen{\cs*{tucwideframe} aktiviert die volle Breite. Mit
+\cs*{tucnarrowframe} beginnt der Inhalt auf der Fluchtlinie des Titelblocks.
+Die Logos für die linke Fläche werden als kommaseparierte Dateiliste gesetzt;
+\cs*{addtucthemeleftlogo} ergänzt ein einzelnes Logo.}{Use
+\cs*{tucwideframe} for full width. With \cs*{tucnarrowframe}, content starts
+on the title block's alignment line. Set left-area logos as a comma-separated
+file list; \cs*{addtucthemeleftlogo} appends one logo.}
+
+\begin{sourcecode}
+  \settucthemeleftlogos{
+    images/logos/osg.png,
+    images/logos/project.pdf
+  }
+  \tucnarrowframe
+  \begin{frame}
+    \frametitle{Projektfolie mit Logos}
+    Schmaler Inhalt
+  \end{frame}
+
+  \tucwideframe
+  \begin{frame}
+    \frametitle{Die nächste Folie nutzt wieder die volle Breite}
+  \end{frame}
+\end{sourcecode}
+
+\tucdocslide{4}
+
+\section{\ldeen{Logos und Fußzeile}{Logos and footer}}
+
+\ldeen{Ohne \cs*{settucthemelogo} wählt das Theme das Universitätslogo aus
+der Paketoption und der Dokumentsprache. Ein explizit gesetztes Logo hat
+Vorrang. Dateipfade sind relativ zur Hauptdatei.}{Without
+\cs*{settucthemelogo}, the theme selects the university
+logo from the package option and document language. An explicit logo takes
+precedence. Paths follow \cs*{includegraphics} and are relative to the main
+document.}
+
+\begin{sourcecode}
+  \settucthemelogo{images/logos/eigenes-headerlogo.pdf}
+  \settucthemetitlelogo{images/logos/veranstaltung.pdf}
+  \settucthemetitlelogoraise{0pt}
+  \settucthemeurl{\url{https://www.tu-chemnitz.de/}}
+\end{sourcecode}
+
+\section{\ldeen{Titelseiten}{Title pages}}
+
+\ldeen{Die Instanz kann dauerhaft mit \cs*{settucthemetitle} oder direkt im
+optionalen Argument von \cs*{maketitle} gewählt werden. \cs*{maketitle} steht
+außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
+\cs*{settucthemetitle}, or directly through the optional argument of
+\cs*{maketitle}. Use \cs*{maketitle} outside a \code{frame} environment.}
+
+\subsection{\code{osg}}
+\begin{sourcecode}
+  \settucthemetitlelogo{images/logos/osg.png}
+  \settucthemetitlelogoraise{0.21cm}
+  \maketitle[osg]
+\end{sourcecode}
+\tucdocslide{1}
+
+\subsection{\code{talk}}
+\begin{sourcecode}
+  \settucthemetitlelogo{images/logos/conference.pdf}
+  \maketitle[talk]
+\end{sourcecode}
+\tucdocslide{5}
+
+\subsection{\code{image}}
+\begin{sourcecode}
+  % top, center oder bottom bestimmt die vertikale Beschnittkante
+  \settucthemetitleimage[center]{images/title-photo.jpg}
+  \maketitle[image]
+\end{sourcecode}
+\tucdocslide{6}
+
+\section{\ldeen{Befehlsreferenz}{Command reference}}
 
 \begin{commands}
   \command{settucthemelogo}[\marg{Datei}]
-  \ldeen{
-    Setzt die Datei für das weiße TU-Chemnitz-Logo im Kopfband. Auf der
-    Titelfolie wird es größer dargestellt als auf normalen Folien. Ist die
-    Datei nicht auffindbar, gibt das Theme ersatzweise den Text
-    \code{TU CHEMNITZ} aus.
-  }{
-    % TODO: English translation
-  }
+  \ldeen{Überschreibt die automatische Logoauswahl. Weglassen, wenn
+    \code{chemnitz2025} und die Dokumentsprache das Logo bestimmen sollen.}
+    {Overrides automatic logo selection. Omit it when \code{chemnitz2025}
+    and the document language should select the logo.}
 
   \command{settucthemetitlelogo}[\marg{Datei}]
-  \ldeen{
-    Setzt das veranstaltungsbezogene Logo im linken Bereich der Titelfolie.
-    Es wird auf die Breite des TU-Logos skaliert und oben bündig mit dem
-    Titelblock angeordnet. Ist die Datei nicht auffindbar, bleibt die
-    Logo-Spalte leer.
-  }{
-    % TODO: English translation
-  }
+  \ldeen{Legt das zusätzliche Logo für die Instanzen \code{osg} und
+    \code{talk} fest.}{Sets the additional logo for the \code{osg} and
+    \code{talk} instances.}
 
   \command{settucthemetitlelogoraise}[\marg{Länge}]
-  \ldeen{
-    Verschiebt das sichtbare Logo der Titelfolie um die angegebene Länge nach
-    oben, um einen transparenten oberen Bildrand auszugleichen. Der Vorgabewert
-    \code{0.21cm} passt zum mitgelieferten OSG-Logo; für eng beschnittene
-    Logos ist gewöhnlich \code{0pt} richtig.
-  }{
-    % TODO: English translation
-  }
+  \ldeen{Korrigiert transparente Ränder einer Logodatei. Für das OSG-Logo ist
+    \code{0.21cm}, für eng beschnittene Dateien gewöhnlich \code{0pt}
+    passend.}{Compensates for transparent margins in a logo file. Use
+    \code{0.21cm} for the OSG logo and usually \code{0pt} for tightly cropped
+    files.}
 
   \command{settucthemeurl}[\marg{Webadresse}]
-  \ldeen{
-    Setzt den rechtsbündigen Text in der Fußzeile normaler Folien. Das
-    Argument wird unverändert gesetzt; soll die Adresse anklickbar sein, kann
-    daher beispielsweise \cs*{url} im Argument verwendet werden.
-  }{
-    % TODO: English translation
-  }
+  \ldeen{Konfiguriert die Webadresse. Für einen anklickbaren Link
+    \cs*{url}\marg{Adresse} übergeben.}{Configures the web address. Pass
+    \cs*{url}\marg{address} to make it clickable.}
 
+  \command{maketitle}[\oarg{osg|talk|image}]
   \command{maketuctitle}
-  \ldeen{
-    Erzeugt die vollständige Titelfolie des Themes. Der Befehl ist nach
-    \cs*{begin}\Marg{document}, aber außerhalb einer \code{frame}-Umgebung
-    aufzurufen. Die Titelfolie besitzt keine Fußzeile.
-  }{
-    % TODO: English translation
-  }
+  \ldeen{Außerhalb einer \code{frame}-Umgebung aufrufen. Das optionale
+    Argument wählt die Instanz. Der Kompatibilitätsbefehl verwendet die zuvor
+    gewählte Instanz.}{Use outside a \code{frame} environment. The optional
+    argument selects the instance. The compatibility command uses the
+    previously selected instance.}
+
+  \command{settucthemeheader}[\marg{Instanz}]
+  \command{settucthemeheaderlines}[\marg{Zeile 1}\marg{Zeile 2}\marg{Zeile 3}]
+  \ldeen{\code{title}, \code{section}, \code{teaching} oder explizite
+    Kopfzeilen mit der Instanz \code{custom}.}{Selects the header instance or
+    sets the three lines of the \code{custom} instance.}
+
+  \command{tuctwoheader}
+  \command{tucthreeheader}
+  \ldeen{Schaltet unmittelbar vor einem Frame zwischen zwei und drei
+    Kopfzeilen um.}{Switches between two and three header lines before a frame.}
+
+  \command{tucwideframe}
+  \command{tucnarrowframe}
+  \command{settucthemeleftlogos}[\marg{kommaseparierte Dateien}]
+  \ldeen{Schaltet den Inhaltsbereich um und belegt die linke Fläche der
+    schmalen Variante mit einem oder mehreren Logos.}{Switches the content
+    width and fills the narrow layout's left area with one or more logos.}
+
+  \command{settucthemetitle}[\marg{Instanz}]
+  \command{settucthemetitleimage}[\oarg{Beschnitt}\marg{Datei}]
+  \ldeen{Wählt \code{osg}, \code{talk} oder \code{image}. Alternativ kann die
+    Instanz auch direkt im optionalen Argument von \cs*{maketitle} gewählt
+    werden. Für \code{Beschnitt} sind \code{top}, \code{center} und
+    \code{bottom} zulässig.}{Selects the
+    \code{osg}, \code{talk}, or \code{image} title page. The optional image
+    argument controls vertical cropping.}
 \end{commands}
 
 
@@ -260,83 +431,167 @@ Eine ausführlichere Präsentation befindet sich in
 {0.1}
 {TU Chemnitz presentation design introduced in 2019}
 
-\color_set:nnn {tuccolor@black@rgb}{RGB}{0,0,0}
-\color_set:nnn{tuccolor@tuc@rgb}{RGB}{0,95,80}
-\color_set:nnn{tuccolor@natwi@rgb}{RGB}{112,112,111}
-\color_set:nnn{tuccolor@ma@rgb}{RGB}{161,11,112}
-\color_set:nnn{tuccolor@mb@rgb}{RGB}{18,51,117}
-\color_set:nnn{tuccolor@etit@rgb}{RGB}{228,3,45}
-\color_set:nnn{tuccolor@if@rgb}{RGB}{74,130,70}
-\color_set:nnn{tuccolor@wiwi@rgb}{RGB}{157,7,54}
-\color_set:nnn{tuccolor@phil@rgb}{RGB}{198,83,6}
-\color_set:nnn{tuccolor@hsw@rgb}{RGB}{0,117,191}
-\color_set:nnn{tuccolor@gold@rgb}{RGB}{141,104,49}
-\color_set:nnn{tuccolor@silver@rgb}{RGB}{157,156,156}
-\color_set:nnn{tuccolor@info@rgb}{RGB}{85,85,85}
-\color_set:nnn{tuccolor@warning@rgb}{RGB}{255,153,0}
-\color_set:nnn{tuccolor@danger@rgb}{RGB}{255,0,0}
+% \ldeen{Primärfarben laut offiziellen CI der TUC}{Primary colors according to the TUC's official CI}.
+\color_set:nnn{tuccolor@tuc}{RGB}{0,95,80}
+\color_set:nnn{tuccolor@natwi}{RGB}{112,112,111}
+\color_set:nnn{tuccolor@ma}{RGB}{161,11,112}
+\color_set:nnn{tuccolor@mb}{RGB}{18,51,117}
+\color_set:nnn{tuccolor@etit}{RGB}{228,3,45}
+\color_set:nnn{tuccolor@if}{RGB}{74,130,70}
+\color_set:nnn{tuccolor@wiwi}{RGB}{157,7,54}
+\color_set:nnn{tuccolor@phil}{RGB}{198,83,6}
+\color_set:nnn{tuccolor@hsw}{RGB}{0,117,191}
+% \ldeen{Als Sekundärfarben wird ein 40--60\% aufgehellte Variante der Primärfarben gewählt.
+% }{
+% Secondary colors are chosen as versions of the primary colors that have been lightened by 40–60\%.
+% }
+\color_set:nnn{tuccolor@scnd@tuc}{RGB}{98,170,160}
+\color_set:nnn{tuccolor@scnd@natwi}{RGB}{170,170,168}
+\color_set:nnn{tuccolor@scnd@ma}{RGB}{205,125,185}
+\color_set:nnn{tuccolor@scnd@mb}{RGB}{110,145,205}
+\color_set:nnn{tuccolor@scnd@etit}{RGB}{245,120,145}
+\color_set:nnn{tuccolor@scnd@if}{RGB}{145,195,140}
+\color_set:nnn{tuccolor@scnd@wiwi}{RGB}{205,110,140}
+\color_set:nnn{tuccolor@scnd@phil}{RGB}{235,170,105}
+\color_set:nnn{tuccolor@scnd@hsw}{RGB}{120,190,235}
 
-\color_set:nnn{tuccolor@black@cmyk}{cmyk}{0.00,0.00,0.00,1.00}
-\color_set:nnn{tuccolor@tuc@cmyk}{cmyk}{1.00,0.34,0.69,0.30}
-\color_set:nnn{tuccolor@natwi@cmyk}{cmyk}{0.00,0.00,0.00,0.70}
-\color_set:nnn{tuccolor@ma@cmyk}{cmyk}{0.30,1.00,0.00,0.17}
-\color_set:nnn{tuccolor@mb@cmyk}{cmyk}{1.00,0.80,0.00,0.29}
-\color_set:nnn{tuccolor@etit@cmyk}{cmyk}{0.00,1.00,0.81,0.00}
-\color_set:nnn{tuccolor@if@cmyk}{cmyk}{0.74,0.28,0.85,0.13}
-\color_set:nnn{tuccolor@wiwi@cmyk}{cmyk}{0.00,1.00,0.50,0.41}
-\color_set:nnn{tuccolor@phil@cmyk}{cmyk}{0.17,0.75,1.00,0.06}
-\color_set:nnn{tuccolor@hsw@cmyk}{cmyk}{1.00,0.40,0.00,0.00}
-\color_set:nnn{tuccolor@gold@cmyk}{cmyk}{0.29,0.48,0.81,0.36}
-\color_set:nnn{tuccolor@silver@cmyk}{cmyk}{0.00,0.00,0.00,0.50}
-\color_set:nnn{tuccolor@info@cmyk}{cmyk}{0.00,0.00,0.00,0.76}
-\color_set:nnn{tuccolor@warning@cmyk}{cmyk}{0,0.40,1.00,0.00}
-\color_set:nnn{tuccolor@danger@cmyk}{cmyk}{0.0,1.00,1.00,0.00}
+% \ldeen{Fakultätsunabhängige Farben.}{Faculty-Independent colors.}
+\color_set:nnn {tuccolor@black}{RGB}{0,0,0}
+\color_set:nnn{tuccolor@gold}{RGB}{141,104,49}
+\color_set:nnn{tuccolor@silver}{RGB}{157,156,156}
 
-\tl_new:N \g_ltxtalk_tuc_fak_color
-\tl_new:N \g_ltxtalk_tuc_color_space
+% \ldeen*{Auch die Funktionsfarben sind in der Vorlage @1 fakultätsunabhängig und werden hier übernommen.}{
+% The function colors in the @1 template are also faculty-independent and are carried over here
+% }{\texttt{beamerthemetuc2019.sty}}
+\color_set:nnn{tuccolor@info@original}{RGB}{85,85,85}
+\color_set:nnn{tuccolor@warning@original}{RGB}{255,153,0}
+\color_set:nnn{tuccolor@danger@original}{RGB}{255,0,0}
+
+% \ldeen{Jedoch passen sie nicht bei jeder Fakultät zu den Fakultärsfarben.
+% Daher werden zwei Alternativen zur Verfügung gestellt:
+% Einerseits fakultätsindividuelle Funktionsfarben,
+% }{
+% However, they do not match the faculty colors for every faculty.
+% Therefore, two alternatives are provided:
+% On the one hand, faculty-specific functional colors; }
+\color_set:nnn{tuccolor@info@tuc}{RGB}{70,85,82}
+\color_set:nnn{tuccolor@info@natwi}{RGB}{80,80,80}
+\color_set:nnn{tuccolor@info@ma}{RGB}{90,70,85}
+\color_set:nnn{tuccolor@info@mb}{RGB}{60,70,90}
+\color_set:nnn{tuccolor@info@etit}{RGB}{95,70,75}
+\color_set:nnn{tuccolor@info@if}{RGB}{70,85,70}
+\color_set:nnn{tuccolor@info@wiwi}{RGB}{90,70,75}
+\color_set:nnn{tuccolor@info@phil}{RGB}{90,80,70}
+\color_set:nnn{tuccolor@info@hsw}{RGB}{65,85,100}
+
+\color_set:nnn{tuccolor@warning@tuc}{RGB}{230,180,40}
+\color_set:nnn{tuccolor@warning@natwi}{RGB}{215,170,60}
+\color_set:nnn{tuccolor@warning@ma}{RGB}{230,175,70}
+\color_set:nnn{tuccolor@warning@mb}{RGB}{235,180,60}
+\color_set:nnn{tuccolor@warning@etit}{RGB}{255,185,0}
+\color_set:nnn{tuccolor@warning@if}{RGB}{220,180,55}
+\color_set:nnn{tuccolor@warning@wiwi}{RGB}{235,175,55}
+\color_set:nnn{tuccolor@warning@phil}{RGB}{255,195,40}
+\color_set:nnn{tuccolor@warning@hsw}{RGB}{235,185,50}
+
+\color_set:nnn{tuccolor@danger@tuc}{RGB}{180,35,45}
+\color_set:nnn{tuccolor@danger@natwi}{RGB}{170,45,45}
+\color_set:nnn{tuccolor@danger@ma}{RGB}{150,20,60}
+\color_set:nnn{tuccolor@danger@mb}{RGB}{175,40,55}
+\color_set:nnn{tuccolor@danger@etit}{RGB}{140,0,35}
+\color_set:nnn{tuccolor@danger@if}{RGB}{170,40,45}
+\color_set:nnn{tuccolor@danger@wiwi}{RGB}{120,10,35}
+\color_set:nnn{tuccolor@danger@phil}{RGB}{170,45,35}
+\color_set:nnn{tuccolor@danger@hsw}{RGB}{180,35,50}
+% \ldots\ldeen{andererseits eine etwas besser passende einheitliche
+% Funktionsfarben.}{on the other hand, a uniform set of functional
+%  colors that are a slightly better match.}
+\color_set:nnn{tuccolor@info@uniq}{RGB}{79,89,99}
+\color_set:nnn{tuccolor@warning@uniq}{RGB}{221,161,0}
+\color_set:nnn{tuccolor@danger@uniq}{RGB}{173,28,44}
+
+% \ldeen*{Auf das cmyk-Farbmodell (wie in @1) wird (zunächst?) verzichtet,
+% da für Druck ohnehin ein gerätespezifisches Farbprofil genutzt werden sollte.
+% }{
+% The CMYK color model (as in @1) is (for now?) not used,
+% since a device-specific color profile should be used for printing anyway.
+% }{\texttt{beamerthemetuc2019.sty}}
 
 \msg_new:nnnn { tuc-2019 } { unknown-choice }
   { Unknown~value~'#3'~for~key~'#1'. }
   { Valid~values~are~#2. }
 
+\tl_new:N \g_ltxtalk_tuc_fak_color
+\tl_new:N \g_ltxtalk_tuc_func_color
+\bool_new:N \g_ltxtalk_chemnitz_bool
+
 \DeclareKeys{
   fakcolor .choices:nn = {
     tuc, natwi, ma, mb, etit, if, wiwi, phil, hsw
   }{
-    \tl_set:Ne \g_ltxtalk_tuc_fak_color \l_keys_choice_str
+    \tl_gset:Ne \g_ltxtalk_tuc_fak_color \l_keys_choice_str
   },
+  fakcolor / inf .code:n =
+    { \tl_gset:Nn \g_ltxtalk_tuc_fak_color {if} },
   fakcolor / unknown .code:n = 
    \msg_error:nneee { tuc-2019 } { unknown-choice }
    { fakcolor } { tuc, natwi, ma, mb, etit, if, wiwi, phil, hsw } % Valid choices
    { \exp_not:n {#1} } % Name of choice key
   ,
   fakcolor .initial:n = tuc,
-  colorspace .choices:nn = {
-    rgb,cmyk
-  }{
-    \tl_set:Ne \g_ltxtalk_tuc_color_space \l_keys_choice_str
+  funccolor .choice:,
+  funccolor/original .code:n =
+  {
+    \tl_gset:Ne \g_ltxtalk_tuc_func_color {original}
   },
-  colorspace / unknown .code:n =
+  funccolor/uniq .code:n =
+  {
+    \tl_gset:Ne \g_ltxtalk_tuc_func_color \g_ltxtalk_tuc_fak_color
+  },
+  funccolor/adapted .code:n =
+  {
+    \tl_gset:Ne \g_ltxtalk_tuc_func_color {uniq}
+  },
+
+  funccolor / unknown .code:n =
    \msg_error:nneee { tuc-2019 } { unknown-choice }
-   { colorspace } { rgb,cmyk } % Valid choices
+   { funccolor } { original, adapted, uniq } % Valid choices
    { \exp_not:n {#1} } % Name of choice key
   ,
-  colorspace .initial:n = rgb
+  funccolor .initial:n = adapted,
+  chemnitz2025 .bool_gset:N = \g_ltxtalk_chemnitz_bool,
+  chemnitz2025 .default:n = true,
+  chemnitz2025 .initial:n = false
 }
 \ProcessKeyOptions\relax
-\tl_new:N \g_ltxtalk_tuc_main_color
-\exp_args:Nne \tl_set:Nn \g_ltxtalk_tuc_main_color { tuccolor@ \g_ltxtalk_tuc_fak_color @ \g_ltxtalk_tuc_color_space }
 
 \RequirePackage{ltxtalk-theme}
+\RequirePackage{tikz}
 
 \tl_new:N \g__ltxtalk_tuc_logo_tl
 \tl_new:N \g__ltxtalk_tuc_title_logo_tl
+\seq_new:N \g__ltxtalk_tuc_left_logos_seq
 \tl_new:N \g__ltxtalk_tuc_url_tl
+\tl_new:N \g__ltxtalk_tuc_header_instance_tl
+\tl_new:N \g__ltxtalk_tuc_title_instance_tl
+\tl_new:N \g__ltxtalk_tuc_header_line_one_tl
+\tl_new:N \g__ltxtalk_tuc_header_line_two_tl
+\tl_new:N \g__ltxtalk_tuc_header_line_three_tl
+\tl_new:N \g__ltxtalk_tuc_title_image_tl
+\tl_new:N \g__ltxtalk_tuc_title_image_crop_tl
+\int_new:N \g__ltxtalk_tuc_header_rows_int
 \dim_new:N \g__ltxtalk_tuc_title_logo_raise_dim
+\dim_new:N \l__ltxtalk_tuc_crop_x_dim
+\dim_new:N \l__ltxtalk_tuc_crop_bottom_dim
+\dim_new:N \l__ltxtalk_tuc_crop_top_dim
 \bool_new:N \g__ltxtalk_tuc_title_bool
-\tl_gset:Nn \g__ltxtalk_tuc_logo_tl {tuc_white.pdf}
+\tl_gclear:N \g__ltxtalk_tuc_logo_tl
 \tl_gset:Nn \g__ltxtalk_tuc_title_logo_tl {osg.png}
 \tl_gset:Nn \g__ltxtalk_tuc_url_tl {https://www.tu-chemnitz.de/}
+\tl_gset:Nn \g__ltxtalk_tuc_header_instance_tl {title}
+\tl_gset:Nn \g__ltxtalk_tuc_title_instance_tl {osg}
+\tl_gset:Nn \g__ltxtalk_tuc_title_image_crop_tl {center}
+\int_gset:Nn \g__ltxtalk_tuc_header_rows_int {2}
 \dim_gset:Nn \g__ltxtalk_tuc_title_logo_raise_dim {0.21cm}
 
 \NewDocumentCommand \settucthemelogo {m}
@@ -347,14 +602,66 @@ Eine ausführlichere Präsentation befindet sich in
   {\dim_gset:Nn \g__ltxtalk_tuc_title_logo_raise_dim {#1}}
 \NewDocumentCommand \settucthemeurl {m}
   {\tl_gset:Nn \g__ltxtalk_tuc_url_tl {#1}}
+\NewDocumentCommand \settucthemeleftlogos {m}
+  {\seq_gset_from_clist:Nn \g__ltxtalk_tuc_left_logos_seq {#1}}
+\NewDocumentCommand \addtucthemeleftlogo {m}
+  {\seq_gput_right:Nn \g__ltxtalk_tuc_left_logos_seq {#1}}
+\NewDocumentCommand \settucthemeheader {m}
+  {\tl_gset:Nn \g__ltxtalk_tuc_header_instance_tl {#1}}
+\NewDocumentCommand \settucthemeheaderlines {m m m}
+  {
+    \tl_gset:Nn \g__ltxtalk_tuc_header_instance_tl {custom}
+    \tl_gset:Nn \g__ltxtalk_tuc_header_line_one_tl {#1}
+    \tl_gset:Nn \g__ltxtalk_tuc_header_line_two_tl {#2}
+    \tl_gset:Nn \g__ltxtalk_tuc_header_line_three_tl {#3}
+  }
+\NewDocumentCommand \settucthemetitle {m}
+  {
+    \tl_gset:Nn \g__ltxtalk_tuc_title_instance_tl {#1}
+    \UseLTXTalkTitleLayout{tuc-2019/#1}
+  }
+\NewDocumentCommand \settucthemetitleimage {O{center} m}
+  {
+    \tl_gset:Nn \g__ltxtalk_tuc_title_image_crop_tl {#1}
+    \tl_gset:Nn \g__ltxtalk_tuc_title_image_tl {#2}
+  }
+\NewDocumentCommand \tucwideframe {}
+  {\UseLTXTalkLayout{tuc-2019-wide}}
+\NewDocumentCommand \tucnarrowframe {}
+  {\UseLTXTalkLayout{tuc-2019-narrow}}
+\NewDocumentCommand \tuctwoheader {}
+  {
+    \int_gset:Nn \g__ltxtalk_tuc_header_rows_int {2}
+    \SetLTXTalkAreaGridRows{header}{2}
+    \UseLTXTalkLayout{tuc-2019-header-two}
+  }
+\NewDocumentCommand \tucthreeheader {}
+  {
+    \int_gset:Nn \g__ltxtalk_tuc_header_rows_int {3}
+    \SetLTXTalkAreaGridRows{header}{3}
+    \UseLTXTalkLayout{tuc-2019-header-three}
+  }
 
 \cs_new_protected:Npn \__ltxtalk_tuc_logo:
   {
-    \file_if_exist:VTF \g__ltxtalk_tuc_logo_tl
+    \tl_if_blank:VTF \g__ltxtalk_tuc_logo_tl
+      {
+        \bool_if:NTF \g_ltxtalk_chemnitz_bool
+          {
+            \str_if_eq:eeTF {\languagename}{english}
+              {\tl_set:Nn \l_tmpa_tl {tuckhseng_white.pdf}}
+              {\tl_set:Nn \l_tmpa_tl {tuckhs_white.pdf}}
+          }
+          {\tl_set:Nn \l_tmpa_tl {tuc_white.pdf}}
+      }
+      {\tl_set_eq:NN \l_tmpa_tl \g__ltxtalk_tuc_logo_tl}
+    \file_if_exist:VTF \l_tmpa_tl
       {
         \includegraphics
-          [height=\bool_if:NTF \g__ltxtalk_tuc_title_bool {1.25cm}{0.82cm}]
-          {\g__ltxtalk_tuc_logo_tl}
+          [width=\bool_if:NTF \g_ltxtalk_chemnitz_bool {2.15cm}{1.63cm},
+           height=\bool_if:NTF \g__ltxtalk_tuc_title_bool {1.25cm}{0.82cm},
+           keepaspectratio]
+          {\l_tmpa_tl}
       }
       {\sffamily\bfseries TU~CHEMNITZ}
   }
@@ -366,46 +673,77 @@ Eine ausführlichere Präsentation befindet sich in
       }
       {}
   }
-\cs_new_protected:Npn \__ltxtalk_tuc_context:
+\cs_new_protected:Npn \__ltxtalk_tuc_header_line:n #1
   {
-    \sffamily
-    \bool_if:NTF \g__ltxtalk_tuc_title_bool
-      {\large \@title \\[0.18cm] \normalsize \@date}
+    \str_case:VnF \g__ltxtalk_tuc_header_instance_tl
       {
-        \@title
-        \tl_if_blank:VF \l__talk_section_tl
-          {~--~\tl_use:N \l__talk_section_tl}
-        \tl_if_blank:VF \l__talk_subsection_tl
-          {\\\tl_use:N \l__talk_subsection_tl}
+        {title}
+          {\int_case:nnF {#1}
+            {
+              {1}{\UseLTXTalkMetadata[lines=1]{short-title}}
+              {2}{\tl_if_blank:eTF{\LTXTalkMetadata{short-subtitle}}
+                    {\UseLTXTalkMetadata[lines=1]{short-institute}}
+                    {\UseLTXTalkMetadata[lines=1]{short-subtitle}}}
+              {3}{\tl_if_blank:eF{\LTXTalkMetadata{short-subtitle}}
+                    {\UseLTXTalkMetadata[lines=1]{short-institute}}}
+            }{}}
+        {section}
+          {\int_compare:nNnTF {\g__ltxtalk_tuc_header_rows_int} = {3}
+            {\int_case:nn {#1}
+              {{1}{\UseLTXTalkMetadata[lines=1]{short-title}}
+               {2}{\UseLTXTalkMetadata[lines=1]{section}}
+               {3}{\UseLTXTalkMetadata[lines=1]{subsection}}}}
+            {\int_case:nn {#1}
+              {{1}{\UseLTXTalkMetadata[lines=1]{section}}
+               {2}{\UseLTXTalkMetadata[lines=1]{subsection}}}}}
+        {teaching}{\__ltxtalk_tuc_teaching_header_line:n {#1}}
+        {custom}
+          {\int_case:nn {#1}
+            {{1}{\tl_use:N \g__ltxtalk_tuc_header_line_one_tl}
+             {2}{\tl_use:N \g__ltxtalk_tuc_header_line_two_tl}
+             {3}{\tl_use:N \g__ltxtalk_tuc_header_line_three_tl}}}
       }
+      {\int_case:nn {#1}
+        {{1}{\UseLTXTalkMetadata[lines=1]{short-title}}
+         {2}{\UseLTXTalkMetadata[lines=1]{short-subtitle}}
+         {3}{\UseLTXTalkMetadata[lines=1]{short-institute}}}}
   }
-\cs_new_protected:Npn \__ltxtalk_tuc_header_line:
+\cs_new_protected:Npn \__ltxtalk_tuc_teaching_header_line:n #1
   {
-    \hbox_to_wd:nn {\paperwidth}
-      {
-        \skip_horizontal:n {0.4cm}
-        \begin{minipage}[t]
-          {\bool_if:NTF \g__ltxtalk_tuc_title_bool {2.485cm}{1.63cm}}
-          \vspace{0pt}\__ltxtalk_tuc_logo:
-        \end{minipage}
-        \skip_horizontal:n {0.4cm}
-        \begin{minipage}[t]{0.4pt}
-          \vspace{0pt}\color{white}
-          \rule
-            {0.4pt}
-            {\bool_if:NTF \g__ltxtalk_tuc_title_bool {1.35cm}{0.82cm}}
-        \end{minipage}
-        \skip_horizontal:n {0.4cm}
-        \begin{minipage}[t]{0.62\paperwidth}
-          \vspace{0.08cm}\color{white}\__ltxtalk_tuc_context:
-        \end{minipage}
-        \hfil
-      }
+    \int_compare:nNnTF {\g__ltxtalk_tuc_header_rows_int} = {3}
+      {\int_case:nn {#1}
+        {{1}{\cs_if_exist:NTF \g__osglecture_metadata_course_tl
+                {\tl_use:N \g__osglecture_metadata_course_tl}
+                {\UseLTXTalkMetadata[lines=1]{short-title}}}
+         {2}{\cs_if_exist:NTF \g__osglecture_unit_title_tl
+                {\tl_use:N \g__osglecture_unit_title_tl}
+                {\UseLTXTalkMetadata[lines=1]{section}}}
+         {3}{\UseLTXTalkMetadata[lines=1]{subsection}}}}
+      {\int_case:nn {#1}
+        {{1}{\cs_if_exist:NTF \g__osglecture_metadata_course_tl
+                {\tl_use:N \g__osglecture_metadata_course_tl}
+                {\UseLTXTalkMetadata[lines=1]{short-title}}
+              ~--~
+              \cs_if_exist:NTF \g__osglecture_unit_title_tl
+                {\tl_use:N \g__osglecture_unit_title_tl}
+                {\UseLTXTalkMetadata[lines=1]{section}}}
+         {2}{\UseLTXTalkMetadata[lines=1]{subsection}}}}
   }
-\cs_new_eq:NN \__ltxtalk_tuc_header: \__ltxtalk_tuc_header_line:
 
 \cs_new_protected:Npn \__ltxtalk_tuc_theme_setup:
   {
+    \DeclareLTXTalkLayout{tuc-2019-wide}
+      {left-margin=false}
+    \DeclareLTXTalkLayout{tuc-2019-narrow}
+      {
+        left-margin=true,
+        left-area-width=2.485cm,
+        content-inset-left=2.89cm
+      }
+    \DeclareLTXTalkLayout{tuc-2019-header-two}
+      {header-height=1.45cm,header-rows=2}
+    \DeclareLTXTalkLayout{tuc-2019-header-three}
+      {header-height=1.78cm,header-rows=3}
     \ltxtalksetup
       {
         header = true,
@@ -420,19 +758,66 @@ Eine ausführlichere Präsentation befindet sich in
       {
         secondary = {HTML}{333333},
         accent = {HTML}{F07D00},
-        text = {HTML}{202020},
-        background = {HTML}{FFFFFF}
+        text = {RGB}{0,0,0},
+        background = {RGB}{255,255,255}
       }
 
-    \exp_args:NnV \color_set:nn {ltxtalk-primary} {\g_ltxtalk_tuc_main_color}  
-    \exp_args:NnV  \color_set:nn { structure }   { \g_ltxtalk_tuc_main_color }
+    \exp_args:Nne   \color_set:nn {ltxtalk-primary}   { tuccolor@ \g_ltxtalk_tuc_fak_color }
+    \exp_args:Nne   \color_set:nn {tuccolor}          { tuccolor@ \g_ltxtalk_tuc_fak_color }
+    \exp_args:Nne   \color_set:nn {ltxtalk-secondary} { tuccolor@scnd@ \g_ltxtalk_tuc_fak_color  }
+    \exp_args:Nne   \color_set:nn { structure }       { tuccolor@ \g_ltxtalk_tuc_fak_color  }
+    \exp_args:Nne   \color_set:nn { tuccolor@info }   { tuccolor@info@  \g_ltxtalk_tuc_func_color }
+    \exp_args:Nne   \color_set:nn { tuccolor@warning }{ tuccolor@warning@  \g_ltxtalk_tuc_func_color }
+    \exp_args:Nne   \color_set:nn { tuccolor@danger } { tuccolor@danger@  \g_ltxtalk_tuc_func_color }
+    \color_set:nn {alert} {tuccolor@warning}
+    \color_set:nn {example} {tuccolor@info}
     
     \setltxtalktitleplacement{frametitle=content,section=none}
 
-    \defineltxtalkslot{tuc-header}{header}{custom}{role=artifact}
-    \setltxtalkslotcontent{tuc-header}{\__ltxtalk_tuc_header:}
-    \positionltxtalkslot{tuc-header}{left}{0.38cm}{\paperwidth}{1.05cm}
-    \styleltxtalkslot{tuc-header}
+    \DeclareLTXTalkAreaGrid{header}
+      {0.4cm,2.485cm,0.4cm,0.4pt,0.4cm,*}{2}
+    \defineltxtalkslot{tuc-header-logo}{header}{custom}{role=artifact}
+    \setltxtalkslotcontent{tuc-header-logo}{\__ltxtalk_tuc_logo:}
+    \PositionLTXTalkSlotInGrid{tuc-header-logo}{2}{1}{1}{3}
+    \styleltxtalkslot{tuc-header-logo}{align=left,color=white}
+
+    \defineltxtalkslot{tuc-header-rule}{header}{custom}{role=artifact}
+    \setltxtalkslotcontent{tuc-header-rule}
+      {\color{white}\rule{0.4pt}{1.05cm}}
+    \PositionLTXTalkSlotInGrid{tuc-header-rule}{4}{1}{1}{3}
+    \styleltxtalkslot{tuc-header-rule}{align=center,color=white}
+
+    \int_step_inline:nn {3}
+      {
+        \defineltxtalkslot{tuc-header-##1}{header}{custom}{role=navigation}
+        \setltxtalkslotcontent{tuc-header-##1}
+          {\__ltxtalk_tuc_header_line:n {##1}}
+        \PositionLTXTalkSlotInGrid{tuc-header-##1}{6}{##1}{1}{1}
+        \styleltxtalkslot{tuc-header-##1}
+          {align=left,color=white,font=\footnotesize\sffamily}
+      }
+
+    \DeclareLTXTalkTitleLayout{tuc-2019/osg}
+      {header=true,header-height=2.4cm,header-rows=3,footer=false}
+      {\bool_set_true:N \g__ltxtalk_tuc_title_bool
+       \int_set:Nn \g__ltxtalk_tuc_header_rows_int {3}
+       \SetLTXTalkAreaGridRows{header}{3}
+       \__ltxtalk_tuc_title_osg:}
+    \DeclareLTXTalkTitleLayout{tuc-2019/talk}
+      {header=true,header-height=2.4cm,header-rows=3,footer=false}
+      {\bool_set_true:N \g__ltxtalk_tuc_title_bool
+       \int_set:Nn \g__ltxtalk_tuc_header_rows_int {3}
+       \SetLTXTalkAreaGridRows{header}{3}
+       \__ltxtalk_tuc_title_talk:}
+    \DeclareLTXTalkTitleLayout{tuc-2019/image}
+      {header=true,header-height=2.4cm,header-rows=3,footer=false}
+      {\bool_set_true:N \g__ltxtalk_tuc_title_bool
+       \int_set:Nn \g__ltxtalk_tuc_header_rows_int {3}
+       \SetLTXTalkAreaGridRows{header}{3}
+       \__ltxtalk_tuc_title_image:}
+    \UseLTXTalkTitleLayout{tuc-2019/osg}
+
+    \styleltxtalkslot{tuc-header-1}
       {align=left,color=white,font=\footnotesize\sffamily}
 
     \defineltxtalkslot{tuc-frametitle}{content}{frametitle}
@@ -447,15 +832,24 @@ Eine ausführlichere Präsentation befindet sich in
     \styleltxtalkslot{tuc-framesubtitle}
       {align=left,color=ltxtalk-secondary,font=\normalsize\sffamily}
 
+    \defineltxtalkslot{tuc-left-logos}{left}{logo}{role=artifact,alt-text=Logos}
+    \setltxtalkslotcontent{tuc-left-logos}
+      {
+        \seq_map_inline:Nn \g__ltxtalk_tuc_left_logos_seq
+          {\file_if_exist:nT {##1}{\includegraphics[width=2.485cm]{##1}\\[0.3cm]}}
+      }
+    \positionltxtalkslot{tuc-left-logos}{center}{top}{2.485cm}{\textheight}
+    \styleltxtalkslot{tuc-left-logos}{align=center}
+
     \defineltxtalkslot{tuc-author}{footer}{custom}{role=note}
-    \setltxtalkslotcontent{tuc-author}{\@author}
+    \setltxtalkslotcontent{tuc-author}{\LTXTalkMetadata{short-author}}
     \positionltxtalkslot{tuc-author}{0.4cm}{center}{0.36\paperwidth}{0.32cm}
     \styleltxtalkslot{tuc-author}
       {align=left,color=ltxtalk-secondary,font=\tiny\sffamily}
 
     \defineltxtalkslot{tuc-page}{footer}{custom}{role=navigation}
     \setltxtalkslotcontent{tuc-page}
-      {N~--~\@framenumber\ von~\@totalframes}
+      {N~--~\LTXTalkMetadata{framenumber}\ von~\LTXTalkMetadata{totalframes}}
     \positionltxtalkslot{tuc-page}{center}{center}{0.22\paperwidth}{0.32cm}
     \styleltxtalkslot{tuc-page}
       {align=center,color=ltxtalk-secondary,font=\tiny\sffamily}
@@ -480,41 +874,101 @@ Eine ausführlichere Präsentation befindet sich in
       }
   }
 
-\NewDocumentCommand \maketuctitle {}
+\cs_new_protected:Npn \__ltxtalk_tuc_title_osg:
   {
-    \bool_gset_true:N \g__ltxtalk_tuc_title_bool
-    \ltxtalksetup
-      {header-height=2.4cm,footer=false}
-    \positionltxtalkslot{tuc-header}{left}{0.45cm}{\paperwidth}{1.6cm}
-    \__ltxtalk_update_text_area:
-    \begin{frame}
-      \thispagestyle{lttheme}
-      \vspace*{0.7cm}
-      \noindent
-      \skip_horizontal:n {\dim_eval:n{0.4cm-\Gm@lmargin}}
-      \begin{minipage}[t]{2.485cm}
-        \vspace{0pt}\par
-        \vspace{\dim_eval:n{-\g__ltxtalk_tuc_title_logo_raise_dim}}
-        \centering\__ltxtalk_tuc_title_logo:
-      \end{minipage}
-      \skip_horizontal:n {0.4cm+0.4pt+0.4cm}
-      \begin{minipage}[t]{0.62\paperwidth}
-          \vspace{0pt}
-          \sffamily
-          \Large\bfseries \@title\par
-          \vspace{0.8cm}
-          \color{ltxtalk-primary}\large \@subtitle\par
-          \vspace{0.75cm}
-          \normalsize\color{ltxtalk-secondary}\@author\par
-          \small \@institute
-      \end{minipage}
-    \end{frame}
-    \bool_gset_false:N \g__ltxtalk_tuc_title_bool
-    \ltxtalksetup
-      {header-height=1.45cm,footer=true,footer-height=0.52cm}
-    \positionltxtalkslot{tuc-header}{left}{0.38cm}{\paperwidth}{1.05cm}
-    \__ltxtalk_update_text_area:
+    \vspace*{2.75cm}\noindent
+    \skip_horizontal:n {\dim_eval:n{0.4cm-\LTXTalkCurrentLeftMargin}}
+    \begin{minipage}[t]{2.485cm}
+      \vspace{0pt}\par\vspace{\dim_eval:n{-\g__ltxtalk_tuc_title_logo_raise_dim}}
+      \centering\__ltxtalk_tuc_title_logo:
+    \end{minipage}
+    \skip_horizontal:n {0.4cm+0.4pt+0.4cm}
+    \begin{minipage}[t]{0.62\paperwidth}
+      \vspace{0pt}\sffamily
+      \Large\bfseries \LTXTalkMetadata{title}\par\vspace{0.8cm}
+      \color{ltxtalk-primary}\large \LTXTalkMetadata{subtitle}\par\vspace{0.75cm}
+      \normalsize\color{ltxtalk-secondary}\LTXTalkMetadata{author}\par
+      \small \LTXTalkMetadata{institute}
+    \end{minipage}
   }
+\cs_new_protected:Npn \__ltxtalk_tuc_title_talk:
+  {
+    \vspace*{1.55cm}\centering\sffamily
+    {\LARGE\bfseries\color{ltxtalk-primary}\LTXTalkMetadata{title}\par}\medskip
+    \tl_if_blank:eF{\LTXTalkMetadata{subtitle}}
+      {{\Large\color{ltxtalk-secondary}\LTXTalkMetadata{subtitle}\par}\bigskip}
+    {\large\LTXTalkMetadata{author}\par}\smallskip
+    {\normalsize\LTXTalkMetadata{institute}\par}\medskip
+    {\normalsize\LTXTalkMetadata{date}\par}\bigskip
+    \__ltxtalk_tuc_title_logo:
+  }
+\cs_new_protected:Npn \__ltxtalk_tuc_title_image:
+  {
+    \vspace*{1.55cm}\raggedright\sffamily
+    {\LARGE\bfseries\color{ltxtalk-primary}\LTXTalkMetadata{title}\par}\smallskip
+    \tl_if_blank:eF{\LTXTalkMetadata{subtitle}}
+      {{\Large\color{ltxtalk-secondary}\LTXTalkMetadata{subtitle}\par}\medskip}
+    \file_if_exist:VTF \g__ltxtalk_tuc_title_image_tl
+      {\noindent\skip_horizontal:n{-\LTXTalkCurrentLeftMargin}
+       \makebox[0pt][l]{\smash{\__ltxtalk_tuc_cover_image:Vn
+          \g__ltxtalk_tuc_title_image_tl
+          {\dim_eval:n{\paperheight-4.55cm}}}}}
+      {}
+  }
+\cs_new_protected:Npn \__ltxtalk_tuc_cover_image:nn #1#2
+  {
+    \hbox_set:Nn \l_tmpa_box {\includegraphics[width=\paperwidth]{#1}}
+    \dim_compare:nNnT
+      {\box_ht:N\l_tmpa_box+\box_dp:N\l_tmpa_box} < {#2}
+      {\hbox_set:Nn \l_tmpa_box {\includegraphics[height=#2]{#1}}}
+    \dim_set:Nn \l__ltxtalk_tuc_crop_x_dim
+      {\dim_max:nn{0pt}{(\box_wd:N\l_tmpa_box-\paperwidth)/2}}
+    \dim_set:Nn \l_tmpa_dim
+      {\dim_max:nn{0pt}
+        {\box_ht:N\l_tmpa_box+\box_dp:N\l_tmpa_box-(#2)}}
+    \str_case:VnF \g__ltxtalk_tuc_title_image_crop_tl
+      {
+        {top}
+          {\dim_zero:N \l__ltxtalk_tuc_crop_bottom_dim
+           \dim_set_eq:NN \l__ltxtalk_tuc_crop_top_dim \l_tmpa_dim}
+        {bottom}
+          {\dim_set_eq:NN \l__ltxtalk_tuc_crop_bottom_dim \l_tmpa_dim
+           \dim_zero:N \l__ltxtalk_tuc_crop_top_dim}
+        {center}
+          {\dim_set:Nn \l__ltxtalk_tuc_crop_bottom_dim {.5\l_tmpa_dim}
+           \dim_set_eq:NN \l__ltxtalk_tuc_crop_top_dim
+             \l__ltxtalk_tuc_crop_bottom_dim}
+      }
+      {\dim_set:Nn \l__ltxtalk_tuc_crop_bottom_dim {.5\l_tmpa_dim}
+       \dim_set_eq:NN \l__ltxtalk_tuc_crop_top_dim
+         \l__ltxtalk_tuc_crop_bottom_dim}
+    \begin{tikzpicture}[baseline=#2]
+      \clip (0,0) rectangle (\paperwidth,#2);
+      \str_case:VnF \g__ltxtalk_tuc_title_image_crop_tl
+        {
+          {top}{\node[anchor=south,inner~sep=0pt]
+            at (\dim_eval:n{\paperwidth/2},0pt) {\box_use:N \l_tmpa_box};}
+          {bottom}{\node[anchor=north,inner~sep=0pt]
+            at (\dim_eval:n{\paperwidth/2},#2) {\box_use:N \l_tmpa_box};}
+          {center}{\node[anchor=center,inner~sep=0pt]
+            at (\dim_eval:n{\paperwidth/2},\dim_eval:n{(#2)/2})
+            {\box_use:N \l_tmpa_box};}
+        }
+        {\node[anchor=center,inner~sep=0pt]
+          at (\dim_eval:n{\paperwidth/2},\dim_eval:n{(#2)/2})
+          {\box_use:N \l_tmpa_box};}
+      \pgfresetboundingbox
+      \path[use~as~bounding~box] (0,0) rectangle (\paperwidth,#2);
+    \end{tikzpicture}
+  }
+\cs_generate_variant:Nn \__ltxtalk_tuc_cover_image:nn {Vn}
+
+\NewDocumentCommand \maketuctitle {}
+  {\MakeLTXTalkTitle}
+
+\RenewDocumentCommand \maketitle {O{}}
+  {\tl_if_blank:nTF {#1}{\MakeLTXTalkTitle}
+    {\MakeLTXTalkTitle[tuc-2019/#1]}}
 
 \RegisterLTXTalkTheme{tuc-2019}{\__ltxtalk_tuc_theme_setup:}
 %</pkg>

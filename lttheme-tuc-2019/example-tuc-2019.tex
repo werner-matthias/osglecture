@@ -1,8 +1,8 @@
 % Beispiel für das Corporate Design der TU Chemnitz (Stand 2019)
-\DocumentMetadata{}
-\documentclass[fakcolor=inf]{ltx-talk}
+\DocumentMetadata{pdfversion=1.7}
+\documentclass{ltx-talk}
 
-\usepackage{ltxtalk-theme-tuc-2019}
+\usepackage[fakcolor=if]{ltxtalk-theme-tuc-2019}
 \settucthemelogo{../../images/logos/tuc_white.pdf}
 \settucthemetitlelogo{../../images/logos/osg.png}
 \settucthemeurl{https://www.tu-chemnitz.de/}
@@ -33,35 +33,31 @@
   \end{itemize}
 \end{frame}
 
-\subsection{Regularien}
-
+\settucthemeheader{section}
+\tucthreeheader
 \begin{frame}
-  \frametitle{0.1 Regularien}
+  \frametitle{Dreizeilige Kopfzeile}
   \begin{itemize}
-    \item Alle Informationen und Materialien werden über die Lernplattform
-      bereitgestellt.
-    \item Fragen können in der Vorlesung und in den Übungen gestellt werden.
-    \item Die Beispiele dieser Präsentation sind vollständig mit
-      \texttt{ltx-talk} gesetzt.
+    \item Präsentationstitel
+    \item aktuelle Section
+    \item aktuelle Subsection
   \end{itemize}
-
-  \begin{block}{Hinweis}
-    Veranstaltungsbezogene Bilder und Inhalte gehören zur Präsentation, nicht
-    zum Theme.
-  \end{block}
 \end{frame}
 
-\section{Inhalt}
-\subsection{Überblick}
-
+\settucthemeleftlogos{../../images/logos/osg.png,../../images/logos/tuckhs_color.pdf}
+\tucnarrowframe
 \begin{frame}
-  \frametitle{Unsere Reise}
-  \begin{enumerate}
-    \item Begriffe und Konzepte
-    \item Anforderungen und Spezifikationen
-    \item Prioritäts- und zeitgesteuertes Scheduling
-    \item Weiche und harte Echtzeit
-  \end{enumerate}
+  \frametitle{Schmaler Inhaltsbereich}
+  Mehrere Logos werden untereinander auf die Breite der linken Fläche
+  skaliert. Der Inhalt beginnt auf der Fluchtlinie des Titelblocks.
 \end{frame}
+
+\tucwideframe
+\tuctwoheader
+\settucthemeheader{title}
+\maketitle[talk]
+
+\settucthemetitleimage[center]{../../images/web.png}
+\maketitle[image]
 
 \end{document}

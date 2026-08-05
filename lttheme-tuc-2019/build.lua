@@ -17,7 +17,8 @@ unpackfiles = {
 }
 
 typesetfiles = {
-    "example-tuc-2019.tex"
+    "example-tuc-2019.tex",
+    "lttheme-tuc-2019.dtx"
 }
 
 

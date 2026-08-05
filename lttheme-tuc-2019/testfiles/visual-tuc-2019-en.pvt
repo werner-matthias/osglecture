@@ -1,0 +1,13 @@
+\DocumentMetadata{}
+\documentclass{ltx-talk}
+\usepackage[english]{babel}
+\usepackage[chemnitz2025]{ltxtalk-theme-tuc-2019}
+\useltxtalktheme{tuc-2019}
+\title[Short title]{English presentation}
+\subtitle{Subtitle}
+\author{Author}
+\institute{Institute}
+\date{2026}
+\begin{document}
+\maketitle[talk]
+\end{document}
