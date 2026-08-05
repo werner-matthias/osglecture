@@ -44,6 +44,41 @@ sub build_spec {
   my $project_root = abs_path($request->{project_root})
     // die "project root not found: $request->{project_root}";
   _require_within($unit_directory, $project_root, 'series unit directory');
+  my $project_tex = $arg{manifest}{project}{tex} // {};
+  my $shared_tex_relative = File::Spec->canonpath(
+    $project_tex->{directory} // 'Include',
+  );
+  my $shared_tex_candidate = File::Spec->rel2abs(
+    $shared_tex_relative, $project_root,
+  );
+  _require_within($shared_tex_candidate, $project_root, 'shared TeX directory');
+  my $shared_tex_directory = -e $shared_tex_candidate
+    ? abs_path($shared_tex_candidate)
+      // die "cannot resolve shared TeX directory: $shared_tex_candidate"
+    : $shared_tex_candidate;
+  _require_within($shared_tex_directory, $project_root, 'shared TeX directory');
+  die "shared TeX path is not a directory: $shared_tex_directory"
+    if -e $shared_tex_directory && !-d $shared_tex_directory;
+  my $project_config_file = $project_tex->{config} // 'projectconfig.tex';
+  my $project_config_candidate = File::Spec->catfile(
+    $shared_tex_directory, $project_config_file,
+  );
+  my $project_config_signature;
+  if (-e $project_config_candidate) {
+    my $canonical = abs_path($project_config_candidate)
+      // die "cannot resolve project configuration file: $project_config_candidate";
+    _require_within($canonical, $shared_tex_directory,
+      'project configuration file');
+    die "project configuration path is not a regular file: $canonical"
+      if !-f $canonical;
+    open my $config_handle, '<:raw', $canonical
+      or die "cannot read project configuration file '$canonical': $!";
+    local $/;
+    my $config_source = <$config_handle>;
+    close $config_handle
+      or die "cannot close project configuration file '$canonical': $!";
+    $project_config_signature = sha256_hex($config_source);
+  }
   my $logical_ordinal = _logical_ordinal(
     $configuration->{structure}{units}, $physical_unit,
     $target->{unit_scopes} // [],
@@ -133,6 +168,12 @@ sub build_spec {
       document_profile => $document_profile,
       shell_escape => $shell_escape,
       document_metadata => $document_metadata_contract,
+      project_tex => {
+        directory => $shared_tex_relative,
+        config    => $project_config_file,
+        (defined($project_config_signature)
+          ? (signature => $project_config_signature) : ()),
+      },
     }),
   );
   return {
@@ -156,6 +197,10 @@ sub build_spec {
       $configuration->{definitions}{bundle_preset}{reference},
     document_profile    => $document_profile,
     project_root        => $project_root,
+    shared_tex_directory => $shared_tex_directory,
+    shared_tex_relative  => $shared_tex_relative,
+    project_config_file  => $project_config_file,
+    project_config_signature => $project_config_signature,
     source              => $source,
     source_directory    => dirname($source),
     build_directory     => $build_directory,
@@ -217,6 +262,8 @@ sub render {
     "  language-map={" . join(',', @map) . "},",
     "  bundle-preset={" . _tex_atom($spec->{bundle_preset}) . "},",
     "  document-profile={" . _tex_atom($spec->{document_profile}) . "},",
+    "  shared-tex-directory={" . _tex_path($spec->{shared_tex_directory}) . "},",
+    "  project-config-file={" . _tex_atom($spec->{project_config_file}) . "},",
     @latex,
     "  shell-escape={" . _tex_atom($spec->{shell_escape}) . "},",
     "  structure-signature={" . _tex_atom($spec->{structure_signature}) . "},",
@@ -345,6 +392,15 @@ sub _tex_atom {
   $value //= '';
   die "value '$value' cannot be represented safely in a TeX build file"
     if $value !~ /\A[A-Za-z0-9 ._+\/=-]*\z/;
+  return $value;
+}
+
+sub _tex_path {
+  my ($value) = @_;
+  $value //= '';
+  $value =~ s{\\}{/}g;
+  die "path '$value' cannot be represented safely in a TeX build file"
+    if $value =~ /[{}%#\r\n]/;
   return $value;
 }
 

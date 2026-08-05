@@ -44,6 +44,7 @@ my $resolved = OLLM::Config->resolve_request(
   },
 );
 
+my $expected_spec = $resolved->{build_spec};
 my @calls;
 my $status = OLLM::Executor->execute(
   resolved => $resolved,
@@ -53,6 +54,7 @@ my $status = OLLM::Executor->execute(
     push @calls, {
       command => [@$command],
       job_id  => $spec->{job_id},
+      texinputs => $ENV{TEXINPUTS},
     };
     return 0;
   },
@@ -70,6 +72,10 @@ ok grep($_ eq '-silent', @{ $calls[0]{command} }),
   'compatible latexmk arguments are preserved';
 ok grep($_ =~ /--shell-restricted/, @{ $calls[0]{command} }),
   'restricted shell escape is part of the controlled LuaLaTeX command';
+my $texinputs_separator = $^O eq 'MSWin32' ? ';' : ':';
+like $calls[0]{texinputs},
+  qr/\Q$expected_spec->{build_directory}$texinputs_separator$expected_spec->{shared_tex_directory}$texinputs_separator\E/,
+  'TEXINPUTS searches the build directory and shared TeX directory first';
 my %metadata_spec = (
   %{ $resolved->{build_spec} },
   document_metadata => {

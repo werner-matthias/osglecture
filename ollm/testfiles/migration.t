@@ -32,6 +32,8 @@ ok -f $result->{path}, 'convertconfig creates ollmconfig.toml';
 my $manifest = OLLM::Config->load_manifest($result->{path});
 is $manifest->{languages}{default}, 'en', 'legacy default language is converted';
 is $manifest->{security}{shell_escape}, 'full', 'legacy shell escape is converted';
+is $manifest->{project}{tex}{directory}, 'Include',
+  'legacy shared source directory becomes the shared TeX directory';
 is_deeply $manifest->{deployment}{types}{handout}{paths},
   ['Deployment/', 'Archive/'], 'legacy destination lists are converted';
 is $manifest->{deployment}{types}{handout}{filename},
@@ -45,6 +47,8 @@ $result = OLLM::Migration->execute(action => 'newtoml', start_dir => $generic);
 ok !$result->{converted}, 'newtoml reports generic generation';
 $manifest = OLLM::Config->load_manifest($result->{path});
 is $manifest->{languages}{default}, 'de', 'generic manifest has portable defaults';
+is $manifest->{project}{tex}{config}, 'projectconfig.tex',
+  'generic manifest declares the standard project configuration';
 
 my $nested = tempdir(CLEANUP => 1);
 open $old, '>:raw', File::Spec->catfile($nested, 'ollmconfig.pl') or die $!;

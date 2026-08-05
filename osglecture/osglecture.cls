@@ -1,8 +1,8 @@
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
 \ProvidesExplClass
   {osglecture}
-  {2026/08/02}
-  {0.10.0}
+  {2026/08/05}
+  {0.11.0}
   {Profile-driven lecture documents}
 
 % The unpublished historical implementation remains available explicitly.
@@ -35,6 +35,7 @@
 \tl_new:N \l__osglecture_setup_file_tl
 \tl_new:N \l__osglecture_mode_setup_file_tl
 \tl_new:N \l__osglecture_additional_modes_tl
+\tl_new:N \l__osglecture_project_config_tl
 \bool_new:N \l__osglecture_doctype_explicit_bool
 \bool_new:N \l__osglecture_profile_explicit_bool
 \bool_new:N \l__osglecture_language_explicit_bool
@@ -268,13 +269,8 @@
       { \OsgLectureBuildLoadedTF {#2} {#1} }
   }
 
-\RequirePackage{osglecture-presitemize}
-\RequirePackage{osglecture-twocolumns}
-\ExplSyntaxOn
-
 \RequirePackage{osglecture-metadata}
-\RequirePackage{osglecture-structure}
-\RequirePackage{osglecture-references}
+\ExplSyntaxOn
 \exp_args:Nx \OsgLectureConfigureMetadata
   {
     course-target =
@@ -284,6 +280,33 @@
       \osglecture_profile_value:Vn
         \l__osglecture_document_profile_tl {event-target}
   }
+
+\OsgLectureBuildLoadedTF
+  {
+    \tl_set:Ne \l_tmpa_tl
+      { \OsgLectureBuildValue{shared-tex-directory} }
+    \tl_set:Ne \l_tmpb_tl
+      { \OsgLectureBuildValue{project-config-file} }
+    \tl_if_empty:NF \l_tmpa_tl
+      {
+        \tl_if_empty:NF \l_tmpb_tl
+          {
+            \tl_set:Ne \l__osglecture_project_config_tl
+              { \l_tmpa_tl / \l_tmpb_tl }
+            \file_if_exist:VTF \l__osglecture_project_config_tl
+              { \exp_args:NV \file_input:n \l__osglecture_project_config_tl }
+              { }
+          }
+      }
+  }
+  { }
+
+\RequirePackage{osglecture-presitemize}
+\RequirePackage{osglecture-twocolumns}
+\ExplSyntaxOn
+\RequirePackage{osglecture-structure}
+\RequirePackage{osglecture-references}
+\ExplSyntaxOn
 
 \tl_set:Ne \l__osglecture_setup_file_tl
   {

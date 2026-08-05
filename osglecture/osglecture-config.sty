@@ -1,8 +1,8 @@
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
 \ProvidesExplPackage
   {osglecture-config}
-  {2026/07/24}
-  {0.1.0}
+  {2026/08/05}
+  {0.2.0}
   {Build-request reader for osglecture}
 
 \ExplSyntaxOn
@@ -56,6 +56,10 @@
       \__osglecture_build_put:nn {bundle-preset} {#1},
     document-profile    .code:n =
       \__osglecture_build_put:nn {document-profile} {#1},
+    shared-tex-directory .code:n =
+      \__osglecture_build_put:nn {shared-tex-directory} {#1},
+    project-config-file .code:n =
+      \__osglecture_build_put:nn {project-config-file} {#1},
     presentation-backend .code:n =
       \__osglecture_build_put:nn {presentation-backend} {#1},
     presentation-profile .code:n =

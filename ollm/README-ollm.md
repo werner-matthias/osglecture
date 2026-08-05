@@ -199,6 +199,32 @@ only selects the corresponding project-wide document profile. Mode parents
 and abstract modes belong to that profile's TeX-side `mode-setup-file`; OLLM
 does not merge or interpret the mode graph.
 
+Project-wide TeX material lives outside the project root's top level. The
+default directory and project configuration are `Include` and
+`projectconfig.tex`; both names can be changed in the project manifest:
+
+```toml
+[project.tex]
+directory = "Include"
+config = "projectconfig.tex"
+```
+
+The directory is project-root-relative. OLLM adds its resolved absolute path
+to `TEXINPUTS`, after the isolated build directory and before inherited search
+paths, so it may contain project-local packages as well as configuration
+files. If the configured project configuration exists, its contents
+participate in the BuildSpec signature. The generated job-bound build file
+passes its absolute directory and filename to `osglecture`.
+
+`osglecture` loads that file after the active mode graph and its metadata
+interface have been initialized, but before the remaining class services and
+profile setup. Mode-specific metadata is therefore valid, for example:
+
+```latex
+\author<presentation>[M.~M.]{Max Mustermann}
+\author<longform>[Mustermann]{Max Mustermann}
+```
+
 For a concrete series build, the resolved configuration is normalized into a
 job-bound `<jobname>.osgbuild.tex`. The reader in
 `../osglecture/osglecture-config.sty` validates its schema and requires its
@@ -222,7 +248,7 @@ A project may enforce one shared, project-root-relative metadata file:
 ```toml
 [latex.document_metadata]
 policy = "enforce"
-file = "shared/document-metadata.tex"
+file = "Include/document-metadata.tex"
 ```
 
 OLLM inserts it before the main source through latexmk's controlled pre-TeX

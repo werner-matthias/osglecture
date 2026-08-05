@@ -496,6 +496,10 @@ Das Projektmanifest enthält die tatsächlich projektspezifischen Angaben:
 id = "bs"
 title = "Betriebssysteme"
 
+[project.tex]
+directory = "Include"
+config = "projectconfig.tex"
+
 [languages]
 available = ["de", "en"]
 default = "de"
@@ -525,6 +529,24 @@ etwa `en` auf `british` statt `english` abgebildet werden. OLLM prüft nur
 Konsistenz und Eindeutigkeit der Kennungen. Ob eine Variante von Babel,
 Polyglossia und `langselect` unterstützt wird, wird auf der LaTeX-Seite
 validiert.
+
+Projektweit gemeinsam genutztes TeX-Material liegt nicht lose im
+Projektroot, sondern standardmäßig in `Include`. `[project.tex]` kann sowohl
+dieses projekt-root-relative Verzeichnis als auch den darin liegenden Namen
+der Projektkonfiguration ändern. OLLM setzt das aufgelöste Verzeichnis hinter
+dem isolierten Buildverzeichnis an den Anfang von `TEXINPUTS`; damit gilt es
+für `projectconfig.tex` ebenso wie für projektlokale Pakete. Eine vorhandene
+Projektkonfiguration wird in die Konfigurationssignatur einbezogen.
+
+Die jobgebundene Builddatei transportiert den absoluten Verzeichnispfad und
+den Dateinamen getrennt. `osglecture` liest die Datei am frühesten Punkt, an
+dem gleichzeitig Basisklasse, finaler Modusgraph und die erweiterten
+Metadatenbefehle existieren: nach `osglecture-metadata`, aber vor den übrigen
+Kerndiensten und dem Profil-Setup. Dadurch sind beispielsweise
+`\author<presentation>[M.~M.]{Max Mustermann}` und entsprechende
+Langformwerte zulässig. Die Datei ist dagegen keine zweite Quelle für
+Doctype, Profilwahl oder Modusgraph; diese Entscheidungen sind zu ihrem
+Ladezeitpunkt bereits abgeschlossen.
 
 Targetnamen sind ebenfalls registrierte, erweiterbare Kennungen. OLLM besitzt
 keine abgeschlossene Liste von Dokumenttypen. Ein Target wird durch das
@@ -674,7 +696,7 @@ LaTeX-Kernel-Metadateninitialisierung:
 ```toml
 [latex.document_metadata]
 policy = "enforce"
-file = "shared/document-metadata.tex"
+file = "Include/document-metadata.tex"
 ```
 
 OLLM prüft, dass die Datei innerhalb des Projektroots liegt, nimmt ihren Inhalt

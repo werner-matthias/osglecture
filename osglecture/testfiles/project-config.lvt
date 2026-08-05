@@ -1,0 +1,9 @@
+\input regression-test
+\documentclass{osglecture}
+\begin{document}
+\START
+\TYPE{project-config-loaded=\ProjectConfigLoaded}
+\TYPE{project-author=\OsgLectureAuthor}
+\TYPE{project-short-author=\OsgLectureShortAuthor}
+\END
+\end{document}

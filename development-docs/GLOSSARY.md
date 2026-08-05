@@ -168,6 +168,22 @@ Die **Auftragsdatei** ist die von OLLM atomar erzeugte Datei
 `<job-id>.osgbuild.tex`. Sie transportiert den BuildSpec in validierter,
 TeX-lesbarer Form. Sie wählt keine Konfiguration neu aus.
 
+### Gemeinsames TeX-Verzeichnis
+
+Das **gemeinsame TeX-Verzeichnis** enthält projektweites TeX-Material wie
+Konfigurationsdaten und projektlokale Pakete. Es heißt standardmäßig
+`Include`, ist über `project.tex.directory` konfigurierbar und wird von OLLM
+kontrolliert in `TEXINPUTS` aufgenommen.
+
+### Projektkonfiguration
+
+Die **Projektkonfiguration** ist die standardmäßig
+`Include/projectconfig.tex` genannte TeX-Datei für gemeinsame Autoren- und
+Metadatenkonfiguration. Ihr Dateiname ist über `project.tex.config`
+konfigurierbar. `osglecture` lädt sie nach Finalisierung des Modusgraphen und
+Initialisierung der Metadatenoberfläche. Sie ist nicht mit dem
+TOML-Projektmanifest oder der jobgebundenen Auftragsdatei identisch.
+
 ### Buildverzeichnis
 
 Das **Buildverzeichnis** ist der für genau einen BuildSpec isolierte Ort für

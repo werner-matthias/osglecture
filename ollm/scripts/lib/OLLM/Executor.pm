@@ -53,13 +53,15 @@ sub execute {
       OLLM::BuildFile->write_for_spec($spec);
     }
     my @command = $class->command_for_spec($spec, $request, $latexmk_rc);
+    my $separator = $^O eq 'MSWin32' ? ';' : ':';
+    local $ENV{TEXINPUTS} = join $separator,
+      $spec->{build_directory},
+      $spec->{shared_tex_directory},
+      ($ENV{TEXINPUTS} // '');
     my $status;
     if ($arg{runner}) {
       $status = $arg{runner}->(\@command, $spec);
     } else {
-      my $separator = $^O eq 'MSWin32' ? ';' : ':';
-      local $ENV{TEXINPUTS} = $spec->{build_directory} . $separator
-        . ($ENV{TEXINPUTS} // '');
       $status = system { $command[0] } @command;
     }
     if ($status == -1) {
@@ -104,7 +106,8 @@ sub validate_request {
     ? @{ $resolved->{build_specs} }
     : ($resolved->{build_spec});
   for my $spec (@specs) {
-    for my $field (qw(source build_directory aux_directory artifact)) {
+    for my $field (qw(source shared_tex_directory build_directory
+                      aux_directory artifact)) {
       my $path = $spec->{$field};
       die "BuildSpec $field path contains a line break: $path\n"
         if $path =~ /[\r\n]/;
@@ -112,6 +115,10 @@ sub validate_request {
     die "build directory '$spec->{build_directory}' contains the TEXINPUTS "
       . "path separator '$path_separator' and cannot be represented safely\n"
       if index($spec->{build_directory}, $path_separator) >= 0;
+    die "shared TeX directory '$spec->{shared_tex_directory}' contains the "
+      . "TEXINPUTS path separator '$path_separator' and cannot be represented "
+      . "safely\n"
+      if index($spec->{shared_tex_directory}, $path_separator) >= 0;
   }
   _validate_latexmk_args($request, $build_count);
   return 1;

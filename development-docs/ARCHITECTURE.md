@@ -784,6 +784,15 @@ Prioritätsauflösung; die Klasse validiert Schema und Jobbindung und übernimmt
 die normalisierten Werte. Damit setzt sie weder ein bestimmtes
 Arbeitsverzeichnis noch eine externe Konfigurationssyntax voraus.
 
+Zu diesen normalisierten Werten gehören `shared-tex-directory` und
+`project-config-file`. OLLM löst das im Projektmanifest standardmäßig als
+`Include/projectconfig.tex` beschriebene Paar auf, setzt den absoluten
+Verzeichnispfad in `TEXINPUTS` und transportiert ihn jobgebunden. Die Klasse
+liest weder TOML noch sucht sie selbst nach dem Projektroot. Sie lädt die
+Projektkonfiguration erst nach Finalisierung des Modusgraphen und
+Initialisierung ihrer Metadatenoberfläche; damit ist die Datei mode-aware,
+aber keine konkurrierende Quelle für frühe Profil- oder Modusentscheidungen.
+
 ### 5.2 Frühe und späte Optionen sind vermischt
 
 Optionen für die Basisklasse müssen vor `\LoadClass` feststehen; andere Optionen könnten später verarbeitet werden. Aktuell laufen Weitergabe, Defaultsetzung, Konfigurationseinlesen und Schlüsselverarbeitung durch mehrere Mechanismen aus LaTeX2e, expl3 und `etoolbox`.
@@ -889,15 +898,18 @@ Dokumentprofile und eigenständige Fachpakete:
    Elternkanten, Aliase und Verhaltenszuordnungen deklarieren.
 5. Die Klasse aktiviert den Doctype als Blattmodus, ergänzt Profilmodi und
    finalisiert den Modusgraphen.
-6. Die Klassenpakete `osglecture-presitemize` und
+6. `osglecture-metadata` bindet die Titelmetadaten an die nativen
+   Backendbefehle.
+7. Die jobgebundene Projektkonfiguration aus dem gemeinsamen TeX-Verzeichnis
+   wird geladen. Sie darf den finalisierten Modusgraphen für Metadaten- und
+   Inhaltsauswahl verwenden, aber nicht mehr erweitern.
+8. Die Klassenpakete `osglecture-presitemize` und
    `osglecture-twocolumns` binden ihre Projektionen an den finalisierten
    Modusgraphen, nicht an konkrete Profile oder Backends.
-7. `osglecture-metadata` bindet die Titelmetadaten an die nativen
-   Backendbefehle.
-8. `setup-file` darf Backendadapter, Formatierung und Implementierungen
+9. `setup-file` darf Backendadapter, Formatierung und Implementierungen
    semantischer Befehle registrieren. Der Modusgraph ist zu diesem Zeitpunkt
    bereits unveränderlich.
-9. Spätestens zu `\begin{document}` prüft
+10. Spätestens zu `\begin{document}` prüft
    `\FinalizeModeAwareCommands` die vollständigen Befehlsverträge.
 
 Für ein eigenständiges Fachpaket folgt daraus:

@@ -76,13 +76,21 @@ sub convert_source {
   my @languages = ($default);
   push @languages, grep { $_ ne $default } qw(de en);
   my $shell = ($scalar{shell_escape} // 0) ? 'full' : 'restricted';
+  my @warnings;
+  my $tex_directory = $scalar{shared_source_dir} // 'Include';
+  $tex_directory =~ s{\A\.\.[\\/]}{};
+  if (File::Spec->file_name_is_absolute($tex_directory)
+      || $tex_directory =~ m{\A\.\.(?:[\\/]|\z)}) {
+    push @warnings,
+      "shared_source_dir could not be converted portably; using 'Include'";
+    $tex_directory = 'Include';
+  }
   my $source = _manifest(
     root => $root, default => $default, languages => \@languages,
-    shell_escape => $shell,
+    shell_escape => $shell, tex_directory => $tex_directory,
     deployment => _legacy_deployment($perl),
   );
 
-  my @warnings;
   push @warnings, "defaultlanguage could not be read; using 'de'"
     if !exists $scalar{defaultlanguage};
   my @unsupported;
@@ -90,8 +98,8 @@ sub convert_source {
     if $perl =~ /\%deploy_restriction\b|\$deploy_pw\b/;
   push @unsupported, 'dynamically assigned deployment settings'
     if $perl =~ /\%(?:deploy_path|deploy_file)\s*=/;
-  push @unsupported, 'shared source/data paths'
-    if $perl =~ /\$(?:shared_source_dir|shared_data_dir)\b/;
+  push @unsupported, 'shared data path'
+    if $perl =~ /\$shared_data_dir\b/;
   push @unsupported, 'chapter-number settings'
     if $perl =~ /\$(?:first_chapter_number|lectconfig|lectureprefix)\b|\@first_chapter_number\b/;
   push @warnings, 'not represented in TOML: ' . join(', ', @unsupported)
@@ -105,7 +113,7 @@ sub generic_source {
   my ($class, $root) = @_;
   return _manifest(
     root => $root, default => 'de', languages => [qw(de en)],
-    shell_escape => 'restricted',
+    shell_escape => 'restricted', tex_directory => 'Include',
   ) . <<'TOML';
 
 # Deployment copies promoted PDF artifacts. Enable and adapt these examples;
@@ -130,12 +138,15 @@ sub _manifest {
   $id = 'lecture-series' if $id eq '';
   my $languages = join(', ', map { _quote($_) } @{ $arg{languages} });
   my $default = _quote($arg{default});
+  my $tex_directory = _quote($arg{tex_directory} // 'Include');
   my $map = join('', map {
     my $babel = $_ eq 'de' ? 'ngerman' : $_ eq 'en' ? 'british' : $_;
     _key($_) . ' = ' . _quote($babel) . "\n";
   } @{ $arg{languages} });
   return "schema = 1\nbundle_preset = \"OSG lecture/1\"\n\n"
     . "[project]\nid = " . _quote($id) . "\n\n"
+    . "[project.tex]\ndirectory = $tex_directory\n"
+    . "config = \"projectconfig.tex\"\n\n"
     . "[languages]\navailable = [$languages]\ndefault = $default\n\n"
     . "[languages.map]\n$map\n"
     . join('', map { "[targets.$_]\nlanguages = [$languages]\n\n" }

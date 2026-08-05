@@ -4,6 +4,35 @@
 gemeinsame Lehrquelle auf Präsentationen und Langformen. Der aktuelle
 Architekturvertrag ist in `ARCHITECTURE.md` beschrieben.
 
+## Projektweite TeX-Konfiguration
+
+Bei einem OLLM-Serienbuild lädt die Klasse die im BuildSpec angegebene
+Projektkonfiguration. Standardmäßig ist dies
+`Include/projectconfig.tex`; Verzeichnis und Dateiname werden im
+Projektmanifest konfiguriert:
+
+```toml
+[project.tex]
+directory = "Include"
+config = "projectconfig.tex"
+```
+
+Der Ladepunkt liegt nach Finalisierung des Modusgraphen und Initialisierung
+von `osglecture-metadata`, aber vor den übrigen Kerndiensten und dem
+Profil-Setup. Damit kann die Datei gemeinsame, modusspezifische Metadaten
+enthalten:
+
+```latex
+\author<presentation>[M.~M.]{Max Mustermann}
+\author<longform>[Mustermann]{Max Mustermann}
+```
+
+Sie kann außerdem projektlokale Pakete aus demselben Verzeichnis laden, da
+OLLM `Include` beziehungsweise das konfigurierte Verzeichnis in `TEXINPUTS`
+einträgt. Doctype, Dokumentprofil und Modusgraph werden nicht in
+`projectconfig.tex` festgelegt; diese Entscheidungen müssen vor ihrem
+Ladepunkt bereits feststehen.
+
 ## Präsentationslisten in gemeinsamer Quelle
 
 Die Umgebung `presitemize` setzt ihre Einträge in Präsentationen als normale

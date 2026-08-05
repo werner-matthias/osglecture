@@ -25,6 +25,10 @@ is $located->{path}, $manifest_path, 'manifest path is canonical';
 my $manifest = OLLM::Config->load_manifest($manifest_path);
 is $manifest->{schema}, 1, 'schema parsed';
 is $manifest->{project}{id}, 'bs', 'project id parsed';
+is $manifest->{project}{tex}{directory}, 'Include',
+  'shared TeX directory parsed';
+is $manifest->{project}{tex}{config}, 'projectconfig.tex',
+  'project configuration filename parsed';
 is_deeply $manifest->{languages}{available}, ['de', 'en'],
   'language list parsed';
 
@@ -237,6 +241,30 @@ close $schema_handle;
 eval { OLLM::Config->load_manifest($invalid_manifest) };
 like $@, qr/:1: unsupported project-manifest schema 9; .* schema 1/,
   'schema mismatch states actual and supported schema';
+
+open my $tex_path_handle, '>', $invalid_manifest or die $!;
+print {$tex_path_handle} <<'TOML';
+schema = 1
+bundle_preset = "OSG lecture/1"
+
+[project]
+id = "bad-tex-path"
+
+[project.tex]
+directory = "Include"
+config = "../projectconfig.tex"
+
+[languages]
+available = ["de"]
+default = "de"
+
+[targets.slides]
+languages = ["de"]
+TOML
+close $tex_path_handle;
+eval { OLLM::Config->load_manifest($invalid_manifest) };
+like $@, qr/project[.]tex[.]config must be a filename/,
+  'project configuration filename cannot escape the shared TeX directory';
 
 open my $case_handle, '>', $invalid_manifest or die $!;
 print {$case_handle} <<'TOML';

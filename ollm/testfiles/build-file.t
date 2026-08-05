@@ -55,6 +55,13 @@ is $spec->{latex}{theme}, 'osg',
   'bundle-preset LaTeX defaults reach the build specification';
 is $spec->{document_profile}, 'scrbook',
   'doctype-specific document profile reaches the build specification';
+is $spec->{shared_tex_directory},
+  abs_path(File::Spec->catdir($fixture, 'Include')),
+  'shared TeX directory is resolved from the project manifest';
+is $spec->{project_config_file}, 'projectconfig.tex',
+  'project configuration filename reaches the build specification';
+like $spec->{project_config_signature}, qr/\A[0-9a-f]{64}\z/,
+  'project configuration contents are signed into the build contract';
 like $spec->{build_directory},
   qr{[.]osglecture/build/020-processes/script/de\z},
   'build directory is isolated by unit, target, and language';
@@ -69,7 +76,7 @@ $metadata_manifest{latex} = {
   %{ $manifest->{latex} // {} },
   document_metadata => {
     policy => 'enforce',
-    file   => 'shared/document-metadata.tex',
+    file   => 'Include/document-metadata.tex',
   },
 };
 my $metadata_spec = OLLM::BuildFile->build_spec(
@@ -79,7 +86,7 @@ my $metadata_spec = OLLM::BuildFile->build_spec(
 );
 is $metadata_spec->{document_metadata}{path},
   abs_path(File::Spec->catfile(
-    $fixture, 'shared', 'document-metadata.tex',
+    $fixture, 'Include', 'document-metadata.tex',
   )),
   'enforced metadata file is normalized within the project root';
 like $metadata_spec->{document_metadata}{signature}, qr/\A[0-9a-f]{64}\z/,
@@ -91,7 +98,7 @@ my @moved_specs;
 for (1 .. 2) {
   my $moved_root = tempdir(CLEANUP => 1);
   my $moved_unit = File::Spec->catdir($moved_root, '020-processes');
-  my $moved_shared = File::Spec->catdir($moved_root, 'shared');
+  my $moved_shared = File::Spec->catdir($moved_root, 'Include');
   make_path($moved_unit, $moved_shared);
   open my $moved_source, '>',
     File::Spec->catfile($moved_unit, 'main.tex') or die $!;
@@ -101,6 +108,11 @@ for (1 .. 2) {
     File::Spec->catfile($moved_shared, 'document-metadata.tex') or die $!;
   print {$moved_metadata} "\\DocumentMetadata{}\n";
   close $moved_metadata;
+  open my $moved_config, '>',
+    File::Spec->catfile($moved_shared, 'projectconfig.tex') or die $!;
+  print {$moved_config}
+    "\\author<presentation>[M.~Mustermann]{Max Mustermann}\n";
+  close $moved_config;
 
   my %moved_request = (
     %{ $resolved->{request} },
@@ -133,6 +145,10 @@ like $content, qr/theme=\{osg\}/,
   'rendered build file contains effective LaTeX defaults';
 like $content, qr/document-profile=\{scrbook\}/,
   'rendered build file contains the resolved document profile';
+like $content, qr/shared-tex-directory=\{[^}]*Include\}/,
+  'rendered build file contains the absolute shared TeX directory';
+like $content, qr/project-config-file=\{projectconfig[.]tex\}/,
+  'rendered build file contains the project configuration filename';
 like $content, qr/bundle-preset=\{OSG lecture\/1\}/,
   'rendered build file contains the resolved bundle preset';
 like $content, qr/shell-escape=\{restricted\}/,

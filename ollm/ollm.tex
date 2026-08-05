@@ -181,6 +181,10 @@ bundle_preset = "OSG lecture/1"
 id = "bs"
 title = "Betriebssysteme"
 
+[project.tex]
+directory = "Include"
+config = "projectconfig.tex"
+
 [languages]
 available = ["de", "en"]
 default = "de"
@@ -199,6 +203,15 @@ languages = ["de", "en"]
 shell_escape = "restricted"
 \end{verbatim}
 }
+
+Projektweit geteiltes TeX-Material liegt standardmäßig in
+\texttt{Include}; beide Namen in \texttt{project.tex} sind konfigurierbar.
+OLLM fügt das Verzeichnis kontrolliert zu \texttt{TEXINPUTS} hinzu und nimmt
+den Inhalt einer vorhandenen Projektkonfiguration in die
+Konfigurationssignatur auf. \texttt{osglecture} lädt sie nach Aufbau des
+Modusgraphen und der Metadatenoberfläche. Damit sind dort beispielsweise
+\verb|\author<presentation>[M.~M.]{Max Mustermann}| und entsprechende
+Langformwerte zulässig.
 
 \subsection*{Bundle-Presets und Targets}
 

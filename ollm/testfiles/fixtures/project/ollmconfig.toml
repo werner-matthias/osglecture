@@ -5,6 +5,10 @@ bundle_preset = "OSG lecture/1"
 id = "bs"
 title = "Betriebssysteme"
 
+[project.tex]
+directory = "Include"
+config = "projectconfig.tex"
+
 [languages]
 available = ["de", "en"]
 default = "de"

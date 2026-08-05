@@ -343,10 +343,31 @@ sub validate_manifest {
     if exists $manifest->{bundle_preset};
 
   _require_table($manifest, 'project', $path);
-  _known_keys($manifest->{project}, [qw(id title)], $path, $lines, 'project');
+  _known_keys($manifest->{project}, [qw(id title tex)], $path, $lines, 'project');
   _require_string($manifest->{project}, 'id', "$path: project");
   _require_string($manifest->{project}, 'title', "$path: project")
     if exists $manifest->{project}{title};
+  if (exists $manifest->{project}{tex}) {
+    my $tex = $manifest->{project}{tex};
+    die "$path: project.tex must be a table" if ref $tex ne 'HASH';
+    _known_keys($tex, [qw(directory config)], $path, $lines, 'project.tex');
+    _require_string($tex, $_, "$path: project.tex") for keys %$tex;
+    if (exists $tex->{directory}) {
+      _fail_at($path, $lines, 'project.tex.directory',
+        'project.tex.directory must be project-root-relative')
+        if File::Spec->file_name_is_absolute($tex->{directory});
+      _fail_at($path, $lines, 'project.tex.directory',
+        'project.tex.directory must not be empty')
+        if $tex->{directory} eq '';
+    }
+    if (exists $tex->{config}) {
+      _fail_at($path, $lines, 'project.tex.config',
+        'project.tex.config must be a filename without directory components')
+        if $tex->{config} eq ''
+          || File::Spec->file_name_is_absolute($tex->{config})
+          || $tex->{config} =~ m{[\\/]};
+    }
+  }
 
   _require_table($manifest, 'languages', $path);
   _known_keys($manifest->{languages}, [qw(available default map)],
