@@ -34,8 +34,8 @@ This work is "maintained" (as per LPPL maintenance status) by
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
 \def\packagename{langselect}
 \ProvidesExplPackage{langselect}
-{2026/08/04}
-{0.6.0}
+{2026/08/05}
+{v1.0.2}
 {support for different languages versions from a common source}
 \ExplSyntaxOff
 %</pkg>
@@ -592,7 +592,19 @@ Section~@1.%
   The star variant of the language macros is "`fragile"', please do not use
   them in a mobile context, e.g., within an argument of \cs{section}. 
 }
-\begin{example}[compile,pages=1,graphics={trim=3cm 22cm 3cm 4cm,clip}]
+\begin{example}[
+  compile,
+  pages=1,
+  graphics={trim=3cm 22cm 3cm 4cm,clip},
+  pre-output={\begin{mdframed}[
+    backgroundcolor=white,
+    hidealllines=true,
+    innerleftmargin=0pt,
+    innerrightmargin=0pt,
+    innertopmargin=4pt,
+    innerbottommargin=4pt
+  ]},
+  after-output={\end{mdframed}}]
     \documentclass{article}
     \usepackage[languages={en,fr},
     targetlang=fr]{langselect}
@@ -690,13 +702,14 @@ Section~@1.%
   \item \ldeen{Wie oben erwähnt, kann man die Paketoption
       \keyis-{targetlang}{babel} nutzen. Dann wird die Zielsprache durch die
       Hauptsprache von Babel bestimmt. Allerdings muss man dann auf die
-      Möglichkeit verzichten, die Zielsprache "`von außen"' (also mit
-      \cs{olsTargetLanguage} oder über den Jobnamen) zu steuern.}{As mentioned
-      above, you can use the package option \keyis-{targetlang}{babel}.
+      Möglichkeit verzichten, die Zielsprache "`von außen"' (also über 
+      den Jobnamen oder mit \cs{olsTargetLanguage}) zu steuern.
+      }{
+      As mentioned above, you can use the package option \keyis-{targetlang}{babel}.
       Then the target language is determined by the main language of Babel.
       However, you then have to forego the option of controlling the target language
-      "`from outside"' (i.e., with \cs{olsTargetLanguage} or via the job
-      name).} 
+      "`from outside"' (i.e., via the job
+      name or with \cs{olsTargetLanguage}).} 
   \item \ldeen{Umgekehrt lädt \thepkg\ Babel oder Polyglossia mit Hilfe der
       Optionen \option{load babel}"/\option{load polyglossia} landen und setzt
       die Zielsprache als Hauptsprache. Weitere Optionen an die Sprachpakete
@@ -705,21 +718,21 @@ Section~@1.%
       options \option{load babel}"/\option{load polyglossia} and sets
       the target language as the main language. Additional options for the
       language packages are passed as option arguments.}
-  \item \ldeen{Schließlich kann mit dem Hooks \code{langselect/language/before}
-      und \code{langselect/language/before} beliebiger Code
-    vor bzw.\ nach Ausgabe der Argumente des Sprachmakros eingefügt werden, z.\,B.\
-    kann hier \cs{foreignlanguage} genutzt werden.
+  \item \ldeen{Mit den beiden Hooks \code{langselect/language/before}
+      und \code{langselect/language/after}  kann schließlich beliebiger Code
+    vor bzw.\ nach Ausgabe der Argumente des Sprachmakros eingefügt werden. 
+    Hier kann z.\,B.\ \cs{foreignlanguage} genutzt werden.
     Der \code{before}-Hook hat als Parameter die Zielsprachenvariante.}{Finally, the hooks
     \code{langselect/language/before} and \code{langselect/language/after} can
     be used to insert any code  
-    before or after the arguments of the language macro are output, e.g.,
+    before or after the arguments of the language macro are output. E.g.,
     \cs{foreignlanguage} may be used here.
     The \code{before} hook has the (mapped) target language as a parameter.}
 \end{enumerate}
 \subsection{Csquotes}
 \label{sec:csquote}
 \ldeen{Unterschiedliche Sprachen haben unterschiedliche Konventionen zur Setzung
-  von Satzzeichen. Besonders stört das bei Anführungszeichen, da diese der
+  von Satzzeichen. Besonders stört dies bei Anführungszeichen, da diese der
   Zielsprache folgen sollen, aber durchaus auch außerhalb der Sprachmakros oder
   in Argumenten der Sternvariante stehen können.
   Das Paket \needpackage{csquotes} bietet dafür eine Lösung, indem es \cs{enquote}
@@ -748,15 +761,19 @@ Section~@1.%
 \section{FAQ}
 \label{sec:faq}
 \begin{itemize}
-  \item \textbf{\ldeen{Ist \thepkg\ noch experimentell?}{Is \thepkg\ still
-        experimental?}}
-    
-    \ldeen{Auf jeden Fall. Während ist beim Autoren zwar im täglichen Einsatz
-      ist, ist nicht auszuschließen, dass es unerwünschte Wechselwirkungen zu
-      anderen Paketen gibt. Die Versionsnummer zeigt dies
-      an.}{Absolutely. Although the author uses it on a daily basis, 
-      it cannot be ruled out that there may be undesirable interactions with
-      other packages. The version number indicates this.}
+  \item \textbf{\ldeen{Ist \thepkg\ stabil?}{Is \thepkg\ stable?}}
+    \ldeen{Obwohl das Paket mittlerweile die Versionsnummer 1 erreicht 
+      hat\footnote{Übrigens als einziges Paket im \pkg{osglecture}-Bundle}
+      und zumindest beim Autor intensiv im Einsatz ist, kann ich nicht versprechen, 
+      das es soweit fehlerfrei ist, dass es das Attribut "`stabil"' verdient.
+      Ich bitte darum, gefundene Fehler über @1 zu melden.
+    }{
+      Although the package has now reached version 1 
+      \footnote{Incidentally, it is the only package in the \pkg{osglecture} bundle}
+      and is in heavy use—at least by the author—I cannot promise 
+      that it is bug-free enough to deserve the "`stable"' label.
+      Please report any bugs you find via @1.     
+    .}{\url{https://github.com/werner-matthias/osglecture/issues}}
   \item \textbf{\ldeen{Wofür steht das "`o"' im \cs*{ols}-Prefix?}{What does the
         "`o"' in the \cs*{ols} prefix stand for}}?
     
