@@ -1,0 +1,39 @@
+\DocumentMetadata{}
+\input regression-test.tex
+\documentclass{ltx-talk}
+\usepackage{ltxtalk-theme}
+\setltxtalkcolors{
+  structure={HTML}{123456},
+  alert={HTML}{A00000},
+  example={HTML}{006000}
+}
+\styleltxtalkblock{block}{rule-color=structure,rule-thickness=.4pt,padding=2pt}
+\styleltxtalkblock{alertblock}{before=\smallskip,after=\smallskip}
+\setltxtalkitemize{
+  level-1={I},level-2={II},level-3={III},level-4={IV}
+}
+\begin{document}
+\begin{frame}{Inner theme}
+  \begin{block}{Block}Normal content.\end{block}
+  \begin{alertblock}{Alert}Alert content.\end{alertblock}
+  \begin{exampleblock}{Example}Example content.\end{exampleblock}
+  \begin{itemize}
+    \item One
+    \begin{itemize}
+      \item Two
+      \begin{itemize}
+        \item Three
+        \begin{itemize}\item Four\end{itemize}
+      \end{itemize}
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+\START
+\ExplSyntaxOn
+\cs_if_exist:NT \alertblock {\TYPE{alertblock:passed}}
+\cs_if_exist:NT \exampleblock {\TYPE{exampleblock:passed}}
+\str_if_eq:eeT {\labelitemi}{I} {\TYPE{itemize-level-1:passed}}
+\str_if_eq:eeT {\labelitemiv}{IV} {\TYPE{itemize-level-4:passed}}
+\ExplSyntaxOff
+\END
+\end{document}

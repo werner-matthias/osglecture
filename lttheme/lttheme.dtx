@@ -273,7 +273,7 @@ dieses Vorgehen.
 \subsection{\ldeen{Farben anpassen}{Customizing colours}}
 
 \ldeen{
-Die fünf semantischen Theme-Farben lassen sich mit
+Die acht semantischen Theme-Farben lassen sich mit
 \cs*{setltxtalkcolors} neu belegen. Jeder Wert besteht wie bei
 \cs*{definecolor} aus Farbmodell und Farbangabe:
 }{
@@ -286,13 +286,18 @@ Die fünf semantischen Theme-Farben lassen sich mit
     secondary = {HTML}{3C7A73},
     accent    = {HTML}{D6A800},
     text      = {HTML}{202020},
-    background= {HTML}{FFFFFF}
+    background= {HTML}{FFFFFF},
+    structure = {HTML}{005B50},
+    alert     = {HTML}{A00020},
+    example   = {HTML}{166534}
   }
 \end{sourcecode}
 
 \ldeen{
 Die entsprechenden Farbnamen tragen das Präfix \code{ltxtalk-}; für
-\code{background} lautet der Name abgekürzt \code{ltxtalk-bg}. Sie stehen
+\code{background} lautet der Name abgekürzt \code{ltxtalk-bg}. Die drei
+inneren Farben sind zusätzlich unter den von \cls{ltx-talk} verwendeten
+Namen \code{structure}, \code{alert} und \code{example} verfügbar. Sie stehen
 überall dort zur Verfügung, wo eine Farbe erwartet wird. Ob eine Änderung
 sichtbar wird, hängt davon ab, ob das aktive Theme an der betreffenden Stelle
 die semantische Farbe oder einen eigenen Farbnamen verwendet.
@@ -870,11 +875,40 @@ Slots, Templates und den Seitenstil bereitstellt.
   \command{setltxtalkcolors}[\marg{Farben}]
   \ldeen{
     Definiert die semantischen Farben \code{primary}, \code{secondary},
-    \code{accent}, \code{text} und \code{background}. Jeder Wert hat die Form
+    \code{accent}, \code{text}, \code{background}, \code{structure},
+    \code{alert} und \code{example}. Jeder Wert hat die Form
     \code{\Marg{Modell}\Marg{Wert}}, beispielsweise
     \code{primary=\Marg{HTML}\Marg{005B50}}. Die zugehörigen Farbnamen lauten
     \code{ltxtalk-primary}, \code{ltxtalk-secondary}, \code{ltxtalk-accent},
-    \code{ltxtalk-text} und \code{ltxtalk-bg}.
+    \code{ltxtalk-text}, \code{ltxtalk-bg}, \code{ltxtalk-structure},
+    \code{ltxtalk-alert} und \code{ltxtalk-example}. Die letzten drei werden
+    zugleich auf die Klassennamen \code{structure}, \code{alert} und
+    \code{example} abgebildet.
+  }{% TODO: English translation
+  }
+\end{commands}
+
+\subsection{\ldeen{Inneres Theme}{Inner theme}}
+
+\begin{commands}
+  \command{styleltxtalkblock}[\marg{Typ}\marg{Optionen}]
+  \ldeen{
+    Bearbeitet die Instanz \code{block}, \code{alertblock} oder
+    \code{exampleblock} des Template-Typs \code{lttheme-block}. Die
+    Standard-Schnittstelle umfasst \code{background}, \code{rule-color},
+    \code{rule-thickness}, \code{padding}, \code{corner-radius},
+    \code{shadow}, \code{shadow-offset}, \code{before} und \code{after}.
+    Eigene Template-Codes können weitere Darstellungen, etwa echte Rundungen
+    oder Schatten, ergänzen. Die Standardinstanz bleibt ohne Rahmen und
+    bewahrt damit die Darstellung der Klasse.
+  }{% TODO: English translation
+  }
+
+  \command{setltxtalkitemize}[\marg{Optionen}]
+  \ldeen{
+    Setzt mit \code{level-1} bis \code{level-4} das Aufzählungszeichen der
+    jeweiligen \code{itemize}-Ebene. Es wird nur die visuelle Marke geändert;
+    Listen- und Listenelement-Tags der Klasse bleiben unverändert.
   }{% TODO: English translation
   }
 \end{commands}
@@ -1230,7 +1264,7 @@ Slots eines Teilthemes implementiert werden.
 %</driver>
 %<*pkg>
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesExplPackage{ltxtalk-theme}{2026-07-15}{0.2}
+\ProvidesExplPackage{ltxtalk-theme}{2026-08-05}{0.3}
   {Theme engine for ltx-talk}
 
 \RequirePackage{xcoffins}
@@ -1384,6 +1418,9 @@ Slots eines Teilthemes implementiert werden.
     accent     .code:n = \__ltxtalk_set_color:nn { ltxtalk-accent } { #1 },
     text       .code:n = \__ltxtalk_set_color:nn { ltxtalk-text } { #1 },
     background .code:n = \__ltxtalk_set_color:nn { ltxtalk-bg } { #1 },
+    structure  .code:n = \__ltxtalk_set_semantic_color:nn { structure } { #1 },
+    alert      .code:n = \__ltxtalk_set_semantic_color:nn { alert } { #1 },
+    example    .code:n = \__ltxtalk_set_semantic_color:nn { example } { #1 },
   }
 
 \cs_new_protected:Npn \__ltxtalk_set_color:nn #1#2
@@ -1391,6 +1428,14 @@ Slots eines Teilthemes implementiert werden.
 
 \cs_new_protected:Npn \__ltxtalk_set_color_aux:nnn #1#2#3
   { \color_set:nnn { #1 } { #2 } { #3 } }
+
+\cs_new_protected:Npn \__ltxtalk_set_semantic_color:nn #1#2
+  { \__ltxtalk_set_semantic_color_aux:nnn { #1 } #2 }
+\cs_new_protected:Npn \__ltxtalk_set_semantic_color_aux:nnn #1#2#3
+  {
+    \color_set:nnn { ltxtalk-#1 } { #2 } { #3 }
+    \color_set_eq:nn { #1 } { ltxtalk-#1 }
+  }
 
 \NewDocumentCommand \setltxtalkcolors { m }
   {
@@ -1403,6 +1448,116 @@ Slots eines Teilthemes implementiert werden.
 \color_set:nnn { ltxtalk-accent } { HTML } { 66999B }
 \color_set:nnn { ltxtalk-text } { HTML } { 333333 }
 \color_set:nnn { ltxtalk-bg } { HTML } { FFFFFF }
+\__ltxtalk_set_semantic_color:nn { structure } { {HTML}{2B3A67} }
+\__ltxtalk_set_semantic_color:nn { alert }     { {HTML}{B00020} }
+\__ltxtalk_set_semantic_color:nn { example }   { {HTML}{166534} }
+
+% ==========================================
+% INNER THEME: BLOCKS AND LIST MARKERS
+% ==========================================
+
+\tl_new:N \l__ltxtalk_block_background_tl
+\tl_new:N \l__ltxtalk_block_rule_color_tl
+\tl_new:N \l__ltxtalk_block_before_tl
+\tl_new:N \l__ltxtalk_block_after_tl
+\dim_new:N \l__ltxtalk_block_rule_dim
+\dim_new:N \l__ltxtalk_block_padding_dim
+\dim_new:N \l__ltxtalk_block_corner_radius_dim
+\dim_new:N \l__ltxtalk_block_shadow_offset_dim
+\bool_new:N \l__ltxtalk_block_shadow_bool
+
+\NewTemplateType { lttheme-block } { 1 }
+\DeclareTemplateInterface { lttheme-block } { standard } { 1 }
+  {
+    background    : tokenlist = none,
+    rule-color    : tokenlist = structure,
+    rule-thickness: length = 0pt,
+    padding       : length = 0pt,
+    corner-radius : length = 0pt,
+    shadow        : boolean = false,
+    shadow-offset : length = 2pt,
+    before        : tokenlist =,
+    after         : tokenlist =
+  }
+\DeclareTemplateCode { lttheme-block } { standard } { 1 }
+  {
+    background = \l__ltxtalk_block_background_tl,
+    rule-color = \l__ltxtalk_block_rule_color_tl,
+    rule-thickness = \l__ltxtalk_block_rule_dim,
+    padding = \l__ltxtalk_block_padding_dim,
+    corner-radius = \l__ltxtalk_block_corner_radius_dim,
+    shadow = \l__ltxtalk_block_shadow_bool,
+    shadow-offset = \l__ltxtalk_block_shadow_offset_dim,
+    before = \l__ltxtalk_block_before_tl,
+    after = \l__ltxtalk_block_after_tl
+  }
+  { \__ltxtalk_typeset_block:n {#1} }
+
+\cs_new_protected:Npn \__ltxtalk_typeset_block:n #1
+  {
+    \group_begin:
+      \l__ltxtalk_block_before_tl
+      \dim_compare:nNnTF { \l__ltxtalk_block_rule_dim } > { 0pt }
+        {
+          \setlength\fboxsep{\l__ltxtalk_block_padding_dim}
+          \setlength\fboxrule{\l__ltxtalk_block_rule_dim}
+          \noindent\fcolorbox{\l__ltxtalk_block_rule_color_tl}
+            {\str_if_eq:VnTF \l__ltxtalk_block_background_tl {none}
+               {ltxtalk-bg}{\l__ltxtalk_block_background_tl}}
+            {\begin{minipage}{\dim_eval:n
+                {\linewidth-2\fboxsep-2\fboxrule}}#1\end{minipage}}
+        }
+        { #1 }
+      \l__ltxtalk_block_after_tl
+    \group_end:
+  }
+
+\clist_map_inline:nn { block, alertblock, exampleblock }
+  { \DeclareInstance { lttheme-block } {#1} { standard } { } }
+
+\NewDocumentCommand \styleltxtalkblock { m m }
+  { \EditInstance { lttheme-block } {#1} {#2} }
+
+\cs_new_protected:Npn \__ltxtalk_use_original_block:nnn #1#2#3
+  {
+    \IfNoValueTF {#1}
+      { \begin{ltxtalk-original-block}{#2}#3\end{ltxtalk-original-block} }
+      { \begin{ltxtalk-original-block}<#1>{#2}#3\end{ltxtalk-original-block} }
+  }
+
+\NewEnvironmentCopy { ltxtalk-original-block } { block }
+\RenewDocumentEnvironment { block } { d <> m +b }
+  { \UseInstance { lttheme-block } { block }
+      {\__ltxtalk_use_original_block:nnn {#1}{#2}{#3}} }
+  { }
+
+% Only provide the two variants while the class does not provide its own.
+\cs_if_exist:cF { alertblock }
+  {
+    \NewDocumentEnvironment { alertblock } { d <> m +b }
+      { \UseInstance { lttheme-block } { alertblock }
+          {\group_begin:\color_set_eq:nn {structure}{alert}
+           \__ltxtalk_use_original_block:nnn {#1}{#2}{#3}\group_end:} }
+      { }
+  }
+\cs_if_exist:cF { exampleblock }
+  {
+    \NewDocumentEnvironment { exampleblock } { d <> m +b }
+      { \UseInstance { lttheme-block } { exampleblock }
+          {\group_begin:\color_set_eq:nn {structure}{example}
+           \__ltxtalk_use_original_block:nnn {#1}{#2}{#3}\group_end:} }
+      { }
+  }
+
+\keys_define:nn { ltxtalk / itemize }
+  {
+    level-1 .code:n = \cs_set:Npn \labelitemi {#1},
+    level-2 .code:n = \cs_set:Npn \labelitemii {#1},
+    level-3 .code:n = \cs_set:Npn \labelitemiii {#1},
+    level-4 .code:n = \cs_set:Npn \labelitemiv {#1}
+  }
+\NewDocumentCommand \setltxtalkitemize { m }
+  { \keys_set:nn { ltxtalk / itemize } {#1} }
 
 % ==========================================
 % NAMED-SLOT-SYSTEM

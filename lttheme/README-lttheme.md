@@ -36,6 +36,14 @@ top of a layout theme with `\addltxtalktheme{anchovy}` or
 `\addltxtalktheme{carp}`. They change semantic colours only and leave the
 layout and tagged reading order untouched.
 
+The engine also controls the inner theme. `\setltxtalkcolors` accepts the
+semantic colours `structure`, `alert`, and `example`; `\styleltxtalkblock`
+styles the `block`, `alertblock`, and `exampleblock` template instances; and
+`\setltxtalkitemize` selects the marker for each of the four list levels.
+The fallback alert/example environments reuse ltx-talk's block implementation,
+including its overlay and tagging behaviour, and are only defined when the
+class has not supplied environments of the same names.
+
 The `tagging-slots` test additionally compares the XML representation of the
 tagged PDF structure. It requires the `show-pdf-tags` program distributed with
 TeX Live.
