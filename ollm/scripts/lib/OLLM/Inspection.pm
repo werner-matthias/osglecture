@@ -160,8 +160,10 @@ sub analyze {
         };
         next;
       }
-      if (($dependency->{target_generation} // '')
-          ne ($target->{generation_id} // '')) {
+      my $dependency_status = OLLM::State->dependency_status(
+        $spec, $dependency, $target,
+      );
+      if ($dependency_status eq 'stale') {
         push @issues, {
           severity => 'error', code => 'dependency-stale',
           message => "consumer used an older target generation",
@@ -170,9 +172,7 @@ sub analyze {
           current_generation => $target->{generation_id},
         };
       }
-      if (($dependency->{kind} // '') eq 'external-reference'
-          && defined($dependency->{label})
-          && !_export_has_label($spec, $target, $dependency->{label})) {
+      if ($dependency_status eq 'label-missing') {
         push @issues, {
           severity => 'error', code => 'label-missing',
           message => "required label '$dependency->{label}' is not exported",
@@ -235,19 +235,6 @@ sub _validate_projection {
       identity => _identity($result), path => $path,
     } if !-f $path || !-s _;
   }
-}
-
-sub _export_has_label {
-  my ($spec, $target, $label) = @_;
-  my $path = File::Spec->catfile(
-    OLLM::State->_generation_directory($spec, $target),
-    'reference.osgref.aux',
-  );
-  return 0 if !-f $path;
-  open my $handle, '<:raw', $path or return 0;
-  my $content = do { local $/; <$handle> };
-  close $handle;
-  return $content =~ /\\newlabel\{\Q$label\E\}\{/ ? 1 : 0;
 }
 
 sub _identity {

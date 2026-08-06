@@ -171,6 +171,7 @@ sub resolve_request {
   }
 
   my $resolved = {
+    manifest => $manifest,
     request => \%request,
     configuration => {
       kind    => 'toml',
@@ -181,6 +182,10 @@ sub resolve_request {
       user_defaults => $user_defaults,
       schema  => $manifest->{schema},
       parser  => $class->parser_info,
+      resolve_max_rounds => exists($manifest->{build})
+          && exists($manifest->{build}{resolve})
+          && exists($manifest->{build}{resolve}{max_rounds})
+        ? $manifest->{build}{resolve}{max_rounds} : 8,
     },
   };
   require OLLM::BuildFile;
@@ -329,7 +334,7 @@ sub validate_manifest {
   $lines //= {};
   die "$path: manifest root must be a table" if ref $manifest ne 'HASH';
   _known_keys($manifest,
-    [qw(schema bundle_preset project languages targets security deployment)],
+    [qw(schema bundle_preset project languages targets security deployment build)],
     $path, $lines, '');
   if (!defined $manifest->{schema} || ref $manifest->{schema}
       || $manifest->{schema} != $MANIFEST_SCHEMA) {
@@ -449,6 +454,20 @@ sub validate_manifest {
     }
   }
   _validate_deployment($manifest, $path, $lines) if exists $manifest->{deployment};
+  if (exists $manifest->{build}) {
+    die "$path: build must be a table" if ref $manifest->{build} ne 'HASH';
+    _known_keys($manifest->{build}, [qw(resolve)], $path, $lines, 'build');
+    if (exists $manifest->{build}{resolve}) {
+      my $resolve = $manifest->{build}{resolve};
+      die "$path: build.resolve must be a table" if ref $resolve ne 'HASH';
+      _known_keys($resolve, [qw(max_rounds)], $path, $lines, 'build.resolve');
+      if (exists $resolve->{max_rounds}) {
+        die "$path: build.resolve.max_rounds must be a positive integer"
+          if ref($resolve->{max_rounds})
+            || $resolve->{max_rounds} !~ /\A[1-9][0-9]*\z/;
+      }
+    }
+  }
   return 1;
 }
 

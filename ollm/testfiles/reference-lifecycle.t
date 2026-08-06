@@ -14,6 +14,7 @@ use lib 'scripts/lib';
 
 use OLLM::Config;
 use OLLM::Executor;
+use OLLM::Resolver;
 use OLLM::State;
 
 my $latexmk = qx{command -v latexmk 2>/dev/null};
@@ -152,5 +153,37 @@ is_deeply $consumer_result->{dependencies}, [{
   label => 'sec:scheduling',
   target_generation => $resolved->{build_spec}{generation_id},
 }], 'the promoted consumer records its actual external document dependency';
+
+open $source, '>:raw', File::Spec->catfile($unit, 'main.tex') or die $!;
+print {$source} <<'TEX';
+\documentclass[doctype=script]{osglecture}
+\begin{document}
+\lecture[Processes]{Processes and scheduling}{processes}
+\section{Earlier material}
+\section{Scheduling}\label{sec:scheduling}
+Lifecycle fixture.
+\end{document}
+TEX
+close $source;
+my $producer_status = OLLM::Executor->execute(
+  resolved => $resolved, latexmk_rc => abs_path('scripts/ollm-latexmk.rc'),
+);
+is $producer_status, 0, 'the producer can publish a changed label generation';
+my ($changed_producer) = grep {
+  $_->{physical_unit} eq '020-processes'
+} OLLM::State->_current_results($consumer_spec);
+isnt $changed_producer->{generation_id}, $consumer_result->{dependencies}[0]{target_generation},
+  'the consumer is stale before reference resolution';
+my $resolve_status = OLLM::Resolver->execute(
+  resolved => $consumer_resolved,
+  latexmk_rc => abs_path('scripts/ollm-latexmk.rc'),
+);
+is $resolve_status, 0, '--resolve rebuilds the stale consumer to a fixpoint';
+my ($resolved_consumer) = grep {
+  $_->{physical_unit} eq '030-consumer'
+} OLLM::State->_current_results($consumer_spec);
+is $resolved_consumer->{dependencies}[0]{target_generation},
+  $changed_producer->{generation_id},
+  'the resolved consumer records the current producer generation';
 
 done_testing;

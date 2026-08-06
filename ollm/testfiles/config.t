@@ -497,6 +497,15 @@ is $bundle_definitions->{targets}{slides}{document_metadata}, 'disabled',
   'example retains the Beamer target metadata default';
 is $bundle_definitions->{targets}{talk}{document_metadata}, 'required',
   'example overrides metadata policy for its ltx-talk target';
+my %resolve_manifest = (%$bundle_data,
+  build => { resolve => { max_rounds => 3 } },
+);
+ok(OLLM::Config->validate_manifest(\%resolve_manifest, '<resolve-test>', {}),
+  'a positive reference-resolution round limit is accepted');
+$resolve_manifest{build}{resolve}{max_rounds} = 0;
+eval { OLLM::Config->validate_manifest(\%resolve_manifest, '<resolve-test>', {}) };
+like $@, qr/max_rounds must be a positive integer/,
+  'a non-positive reference-resolution round limit is rejected';
 
 my $temporary = tempdir(CLEANUP => 1);
 open my $toml, '>', File::Spec->catfile($temporary, 'ollmconfig.toml')

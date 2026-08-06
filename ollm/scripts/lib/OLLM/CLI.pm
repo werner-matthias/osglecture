@@ -116,9 +116,22 @@ sub run {
   if ($resolved->{configuration}{kind} eq 'toml'
       || $resolved->{request}{context} eq 'standalone') {
     if ($plan->{resolve}) {
-      print STDERR
-        "ollm: --resolve is not implemented by the new build executor yet\n";
-      return 69;
+      require OLLM::Resolver;
+      my $status = eval {
+        OLLM::Resolver->execute(
+          resolved => $resolved,
+          latexmk_rc => File::Spec->catfile(
+            $arg{script_dir}, 'ollm-latexmk.rc',
+          ),
+        )
+      };
+      if (!defined $status) {
+        my $error = $@ || 'unknown reference-resolution error';
+        chomp $error;
+        print STDERR "ollm: $error\n";
+        return 1;
+      }
+      return $status;
     }
     require OLLM::Executor;
     my $status = eval {

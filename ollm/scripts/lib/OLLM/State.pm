@@ -240,6 +240,59 @@ sub _generation_directory {
   );
 }
 
+sub dependency_status {
+  my ($class, $spec, $dependency, $target) = @_;
+  return 'missing' if !$target;
+  my $used = $dependency->{target_generation} // '';
+  if (($dependency->{kind} // '') eq 'external-reference') {
+    my $label = $dependency->{label} // '';
+    my $current = $class->_export_label($spec, $target, $label);
+    return 'label-missing' if !defined $current;
+    return 'current' if $used ne '' && $used eq ($target->{generation_id} // '');
+    return 'stale' if $used eq '';
+    my %old = (%$target, generation_id => $used);
+    my $previous = $class->_export_label($spec, \%old, $label);
+    return defined($previous) && $previous eq $current ? 'current' : 'stale';
+  }
+  if (($dependency->{kind} // '') eq 'integration') {
+    return 'current' if $used ne '' && $used eq ($target->{generation_id} // '');
+    return 'stale' if $used eq '';
+    my %old = (%$target, generation_id => $used);
+    my $old = File::Spec->catfile($class->_generation_directory($spec, \%old), 'document.pdf');
+    my $new = File::Spec->catfile($class->_generation_directory($spec, $target), 'document.pdf');
+    return 'stale' if !-f $old || !-f $new;
+    return _file_digest($old) eq _file_digest($new) ? 'current' : 'stale';
+  }
+  return 'stale';
+}
+
+sub _export_label {
+  my ($class, $spec, $result, $label) = @_;
+  my $path = File::Spec->catfile(
+    $class->_generation_directory($spec, $result), 'reference.osgref.aux',
+  );
+  return if !-f $path;
+  open my $handle, '<:raw', $path or die "cannot read reference export '$path': $!\n";
+  while (my $line = <$handle>) {
+    if ($line =~ /\A\\newlabel\{\Q$label\E\}\{/) {
+      close $handle or die "cannot close reference export '$path': $!\n";
+      $line =~ s/[\r\n]+\z//;
+      return $line;
+    }
+  }
+  close $handle or die "cannot close reference export '$path': $!\n";
+  return;
+}
+
+sub _file_digest {
+  my ($path) = @_;
+  open my $handle, '<:raw', $path or die "cannot read artifact '$path': $!\n";
+  my $digest = Digest::SHA->new(256);
+  $digest->addfile($handle);
+  close $handle or die "cannot close artifact '$path': $!\n";
+  return $digest->hexdigest;
+}
+
 sub _read_result {
   my ($path) = @_;
   open my $handle, '<:raw', $path

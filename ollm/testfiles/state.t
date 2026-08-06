@@ -144,4 +144,25 @@ ok -f File::Spec->catfile($integration_published, 'document.pdf'),
 ok !-e File::Spec->catfile($integration_published, 'reference.osgref.aux'),
   'integration promotion does not create a reference export';
 
+my %new_target = (%$record, generation_id => 'e' x 64);
+my $new_directory = OLLM::State->_generation_directory($spec, \%new_target);
+make_path($new_directory);
+open my $new_reference, '>:raw',
+  File::Spec->catfile($new_directory, 'reference.osgref.aux') or die $!;
+print {$new_reference} "\\newlabel{target}{{42}{7}{Target}{section.1}{}}\n";
+close $new_reference;
+my $dependency = {
+  kind => 'external-reference', target_generation => $record->{generation_id},
+  unit_id => 'processes', doctype => 'script', language => 'de',
+  label => 'target', property => 'ref',
+};
+is(OLLM::State->dependency_status($spec, $dependency, \%new_target), 'current',
+  'an unchanged referenced label remains current across target generations');
+open $new_reference, '>:raw',
+  File::Spec->catfile($new_directory, 'reference.osgref.aux') or die $!;
+print {$new_reference} "\\newlabel{target}{{43}{8}{Target}{section.2}{}}\n";
+close $new_reference;
+is(OLLM::State->dependency_status($spec, $dependency, \%new_target), 'stale',
+  'a changed referenced label makes its consumer stale');
+
 done_testing;

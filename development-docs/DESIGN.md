@@ -44,18 +44,15 @@ OLLM soll:
 ### 2.1 Implementierungsstatus und TODO
 
 Der neue Executor implementiert derzeit normale und kontinuierliche Builds,
-`build --all`, `build --dry-run`, Standalone-Builds sowie die grundlegende
-Werkzeugprüfung durch `doctor`. Native Clean- und Informationsaktionen von
-`latexmk` können für einen aufgelösten Build durchgereicht werden.
-
-Als wesentliche von der CLI bereits erkannte OLLM-Funktion ist noch der
-Fixpunkt-Build mit `build --resolve` nicht implementiert und endet mit
-Exitcode 69.
+`build --all`, `build --resolve`, `build --dry-run`, Standalone-Builds sowie
+die grundlegende Werkzeugprüfung durch `doctor`. Native Clean- und
+Informationsaktionen von `latexmk` können für einen aufgelösten Build
+durchgereicht werden.
 
 Implementiert sind inzwischen der LaTeX-nahe Ergebnisrückkanal, atomare
 Resultat-/Referenzpromotion und der jobgebundene Snapshot der zuletzt
-promotierten Referenzexports. TODO bleiben deren Auswertung durch `check` und
-`report`, Fixpunktrunden sowie die vollständigen projekt- und
+promotierten Referenzexports sowie deren Auswertung durch `check`, `report`
+und Fixpunktrunden. TODO bleiben die vollständigen projekt- und
 backendabhängigen `doctor`-Prüfungen.
 
 ## 3. Nichtziele
@@ -1317,8 +1314,16 @@ semantische Abhängigkeiten in Runden. Die lokale Obergrenze lautet:
 max_rounds = 8
 ```
 
-Der konkrete Default bleibt bei der Implementierung festzulegen. Der Name
-`max_rounds` bezeichnet bewusst Fixpunktrunden und nicht Graphentiefe.
+Fehlt der Abschnitt, verwendet OLLM acht Runden. `max_rounds` muss eine
+positive Ganzzahl sein. Eine Abhängigkeit gilt bei einer neueren Generation
+nicht allein wegen der geänderten Generation-ID als veraltet: Bei
+Referenzabhängigkeiten wird der tatsächlich benutzte `\\newlabel`-Datensatz,
+bei Integrationsabhängigkeiten das PDF verglichen. Dadurch können auch Zyklen
+einen Fixpunkt erreichen, solange sich die jeweils konsumierten Daten nicht
+mehr ändern.
+
+Der Name `max_rounds` bezeichnet bewusst Fixpunktrunden und nicht
+Graphentiefe.
 
 Integrationsverzeichnisse wählen die zu integrierenden, bereits gebauten
 PDF-Artefakte auf der LaTeX-Ebene nach logischen Unit-IDs:
@@ -1444,7 +1449,7 @@ Mindestens:
 `--all` bezeichnet nur die im Manifest vorgesehenen Builds der aktuellen
 Einheit.
 
-`--resolve` gehört zu `build`, ist aber noch TODO; `check` bleibt im
+`--resolve` gehört zu `build`; `check` bleibt im
 spezifizierten Zielverhalten rein lesend.
 
 ### 15.4 OLLM- und latexmk-Argumente
