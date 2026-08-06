@@ -12,8 +12,7 @@ use File::Path qw(make_path);
 use File::Spec;
 use OLLM::BuildFile;
 use OLLM::State;
-
-our $VERSION = '0.1.0';
+use OLLM::Version qw($VERSION);
 
 sub execute {
   my ($class, %arg) = @_;

@@ -8,8 +8,7 @@ use Cwd qw(abs_path);
 use File::Spec;
 
 use OLLM::State;
-
-our $VERSION = '0.1.0';
+use OLLM::Version qw($VERSION);
 
 sub prepare {
   my ($class, %arg) = @_;

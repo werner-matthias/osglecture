@@ -10,8 +10,7 @@ use File::Basename qw(dirname);
 use File::Find qw(find);
 use File::Spec;
 use JSON::PP;
-
-our $VERSION = '0.1.0';
+use OLLM::Version qw($VERSION);
 our $MANIFEST_SCHEMA = 1;
 our $DEFINITION_SCHEMA = 1;
 our $LOCAL_SCHEMA = 1;

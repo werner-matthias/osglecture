@@ -9,8 +9,7 @@ use File::Basename qw(dirname);
 use File::Spec;
 use JSON::PP;
 use OLLM::Config;
-
-our $VERSION = '0.12.0-dev';
+use OLLM::Version qw($VERSION);
 
 my %ACTION = map { $_ => 1 }
   qw(build report check clean prune doctor convertconfig newtoml);
@@ -169,6 +168,7 @@ sub run {
   );
   {
     no warnings 'exec';
+    local $ENV{OLLM_VERSION} = $VERSION;
     exec { $command[0] } @command;
   }
   print STDERR "ollm: cannot execute latexmk: $!\n";

@@ -11,8 +11,7 @@ use File::Path qw(make_path);
 use File::Spec;
 use File::Temp qw(tempfile);
 use JSON::PP;
-
-our $VERSION = '0.1.0';
+use OLLM::Version qw($VERSION);
 our $SCHEMA = 1;
 
 sub build_spec {

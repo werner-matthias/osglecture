@@ -9,8 +9,7 @@ use File::Spec;
 use OLLM::BuildFile;
 use OLLM::Executor;
 use OLLM::State;
-
-our $VERSION = '0.1.0';
+use OLLM::Version qw($VERSION);
 
 sub execute {
   my ($class, %arg) = @_;

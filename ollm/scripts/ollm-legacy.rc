@@ -414,7 +414,11 @@ sub doc_dirs ($type) {
 }
 
 sub greeting {
-  print colored("OLLM - OSG LaTeX Lecture Maker $VERSION: an extension for latexmk to support osgbeamer.cls\n\n", "bold");
+  my $ollm_version = $ENV{OLLM_VERSION} // 'unknown';
+  print colored(
+    "OLLM Version $ollm_version, Legacy Mode, Version $VERSION\n\n",
+    "bold",
+  );
 }
 
 sub ollm_print_help {

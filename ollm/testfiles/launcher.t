@@ -8,6 +8,11 @@ my $version = qx{$^X scripts/ollm --version};
 is $?, 0, 'version exits successfully';
 like $version, qr/^ollm 0\.12\.0-dev/m, 'version is reported';
 
+require OLLM::Version;
+require OLLM::State;
+is $OLLM::State::VERSION, $OLLM::Version::VERSION,
+  'internal modules use the central OLLM program version';
+
 my $plan = qx{$^X scripts/ollm build script --language=en --source=main.tex --dry-run --format=json};
 is $?, 0, 'JSON dry-run exits successfully';
 like $plan, qr/"schema"\s*:\s*"org\.osglecture\.ollm\.build-request"/,
@@ -31,5 +36,13 @@ my $wrapper = do { local $/; <$cmd> };
 close $cmd;
 like $wrapper, qr/perl "\%~dp0ollm" \%\*/,
   'Windows wrapper delegates to the shared Perl launcher';
+
+open my $legacy, '<', 'scripts/ollm-legacy.rc'
+  or die "cannot read scripts/ollm-legacy.rc: $!";
+my $legacy_source = do { local $/; <$legacy> };
+close $legacy;
+like $legacy_source,
+  qr/OLLM Version \$ollm_version, Legacy Mode, Version \$VERSION/,
+  'legacy greeting distinguishes the OLLM and legacy-engine versions';
 
 done_testing;

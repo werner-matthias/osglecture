@@ -12,8 +12,7 @@ use File::Find qw(find);
 use File::Path qw(make_path remove_tree);
 use File::Spec;
 use JSON::PP;
-
-our $VERSION = '0.1.0';
+use OLLM::Version qw($VERSION);
 
 sub prepare {
   my ($class, %arg) = @_;

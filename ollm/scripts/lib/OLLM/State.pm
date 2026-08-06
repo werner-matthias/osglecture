@@ -16,8 +16,7 @@ use JSON::PP;
 use Time::HiRes qw(time);
 
 use OLLM::BuildFile;
-
-our $VERSION = '0.1.0';
+use OLLM::Version qw($VERSION);
 our $SCHEMA = 1;
 my $attempt_counter = 0;
 

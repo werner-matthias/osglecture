@@ -3,7 +3,7 @@ Featurewünsche.
 
 # OLLM
 * [x] clean/prune
-* [ ] resolve für Abhängigkeiten
+* [x] resolve für Abhängigkeiten
 * [x] report/check
 
 # osglecture + Ergänzungspakete
