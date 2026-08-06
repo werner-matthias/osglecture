@@ -1,5 +1,5 @@
 \input regression-test
-\documentclass[doctype=slides]{osglecture}
+\documentclass[standalone,doctype=slides]{osglecture}
 \lehrveranstaltung[Course short]{Course long}
 \title[Unit short]{Unit long}
 \author[Author short]{Author long}

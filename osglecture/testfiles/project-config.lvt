@@ -1,9 +1,30 @@
 \input regression-test
+\def\OSGLectureProjectManifestFile{project-config-manifest.toml}
+\def\OSGLectureJobFile{project-config.osgbuild.tex}
 \documentclass{osglecture}
+\title[U.~Title]{Unit Title}
+% An identical local value is compatible with project enforcement.
+\author[L.~Author]{Longform Author}
 \begin{document}
 \START
 \TYPE{project-config-loaded=\ProjectConfigLoaded}
 \TYPE{project-author=\OsgLectureAuthor}
 \TYPE{project-short-author=\OsgLectureShortAuthor}
+\TYPE{project-supervisor=\OsgLectureMetadataValue{supervisor}}
+\TYPE{project-short-supervisor=\OsgLectureMetadataShortValue{supervisor}}
+\TYPE{unit-title=\OsgLectureTitle}
+\TYPE{unit-short-title=\OsgLectureShortTitle}
+\TYPE{project-numbering=\OsgLectureProjectValue{numbering}}
+\TYPE{project-theme=\OsgLectureProjectValue{theme}}
+\OsgLectureProjectEnforcedTF{theme}
+  {\TYPE{project-theme-enforced=true}}
+  {\TYPE{project-theme-enforced=false}}
+\makeatletter
+\if@twoside
+  \TYPE{project-class-options=early}
+\else
+  \TYPE{project-class-options=missing}
+\fi
+\makeatother
 \END
 \end{document}

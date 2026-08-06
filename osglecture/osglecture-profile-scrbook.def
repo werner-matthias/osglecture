@@ -3,6 +3,7 @@
 \DeclareOsgLectureProfile{scrbook}
   {
     backend = scrbook,
+    capabilities = {longform,print},
     class = scrbook,
     doctypes = {script,article},
     course-target = title,

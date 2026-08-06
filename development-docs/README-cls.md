@@ -6,8 +6,11 @@ Architekturvertrag ist in `ARCHITECTURE.md` beschrieben.
 
 ## Projektweite TeX-Konfiguration
 
-Bei einem OLLM-Serienbuild lädt die Klasse die im BuildSpec angegebene
-Projektkonfiguration. Standardmäßig ist dies
+Bei einem OLLM-Serienbuild prüft die Klasse zunächst das durch
+`\OSGLectureProjectManifestFile` bezeichnete TOML-Manifest auf Existenz und
+lädt ausschließlich die durch `\OSGLectureJobFile` bezeichnete Auftragsdatei.
+Aus deren BuildSpec lädt sie anschließend die Projektkonfiguration.
+Standardmäßig ist dies
 `Include/projectconfig.tex`; Verzeichnis und Dateiname werden im
 Projektmanifest konfiguriert:
 
@@ -17,21 +20,51 @@ directory = "Include"
 config = "projectconfig.tex"
 ```
 
-Der Ladepunkt liegt nach Finalisierung des Modusgraphen und Initialisierung
-von `osglecture-metadata`, aber vor den übrigen Kerndiensten und dem
-Profil-Setup. Damit kann die Datei gemeinsame, modusspezifische Metadaten
-enthalten:
+Liegt daneben `documentmetadata.tex`, schaltet OLLM sie garantiert vor die
+Hauptquelle. Die nutzereditierbare Datei enthält selbst den frühen
+`\DocumentMetadata{...}`-Aufruf und kann
+`\OsgLectureRequestedLanguage` für die konkrete Buildsprache verwenden.
+
+Die Datei wird vor dem Laden der Basisklasse durch eine deklarative
+Bootstrap-Schicht gelesen. Frühe Werte wie Basisklassenoptionen wirken vor
+`\LoadClass`; mode-spezifische Metadaten werden zunächst gespeichert und erst
+nach Finalisierung des Modusgraphen angewendet:
 
 ```latex
 \author<presentation>[M.~M.]{Max Mustermann}
 \author<longform>[Mustermann]{Max Mustermann}
 ```
 
-Sie kann außerdem projektlokale Pakete aus demselben Verzeichnis laden, da
-OLLM `Include` beziehungsweise das konfigurierte Verzeichnis in `TEXINPUTS`
-einträgt. Doctype, Dokumentprofil und Modusgraph werden nicht in
-`projectconfig.tex` festgelegt; diese Entscheidungen müssen vor ihrem
-Ladepunkt bereits feststehen.
+Basisklassenoptionen und TeX-Projektpolicy werden deklarativ gesetzt:
+
+```latex
+\LectureProjectSetup{
+  class-options={twoside,open=right},
+  presentation-profile=beamer,
+  longform-profile=scrbook
+}
+\LectureProjectEnforce{theme=osg-accessible}
+```
+
+Der Targetvertrag liefert nur `profile-class=presentation|longform`. Die Klasse
+wählt damit einen der beiden Profilschlüssel. `identity-profile`, `theme`,
+`numbering` und `references` sind bereits registriert; ihre konsumierenden
+Subsysteme sind noch TODO.
+
+Metadatenfelder sind generisch erweiterbar:
+
+```latex
+\DeclareOsgLectureMetadataField{supervisor}
+\supervisor<longform>[A.~Prof.]{Ada Professor}
+```
+
+Später stehen `\OsgLectureMetadataValue{supervisor}` und
+`\OsgLectureMetadataShortValue{supervisor}` zur Verfügung. Eine Metadatenvorgabe
+kann mit `\EnforceLectureProjectConfiguration{...}` verbindlich gemacht werden.
+Die Priorität lautet `Fallback < Profil < Projekt < Unit < Enforcement`. Die
+Datei ist in dieser frühen Phase keine
+allgemeine Paket- oder Imperativschnittstelle; öffentliche späte Hooks werden
+separat definiert.
 
 ## Präsentationslisten in gemeinsamer Quelle
 

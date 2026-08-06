@@ -1,14 +1,16 @@
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
 \ProvidesExplPackage
   {osglecture-profiles}
-  {2026/07/29}
-  {0.1.0}
+  {2026/08/06}
+  {0.2.0}
   {Profile registry for osglecture}
 
 \ExplSyntaxOn
 
 \prop_new:N \g__osglecture_profiles_prop
 \tl_new:N \l__osglecture_profile_backend_tl
+\tl_new:N \l__osglecture_profile_engine_tl
+\tl_new:N \l__osglecture_profile_capabilities_tl
 \tl_new:N \l__osglecture_profile_class_tl
 \tl_new:N \l__osglecture_profile_doctypes_tl
 \tl_new:N \l__osglecture_profile_options_tl
@@ -29,9 +31,15 @@
 \msg_new:nnnn { osglecture-profiles } { incomplete-profile }
   { Document~profile~'#1'~does~not~define~'#2'. }
   { Every~profile~must~define~backend,~class,~and~doctypes. }
+\msg_new:nnnn { osglecture-profiles } { unsupported-engine }
+  { Document~profile~'#1'~requires~unsupported~engine~'#2'. }
+  { This~version~of~osglecture~supports~only~engine~'lualatex'. }
 
 \keys_define:nn { osglecture/profile }
   {
+    engine .tl_set:N = \l__osglecture_profile_engine_tl,
+    engine .initial:n = lualatex,
+    capabilities .clist_set:N = \l__osglecture_profile_capabilities_tl,
     backend .tl_set:N = \l__osglecture_profile_backend_tl,
     class .tl_set:N = \l__osglecture_profile_class_tl,
     doctypes .clist_set:N = \l__osglecture_profile_doctypes_tl,
@@ -53,6 +61,8 @@
 \NewDocumentCommand \DeclareOsgLectureProfile { m m }
   {
     \tl_clear:N \l__osglecture_profile_backend_tl
+    \tl_set:Nn \l__osglecture_profile_engine_tl {lualatex}
+    \tl_clear:N \l__osglecture_profile_capabilities_tl
     \tl_clear:N \l__osglecture_profile_class_tl
     \tl_clear:N \l__osglecture_profile_doctypes_tl
     \tl_clear:N \l__osglecture_profile_options_tl
@@ -71,6 +81,10 @@
       { \msg_fatal:nnnn {osglecture-profiles}{incomplete-profile}{#1}{doctypes} }
     \prop_gput:NnV \g__osglecture_profiles_prop {#1/backend}
       \l__osglecture_profile_backend_tl
+    \prop_gput:NnV \g__osglecture_profiles_prop {#1/engine}
+      \l__osglecture_profile_engine_tl
+    \prop_gput:NnV \g__osglecture_profiles_prop {#1/capabilities}
+      \l__osglecture_profile_capabilities_tl
     \prop_gput:NnV \g__osglecture_profiles_prop {#1/class}
       \l__osglecture_profile_class_tl
     \prop_gput:NnV \g__osglecture_profiles_prop {#1/doctypes}
@@ -99,6 +113,9 @@
     \OsgLectureLoadProfile{#1}
     \prop_if_in:NnF \g__osglecture_profiles_prop {#1/backend}
       { \msg_fatal:nnn {osglecture-profiles}{unknown-profile}{#1} }
+    \prop_get:NnN \g__osglecture_profiles_prop {#1/engine} \l_tmpb_tl
+    \str_if_eq:VnF \l_tmpb_tl {lualatex}
+      { \msg_fatal:nnnn {osglecture-profiles}{unsupported-engine}{#1}{\l_tmpb_tl} }
     \prop_get:NnN \g__osglecture_profiles_prop {#1/doctypes} \l_tmpa_tl
     \clist_if_in:VnF \l_tmpa_tl {#2}
       { \msg_fatal:nnnn {osglecture-profiles}{unsupported-doctype}{#1}{#2} }

@@ -3,6 +3,7 @@
 \DeclareOsgLectureProfile{beamer}
   {
     backend = beamer,
+    capabilities = {presentation,print},
     class = beamer,
     doctypes = {slides,handout},
     course-target = subtitle,

@@ -1,0 +1,168 @@
+\NeedsTeXFormat{LaTeX2e}[2022/06/01]
+\ProvidesExplPackage
+  {osglecture-project}
+  {2026/08/06}
+  {0.1.0}
+  {Deferred project configuration for osglecture}
+
+\ExplSyntaxOn
+
+\clist_new:N \g__osglecture_metadata_fields_clist
+\seq_new:N \g__osglecture_metadata_pending_seq
+\int_new:N \g__osglecture_configuration_priority_int
+\bool_new:N \g__osglecture_configuration_enforced_bool
+\tl_new:N \g__osglecture_project_class_options_tl
+\prop_new:N \g__osglecture_project_policy_prop
+\prop_new:N \g__osglecture_project_policy_priority_prop
+\prop_new:N \g__osglecture_project_policy_enforced_prop
+\msg_new:nnnn {osglecture-project}{enforced-conflict}
+  { Configuration~'#1'~is~enforced~as~'#2';~cannot~set~'#3'. }
+  { Change~the~project~enforcement~instead~of~overriding~it~locally. }
+\cs_new_protected:Npn \__osglecture_metadata_receiver:nnnnn #1#2#3#4#5
+  {
+    \seq_gput_right:Nx \g__osglecture_metadata_pending_seq
+      {
+        \exp_not:N \__osglecture_metadata_record:nnnnn
+        {\exp_not:n{#1}}{\exp_not:n{#2}}{\exp_not:n{#3}}{\exp_not:n{#4}}
+        {#5}
+      }
+  }
+
+\int_gset:Nn \g__osglecture_configuration_priority_int {20}
+\bool_gset_false:N \g__osglecture_configuration_enforced_bool
+
+\cs_new_protected:Npn \__osglecture_policy_set:nn #1#2
+  {
+    \prop_get:NnNTF \g__osglecture_project_policy_priority_prop {#1} \l_tmpa_tl
+      {
+        \prop_get:NnN \g__osglecture_project_policy_prop {#1} \l_tmpb_tl
+        \prop_get:NnN \g__osglecture_project_policy_enforced_prop {#1} \l_tmpc_tl
+        \int_compare:nNnTF {\g__osglecture_configuration_priority_int} < {\l_tmpa_tl}
+          {
+            \str_if_eq:VnT \l_tmpc_tl {true}
+              { \str_if_eq:VnF \l_tmpb_tl {#2}
+                  { \msg_fatal:nnxxx {osglecture-project}{enforced-conflict}
+                      {#1}{\l_tmpb_tl}{#2} } }
+          }
+          { \__osglecture_policy_store:nn {#1}{#2} }
+      }
+      { \__osglecture_policy_store:nn {#1}{#2} }
+  }
+\cs_new_protected:Npn \__osglecture_policy_store:nn #1#2
+  {
+    \prop_gput:Nnn \g__osglecture_project_policy_prop {#1}{#2}
+    \prop_gput:Nnx \g__osglecture_project_policy_priority_prop {#1}
+      {\int_use:N \g__osglecture_configuration_priority_int}
+    \prop_gput:Nnx \g__osglecture_project_policy_enforced_prop {#1}
+      {\bool_if:NTF \g__osglecture_configuration_enforced_bool {true}{false}}
+  }
+
+\keys_define:nn { osglecture/project }
+  {
+    class-options .tl_gset:N = \g__osglecture_project_class_options_tl,
+    presentation-profile .code:n =
+      { \__osglecture_policy_set:nn {presentation-profile}{#1} },
+    longform-profile .code:n =
+      { \__osglecture_policy_set:nn {longform-profile}{#1} },
+    identity-profile .code:n =
+      { \__osglecture_policy_set:nn {identity-profile}{#1} },
+    theme .code:n = { \__osglecture_policy_set:nn {theme}{#1} },
+    numbering .code:n = { \__osglecture_policy_set:nn {numbering}{#1} },
+    references .code:n = { \__osglecture_policy_set:nn {references}{#1} },
+  }
+
+\NewDocumentCommand \LectureProjectSetup { m }
+  { \keys_set:nn { osglecture/project } {#1} }
+\NewDocumentCommand \LectureProjectEnforce { m }
+  {
+    \int_gset:Nn \g__osglecture_configuration_priority_int {40}
+    \bool_gset_true:N \g__osglecture_configuration_enforced_bool
+    \keys_set:nn { osglecture/project } {#1}
+    \int_gset:Nn \g__osglecture_configuration_priority_int {20}
+    \bool_gset_false:N \g__osglecture_configuration_enforced_bool
+  }
+\NewDocumentCommand \EnforceLectureProjectConfiguration { m }
+  {
+    \int_gset:Nn \g__osglecture_configuration_priority_int {40}
+    \bool_gset_true:N \g__osglecture_configuration_enforced_bool
+    #1
+    \int_gset:Nn \g__osglecture_configuration_priority_int {20}
+    \bool_gset_false:N \g__osglecture_configuration_enforced_bool
+  }
+\NewExpandableDocumentCommand \OsgLectureProjectValue { m }
+  { \prop_item:Nn \g__osglecture_project_policy_prop {#1} }
+\NewDocumentCommand \OsgLectureProjectEnforcedTF { m m m }
+  {
+    \prop_get:NnNTF \g__osglecture_project_policy_enforced_prop {#1} \l_tmpa_tl
+      { \str_if_eq:VnTF \l_tmpa_tl {true}{#2}{#3} }
+      {#3}
+  }
+
+\NewExpandableDocumentCommand \OsgLectureProjectClassOptions { }
+  { \tl_use:N \g__osglecture_project_class_options_tl }
+
+\cs_new_protected:Npn \__osglecture_metadata_dispatch:nnnn #1#2#3#4
+  {
+    \__osglecture_metadata_receiver:nnnnn {#1} {#2} {#3} {#4}
+      { \int_use:N \g__osglecture_configuration_priority_int }
+  }
+
+\NewDocumentCommand \DeclareOsgLectureMetadataField { m }
+  {
+    \clist_if_in:NnF \g__osglecture_metadata_fields_clist {#1}
+      {
+        \clist_gput_right:Nn \g__osglecture_metadata_fields_clist {#1}
+        \clist_if_in:nnT {title,author,date} {#1}
+          {
+            \cs_if_exist:cT {#1}
+              { \cs_new_eq:cc { __osglecture_project_preexisting_#1 } {#1} }
+          }
+      }
+    \cs_if_exist:cF { __osglecture_project_proxy_#1 }
+      {
+        \exp_args:Nc \NewDocumentCommand
+          { __osglecture_project_proxy_#1 } { d<> O{} m }
+          {
+            \IfNoValueTF{##1}
+              { \__osglecture_metadata_dispatch:nnnn {#1} {} {##2} {##3} }
+              { \__osglecture_metadata_dispatch:nnnn {#1} {##1} {##2} {##3} }
+          }
+      }
+    \cs_set_eq:cc {#1} { __osglecture_project_proxy_#1 }
+  }
+
+\cs_new_protected:Npn \osglecture_project_suspend_metadata_commands:
+  {
+    \clist_map_inline:Nn \g__osglecture_metadata_fields_clist
+      {
+        \cs_if_eq:ccT {##1} { __osglecture_project_proxy_##1 }
+          {
+            \cs_if_exist:cTF { __osglecture_project_preexisting_##1 }
+              { \cs_set_eq:cc {##1} { __osglecture_project_preexisting_##1 } }
+              { \cs_undefine:c {##1} }
+          }
+      }
+  }
+
+\cs_new_protected:Npn \osglecture_configuration_priority_set:n #1
+  {
+    \int_gset:Nn \g__osglecture_configuration_priority_int {#1}
+    \bool_gset_false:N \g__osglecture_configuration_enforced_bool
+  }
+
+\int_gset:Nn \g__osglecture_configuration_priority_int {0}
+\keys_set:nn {osglecture/project}
+  {
+    presentation-profile=beamer,
+    longform-profile=scrbook,
+    identity-profile=osg,
+    theme=osg,
+    numbering=chapter,
+    references=external-on-demand
+  }
+\int_gset:Nn \g__osglecture_configuration_priority_int {20}
+
+\clist_map_inline:nn { title, subtitle, author, institute, date, course, event }
+  { \DeclareOsgLectureMetadataField{#1} }
+
+\ExplSyntaxOff

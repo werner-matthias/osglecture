@@ -3,3 +3,11 @@ Don't change this file in any respect.
 project-config-loaded=true
 project-author=LongformAuthor
 project-short-author=L. Author
+project-supervisor=AdaProfessor
+project-short-supervisor=A. Prof.
+unit-title=Unit Title
+unit-short-title=U.~Title
+project-numbering=section
+project-theme=osg-accessible
+project-theme-enforced=true
+project-class-options=early

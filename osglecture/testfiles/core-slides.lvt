@@ -1,5 +1,5 @@
 \input regression-test
-\documentclass{osglecture}
+\documentclass[standalone]{osglecture}
 \begin{document}
 \START
 \TYPE{doctype=\OsgLectureDocumentType}

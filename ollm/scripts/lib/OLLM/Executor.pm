@@ -189,7 +189,22 @@ sub command_for_spec {
     '--halt-on-error',
     '%O',
     '%S';
-  my @pretex;
+  my $build_file = File::Spec->catfile(
+    $spec->{build_directory}, "$spec->{job_id}.osgbuild.tex",
+  );
+  my $manifest = $spec->{project_manifest}
+    // die "BuildSpec has no project manifest";
+  for my $entry (
+    ['build-file', $build_file], ['project-manifest', $manifest],
+  ) {
+    die "$entry->[0] path contains unsafe TeX filename characters: $entry->[1]"
+      if $entry->[1] =~ /[{}%#\r\n]/;
+  }
+  $build_file =~ s{\\}{/}g;
+  $manifest =~ s{\\}{/}g;
+  my $pretex = "\\edef\\OSGLectureProjectManifestFile"
+    . "{\\detokenize{$manifest}}"
+    . "\\edef\\OSGLectureJobFile{\\detokenize{$build_file}}";
   if ($spec->{document_metadata}) {
     my $path = $spec->{document_metadata}{path};
     die "document metadata path contains unsafe TeX filename characters: $path"
@@ -198,9 +213,8 @@ sub command_for_spec {
     my $language = $spec->{language};
     die "language '$language' cannot be represented safely in metadata pre-TeX"
       if $language !~ /\A[A-Za-z0-9._+-]+\z/;
-    my $code = "\\def\\OsgLectureRequestedLanguage{$language}"
+    $pretex .= "\\def\\OsgLectureRequestedLanguage{$language}"
       . "\\input{\"$path\"}";
-    @pretex = ("-usepretex=$code");
   }
   return (
     'latexmk',
@@ -213,7 +227,7 @@ sub command_for_spec {
     "-outdir=$spec->{build_directory}",
     "-auxdir=$spec->{aux_directory}",
     "-pdflualatex=$engine",
-    @pretex,
+    "-usepretex=$pretex",
     ($request->{rebuild} ? ('-gg') : ()),
     @{ $request->{latexmk_args} // [] },
     $spec->{source},

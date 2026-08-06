@@ -1,6 +1,6 @@
 \input regression-test
 \DocumentMetadata{}
-\documentclass[doctype=handout,profile=ltx-talk]{osglecture}
+\documentclass[standalone,doctype=handout,profile=ltx-talk]{osglecture}
 \begin{document}
 \START
 \TYPE{doctype=\OsgLectureDocumentType}

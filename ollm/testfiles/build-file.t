@@ -49,10 +49,8 @@ like $spec->{structure_signature}, qr/\A[0-9a-f]{64}\z/,
   'build specification carries the canonical project-structure signature';
 is $spec->{shell_escape}, 'restricted',
   'manifest shell-escape policy reaches the build specification';
-is $spec->{latex}{theme}, 'osg',
-  'bundle-preset LaTeX defaults reach the build specification';
-is $spec->{document_profile}, 'scrbook',
-  'doctype-specific document profile reaches the build specification';
+is $spec->{profile_class}, 'longform',
+  'target profile class reaches the build specification';
 is $spec->{shared_tex_directory},
   abs_path(File::Spec->catdir($fixture, 'Include')),
   'shared TeX directory is resolved from the project manifest';
@@ -69,28 +67,13 @@ is $spec->{artifact},
   File::Spec->catfile($spec->{build_directory}, "$spec->{job_id}.pdf"),
   'artifact path is explicit';
 
-my %metadata_manifest = %$manifest;
-$metadata_manifest{latex} = {
-  %{ $manifest->{latex} // {} },
-  document_metadata => {
-    policy => 'enforce',
-    file   => 'Include/document-metadata.tex',
-  },
-};
-my $metadata_spec = OLLM::BuildFile->build_spec(
-  resolved       => $resolved,
-  manifest       => \%metadata_manifest,
-  unit_directory => $chapter,
-);
-is $metadata_spec->{document_metadata}{path},
+is $spec->{document_metadata}{path},
   abs_path(File::Spec->catfile(
-    $fixture, 'Include', 'document-metadata.tex',
+    $fixture, 'Include', 'documentmetadata.tex',
   )),
-  'enforced metadata file is normalized within the project root';
-like $metadata_spec->{document_metadata}{signature}, qr/\A[0-9a-f]{64}\z/,
-  'enforced metadata contents are signed into the build contract';
-isnt $metadata_spec->{config_signature}, $spec->{config_signature},
-  'metadata policy and contents affect the configuration signature';
+  'conventional document metadata file is discovered in shared TeX';
+like $spec->{document_metadata}{signature}, qr/\A[0-9a-f]{64}\z/,
+  'document metadata contents are signed into the build contract';
 
 my @moved_specs;
 for (1 .. 2) {
@@ -103,8 +86,9 @@ for (1 .. 2) {
   print {$moved_source} "\\documentclass{article}\n";
   close $moved_source;
   open my $moved_metadata, '>',
-    File::Spec->catfile($moved_shared, 'document-metadata.tex') or die $!;
-  print {$moved_metadata} "\\DocumentMetadata{}\n";
+    File::Spec->catfile($moved_shared, 'documentmetadata.tex') or die $!;
+  print {$moved_metadata}
+    "\\DocumentMetadata{lang=\\OsgLectureRequestedLanguage}\n";
   close $moved_metadata;
   open my $moved_config, '>',
     File::Spec->catfile($moved_shared, 'projectconfig.tex') or die $!;
@@ -129,7 +113,7 @@ for (1 .. 2) {
   );
   push @moved_specs, OLLM::BuildFile->build_spec(
     resolved       => \%moved_resolved,
-    manifest       => \%metadata_manifest,
+    manifest       => $manifest,
     unit_directory => $moved_unit,
   );
 }
@@ -139,10 +123,8 @@ is $moved_specs[0]{config_signature}, $moved_specs[1]{config_signature},
 my $content = OLLM::BuildFile->render($spec);
 like $content, qr/job-id=\{bs-020-script-de-processes\}/,
   'rendered build file binds itself to the job id';
-like $content, qr/theme=\{osg\}/,
-  'rendered build file contains effective LaTeX defaults';
-like $content, qr/document-profile=\{scrbook\}/,
-  'rendered build file contains the resolved document profile';
+like $content, qr/profile-class=\{longform\}/,
+  'rendered build file contains only the target profile class';
 like $content, qr/shared-tex-directory=\{[^}]*Include\}/,
   'rendered build file contains the absolute shared TeX directory';
 like $content, qr/project-config-file=\{projectconfig[.]tex\}/,
@@ -182,13 +164,20 @@ is(OLLM::BuildFile->write_atomic($build_file, $content), 0,
 
 my $document = File::Spec->catfile($temporary, 'integration.tex');
 open my $document_handle, '>', $document or die $!;
+my $manifest_file = $spec->{project_manifest};
+$manifest_file =~ s{\\}{/}g;
+my $job_file = $build_file;
+$job_file =~ s{\\}{/}g;
+print {$document_handle}
+  "\\edef\\OSGLectureProjectManifestFile{\\detokenize{$manifest_file}}\n",
+  "\\edef\\OSGLectureJobFile{\\detokenize{$job_file}}\n";
 print {$document_handle} <<'TEX';
 \documentclass{article}
 \usepackage{osglecture-config}
 \OsgLectureLoadBuildFileForJob
 \begin{document}
 \typeout{OSGTEST:doctype=\OsgLectureBuildValue{doctype}}
-\typeout{OSGTEST:document-profile=\OsgLectureBuildValue{document-profile}}
+\typeout{OSGTEST:profile-class=\OsgLectureBuildValue{profile-class}}
 \typeout{OSGTEST:language=\OsgLectureBuildValue{language}}
 Configuration bridge.
 \end{document}
@@ -226,8 +215,8 @@ local $/;
 my $log = <$log_handle>;
 close $log_handle;
 like $log, qr/OSGTEST:doctype=script/, 'LaTeX receives the document type';
-like $log, qr/OSGTEST:document-profile=scrbook/,
-  'LaTeX receives the resolved document profile';
+like $log, qr/OSGTEST:profile-class=longform/,
+  'LaTeX receives the target profile class';
 like $log, qr/OSGTEST:language=de/, 'LaTeX receives the language';
 
 done_testing;

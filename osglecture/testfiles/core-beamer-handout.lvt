@@ -1,5 +1,5 @@
 \input regression-test
-\documentclass[doctype=handout,profile=beamer]{osglecture}
+\documentclass[standalone,doctype=handout,profile=beamer]{osglecture}
 \begin{document}
 \START
 \TYPE{doctype=\OsgLectureDocumentType}

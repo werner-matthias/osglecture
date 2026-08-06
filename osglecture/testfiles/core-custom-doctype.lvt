@@ -13,7 +13,7 @@
 \AssignLectureModeBehavior{studyguide}{longform}
 \end{filecontents*}
 \documentclass
-  [doctype=studyguide,profile=studyguide-scrbook]
+  [standalone,doctype=studyguide,profile=studyguide-scrbook]
   {osglecture}
 \begin{document}
 \START

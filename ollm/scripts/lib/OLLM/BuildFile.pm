@@ -94,38 +94,21 @@ sub build_spec {
     $target_name, $language,
   );
   my $artifact = File::Spec->catfile($build_directory, "$job_id.pdf");
-  my $latex = _effective_latex(
-    $configuration->{definitions}{bundle_preset}{latex} // {},
-    $configuration->{user_defaults}{latex} // {},
-    $arg{manifest}{latex} // {},
-  );
   my $profile_class = $target->{profile_class}
-    // die "target '$target_name' has no document-profile class";
-  my $profile_key = $profile_class eq 'presentation'
-    ? 'presentation_profile' : 'script_profile';
-  my $document_profile =
-       $latex->{enforce}{$profile_key}
-    // $latex->{defaults}{$profile_key}
-    // ($doctype =~ /\A(?:slides|handout)\z/ ? 'beamer' : 'scrbook');
-  die "invalid document profile '$document_profile'; expected a portable "
-    . "profile identifier"
-    if $document_profile !~ /\A[A-Za-z0-9][A-Za-z0-9.-]*\z/;
+    // die "target '$target_name' has no profile class";
   my $shell_escape = $arg{manifest}{security}{shell_escape} // 'restricted';
   my $document_metadata;
   my $document_metadata_contract;
-  if (($arg{manifest}{latex}{document_metadata}{policy} // 'author')
-      eq 'enforce') {
-    my $configured = $arg{manifest}{latex}{document_metadata}{file};
-    die "latex.document_metadata.file is required for policy 'enforce'"
-      if !defined($configured) || $configured eq '';
-    die "latex.document_metadata.file must be project-root-relative"
-      if File::Spec->file_name_is_absolute($configured);
-    my $candidate = File::Spec->rel2abs($configured, $project_root);
+  my $document_metadata_file = 'documentmetadata.tex';
+  my $candidate = File::Spec->catfile(
+    $shared_tex_directory, $document_metadata_file,
+  );
+  if (-e $candidate) {
     my $canonical = abs_path($candidate)
-      // die "document metadata file not found: $candidate";
+      // die "cannot resolve document metadata file: $candidate";
     die "document metadata path is not a regular file: $canonical"
       if !-f $canonical;
-    _require_within($canonical, $project_root, 'document metadata file');
+    _require_within($canonical, $shared_tex_directory, 'document metadata file');
     open my $metadata_handle, '<:raw', $canonical
       or die "cannot read document metadata file '$canonical': $!";
     local $/;
@@ -137,7 +120,9 @@ sub build_spec {
       signature => sha256_hex($metadata_source),
     };
     $document_metadata_contract = {
-      path      => File::Spec->canonpath($configured),
+      path      => File::Spec->catfile(
+        $shared_tex_relative, $document_metadata_file,
+      ),
       signature => $document_metadata->{signature},
     };
   }
@@ -154,7 +139,6 @@ sub build_spec {
         languages => $arg{manifest}{languages},
         target    => $arg{manifest}{targets}{$target_name},
         security  => $arg{manifest}{security} // {},
-        latex     => $arg{manifest}{latex} // {},
       },
       bundle_preset =>
         $configuration->{definitions}{bundle_preset}{signature},
@@ -164,8 +148,6 @@ sub build_spec {
       language    => $language,
       physical_unit => $physical_unit,
       structure_signature => $structure_signature,
-      latex       => $latex,
-      document_profile => $document_profile,
       shell_escape => $shell_escape,
       document_metadata => $document_metadata_contract,
       project_tex => {
@@ -194,8 +176,10 @@ sub build_spec {
     available_languages => $arg{manifest}{languages}{available},
     bundle_preset       =>
       $configuration->{definitions}{bundle_preset}{reference},
-    document_profile    => $document_profile,
     project_root        => $project_root,
+    project_manifest    => abs_path($arg{resolved}{configuration}{path})
+      // die("project manifest not found: "
+        . $arg{resolved}{configuration}{path}),
     shared_tex_directory => $shared_tex_directory,
     shared_tex_relative  => $shared_tex_relative,
     project_config_file  => $project_config_file,
@@ -205,8 +189,6 @@ sub build_spec {
     build_directory     => $build_directory,
     aux_directory       => $build_directory,
     artifact            => $artifact,
-    latex               => $latex->{defaults},
-    latex_enforce       => $latex->{enforce},
     shell_escape        => $shell_escape,
     document_metadata   => $document_metadata,
     structure_signature => $structure_signature,
@@ -217,22 +199,6 @@ sub build_spec {
 sub render {
   my ($class, $spec) = @_;
   my @languages = map { _tex_atom($_) } @{ $spec->{available_languages} };
-  my %latex_key = (
-    identity_profile     => 'identity-profile',
-    numbering            => 'numbering',
-    presentation_backend => 'presentation-backend',
-    presentation_profile => 'presentation-profile',
-    references           => 'references',
-    script_profile       => 'script-profile',
-    theme                => 'theme',
-  );
-  my @latex = map {
-    "  $latex_key{$_}={" . _tex_atom($spec->{latex}{$_}) . "},"
-  } sort keys %{ $spec->{latex} };
-  my @enforce = map {
-    "  $latex_key{$_}={" . _tex_atom($spec->{latex_enforce}{$_}) . "},"
-  } sort keys %{ $spec->{latex_enforce} };
-  $enforce[-1] =~ s/,\z// if @enforce;
   my @lines = (
     '% Generated by OLLM. Do not edit.',
     "\\OsgLectureBuildSetup{",
@@ -252,21 +218,17 @@ sub render {
       ? "  generation-id={" . _tex_atom($spec->{generation_id}) . "},"
       : ()),
     "  target={" . _tex_atom($spec->{target}) . "},",
+    "  profile-class={" . _tex_atom($spec->{profile_class}) . "},",
     "  doctype={" . _tex_atom($spec->{doctype}) . "},",
     "  language={" . _tex_atom($spec->{language}) . "},",
     "  available-languages={" . join(',', @languages) . "},",
     "  bundle-preset={" . _tex_atom($spec->{bundle_preset}) . "},",
-    "  document-profile={" . _tex_atom($spec->{document_profile}) . "},",
     "  shared-tex-directory={" . _tex_path($spec->{shared_tex_directory}) . "},",
     "  project-config-file={" . _tex_atom($spec->{project_config_file}) . "},",
-    @latex,
     "  shell-escape={" . _tex_atom($spec->{shell_escape}) . "},",
     "  structure-signature={" . _tex_atom($spec->{structure_signature}) . "},",
     "  config-signature={" . _tex_atom($spec->{config_signature}) . "}",
     "}",
-    (@enforce
-      ? ("\\OsgLectureEnforceSetup{", @enforce, "}")
-      : ()),
     '',
   );
   return join "\n", @lines;
@@ -345,23 +307,6 @@ sub _parse_unit {
   my ($number, $unit_scope, $role, $slug) = ($1, $2, $3 // 'content', $4);
   die "invalid empty unit slug in '$name'" if $slug eq '';
   return ($number, $unit_scope, $role, $slug);
-}
-
-sub _effective_latex {
-  my ($preset, $user, $project) = @_;
-  my %defaults = (
-    %{ $preset->{defaults} // {} },
-    %{ $user->{defaults} // {} },
-    %{ $project->{defaults} // {} },
-  );
-  my %enforce = (
-    %{ $preset->{enforce} // {} },
-    %{ $project->{enforce} // {} },
-  );
-  return {
-    defaults => \%defaults,
-    enforce  => \%enforce,
-  };
 }
 
 sub _validate_job_atom {

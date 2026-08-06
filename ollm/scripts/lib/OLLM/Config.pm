@@ -329,7 +329,7 @@ sub validate_manifest {
   $lines //= {};
   die "$path: manifest root must be a table" if ref $manifest ne 'HASH';
   _known_keys($manifest,
-    [qw(schema bundle_preset project languages targets security latex deployment)],
+    [qw(schema bundle_preset project languages targets security deployment)],
     $path, $lines, '');
   if (!defined $manifest->{schema} || ref $manifest->{schema}
       || $manifest->{schema} != $MANIFEST_SCHEMA) {
@@ -439,38 +439,6 @@ sub validate_manifest {
         if $overwrite !~ /\A(?:explicit|automatic)\z/;
     }
   }
-  if (exists $manifest->{latex}) {
-    die "$path: latex must be a table" if ref $manifest->{latex} ne 'HASH';
-    _known_keys($manifest->{latex}, [qw(defaults enforce document_metadata)],
-      $path, $lines, 'latex');
-    for my $level (qw(defaults enforce)) {
-      next if !exists $manifest->{latex}{$level};
-      my $values = $manifest->{latex}{$level};
-      die "$path: latex.$level must be a table" if ref $values ne 'HASH';
-      _known_keys(
-        $values,
-        [qw(theme numbering references presentation_backend identity_profile
-            presentation_profile script_profile)],
-        $path, $lines, "latex.$level",
-      );
-      _require_string($values, $_, "$path: latex.$level")
-        for keys %$values;
-    }
-    if (exists $manifest->{latex}{document_metadata}) {
-      my $metadata = $manifest->{latex}{document_metadata};
-      die "$path: latex.document_metadata must be a table"
-        if ref $metadata ne 'HASH';
-      _known_keys($metadata, [qw(policy file)], $path, $lines,
-        'latex.document_metadata');
-      my $policy = _require_string(
-        $metadata, 'policy', "$path: latex.document_metadata",
-      );
-      die "$path: invalid latex.document_metadata.policy '$policy'"
-        if $policy !~ /\A(?:author|enforce)\z/;
-      _require_string($metadata, 'file', "$path: latex.document_metadata")
-        if $policy eq 'enforce' || exists $metadata->{file};
-    }
-  }
   _validate_deployment($manifest, $path, $lines) if exists $manifest->{deployment};
   return 1;
 }
@@ -550,7 +518,7 @@ sub load_user_defaults {
   }
   return {} if !defined $path || !-f $path;
   my ($data, $lines) = $class->_load_toml($path);
-  _known_keys($data, [qw(schema bundle_preset latex)], $path, $lines, '');
+  _known_keys($data, [qw(schema bundle_preset)], $path, $lines, '');
   if (!defined $data->{schema} || ref $data->{schema}
       || $data->{schema} != $USER_SCHEMA) {
     my $actual = defined($data->{schema}) && !ref($data->{schema})
@@ -561,19 +529,6 @@ sub load_user_defaults {
   }
   _require_string($data, 'bundle_preset', $path)
     if exists $data->{bundle_preset};
-  if (exists $data->{latex}) {
-    die "$path: latex must be a table" if ref $data->{latex} ne 'HASH';
-    _known_keys($data->{latex}, [qw(defaults)], $path, $lines, 'latex');
-    if (exists $data->{latex}{defaults}) {
-      my $values = $data->{latex}{defaults};
-      die "$path: latex.defaults must be a table" if ref $values ne 'HASH';
-      _known_keys($values,
-        [qw(theme numbering references presentation_backend identity_profile
-            presentation_profile script_profile)],
-        $path, $lines, 'latex.defaults');
-      _require_string($values, $_, "$path: latex.defaults") for keys %$values;
-    }
-  }
   $data->{path} = $path;
   return $data;
 }
@@ -667,7 +622,6 @@ sub resolve_definitions {
       path    => $preset{$preset_name}{path},
       reference => $preset_name,
       version => $preset{$preset_name}{data}{version},
-      latex   => $preset{$preset_name}{data}{latex} // {},
       signature => sha256_hex(
         JSON::PP->new->canonical->encode($preset{$preset_name}{data}),
       ),
@@ -699,7 +653,7 @@ sub _load_definition {
   my ($class, $path) = @_;
   my ($data, $lines) = $class->_load_toml($path);
   _known_keys($data,
-    [qw(schema kind name version latex doctype profile_class unit_scopes)],
+    [qw(schema kind name version doctype profile_class unit_scopes)],
     $path, $lines, '');
   if (!defined $data->{schema} || ref $data->{schema}
       || $data->{schema} != $DEFINITION_SCHEMA) {
@@ -744,21 +698,6 @@ sub _load_definition {
           "invalid target unit scope '$unit_scope'")
           if $unit_scope !~ /\A[a-z]{1,2}\z/;
       }
-    }
-    _fail_at($path, $lines, 'latex', "target must not define 'latex'")
-      if exists $data->{latex};
-  }
-  if (exists $data->{latex}) {
-    die "$path: latex must be a table" if ref $data->{latex} ne 'HASH';
-    _known_keys($data->{latex}, [qw(defaults enforce)], $path, $lines, 'latex');
-    for my $level (keys %{ $data->{latex} }) {
-      my $values = $data->{latex}{$level};
-      die "$path: latex.$level must be a table" if ref $values ne 'HASH';
-      _known_keys($values,
-        [qw(theme numbering references presentation_backend identity_profile
-            presentation_profile script_profile)],
-        $path, $lines, "latex.$level");
-      _require_string($values, $_, "$path: latex.$level") for keys %$values;
     }
   }
   return $data;

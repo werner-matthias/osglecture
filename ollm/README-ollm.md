@@ -245,50 +245,38 @@ optional `tex` locator. `[languages]` contains only the build-matrix values
 For a concrete series build, the resolved configuration is normalized into a
 job-bound `<jobname>.osgbuild.tex`. The reader in
 `../osglecture/osglecture-config.sty` validates its schema and requires its
-`job-id` to match TeX's current job name. `--dry-run --format=json` exposes the
-same normalized `build_spec` without writing or starting LaTeX.
+`job-id` to match TeX's current job name. OLLM identifies that concrete file
+before the class is loaded; the reader performs no filename or timestamp
+search. `--dry-run --format=json` exposes the same normalized `build_spec`
+without writing or starting LaTeX.
 
-The bundle preset and document-profile defaults may be selected in the
-per-user configuration:
+The per-user configuration selects only a bundle preset:
 
 ```toml
 schema = 1
 bundle_preset = "OSG lecture/1"
-
-[latex.defaults]
-presentation_profile = "beamer"
-script_profile = "scrbook"
 ```
 
-A project may enforce one shared, project-root-relative metadata file:
-
-```toml
-[latex.document_metadata]
-policy = "enforce"
-file = "Include/document-metadata.tex"
-```
-
-OLLM inserts it before the main source through latexmk's controlled pre-TeX
-mechanism and first defines `\OsgLectureRequestedLanguage`. The file contents
-participate in the configuration signature. OLLM does not inspect or rewrite
-`main.tex`; a second `\DocumentMetadata` in the source remains a normal LaTeX
-conflict which the author must resolve. User `-pretex` and `-usepretex`
-options are reserved and rejected.
+If `documentmetadata.tex` exists in the configured shared TeX directory
+(normally `Include/documentmetadata.tex`), OLLM always inserts it before the
+main source through latexmk's controlled pre-TeX mechanism. Immediately before
+that input it defines `\OsgLectureRequestedLanguage` from the concrete build.
+The user-owned file normally contains the actual `\DocumentMetadata{...}` and
+may use that symbol, directly or through `langselect`, for the target language.
+Its contents participate in the configuration signature. OLLM does not inspect
+or rewrite `main.tex`; a second `\DocumentMetadata` remains a normal LaTeX
+conflict. User `-pretex` and `-usepretex` options are reserved and rejected.
 
 OLLM reads `$XDG_CONFIG_HOME/ollm/config.toml`, or
 `$HOME/.config/ollm/config.toml` when `XDG_CONFIG_HOME` is unset. On Windows it
 uses `%APPDATA%\ollm\config.toml`. `OLLM_USER_CONFIG` selects an explicit file,
-which is also useful for testing. Without a file OLLM uses `OSG lecture/1`,
-`beamer`, and `scrbook`.
+which is also useful for testing. Without a file OLLM uses `OSG lecture/1`.
 
-The target's `profile_class` selects `presentation_profile` or
-`script_profile`. For that key, the implemented priority is: built-in fallback
-below bundle-preset defaults, user defaults, project `latex.defaults`, and
-finally effective enforcement (bundle preset followed by project
-`latex.enforce`). A CLI build request cannot select a document profile. The
-resolved `document-profile` is nevertheless recorded in the BuildSpec and its
-signed build file. An explicit TeX class option `profile=...` must match this
-resolved value when a build file is loaded.
+The target contributes only its abstract `profile_class` (`presentation` or
+`longform`) to the BuildSpec. The concrete TeX profile is selected by
+`presentation-profile` or `longform-profile` in `projectconfig.tex`; it is not
+an OLLM or CLI setting. This keeps presentation policy on the TeX side and
+allows a future non-TeX pipeline to use the same target contract.
 
 ## Build execution
 
@@ -304,6 +292,12 @@ Series builds use:
 for their PDF, recorder data, `latexmk` state, auxiliary files, and the
 job-bound `<jobname>.osgbuild.tex`. OLLM starts `latexmk` with LuaLaTeX,
 recorder mode, SyncTeX, an explicit job name, and controlled output paths.
+Before the source it defines `\OSGLectureProjectManifestFile` and
+`\OSGLectureJobFile` with the concrete normalized paths. The class checks that
+the manifest exists and loads only the selected job file; it never chooses a
+job file by name search or modification time. Absolute paths are an executor
+choice for reliable `-cd` and parallel operation, not a requirement on other
+runners: any unambiguous TeX-resolvable locator satisfies the class contract.
 
 Every series resolution also computes a path-independent signature of the
 ordered physical unit structure. The signature is written to the BuildSpec and

@@ -224,8 +224,8 @@ Serien- und Standalone-Dokumente an derselben Stelle konfiguriert:
 Das Manifest enthält unter \texttt{project} daher nur die technische ID und
 den optionalen TeX-Fundort. \texttt{languages} enthält ausschließlich die für
 die Buildmatrix benötigten Werte \texttt{available} und \texttt{default}.
-Die bewusst überschreibbaren beziehungsweise erzwingbaren LaTeX-Policies in
-\texttt{latex.defaults} und \texttt{latex.enforce} bleiben davon unberührt.
+Die TeX-seitigen Defaults und erzwungenen Projektvorgaben stehen in
+\texttt{Include/projectconfig.tex}; sie gehören nicht zum Buildmanifest.
 
 \subsection*{Bundle-Presets und Targets}
 
@@ -255,10 +255,27 @@ erzeugt einen an den Jobnamen gebundenen Auftrag:
 <jobname>.osgbuild.tex
 \end{verbatim}
 
+Vor dem Einlesen der Hauptdatei definiert OLLM die TeX-Symbole
+\texttt{\string\OSGLectureProjectManifestFile} und
+\texttt{\string\OSGLectureJobFile}. Sie bezeichnen das vorhandene
+Projektmanifest und genau diese Auftragsdatei. Die Klasse sucht nicht nach
+Aufträgen und wertet insbesondere keine Änderungszeiten aus. OLLM verwendet
+dafür normalisierte absolute Pfade; der Klassenvertrag erlaubt auch einen
+relativen Pfad, wenn er im gestarteten TeX-Prozess eindeutig auflösbar ist.
+
 Die Datei enthält unter anderem Dokumenttyp, Sprache, physische Einheit,
 Bundle-Preset und eine SHA-256-Konfigurationssignatur. Sie wird zunächst
 temporär im Zielverzeichnis geschrieben und nur bei verändertem Inhalt
 ersetzt. Dadurch lösen unveränderte Aufträge keinen unnötigen LaTeX-Neubau aus.
+
+Existiert im gemeinsamen TeX-Verzeichnis die nutzereditierbare Datei
+\texttt{documentmetadata.tex}, liest OLLM sie bei jedem Serienbuild garantiert
+vor der Hauptquelle ein. Unmittelbar zuvor definiert es
+\texttt{\string\OsgLectureRequestedLanguage} aus der Sprache des konkreten
+Auftrags. Die Datei enthält selbst den frühen
+\texttt{\string\DocumentMetadata}-Aufruf; ihr Name und ihre Aktivierung
+benötigen keinen zusätzlichen TOML-Schlüssel. Ihr Inhalt geht in die
+Konfigurationssignatur ein.
 
 Das Paket \texttt{osglecture-config} liest den Auftrag und lehnt ihn ab, wenn
 sein Schema nicht unterstützt wird oder die enthaltene Job-ID nicht mit dem

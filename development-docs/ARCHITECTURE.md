@@ -36,33 +36,36 @@ belasten.
 ### Dokumentprofile
 
 `bundle_preset` in der OLLM-Konfiguration bezeichnet das versionierte
-Bundle-Preset, beispielsweise `OSG lecture/1`. Davon getrennt bezeichnet
-`document-profile` die konkrete TeX-Integration. Die Targetdefinition wählt
-über ihre Profilklasse zunächst `presentation_profile` oder `script_profile`.
-OLLM löst diesen Schlüssel in folgender Priorität auf:
+Bundle-Preset, beispielsweise `OSG lecture/1`. Davon getrennt bezeichnet ein
+Dokumentprofil die konkrete TeX-Integration. Die Targetdefinition liefert nur
+`profile-class`; die Klasse wählt damit in `projectconfig.tex`
+`presentation-profile` oder `longform-profile`. Für TeX-Konfiguration gilt:
 
 ```text
-eingebauter Fallback
-    < Bundle-Preset-Defaults
-    < Nutzerdefaults
-    < Projekt-latex.defaults
-    < Bundle-Preset-Enforcement
-    < Projekt-latex.enforce
+eingebauter Fallback (0)
+    < Profil-Setup (10)
+    < projectconfig.tex (20)
+    < Unit-Quelle/Klassenoption (30)
+    < erzwungene Projektkonfiguration (40)
 ```
 
-Das Ergebnis wird in den BuildSpec geschrieben und kann nicht durch die CLI
-ausgewählt werden.
+Der konkrete Profilname wird nicht in den BuildSpec geschrieben und kann nicht
+durch die CLI ausgewählt werden.
 
 Die Klasse lädt Profildeskriptoren vor der Basisklasse. Ein Deskriptor
-deklariert unterstützte Dokumenttypen, Backend, Basisklasse,
+deklariert Engine, Fähigkeiten, unterstützte Dokumenttypen, Backend, Basisklasse,
 dokumenttypspezifische Klassenoptionen und optional eine Setup-Datei. Diese
 Setup-Datei wird erst nach Basisklasse und Moduskern geladen. Damit können
 weitere Profile ergänzt werden, ohne die Kernklasse um Backendfälle zu
 erweitern.
 
-Der stabile Deskriptorvertrag umfasst `backend`, `class`, `doctypes`,
+Der stabile Deskriptorvertrag umfasst `engine`, `capabilities`, `backend`, `class`, `doctypes`,
 `class-options`, `document-metadata`, `modes`, `mode-setup-file`,
 `setup-file`, `course-target` und `event-target`.
+`engine` ist derzeit auf `lualatex` beschränkt. `capabilities` beschreibt
+fachliche Fähigkeiten wie `presentation`, `longform` und `print`, aber keine
+externen Programme. Eine spätere tex4ht- oder Pandoc-Pipeline bleibt ein vom
+TeX-Profil getrennter Buildvertrag.
 `mode-setup-file` wird vor Aktivierung und Finalisierung des Modusgraphen
 geladen; `setup-file` danach. Nur die erste Datei darf den Graphen erweitern.
 
@@ -74,22 +77,33 @@ Mitgeliefert werden zunächst:
 
 Die gegenwärtige Version von `ltx-talk` verlangt `\DocumentMetadata{}` vor
 `\documentclass`. Ein Wrapper kann diese Initialisierung technisch nicht
-nachholen. Sie darf im Autorenmodell weiterhin in der Quelle oder gemeinsamem
-Projektcode stehen. Alternativ erzwingt das Projekt mit
-`latex.document_metadata.policy = "enforce"` eine gemeinsame Datei: OLLM
-definiert vor dem Hauptdokument `\OsgLectureRequestedLanguage` und liest die
-Datei über latexmks kontrollierten PreTeX-Mechanismus ein. OLLM untersucht
-`main.tex` nicht; ein zusätzlicher Aufruf bleibt ein sichtbarer LaTeX-Konflikt.
+nachholen. Existiert `documentmetadata.tex` im gemeinsamen TeX-Verzeichnis,
+liest OLLM diese nutzereditierbare Datei garantiert vor dem Hauptdokument ein.
+Zuvor definiert es `\OsgLectureRequestedLanguage`; die Datei beziehungsweise
+`langselect` kann damit die auftragsabhängige Sprache einsetzen. OLLM
+untersucht `main.tex` nicht; ein zusätzlicher `\DocumentMetadata`-Aufruf bleibt
+ein sichtbarer LaTeX-Konflikt.
 
 Im Standalone-Betrieb kann `profile=...` als Klassenoption verwendet werden.
-Bei einer OLLM-Auftragsdatei ist die Klassenoption nur zulässig, wenn sie dem
-aufgelösten `document-profile` entspricht; ein Widerspruch ist ein Fehler.
+Auch bei einer OLLM-Auftragsdatei kann sie einen normalen Projektwert für
+Diagnosezwecke überschreiben. Ein Widerspruch zu einem mit
+`\LectureProjectEnforce` erzwungenen Profil ist ein Fehler.
 
-Die Klassenoption `standalone` erzwingt den lokalen Konfigurationsweg. Existiert
-für den tatsächlichen Jobnamen eine Auftragsdatei, wird sie bewusst nicht
-geladen und eine Warnung ausgegeben. Ohne Auftragsdatei bleibt Standalone der
-implizite Zustand; die Option ist dann lediglich eine ausdrückliche
-Zusicherung.
+Die beiden Startwege sind explizit und disjunkt. `standalone` wählt den lokalen
+Konfigurationsweg. Andernfalls muss der Runner vor der Hauptdatei
+`\OSGLectureProjectManifestFile` und `\OSGLectureJobFile` definieren. Die Klasse
+prüft zunächst nur die Existenz des bezeichneten TOML-Manifests, ohne es zu
+lesen, und lädt danach ausschließlich die bezeichnete Auftragsdatei. Sie sucht
+weder nach `<jobname>.osgbuild.tex` noch nach der jüngsten Auftragsdatei.
+Fehlt einer der beiden Zeiger, fehlt eine bezeichnete Datei oder sind
+`standalone` und ein Runner-Zeiger gleichzeitig aktiv, bricht die Klasse ab.
+
+Die Zeiger sind Pfad-Locators, keine portablen Projektmetadaten. Relative und
+absolute TeX-auflösbare Pfade sind zulässig. OLLM erzeugt normalisierte absolute
+Pfade, weil latexmks `-cd`, verschiedene Buildverzeichnisse und parallele
+Prozesse dann keinen Einfluss auf ihre Auflösung haben. Die Pfade werden nur
+in flüchtigen Buildkommandos verwendet und nicht in transportierbare
+Projektdateien geschrieben.
 
 ### Vertragsstatus für Folgearbeiten
 
@@ -373,17 +387,19 @@ nicht.
 ### 3.3 Serie und Standalone sind zwei gleichwertige Kontexte
 
 Im Serienbetrieb liefert OLLM Informationen über Verzeichnisstruktur, Kapitel,
-Sprache, Dokumenttyp und gemeinsame Daten. Ohne passende Auftragsdatei
-schaltet die Klasse automatisch in den Standalone-Modus. Die Klassenoption
-`standalone` erzwingt diesen Zustand und ignoriert eine vorhandene
-Auftragsdatei mit einer Warnung.
+Sprache, Dokumenttyp und gemeinsame Daten. Ein Serienbetrieb verlangt immer
+ein vorhandenes TOML-Projektmanifest und einen durch den Runner eindeutig
+bezeichneten Auftrag. Ohne diesen Kontext bricht die Klasse ab. Der lokale
+Betrieb muss mit der Klassenoption `standalone` ausdrücklich gewählt werden;
+Runner-Zeiger und `standalone` gleichzeitig sind ein Fehler.
 
 Das ist fachlich sinnvoll: Autoreninhalte sollen sowohl als Teil einer Vorlesungsreihe als auch isoliert übersetzbar sein. Der heutige Code behandelt Standalone jedoch teilweise als Rückfallpfad. Künftig sollten beide Kontexte klar spezifizierte, getestete Betriebsarten sein:
 
 - **Standalone:** alle erforderlichen Angaben kommen aus Dokumentoptionen und lokalen Metadaten.
 - **Serie:** eine externe Konfigurationsquelle ergänzt Defaults, Pfade und Kapitelkontext.
 
-Eine nicht vorhandene Serienkonfiguration darf keine impliziten Seiteneffekte außerhalb dieser Umschaltung haben.
+Eine nicht vorhandene Serienkonfiguration führt insbesondere nicht zu einer
+impliziten Umschaltung auf Standalone.
 
 ### 3.4 Konfiguration besitzt Herkunft und Priorität
 
@@ -392,14 +408,19 @@ Klassenoptionen übernommen. Eine geladene Auftragsdatei füllt nicht explizit
 gesetzte Werte. Explizite Abweichungen sind zu Debugzwecken erlaubt und
 erzeugen eine Warnung; der BuildSpec selbst bleibt unverändert.
 
-Das Dokumentprofil ist strenger: OLLM löst es nach der im Abschnitt
-„Dokumentprofile“ beschriebenen Priorität auf. Eine explizite Klassenoption
-darf diesen Wert bei einer Auftragsdatei nicht überschreiben, sondern muss
-identisch sein. Ein Widerspruch ist ein Fehler.
+Das Dokumentprofil löst osglecture aus der Profilklasse des Targets und der
+TeX-Projektpolicy auf. Eine explizite Klassenoption darf einen normalen
+Projektwert zu Diagnosezwecken überschreiben, nicht jedoch einen erzwungenen
+Wert. Ein solcher Widerspruch ist ein Fehler.
 
 ### 3.5 Metadaten gehören zum Dokumentmodell
 
-Titel, Autor, Datum, Veranstaltung, Institution, URL und Logo werden teilweise sehr früh benötigt, obwohl ihre endgültigen Befehle erst nach dem Laden der Basisklasse existieren. Die Klasse löst dies durch verzögerte Ausführung: Sie sammelt Titelbefehle aus der Serienkonfiguration in einem Hook und führt sie später erneut aus.
+Titel, Autor, Datum, Veranstaltung, Institution, URL und Logo werden teilweise
+sehr früh benötigt, obwohl ihre endgültigen Backendbefehle erst nach dem Laden
+der Basisklasse existieren. `osglecture-project` erfasst sie deshalb generisch
+als Daten aus Feldname, Modusselektor, Kurz- und Langwert sowie
+Herkunftspriorität. `osglecture-metadata` wertet die Datensätze später aus;
+die Projektdatei wird weder erneut gelesen noch als Hook wiederholt.
 
 Die zugrunde liegende Idee ist richtig: Metadaten sind Daten, keine
 unmittelbaren Layoutaktionen. `osglecture-metadata` realisiert dafür den
@@ -409,6 +430,8 @@ gemeinsamen Kern:
 - Validierung erfolgt unabhängig vom Ausgabemodus.
 - Beamer- und Skriptadapter übertragen die Werte in die jeweilige Basisklasse.
 - Kurz- und Langformen sowie modusspezifische Varianten haben eine einheitliche Syntax.
+- Weitere Felder lassen sich mit `\DeclareOsgLectureMetadataField` registrieren
+  und über generische Wertzugriffe auslesen.
 
 Die öffentliche Oberfläche bleibt dabei bewusst LaTeX-typisch. Etablierte
 Befehle wie `\title`, `\author`, `\date` und `\institute` werden nicht durch
@@ -473,8 +496,9 @@ portable Moduslogik wie Autoreninhalte:
 
 Diese Auswahl wirkt ausschließlich auf Metadaten und Inhalt. Sie darf weder
 Dokumenttyp noch Backend nachträglich ändern. Eine spätere lokale
-Metadatenangabe im Hauptdokument überschreibt die projektweite Vorgabe nach der
-üblichen LaTeX-Reihenfolge.
+Metadatenangabe im Hauptdokument überschreibt die projektweite Vorgabe aufgrund
+der expliziten Herkunftspriorität `Profil < Projekt < Unit < Enforcement`, nicht lediglich
+aufgrund der Lesereihenfolge.
 
 Damit entfällt ein großer Teil des temporären Überschreibens und Wiederherstellens fremder Befehle.
 
@@ -788,10 +812,13 @@ Zu diesen normalisierten Werten gehören `shared-tex-directory` und
 `project-config-file`. OLLM löst das im Projektmanifest standardmäßig als
 `Include/projectconfig.tex` beschriebene Paar auf, setzt den absoluten
 Verzeichnispfad in `TEXINPUTS` und transportiert ihn jobgebunden. Die Klasse
-liest weder TOML noch sucht sie selbst nach dem Projektroot. Sie lädt die
-Projektkonfiguration erst nach Finalisierung des Modusgraphen und
-Initialisierung ihrer Metadatenoberfläche; damit ist die Datei mode-aware,
-aber keine konkurrierende Quelle für frühe Profil- oder Modusentscheidungen.
+liest weder TOML noch sucht sie selbst nach dem Projektroot. Sie liest die
+Projektkonfiguration jedoch bereits vor `\LoadClass` durch die
+basisklassenunabhängige Bootstrap-Schicht `osglecture-project`. Deklarationen
+werden dabei gespeichert und erst in ihrer zulässigen Phase materialisiert.
+So können `class-options` früh wirken, während mode-spezifische Metadaten erst
+nach Finalisierung des Modusgraphen ausgewählt und an das Backend übertragen
+werden.
 
 ### 5.2 Frühe und späte Optionen sind vermischt
 
@@ -890,26 +917,28 @@ Sie sollte nicht:
 Folgende Namen und Phasen sind die öffentlichen Anknüpfungspunkte für
 Dokumentprofile und eigenständige Fachpakete:
 
-1. Das Dokumentprofil wird ausgewählt und lädt die Basisklasse.
-2. `osglecture-modes` deklariert die portable Grundmatrix.
-3. `osglecture` deklariert die stabilen Verhaltensklassen
+1. Auftrag und Dokumentprofil werden ausgewählt; der Profildeskriptor liefert
+   frühe Defaults.
+2. `osglecture-project` liest `projectconfig.tex` deklarativ und speichert
+   frühe Optionen sowie noch nicht ausgewertete Metadaten.
+3. Profil-, Projekt- und explizite Unit-Klassenoptionen werden zusammengeführt;
+   danach wird die Basisklasse genau einmal geladen.
+4. `osglecture-modes` deklariert die portable Grundmatrix.
+5. `osglecture` deklariert die stabilen Verhaltensklassen
    `presentation-dynamic`, `presentation-static` und `longform`.
-4. `mode-setup-file` darf vor Aktivierung des Blattmodus zusätzliche Modi,
+6. `mode-setup-file` darf vor Aktivierung des Blattmodus zusätzliche Modi,
    Elternkanten, Aliase und Verhaltenszuordnungen deklarieren.
-5. Die Klasse aktiviert den Doctype als Blattmodus, ergänzt Profilmodi und
+7. Die Klasse aktiviert den Doctype als Blattmodus, ergänzt Profilmodi und
    finalisiert den Modusgraphen.
-6. `osglecture-metadata` bindet die Titelmetadaten an die nativen
-   Backendbefehle.
-7. Die jobgebundene Projektkonfiguration aus dem gemeinsamen TeX-Verzeichnis
-   wird geladen. Sie darf den finalisierten Modusgraphen für Metadaten- und
-   Inhaltsauswahl verwenden, aber nicht mehr erweitern.
-8. Die Klassenpakete `osglecture-presitemize` und
+8. `osglecture-metadata` wertet die gespeicherten Selektoren aus und bindet die
+   zutreffenden Metadaten an die nativen Backendbefehle.
+9. Die Klassenpakete `osglecture-presitemize` und
    `osglecture-twocolumns` binden ihre Projektionen an den finalisierten
    Modusgraphen, nicht an konkrete Profile oder Backends.
-9. `setup-file` darf Backendadapter, Formatierung und Implementierungen
+10. `setup-file` darf Backendadapter, Formatierung und Implementierungen
    semantischer Befehle registrieren. Der Modusgraph ist zu diesem Zeitpunkt
    bereits unveränderlich.
-10. Spätestens zu `\begin{document}` prüft
+11. Spätestens zu `\begin{document}` prüft
    `\FinalizeModeAwareCommands` die vollständigen Befehlsverträge.
 
 Für ein eigenständiges Fachpaket folgt daraus:

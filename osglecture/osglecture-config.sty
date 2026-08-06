@@ -1,14 +1,13 @@
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
 \ProvidesExplPackage
   {osglecture-config}
-  {2026/08/05}
-  {0.2.0}
+  {2026/08/06}
+  {0.3.0}
   {Build-request reader for osglecture}
 
 \ExplSyntaxOn
 
 \prop_new:N \g__osglecture_build_prop
-\prop_new:N \g__osglecture_enforce_prop
 \bool_new:N \g__osglecture_build_loaded_bool
 
 \msg_new:nnnn { osglecture-config } { unsupported-schema }
@@ -23,6 +22,15 @@
 \msg_new:nnnn { osglecture-config } { file-not-found }
   { OSG~lecture~build~file~'#1'~was~not~found. }
   { Generate~it~with~OLLM~or~use~standalone~class~options. }
+\msg_new:nnnn { osglecture-config } { job-symbol-missing }
+  { No~OLLM~job~was~specified~for~this~series~build. }
+  { Start~the~build~with~OLLM~or~select~the~class~option~'standalone'. }
+\msg_new:nnnn { osglecture-config } { manifest-symbol-missing }
+  { No~project~manifest~was~specified~for~this~series~build. }
+  { Start~the~build~with~OLLM~or~select~the~class~option~'standalone'. }
+\msg_new:nnnn { osglecture-config } { manifest-not-found }
+  { The~project~manifest~'#1'~was~not~found. }
+  { Restore~the~series~manifest~or~select~the~class~option~'standalone'. }
 
 \cs_new_protected:Npn \__osglecture_build_put:nn #1#2
   { \prop_gput:Nnn \g__osglecture_build_prop {#1} {#2} }
@@ -47,32 +55,17 @@
     generation-id       .code:n =
       \__osglecture_build_put:nn {generation-id} {#1},
     target              .code:n = \__osglecture_build_put:nn {target} {#1},
+    profile-class       .code:n = \__osglecture_build_put:nn {profile-class} {#1},
     doctype             .code:n = \__osglecture_build_put:nn {doctype} {#1},
     language            .code:n = \__osglecture_build_put:nn {language} {#1},
     available-languages .code:n =
       \__osglecture_build_put:nn {available-languages} {#1},
     bundle-preset       .code:n =
       \__osglecture_build_put:nn {bundle-preset} {#1},
-    document-profile    .code:n =
-      \__osglecture_build_put:nn {document-profile} {#1},
     shared-tex-directory .code:n =
       \__osglecture_build_put:nn {shared-tex-directory} {#1},
     project-config-file .code:n =
       \__osglecture_build_put:nn {project-config-file} {#1},
-    presentation-backend .code:n =
-      \__osglecture_build_put:nn {presentation-backend} {#1},
-    presentation-profile .code:n =
-      \__osglecture_build_put:nn {presentation-profile} {#1},
-    script-profile       .code:n =
-      \__osglecture_build_put:nn {script-profile} {#1},
-    identity-profile    .code:n =
-      \__osglecture_build_put:nn {identity-profile} {#1},
-    modes               .code:n = \__osglecture_build_put:nn {modes} {#1},
-    mode-setup-file     .code:n =
-      \__osglecture_build_put:nn {mode-setup-file} {#1},
-    theme               .code:n = \__osglecture_build_put:nn {theme} {#1},
-    numbering           .code:n = \__osglecture_build_put:nn {numbering} {#1},
-    references          .code:n = \__osglecture_build_put:nn {references} {#1},
     shell-escape        .code:n =
       \__osglecture_build_put:nn {shell-escape} {#1},
     structure-signature .code:n =
@@ -81,35 +74,12 @@
       \__osglecture_build_put:nn {config-signature} {#1},
   }
 
-\keys_define:nn { osglecture/enforce }
-  {
-    presentation-backend .code:n =
-      \prop_gput:Nnn \g__osglecture_enforce_prop {presentation-backend} {#1},
-    presentation-profile .code:n =
-      \prop_gput:Nnn \g__osglecture_enforce_prop {presentation-profile} {#1},
-    script-profile .code:n =
-      \prop_gput:Nnn \g__osglecture_enforce_prop {script-profile} {#1},
-    identity-profile .code:n =
-      \prop_gput:Nnn \g__osglecture_enforce_prop {identity-profile} {#1},
-    modes .code:n =
-      \prop_gput:Nnn \g__osglecture_enforce_prop {modes} {#1},
-    mode-setup-file .code:n =
-      \prop_gput:Nnn \g__osglecture_enforce_prop {mode-setup-file} {#1},
-    theme .code:n =
-      \prop_gput:Nnn \g__osglecture_enforce_prop {theme} {#1},
-    numbering .code:n =
-      \prop_gput:Nnn \g__osglecture_enforce_prop {numbering} {#1},
-    references .code:n =
-      \prop_gput:Nnn \g__osglecture_enforce_prop {references} {#1},
-  }
-
 \cs_new_protected:Npn \__osglecture_build_validate:
   {
     \clist_map_inline:nn
       {schema,job-id,context,series-id,physical-unit,physical-number,
-       unit-scope,unit-role,target,doctype,language,available-languages,
-       bundle-preset,
-       document-profile,
+       unit-scope,unit-role,target,profile-class,doctype,language,
+       available-languages,bundle-preset,
        structure-signature,
        config-signature}
       {
@@ -136,15 +106,6 @@
 \NewExpandableDocumentCommand \OsgLectureBuildValue { m }
   { \prop_item:Nn \g__osglecture_build_prop {#1} }
 
-\NewDocumentCommand \OsgLectureEnforceSetup { m }
-  {
-    \prop_gclear:N \g__osglecture_enforce_prop
-    \keys_set:nn {osglecture/enforce} {#1}
-  }
-
-\NewExpandableDocumentCommand \OsgLectureEnforcedValue { m }
-  { \prop_item:Nn \g__osglecture_enforce_prop {#1} }
-
 \NewDocumentCommand \OsgLectureBuildLoadedTF { m m }
   { \bool_if:NTF \g__osglecture_build_loaded_bool {#1} {#2} }
 
@@ -156,6 +117,21 @@
   }
 
 \NewDocumentCommand \OsgLectureLoadBuildFileForJob { }
-  { \OsgLectureLoadBuildFile{\c_sys_jobname_str.osgbuild.tex} }
+  {
+    \cs_if_exist:NTF \OSGLectureProjectManifestFile
+      {
+        \exp_args:Ne \file_if_exist:nTF
+          { \OSGLectureProjectManifestFile }
+          { }
+          {
+            \msg_fatal:nnx {osglecture-config}{manifest-not-found}
+              { \OSGLectureProjectManifestFile }
+          }
+      }
+      { \msg_fatal:nn {osglecture-config}{manifest-symbol-missing} }
+    \cs_if_exist:NTF \OSGLectureJobFile
+      { \exp_args:Ne \OsgLectureLoadBuildFile { \OSGLectureJobFile } }
+      { \msg_fatal:nn {osglecture-config}{job-symbol-missing} }
+  }
 
 \ExplSyntaxOff

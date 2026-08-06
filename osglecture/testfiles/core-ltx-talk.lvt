@@ -1,6 +1,6 @@
 \input regression-test
 \DocumentMetadata{}
-\documentclass[profile=ltx-talk]{osglecture}
+\documentclass[standalone,profile=ltx-talk]{osglecture}
 \course[Course short]{Course long}
 \title[Unit short]{Unit long}
 \author[Author short]{Author long}

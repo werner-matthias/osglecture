@@ -1,5 +1,5 @@
 \input regression-test
-\documentclass[doctype=script]{osglecture}
+\documentclass[standalone,doctype=script]{osglecture}
 \ExplSyntaxOn
 \cs_new_eq:NN \osg_test_twocol_columns:nn \twocol_typeset_columns:nn
 \cs_new_eq:NN \osg_test_twocol_plain:n \twocol_typeset_plain:n

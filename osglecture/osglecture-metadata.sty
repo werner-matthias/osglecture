@@ -1,49 +1,45 @@
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
 \ProvidesExplPackage
   {osglecture-metadata}
-  {2026/07/29}
-  {0.1.0}
-  {Semantic title metadata for osglecture}
+  {2026/08/06}
+  {0.2.0}
+  {Semantic and extensible metadata for osglecture}
 
+\RequirePackage{osglecture-project}
 \RequirePackage{osglecture-modes}
 
 \ExplSyntaxOn
 
 \tl_new:N \g__osglecture_metadata_course_target_tl
 \tl_new:N \g__osglecture_metadata_event_target_tl
+\prop_new:N \g__osglecture_metadata_value_prop
+\prop_new:N \g__osglecture_metadata_short_prop
+\prop_new:N \g__osglecture_metadata_priority_prop
+\prop_new:N \g__osglecture_metadata_enforced_prop
 
 \keys_define:nn { osglecture/metadata }
   {
     course-target .choices:nn = { title, subtitle, none }
-      {
-        \tl_gset_eq:NN
-          \g__osglecture_metadata_course_target_tl \l_keys_choice_tl
-      },
+      { \tl_gset_eq:NN \g__osglecture_metadata_course_target_tl \l_keys_choice_tl },
     course-target .initial:n = none,
     event-target .choices:nn = { title, subtitle, none }
-      {
-        \tl_gset_eq:NN
-          \g__osglecture_metadata_event_target_tl \l_keys_choice_tl
-      },
+      { \tl_gset_eq:NN \g__osglecture_metadata_event_target_tl \l_keys_choice_tl },
     event-target .initial:n = none,
   }
 
 \NewDocumentCommand \OsgLectureConfigureMetadata { m }
   { \keys_set:nn { osglecture/metadata } {#1} }
 
-\clist_map_inline:nn { title, subtitle, author, institute, date }
+\clist_map_inline:Nn \g__osglecture_metadata_fields_clist
   {
     \cs_if_exist:cT {#1}
-      { \cs_new_eq:cc { __osglecture_metadata_native_#1 } {#1} }
+      {
+        \cs_if_eq:ccF {#1} { __osglecture_project_proxy_#1 }
+          { \cs_new_eq:cc { __osglecture_metadata_native_#1 } {#1} }
+      }
   }
 \cs_if_exist:NT \publishers
   { \cs_new_eq:NN \__osglecture_metadata_native_publishers \publishers }
-
-\clist_map_inline:nn { title, subtitle, author, institute, date, course, event }
-  {
-    \tl_new:c { g__osglecture_metadata_#1_tl }
-    \tl_new:c { g__osglecture_metadata_short_#1_tl }
-  }
 
 \cs_new_protected:Npn \__osglecture_metadata_call_native:nnn #1#2#3
   {
@@ -51,10 +47,8 @@
       {
         \str_case:enF { \OsgLectureBackend }
           {
-            {beamer}
-              { \use:c { __osglecture_metadata_native_#1 } [#2] {#3} }
-            {ltx-talk}
-              { \use:c { __osglecture_metadata_native_#1 } [#2] {#3} }
+            {beamer}   { \use:c { __osglecture_metadata_native_#1 } [#2] {#3} }
+            {ltx-talk} { \use:c { __osglecture_metadata_native_#1 } [#2] {#3} }
           }
           { \use:c { __osglecture_metadata_native_#1 } {#3} }
       }
@@ -74,107 +68,124 @@
   {
     \str_case:nn {#1}
       {
-        {title}
-          { \__osglecture_metadata_call_native:nnn {title} {#2} {#3} }
-        {subtitle}
-          { \__osglecture_metadata_call_native:nnn {subtitle} {#2} {#3} }
+        {title}    { \__osglecture_metadata_call_native:nnn {title} {#2} {#3} }
+        {subtitle} { \__osglecture_metadata_call_native:nnn {subtitle} {#2} {#3} }
       }
   }
 \cs_generate_variant:Nn \__osglecture_metadata_apply_target:nnn { Vnn }
 
-\cs_new_protected:Npn \__osglecture_metadata_set:nnn #1#2#3
+\cs_new_protected:Npn \__osglecture_metadata_apply:nnn #1#2#3
   {
-    \tl_gset:cn { g__osglecture_metadata_short_#1_tl } {#2}
-    \tl_gset:cn { g__osglecture_metadata_#1_tl } {#3}
     \str_case:nnF {#1}
       {
         {course}
-          {
-            \__osglecture_metadata_apply_target:Vnn
-              \g__osglecture_metadata_course_target_tl {#2} {#3}
-          }
+          { \__osglecture_metadata_apply_target:Vnn
+              \g__osglecture_metadata_course_target_tl {#2} {#3} }
         {event}
-          {
-            \__osglecture_metadata_apply_target:Vnn
-              \g__osglecture_metadata_event_target_tl {#2} {#3}
-          }
-        {institute}
-          { \__osglecture_metadata_apply_institute:nn {#2} {#3} }
+          { \__osglecture_metadata_apply_target:Vnn
+              \g__osglecture_metadata_event_target_tl {#2} {#3} }
+        {institute} { \__osglecture_metadata_apply_institute:nn {#2} {#3} }
       }
       { \__osglecture_metadata_call_native:nnn {#1} {#2} {#3} }
   }
 
-\cs_new_protected:Npn \__osglecture_metadata_command:nnnn #1#2#3#4
+\cs_new_protected:Npn \__osglecture_metadata_set:nnnn #1#2#3#4
   {
-    \IfNoValueTF{#2}
+    \prop_get:NnNTF \g__osglecture_metadata_priority_prop {#1} \l_tmpa_tl
       {
-        \tl_if_blank:nTF {#3}
-          { \__osglecture_metadata_set:nnn {#1} {#4} {#4} }
-          { \__osglecture_metadata_set:nnn {#1} {#3} {#4} }
-      }
-      {
-        \lecturemode<#2>
+        \int_compare:nNnF {#4} < {\l_tmpa_tl}
+          { \__osglecture_metadata_store:nnnn {#1}{#2}{#3}{#4} }
+        \int_compare:nNnT {#4} < {\l_tmpa_tl}
           {
-            \tl_if_blank:nTF {#3}
-              { \__osglecture_metadata_set:nnn {#1} {#4} {#4} }
-              { \__osglecture_metadata_set:nnn {#1} {#3} {#4} }
+            \prop_get:NnN \g__osglecture_metadata_enforced_prop {#1} \l_tmpb_tl
+            \prop_get:NnN \g__osglecture_metadata_value_prop {#1} \l_tmpc_tl
+            \str_if_eq:VnT \l_tmpb_tl {true}
+              { \tl_if_eq:VnF \l_tmpc_tl {#3}
+                  { \msg_fatal:nnxxx {osglecture-project}{enforced-conflict}
+                      {#1}{\l_tmpc_tl}{#3} } }
           }
+      }
+      { \__osglecture_metadata_store:nnnn {#1}{#2}{#3}{#4} }
+  }
+
+\cs_new_protected:Npn \__osglecture_metadata_store:nnnn #1#2#3#4
+  {
+    \tl_if_blank:nTF {#2}
+      { \prop_gput:Nnn \g__osglecture_metadata_short_prop {#1} {#3} }
+      { \prop_gput:Nnn \g__osglecture_metadata_short_prop {#1} {#2} }
+    \prop_gput:Nnn \g__osglecture_metadata_value_prop {#1} {#3}
+    \prop_gput:Nnn \g__osglecture_metadata_priority_prop {#1} {#4}
+    \prop_gput:Nnx \g__osglecture_metadata_enforced_prop {#1}
+      {\bool_if:NTF \g__osglecture_configuration_enforced_bool {true}{false}}
+    \tl_if_blank:nTF {#2}
+      { \__osglecture_metadata_apply:nnn {#1} {#3} {#3} }
+      { \__osglecture_metadata_apply:nnn {#1} {#2} {#3} }
+  }
+
+\cs_new_protected:Npn \__osglecture_metadata_receive:nnnnn #1#2#3#4#5
+  {
+    \tl_if_blank:nTF {#2}
+      { \__osglecture_metadata_set:nnnn {#1} {#3} {#4} {#5} }
+      {
+        \IfLectureModeTF{#2}
+          { \__osglecture_metadata_set:nnnn {#1} {#3} {#4} {#5} }
+          { }
       }
   }
 
+\cs_set_eq:NN \__osglecture_metadata_receiver:nnnnn
+  \__osglecture_metadata_receive:nnnnn
+
+\clist_map_inline:Nn \g__osglecture_metadata_fields_clist
+  { \cs_set_eq:cc {#1} { __osglecture_project_proxy_#1 } }
+
+\cs_new_eq:NN \__osglecture_metadata_record:nnnnn
+  \__osglecture_metadata_receive:nnnnn
+\seq_use:Nn \g__osglecture_metadata_pending_seq { }
+\seq_gclear:N \g__osglecture_metadata_pending_seq
+
+\NewExpandableDocumentCommand \OsgLectureMetadataValue { m }
+  { \prop_item:Nn \g__osglecture_metadata_value_prop {#1} }
+\NewExpandableDocumentCommand \OsgLectureMetadataShortValue { m }
+  { \prop_item:Nn \g__osglecture_metadata_short_prop {#1} }
+
+\cs_new_protected:Npn \__osglecture_metadata_compat:nnnn #1#2#3#4
+  {
+    \IfNoValueTF{#2}
+      { \__osglecture_metadata_dispatch:nnnn {#1} {} {#3} {#4} }
+      { \__osglecture_metadata_dispatch:nnnn {#1} {#2} {#3} {#4} }
+  }
 \NewDocumentCommand \OsgLectureSetTitle { d<> O{} m }
-  { \__osglecture_metadata_command:nnnn {title} {#1} {#2} {#3} }
+  { \__osglecture_metadata_compat:nnnn {title}{#1}{#2}{#3} }
 \NewDocumentCommand \OsgLectureSetSubtitle { d<> O{} m }
-  { \__osglecture_metadata_command:nnnn {subtitle} {#1} {#2} {#3} }
+  { \__osglecture_metadata_compat:nnnn {subtitle}{#1}{#2}{#3} }
 \NewDocumentCommand \OsgLectureSetAuthor { d<> O{} m }
-  { \__osglecture_metadata_command:nnnn {author} {#1} {#2} {#3} }
+  { \__osglecture_metadata_compat:nnnn {author}{#1}{#2}{#3} }
 \NewDocumentCommand \OsgLectureSetInstitute { d<> O{} m }
-  { \__osglecture_metadata_command:nnnn {institute} {#1} {#2} {#3} }
+  { \__osglecture_metadata_compat:nnnn {institute}{#1}{#2}{#3} }
 \NewDocumentCommand \OsgLectureSetDate { d<> O{} m }
-  { \__osglecture_metadata_command:nnnn {date} {#1} {#2} {#3} }
+  { \__osglecture_metadata_compat:nnnn {date}{#1}{#2}{#3} }
 \NewDocumentCommand \OsgLectureSetCourse { d<> O{} m }
-  { \__osglecture_metadata_command:nnnn {course} {#1} {#2} {#3} }
+  { \__osglecture_metadata_compat:nnnn {course}{#1}{#2}{#3} }
 \NewDocumentCommand \OsgLectureSetEvent { d<> O{} m }
-  { \__osglecture_metadata_command:nnnn {event} {#1} {#2} {#3} }
+  { \__osglecture_metadata_compat:nnnn {event}{#1}{#2}{#3} }
 
-\cs_set_protected:Npn \title { \OsgLectureSetTitle }
-\cs_set_protected:Npn \subtitle { \OsgLectureSetSubtitle }
-\cs_set_protected:Npn \author { \OsgLectureSetAuthor }
-\cs_set_protected:Npn \institute { \OsgLectureSetInstitute }
-\cs_set_protected:Npn \date { \OsgLectureSetDate }
-\cs_new_protected:Npn \course { \OsgLectureSetCourse }
-\cs_new_protected:Npn \event { \OsgLectureSetEvent }
+\NewExpandableDocumentCommand \OsgLectureTitle {} { \OsgLectureMetadataValue{title} }
+\NewExpandableDocumentCommand \OsgLectureShortTitle {} { \OsgLectureMetadataShortValue{title} }
+\NewExpandableDocumentCommand \OsgLectureSubtitle {} { \OsgLectureMetadataValue{subtitle} }
+\NewExpandableDocumentCommand \OsgLectureShortSubtitle {} { \OsgLectureMetadataShortValue{subtitle} }
+\NewExpandableDocumentCommand \OsgLectureAuthor {} { \OsgLectureMetadataValue{author} }
+\NewExpandableDocumentCommand \OsgLectureShortAuthor {} { \OsgLectureMetadataShortValue{author} }
+\NewExpandableDocumentCommand \OsgLectureInstitute {} { \OsgLectureMetadataValue{institute} }
+\NewExpandableDocumentCommand \OsgLectureShortInstitute {} { \OsgLectureMetadataShortValue{institute} }
+\NewExpandableDocumentCommand \OsgLectureDate {} { \OsgLectureMetadataValue{date} }
+\NewExpandableDocumentCommand \OsgLectureShortDate {} { \OsgLectureMetadataShortValue{date} }
+\NewExpandableDocumentCommand \OsgLectureCourse {} { \OsgLectureMetadataValue{course} }
+\NewExpandableDocumentCommand \OsgLectureShortCourse {} { \OsgLectureMetadataShortValue{course} }
+\NewExpandableDocumentCommand \OsgLectureEvent {} { \OsgLectureMetadataValue{event} }
+\NewExpandableDocumentCommand \OsgLectureShortEvent {} { \OsgLectureMetadataShortValue{event} }
 
-\NewExpandableDocumentCommand \OsgLectureTitle { }
-  { \tl_use:N \g__osglecture_metadata_title_tl }
-\NewExpandableDocumentCommand \OsgLectureShortTitle { }
-  { \tl_use:N \g__osglecture_metadata_short_title_tl }
-\NewExpandableDocumentCommand \OsgLectureSubtitle { }
-  { \tl_use:N \g__osglecture_metadata_subtitle_tl }
-\NewExpandableDocumentCommand \OsgLectureShortSubtitle { }
-  { \tl_use:N \g__osglecture_metadata_short_subtitle_tl }
-\NewExpandableDocumentCommand \OsgLectureAuthor { }
-  { \tl_use:N \g__osglecture_metadata_author_tl }
-\NewExpandableDocumentCommand \OsgLectureShortAuthor { }
-  { \tl_use:N \g__osglecture_metadata_short_author_tl }
-\NewExpandableDocumentCommand \OsgLectureInstitute { }
-  { \tl_use:N \g__osglecture_metadata_institute_tl }
-\NewExpandableDocumentCommand \OsgLectureShortInstitute { }
-  { \tl_use:N \g__osglecture_metadata_short_institute_tl }
-\NewExpandableDocumentCommand \OsgLectureDate { }
-  { \tl_use:N \g__osglecture_metadata_date_tl }
-\NewExpandableDocumentCommand \OsgLectureShortDate { }
-  { \tl_use:N \g__osglecture_metadata_short_date_tl }
-\NewExpandableDocumentCommand \OsgLectureCourse { }
-  { \tl_use:N \g__osglecture_metadata_course_tl }
-\NewExpandableDocumentCommand \OsgLectureShortCourse { }
-  { \tl_use:N \g__osglecture_metadata_short_course_tl }
-\NewExpandableDocumentCommand \OsgLectureEvent { }
-  { \tl_use:N \g__osglecture_metadata_event_tl }
-\NewExpandableDocumentCommand \OsgLectureShortEvent { }
-  { \tl_use:N \g__osglecture_metadata_short_event_tl }
-
-\cs_new_eq:NN \lehrveranstaltung \course
-\cs_new_eq:NN \conference \event
+\cs_set_eq:NN \lehrveranstaltung \course
+\cs_set_eq:NN \conference \event
 
 \ExplSyntaxOff

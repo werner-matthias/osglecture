@@ -3,6 +3,7 @@
 \DeclareOsgLectureProfile{ltx-talk}
   {
     backend = ltx-talk,
+    capabilities = {presentation,print},
     class = ltx-talk,
     doctypes = {slides,handout},
     document-metadata = required,

@@ -434,32 +434,23 @@ Projektmanifest
 konkrete CLI-Buildauswahl
 ```
 
-Lokale Klassenoptionen werden erst in LaTeX verarbeitet. Für ausgewählte
-LaTeX-Schlüssel existiert zusätzlich eine erzwungene Projektpolicy mit höherer
-Priorität.
-
-Die Dokumentprofilauswahl bildet eine Ausnahme von der allgemeinen
-CLI-Buildauswahl: Sie darf nicht pro Auftrag überschrieben werden. Die
-Profilklasse des Targets wählt `presentation_profile` oder `script_profile`.
-Für diesen Schlüssel gilt die implementierte Priorität:
+Lokale Klassenoptionen werden erst in LaTeX verarbeitet. TeX-Policy wird in
+`projectconfig.tex` mit `\LectureProjectSetup` festgelegt; ausgewählte Werte
+können dort mit `\LectureProjectEnforce` erzwungen werden. Die Profilklasse des
+Targets entscheidet lediglich, ob `presentation-profile` oder
+`longform-profile` ausgewertet wird. Für TeX-Konfiguration gilt:
 
 ```text
-eingebauter Fallback
-        <
-Defaults des Bundle-Presets
-        <
-Nutzerdefaults
-        <
-latex.defaults des Projektmanifests
-        <
-effektives Enforcement
+eingebauter Fallback (0)
+        < Profil-Setup (10)
+        < projectconfig.tex (20)
+        < Unit-Quelle/Klassenoption (30)
+        < erzwungene Projektkonfiguration (40)
 ```
 
-Beim Enforcement werden zuerst Werte des Bundle-Presets und danach
-`latex.enforce` des Projektmanifests zusammengeführt. Der aufgelöste Wert wird
-als `document-profile` im BuildSpec transportiert. Eine CLI-Buildauswahl kann
-ihn nicht ändern. Eine explizite TeX-Klassenoption `profile=...` muss bei
-geladener Auftragsdatei mit ihm übereinstimmen.
+Der BuildSpec transportiert nur `profile-class`. Eine explizite Klassenoption
+`profile=...` darf den normalen Projektwert zu Diagnosezwecken überschreiben,
+aber keinen mit `\LectureProjectEnforce` erzwungenen Profilwert.
 
 ### 7.3 Bundle-Preset
 
@@ -527,9 +518,8 @@ unterscheiden.
 
 Auch der fachliche Projekttitel ist ausschließlich LaTeX-Metadatum und wird mit
 `\title` in `projectconfig.tex` gesetzt. `[project]` enthält nur die technische
-Serien-ID. Im Unterschied dazu bleiben `latex.defaults` und `latex.enforce`
-bewusst Manifestbestandteile: Sie bilden eine überschreibbare beziehungsweise
-verbindliche Projektpolicy und keine zweite Metadatenquelle.
+Serien-ID. Auch überschreibbare und verbindliche TeX-Policy liegt in
+`projectconfig.tex`; das Manifest bleibt auf den Buildvertrag beschränkt.
 
 Projektweit gemeinsam genutztes TeX-Material liegt nicht lose im
 Projektroot, sondern standardmäßig in `Include`. `[project.tex]` kann sowohl
@@ -540,14 +530,22 @@ für `projectconfig.tex` ebenso wie für projektlokale Pakete. Eine vorhandene
 Projektkonfiguration wird in die Konfigurationssignatur einbezogen.
 
 Die jobgebundene Builddatei transportiert den absoluten Verzeichnispfad und
-den Dateinamen getrennt. `osglecture` liest die Datei am frühesten Punkt, an
-dem gleichzeitig Basisklasse, finaler Modusgraph und die erweiterten
-Metadatenbefehle existieren: nach `osglecture-metadata`, aber vor den übrigen
-Kerndiensten und dem Profil-Setup. Dadurch sind beispielsweise
-`\author<presentation>[M.~M.]{Max Mustermann}` und entsprechende
-Langformwerte zulässig. Die Datei ist dagegen keine zweite Quelle für
-Doctype, Profilwahl oder Modusgraph; diese Entscheidungen sind zu ihrem
-Ladezeitpunkt bereits abgeschlossen.
+den Dateinamen getrennt. `osglecture` liest `projectconfig.tex` vor
+`\LoadClass` mit der basisklassenunabhängigen Schicht `osglecture-project`.
+Die Datei wird nur einmal eingelesen: frühe Angaben wie `class-options` werden
+vor dem Laden der Basisklasse zusammengeführt; Metadatenaufrufe werden als
+Feld, Modusselektor, Kurz- und Langwert sowie Herkunftspriorität gespeichert.
+`osglecture-metadata` wertet sie nach Finalisierung des Modusgraphen aus und
+bindet sie an den Backendadapter. Dadurch sind beispielsweise
+`\author<presentation>[M.~M.]{Max Mustermann}` und entsprechende Langformwerte
+zulässig, ohne eine noch unbekannte Basisklasse aufzurufen.
+
+Mit `\DeclareOsgLectureMetadataField{<name>}` können Projektcode und spätere
+Pakete weitere Befehle derselben Form registrieren. Werte sind generisch über
+`\OsgLectureMetadataValue{<name>}` und
+`\OsgLectureMetadataShortValue{<name>}` zugänglich. Die implementierte
+Priorität lautet `Profil < projectconfig.tex < Unit`; ein später gelesener
+Profilwert kann daher keinen bereits gespeicherten Projektwert verdrängen.
 
 Targetnamen sind ebenfalls registrierte, erweiterbare Kennungen. OLLM besitzt
 keine abgeschlossene Liste von Dokumenttypen. Ein Target wird durch das
@@ -594,7 +592,7 @@ bleiben für alle konfigurierten Targets gültig. Damit bleibt die Filterung von
 
 `profile_class` wählt ausschließlich den projektweiten Profilschlüssel. Schema
 1 kennt `presentation` und `longform`; daraus folgen
-`presentation_profile` beziehungsweise `script_profile`. Der Wert ist keine
+`presentation-profile` beziehungsweise `longform-profile`. Der Wert ist keine
 Moduskante und aktiviert keinen Autorenmodus.
 
 Die Modusmatrix ist kein Bestandteil einer Targetdefinition oder des
@@ -665,48 +663,49 @@ Fehlermeldung sowohl das gefundene als auch das unterstützte Schema. Profil-
 und Targetversionen versionieren dagegen den fachlichen Inhalt der jeweiligen
 Definition.
 
-### 7.6 Erzwungene LaTeX-Policy
+### 7.6 TeX-Projektpolicy und Enforcement
 
-```toml
-[latex.defaults]
-theme = "osg"
-numbering = "chapter"
-references = "external-on-demand"
-
-[latex.enforce]
-theme = "osg-accessible"
-numbering = "continuous"
+```tex
+\LectureProjectSetup{
+  presentation-profile = beamer,
+  longform-profile = scrbook,
+  numbering = chapter,
+  references = external-on-demand
+}
+\LectureProjectEnforce{theme=osg-accessible}
 ```
 
-`latex.enforce` überschreibt lokale Klassenoptionen. Zulässig sind nur
-freigegebene LaTeX-Schlüssel, insbesondere:
+Die Schnittstelle liegt ausschließlich in `projectconfig.tex`, nicht im TOML-
+Manifest. Implementiert und von der Klasse konsumiert werden derzeit
+`presentation-profile` und `longform-profile`. Registriert sind außerdem
+`identity-profile`, `theme`, `numbering` und `references`; ihre Anbindung an
+die jeweiligen Subsysteme ist noch TODO.
 
-- Nummerierungs- und Referenzpolicy;
-- Theme oder Corporate-Identity-Profil;
-- Backendauswahl;
-- Barrierefreiheits- und zentrale Bibliografiepolicy.
+Metadatenbefehle lassen sich generisch erzwingen:
 
-Nicht erzwingbar sind Buildidentität, Dokumenttyp, Sprache, Titel, Rollen oder
-abgeleitete Nummern.
+```tex
+\EnforceLectureProjectConfiguration{
+  \author<longform>[M. Mustermann]{Max Mustermann}
+}
+```
 
-Aktive Enforcement-Werte werden in Log und Report sichtbar gemacht.
+Ein späterer Wert geringerer Priorität darf einen erzwungenen Wert nicht
+verändern; ein solcher Versuch ist ein Fehler. Eine Darstellung aktiver
+Enforcement-Werte in Log und Report ist noch TODO.
 
 Eine Ausnahme ist die zeitlich vor `\documentclass` benötigte
-LaTeX-Kernel-Metadateninitialisierung:
-
-```toml
-[latex.document_metadata]
-policy = "enforce"
-file = "Include/document-metadata.tex"
-```
-
-OLLM prüft, dass die Datei innerhalb des Projektroots liegt, nimmt ihren Inhalt
-in die Konfigurationssignatur auf und liest sie über latexmks kontrollierten
-PreTeX-Mechanismus ein. Zuvor definiert es
-`\OsgLectureRequestedLanguage` aus der normalisierten Buildsprache. OLLM
-untersucht `main.tex` nicht; ein konkurrierender `\DocumentMetadata`-Aufruf ist
-bewusst ein vom Nutzer aufzulösender LaTeX-Fehler. Daher sind benutzerseitige
-`-pretex`- und `-usepretex`-Optionen reserviert.
+LaTeX-Kernel-Metadateninitialisierung. Existiert im konfigurierten gemeinsamen
+TeX-Verzeichnis die feste, nutzereditierbare Datei `documentmetadata.tex`,
+liest OLLM sie bei jedem Serienbuild über latexmks kontrollierten
+PreTeX-Mechanismus ein. Die Datei enthält selbst den sichtbaren
+`\DocumentMetadata{...}`-Aufruf; dafür gibt es keine zusätzliche TOML-Policy.
+OLLM nimmt ihren Inhalt in die Konfigurationssignatur auf und definiert zuvor
+`\OsgLectureRequestedLanguage` aus der normalisierten Buildsprache. Dadurch
+kann `langselect` die erst für den konkreten Auftrag bekannte Zielsprache
+einsetzen und Konflikte diagnostizieren. OLLM untersucht `main.tex` nicht; ein
+zweiter `\DocumentMetadata`-Aufruf ist bewusst ein vom Nutzer aufzulösender
+LaTeX-Fehler. Benutzerseitige `-pretex`- und `-usepretex`-Optionen bleiben
+reserviert.
 
 ### 7.7 TOML-Parser
 
@@ -873,8 +872,12 @@ Build- und Aux-Verzeichnis sind in dieser Stufe identisch; alle privaten
 `latexmk`-, Recorder- und TeX-Ausgaben eines Builds bleiben dadurch gemeinsam
 isoliert. `latexmk` wechselt mit `-cd` in das Quellverzeichnis, erhält aber
 absolute Ausgabewege. Das Buildverzeichnis wird für den Prozess zusätzlich
-über `TEXINPUTS` sichtbar gemacht, damit die Klasse die jobgebundene
-Auftragsdatei findet. SyncTeX bleibt aktiviert. Ein später getrenntes
+über `TEXINPUTS` sichtbar gemacht. OLLM definiert vor der Hauptdatei die festen
+Symbole `\OSGLectureProjectManifestFile` und `\OSGLectureJobFile` mit den
+konkreten, normalisierten Pfaden. Die Klasse prüft die Existenz des Manifests
+und lädt genau diesen Auftrag; eine Dateisuche nach Jobname oder Zeitstempel
+findet nicht statt. Damit bleiben parallele Builds eindeutig. SyncTeX bleibt
+aktiviert. Ein später getrenntes
 Artefaktverzeichnis darf diesen Vertrag erweitern, ohne die Buildidentität zu
 ändern.
 
@@ -891,6 +894,11 @@ Die Auftragsdatei ist TeX:
 Sie enthält ausschließlich generierte Konfigurationsanweisungen, weder
 `\documentclass` noch das Hauptdokument.
 
+Der Pfadzeiger darf absolut oder relativ sein, sofern TeX ihn im gestarteten
+Prozess eindeutig auflösen kann. OLLM verwendet absolute Pfade als robuste
+Ausführungsdarstellung; sie sind kein Bestandteil der portablen
+Projektkonfiguration oder der Konfigurationssignatur.
+
 Beispiel:
 
 ```tex
@@ -905,18 +913,8 @@ Beispiel:
   language             = de,
   available-languages  = {de,en},
   bundle-preset        = {OSG lecture/1},
-  document-profile     = beamer,
-  presentation-profile = beamer,
-  script-profile       = scrbook,
-  identity-profile     = osg,
-  theme                = osg,
-  numbering            = chapter,
-  references           = external-on-demand,
+  profile-class        = presentation,
   config-signature     = {...}
-}
-
-\OsgLectureEnforceSetup{
-  theme = osg-accessible
 }
 ```
 

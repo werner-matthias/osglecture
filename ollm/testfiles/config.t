@@ -446,8 +446,6 @@ is $extended->{build_spec}{target}, 'keynote',
   'a project-provided target reaches the BuildSpec';
 is $extended->{build_spec}{doctype}, 'keynote',
   'an extended target supplies its matching document type';
-is $extended->{build_spec}{document_profile}, 'beamer',
-  'presentation parent selects the presentation document profile';
 is $extended->{build_spec}{profile_class}, 'presentation',
   'extended target profile class remains available in the BuildSpec';
 
@@ -506,10 +504,6 @@ open my $user_handle, '>', $user_config or die $!;
 print {$user_handle} <<'TOML';
 schema = 1
 bundle_preset = "OSG lecture/1"
-
-[latex.defaults]
-presentation_profile = "ltx-talk"
-script_profile = "scrbook"
 TOML
 close $user_handle;
 {
@@ -530,8 +524,8 @@ close $user_handle;
       target => 'slides',
     },
   );
-  is $user_resolved->{build_spec}{document_profile}, 'ltx-talk',
-    'user defaults select the presentation document profile';
+  is $user_resolved->{build_spec}{profile_class}, 'presentation',
+    'user configuration does not own the TeX document profile';
 }
 
 done_testing;

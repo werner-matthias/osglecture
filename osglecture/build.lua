@@ -8,6 +8,7 @@ checkdeps = { "../osglecture-modes" }
 installfiles = {
   "osglecture.cls",
   "osglecture-config.sty",
+  "osglecture-project.sty",
   "osglecture-metadata.sty",
   "osglecture-references.sty",
   "osglecture-structure.sty",
@@ -20,6 +21,7 @@ installfiles = {
 sourcefiles = {
   "osglecture.cls",
   "osglecture-config.sty",
+  "osglecture-project.sty",
   "osglecture-metadata.sty",
   "osglecture-references.sty",
   "osglecture-structure.sty",

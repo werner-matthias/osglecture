@@ -77,13 +77,14 @@ Ein **Dokumentprofil** beschreibt die konkrete TeX-Integration eines oder
 mehrerer Doctypes: Backend, Basisklasse, dokumenttypspezifische
 Basisklassenoptionen, Metadatenvoraussetzungen und optionales Setup.
 
-- Nutzer-/Projektkonfiguration:
-  `presentation_profile`, `script_profile`
-- BuildSpec: `document_profile`
-- Auftragsdatei: `document-profile`
+- TeX-Projektkonfiguration:
+  `presentation-profile`, `longform-profile`
+- BuildSpec und Auftragsdatei transportieren nur die abstrakte `profile_class`
+  beziehungsweise `profile-class`
 - Standalone-Klassenoption: `profile`
 - Profildatei: `osglecture-profile-<name>.def`
-- Zuständig: OLLM wählt; osglecture validiert und lädt
+- Zuständig: osglecture wählt, validiert und lädt; OLLM übermittelt nur die
+  Profilklasse des Targets
 
 Ein Dokumentprofil ist weder ein Bundle-Preset noch ein Unit-Scope.
 
@@ -166,7 +167,9 @@ Build.
 
 Die **Auftragsdatei** ist die von OLLM atomar erzeugte Datei
 `<job-id>.osgbuild.tex`. Sie transportiert den BuildSpec in validierter,
-TeX-lesbarer Form. Sie wählt keine Konfiguration neu aus.
+TeX-lesbarer Form. Sie wählt keine Konfiguration neu aus. Ein Serienprozess
+erhält ihren konkreten Pfad vor `\documentclass` im Symbol
+`\OSGLectureJobFile`; der Dateiname wird nicht heuristisch gesucht.
 
 ### Gemeinsames TeX-Verzeichnis
 
@@ -180,8 +183,9 @@ kontrolliert in `TEXINPUTS` aufgenommen.
 Die **Projektkonfiguration** ist die standardmäßig
 `Include/projectconfig.tex` genannte TeX-Datei für gemeinsame Autoren- und
 Metadatenkonfiguration. Ihr Dateiname ist über `project.tex.config`
-konfigurierbar. `osglecture` lädt sie nach Finalisierung des Modusgraphen und
-Initialisierung der Metadatenoberfläche. Sie ist nicht mit dem
+konfigurierbar. `osglecture-project` liest sie vor der Basisklasse deklarativ;
+frühe Optionen werden sofort berücksichtigt, mode-spezifische Metadaten erst
+nach Finalisierung des Modusgraphen materialisiert. Sie ist nicht mit dem
 TOML-Projektmanifest oder der jobgebundenen Auftragsdatei identisch.
 
 ### Buildverzeichnis
@@ -246,9 +250,10 @@ Kerndienst.
 ohne festgelegte Serienverzeichnisstruktur. Die Klasse verwendet dabei
 eingebaute Defaults oder explizite lokale Klassenoptionen.
 
-Ohne Auftragsdatei ist der Zustand implizit. Die Klassenoption `standalone`
-erzwingt ihn auch dann, wenn eine jobgebundene Auftragsdatei vorhanden ist;
-osglecture ignoriert diese Datei in diesem Fall mit einer Warnung.
+Standalone muss mit der Klassenoption `standalone` ausdrücklich gewählt
+werden. Ohne diese Option verlangt osglecture die vom Runner gesetzten Zeiger
+auf Projektmanifest und Auftragsdatei. Standalone zusammen mit einem solchen
+Zeiger ist ein Fehler.
 
 ### Legacyzweig
 

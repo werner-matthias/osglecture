@@ -1,5 +1,5 @@
 \input regression-test
-\documentclass[doctype=slides,lang=en]{osglecture}
+\documentclass[standalone,doctype=slides,lang=en]{osglecture}
 \begin{document}
 \START
 \begin{frame}

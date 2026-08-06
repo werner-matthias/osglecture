@@ -72,6 +72,16 @@ ok grep($_ eq '-silent', @{ $calls[0]{command} }),
   'compatible latexmk arguments are preserved';
 ok grep($_ =~ /--shell-restricted/, @{ $calls[0]{command} }),
   'restricted shell escape is part of the controlled LuaLaTeX command';
+ok grep(
+  $_ =~ /\\edef\\OSGLectureJobFile\{\\detokenize\{/
+    && index($_, "$expected_spec->{job_id}.osgbuild.tex") >= 0,
+  @{ $calls[0]{command} },
+), 'series build injects an unambiguous job-file symbol before the source';
+ok grep(
+  $_ =~ /\A-usepretex=\\edef\\OSGLectureProjectManifestFile/
+    && index($_, 'ollmconfig.toml') >= 0,
+  @{ $calls[0]{command} },
+), 'series build identifies the manifest whose existence the class verifies';
 my $texinputs_separator = $^O eq 'MSWin32' ? ';' : ':';
 like $calls[0]{texinputs},
   qr/\Q$expected_spec->{build_directory}$texinputs_separator$expected_spec->{shared_tex_directory}$texinputs_separator\E/,
@@ -86,7 +96,7 @@ my @metadata_command = OLLM::Executor->command_for_spec(
   \%metadata_spec, $resolved->{request},
 );
 ok grep(
-  $_ =~ /\A-usepretex=\\def\\OsgLectureRequestedLanguage\{de\}/
+  $_ =~ /\\def\\OsgLectureRequestedLanguage\{de\}/
     && index($_, '\\input{"') >= 0,
   @metadata_command,
 ), 'enforced metadata uses controlled pre-TeX with the normalized language';
