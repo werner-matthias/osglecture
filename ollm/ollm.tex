@@ -268,14 +268,14 @@ Bundle-Preset und eine SHA-256-Konfigurationssignatur. Sie wird zunächst
 temporär im Zielverzeichnis geschrieben und nur bei verändertem Inhalt
 ersetzt. Dadurch lösen unveränderte Aufträge keinen unnötigen LaTeX-Neubau aus.
 
-Existiert im gemeinsamen TeX-Verzeichnis die nutzereditierbare Datei
-\texttt{documentmetadata.tex}, liest OLLM sie bei jedem Serienbuild garantiert
-vor der Hauptquelle ein. Unmittelbar zuvor definiert es
-\texttt{\string\OsgLectureRequestedLanguage} aus der Sprache des konkreten
-Auftrags. Die Datei enthält selbst den frühen
-\texttt{\string\DocumentMetadata}-Aufruf; ihr Name und ihre Aktivierung
-benötigen keinen zusätzlichen TOML-Schlüssel. Ihr Inhalt geht in die
-Konfigurationssignatur ein.
+Jedes Target löst eine Policy
+\texttt{document\_metadata=required|disabled} auf. Bei \texttt{required}
+verlangt und liest OLLM die nutzereditierbare Datei
+\texttt{documentmetadata.tex} vor der Hauptquelle; bei \texttt{disabled} wird
+sie nicht eingelesen. Unmittelbar zuvor definiert OLLM Symbole für Target,
+Dokumenttyp, Profilklasse, Policy und Sprache des konkreten Auftrags. Die Datei
+enthält selbst den frühen \texttt{\string\DocumentMetadata}-Aufruf; ihr Inhalt
+geht bei Verwendung in die Konfigurationssignatur ein.
 
 Das Paket \texttt{osglecture-config} liest den Auftrag und lehnt ihn ab, wenn
 sein Schema nicht unterstützt wird oder die enthaltene Job-ID nicht mit dem

@@ -20,6 +20,7 @@ languages = ["de"]
 
 [targets.script]
 languages = ["de", "en"]
+document_metadata = "required"
 
 [security]
 shell_escape = "restricted"

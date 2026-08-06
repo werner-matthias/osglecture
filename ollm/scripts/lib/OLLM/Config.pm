@@ -400,7 +400,8 @@ sub validate_manifest {
     my $definition = $manifest->{targets}{$target};
     die "$path: targets.$target must be a table"
       if ref $definition ne 'HASH';
-    _known_keys($definition, [qw(languages)], $path, $lines, "targets.$target");
+    _known_keys($definition, [qw(languages document_metadata)],
+      $path, $lines, "targets.$target");
     my $languages = _require_string_array(
       $definition, 'languages', "$path: targets.$target",
     );
@@ -408,6 +409,14 @@ sub validate_manifest {
     my %target_languages = map { $_ => 1 } @$languages;
     die "$path: targets.$target.languages contains duplicates"
       if keys(%target_languages) != @$languages;
+    if (exists $definition->{document_metadata}) {
+      my $policy = _require_string(
+        $definition, 'document_metadata', "$path: targets.$target",
+      );
+      die "$path: invalid targets.$target.document_metadata '$policy'; "
+        . "expected 'required' or 'disabled'"
+        if $policy !~ /\A(?:required|disabled)\z/;
+    }
     for my $language (@$languages) {
       die "$path: target '$target' uses unavailable language '$language'"
         if !$available{$language};
@@ -598,6 +607,9 @@ sub resolve_definitions {
     $selected_targets{$name} = {
       doctype       => $target{$name}{data}{doctype},
       profile_class => $target{$name}{data}{profile_class},
+      document_metadata =>
+           $manifest->{targets}{$name}{document_metadata}
+        // $target{$name}{data}{document_metadata},
       path    => $target{$name}{path},
       signature => sha256_hex(
         JSON::PP->new->canonical->encode($target{$name}{data}),
@@ -653,7 +665,8 @@ sub _load_definition {
   my ($class, $path) = @_;
   my ($data, $lines) = $class->_load_toml($path);
   _known_keys($data,
-    [qw(schema kind name version doctype profile_class unit_scopes)],
+    [qw(schema kind name version doctype profile_class unit_scopes
+        document_metadata)],
     $path, $lines, '');
   if (!defined $data->{schema} || ref $data->{schema}
       || $data->{schema} != $DEFINITION_SCHEMA) {
@@ -678,6 +691,9 @@ sub _load_definition {
     _fail_at($path, $lines, 'unit_scopes',
       "bundle preset must not define 'unit_scopes'")
       if exists $data->{unit_scopes};
+    _fail_at($path, $lines, 'document_metadata',
+      "bundle preset must not define 'document_metadata'")
+      if exists $data->{document_metadata};
   } else {
     _require_string($data, 'doctype', $path);
     my $profile_class = _require_string($data, 'profile_class', $path);
@@ -685,6 +701,10 @@ sub _load_definition {
       "invalid target profile_class '$profile_class'; "
       . "expected 'presentation' or 'longform'")
       if $profile_class !~ /\A(?:presentation|longform)\z/;
+    my $metadata = _require_string($data, 'document_metadata', $path);
+    _fail_at($path, $lines, 'document_metadata',
+      "invalid document_metadata '$metadata'; expected 'required' or 'disabled'")
+      if $metadata !~ /\A(?:required|disabled)\z/;
     _fail_at($path, $lines, 'doctype',
       "target name '$data->{name}' and doctype '$data->{doctype}' differ; "
       . "schema 1 has no versioned target/doctype adapter contract")

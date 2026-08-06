@@ -1,0 +1,13 @@
+\ProvidesFile{osglecture-profile-series-ltx-talk.def}
+  [2026/08/06 v0.1.0 series example ltx-talk profile]
+\DeclareOsgLectureProfile{series-ltx-talk}
+  {
+    backend = ltx-talk,
+    capabilities = {presentation,print},
+    class = ltx-talk,
+    doctypes = {talk},
+    document-metadata = required,
+    mode-setup-file = seriesexample-talk-modes.tex,
+    course-target = subtitle,
+    event-target = subtitle
+  }

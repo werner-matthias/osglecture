@@ -5,6 +5,7 @@
     backend = scrbook,
     capabilities = {longform,print},
     class = scrbook,
+    document-metadata = supported,
     doctypes = {script,article},
     course-target = title,
     event-target = subtitle

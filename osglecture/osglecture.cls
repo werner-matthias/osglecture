@@ -55,6 +55,12 @@
   { Document~profile~'#1'~requires~\token_to_str:N\DocumentMetadata. }
   { Put~\token_to_str:N\DocumentMetadata\c_left_brace_str\c_right_brace_str~
     before~\token_to_str:N\documentclass~in~the~document~source. }
+\msg_new:nnnn { osglecture } { metadata-forbidden }
+  { Document~profile~'#1'~does~not~support~\token_to_str:N\DocumentMetadata. }
+  { Disable~document~metadata~for~this~target~or~select~another~profile. }
+\msg_new:nnnn { osglecture } { metadata-policy-conflict }
+  { Build~metadata~policy~'#1'~conflicts~with~profile~'#2'~('#3'). }
+  { Change~the~target-specific~document_metadata~policy~or~the~target~profile. }
 \msg_new:nnnn { osglecture } { standalone-job-conflict }
   { Standalone~mode~cannot~be~combined~with~an~OLLM~job. }
   { Remove~the~standalone~class~option~or~build~without~OLLM. }
@@ -164,6 +170,24 @@
   { \tl_set:Nn \l_tmpa_tl {longform-profile} }
 \exp_args:NNV \prop_get:NnN
   \g__osglecture_project_policy_prop \l_tmpa_tl \l_tmpb_tl
+\bool_set_false:N \l_tmpa_bool
+\exp_args:NNV \prop_get:NnNT
+  \g__osglecture_project_policy_enforced_prop \l_tmpa_tl \l_tmpd_tl
+  { \str_if_eq:VnT \l_tmpd_tl {true} {\bool_set_true:N \l_tmpa_bool} }
+\OsgLectureBuildLoadedTF
+  {
+    \tl_set:Ne \l_tmpc_tl {\OsgLectureBuildValue{target}}
+    \exp_args:NNV \prop_get:NnNT
+      \g__osglecture_project_target_profile_prop \l_tmpc_tl \l_tmpd_tl
+      {
+        \bool_if:NTF \l_tmpa_bool
+          { \str_if_eq:VVF \l_tmpb_tl \l_tmpd_tl
+              { \msg_fatal:nnxxx {osglecture-project}{enforced-conflict}
+                  {\l_tmpa_tl}{\l_tmpb_tl}{\l_tmpd_tl} } }
+          { \tl_set_eq:NN \l_tmpb_tl \l_tmpd_tl }
+      }
+  }
+  { }
 \bool_if:NTF \l__osglecture_profile_explicit_bool
   {
     \exp_args:NNV \prop_get:NnNT
@@ -194,21 +218,34 @@
     \osglecture_profile_value:Vn
       \l__osglecture_document_profile_tl {document-metadata}
   }
+\bool_set_false:N \l_tmpa_bool
+\cs_if_exist:NT \IfDocumentMetadataTF
+  { \IfDocumentMetadataTF {\bool_set_true:N \l_tmpa_bool} { } }
 \str_if_eq:VnT \l_tmpa_tl {required}
   {
-    \cs_if_exist:NTF \IfDocumentMetadataTF
-      {
-        \IfDocumentMetadataTF { }
-          {
-            \msg_fatal:nnV {osglecture}{metadata-required}
-              \l__osglecture_document_profile_tl
-          }
-      }
-      {
-        \msg_fatal:nnV {osglecture}{metadata-required}
-          \l__osglecture_document_profile_tl
-      }
+    \bool_if:NF \l_tmpa_bool
+      { \msg_fatal:nnV {osglecture}{metadata-required}
+          \l__osglecture_document_profile_tl }
   }
+\str_if_eq:VnT \l_tmpa_tl {forbidden}
+  { \bool_if:NT \l_tmpa_bool
+      { \msg_fatal:nnV {osglecture}{metadata-forbidden}
+          \l__osglecture_document_profile_tl } }
+\OsgLectureBuildLoadedTF
+  {
+    \tl_set:Ne \l_tmpb_tl
+      {\OsgLectureBuildValue{document-metadata-policy}}
+    \bool_lazy_or:nnT
+      { \bool_lazy_and_p:nn
+          {\str_if_eq_p:Vn \l_tmpa_tl {required}}
+          {\str_if_eq_p:Vn \l_tmpb_tl {disabled}} }
+      { \bool_lazy_and_p:nn
+          {\str_if_eq_p:Vn \l_tmpa_tl {forbidden}}
+          {\str_if_eq_p:Vn \l_tmpb_tl {required}} }
+      { \msg_fatal:nnxxx {osglecture}{metadata-policy-conflict}
+          {\l_tmpb_tl}{\l__osglecture_document_profile_tl}{\l_tmpa_tl} }
+  }
+  { }
 \tl_set:Ne \l__osglecture_selected_options_tl
   {
     \osglecture_profile_class_options:VV

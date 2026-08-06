@@ -5,6 +5,7 @@
     backend = beamer,
     capabilities = {presentation,print},
     class = beamer,
+    document-metadata = forbidden,
     doctypes = {slides,handout},
     course-target = subtitle,
     event-target = subtitle

@@ -195,7 +195,9 @@ ollm build --target=studyguide --language=en
 
 A schema-1 target definition uses the same `name` and `doctype` and declares
 `profile_class = "presentation"` or `profile_class = "longform"`. This value
-only selects the corresponding project-wide document profile. Mode parents
+selects the corresponding project-wide document profile unless
+`\LectureTargetSetup` supplies a more specific TeX-side selection. It also
+declares a `document_metadata` default. Mode parents
 and abstract modes belong to that profile's TeX-side `mode-setup-file`; OLLM
 does not merge or interpret the mode graph.
 
@@ -257,10 +259,13 @@ schema = 1
 bundle_preset = "OSG lecture/1"
 ```
 
-If `documentmetadata.tex` exists in the configured shared TeX directory
-(normally `Include/documentmetadata.tex`), OLLM always inserts it before the
-main source through latexmk's controlled pre-TeX mechanism. Immediately before
-that input it defines `\OsgLectureRequestedLanguage` from the concrete build.
+Each target definition supplies a `document_metadata = "required" | "disabled"`
+default, which `[targets.<name>]` may override. For `required`, OLLM requires
+`documentmetadata.tex` in the configured shared TeX directory and inserts it
+before the main source through latexmk's controlled pre-TeX mechanism. For
+`disabled`, an existing file is not read. Immediately before the main source
+OLLM defines the normalized requested target, doctype, profile class, metadata
+policy, and language as `\OsgLectureRequested...` symbols.
 The user-owned file normally contains the actual `\DocumentMetadata{...}` and
 may use that symbol, directly or through `langselect`, for the target language.
 Its contents participate in the configuration signature. OLLM does not inspect
@@ -274,7 +279,8 @@ which is also useful for testing. Without a file OLLM uses `OSG lecture/1`.
 
 The target contributes only its abstract `profile_class` (`presentation` or
 `longform`) to the BuildSpec. The concrete TeX profile is selected by
-`presentation-profile` or `longform-profile` in `projectconfig.tex`; it is not
+`presentation-profile`, `longform-profile`, or the more specific
+`\LectureTargetSetup{<target>}{profile=...}` in `projectconfig.tex`; it is not
 an OLLM or CLI setting. This keeps presentation policy on the TeX side and
 allows a future non-TeX pipeline to use the same target contract.
 

@@ -53,9 +53,9 @@
     event-target .choices:nn = { title, subtitle, none }
       { \tl_set_eq:NN \l__osglecture_profile_event_target_tl \l_keys_choice_tl },
     event-target .initial:n = none,
-    document-metadata .choices:nn = { optional, required }
+    document-metadata .choices:nn = { supported, required, forbidden }
       { \tl_set_eq:NN \l__osglecture_profile_metadata_tl \l_keys_choice_tl },
-    document-metadata .initial:n = optional,
+    document-metadata .initial:n = supported,
   }
 
 \NewDocumentCommand \DeclareOsgLectureProfile { m m }
@@ -71,7 +71,7 @@
     \tl_clear:N \l__osglecture_profile_mode_setup_tl
     \tl_set:Nn \l__osglecture_profile_course_target_tl {none}
     \tl_set:Nn \l__osglecture_profile_event_target_tl {none}
-    \tl_set:Nn \l__osglecture_profile_metadata_tl {optional}
+    \tl_set:Nn \l__osglecture_profile_metadata_tl {supported}
     \keys_set:nn { osglecture/profile } {#2}
     \tl_if_empty:NT \l__osglecture_profile_backend_tl
       { \msg_fatal:nnnn {osglecture-profiles}{incomplete-profile}{#1}{backend} }

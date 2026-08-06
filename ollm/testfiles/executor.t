@@ -18,7 +18,8 @@ use OLLM::Executor;
 my $fixture = abs_path('testfiles/fixtures/project');
 my $temporary = tempdir(CLEANUP => 1);
 my $chapter = File::Spec->catdir($temporary, '020-processes');
-make_path($chapter);
+my $shared = File::Spec->catdir($temporary, 'Include');
+make_path($chapter, $shared);
 copy(
   File::Spec->catfile($fixture, 'ollmconfig.toml'),
   File::Spec->catfile($temporary, 'ollmconfig.toml'),
@@ -27,6 +28,12 @@ copy(
   File::Spec->catfile($fixture, '020-processes', 'main.tex'),
   File::Spec->catfile($chapter, 'main.tex'),
 ) or die $!;
+for my $file (qw(projectconfig.tex documentmetadata.tex)) {
+  copy(
+    File::Spec->catfile($fixture, 'Include', $file),
+    File::Spec->catfile($shared, $file),
+  ) or die $!;
+}
 my $resolved = OLLM::Config->resolve_request(
   start_dir       => $chapter,
   definitions_dir => abs_path('scripts/definitions'),
@@ -97,9 +104,12 @@ my @metadata_command = OLLM::Executor->command_for_spec(
 );
 ok grep(
   $_ =~ /\\def\\OsgLectureRequestedLanguage\{de\}/
+    && /\\def\\OsgLectureRequestedTarget\{script\}/
+    && /\\def\\OsgLectureRequestedProfileClass\{longform\}/
+    && /\\def\\OsgLectureRequestedDocumentMetadataPolicy\{required\}/
     && index($_, '\\input{"') >= 0,
   @metadata_command,
-), 'enforced metadata uses controlled pre-TeX with the normalized language';
+), 'required metadata receives normalized target context in controlled pre-TeX';
 for my $policy (
   [off  => '--no-shell-escape'],
   [full => '--shell-escape'],

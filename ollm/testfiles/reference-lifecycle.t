@@ -40,11 +40,20 @@ if ($unpack_status != 0) {
   BAIL_OUT('cannot unpack osglecture-modes for the lifecycle test');
 }
 my $unit = File::Spec->catdir($root, '020-processes');
-make_path($unit);
+my $shared = File::Spec->catdir($root, 'Include');
+make_path($unit, $shared);
 copy(
   'testfiles/fixtures/project/ollmconfig.toml',
   File::Spec->catfile($root, 'ollmconfig.toml'),
 ) or die $!;
+my $lifecycle_manifest = File::Spec->catfile($root, 'ollmconfig.toml');
+open my $manifest_in, '<:raw', $lifecycle_manifest or die $!;
+my $manifest_text = do { local $/; <$manifest_in> };
+close $manifest_in;
+$manifest_text =~ s/document_metadata = "required"/document_metadata = "disabled"/;
+open my $manifest_out, '>:raw', $lifecycle_manifest or die $!;
+print {$manifest_out} $manifest_text;
+close $manifest_out;
 open my $source, '>:raw', File::Spec->catfile($unit, 'main.tex')
   or die $!;
 print {$source} <<'TEX';

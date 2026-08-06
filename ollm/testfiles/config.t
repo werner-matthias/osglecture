@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 use Cwd qw(abs_path);
+use File::Copy qw(copy);
 use File::Path qw(make_path);
 use File::Spec;
 use File::Temp qw(tempdir);
@@ -177,7 +178,14 @@ is_deeply(
 
 my $scoped_root = tempdir(CLEANUP => 1);
 my $scoped_unit = File::Spec->catdir($scoped_root, '020as-processes');
-make_path($scoped_unit);
+my $scoped_shared = File::Spec->catdir($scoped_root, 'Include');
+make_path($scoped_unit, $scoped_shared);
+for my $file (qw(projectconfig.tex documentmetadata.tex)) {
+  copy(
+    File::Spec->catfile($fixture, 'Include', $file),
+    File::Spec->catfile($scoped_shared, $file),
+  ) or die $!;
+}
 open my $scoped_manifest, '>',
   File::Spec->catfile($scoped_root, 'ollmconfig.toml') or die $!;
 open my $fixture_manifest, '<', $manifest_path or die $!;
@@ -401,6 +409,7 @@ name = "keynote"
 version = "1.0"
 doctype = "keynote"
 profile_class = "presentation"
+document_metadata = "disabled"
 TOML
 close $extended_target;
 open my $extended_local, '>',
@@ -458,6 +467,7 @@ name = "mismatch"
 version = "1.0"
 doctype = "different"
 profile_class = "longform"
+document_metadata = "disabled"
 TOML
 close $mismatched_target;
 eval {
@@ -483,6 +493,10 @@ my $bundle_definitions = OLLM::Config->resolve_definitions(
 );
 is $bundle_definitions->{bundle_preset}{reference}, 'OSG lecture/1',
   'bundle-level example resolves its bundled preset';
+is $bundle_definitions->{targets}{slides}{document_metadata}, 'disabled',
+  'example retains the Beamer target metadata default';
+is $bundle_definitions->{targets}{talk}{document_metadata}, 'required',
+  'example overrides metadata policy for its ltx-talk target';
 
 my $temporary = tempdir(CLEANUP => 1);
 open my $toml, '>', File::Spec->catfile($temporary, 'ollmconfig.toml')

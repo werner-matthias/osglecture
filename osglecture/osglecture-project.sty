@@ -15,6 +15,8 @@
 \prop_new:N \g__osglecture_project_policy_prop
 \prop_new:N \g__osglecture_project_policy_priority_prop
 \prop_new:N \g__osglecture_project_policy_enforced_prop
+\prop_new:N \g__osglecture_project_target_profile_prop
+\tl_new:N \l__osglecture_project_target_tl
 \msg_new:nnnn {osglecture-project}{enforced-conflict}
   { Configuration~'#1'~is~enforced~as~'#2';~cannot~set~'#3'. }
   { Change~the~project~enforcement~instead~of~overriding~it~locally. }
@@ -73,6 +75,19 @@
 
 \NewDocumentCommand \LectureProjectSetup { m }
   { \keys_set:nn { osglecture/project } {#1} }
+\keys_define:nn { osglecture/project-target }
+  {
+    profile .code:n =
+      { \prop_gput:NVn \g__osglecture_project_target_profile_prop
+          \l__osglecture_project_target_tl {#1} },
+  }
+\NewDocumentCommand \LectureTargetSetup { m m }
+  {
+    \tl_set:Nn \l__osglecture_project_target_tl {#1}
+    \keys_set:nn {osglecture/project-target} {#2}
+  }
+\NewExpandableDocumentCommand \OsgLectureTargetProfile { m }
+  { \prop_item:Nn \g__osglecture_project_target_profile_prop {#1} }
 \NewDocumentCommand \LectureProjectEnforce { m }
   {
     \int_gset:Nn \g__osglecture_configuration_priority_int {40}

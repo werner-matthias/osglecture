@@ -205,16 +205,24 @@ sub command_for_spec {
   my $pretex = "\\edef\\OSGLectureProjectManifestFile"
     . "{\\detokenize{$manifest}}"
     . "\\edef\\OSGLectureJobFile{\\detokenize{$build_file}}";
+  for my $symbol (
+    ['RequestedTarget', $spec->{target}],
+    ['RequestedDoctype', $spec->{doctype}],
+    ['RequestedProfileClass', $spec->{profile_class}],
+    ['RequestedDocumentMetadataPolicy', $spec->{document_metadata_policy}],
+    ['RequestedLanguage', $spec->{language}],
+  ) {
+    my ($name, $value) = @$symbol;
+    die "build value '$value' cannot be represented safely in metadata pre-TeX"
+      if !defined($value) || $value !~ /\A[A-Za-z0-9._+-]+\z/;
+    $pretex .= "\\def\\OsgLecture$name\{$value}";
+  }
   if ($spec->{document_metadata}) {
     my $path = $spec->{document_metadata}{path};
     die "document metadata path contains unsafe TeX filename characters: $path"
       if $path =~ /[{}%#\r\n]/;
     $path =~ s{\\}{/}g;
-    my $language = $spec->{language};
-    die "language '$language' cannot be represented safely in metadata pre-TeX"
-      if $language !~ /\A[A-Za-z0-9._+-]+\z/;
-    $pretex .= "\\def\\OsgLectureRequestedLanguage{$language}"
-      . "\\input{\"$path\"}";
+    $pretex .= "\\input{\"$path\"}";
   }
   return (
     'latexmk',

@@ -56,6 +56,8 @@
       \__osglecture_build_put:nn {generation-id} {#1},
     target              .code:n = \__osglecture_build_put:nn {target} {#1},
     profile-class       .code:n = \__osglecture_build_put:nn {profile-class} {#1},
+    document-metadata-policy .choices:nn = { required, disabled }
+      { \__osglecture_build_put:nn {document-metadata-policy} {#1} },
     doctype             .code:n = \__osglecture_build_put:nn {doctype} {#1},
     language            .code:n = \__osglecture_build_put:nn {language} {#1},
     available-languages .code:n =
@@ -78,7 +80,8 @@
   {
     \clist_map_inline:nn
       {schema,job-id,context,series-id,physical-unit,physical-number,
-       unit-scope,unit-role,target,profile-class,doctype,language,
+       unit-scope,unit-role,target,profile-class,document-metadata-policy,
+       doctype,language,
        available-languages,bundle-preset,
        structure-signature,
        config-signature}

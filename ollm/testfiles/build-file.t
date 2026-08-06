@@ -51,6 +51,8 @@ is $spec->{shell_escape}, 'restricted',
   'manifest shell-escape policy reaches the build specification';
 is $spec->{profile_class}, 'longform',
   'target profile class reaches the build specification';
+is $spec->{document_metadata_policy}, 'required',
+  'project target overrides the definition metadata policy';
 is $spec->{shared_tex_directory},
   abs_path(File::Spec->catdir($fixture, 'Include')),
   'shared TeX directory is resolved from the project manifest';
@@ -74,6 +76,20 @@ is $spec->{document_metadata}{path},
   'conventional document metadata file is discovered in shared TeX';
 like $spec->{document_metadata}{signature}, qr/\A[0-9a-f]{64}\z/,
   'document metadata contents are signed into the build contract';
+
+my $slides_resolved = OLLM::Config->resolve_request(
+  start_dir       => $chapter,
+  definitions_dir => abs_path('scripts/definitions'),
+  plan => {
+    action => 'build', all => 0, dry_run => 1, latexmk_args => [],
+    legacy_args => [], non_interactive => 1, rebuild => 0, resolve => 0,
+    source => 'main.tex', target => 'slides',
+  },
+);
+is $slides_resolved->{build_spec}{document_metadata_policy}, 'disabled',
+  'target-definition metadata policy applies without a project override';
+ok !defined($slides_resolved->{build_spec}{document_metadata}),
+  'disabled policy does not preload an existing project metadata file';
 
 my @moved_specs;
 for (1 .. 2) {
@@ -125,6 +141,8 @@ like $content, qr/job-id=\{bs-020-script-de-processes\}/,
   'rendered build file binds itself to the job id';
 like $content, qr/profile-class=\{longform\}/,
   'rendered build file contains only the target profile class';
+like $content, qr/document-metadata-policy=\{required\}/,
+  'rendered build file contains the effective early metadata policy';
 like $content, qr/shared-tex-directory=\{[^}]*Include\}/,
   'rendered build file contains the absolute shared TeX directory';
 like $content, qr/project-config-file=\{projectconfig[.]tex\}/,

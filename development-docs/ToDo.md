@@ -6,23 +6,18 @@ Featurewünsche.
 * [ ] resolve für Abhängigkeiten
 * [x] report/check
 
-# osglecture
-* [ ] Übergreifende Links
+# osglecture + Ergänzungspakete
+* [x] Übergreifende Links
 * [x] Querreferenzen zwischen Folien und Script
 * [x] Kapitelübergreifende Literaturreferenzen
 * [x] Lang-/Kurzformunterstützung auf Sprachebene
 * [ ] Integrationsworkflow
+* [ ] tagging bei presitemize und twocolumns
 
 # lttheme
 * [x] TUC-Theme isolieren
 * [x] Beispielthemen analog Beamer
 * [x] Unterstützung für innere Themes
-
-# tagpax
-* [x] Test klären
-
-# osglecture-modes
-* [x] Automatische Übername neuer Modes für Beamer-/Ltx-Talk-Befehle wie \only
 
 # Ergänzungspakete
 * [ ] ANSI-Terminal

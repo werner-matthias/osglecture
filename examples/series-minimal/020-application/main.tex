@@ -1,0 +1,23 @@
+\documentclass{osglecture}
+\usepackage{seriesexample}
+
+\begin{document}
+\lecture[Anwendung]{Anwendung des Prinzips}{application}
+
+\begin{seriessection}{Anschluss an die erste Unit}
+  Die Trennung von Inhalt und Darstellung wurde bereits in
+  Abschnitt~\olref[introduction]{sec:shared-source} eingeführt.
+
+  \begin{presitemize}
+    \item Die Referenz verwendet die logische Unit-ID \emph{introduction}
+    \anditem OLLM registriert die zuletzt erfolgreich gebaute Projektion
+    \thereforeitem Die Quelle \finite{bleibt} unabhängig von Buildpfaden
+  \end{presitemize}
+\end{seriessection}
+
+\begin{seriessection}{Beobachtung für die Adapterentwicklung}
+  Das projektlokale Environment \texttt{seriessection} überbrückt derzeit den
+  Unterschied zwischen Beamer-Frame und Langform-Abschnitt. Gerade diese kleine
+  Brücke ist ein Kandidat für einen späteren gemeinsamen Adaptervertrag.
+\end{seriessection}
+\end{document}

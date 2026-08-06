@@ -77,10 +77,15 @@ Ein **Dokumentprofil** beschreibt die konkrete TeX-Integration eines oder
 mehrerer Doctypes: Backend, Basisklasse, dokumenttypspezifische
 Basisklassenoptionen, Metadatenvoraussetzungen und optionales Setup.
 
+Die präklassische Targetpolicy `document_metadata=required|disabled` ist davon
+getrennt. Das Profil beschreibt seine tatsächliche Fähigkeit mit
+`document-metadata=required|supported|forbidden`; osglecture validiert beide.
+
 - TeX-Projektkonfiguration:
   `presentation-profile`, `longform-profile`
-- BuildSpec und Auftragsdatei transportieren nur die abstrakte `profile_class`
-  beziehungsweise `profile-class`
+- BuildSpec und Auftragsdatei transportieren die abstrakte `profile_class`
+  beziehungsweise `profile-class` sowie getrennt die effektive
+  `document-metadata-policy`
 - Standalone-Klassenoption: `profile`
 - Profildatei: `osglecture-profile-<name>.def`
 - Zuständig: osglecture wählt, validiert und lädt; OLLM übermittelt nur die

@@ -20,10 +20,11 @@ directory = "Include"
 config = "projectconfig.tex"
 ```
 
-Liegt daneben `documentmetadata.tex`, schaltet OLLM sie garantiert vor die
-Hauptquelle. Die nutzereditierbare Datei enthält selbst den frühen
-`\DocumentMetadata{...}`-Aufruf und kann
-`\OsgLectureRequestedLanguage` für die konkrete Buildsprache verwenden.
+Bei `document_metadata="required"` für das konkrete Target schaltet OLLM die
+daneben liegende `documentmetadata.tex` vor die Hauptquelle; bei `disabled`
+nicht. Die nutzereditierbare Datei enthält selbst den frühen
+`\DocumentMetadata{...}`-Aufruf und kann die von OLLM definierten
+`\OsgLectureRequested...`-Symbole verwenden.
 
 Die Datei wird vor dem Laden der Basisklasse durch eine deklarative
 Bootstrap-Schicht gelesen. Frühe Werte wie Basisklassenoptionen wirken vor
@@ -44,10 +45,13 @@ Basisklassenoptionen und TeX-Projektpolicy werden deklarativ gesetzt:
   longform-profile=scrbook
 }
 \LectureProjectEnforce{theme=osg-accessible}
+\LectureTargetSetup{slides}{profile=beamer}
+\LectureTargetSetup{handout}{profile=ltx-talk}
 ```
 
 Der Targetvertrag liefert nur `profile-class=presentation|longform`. Die Klasse
-wählt damit einen der beiden Profilschlüssel. `identity-profile`, `theme`,
+wählt damit zunächst einen der beiden Profilschlüssel; eine targetspezifische
+Auswahl hat Vorrang. `identity-profile`, `theme`,
 `numbering` und `references` sind bereits registriert; ihre konsumierenden
 Subsysteme sind noch TODO.
 

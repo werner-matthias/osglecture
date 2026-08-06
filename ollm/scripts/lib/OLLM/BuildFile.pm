@@ -96,6 +96,8 @@ sub build_spec {
   my $artifact = File::Spec->catfile($build_directory, "$job_id.pdf");
   my $profile_class = $target->{profile_class}
     // die "target '$target_name' has no profile class";
+  my $document_metadata_policy = $target->{document_metadata}
+    // die "target '$target_name' has no document metadata policy";
   my $shell_escape = $arg{manifest}{security}{shell_escape} // 'restricted';
   my $document_metadata;
   my $document_metadata_contract;
@@ -103,7 +105,9 @@ sub build_spec {
   my $candidate = File::Spec->catfile(
     $shared_tex_directory, $document_metadata_file,
   );
-  if (-e $candidate) {
+  if ($document_metadata_policy eq 'required') {
+    die "document metadata file required for target '$target_name': $candidate"
+      if !-e $candidate;
     my $canonical = abs_path($candidate)
       // die "cannot resolve document metadata file: $candidate";
     die "document metadata path is not a regular file: $canonical"
@@ -150,6 +154,7 @@ sub build_spec {
       structure_signature => $structure_signature,
       shell_escape => $shell_escape,
       document_metadata => $document_metadata_contract,
+      document_metadata_policy => $document_metadata_policy,
       project_tex => {
         directory => $shared_tex_relative,
         config    => $project_config_file,
@@ -172,6 +177,7 @@ sub build_spec {
     target              => $target_name,
     doctype             => $doctype,
     profile_class       => $profile_class,
+    document_metadata_policy => $document_metadata_policy,
     language            => $language,
     available_languages => $arg{manifest}{languages}{available},
     bundle_preset       =>
@@ -219,6 +225,8 @@ sub render {
       : ()),
     "  target={" . _tex_atom($spec->{target}) . "},",
     "  profile-class={" . _tex_atom($spec->{profile_class}) . "},",
+    "  document-metadata-policy={"
+      . _tex_atom($spec->{document_metadata_policy}) . "},",
     "  doctype={" . _tex_atom($spec->{doctype}) . "},",
     "  language={" . _tex_atom($spec->{language}) . "},",
     "  available-languages={" . join(',', @languages) . "},",

@@ -9,5 +9,6 @@ unit-title=Unit Title
 unit-short-title=U.~Title
 project-numbering=section
 project-theme=osg-accessible
+target-profile=scrbook
 project-theme-enforced=true
 project-class-options=early

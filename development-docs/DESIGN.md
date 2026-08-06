@@ -496,12 +496,15 @@ default = "de"
 
 [targets.slides]
 languages = ["de"]
+document_metadata = "disabled"
 
 [targets.handout]
 languages = ["de"]
+document_metadata = "required"
 
 [targets.script]
 languages = ["de", "en"]
+document_metadata = "disabled"
 
 [security]
 shell_escape = "restricted"
@@ -577,6 +580,7 @@ name = "slides"
 version = "1.0"
 doctype = "slides"
 profile_class = "presentation"
+document_metadata = "disabled"
 unit_scopes = ["b", "bs"]
 ```
 
@@ -592,8 +596,11 @@ bleiben für alle konfigurierten Targets gültig. Damit bleibt die Filterung von
 
 `profile_class` wählt ausschließlich den projektweiten Profilschlüssel. Schema
 1 kennt `presentation` und `longform`; daraus folgen
-`presentation-profile` beziehungsweise `longform-profile`. Der Wert ist keine
-Moduskante und aktiviert keinen Autorenmodus.
+`presentation-profile` beziehungsweise `longform-profile`. Eine
+targetspezifische Auswahl mit `\LectureTargetSetup` hat Vorrang. Der Wert ist
+keine Moduskante und aktiviert keinen Autorenmodus. `document_metadata`
+liefert unabhängig davon den für die präklassische Verarbeitung nötigen
+Default `required` oder `disabled`.
 
 Die Modusmatrix ist kein Bestandteil einer Targetdefinition oder des
 BuildSpec. Sie gehört zum TeX-Integrationsvertrag des ausgewählten
@@ -694,13 +701,14 @@ verändern; ein solcher Versuch ist ein Fehler. Eine Darstellung aktiver
 Enforcement-Werte in Log und Report ist noch TODO.
 
 Eine Ausnahme ist die zeitlich vor `\documentclass` benötigte
-LaTeX-Kernel-Metadateninitialisierung. Existiert im konfigurierten gemeinsamen
-TeX-Verzeichnis die feste, nutzereditierbare Datei `documentmetadata.tex`,
-liest OLLM sie bei jedem Serienbuild über latexmks kontrollierten
-PreTeX-Mechanismus ein. Die Datei enthält selbst den sichtbaren
-`\DocumentMetadata{...}`-Aufruf; dafür gibt es keine zusätzliche TOML-Policy.
+LaTeX-Kernel-Metadateninitialisierung. Jede Targetdefinition besitzt dafür den
+Default `document_metadata = "required" | "disabled"`; das Projekt darf ihn in
+`[targets.<name>]` überschreiben. Nur bei `required` verlangt und liest OLLM die
+feste, nutzereditierbare Datei `documentmetadata.tex` über latexmks
+kontrollierten PreTeX-Mechanismus. Die Datei enthält selbst den sichtbaren
+`\DocumentMetadata{...}`-Aufruf.
 OLLM nimmt ihren Inhalt in die Konfigurationssignatur auf und definiert zuvor
-`\OsgLectureRequestedLanguage` aus der normalisierten Buildsprache. Dadurch
+Symbole für Target, Doctype, Profilklasse, Policy und Sprache. Dadurch
 kann `langselect` die erst für den konkreten Auftrag bekannte Zielsprache
 einsetzen und Konflikte diagnostizieren. OLLM untersucht `main.tex` nicht; ein
 zweiter `\DocumentMetadata`-Aufruf ist bewusst ein vom Nutzer aufzulösender
@@ -781,8 +789,9 @@ config-signature
 `--all` erzeugt ausschließlich die im Projektmanifest vorgesehenen Builds der
 aktuellen Einheit, zusätzlich gefiltert durch deren Profil und Rolle.
 
-Der BuildSpec enthält Target, Dokumenttyp, Profilklasse und das aufgelöste
-Dokumentprofil. Modusmatrix und Backendadapter sind bewusst keine
+Der BuildSpec enthält Target, Dokumenttyp, Profilklasse und die effektive
+DocumentMetadata-Policy, aber nicht das konkrete Dokumentprofil. Modusmatrix
+und Backendadapter sind bewusst keine
 OLLM-Builddimensionen: Beide werden durch den installierten
 Profildeskriptor auf der TeX-Seite festgelegt und dort gegen den Dokumenttyp
 validiert.

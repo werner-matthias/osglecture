@@ -16,6 +16,7 @@
 \TYPE{unit-short-title=\OsgLectureShortTitle}
 \TYPE{project-numbering=\OsgLectureProjectValue{numbering}}
 \TYPE{project-theme=\OsgLectureProjectValue{theme}}
+\TYPE{target-profile=\OsgLectureDocumentProfile}
 \OsgLectureProjectEnforcedTF{theme}
   {\TYPE{project-theme-enforced=true}}
   {\TYPE{project-theme-enforced=false}}

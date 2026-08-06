@@ -39,7 +39,9 @@ belasten.
 Bundle-Preset, beispielsweise `OSG lecture/1`. Davon getrennt bezeichnet ein
 Dokumentprofil die konkrete TeX-Integration. Die Targetdefinition liefert nur
 `profile-class`; die Klasse wählt damit in `projectconfig.tex`
-`presentation-profile` oder `longform-profile`. Für TeX-Konfiguration gilt:
+`presentation-profile` oder `longform-profile`. Eine Auswahl durch
+`\LectureTargetSetup{<target>}{profile=...}` ist spezifischer. Für
+TeX-Konfiguration gilt:
 
 ```text
 eingebauter Fallback (0)
@@ -76,11 +78,13 @@ Mitgeliefert werden zunächst:
 - `scrbook` für `script` und `article`.
 
 Die gegenwärtige Version von `ltx-talk` verlangt `\DocumentMetadata{}` vor
-`\documentclass`. Ein Wrapper kann diese Initialisierung technisch nicht
-nachholen. Existiert `documentmetadata.tex` im gemeinsamen TeX-Verzeichnis,
-liest OLLM diese nutzereditierbare Datei garantiert vor dem Hauptdokument ein.
-Zuvor definiert es `\OsgLectureRequestedLanguage`; die Datei beziehungsweise
-`langselect` kann damit die auftragsabhängige Sprache einsetzen. OLLM
+`\documentclass`, Beamer verbietet es. Ein Wrapper kann diese Initialisierung
+technisch nicht nachholen. Deshalb löst OLLM pro Target
+`document_metadata=required|disabled` auf und liest die nutzereditierbare Datei
+nur bei `required`. Zuvor definiert es Symbole für Target, Doctype,
+Profilklasse, Policy und Sprache. Der Profildeskriptor deklariert unabhängig
+`document-metadata=required|supported|forbidden`; die Klasse validiert beide
+Seiten nach ihrer eigenen Auswahl des konkreten Profils. OLLM
 untersucht `main.tex` nicht; ein zusätzlicher `\DocumentMetadata`-Aufruf bleibt
 ein sichtbarer LaTeX-Konflikt.
 

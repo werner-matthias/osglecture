@@ -4,4 +4,5 @@ name = "script"
 version = "1.0"
 doctype = "script"
 profile_class = "longform"
+document_metadata = "disabled"
 unit_scopes = ["a", "as"]
