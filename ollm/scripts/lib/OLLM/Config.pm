@@ -43,12 +43,14 @@ sub resolve_request {
     all             => $plan->{all} ? 1 : 0,
     context         => $standalone
       ? 'standalone'
-      : $located->{kind} eq 'toml' ? 'series' : 'legacy',
+      : $located->{kind} eq 'toml' ? 'series'
+      : $located->{kind} eq 'legacy' ? 'legacy' : 'none',
     dry_run         => $plan->{dry_run} ? 1 : 0,
     latexmk_args    => [@{ $plan->{latexmk_args} }],
     non_interactive => $plan->{non_interactive} ? 1 : 0,
     rebuild         => $plan->{rebuild} ? 1 : 0,
     resolve         => $plan->{resolve} ? 1 : 0,
+    scope           => $plan->{scope} // 'current',
     source          => $plan->{source} // 'main.tex',
     target          => $plan->{target},
     target_explicit => $plan->{target_explicit} ? 1 : 0,
@@ -129,44 +131,29 @@ sub resolve_request {
   $request{project_root} = $root;
   $request{series_id} = $manifest->{project}{id};
 
-  my $targets = $manifest->{targets};
-  if ($request{all}) {
+  my @builds = _select_builds(
+    request       => \%request,
+    manifest      => $manifest,
+    definitions   => $definitions,
+    structure     => $structure,
+    project_root  => $root,
+    start         => $start,
+    manifest_path => $located->{path},
+  );
+  $request{builds} = [map {
+    +{
+      target        => $_->{target},
+      language      => $_->{language},
+      source        => $request{source},
+      physical_unit => $_->{physical_unit},
+    }
+  } @builds];
+  if (@builds == 1) {
+    $request{target} = $builds[0]{target};
+    $request{language} = $builds[0]{language};
+  } else {
     delete $request{target};
     delete $request{language};
-    my @builds;
-    for my $target (sort keys %$targets) {
-      next if !_unit_allows_target(
-        $start,
-        $definitions->{targets}{$target}{unit_scopes},
-      );
-      for my $language (@{ $targets->{$target}{languages} }) {
-        push @builds, {
-          target   => $target,
-          language => $language,
-          source   => $request{source},
-        };
-      }
-    }
-    die "no configured target/language combination applies to unit "
-      . File::Basename::basename($start)
-      if !@builds;
-    $request{builds} = \@builds;
-  } else {
-    my $target = $request{target};
-    die "target '$target' is not configured in $located->{path}"
-      if !exists $targets->{$target};
-
-    my @target_languages = @{ $targets->{$target}{languages} };
-    my %target_language = map { $_ => 1 } @target_languages;
-    if (defined $request{language}) {
-      die "language '$request{language}' is not configured for target '$target'"
-        if !$target_language{$request{language}};
-    } else {
-      my $default = $manifest->{languages}{default};
-      $request{language} = $target_language{$default}
-        ? $default
-        : $target_languages[0];
-    }
   }
 
   my $resolved = {
@@ -188,16 +175,16 @@ sub resolve_request {
     },
   };
   require OLLM::BuildFile;
-  if ($request{all}) {
+  {
     my @specs = map {
       OLLM::BuildFile->build_spec(
         resolved       => $resolved,
         manifest       => $manifest,
-        unit_directory => $start,
+        unit_directory => File::Spec->catdir($root, $_->{physical_unit}),
         target          => $_->{target},
         language        => $_->{language},
       )
-    } @{ $request{builds} };
+    } @builds;
     my (%job, %directory);
     for my $spec (@specs) {
       my $job_key = lc $spec->{job_id};
@@ -211,15 +198,114 @@ sub resolve_request {
         . "'$spec->{build_directory}'"
         if $directory{$directory_key}++;
     }
-    $resolved->{build_specs} = \@specs;
-  } else {
-    $resolved->{build_spec} = OLLM::BuildFile->build_spec(
-      resolved       => $resolved,
-      manifest       => $manifest,
-      unit_directory => $start,
-    );
+    if (@specs == 1) {
+      $resolved->{build_spec} = $specs[0];
+    } else {
+      $resolved->{build_specs} = \@specs;
+    }
   }
   return $resolved;
+}
+
+sub _select_builds {
+  my (%arg) = @_;
+  my $request = $arg{request};
+  my $manifest = $arg{manifest};
+  my $definitions = $arg{definitions};
+  my $scope = $request->{scope};
+  my @units = @{ $arg{structure}{units} };
+  my $current_name = File::Basename::basename($arg{start});
+  my ($current) = grep { $_->{physical_unit} eq $current_name } @units;
+
+  die "invalid build scope '$scope'"
+    if $scope !~ /\A(?:current|unit|series|collection)\z/;
+  die "build --scope=$scope must be run inside a series unit"
+    if ($scope eq 'current' || $scope eq 'unit') && !$current;
+
+  my $targets = $manifest->{targets};
+  my @target_names = ($scope eq 'unit' || $request->{all})
+    ? ($request->{target_explicit}
+        ? ($request->{target}) : sort keys %$targets)
+    : ($request->{target});
+  for my $target (@target_names) {
+    die "target '$target' is not configured in $arg{manifest_path}"
+      if !defined($target) || !exists $targets->{$target};
+  }
+
+  my @selected_units;
+  if ($scope eq 'current' || $scope eq 'unit') {
+    @selected_units = ($current);
+  } elsif ($scope eq 'series') {
+    @selected_units = grep { ($_->{unit_role} // 'content') ne 'i' } @units;
+  } else {
+    my %doctypes = map {
+      $definitions->{targets}{$_}{doctype} => 1
+    } @target_names;
+    for my $doctype (sort keys %doctypes) {
+      my @doctype_targets = grep {
+        $definitions->{targets}{$_}{doctype} eq $doctype
+      } @target_names;
+      my @candidates;
+      UNIT:
+      for my $unit (@units) {
+        next if ($unit->{unit_role} // '') ne 'i';
+        for my $target (@doctype_targets) {
+          if (_unit_allows_definition(
+              $unit, $definitions->{targets}{$target}{unit_scopes})) {
+            push @candidates, $unit;
+            next UNIT;
+          }
+        }
+      }
+      die "no integration unit applies to document type '$doctype'"
+        if !@candidates;
+      die "more than one integration unit applies to document type '$doctype': "
+        . join(', ', map { $_->{physical_unit} } @candidates)
+        if @candidates > 1;
+      push @selected_units, $candidates[0];
+    }
+  }
+
+  my @builds;
+  for my $unit (@selected_units) {
+    for my $target (@target_names) {
+      my $definition = $definitions->{targets}{$target};
+      next if !_unit_allows_definition($unit, $definition->{unit_scopes});
+      my @configured = @{ $targets->{$target}{languages} };
+      my %configured = map { $_ => 1 } @configured;
+      my @languages;
+      if ($request->{language_explicit}) {
+        if (!$configured{$request->{language}}) {
+          die "language '$request->{language}' is not configured for target '$target'"
+            if $request->{target_explicit};
+          next;
+        }
+        @languages = ($request->{language});
+      } elsif ($scope eq 'unit' || $request->{all}) {
+        @languages = @configured;
+      } else {
+        my $default = $manifest->{languages}{default};
+        @languages = ($configured{$default} ? $default : $configured[0]);
+      }
+      push @builds, map {
+        +{
+          physical_unit => $unit->{physical_unit},
+          target        => $target,
+          language      => $_,
+        }
+      } @languages;
+    }
+  }
+  die "no configured build matches --scope=$scope" if !@builds;
+  return @builds;
+}
+
+sub _unit_allows_definition {
+  my ($unit, $unit_scopes) = @_;
+  return 1 if ($unit->{unit_scope} // '') eq '';
+  return scalar grep {
+    $_ eq ($unit->{unit_scope} // '')
+  } @{ $unit_scopes // [] };
 }
 
 sub structure_snapshot {
@@ -258,14 +344,6 @@ sub structure_snapshot {
     units     => \@units,
     signature => sha256_hex($canonical),
   };
-}
-
-sub _unit_allows_target {
-  my ($directory, $unit_scopes) = @_;
-  my $name = File::Basename::basename(File::Spec->rel2abs($directory));
-  return 1 if $name !~ /\A\d{3}([a-z]{1,2})-/;
-  my $unit_scope = $1;
-  return scalar grep { $_ eq $unit_scope } @{ $unit_scopes // [] };
 }
 
 sub find_manifest {

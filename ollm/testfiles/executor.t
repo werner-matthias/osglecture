@@ -262,7 +262,7 @@ ok !-e $build_file, 'clean action does not create a new build-request file';
 
 $resolved->{request}{latexmk_args} = ['-version'];
 eval { OLLM::Executor::_validate_latexmk_args($resolved->{request}, 2) };
-like $@, qr/--all requests multiple.*only reports information/,
+like $@, qr/selected build scope requests multiple.*only reports information/,
   'information action rejects a misleading OLLM build matrix';
 
 $resolved->{request}{target_explicit} = 1;

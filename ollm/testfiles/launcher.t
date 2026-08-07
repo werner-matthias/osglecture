@@ -2,22 +2,56 @@ use v5.30;
 use strict;
 use warnings;
 
+use Cwd ();
+use File::Temp ();
 use Test::More;
 
 my $version = qx{$^X scripts/ollm --version};
 is $?, 0, 'version exits successfully';
 like $version, qr/^ollm 0\.12\.0-dev/m, 'version is reported';
 
+my $outside = File::Temp::tempdir(CLEANUP => 1);
+my $launcher = Cwd::abs_path('scripts/ollm');
+my $previous_directory = Cwd::getcwd();
+chdir $outside or die "cannot enter temporary directory $outside: $!";
+my $outside_output = qx{$^X "$launcher" 2>&1};
+my $outside_status = $? >> 8;
+chdir $previous_directory
+  or die "cannot restore working directory $previous_directory: $!";
+is $outside_status, 2, 'a build outside a project is rejected as a usage error';
+like $outside_output, qr/no ollmconfig[.]toml project found/,
+  'the diagnostic explains how to select a project or standalone mode';
+unlike $outside_output, qr/Legacy Mode/,
+  'a missing project never enters legacy mode implicitly';
+
+open my $standalone_source, '>', "$outside/main.tex"
+  or die "cannot create standalone test source: $!";
+print {$standalone_source} "\\documentclass{article}\n\\begin{document}\n\\end{document}\n";
+close $standalone_source;
+chdir $outside or die "cannot enter temporary directory $outside: $!";
+my $standalone_output = qx{$^X "$launcher" standalone --dry-run main.tex 2>&1};
+my $standalone_status = $? >> 8;
+chdir $previous_directory
+  or die "cannot restore working directory $previous_directory: $!";
+is $standalone_status, 0,
+  'explicit standalone mode remains available outside a project';
+like $standalone_output, qr/^Context:\s+standalone$/m,
+  'the explicit standalone invocation has standalone context';
+unlike $standalone_output, qr/Legacy Mode/,
+  'standalone mode is not reported as legacy mode';
+
 require OLLM::Version;
 require OLLM::State;
 is $OLLM::State::VERSION, $OLLM::Version::VERSION,
   'internal modules use the central OLLM program version';
 
-my $plan = qx{$^X scripts/ollm build script --language=en --source=main.tex --dry-run --format=json};
+my $standalone_fixture =
+  Cwd::abs_path('testfiles/fixtures/project/020-processes/main.tex');
+my $plan = qx{$^X scripts/ollm standalone build --source="$standalone_fixture" --dry-run --format=json};
 is $?, 0, 'JSON dry-run exits successfully';
 like $plan, qr/"schema"\s*:\s*"org\.osglecture\.ollm\.build-request"/,
   'JSON plan has a versioned schema';
-like $plan, qr/"target"\s*:\s*"script"/, 'JSON plan contains target';
+like $plan, qr/"target"\s*:\s*"slides"/, 'JSON plan contains default target';
 
 my $report = qx{$^X scripts/ollm report --project-root=../examples/series-minimal --format=json};
 is $?, 0, 'report describes a project with dormant units successfully';

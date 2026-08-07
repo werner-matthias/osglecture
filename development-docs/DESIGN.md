@@ -789,8 +789,8 @@ shell-escape policy
 config-signature
 ```
 
-`--all` erzeugt ausschließlich die im Projektmanifest vorgesehenen Builds der
-aktuellen Einheit, zusätzlich gefiltert durch deren Profil und Rolle.
+`--all` erzeugt ausschließlich im Projektmanifest vorgesehene Builds innerhalb
+des gewählten Build-Scopes, zusätzlich gefiltert durch Unit-Scopes und Rolle.
 
 Der BuildSpec enthält Target, Dokumenttyp, Profilklasse und die effektive
 DocumentMetadata-Policy, aber nicht das konkrete Dokumentprofil. Modusmatrix
@@ -1453,8 +1453,26 @@ Mindestens:
 --non-interactive
 ```
 
-`--all` bezeichnet nur die im Manifest vorgesehenen Builds der aktuellen
-Einheit.
+Builds kennen vier Scopes:
+
+```text
+current      genau die gewählte oder Defaultprojektion der aktuellen Unit
+unit         alle nicht durch Unit-Scope, Target oder Sprache ausgeschlossenen
+             Projektionen der aktuellen Unit
+series       die gewählte oder Defaultprojektion aller passenden regulären
+             Units; Integrationsunits sind ausgeschlossen
+collection   die eindeutige, zum Doctype passende Integrationsunit
+```
+
+`current` ist der Default. `current` und `unit` benötigen eine aktuelle Unit.
+`series` und `collection` dürfen von der Projektwurzel oder einer Unit aus
+aufgerufen werden. Für `collection` wird die Eignung einer Rollen-`i`-Unit
+über die `unit_scopes` des gewählten Targets bestimmt. Kein beziehungsweise
+mehr als ein Kandidat pro Doctype ist ein Konfigurationsfehler.
+
+`--all` bleibt dazu orthogonal: Es erweitert die Target-/Sprachauswahl im
+gewählten Scope auf alle konfigurierten und für die jeweilige Unit zulässigen
+Projektionen. Ohne `--scope` bleibt auch mit `--all` der Scope `current`.
 
 `--resolve` gehört zu `build`; `check` bleibt im
 spezifizierten Zielverhalten rein lesend.

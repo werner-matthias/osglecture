@@ -327,9 +327,9 @@ sub _validate_latexmk_args {
       . "turns off the rebuild mode requested by OLLM\n";
   }
   if ($action eq 'information' && $build_count > 1) {
-    die "--all requests multiple target/language builds, but latexmk option "
+    die "the selected build scope requests multiple builds, but latexmk option "
       . "'" . _action_option($arguments) . "' only reports information; "
-      . "run the latexmk information command without --all\n";
+      . "restrict the build to one projection\n";
   }
   if ($action eq 'information') {
     my @selection = grep { $request->{"${_}_explicit"} }

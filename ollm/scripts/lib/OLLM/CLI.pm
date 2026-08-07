@@ -48,9 +48,13 @@ sub run {
     return 0;
   }
 
-  if ($plan->{action} ne 'deploy'
-      && ($plan->{overwrite} || ($plan->{scope} // '') eq 'collection')) {
+  if ($plan->{action} ne 'deploy' && $plan->{overwrite}) {
     print STDERR "ollm: deployment options are only valid for deploy\n";
+    return 2;
+  }
+  if ($plan->{action} ne 'deploy' && $plan->{action} ne 'build'
+      && ($plan->{scope} // '') eq 'collection') {
+    print STDERR "ollm: --scope=collection is only valid for build or deploy\n";
     return 2;
   }
 
@@ -90,6 +94,14 @@ sub run {
     my $error = $@ || 'unknown configuration error';
     chomp $error;
     print STDERR "ollm: $error\n";
+    return 2;
+  }
+
+  if ($resolved->{configuration}{kind} eq 'none'
+      && $resolved->{request}{context} ne 'standalone') {
+    print STDERR "ollm: no ollmconfig.toml project found; run the command "
+      . "inside a project, select one with --project-root/--config, or use "
+      . "standalone explicitly\n";
     return 2;
   }
 
@@ -777,6 +789,7 @@ sub _print_plan {
   my $configuration = $resolved->{configuration};
   print "Action:   $request->{action}\n";
   print "Context:  $request->{context}\n";
+  print "Scope:    $request->{scope}\n" if defined $request->{scope};
   print "Target:   $request->{target}\n" if defined $request->{target};
   print "Language: $request->{language}\n" if defined $request->{language};
   print "Source:   $request->{source}\n";
@@ -1013,8 +1026,8 @@ sub _unavailable {
 sub _help {
   return <<'HELP';
 Usage:
-  ollm [global options] [build] [[+]target| | --target=<target>] [build options] [latexmk options]
-  ollm [global options] <report|check|clean|prune|doctor|deploy|convertconfig|newtoml>
+  ollm [global options] [[+]build] [[+]target| | --target=<target>] [build options] [latexmk options]
+  ollm [global options] [+]<report|check|clean|prune|doctor|deploy|convertconfig|newtoml>
 
 Targets:
   slides (aliases: beamer, presentation)
@@ -1040,13 +1053,14 @@ General options:
   --format=text|json    select human- or machine-readable output
   --color=auto|always|never
   --non-interactive
-  --legacy              explicitly build with ollmconfig.pl
   +enforce+|--enforce+  require '+' on command and target words
   --overwrite           permit replacement when project policy is explicit
+  --legacy              explicitly build with ollmconfig.pl
 
 Build options:
   --target=TARGET       select a registered project target
-  --language=LANG       select a language
+  --language=LANG | [+]lang=LANG
+                        select a language
   --source=FILE         select the main TeX source
   --all
   --resolve
@@ -1054,15 +1068,13 @@ Build options:
   --dry-run.            print the normalized request without building
   --level=aux|build|state|all
   --scope=current|unit|series|collection
+                        select build, inspection, maintenance, or deploy scope
   --stale-units         let prune remove states for missing physical units
   --debug=tex|ollm|tex+ollm
   --warnings=all|important|none
   --config=FILE
   --project-root=DIR
 
-Compatibility:
-  Bare targets, lang=en, +lang=en, +script, and debug remain accepted.
-  Commands may also use '+'. The deprecated +force+ aliases +enforce+.
   Compatible unknown minus options are passed to latexmk.
 HELP
 }

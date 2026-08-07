@@ -218,6 +218,127 @@ is_deeply(
   '--all filters target/language pairs through target unit scopes',
 );
 
+my $scope_root = tempdir(CLEANUP => 1);
+my $scope_shared = File::Spec->catdir($scope_root, 'Include');
+my @scope_units = qw(
+  010-first
+  020bs-second
+  030as-third
+  090as-i-collection
+);
+make_path($scope_shared, map { File::Spec->catdir($scope_root, $_) } @scope_units);
+copy($manifest_path, File::Spec->catfile($scope_root, 'ollmconfig.toml'))
+  or die $!;
+for my $file (qw(projectconfig.tex documentmetadata.tex)) {
+  copy(
+    File::Spec->catfile($fixture, 'Include', $file),
+    File::Spec->catfile($scope_shared, $file),
+  ) or die $!;
+}
+for my $unit (@scope_units) {
+  open my $source, '>', File::Spec->catfile($scope_root, $unit, 'main.tex')
+    or die $!;
+  print {$source} "\\documentclass{article}\n";
+  close $source;
+}
+
+sub _scope_plan {
+  my (%override) = @_;
+  return {
+    action => 'build', all => 0, dry_run => 1, latexmk_args => [],
+    legacy_args => [], non_interactive => 0, rebuild => 0, resolve => 0,
+    source => 'main.tex', target => 'slides',
+    %override,
+  };
+}
+
+my $unit_matrix = OLLM::Config->resolve_request(
+  start_dir => File::Spec->catdir($scope_root, '010-first'),
+  definitions_dir => $definitions,
+  plan => _scope_plan(scope => 'unit'),
+);
+is_deeply(
+  [map { "$_->{target}/$_->{language}" } @{ $unit_matrix->{build_specs} }],
+  ['handout/de', 'script/de', 'script/en', 'slides/de'],
+  'unit scope builds every unrestricted target/language projection',
+);
+
+my $unit_target = OLLM::Config->resolve_request(
+  start_dir => File::Spec->catdir($scope_root, '010-first'),
+  definitions_dir => $definitions,
+  plan => _scope_plan(
+    scope => 'unit', target => 'script', target_explicit => 1,
+  ),
+);
+is_deeply(
+  [map { "$_->{target}/$_->{language}" } @{ $unit_target->{build_specs} }],
+  ['script/de', 'script/en'],
+  'an explicit target restricts the unit matrix but not its languages',
+);
+
+my $unit_language = OLLM::Config->resolve_request(
+  start_dir => File::Spec->catdir($scope_root, '010-first'),
+  definitions_dir => $definitions,
+  plan => _scope_plan(
+    scope => 'unit', language => 'en', language_explicit => 1,
+  ),
+);
+is $unit_language->{build_spec}{target}, 'script',
+  'an explicit language omits targets which do not provide it';
+
+my $series_scope = OLLM::Config->resolve_request(
+  start_dir => $scope_root,
+  definitions_dir => $definitions,
+  plan => _scope_plan(
+    scope => 'series', target => 'script', target_explicit => 1,
+  ),
+);
+is_deeply(
+  [map { $_->{physical_unit} } @{ $series_scope->{build_specs} }],
+  ['010-first', '030as-third'],
+  'series scope builds every applicable non-integration unit',
+);
+
+my $collection_scope = OLLM::Config->resolve_request(
+  start_dir => $scope_root,
+  definitions_dir => $definitions,
+  plan => _scope_plan(
+    scope => 'collection', target => 'script', target_explicit => 1,
+  ),
+);
+is $collection_scope->{build_spec}{physical_unit}, '090as-i-collection',
+  'collection scope switches to the unique applicable integration unit';
+
+eval {
+  OLLM::Config->resolve_request(
+    start_dir => $scope_root,
+    definitions_dir => $definitions,
+    plan => _scope_plan(
+      scope => 'collection', target => 'slides', target_explicit => 1,
+    ),
+  );
+};
+like $@, qr/no integration unit applies to document type 'slides'/,
+  'collection scope diagnoses a missing integration unit';
+
+my $second_collection = File::Spec->catdir($scope_root, '091as-i-other');
+make_path($second_collection);
+open my $second_source, '>', File::Spec->catfile($second_collection, 'main.tex')
+  or die $!;
+print {$second_source} "\\documentclass{article}\n";
+close $second_source;
+eval {
+  OLLM::Config->resolve_request(
+    start_dir => $scope_root,
+    definitions_dir => $definitions,
+    plan => _scope_plan(
+      scope => 'collection', target => 'script', target_explicit => 1,
+    ),
+  );
+};
+like $@, qr/more than one integration unit applies.*090as-i-collection.*091as-i-other/,
+  'collection scope diagnoses ambiguous integration units';
+
 my $standalone = OLLM::Config->resolve_request(
   plan => {
     action          => 'build',
