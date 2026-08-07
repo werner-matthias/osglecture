@@ -42,12 +42,9 @@ ollm newtoml
 ## Implementation status and TODO
 
 The new executor currently implements ordinary and continuous `build`,
-`build --all`, `build --dry-run`, standalone builds, and the basic `doctor`
-toolchain check. Native latexmk clean and information actions can be passed
-through to one resolved build.
-
-Dependency fixpoint builds with `build --resolve` remain the principal CLI
-function accepted but not yet implemented; they return exit code 69.
+`build --all`, `build --resolve`, `build --dry-run`, standalone builds, and
+the global and project-aware `doctor` toolchain check. Native latexmk clean
+and information actions can be passed through to one resolved build.
 
 `report` describes discovered units, promoted projections, their generations,
 and semantic dependencies without using findings as a release gate. `check`
@@ -83,9 +80,9 @@ slug is never promoted as its substitute.
 The `.osglecture` tree is OLLM-owned but deliberately inspectable and fully
 rebuildable. With no OLLM or latexmk process running, deleting it is a
 supported radical recovery procedure; this also discards all promoted logical
-mappings, so target units must be built directly again. Reference-index
-evaluation by `check`/`report`, dependency fixpoint builds, and the extended
-project-aware `doctor` checks remain TODO.
+mappings, so target units must be built directly again. Backend-specific
+optional-tool checks and TeX-side reporting of effective and enforced
+configuration values remain TODO.
 
 ## TOML parser
 

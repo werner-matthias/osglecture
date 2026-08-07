@@ -9,6 +9,7 @@ use File::Spec;
 
 use OLLM::State;
 use OLLM::Version qw($VERSION);
+use OLLM::BuildFile;
 
 sub prepare {
   my ($class, %arg) = @_;
@@ -55,6 +56,8 @@ sub prepare {
   return {
     action => $plan->{action}, scope => $scope, project_root => $root,
     series_id => $manifest->{project}{id}, structure => $structure,
+    manifest => $manifest, manifest_path => $arg{manifest_path},
+    definitions => $arg{definitions},
     physical_unit => $physical, target => $target, language => $language,
   };
 }
@@ -69,6 +72,8 @@ sub analyze {
   my %by_identity;
   my %physical_ids;
   my %integration;
+  my %structure = map { $_->{physical_unit} => $_ }
+    @{ $request->{structure}{units} };
   for my $result (@all) {
     my $key = _key($result);
     die "duplicate promoted document identity '" . _identity($result) . "'\n"
@@ -110,6 +115,33 @@ sub analyze {
         physical_unit => $result->{physical_unit},
       };
     }
+    my $unit = $structure{$result->{physical_unit} // ''};
+    if ($unit) {
+      for my $field (qw(unit_role unit_scope)) {
+        next if !defined $result->{$field};
+        push @issues, {
+          severity => 'error', code => "$field-mismatch",
+          message => "promoted $field does not match the current unit structure",
+          identity => _identity($result), stored => $result->{$field},
+          current => $unit->{$field},
+        } if ($result->{$field} // '') ne ($unit->{$field} // '');
+      }
+    }
+    my $target_name = $result->{target} // $result->{doctype};
+    my $target = $request->{manifest}{targets}{$target_name};
+    if (!$target) {
+      push @issues, { severity => 'error', code => 'target-unconfigured',
+        message => "promoted target '$target_name' is no longer configured",
+        identity => _identity($result), target => $target_name };
+    } elsif (!grep { $_ eq ($result->{language} // '') }
+        @{ $target->{languages} // [] }) {
+      push @issues, { severity => 'error', code => 'language-unconfigured',
+        message => "promoted language '$result->{language}' is no longer configured for target '$target_name'",
+        identity => _identity($result), target => $target_name,
+        language => $result->{language} };
+    }
+    _validate_current_contract($request, $result, \@issues)
+      if $request->{definitions} && $unit && $target;
   }
   if ($request->{action} eq 'check' && $request->{scope} eq 'current'
       && !@projections) {
@@ -203,6 +235,7 @@ sub analyze {
   } grep { $required{_key($_)} } values %by_identity;
   my @projection_report = map {
     my $identity = _identity($_);
+    my $generation = OLLM::State->_generation_directory($spec, $_);
     +{
       identity => $identity,
       required => $required{_key($_)} ? 1 : 0,
@@ -211,13 +244,86 @@ sub analyze {
       unit_role => $_->{unit_role}, doctype => $_->{doctype},
       language => $_->{language}, generation_id => $_->{generation_id},
       job_id => $_->{job_id}, dependencies => $_->{dependencies} // [],
+      target => $_->{target} // $_->{doctype}, chapter => $_->{chapter} // '',
+      ordinal => $_->{ordinal} // '', unit_scope => $_->{unit_scope},
+      config_signature => $_->{config_signature},
+      current_config_signature => $_->{current_config_signature},
+      shell_escape => $_->{shell_escape}, bundle_preset => $_->{bundle_preset},
+      structure_signature => $_->{structure_signature},
+      project_config_signature => $_->{project_config_signature},
+      artifact => File::Spec->catfile($generation, 'document.pdf'),
+      reference_export => ($_->{unit_role} // '') eq 'i' ? undef
+        : File::Spec->catfile($generation, 'reference.osgref.aux'),
     }
   } @report_results;
   return {
     scope => $request->{scope}, units => \@unit_report,
     projections => \@projection_report, issues => \@issues,
+    configuration => {
+      manifest => $request->{manifest_path},
+      bundle_preset => $request->{manifest}{bundle_preset},
+      structure_signature => $request->{structure}{signature},
+      effective_tex => {
+        available => 0,
+        reason => 'effective/enforced TeX values are not exported yet',
+      },
+    },
     ok => scalar(grep { ($_->{severity} // '') eq 'error' } @issues) ? 0 : 1,
   };
+}
+
+sub _validate_current_contract {
+  my ($request, $result, $issues) = @_;
+  my $target_name = $result->{target} // $result->{doctype};
+  my $resolved = {
+    request => {
+      action => 'build', context => 'series', project_root => $request->{project_root},
+      series_id => $request->{series_id}, target => $target_name,
+      language => $result->{language}, source => 'main.tex',
+    },
+    configuration => {
+      kind => 'toml', path => $request->{manifest_path},
+      definitions => $request->{definitions}, structure => $request->{structure},
+    },
+  };
+  my $directory = File::Spec->catdir(
+    $request->{project_root}, $result->{physical_unit},
+  );
+  my $expected = eval {
+    OLLM::BuildFile->build_spec(
+      resolved => $resolved, manifest => $request->{manifest},
+      unit_directory => $directory, target => $target_name,
+      language => $result->{language},
+    )
+  };
+  if (!$expected) {
+    my $error = $@ || 'cannot reconstruct current build contract'; chomp $error;
+    push @$issues, { severity => 'error', code => 'contract-unavailable',
+      message => $error, identity => _identity($result) };
+    return;
+  }
+  push @$issues, { severity => 'error', code => 'job-id-mismatch',
+    message => 'promoted job id does not match the current build contract',
+    identity => _identity($result), stored => $result->{job_id},
+    current => $expected->{job_id} }
+    if ($result->{job_id} // '') ne $expected->{job_id};
+  push @$issues, { severity => 'error', code => 'ordinal-mismatch',
+    message => 'promoted ordinal does not match the current unit structure',
+    identity => _identity($result), stored => $result->{ordinal},
+    current => $expected->{logical_ordinal} }
+    if ($result->{ordinal} // '') ne $expected->{logical_ordinal};
+  push @$issues, { severity => 'error', code => 'shell-escape-mismatch',
+    message => 'promoted shell-escape policy differs from the current policy',
+    identity => _identity($result), stored => $result->{shell_escape},
+    current => $expected->{shell_escape} }
+    if defined($result->{shell_escape})
+      && $result->{shell_escape} ne $expected->{shell_escape};
+  $result->{current_config_signature} = $expected->{config_signature};
+  push @$issues, { severity => 'warning', code => 'configuration-changed',
+    message => 'the aggregate build configuration has changed; a rebuild is recommended',
+    identity => _identity($result), stored => $result->{config_signature},
+    current => $expected->{config_signature} }
+    if ($result->{config_signature} // '') ne $expected->{config_signature};
 }
 
 sub _validate_projection {

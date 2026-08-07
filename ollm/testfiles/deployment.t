@@ -73,6 +73,16 @@ my $collection_name = OLLM::Deployment::_filename(
 );
 is $collection_name, 'course-script-de.pdf',
   'collection templates do not require unit, chapter, or ordinal';
+my %excursus_result = (%{ $request->{results}[0] },
+  unit_id => 'extra', unit_role => 'e', ordinal => '1e2', chapter => '2');
+is(OLLM::Deployment::_filename(
+  '{ordinal:02}-{unit}.pdf', $request, \%excursus_result,
+), '01e2-extra.pdf', 'zero padding preserves an excursus ordinal suffix');
+my %appendix_result = (%excursus_result,
+  unit_id => 'appendix', unit_role => 'a', ordinal => '2ap1');
+is(OLLM::Deployment::_filename(
+  '{ordinal:02}-{unit}.pdf', $request, \%appendix_result,
+), '02ap1-appendix.pdf', 'zero padding preserves an appendix ordinal suffix');
 
 my $target = File::Spec->catfile($destination, 'course-script-de.pdf');
 $request->{deployment}{types}{script}{paths} = [$destination];

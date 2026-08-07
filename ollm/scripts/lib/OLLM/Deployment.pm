@@ -179,10 +179,14 @@ sub _placeholder {
       || ($value->{$name} eq '' && $name ne 'role');
   my $rendered = $value->{$name} // '';
   if (defined $width) {
+    my ($number, $suffix) = $name eq 'ordinal'
+      ? ($rendered =~ /\A([0-9]+)((?:e|ap)[0-9]+)?\z/)
+      : ($rendered =~ /\A([0-9]+)()\z/);
     die "deployment placeholder '{$name}:0$width}' requires a decimal value"
-      if $rendered !~ /\A[0-9]+\z/;
-    $rendered = ('0' x ($width - length($rendered))) . $rendered
-      if length($rendered) < $width;
+      if !defined $number;
+    $number = ('0' x ($width - length($number))) . $number
+      if length($number) < $width;
+    $rendered = $number . ($suffix // '');
   }
   return $rendered;
 }

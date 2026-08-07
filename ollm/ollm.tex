@@ -4,6 +4,7 @@
 \usepackage{etoolbox}
 \usepackage[margin=25mm]{geometry}
 \usepackage{xcolor}
+\usepackage[ngerman]{babel}
 \usepackage{hyperref}
 \usepackage{microtype}
 \usepackage{needspace}
@@ -19,160 +20,386 @@
 \AtBeginEnvironment{verbatim}{\linespread{1.0}\selectfont}
 
 \hypersetup{
-  pdftitle  = {OLLM -- OSG LaTeX Lecture Maker},
+  pdftitle  = {OLLM -- Benutzerhandbuch},
   pdfauthor = {OSG},
   colorlinks,
   linkcolor = blue!50!black,
   urlcolor  = blue!50!black
 }
 
-\title{OLLM\\OSG LaTeX Lecture Maker}
+\title{OLLM\\OSG LaTeX Lecture Maker\\\large Benutzerhandbuch}
 \author{OSG}
-\date{Entwurfsstand}
+\date{}
 
 \begin{document}
 
 \maketitle
 
 \begin{abstract}
-  OLLM ist das Build-Frontend des \texttt{osglecture}-Bundles. Es wählt
-  Dokument- und Sprachvarianten aus und übergibt den einzelnen LaTeX-Build an
-  \texttt{latexmk}. Dieses Handbuch entsteht parallel zur Neuimplementierung.
+OLLM baut mit \texttt{osglecture} erstellte Vorlesungsdokumente. Es wählt
+Dokumenttyp und Sprache, startet LuaLaTeX über \texttt{latexmk}, verwaltet
+kapitelübergreifende Referenzen und kopiert fertige PDFs auf konfigurierte
+Deploymentziele. Dieses Handbuch beschreibt die Bedienung und sämtliche
+gegenwärtig unterstützten TOML-Konfigurationsdateien.
 \end{abstract}
 
 \tableofcontents
 
-\section{Status}
+\section{Schnelleinstieg}
 
-Das ausgelieferte Programm \texttt{ollm} besitzt bereits den neuen portablen
-Kommandozeilen-Launcher. Kompatible Builds übergibt er zunächst an die
-erhaltene \texttt{latexmk}-Konfiguration \texttt{ollm-legacy.rc} in Version
-0.11.1. Ihre häufig verwendete Schnittstelle bildet die Kompatibilitätsbasis
-für die Überarbeitung.
+OLLM benötigt Perl~5.30 oder neuer, \texttt{latexmk} und LuaLaTeX. Eine
+vollständige Installation prüfen Sie mit:
 
-Die Zielarchitektur mit ihren Dateiverträgen und Rationales steht in
-\texttt{DESIGN.md}.
+\begin{verbatim}
+ollm --version
+ollm doctor
+\end{verbatim}
 
-\subsection*{TODO: noch nicht implementiert}
+Wechseln Sie zum Anlegen eines Projekts in dessen künftige Wurzel und führen
+Sie aus:
 
-Die CLI erkennt die folgenden Funktionen bereits, sie sind im neuen Executor
-aber noch nicht implementiert und enden mit Exitcode 69:
-\begin{itemize}
-  \item \texttt{report},
-  \item das rein lesende \texttt{check},
-  \item OLLM-spezifisches \texttt{clean},
-  \item \texttt{prune},
-  \item Fixpunkt-Builds mit \texttt{build --resolve}.
-\end{itemize}
-Ebenfalls TODO sind Resultat-Promotion, Auswertung von Referenzindizes und die
-vollständigen projektabhängigen \texttt{doctor}-Prüfungen. Implementiert sind
-der normale und kontinuierliche Build, \texttt{build --all},
-\texttt{build --dry-run}, Standalone-Builds und die grundlegende
-\texttt{doctor}-Werkzeugprüfung.
+\begin{verbatim}
+ollm newtoml
+\end{verbatim}
 
-\section{Aufgabenteilung}
+Der Befehl erzeugt \texttt{ollmconfig.toml}. Existiert dort bereits eine alte
+\texttt{ollmconfig.pl}, wird diese soweit möglich konvertiert. Ein vorhandenes
+TOML-Manifest wird niemals überschrieben.
+
+Eine kleine Serie kann so aufgebaut sein:
+
+\begin{verbatim}
+my-course/
+  ollmconfig.toml
+  Include/
+    projectconfig.tex
+    documentmetadata.tex
+  010-introduction/
+    main.tex
+  020-processes/
+    main.tex
+\end{verbatim}
+
+In einem Unit-Verzeichnis bauen Sie beispielsweise ein deutsches Skript:
+
+\begin{verbatim}
+cd 010-introduction
+ollm build script --language=de
+\end{verbatim}
+
+Die Kurzform \texttt{ollm script --language=de} ist gleichwertig. Die Targets
+\texttt{slides}, \texttt{handout} und \texttt{script} sind mitgeliefert.
+
+\section{Projektaufbau}
+
+\subsection{Projektwurzel und Units}
+
+Die Datei \texttt{ollmconfig.toml} markiert die Projektwurzel. OLLM sucht vom
+Arbeitsverzeichnis aus aufwärts nach dieser Datei. Ein Unit-Verzeichnis trägt
+einen dreistelligen physischen Ordnungspräfix:
+
+\begin{verbatim}
+010-introduction
+020-processes
+\end{verbatim}
+
+Nach den drei Ziffern kann ein Target-Scope stehen. Die mitgelieferten
+Definitionen verwenden unter anderem \texttt{a}/\texttt{as} für Langformen
+und \texttt{b}/\texttt{bs}/\texttt{bh} für Präsentation, Folien und Handout.
+Eine optionale Rolle folgt nach einem weiteren Bindestrich:
+
+\begin{verbatim}
+030-e-scheduling-details   Excursus
+090-a-appendix             Appendix
+099-i-collection           Integration
+\end{verbatim}
+
+Ohne Rollenpräfix ist die Unit regulärer Inhalt. Ein Excursus gehört zur
+vorhergehenden sichtbaren Content-Unit. Seine logische Ordnungskennung lautet
+beispielsweise \texttt{2e1}; weitere Exkurse erhalten \texttt{2e2} usw.
+Anhänge führen den regulären Zähler weiter und ergänzen eine lokale Kennung,
+beispielsweise \texttt{3ap1}, \texttt{4ap2}. Eine Integrationsunit besitzt
+keine Ordnungsnummer.
+
+Die logische Unit-ID stammt nicht aus dem Verzeichnisnamen. Eine reguläre Unit
+deklariert sie ausdrücklich in LaTeX, beispielsweise:
+
+\begin{verbatim}
+\lecture[Prozesse]{Prozesse und Scheduling}{processes}
+\end{verbatim}
+
+Nach einem ersten erfolgreichen Build kennt OLLM die Zuordnung von
+\texttt{processes} zum physischen Verzeichnis. Bis dahin ergeben unbekannte
+kapitelübergreifende Referenzen wie bei LaTeX üblich einen Platzhalter und
+eine Warnung.
+
+\subsection{Gemeinsame TeX-Konfiguration}
+
+Standardmäßig liegt projektweit geteiltes TeX-Material in \texttt{Include}.
+\texttt{Include/projectconfig.tex} enthält fachliche und darstellerische
+TeX-Konfiguration, beispielsweise Titel, Autor und Sprachabbildung:
+
+\begin{verbatim}
+\title{Betriebssysteme}
+\author<presentation>[M. Mustermann]{Max Mustermann}
+\author<longform>[Mustermann]{Max Mustermann}
+
+\usepackage[
+  languages={de,en},
+  targetlang={\OsgLectureLanguage},
+  map={de=ngerman,en=british}
+]{langselect}
+\end{verbatim}
+
+Titel und Sprachabbildung gehören bewusst nicht in TOML. Dadurch kann dieselbe
+TeX-Konfiguration auch von einem Standalone-Dokument verwendet werden.
+
+Benötigt ein Target frühe PDF-Metadaten, enthält
+\texttt{Include/documentmetadata.tex} den Aufruf von
+\verb|\DocumentMetadata|. Ein einfaches Beispiel ist:
+
+\begin{verbatim}
+\DocumentMetadata{lang=\OsgLectureRequestedLanguage}
+\end{verbatim}
+
+Ob diese Datei erforderlich oder deaktiviert ist, bestimmt das jeweilige
+Target beziehungsweise ein Override im Projektmanifest.
+
+\section{Aufruf und Optionsmodell}
+
+Die allgemeine Form lautet:
+
+\begin{verbatim}
+ollm [globale Optionen] [Aktion] [Target] [Aktionsoptionen]
+\end{verbatim}
+
+Ohne Aktion wird \texttt{build} angenommen. Mitgelieferte Targetnamen können
+als nacktes Wort oder mit historischem Pluspräfix geschrieben werden:
+
+\begin{verbatim}
+ollm slides
+ollm +slides
+ollm build --target=slides
+\end{verbatim}
+
+Aliase sind \texttt{beamer} und \texttt{presentation} für \texttt{slides}
+sowie \texttt{article} für \texttt{script}. Projektdefinierte Targets werden
+mit \texttt{--target=NAME} gewählt.
+
+\subsection{Allgemeine Optionen}
 
 \begin{description}
-  \item[OLLM] wählt und orchestriert konkrete Builds.
-  \item[\texttt{latexmk}] führt LuaLaTeX und benötigte Hilfsprogramme bis zum
-    stabilen Ergebnis aus.
-  \item[\texttt{osglecture}] interpretiert den Buildauftrag und bestimmt
-    Dokumentsemantik, Serienstruktur und Referenzverhalten.
-  \item[Deploymentwerkzeug] soll später geprüfte Artefakte veröffentlichen.
+\item[\texttt{--help}] zeigt die eingebaute Kurzhilfe.
+\item[\texttt{--version}] zeigt die OLLM-Version.
+\item[\texttt{--format=text|json}] wählt menschen- oder maschinenlesbare
+  Ausgabe. JSON eignet sich für CI und Werkzeuge.
+\item[\texttt{--color=auto|always|never}] steuert farbige Terminalausgabe.
+\item[\texttt{--config=DATEI}] verwendet ein bestimmtes Projektmanifest.
+\item[\texttt{--project-root=VERZEICHNIS}] verwendet die angegebene
+  Projektwurzel.
+\item[\texttt{--non-interactive}] unterdrückt interaktive Rückfragen.
+\item[\texttt{--legacy}] aktiviert ausdrücklich den alten Buildpfad mit
+  \texttt{ollmconfig.pl}.
+\item[\texttt{--overwrite}] erlaubt bei \texttt{deploy} das Ersetzen einer
+  abweichenden Zieldatei, wenn die Projektpolicy eine explizite Freigabe
+  verlangt.
+\item[\texttt{+enforce+}, \texttt{--enforce+}] verlangt das Pluspräfix bei
+  Aktions- und eingebauten Targetwörtern. Das verhindert, dass ein Dateiname
+  wie \texttt{slides} als Target interpretiert wird. \texttt{+force+} ist ein
+  veralteter Alias.
 \end{description}
 
-\section{Legacy-Aufruf}
+Unbekannte kompatible Minusoptionen werden bei einem Build an \texttt{latexmk}
+weitergereicht. Zusätzliche RC-Dateien und Optionen, die den kontrollierten
+Buildvertrag umgehen würden, lehnt OLLM ab.
 
-OLLM wird direkt aufgerufen. Der Launcher startet nur mit der ausdrücklichen
-Option \texttt{--legacy} \texttt{latexmk} mit der Legacy-RC-Datei. Eine
-\texttt{ollmconfig.pl} und eine \texttt{ollmconfig.toml} dürfen während der
-Migration nebeneinander liegen; ohne \texttt{--legacy} wird TOML gewählt.
-Beispiele der bisherigen Oberfläche sind:
+\section{Bauen}
 
-\begin{verbatim}
-ollm --legacy slides
-ollm --legacy handout
-ollm --legacy +lang=en script
-\end{verbatim}
-
-Aktionen und Targets verstehen weiterhin ein vorangestelltes \texttt{+}.
-\texttt{+enforce+} oder \texttt{--enforce+} macht dieses Präfix für Aktionen
-und Targets verpflichtend; dadurch kann beispielsweise \texttt{slides} als
-Dateiname verwendet werden. \texttt{+force+} bleibt ein veralteter Alias.
-
-\subsection*{Konfigurationsmigration}
-
-\texttt{ollm convertconfig} erzeugt aus einer gefundenen
-\texttt{ollmconfig.pl} soweit möglich eine \texttt{ollmconfig.toml}, ohne den
-Perl-Code auszuführen. Statisch erkennbare Deploymentregeln werden übernommen;
-nicht abbildbare dynamische, Restriktions-, Pfad- oder berechnete Werte werden
-als Warnung ausgegeben. \texttt{ollm newtoml} erzeugt andernfalls
-eine generische TOML-Datei; bei vorhandener Perl-Datei konvertiert es diese.
-Ein bestehendes TOML wird von beiden Befehlen niemals überschrieben.
-
-\section{Deployment}
-
-\texttt{ollm deploy} kopiert bereits promotierte PDF-Artefakte und startet
-keinen Build. In der Projektwurzel gilt standardmäßig der Scope
-\texttt{series}, in jeder Unit \texttt{current};
-\texttt{--scope=collection} wählt die Integrationsdatei eines Dokumenttyps.
-Fehlende Zielverzeichnisse werden niemals angelegt und führen zu einem
-Fehlerstatus. Weitere Versuche zum selben nicht verfügbaren Pfad werden
-übersprungen, andere Ziele aber weiter verarbeitet.
+\subsection{Einzelner Build}
 
 \begin{verbatim}
-[deployment]
-series = "both"
-
-[deployment.roles]
-content = ""
-appendix = "A"
-
-[deployment.types.handout]
-paths = ["/srv/lecture/handouts", "/srv/lecture/archive"]
-filename = "{role}{chapter:02}-{unit}-{lang}.pdf"
-collection_filename = "{series}-{lang}.pdf"
-
-[security.deployment]
-overwrite = "explicit"
+ollm build script --language=en
+ollm build --target=slides --language=de --source=main.tex
 \end{verbatim}
 
-Dateinamenschablonen kennen \texttt{series}, \texttt{unit},
-\texttt{ordinal}, \texttt{chapter}, \texttt{doctype}, \texttt{lang} und
-\texttt{role}. Dezimalwerte können wie in \texttt{\{chapter:02\}} mit
-führenden Nullen auf eine Mindestbreite aufgefüllt werden. Die tatsächliche
-Kapitelnummer stammt aus dem LaTeX-Ergebnis und kann mit
-\verb|\OsgLectureDeploymentChapter{...}| ausdrücklich gesetzt werden.
-Abweichende vorhandene Dateien benötigen bei der Policy \texttt{explicit}
-die Option \texttt{--overwrite}. OLLM kopiert zunächst in eine temporäre
-Zieldatei und bevorzugt eine atomare Installation.
+\texttt{--language} wählt eine für das Target konfigurierte Sprache. Ohne
+Angabe gilt die Projektstandardsprache, sofern das Target sie unterstützt,
+ansonsten die erste Sprache des Targets. \texttt{--source} ist standardmäßig
+\texttt{main.tex}.
 
-\section{Neue Grundfunktionen}
-
-Die normalisierte Auswahl kann bereits ohne LaTeX-Build ausgegeben werden:
+\texttt{--rebuild} verlangt einen vollständigen \texttt{latexmk}-Neubau.
+\texttt{--dry-run} startet kein LaTeX, sondern zeigt die normalisierte Auswahl:
 
 \begin{verbatim}
 ollm build script --language=en --dry-run
 ollm build script --language=en --dry-run --format=json
 \end{verbatim}
 
-\texttt{ollm doctor} prüft, ob Perl, \texttt{latexmk} und LuaLaTeX auffindbar
-sind. \texttt{ollm --version} gibt die Version des neuen Launchers aus.
+\verb|--debug=tex|, \texttt{ollm} oder \texttt{tex+ollm} aktiviert
+Diagnoseausgaben für die gewählte Ebene. \verb|--warnings=all|,
+\texttt{important} oder \texttt{none} wählt die gewünschte Warnungsmenge.
 
-\section{Projektmanifest}
+\subsection{Buildmatrix mit \texttt{--all}}
 
-Das Projektmanifest heißt \texttt{ollmconfig.toml} und markiert die
-Projektwurzel. OLLM sucht ausgehend vom Arbeitsverzeichnis aufwärts danach.
-Alternativ werden Manifest oder Projektwurzel ausdrücklich ausgewählt:
+\texttt{--all} baut alle im Manifest für die aktuelle Unit vorgesehenen
+Target-/Sprachkombinationen. Target-Scope und Rolle der Unit filtern die
+Matrix. Der Befehl baut nicht automatisch jede Unit der Serie.
 
 \begin{verbatim}
-ollm build script --config=/path/to/ollmconfig.toml --dry-run
-ollm build script --project-root=/path/to/project --dry-run
+ollm build --all
 \end{verbatim}
 
-Ein minimales Serienmanifest enthält:
+\subsection{Abhängigkeiten mit \texttt{--resolve}}
 
-{\small
+\texttt{--resolve} verfolgt die von LaTeX gemeldeten serieninternen
+Abhängigkeiten und baut veraltete Produzenten beziehungsweise Konsumenten bis
+zu einem Fixpunkt:
+
+\begin{verbatim}
+ollm build script --resolve
+\end{verbatim}
+
+Zyklen sind erlaubt. Noch nie direkt gebaute logische Units kann OLLM nicht
+aus Verzeichnisnamen erraten; bauen Sie eine solche Unit zunächst einmal in
+der benötigten Projektion. Die Höchstzahl der Fixpunktrunden wird in
+\verb|[build.resolve]| konfiguriert.
+
+\subsection{Standalone-Modus}
+
+Für ein Dokument ohne Serienmanifest bleibt die kompatible Aktion
+\texttt{standalone} verfügbar:
+
+\begin{verbatim}
+ollm standalone main.tex
+\end{verbatim}
+
+Dokumenttyp und Sprache stammen dabei aus den Klassenoptionen des Dokuments;
+\texttt{--target}, \texttt{--language} und \texttt{--all} sind nicht
+zulässig.
+
+\section{Report, Check und Doctor}
+
+\subsection{Report}
+
+\texttt{report} beschreibt Units, vorhandene Projektionen, Artefakte,
+Generationen, Kapitel- und Ordnungsnummern, Konfigurationssignaturen und
+Abhängigkeiten. Befunde ändern seinen Exitstatus nicht, solange der Zustand
+lesbar ist.
+
+\begin{verbatim}
+ollm report
+ollm report --scope=unit
+ollm report --format=json
+\end{verbatim}
+
+In der Projektwurzel ist der Default-Scope \texttt{series}; in einer Unit
+\texttt{current}. \texttt{unit} muss ausdrücklich gewählt werden. Eine
+entdeckte, aber unbenutzte und ungebaute Unit erscheint als \texttt{dormant}
+und ist kein Fehler.
+
+\subsection{Check}
+
+\texttt{check} liest dieselben Daten, bewertet Inkonsistenzen jedoch als
+Fehler. Es baut nichts. Geprüft werden unter anderem Artefakte, Identitäten,
+Rollen und Scopes, Target-/Sprachzulässigkeit, Job-ID, Ordnungsnummer und
+Referenzabhängigkeiten.
+
+\begin{verbatim}
+ollm check
+ollm check --scope=current --target=script --language=de
+ollm check --format=json
+\end{verbatim}
+
+Ein inkonsistenter erforderlicher Zustand ergibt Exitcode~3. Ruhende Units
+erzeugen keine Buildpflicht. Die aggregierte Konfiguration kann sich bereits
+durch eine neue ruhende Unit ändern; ein solcher unspezifischer Unterschied
+wird daher als Warnung gemeldet, konkrete Vertragsabweichungen bleiben Fehler.
+
+\subsection{Doctor}
+
+\texttt{doctor} prüft global Perl, \texttt{latexmk}, LuaLaTeX,
+\texttt{kpsewhich}, den TOML-Parser sowie erforderliche und optionale
+TeX-Pakete. Innerhalb eines Projekts prüft es zusätzlich Manifest,
+Definitionen, Projektdateien, Schreibbarkeit, gespeicherten Zustand und
+Shell-Escape-Policy.
+
+\begin{verbatim}
+ollm doctor
+ollm doctor --project-root=/path/to/project
+ollm doctor --format=json
+\end{verbatim}
+
+Fehlende notwendige Werkzeuge ergeben Exitcode~69. Optionale Pakete werden
+angezeigt, führen allein aber nicht zum Fehlschlag.
+
+\section{Aufräumen}
+
+\subsection{Clean}
+
+\texttt{clean} entfernt ausgewählte Arbeits- oder Zustandsdaten. Der
+Default-Level ist \texttt{aux}, der Default-Scope \texttt{current}.
+
+\begin{description}
+\item[\texttt{--level=aux}] entfernt Hilfsdateien, behält aber das lokale PDF.
+\item[\texttt{--level=build}] entfernt das isolierte Buildverzeichnis.
+\item[\texttt{--level=state}] entfernt promovierte Zustandsprojektionen.
+\item[\texttt{--level=all}] kombiniert \texttt{build} und \texttt{state}.
+\end{description}
+
+Scopes sind \texttt{current}, \texttt{unit} und \texttt{series}. Ein
+Serien-Clean aus einer Unit verlangt eine Rückfrage; von der Projektwurzel aus
+nicht. Mit \texttt{--dry-run} wird nur der Löschplan gezeigt.
+
+\begin{verbatim}
+ollm clean --level=aux
+ollm clean --level=build --scope=unit --dry-run
+ollm clean --level=state --scope=series
+\end{verbatim}
+
+\subsection{Prune}
+
+\texttt{prune} entfernt aufgegebene temporäre Zustände und ersetzte
+Generationen. Zustände von inzwischen fehlenden physischen Units werden nur
+mit \texttt{--stale-units} entfernt:
+
+\begin{verbatim}
+ollm prune --dry-run
+ollm prune --stale-units
+\end{verbatim}
+
+Wenn kein OLLM- oder \texttt{latexmk}-Prozess läuft, darf das gesamte
+Verzeichnis \texttt{.osglecture} als radikale Reparatur gelöscht werden. Dabei
+gehen auch alle bekannten Zuordnungen logischer Unit-IDs verloren; betroffene
+Units müssen anschließend wieder direkt gebaut werden.
+
+\section{Deployment}
+
+\texttt{deploy} kopiert bereits erfolgreich promovierte PDFs. Es startet
+keinen Build und legt keine Zielverzeichnisse an.
+
+\begin{verbatim}
+ollm deploy handout
+ollm deploy --target=script --scope=series
+ollm deploy --target=script --scope=collection
+ollm deploy --all --overwrite
+\end{verbatim}
+
+In der Projektwurzel gilt standardmäßig \texttt{series}, in einer Unit
+\texttt{current}. \texttt{unit} wählt alle vorhandenen Projektionen der Unit;
+\texttt{collection} wählt die Integrationsdatei des Dokumenttyps unabhängig
+vom Arbeitsverzeichnis. Bei Serien-Deployment entscheidet
+\verb|deployment.series|, ob Einzelunits, Collection oder beide kopiert
+werden.
+
+Fehlt ein Zielpfad, meldet OLLM einen Fehler und überspringt weitere Versuche
+mit demselben Pfad. Andere konfigurierte Ziele werden weiter bearbeitet. Eine
+vorhandene identische Datei bleibt unverändert. Ob eine abweichende Datei
+\texttt{--overwrite} verlangt, bestimmt \verb|security.deployment.overwrite|.
+
+\section{Das Projektmanifest \texttt{ollmconfig.toml}}
+
+\subsection{Vollständiges Beispiel}
+
 \begin{verbatim}
 schema = 1
 bundle_preset = "OSG lecture/1"
@@ -189,149 +416,318 @@ available = ["de", "en"]
 default = "de"
 
 [targets.slides]
+languages = ["de", "en"]
+document_metadata = "disabled"
+
+[targets.handout]
 languages = ["de"]
 
 [targets.script]
 languages = ["de", "en"]
+document_metadata = "required"
 
 [security]
 shell_escape = "restricted"
+
+[build.resolve]
+max_rounds = 8
+
+[deployment]
+series = "both"
+
+[deployment.roles]
+content = ""
+appendix = "A"
+excursus = "E"
+integration = ""
+
+[deployment.types.handout]
+paths = ["deployment/handouts", "/srv/lecture/handouts"]
+filename = "{role}{chapter:02}-{unit}-{lang}.pdf"
+collection_filename = "{series}-{doctype}-{lang}.pdf"
+series = "units"
+
+[deployment.types.handout.units.introduction]
+filename = "{chapter:02}-intro-{lang}.pdf"
+
+[security.deployment]
+overwrite = "explicit"
 \end{verbatim}
-}
 
-Projektweit geteiltes TeX-Material liegt standardmäßig in
-\texttt{Include}; beide Namen in \texttt{project.tex} sind konfigurierbar.
-OLLM fügt das Verzeichnis kontrolliert zu \texttt{TEXINPUTS} hinzu und nimmt
-den Inhalt einer vorhandenen Projektkonfiguration in die
-Konfigurationssignatur auf. \texttt{osglecture} lädt sie nach Aufbau des
-Modusgraphen und der Metadatenoberfläche. Damit sind dort beispielsweise
-\verb|\author<presentation>[M.~M.]{Max Mustermann}| und entsprechende
-Langformwerte zulässig.
+Unbekannte Schlüssel sind Fehler. Alle Bezeichner und Pfade müssen die in den
+folgenden Abschnitten beschriebenen Bedingungen erfüllen.
 
-Der fachliche Projekttitel und die Abbildung kurzer Sprachkennungen auf
-LaTeX-Sprachvarianten sind ausschließlich TeX-Eigenschaften. Sie werden für
-Serien- und Standalone-Dokumente an derselben Stelle konfiguriert:
+\subsection{Wurzelschlüssel}
+
+\begin{description}
+\item[\texttt{schema}] Pflichtwert \texttt{1}. Er bezeichnet das
+  Dateischema, nicht die OLLM- oder Bundleversion.
+\item[\texttt{bundle\_preset}] Referenz auf ein Bundle-Preset, gewöhnlich
+  \verb|"OSG lecture/1"|. Fehlt der Schlüssel, verwendet OLLM den
+  Nutzerdefault beziehungsweise den eingebauten Default.
+\end{description}
+
+Weitere erlaubte Tabellen sind \texttt{project}, \texttt{languages},
+\texttt{targets}, \texttt{security}, \texttt{build} und optional
+\texttt{deployment}.
+
+\subsection{\texttt{[project]} und \texttt{[project.tex]}}
+
+\verb|project.id| ist die technische, portable Serien-ID. Sie geht in
+Jobnamen und Dokumentidentitäten ein und sollte nach dem ersten Build nicht
+leichtfertig geändert werden.
+
+\verb|project.tex.directory| ist ein projektwurzelrelatives Verzeichnis;
+Default ist \texttt{Include}. Absolute Pfade und Pfade oberhalb der
+Projektwurzel sind nicht zulässig. \verb|project.tex.config| ist ein reiner
+Dateiname ohne Verzeichniskomponenten; Default ist
+\texttt{projectconfig.tex}. Die Datei darf neben Einstellungen auch
+projektlokale Pakete aus dem gemeinsamen Verzeichnis verwenden.
+
+\subsection{\texttt{[languages]}}
+
+\verb|languages.available| ist eine nichtleere Liste portabler kurzer
+Sprachkennungen. Doppelte Werte und Kollisionen, die sich nur in Groß- und
+Kleinschreibung unterscheiden, sind unzulässig. \verb|languages.default|
+muss in dieser Liste stehen.
+
+Diese Tabelle beschreibt ausschließlich die Buildmatrix. Die Zuordnung zu
+\texttt{babel}- oder anderen LaTeX-Sprachnamen gehört in
+\texttt{projectconfig.tex}.
+
+\subsection{\texttt{[targets.NAME]}}
+
+Für jedes Projekt-Target ist eine Tabelle erforderlich. \verb|languages| ist
+eine nichtleere Teilmenge von \verb|languages.available|. Optional überschreibt
+\verb|document_metadata = "required"| oder \verb|"disabled"| den Default
+der Targetdefinition.
+
+Der Name muss durch eine eingebaute oder zusätzlich gefundene Targetdefinition
+registriert sein. Schema~1 verlangt, dass Targetname und Doctype identisch
+sind.
+
+\subsection{\texttt{[security]}}
+
+\verb|shell_escape| kann folgende Werte annehmen:
+
+\begin{description}
+\item[\texttt{off}] startet LuaLaTeX mit deaktiviertem Shell-Escape.
+\item[\texttt{restricted}] verwendet die eingeschränkte Allowlist der
+  TeX-Distribution; dies ist der Default.
+\item[\texttt{full}] erlaubt vollständiges Shell-Escape und sollte nur für
+  vertrauenswürdige Quellen verwendet werden.
+\end{description}
+
+In \verb|[security.deployment]| bestimmt \verb|overwrite| das Überschreiben
+abweichender Zieldateien:
+
+\begin{description}
+\item[\texttt{explicit}] verlangt bei Bedarf \texttt{--overwrite}; Default.
+\item[\texttt{automatic}] ersetzt abweichende Dateien ohne Zusatzoption.
+\end{description}
+
+\subsection{\texttt{[build.resolve]}}
+
+\verb|max_rounds| ist eine positive Ganzzahl und begrenzt den Fixpunktlauf
+von \texttt{build --resolve}. Ohne Angabe gelten acht Runden.
+
+\subsection{Deploymenttabellen}
+
+\verb|deployment.series| legt die Serienauswahl global fest:
+\verb|"units"|, \verb|"collection"| oder \verb|"both"|. Ohne Angabe
+gilt \verb|"both"|. In \verb|deployment.roles| können die Rollen
+\texttt{content}, \texttt{appendix}, \texttt{excursus} und
+\texttt{integration} auf frei wählbare Dateinamensbestandteile abgebildet
+werden.
+
+Für jeden deploybaren Dokumenttyp ist
+\verb|[deployment.types.DOCTYPE]| erforderlich:
+
+\begin{description}
+\item[\texttt{paths}] nichtleere Liste von Zielverzeichnissen. Relative Pfade
+  beziehen sich auf die Projektwurzel. OLLM legt sie nicht an.
+\item[\texttt{filename}] Schablone für einzelne Units.
+\item[\texttt{collection\_filename}] optionale Schablone für die
+  Integrationsdatei; ohne sie wird \texttt{filename} verwendet.
+\item[\texttt{series}] optionaler Override von
+  \verb|deployment.series| für diesen Dokumenttyp.
+\end{description}
+
+Ein Dateiname für eine einzelne logische Unit kann ausschließlich über eine
+Unit-Tabelle überschrieben werden:
 
 \begin{verbatim}
-\title{Betriebssysteme}
-\usepackage[
-  languages={de,en},
-  targetlang={\OsgLectureLanguage},
-  map={de=ngerman,en=british}
-]{langselect}
+[deployment.types.DOCTYPE.units.UNIT-ID]
+filename = "..."
 \end{verbatim}
 
-Das Manifest enthält unter \texttt{project} daher nur die technische ID und
-den optionalen TeX-Fundort. \texttt{languages} enthält ausschließlich die für
-die Buildmatrix benötigten Werte \texttt{available} und \texttt{default}.
-Die TeX-seitigen Defaults und erzwungenen Projektvorgaben stehen in
-\texttt{Include/projectconfig.tex}; sie gehören nicht zum Buildmanifest.
+Schablonen kennen:
 
-\subsection*{Bundle-Presets und Targets}
+\begin{description}
+\item[\texttt{\{series\}}] technische Projekt-ID;
+\item[\texttt{\{unit\}}] logische Unit-ID;
+\item[\texttt{\{ordinal\}}] logische Ordnungskennung;
+\item[\texttt{\{chapter\}}] von LaTeX gemeldete Kapitelrepräsentation;
+\item[\texttt{\{doctype\}}] Dokumenttyp;
+\item[\texttt{\{lang\}}] Sprache;
+\item[\texttt{\{role\}}] Wert aus \verb|deployment.roles|.
+\end{description}
 
-Bundle-Presets und Dokumenttargets sind versionierte Definitionen. OLLM löst sie
-zunächst aus dem mitgelieferten Bundle auf. Zusätzliche Suchpfade werden in
-der optionalen Datei \texttt{.ollmconfig.local.toml} eingetragen:
+Dezimale Werte können mit einer Mindestbreite versehen werden, etwa
+\texttt{\{chapter:02\}}. Bei \texttt{ordinal} wird nur der numerische Präfix
+aufgefüllt: \texttt{1e2} wird zu \texttt{01e2}, \texttt{3ap1} zu
+\texttt{03ap1}. Die Kapitelrepräsentation kann im Dokument mit
+\verb|\OsgLectureDeploymentChapter{...}| ausdrücklich gesetzt werden.
+
+\section{Lokale Projektkonfiguration \texttt{.ollmconfig.local.toml}}
+
+Diese optionale, üblicherweise nicht versionierte Datei erweitert ausschließlich
+die Suchpfade für Definitionen:
 
 \begin{verbatim}
 schema = 1
 
 [definitions]
-paths = ["configuration", "/opt/osglecture/definitions"]
+paths = ["Definitions", "/opt/osglecture/definitions"]
 \end{verbatim}
 
-Relative Pfade beziehen sich auf die Projektwurzel. Unbekannte Schlüssel,
-Bundle-Presets und Targets sind Fehler. Soweit die TOML-Quelle einen Schlüssel
-enthält, nennt die Diagnose auch dessen Zeile. Technische Schemawerte sind
-unabhängig von der Bundleversion; bei einem Konflikt nennt OLLM gefundenes und
-unterstütztes Schema ausdrücklich.
+\verb|schema| muss \texttt{1} sein. \verb|definitions.paths| ist eine Liste;
+relative Einträge beziehen sich auf die Projektwurzel. Alle Pfade müssen
+existieren. Doppelte Definitionen desselben Namens sind ein Fehler. Die lokalen
+Pfade werden vor den mitgelieferten Definitionen durchsucht, ersetzen aber
+nicht stillschweigend eine gleichnamige Definition.
 
-\section{Buildauftrag}
+\section{Persönliche Konfiguration}
 
-Für einen konkreten Serienbuild normalisiert OLLM die Verzeichnisidentität und
-erzeugt einen an den Jobnamen gebundenen Auftrag:
+Die persönliche Konfiguration enthält gegenwärtig nur den bevorzugten
+Bundle-Preset:
 
 \begin{verbatim}
-<jobname>.osgbuild.tex
+schema = 1
+bundle_preset = "OSG lecture/1"
 \end{verbatim}
 
-Vor dem Einlesen der Hauptdatei definiert OLLM die TeX-Symbole
-\texttt{\string\OSGLectureProjectManifestFile} und
-\texttt{\string\OSGLectureJobFile}. Sie bezeichnen das vorhandene
-Projektmanifest und genau diese Auftragsdatei. Die Klasse sucht nicht nach
-Aufträgen und wertet insbesondere keine Änderungszeiten aus. OLLM verwendet
-dafür normalisierte absolute Pfade; der Klassenvertrag erlaubt auch einen
-relativen Pfad, wenn er im gestarteten TeX-Prozess eindeutig auflösbar ist.
+OLLM sucht sie unter Unix zunächst in \verb|$XDG_CONFIG_HOME/ollm/config.toml|
+und sonst in \verb|$HOME/.config/ollm/config.toml|, unter Windows in
+\verb|%APPDATA%\ollm\config.toml|. Die Umgebungsvariable
+\verb|OLLM_USER_CONFIG| kann eine andere Datei bestimmen. Ein expliziter Wert
+im Projektmanifest hat Vorrang.
 
-Die Datei enthält unter anderem Dokumenttyp, Sprache, physische Einheit,
-Bundle-Preset und eine SHA-256-Konfigurationssignatur. Sie wird zunächst
-temporär im Zielverzeichnis geschrieben und nur bei verändertem Inhalt
-ersetzt. Dadurch lösen unveränderte Aufträge keinen unnötigen LaTeX-Neubau aus.
+\section{Definitionsdateien}
 
-Jedes Target löst eine Policy
-\texttt{document\_metadata=required|disabled} auf. Bei \texttt{required}
-verlangt und liest OLLM die nutzereditierbare Datei
-\texttt{documentmetadata.tex} vor der Hauptquelle; bei \texttt{disabled} wird
-sie nicht eingelesen. Unmittelbar zuvor definiert OLLM Symbole für Target,
-Dokumenttyp, Profilklasse, Policy und Sprache des konkreten Auftrags. Die Datei
-enthält selbst den frühen \texttt{\string\DocumentMetadata}-Aufruf; ihr Inhalt
-geht bei Verwendung in die Konfigurationssignatur ein.
+Definitionsdateien sind TOML-Dateien in den mitgelieferten oder lokal
+konfigurierten Suchpfaden. Normale Projektanwender müssen sie nur für eigene
+Targets bearbeiten.
 
-Das Paket \texttt{osglecture-config} liest den Auftrag und lehnt ihn ab, wenn
-sein Schema nicht unterstützt wird oder die enthaltene Job-ID nicht mit dem
-aktuellen TeX-Jobnamen übereinstimmt. Die Klasse verwendet Dokumenttyp und
-Sprache aus diesem expliziten Auftrag; nur der Legacyzweig liest sie weiterhin
-aus dem Jobnamen.
-
-\section{TOML-Parser}
-
-OLLM liefert den reinen Leseweg von \texttt{TOML::Tiny} 0.22 mit. Nutzer
-müssen daher kein CPAN-Modul nachinstallieren. \texttt{ollm doctor} berichtet
-Name, Version und Herkunft des aktiven Parsers.
-
-Diese Bündelung ist für TeX Live wichtig: Drittmodule werden für
-Anwendungsskripte nicht allgemein garantiert, und insbesondere das
-mitgelieferte Windows-Perl ist bewusst minimal. OLLM verwendet nur
-\texttt{Parser}, \texttt{Tokenizer} und \texttt{Grammar}; diese benötigen
-ausschließlich Perl-Core-Module.
-
-Für Entwicklung und Vergleich kann die vollständige Upstream-Distribution
-optional installiert werden:
+\subsection{Bundle-Preset}
 
 \begin{verbatim}
-cpanm TOML::Tiny
-cpan TOML::Tiny
+schema = 1
+kind = "bundle-preset"
+name = "OSG lecture"
+version = "1"
 \end{verbatim}
 
-OLLM verwendet weiterhin die mitgelieferte und getestete Fassung. Eine
-CPAN-Installation ist daher weder Voraussetzung noch Reparaturschritt.
+Erlaubt sind ausschließlich \verb|schema|, \verb|kind|, \verb|name| und
+\verb|version|. Das Projekt referenziert das Preset als
+\verb|"Name/Version"|, hier also \verb|"OSG lecture/1"|.
 
-\Needspace{10\baselineskip}
-\section{Entwicklungs-Build}
-
-Das OLLM-Modul ist in den Bundle-Build mit \texttt{l3build} integriert:
+\subsection{Targetdefinition}
 
 \begin{verbatim}
-l3build check
-l3build doc
-l3build install
+schema = 1
+kind = "target"
+name = "studyguide"
+version = "1.0"
+doctype = "studyguide"
+profile_class = "longform"
+document_metadata = "required"
+unit_scopes = ["a", "as"]
 \end{verbatim}
 
-\texttt{check} prüft Perl-Syntax, CLI, Manifestvalidierung, lokale
-Definitionspfade sowie die Auflösung des bundleweiten Minimalbeispiels.
+\begin{description}
+\item[\texttt{name}] registrierter CLI-Targetname.
+\item[\texttt{version}] Version dieser Definition, unabhängig vom Schema.
+\item[\texttt{doctype}] Dokumenttyp; in Schema~1 identisch zu \texttt{name}.
+\item[\texttt{profile\_class}] \verb|"presentation"| oder
+  \verb|"longform"|. Die konkrete TeX-Profilwahl erfolgt in
+  \texttt{projectconfig.tex}.
+\item[\texttt{document\_metadata}] Default \verb|"required"| oder
+  \verb|"disabled"|; das Projekt darf ihn überschreiben.
+\item[\texttt{unit\_scopes}] optionale Liste ein- oder zweibuchstabiger
+  Verzeichnisscopes, für die das Target gilt.
+\end{description}
+
+Legen Sie eine eigene Definition beispielsweise hier ab:
+
+\begin{verbatim}
+Definitions/targets/studyguide.toml
+\end{verbatim}
+
+Tragen Sie anschließend \texttt{Definitions} in die lokale Projektkonfiguration
+ein, ergänzen Sie \verb|[targets.studyguide]| im Projektmanifest und wählen Sie
+das Target mit \texttt{--target=studyguide}.
+
+\section{Migration aus \texttt{ollmconfig.pl}}
+
+\begin{verbatim}
+ollm convertconfig
+ollm newtoml
+\end{verbatim}
+
+\texttt{convertconfig} sucht eine alte \texttt{ollmconfig.pl} und erzeugt
+eine konservative \texttt{ollmconfig.toml}, ohne den Perl-Code auszuführen.
+\texttt{newtoml} erzeugt eine generische Datei oder verhält sich bei gefundener
+Perl-Datei wie \texttt{convertconfig}. Beide Befehle brechen ab, wenn TOML
+bereits existiert.
+
+Statisch erkennbare Sprachen, Shell-Escape-Einstellung, gemeinsames
+TeX-Verzeichnis und einfache Deploymentzuweisungen werden übernommen.
+Dynamische Perl-Ausdrücke, Passwörter, Deploymentrestriktionen, gemeinsam
+genutzte Datenpfade und alte Kapitelnummernlogik müssen anhand der ausgegebenen
+Warnungen manuell übertragen werden.
+
+Während der Migration dürfen beide Konfigurationsdateien nebeneinander liegen.
+Normale Aufrufe verwenden TOML. Nur \texttt{--legacy} aktiviert die alte
+Perl-Datei:
+
+\begin{verbatim}
+ollm --legacy slides
+ollm --legacy +lang=en script
+\end{verbatim}
+
+\section{Exitcodes und CI}
+
+\begin{description}
+\item[0] erfolgreiche Aktion beziehungsweise lesbarer Report;
+\item[1] Build-, Deployment- oder Zustandsfehler;
+\item[2] ungültiger Aufruf oder ungültige Konfiguration;
+\item[3] \texttt{check} hat eine Inkonsistenz gefunden;
+\item[69] benötigtes Programm oder eine nicht verfügbare Ausführungsfunktion;
+\item[128+Signal] signalbedingter Abbruch auf POSIX-Systemen, insbesondere
+  130 bei Strg-C.
+\end{description}
+
+Für maschinelle Auswertung sollte \texttt{--format=json} verwendet werden.
+\texttt{report} ist kein Freigabegate; für CI ist \texttt{check} vorgesehen.
 
 \section{Weiterführende Dokumente}
 
+Dieses Handbuch beschreibt ausschließlich die Benutzerschnittstelle. Hinweise
+für Wartung und Weiterentwicklung stehen außerhalb der installierten
+Nutzerdokumentation:
+
 \begin{description}
-  \item[\texttt{README.md}] kurzer Einstieg und Entwicklungsbefehle;
-  \item[\texttt{DEPENDENCIES.md}] Laufzeitabhängigkeiten und
-    Installationshinweise;
-  \item[\texttt{DESIGN.md}] Architektur, Invarianten, Rationales und offene
-    Entscheidungen;
-  \item[\texttt{THIRD\_PARTY.md}] Herkunft und Lizenz mitgelieferter
-    Komponenten;
-  \item[dieses Handbuch] nutzerorientierte Beschreibung implementierter
-    Funktionen.
+\item[\texttt{development-docs/DESIGN.md}] OLLM-Architektur, Dateiverträge,
+  Invarianten und Rationales;
+\item[\texttt{development-docs/ARCHITECTURE.md}] Architektur von
+  \texttt{osglecture};
+\item[\texttt{development-docs/GLOSSARY.md}] verbindliche Begriffe;
+\item[\texttt{development-docs/DEPENDENCIES-ollm.md}] technische Herkunft
+  und Reparaturhinweise zu Laufzeitabhängigkeiten;
+\item[\texttt{development-docs/DEVELOPMENT-ollm.md}] Build-, Test- und
+  Paketierungshinweise für Mitwirkende;
+\item[\texttt{ollm/THIRD\_PARTY.md}] Lizenzen mitgelieferter Komponenten.
 \end{description}
 
 \end{document}

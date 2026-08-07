@@ -31,6 +31,14 @@ is $?, 0, 'series check does not require a dormant unit to be built';
 like $check, qr/"schema"\s*:\s*"org\.osglecture\.ollm\.check"/,
   'check JSON has a versioned schema';
 
+my $doctor = qx{$^X scripts/ollm doctor --format=json};
+like $doctor, qr/"schema"\s*:\s*"org\.osglecture\.ollm\.doctor"/,
+  'doctor always emits its versioned JSON result even when a tool is missing';
+like $doctor, qr/"tex_files"\s*:/,
+  'doctor reports TeX package discovery';
+like $doctor, qr/"project"\s*:/,
+  'doctor distinguishes global and project-aware checks';
+
 open my $cmd, '<', 'scripts/ollm.cmd' or die "cannot read scripts/ollm.cmd: $!";
 my $wrapper = do { local $/; <$cmd> };
 close $cmd;

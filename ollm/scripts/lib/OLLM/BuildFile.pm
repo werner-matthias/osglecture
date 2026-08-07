@@ -244,7 +244,7 @@ sub render {
 sub _logical_ordinal {
   my ($units, $physical, $scopes) = @_;
   my %scope = map { $_ => 1 } @$scopes;
-  my $ordinal = 0;
+  my ($ordinal, $excursus, $appendix) = (0, 0, 0);
   for my $unit (@$units) {
     my $applies = ($unit->{unit_scope} // '') eq ''
       || $scope{$unit->{unit_scope} // ''};
@@ -252,8 +252,21 @@ sub _logical_ordinal {
     return '' if $unit->{physical_unit} eq $physical
       && ($unit->{unit_role} // '') eq 'i';
     next if ($unit->{unit_role} // '') eq 'i';
-    ++$ordinal;
-    return $ordinal if $unit->{physical_unit} eq $physical;
+    my $role = $unit->{unit_role} // 'content';
+    my $value;
+    if ($role eq 'excursus' || $role eq 'e') {
+      die "excursus '$unit->{physical_unit}' has no preceding content unit"
+        if !$ordinal;
+      $value = $ordinal . 'e' . ++$excursus;
+    } elsif ($role eq 'appendix' || $role eq 'a') {
+      ++$ordinal;
+      $value = $ordinal . 'ap' . ++$appendix;
+    } else {
+      ++$ordinal;
+      ($excursus, $appendix) = (0, 0);
+      $value = $ordinal;
+    }
+    return $value if $unit->{physical_unit} eq $physical;
   }
   die "cannot determine logical ordinal for physical unit '$physical'";
 }

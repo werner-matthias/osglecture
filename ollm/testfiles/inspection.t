@@ -78,6 +78,12 @@ is_deeply(
   ['target', 'consumer'],
   'current report includes the transitive required dependency',
 );
+like $current->{projections}[0]{artifact}, qr/document[.]pdf\z/,
+  'report exposes the promoted PDF path';
+like $current->{projections}[0]{reference_export}, qr/reference[.]osgref[.]aux\z/,
+  'report exposes the promoted reference export';
+ok !$current->{configuration}{effective_tex}{available},
+  'report states that effective and enforced TeX values are not exported yet';
 
 my $missing_current = OLLM::Inspection->prepare(
   plan => {action => 'check', target => 'slides', language => 'de'},

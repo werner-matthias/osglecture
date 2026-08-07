@@ -69,6 +69,28 @@ is $spec->{artifact},
   File::Spec->catfile($spec->{build_directory}, "$spec->{job_id}.pdf"),
   'artifact path is explicit';
 
+my $ordinal_units = [
+  { physical_unit => '010-first', unit_scope => '', unit_role => 'content' },
+  { physical_unit => '011-e-first', unit_scope => '', unit_role => 'e' },
+  { physical_unit => '012-e-second', unit_scope => '', unit_role => 'e' },
+  { physical_unit => '020-second', unit_scope => '', unit_role => 'content' },
+  { physical_unit => '090-a-one', unit_scope => '', unit_role => 'a' },
+  { physical_unit => '091-a-two', unit_scope => '', unit_role => 'a' },
+  { physical_unit => '099-i-all', unit_scope => '', unit_role => 'i' },
+];
+is(OLLM::BuildFile::_logical_ordinal($ordinal_units, '010-first', []), 1,
+  'content receives the next regular ordinal');
+is(OLLM::BuildFile::_logical_ordinal($ordinal_units, '011-e-first', []), '1e1',
+  'first excursus is attached to its preceding content ordinal');
+is(OLLM::BuildFile::_logical_ordinal($ordinal_units, '012-e-second', []), '1e2',
+  'excursuses have a local sequence');
+is(OLLM::BuildFile::_logical_ordinal($ordinal_units, '090-a-one', []), '3ap1',
+  'first appendix continues the regular ordinal and adds its local sequence');
+is(OLLM::BuildFile::_logical_ordinal($ordinal_units, '091-a-two', []), '4ap2',
+  'later appendices continue both sequences');
+is(OLLM::BuildFile::_logical_ordinal($ordinal_units, '099-i-all', []), '',
+  'integration has no ordinal');
+
 is $spec->{document_metadata}{path},
   abs_path(File::Spec->catfile(
     $fixture, 'Include', 'documentmetadata.tex',

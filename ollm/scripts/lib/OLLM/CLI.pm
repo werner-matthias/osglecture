@@ -63,7 +63,7 @@ sub run {
   }
 
   if ($plan->{action} eq 'doctor') {
-    return $class->_doctor($plan);
+    return $class->_doctor($plan, %arg);
   }
 
   if ($plan->{action} eq 'clean' || $plan->{action} eq 'prune') {
@@ -71,7 +71,7 @@ sub run {
   }
 
   if ($plan->{action} eq 'report' || $plan->{action} eq 'check') {
-    return $class->_inspection($plan);
+    return $class->_inspection($plan, %arg);
   }
 
   if ($plan->{action} ne 'build') {
@@ -582,7 +582,7 @@ sub _maintenance {
 }
 
 sub _inspection {
-  my ($class, $plan) = @_;
+  my ($class, $plan, %arg) = @_;
   for my $option (qw(all dry_run level rebuild resolve stale_units)) {
     if ($plan->{$option}) {
       print STDERR "ollm: --$option is not valid for $plan->{action}\n";
@@ -614,6 +614,20 @@ sub _inspection {
     return 2;
   }
   my $root = dirname($located->{path});
+  my $definitions = eval {
+    OLLM::Config->resolve_definitions(
+      manifest => $manifest, manifest_path => $located->{path},
+      project_root => $root,
+      bundle_path => $arg{definitions_dir}
+        // File::Spec->catdir($arg{script_dir}, 'definitions'),
+    )
+  };
+  if (!$definitions) {
+    my $error = $@ || 'cannot resolve project definitions';
+    chomp $error;
+    print STDERR "ollm: $error\n";
+    return 2;
+  }
   my $start = $cwd;
   my $relative = File::Spec->abs2rel($cwd, $root);
   if ((defined($plan->{project_root}) || defined($plan->{config}))
@@ -626,6 +640,7 @@ sub _inspection {
     OLLM::Inspection->prepare(
       plan => $plan, project_root => $root, start_dir => $start,
       manifest => $manifest,
+      manifest_path => $located->{path}, definitions => $definitions,
       structure => OLLM::Config->structure_snapshot(project_root => $root),
     );
   };
@@ -658,12 +673,31 @@ sub _print_inspection {
     return;
   }
   print "Scope: $report->{scope}\n";
+  print "Config: $report->{configuration}{manifest}\n"
+    if defined $report->{configuration}{manifest};
+  print "Bundle: $report->{configuration}{bundle_preset}\n"
+    if defined $report->{configuration}{bundle_preset};
+  print "TeX configuration: not exported (effective/enforced values unavailable)\n"
+    if !$report->{configuration}{effective_tex}{available};
   for my $unit (@{ $report->{units} }) {
     print "Unit:  $unit->{physical_unit} [$unit->{status}]\n";
   }
   for my $projection (@{ $report->{projections} }) {
     print "Build: $projection->{identity} [$projection->{status}]",
       $projection->{required} ? " required\n" : "\n";
+    print "        job=$projection->{job_id} ordinal=$projection->{ordinal}",
+      " chapter=$projection->{chapter}\n";
+    print "        artifact=$projection->{artifact}\n";
+    print "        reference-export=$projection->{reference_export}\n"
+      if defined $projection->{reference_export};
+    print "        config-signature=$projection->{config_signature}\n"
+      if defined $projection->{config_signature};
+    for my $dependency (@{ $projection->{dependencies} // [] }) {
+      print "        depends=$dependency->{kind} ",
+        join('/', map { $dependency->{$_} // '' } qw(unit_id doctype language)),
+        defined($dependency->{label}) ? " label=$dependency->{label}" : '',
+        "\n";
+    }
   }
   for my $issue (@{ $report->{issues} }) {
     print uc($issue->{severity}), " [$issue->{code}] $issue->{message}\n";
@@ -758,13 +792,116 @@ sub _print_plan {
 }
 
 sub _doctor {
-  my ($class, $plan) = @_;
-  my @checks = map {
-    +{ program => $_, found => _find_program($_) }
-  } qw(perl latexmk lualatex);
+  my ($class, $plan, %arg) = @_;
+  for my $option (qw(all dry_run level overwrite rebuild resolve scope stale_units)) {
+    if ($plan->{$option}) {
+      print STDERR "ollm: --$option is not valid for doctor\n";
+      return 2;
+    }
+  }
+  if ($plan->{source_explicit} || $plan->{target_explicit}
+      || $plan->{language_explicit} || @{ $plan->{latexmk_args} }) {
+    print STDERR "ollm: doctor does not accept build targets, sources, or latexmk options\n";
+    return 2;
+  }
+  my @checks = map { _program_doctor_check($_) }
+    qw(perl latexmk lualatex kpsewhich);
   my $ok = !grep { !defined $_->{found} } @checks;
   my $parser = OLLM::Config->parser_info;
   $ok = 0 if !$parser->{available};
+
+  my @tex_files = (
+    map({ _kpsewhich_check($_, 1) } qw(
+      osglecture.cls osglecture-project.sty osglecture-structure.sty
+      hyperref.sty
+    )),
+    map({ _kpsewhich_check($_, 0) } qw(varioref.sty tagpdf.sty tagpax.sty)),
+  );
+  $ok = 0 if grep { $_->{required} && !$_->{ok} } @tex_files;
+
+  my $project;
+  my $located = eval {
+    OLLM::Config->find_manifest(
+      start_dir => getcwd(), config => $plan->{config},
+      project_root => $plan->{project_root},
+    )
+  };
+  if (!$located) {
+    my $error = $@ || 'cannot inspect project configuration'; chomp $error;
+    $project = { present => JSON::PP::false, ok => JSON::PP::false,
+      error => $error };
+    $ok = 0;
+  } elsif ($located->{kind} eq 'toml') {
+    my $manifest = eval { OLLM::Config->load_manifest($located->{path}) };
+    if (!$manifest) {
+      my $error = $@ || 'cannot load project manifest'; chomp $error;
+      $project = { present => JSON::PP::true, ok => JSON::PP::false,
+        path => $located->{path}, error => $error };
+      $ok = 0;
+    } else {
+      my $root = dirname($located->{path});
+      my $definitions = eval {
+        OLLM::Config->resolve_definitions(
+          manifest => $manifest, manifest_path => $located->{path},
+          project_root => $root,
+          bundle_path => $arg{definitions_dir}
+            // File::Spec->catdir($arg{script_dir}, 'definitions'),
+        )
+      };
+      my @project_checks;
+      if (!$definitions) {
+        my $error = $@ || 'cannot resolve project definitions'; chomp $error;
+        push @project_checks, { name => 'definitions', ok => JSON::PP::false,
+          message => $error };
+      } else {
+        push @project_checks, { name => 'definitions', ok => JSON::PP::true,
+          bundle_preset => $definitions->{bundle_preset}{reference} };
+      }
+      my $tex = $manifest->{project}{tex} // {};
+      my $shared = File::Spec->catdir($root, $tex->{directory} // 'Include');
+      my $config = File::Spec->catfile($shared, $tex->{config} // 'projectconfig.tex');
+      push @project_checks,
+        { name => 'project-root-writable', ok => (-w $root ? JSON::PP::true : JSON::PP::false), path => $root },
+        { name => 'project-config', ok => (-f $config ? JSON::PP::true : JSON::PP::false), path => $config };
+      my $needs_metadata = $definitions && grep {
+        (($manifest->{targets}{$_}{document_metadata}
+          // $definitions->{targets}{$_}{document_metadata} // 'disabled') eq 'required')
+      } keys %{ $manifest->{targets} };
+      if ($needs_metadata) {
+        my $metadata = File::Spec->catfile($shared, 'documentmetadata.tex');
+        push @project_checks, { name => 'document-metadata',
+          ok => (-f $metadata ? JSON::PP::true : JSON::PP::false), path => $metadata };
+      }
+      my $state_directory = File::Spec->catdir($root, '.osglecture', 'state');
+      if (-e $state_directory) {
+        require OLLM::State;
+        my $readable = eval {
+          my @results = OLLM::State->_current_results({
+            project_root => $root, series_id => $manifest->{project}{id},
+          });
+          scalar @results;
+          1;
+        };
+        my $error = $@; chomp $error;
+        push @project_checks, { name => 'state',
+          ok => $readable ? JSON::PP::true : JSON::PP::false,
+          path => $state_directory,
+          (!$readable ? (message => $error) : ()) };
+      } else {
+        push @project_checks, { name => 'state', ok => JSON::PP::true,
+          status => 'not-initialized', path => $state_directory };
+      }
+      my $project_ok = !grep { !$_->{ok} } @project_checks;
+      $project = { present => JSON::PP::true,
+        ok => $project_ok ? JSON::PP::true : JSON::PP::false,
+        path => $located->{path}, root => $root,
+        shell_escape => $manifest->{security}{shell_escape} // 'restricted',
+        checks => \@project_checks };
+      $ok = 0 if !$project_ok;
+    }
+  } else {
+    $project = { present => JSON::PP::false, ok => JSON::PP::true };
+  }
 
   if ($plan->{format} eq 'json') {
     print JSON::PP->new->canonical->pretty->encode({
@@ -772,12 +909,20 @@ sub _doctor {
       version => 1,
       ok      => $ok ? JSON::PP::true : JSON::PP::false,
       checks  => \@checks,
+      tex_files => \@tex_files,
       toml_parser => $parser,
+      project => $project,
     });
   } else {
     for my $check (@checks) {
-      printf "%-10s %s\n", $check->{program},
-        defined $check->{found} ? $check->{found} : 'NOT FOUND';
+      printf "%-10s %s%s\n", $check->{program},
+        defined $check->{found} ? $check->{found} : 'NOT FOUND',
+        defined($check->{version}) && $check->{version} ne ''
+          ? " -- $check->{version}" : '';
+    }
+    for my $file (@tex_files) {
+      printf "%-10s %s\n", $file->{name},
+        $file->{ok} ? $file->{path} : 'NOT FOUND';
     }
     if ($parser->{available}) {
       printf "%-10s %s %s (%s)\n", 'TOML',
@@ -785,8 +930,56 @@ sub _doctor {
     } else {
       printf "%-10s NOT FOUND: %s\n", 'TOML', $parser->{error};
     }
+    if ($project->{present}) {
+      print "Project:   $project->{path}\n";
+      print "Shell:     $project->{shell_escape}\n";
+      for my $check (@{ $project->{checks} // [] }) {
+        print "Project:   $check->{name} ", $check->{ok} ? 'OK' : 'FAILED',
+          defined($check->{path}) ? " ($check->{path})" : '', "\n";
+      }
+    } else {
+      print "Project:   none (global checks only)\n";
+    }
   }
   return $ok ? 0 : 69;
+}
+
+sub _program_doctor_check {
+  my ($program) = @_;
+  my $found = _find_program($program);
+  my $version;
+  if ($found) {
+    my @command = $program eq 'perl' ? ($found, '-v') : ($found, '--version');
+    $version = _capture_first_line(@command);
+  }
+  return { program => $program, found => $found, version => $version };
+}
+
+sub _kpsewhich_check {
+  my ($name, $required) = @_;
+  my $kpsewhich = _find_program('kpsewhich');
+  return { name => $name, required => $required ? JSON::PP::true : JSON::PP::false,
+    ok => JSON::PP::false } if !$kpsewhich;
+  my $path = _capture_first_line($kpsewhich, $name);
+  return { name => $name,
+    required => $required ? JSON::PP::true : JSON::PP::false,
+    ok => $path ? JSON::PP::true : JSON::PP::false,
+    ($path ? (path => $path) : ()) };
+}
+
+sub _capture_first_line {
+  my (@command) = @_;
+  open my $handle, '-|', @command or return;
+  my $line;
+  while (defined(my $candidate = <$handle>)) {
+    next if $candidate =~ /\A\s*\z/;
+    $line = $candidate;
+    last;
+  }
+  close $handle;
+  return if !defined $line;
+  $line =~ s/[\r\n]+\z//;
+  return $line;
 }
 
 sub _find_program {

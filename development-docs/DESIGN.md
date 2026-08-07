@@ -349,7 +349,9 @@ geschrieben.
 Ein `excursus` ist geordnetes ergänzendes Material, erzeugt aber keine neue
 Kapitelnummer. Er wird nach Filterung standardmäßig der vorhergehenden
 sichtbaren Content-Einheit zugeordnet. Ohne vorhergehende Content-Einheit ist
-er ungültig.
+er ungültig. Seine logische Ordnungskennung hängt `e` und eine lokale
+Exkursnummer an die reguläre Vorgängerkennung an, beispielsweise `3e1` und
+`3e2`.
 
 Ein `integration`-Verzeichnis baut ein Gesamtprodukt und ist selbst kein
 nummeriertes Kapitel. Für OLLM ist es dennoch eine gewöhnlich aufgelöste und
@@ -361,7 +363,11 @@ Abweichungen im Resultatvertrag, insbesondere keine obligatorische
 `\lecture`-Deklaration und zunächst keinen Reexport von Unitreferenzen.
 
 Ein `appendix` gehört in einen eigenen strukturellen Abschnitt und verwendet
-die Appendix-Nummerierung des jeweiligen Backends.
+die Appendix-Nummerierung des jeweiligen Backends. Für die logische
+Ordnungskennung läuft der reguläre Zähler weiter; zusätzlich wird `ap` mit
+einer lokalen Anhangsnummer angehängt, beispielsweise `4ap1` und `5ap2`.
+Bei einer Auffüllung wie `{ordinal:02}` wird nur der reguläre numerische
+Präfix aufgefüllt (`04ap1`).
 
 Weitere Rollen benötigen eine Schemaänderung und eine Kollisionsprüfung, da ein
 einbuchstabiges Segment nach dem ersten Bindestrich als Rolle interpretiert
@@ -1390,7 +1396,8 @@ report     implementiert
 check      implementiert
 clean      implementiert
 prune      implementiert
-doctor     grundlegende Werkzeugprüfung implementiert; Projekttests TODO
+doctor     globale und projektbezogene Grundprüfung implementiert;
+           Backendwerkzeuge und Mindestversionen TODO
 convertconfig  konservative Migration von ollmconfig.pl nach TOML
 newtoml    neues generisches TOML oder Migration einer gefundenen Perl-Datei
 ```
@@ -1659,16 +1666,18 @@ nicht.
 
 ### 16.3 Doctor
 
-`doctor` prüft derzeit die Auffindbarkeit von Perl, `latexmk` und LuaLaTeX
-sowie Verfügbarkeit, Version und Herkunft des TOML-Parsers. **TODO:** Die
-projekt- und backendabhängige Prüfung soll zusätzlich umfassen:
+`doctor` unterscheidet globale und projektbezogene Prüfungen. Global meldet
+es Pfad und Version von Perl, `latexmk`, LuaLaTeX und `kpsewhich`, die
+Verfügbarkeit zentraler beziehungsweise optionaler TeX-Pakete sowie Version
+und Herkunft des TOML-Parsers. Innerhalb eines Projekts validiert es außerdem
+Manifest und Definitionen, Projektkonfiguration, erforderliche
+Dokumentmetadaten, Schreibrechte, Zustandslesbarkeit und die deklarierte
+Shell-Escape-Policy. Noch nicht als harte Mindestanforderung implementiert
+sind:
 
-- `latexmk`;
-- LuaLaTeX und Mindestversion;
-- OLLM und TOML-Parser;
-- Auffindbarkeit des Bundles;
-- Manifest und Schreibrechte;
-- Shell-Escape-Policy.
+- konkrete Mindestversionen für LuaLaTeX und die TeX-Distribution;
+- backendabhängige optionale Programme;
+- der Abgleich benötigter Programme mit der Restricted-Shell-Escape-Allowlist.
 
 Optionale Werkzeuge werden nur geprüft, wenn das effektive Projekt oder Backend
 sie deklariert. Xindy ist daher keine feste Voraussetzung; eine Lua-basierte
