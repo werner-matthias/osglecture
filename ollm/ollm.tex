@@ -1,50 +1,80 @@
-\documentclass[a4paper,11pt]{article}
+ \documentclass[
+load-preamble+
+]{osgdoc}
 
+\usepackage{enumitem}
 \usepackage{fontspec}
-\usepackage{etoolbox}
-\usepackage[margin=25mm]{geometry}
-\usepackage{xcolor}
-\usepackage[ngerman]{babel}
-\usepackage{hyperref}
 \usepackage{microtype}
-\usepackage{needspace}
+\usepackage{xspace}
+\usepackage[
+languages={de,en},
+map={de=german,en=english},
+targetlang={job=2},
+load babel
+]{langselect}
 
-\setmainfont{Latin Modern Roman}
-\setsansfont{Latin Modern Sans}
-\setmonofont[
-  BoldFont = LMMono10-Regular,
-  Scale = 0.9
-]{Latin Modern Mono}
+\newpackagename{\ollm}{OLLM}
+\newpackagename{\osglecture}{osglecture}
 
-\emergencystretch=2em
-\AtBeginEnvironment{verbatim}{\linespread{1.0}\selectfont}
-
-\hypersetup{
-  pdftitle  = {OLLM -- Benutzerhandbuch},
-  pdfauthor = {OSG},
-  colorlinks,
-  linkcolor = blue!50!black,
-  urlcolor  = blue!50!black
+\makeindex
+\setcnltx{
+  %version  = \UseVersionOf{ltxtalk-theme-tuc-2019.sty},
+  %date     = \UseDateOf{ltxtalk-theme-tuc-2019.sty},
+  title    = {\ollm~-- OSG LaTeX Lecture Maker},
+  info     = {\ldeen{Nutzerhandbuch}{User Manual}},
+  package = {osglecture},
+  authors  = {Matthias Werner[matthias.werner@informatik.tu-chemnitz.de]},
+  abstract={
+  \ldeen{
+      \ollm{} ist ein in Perl geschriebenes Buildscript für die 
+      \osglecture-Klasse.
+      Ursprünglich aus einem rc-Script für \pkg{latexmk} entstanden, baut
+      es mit \osglecture{} erstellte Vorlesungsdokumente, wählt
+      Dokumenttyp und Sprache, startet die eigentliche Übersetzung 
+      über \pkg{latexmk}, verwaltet kapitelübergreifende Referenzen und
+      kopiert fertige PDFs auf konfigurierte Deploymentziele.
+    }{
+      \ollm is a build script written in Perl for the \osglecture{} class.
+      Originally derived from an rc script for \pkg{latexmk},
+      it builds lecture documents created with \osglecture, selects
+      the document type and language, starts the actual compilation 
+      via \pkg{latexmk}, manages cross-chapter references, and
+      copies finished PDFs to configured deployment destinations.    
+    }\par\medskip
+    \ldeen{
+      Dieses Handbuch beschreibt die Bedienung von \ollm{} 
+      sowie die Formate der genutzten Konfigurationsdateien.
+    }{
+      This manual describes how to use \ollm{} 
+      as well as the formats of the configuration files used.
+    }
+  },
+  url      =https://github.com/werner-matthias/osglecture,
+  build-title
 }
+%\AtBeginEnvironment{verbatim}{\linespread{1.0}\selectfont}
+%\emergencystretch=2em
 
-\title{OLLM\\OSG LaTeX Lecture Maker\\\large Benutzerhandbuch}
-\author{OSG}
-\date{}
+%\hypersetup{
+%  pdftitle  = {OLLM -- Benutzerhandbuch},
+%  pdfauthor = {OSG},
+%  colorlinks,
+%  linkcolor = blue!50!black,
+%  urlcolor  = blue!50!black
+%}
 
 \begin{document}
 
-\maketitle
-
-\begin{abstract}
-OLLM baut mit \texttt{osglecture} erstellte Vorlesungsdokumente. Es wählt
-Dokumenttyp und Sprache, startet LuaLaTeX über \texttt{latexmk}, verwaltet
-kapitelübergreifende Referenzen und kopiert fertige PDFs auf konfigurierte
-Deploymentziele. Dieses Handbuch beschreibt die Bedienung und sämtliche
-gegenwärtig unterstützten TOML-Konfigurationsdateien.
-\end{abstract}
-
-\tableofcontents
-
+\section{TL;DR}
+\begin{itemize}
+  \item \ldeen{Wenn Sie in einem bestehenden \osglecture-Kurs die Vorlesungsfolien 
+  in deutscher Sprache neu generieren lassen wollen:}{Foo}
+\end{itemize}
+  \begin{verbatim}
+    > ollm slides --language=de
+  \end{verbatim}
+  
+\ldeen{Wenn Sie in einem }{}
 \section{Schnelleinstieg}
 
 OLLM benötigt Perl~5.30 oder neuer, \texttt{latexmk} und LuaLaTeX. Eine
