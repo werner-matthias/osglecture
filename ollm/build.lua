@@ -20,6 +20,7 @@ sourcefiles = {
   "ollm.tex",
   "ollm-en.tex",
   "ollm-de.tex",
+  "scripts/lib/OLLM/Version.pm"
 }
 
 typesetfiles = { 

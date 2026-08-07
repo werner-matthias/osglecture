@@ -1,6 +1,23 @@
  \documentclass[
 load-preamble+
 ]{osgdoc}
+\usepackage{iftex}
+\ifLuaTeX\else
+  \errmessage{LuaLaTeX is required to run this document.}
+\fi
+% Get ollm verison from Version.pm
+\begin{luacode*}
+  tex.print("\\gdef\\ollmversion{??}")
+  local file = io.open("Version.pm","r")
+  if file then
+    for line in file:lines() do
+      if line:match("VERSION = ") then
+          tex.print("\\gdef\\ollmversion{"..line:match("'([^']*)'").."}")
+        break
+      end
+    end  
+  end
+\end{luacode*}
 
 \usepackage{enumitem}
 \usepackage{fontspec}
@@ -18,8 +35,8 @@ load babel
 
 \makeindex
 \setcnltx{
-  %version  = \UseVersionOf{ltxtalk-theme-tuc-2019.sty},
-  %date     = \UseDateOf{ltxtalk-theme-tuc-2019.sty},
+  version  = \ollmversion,
+  date     = \today,
   title    = {\ollm~-- OSG LaTeX Lecture Maker},
   info     = {\ldeen{Nutzerhandbuch}{User Manual}},
   package = {osglecture},
@@ -67,12 +84,36 @@ load babel
 
 \section{TL;DR}
 \begin{itemize}
-  \item \ldeen{Wenn Sie in einem bestehenden \osglecture-Kurs die Vorlesungsfolien 
-  in deutscher Sprache neu generieren lassen wollen:}{Foo}
-\end{itemize}
+  \item \ldeen{Wenn Sie in einem bestehenden 
+    \osglecture-Kurs\footnote{D.\,h., mit korrekter Verzeichnisstruktur und korrektem Manifest}
+    die Vorlesungsfolien einer Lehreinheit in deutscher Sprache neu generieren lassen wollen, 
+    wechseln sie zum Verzeichnis dieser Einheit und geben ein:}{}
   \begin{verbatim}
     > ollm slides --language=de
   \end{verbatim}
+
+  \item \ldeen{Sie wollen alle Scriptkapitel der Erstsprache der Lehrveranstaltung
+   zu einem Script zusammenstellen. Dazu muss das Arbeitsverzeichnis irgendein
+   Projektverzeichnis sein und Sie geben ein:}{}
+  \begin{verbatim}
+    > ollm script --scope=collection
+  \end{verbatim}
+
+  \item \ldeen{Sie wollen alle Handouts der Erstsprache übersetzen. 
+  Dazu muss das Arbeitsverzeichnis irgendein
+   Projektverzeichnis sein und Sie geben ein:}{}
+  \begin{verbatim}
+    > ollm handout --scope=series
+  \end{verbatim}
+
+  \item \ldeen{Sie wollen alle englischen Handouts an ihren Zielort kopieren. 
+  Dazu muss das Arbeitsverzeichnis irgendein
+   Projektverzeichnis sein und Sie geben ein:}{}
+  \begin{verbatim}
+    > ollm deploy handout lang=en --scope=series
+  \end{verbatim}
+
+\end{itemize}
   
 \ldeen{Wenn Sie in einem }{}
 \section{Schnelleinstieg}
@@ -257,6 +298,28 @@ Angabe gilt die Projektstandardsprache, sofern das Target sie unterstützt,
 ansonsten die erste Sprache des Targets. \texttt{--source} ist standardmäßig
 \texttt{main.tex}.
 
+\texttt{--scope} bestimmt, auf welche Units und Projektionen der Build wirkt:
+
+\begin{description}
+\item[\texttt{current}] ist der Default und baut genau das ausdrücklich
+  gewählte beziehungsweise das Default-Target in der gewählten oder
+  Defaultsprache der aktuellen Unit.
+\item[\texttt{unit}] baut alle für die aktuelle Unit zulässigen Targets und
+  Sprachen. Ein ausdrücklich angegebenes Target oder eine ausdrücklich
+  angegebene Sprache schränkt diese Matrix ein.
+\item[\texttt{series}] baut das gewählte beziehungsweise das Default-Target in
+  der gewählten oder Defaultsprache für alle Units, auf die das Target
+  anwendbar ist. Integrationsunits gehören nicht zu dieser Auswahl.
+\item[\texttt{collection}] sucht für den Dokumenttyp des Targets die eindeutig
+  passende Integrationsunit und baut dort. Der Scope funktioniert unabhängig
+  vom Arbeitsverzeichnis. Keine oder mehrere passende Integrationsunits sind
+  ein Fehler.
+\end{description}
+
+\texttt{current} und \texttt{unit} verlangen ein Unit-Verzeichnis als
+Ausgangspunkt; \texttt{series} und \texttt{collection} können auch aus der
+Projektwurzel verwendet werden.
+
 \texttt{--rebuild} verlangt einen vollständigen \texttt{latexmk}-Neubau.
 \texttt{--dry-run} startet kein LaTeX, sondern zeigt die normalisierte Auswahl:
 
@@ -271,9 +334,10 @@ Diagnoseausgaben für die gewählte Ebene. \verb|--warnings=all|,
 
 \subsection{Buildmatrix mit \texttt{--all}}
 
-\texttt{--all} baut alle im Manifest für die aktuelle Unit vorgesehenen
-Target-/Sprachkombinationen. Target-Scope und Rolle der Unit filtern die
-Matrix. Der Befehl baut nicht automatisch jede Unit der Serie.
+\texttt{--all} erweitert die Target-/Sprachauswahl des gewählten Build-Scopes
+auf alle im Manifest vorgesehenen Kombinationen. Target-Scope und Rolle jeder
+Unit filtern die Matrix. Ohne ausdrücklichen Scope bleibt \texttt{current}
+wirksam; der Befehl baut dann nicht automatisch jede Unit der Serie.
 
 \begin{verbatim}
 ollm build --all
