@@ -1,0 +1,10 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+profile=book
+course=Course long
+short-course=Course short
+author=Ada Author
+institute=Institute long
+event=Event long
+native-subtitle=absent
+native-publishers=absent

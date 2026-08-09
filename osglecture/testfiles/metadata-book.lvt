@@ -1,0 +1,24 @@
+\input regression-test
+\documentclass[standalone,doctype=script]{osglecture}
+\course[Course short]{Course long}
+\author{Ada Author}
+\institute[Institute short]{Institute long}
+\event[Event short]{Event long}
+\begin{document}
+\START
+\TYPE{profile=\OsgLectureDocumentProfile}
+\TYPE{course=\OsgLectureCourse}
+\TYPE{short-course=\OsgLectureShortCourse}
+\TYPE{author=\OsgLectureAuthor}
+\TYPE{institute=\OsgLectureInstitute}
+\TYPE{event=\OsgLectureEvent}
+\ExplSyntaxOn
+\cs_if_exist:NTF \__osglecture_metadata_native_subtitle
+  {\TYPE{native-subtitle=present}}
+  {\TYPE{native-subtitle=absent}}
+\cs_if_exist:NTF \__osglecture_metadata_native_publishers
+  {\TYPE{native-publishers=present}}
+  {\TYPE{native-publishers=absent}}
+\ExplSyntaxOff
+\END
+\end{document}

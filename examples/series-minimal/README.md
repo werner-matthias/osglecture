@@ -35,12 +35,16 @@ and selects concrete profiles per target: `slides` uses `beamer`, while `talk`
 uses the project-local `series-ltx-talk` profile. That profile selects the
 `ltx-talk` base class and declares `talk` as a presentation mode through its
 early `mode-setup-file`.
-The long-form `script` target uses the built-in `scrbook` default.
+The long-form `script` target uses the built-in standard `book` default.
+All osglecture metadata remains available semantically. Until the planned
+bundle-owned title page is implemented, the native Book title machinery only
+renders its standard fields; additional values such as `course`, `event`, and
+`institute` are intentionally not mapped by this profile.
 
 The target-specific `document_metadata` policy in `ollmconfig.toml` disables
-the early file for Beamer and the optional `scrbook` case, but requires it for
-`ltx-talk`. OLLM therefore inputs the user-owned `documentmetadata.tex` only
-for the `talk` target. osglecture validates the resulting kernel state against the selected
+the early file for Beamer, but requires it for `ltx-talk` and `book`. OLLM
+therefore inputs the user-owned `documentmetadata.tex` for `talk` and `script`.
+The file enables tagging. osglecture validates the resulting kernel state against the selected
 profile's `required`, `supported`, or `forbidden` capability.
 
 `seriesexample.sty` is a project-local package loaded after the class. Its
@@ -91,7 +95,7 @@ To inspect all six BuildSpecs without invoking LaTeX, run `ollm build --all
 |---|---|---|---|
 | `slides` | `presentation` | `beamer` | frames, itemized presentation lists, real columns |
 | `talk` | `presentation` | `series-ltx-talk` → `ltx-talk` | extended presentation mode with required document metadata |
-| `script` | `longform` | `scrbook` | sections, connected prose, column contents in sequence |
+| `script` | `longform` | `book` | sections, connected prose, column contents in sequence |
 
 The target-specific selection is expressed in `projectconfig.tex` as:
 

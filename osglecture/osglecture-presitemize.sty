@@ -1,7 +1,7 @@
 \ProvidesExplPackage
   {osglecture-presitemize}
-  {2026/08/02}
-  {0.1.0}
+  {2026/08/09}
+  {0.2.0}
   {Prose-aware presentation lists for osglecture}
 
 \RequirePackage{osglecture-modes}
@@ -280,15 +280,6 @@
 \IfLectureModeTF{longform}
   {
     \bool_set_true:N \l__osglecture_pres_longform_bool
-    \RequirePackage{enumitem}
-    \newlist{osglecturepresitemize}{itemize*}{3}
-    \setlist[osglecturepresitemize]
-      {
-        label={},
-        mode=unboxed,
-        afterlabel={},
-        itemjoin={\tl_use:N \l__osglecture_pres_join_tl}
-      }
 
     \NewDocumentEnvironment{presitemize}{O{}}
       {
@@ -301,8 +292,14 @@
         \tl_clear:N \l__osglecture_pres_join_tl
         \bool_set_false:N \l__osglecture_pres_subordinate_bool
         \bool_set_false:N \l__osglecture_pres_has_item_bool
-        \begin{osglecturepresitemize}
-        \cs_set_eq:NN \__osglecture_pres_original_item: \item
+        % Longform is semantic prose, not an inline list.  Keeping it out of a
+        % list environment also lets the LaTeX tagging layer tag the result as
+        % ordinary paragraph content.
+        \cs_set_protected:Npn \__osglecture_pres_original_item:
+          {
+            \bool_if:NT \l__osglecture_pres_has_item_bool
+              { \tl_use:N \l__osglecture_pres_join_tl }
+          }
         \RenewDocumentCommand \item {d<> o}
           {
             \__osglecture_pres_item:nnnn
@@ -325,7 +322,6 @@
             && \l__osglecture_pres_auto_punctuation_bool
           }
           {\unskip.}
-        \end{osglecturepresitemize}
         \group_end:
       }
   }

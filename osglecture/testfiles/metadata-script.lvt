@@ -1,5 +1,5 @@
 \input regression-test
-\documentclass[standalone,doctype=script]{osglecture}
+\documentclass[standalone,doctype=script,profile=scrbook]{osglecture}
 \course[Course short]{Course long}
 \author{Ada Author}
 \institute[Institute short]{Institute long}

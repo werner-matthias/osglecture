@@ -75,7 +75,8 @@ Mitgeliefert werden zunächst:
 
 - `beamer` für `slides` und `handout`,
 - `ltx-talk` für `slides` und `handout`,
-- `scrbook` für `script` und `article`.
+- `book` als Standard für `script` und `article`,
+- `scrbook` als alternativer KOMA-Script-Adapter für `script` und `article`.
 
 Die gegenwärtige Version von `ltx-talk` verlangt `\DocumentMetadata{}` vor
 `\documentclass`, Beamer verbietet es. Ein Wrapper kann diese Initialisierung
@@ -172,7 +173,7 @@ Die Klasse verarbeitet vier Arten von Eingaben und erzeugt daraus eine konkrete 
           ┌────────────────────┼────────────────────┐
           ▼                    ▼                    ▼
     Präsentation           Handout              Skript
-  beamer/ltx-talk      beamer/ltx-talk          scrbook
+  beamer/ltx-talk      beamer/ltx-talk          book/scrbook
           │                    │                    │
           └────────────────────┼────────────────────┘
                                ▼
@@ -184,7 +185,7 @@ Die Klasse übernimmt derzeit fünf Rollen:
 
 1. **Konfiguration ermitteln:** Klassenoptionen und den normalisierten,
    jobgebundenen OLLM-Buildauftrag auswerten.
-2. **Ausgabemodus wählen:** `beamer` oder `scrbook` mit `beamerarticle` als Basisklasse laden.
+2. **Ausgabemodus wählen:** Präsentations- oder Langformprofil mit seiner Basisklasse laden.
 3. **Serienkontext integrieren:** kapitelübergreifende Metadaten, Referenzen, Bibliografie und Nummerierung einbinden.
 4. **Darstellung konfigurieren:** Theme, Schriften, Farben und Handout-Layout festlegen.
 5. **Autoren-API anbieten:** modusabhängige Textauszeichnung, Spalten, Bilder, Notizen und Kompatibilitätsmakros definieren.
@@ -377,7 +378,8 @@ Die derzeitigen Typen sind unterschiedlich reif:
 
 - `slides`: Präsentationsausgabe, derzeit regulär über Beamer.
 - `handout`: Präsentations-/Druckausgabe, derzeit über Beamer und `pgfpages`.
-- `script` und `article`: Longform-Ausgabe, derzeit über `scrbook` und `beamerarticle`.
+- `script` und `article`: Longform-Ausgabe standardmäßig über `book`; `scrbook`
+  bleibt als alternativer Adapter verfügbar.
 - `screen`: experimentelle Zweitbildschirm-Konfiguration.
 - `web`: ausdrücklich nicht unterstützt.
 
@@ -472,12 +474,14 @@ Standardprofile bilden sie wie folgt ab:
 |---|---|---|
 | Beamer | Untertitel | Untertitel |
 | ltx-talk | Untertitel | Untertitel |
+| book | keine native Abbildung | keine native Abbildung |
 | scrbook | Titel | Untertitel |
 
-Damit bleibt das osgbeamer-Modell erhalten: In einer Präsentation bezeichnet
-der Titel die einzelne Unit und der Kurs erscheint als Kontext; in der
-Langform ist der Kurs der Dokumenttitel und eine Unit wird später strukturell
-als Kapitel realisiert. Im Standalone-Fall kann `title` den Vortrag und
+Damit bleibt das osgbeamer-Modell in den entsprechenden Adaptern erhalten. Das
+neue Standardprofil `book` speichert alle semantischen Werte, bildet zusätzliche
+Felder aber bis zur eigenen osglecture-Titelseite nicht auf Klassenbefehle ab.
+Eine Unit wird in der Langform strukturell als Kapitel realisiert. Im
+Standalone-Fall kann `title` den Vortrag und
 `event` die Konferenz bezeichnen. Treffen mehrere Angaben auf dasselbe native
 Zielfeld, gilt wie bei gewöhnlichen LaTeX-Titelbefehlen die zuletzt
 ausgeführte Angabe.
@@ -590,6 +594,12 @@ Autorenoberfläche (`\anditem`, `\butitem`, `\thereforeitem`) und die
 gleichwertige Key-Oberfläche
 (`\presitem[relation=sentence|and|but|therefore,...]`) bilden denselben
 internen Vertrag ab.
+
+Die semantische Projektion umfasst die Tagstruktur: Präsentationsmodi verwenden
+die native, vom jeweiligen Backend beziehungsweise LaTeX getaggte
+`itemize`-Umgebung. `longform` erzeugt unmittelbar Absatzinhalt und baut keine
+unsichtbare Inline-Liste auf. Dadurch entspricht der Strukturbaum der jeweils
+sichtbaren Textform und bleibt unabhängig von `enumitem`-Kompatibilität.
 
 Die Sprachprofile `de`, `en` und `fr` besitzen Konnektoren,
 Interpunktion und die Stellung des markierten finiten Verbs. Die
@@ -874,7 +884,7 @@ osglecture.cls
 ├── Backendadapter
 │   ├── slides  → beamer oder ltx-talk
 │   ├── handout → beamer oder ltx-talk
-│   └── script  → scrbook
+│   └── script  → book (alternativ scrbook)
 │
 ├── Domänendienste
 │   ├── Metadaten und Dokumentidentität
@@ -1021,7 +1031,8 @@ Vor einer Implementierung sollten folgende Fragen entschieden werden:
 
 ### Basisklassen und Theme
 
-- Bleibt `scrbook` das Standardbackend für die Langform?
+- Welche zusätzlichen Fähigkeiten soll der optionale `scrbook`-Adapter über
+  das Standardprofil `book` hinaus dauerhaft anbieten?
 - Welche gemeinsame Semantik müssen Beamer- und `ltx-talk`-Adapter für
   `slides` garantieren?
 - Welche Teile des TUC-/OSG-Designs sind Default, welche Voraussetzung?

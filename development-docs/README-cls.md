@@ -42,7 +42,7 @@ Basisklassenoptionen und TeX-Projektpolicy werden deklarativ gesetzt:
 \LectureProjectSetup{
   class-options={twoside,open=right},
   presentation-profile=beamer,
-  longform-profile=scrbook
+  longform-profile=book
 }
 \LectureProjectEnforce{theme=osg-accessible}
 \LectureTargetSetup{slides}{profile=beamer}
@@ -79,6 +79,12 @@ implementiert. `osglecture.cls` lädt dieses Paket automatisch; Autoren müssen
 es bei Verwendung der Klasse nicht zusätzlich laden. Das Stylefile hängt nur
 von `osglecture-modes` ab und kann von einer anderen Klasse direkt geladen
 werden, wenn diese zuvor ihre Blattmodi und Verhaltensklassen konfiguriert.
+
+Diese Projektion gilt auch für Tagged PDF: In Präsentationsmodi bleibt die
+native `itemize`-Umgebung erhalten und wird als Liste getaggt. In der Langform
+erzeugt `presitemize` direkt Absatzinhalt und damit keine irreführende
+Listenstruktur. Die Langform hängt deshalb nicht von `enumitem` oder dessen
+Inline-Listen ab.
 
 Die kompakte Schreibweise ist für häufige Fälle gedacht:
 

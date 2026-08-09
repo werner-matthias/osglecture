@@ -22,7 +22,7 @@ document_metadata = "required"
 
 [targets.script]
 languages = ["de"]
-document_metadata = "disabled"
+document_metadata = "required"
 
 [security]
 shell_escape = "restricted"

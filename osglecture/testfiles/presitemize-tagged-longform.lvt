@@ -1,0 +1,17 @@
+\DocumentMetadata{lang=de,tagging=on}
+\input regression-test
+\documentclass[standalone,doctype=script,lang=de]{osglecture}
+\begin{document}
+\START
+\begin{presitemize}
+  \item Die Übersetzung \finite{funktioniert}
+  \anditem das Ergebnis \finite{bleibt} als Absatz getaggt
+\end{presitemize}
+\makeatletter
+\@ifpackageloaded{enumitem}
+  {\TYPE{tagged-longform-enumitem=loaded}}
+  {\TYPE{tagged-longform-enumitem=absent}}
+\makeatother
+\TYPE{tagged-longform-complete=true}
+\END
+\end{document}

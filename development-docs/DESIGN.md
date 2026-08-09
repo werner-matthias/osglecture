@@ -678,7 +678,7 @@ Definition.
 ```tex
 \LectureProjectSetup{
   presentation-profile = beamer,
-  longform-profile = scrbook,
+  longform-profile = book,
   numbering = chapter,
   references = external-on-demand
 }

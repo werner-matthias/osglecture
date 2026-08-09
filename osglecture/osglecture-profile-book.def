@@ -1,0 +1,12 @@
+\ProvidesFile{osglecture-profile-book.def}
+  [2026/08/09 v0.1.0 osglecture standard book profile]
+\DeclareOsgLectureProfile{book}
+  {
+    backend = book,
+    capabilities = {longform,print},
+    class = book,
+    document-metadata = supported,
+    doctypes = {script,article},
+    course-target = none,
+    event-target = none
+  }

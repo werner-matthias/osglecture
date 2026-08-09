@@ -110,7 +110,8 @@ dessen Namen oder mit der Basisklasse identisch sein.
 ### Basisklasse
 
 Die **Basisklasse** ist die von `osglecture.cls` über `\LoadClass` geladene
-LaTeX-Klasse, gegenwärtig `beamer`, `ltx-talk` oder `scrbook`. Sie ist ein
+LaTeX-Klasse, gegenwärtig `beamer`, `ltx-talk`, `book` oder optional
+`scrbook`. Sie ist ein
 Implementierungsdetail des Dokumentprofils.
 
 ### Mode
