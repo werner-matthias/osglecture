@@ -1,0 +1,215 @@
+ \documentclass[
+ ]{scrarticle}
+
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{fontspec}
+\usepackage{microtype}
+\usepackage{dirtreex}
+\usepackage[
+languages={de,en},
+map={de=german,en=english},
+targetlang={job=3},
+load babel
+]{langselect}
+
+\colorlet{linkblue}{blue!50!black}
+\newcommand{\osglecture}{\textcolor{blue}{OSG Lecture}}
+
+\hypersetup{
+  pdftitle  = {OSG Lecture Bundle - Benutzerhandbuch},
+  pdfauthor = {Matthias Werner},
+  colorlinks,
+  linkcolor = linkblue,
+  urlcolor  = linkblue
+}
+\author{Matthias Werner}
+\title{\ldeen{Das OSG Lecture Bundle}{}}
+\subtitle{\ldeen{Benutzerhandbuch}{User Manual}}
+
+\begin{document}
+\maketitle
+\part{\ldeen{Einführung}{introduction}}
+\ldeen{Lehrmaterialien treten in vielerlei Formen und Versionen auf, beispielsweise als 
+Vorlesungsskript, Folien oder Handouts, und das möglicherweise jeweils in verschiedenen Sprachen.
+Dabei sind die Inhalte oft gleich oder ähnlich, und die Stukturen~-- beispielsweise die 
+Reihenfolge der Lehr- und Lerneinheiten sollten konsistent sein.
+Gleichzeitig werden Lehrmaterialien in der Regel permanent überarbeitet. Einzelne Lehreinheiten
+  werden modernisiert, reorganisiert oder gleich ganz entfernt, neue werden ergänzt.
+}{
+  Teaching materials come in many forms and versions, such as 
+  lecture notes, slides, or handouts, and may be available in different languages.
+  Yet the content is often the same or similar, and the structures—for example, the 
+  order of the teaching and learning units—should be consistent.
+  At the same time, teaching materials are generally revised on an ongoing basis. 
+  Individual teaching units are updated, reorganized, or removed entirely, while new ones 
+  are added.
+}
+
+\ldeen*{
+  Dabei stets die gewünschte Konsistenz aufrechtzuerhalten, ist schwierig. Das @1 Bundle 
+  versucht Lehrende, dabei zu unterstützen. Sie folgt dabei einer zentralen Idee:
+}{
+  Maintaining the desired consistency throughout this process is difficult. The @1 Bundle 
+  aims to support instructors in this effort. It is based on a central idea:
+}{\osglecture}
+ 
+\begin{quote}
+\textbf{\ldeen{Es sollten so wenig wie möglich Redundanzen auftreten.
+  }{
+    Redundancies should be kept to a minimum.
+  }}
+
+  \textbf{\ldeen{Wo Redundanzen notwendig sind (beispielsweise bei verschiedenen Textversionen), 
+  ist die Aufrechterhaltung von Konsistenz einfacher, wenn aufeinander 
+  bezogenes Quellmaterial möglichst nahe beieinander ist.
+  }{
+    Where redundancies are necessary (for example, with different versions of a text), 
+    it is easier to maintain consistency if related 
+    source material is located as close together as possible.}}
+\end{quote}
+
+\ldeen*{Daher soll @1 u.\,a.\ ermöglichen
+}{
+  Therefore, @1 is intended, amongst other things, to enable}{\osglecture}:
+\begin{itemize}
+  \item \ldeen{Generierung verschiedener Dokumentarten aus der gleichen Quelle
+  }{
+    Generating different types of documents from the same source
+  };
+  \item \ldeen{einfache Reorganisation von Lehreinheiten}{easy reorganization of teaching units};
+  \item \ldeen{verschiedene Sprachvarianten aus der gleichen Quelle,
+        wobei gemeinsame Daten nicht redundant dargestellt werden brauchen}{
+        different language versions from the same source,
+        wherein shared data does not need to be presented redundantly};
+  \item \ldeen{Unterstützung bei individuellen Erstellen und Überarbeiten von 
+        Lehreinheiten mit einfacher Integration (z.\,B.\ Skriptkapitel zu einem
+        Gesamtskript)}{
+        support for creating and revising individual 
+        instructional units that can be easily integrated (e.g., lecture notes chapters into a
+        comprehensive set of lecture notes)
+        };
+  \item \ldeen{schnelle Bereitstellung der verschiedenen Dokumentarten
+  }{
+    rapid deployment of the various types of document}.
+\end{itemize}
+\ldeen*{Dabei wurde von Modalitäten und Arbeitsabläufen ausgegangen, die 
+  an der Professur für Betriebssystem (\emph{Operating Systems Group, OSG}) 
+  der TU Chemnitz derzeit üblich sind.
+  Wenn Sie nicht dort tätig sind und z.\,B.\ andere Abläufe haben, könnte 
+  @1 trotzdem für Sie nützlich sein: einzelne Pakete des Bundles lassen sich 
+  auch unabhängig von den anderen nutzen.
+  }{
+    This was based on the procedures and workflows that 
+    are currently standard practice at the Operating Systems Group at Chemnitz University of Technology.
+    If you do not work there and, for example, have different procedures, 
+    @1 might still be useful to you: individual packages within the bundle can 
+    also be used independently of the others.
+  }{\osglecture}
+
+\ldeen*{@1 ist das Nachfolgeprojekt von @2, das sich aus einem
+  Thema und einer handvoll Ergänzungsmacros für die überaus verbreitete Beamer-Klasse@3
+  entwickelt hat.}{@1 is the successor project to @2, which has evolved from a
+  theme and a handful of supplementary macros for the widely used Beamer class@3}
+  {\osglecture}
+{\textcolor{blue}{OSGBeamer}\footnote{\url{https://github.com/tuc-osg/osgbeamer}}}
+{\footnote{\url{https://ctan.org/pkg/beamer}}}
+
+%\part{\ldeen{Kurztutorial}{Short Tutorial}}{}
+%
+%TODO
+
+\part{\ldeen{Konzepte}{Concepts}}
+\section{\ldeen{Lehreinheit}{Course Unit}}
+\ldeen{Ein Kurs ist aus Sicht von \osglecture\ eine Serie von zusammenhängenden 
+Lehreinheiten, z.\,B. Vorlesungen oder Übungen (oder beidem), die 
+typischerweise im Laufe eines Semesters gehalten werden.}{
+  From the perspective of \osglecture\, a course is a series of related 
+course units, e.g. lectures or tutorials (or both), which 
+are typically held over the course of a semester.
+}
+\ldeen{Eine Lehreinheit ist hier eher ein didaktisches Konzept als ein 
+  zeitliches Konzept: Es ist durchaus möglich, dass sich eine Lehreinheit
+  über mehrere Termine streckt oder dass zu einem Termin mehrere (eher kurze)
+  Einheiten behandelt werden.}{A teaching unit here is a didactic concept rather than a 
+  temporal one: It is entirely possible for a teaching unit to
+  span multiple sessions or for several (rather short)
+  units to be covered in a single session.}
+\ldeen{Welchen Satz von Lehrmaterialien für einen Kurs benötigt werden, kann recht
+unterschiedlich sein. In der OSG gibt es einige typische Lehrszenarien}{
+  The set of teaching materials required for a course can vary quite
+a lot. At the OSG, there are a number of typical teaching scenarios
+}:
+
+\begin{enumerate}
+  \item \label{it:ts:lec}\ldeen{Es gibt Präsentationen, die die Lehrenden benutzen, 
+        während die Studierenden dazu passende Handouts erhalten.
+        }{There are presentations that lecturers use whilst students are given 
+        the relevant handouts.}
+
+  \item \label{it:ts:ml}\ldeen*{Wie @1, aber die Handouts gibt es in einer 
+        englischen und einer deutschen Sprachfassung.
+        }{
+        Same as @1, but the handouts are available in both English and German.
+        }{\ref{it:ts:lec}}
+  \item \ldeen*{Wie @1, aber statt der Handouts pro Lehrthema 
+        gibt es jeweils ein Gesamtskript pro Sprache.
+        }{
+        As in @1, but instead of handouts for each teaching topic, 
+        there is one comprehensive set of lecture notes for each language.
+        }{\ref{it:ts:ml}}
+\end{enumerate}
+
+\ldeen{All diese und noch viel mehr Szenarien werden durch \osglecture{} unterstützt.}{
+  All of these scenarios—and many more—are supported by \osglecture.}
+
+\section{\ldeen{Verzeichnisstruktur}{Directory Structure}}
+\ldeen{
+  Die Materialien jedes Kurs' sind in einem eigenen Verzeichnis, dem sogenannten (Kurs-)Projektverzeichnis 
+  oder (bezogen auf das Projekt) Rootverzeichnis.
+  Dabei bildet die Verzeichnisstruktur die Stuktur des Kurses nach.}{
+  The materials for each course are located in their own directory, known as the (course) project directory 
+  or (in relation to the project) root directory.
+  The directory structure mirrors the structure of the course.
+  }
+
+\ldeen{Im Folgenden ist eine mögliche Verzeichnisstruktur für ein einfaches Szenario zu sehen}{
+  The following shows a possible directory structure for a simple scenario
+}:\medskip
+
+\begin{dirtreex}[elbow radius=3pt,fontsize=\footnotesize,
+  box={true, corners=0pt, border color=blue!60,
+  border width=0.5pt, background color=blue!2,
+  margin=6pt}]
+  \dir{Operating\_Systems}{\emph{\ldeen{Root-Verzeichnis}{root}}}{
+    \file{ollmconfig.toml}{\ldeen{Manifest}{manifest}}
+    \dir{000-Intro}{\emph{\ldeen{1. Lehreinheit}{1st unit}}}{
+      \file{main.tex}{}
+      \file{picture.png}{}
+      \file{}{}
+      \file{\hspace{2em}\smash{\raisebox{.6ex}{$\vdots$}}}{}
+    }
+    \dir{010-Design}{\emph{\ldeen{2. Lehreinheit}{2nd unit}}}{
+      \file{main.tex}{}
+    }
+    \dir{020-Process}{\emph{\ldeen{3. Lehreinheit}{3rd unit}}}{
+      \file{main.tex}{}
+    }
+    \file{}{}
+    \file{\hspace{1em}\smash{\raisebox{.6ex}{$\vdots$}}}{}
+    \dir{Include}{\emph{\ldeen{gemeinsame Daten}{common data}}}{
+      \file{projectconfig.tex}{\emph{\ldeen{Kurs-Metadaten}{course's meta data}}}
+      \file{$\cdots$}{}
+    }
+  }
+\end{dirtreex}
+
+\ldeen{Der Verzeichnisname einer Lehreinheit besteht mindestens aus einer dreistelligen Nummer
+  und einer durch einen Bindestrich abgetrennten Themenbeschreibung.}{
+  The directory name of a course consists of at least a three-digit number
+  and a description of the topic, separated by a hyphen.
+  }
+  Er kann aber noch zusätzliche Informationen beinhalten. 
+
+\end{document}
