@@ -7,6 +7,7 @@
 \usepackage{fontspec}
 \usepackage{microtype}
 \usepackage{dirtreex}
+\usepackage{tcolorbox}
 \usepackage[
 languages={de,en},
 map={de=german,en=english},
@@ -163,6 +164,9 @@ a lot. At the OSG, there are a number of typical teaching scenarios
 
 \ldeen{All diese und noch viel mehr Szenarien werden durch \osglecture{} unterstützt.}{
   All of these scenarios—and many more—are supported by \osglecture.}
+  \ldeen{Dabei spielt @1 die Rolle einer \emph{Metaklasse}: Sie organisiert im Wesentlichen,
+  welche konkrete Klasse geladen wird (z.\,B. \texttt{article}, \texttt{book}, \texttt{ltx-talk} oder \texttt{beamer}) und sorgt dafür, dass es ein gemeinsames Interface gibt.}{In this context, @1 acts as a \emph{metaclass}: It essentially determines
+  which specific class is loaded (e.g., \texttt{article}, \texttt{book}, \texttt{ltx-talk}, or \texttt{beamer}) and ensures that there is a common interface.}
 
 \section{\ldeen{Verzeichnisstruktur}{Directory Structure}}
 \ldeen{
@@ -210,6 +214,69 @@ a lot. At the OSG, there are a number of typical teaching scenarios
   The directory name of a course consists of at least a three-digit number
   and a description of the topic, separated by a hyphen.
   }
-  Er kann aber noch zusätzliche Informationen beinhalten. 
+  \ldeen{Die Nummer muss dreistellig sein (führende Nullen sind erlaubt) und legt lediglich die Reihenfolge
+  der Lehreinheiten fest, nicht etwa Kapitelnummern. Daher bietet es sich mindestens in der Entwicklungsphase eines Kurses an, eine größere Schrittweite zu wählen, um später Kapitel ohne großen Aufwand umorganisieren zu können.
+  }{The number must be three digits long (leading zeros are allowed) and simply determines the order
+  of the learning units, not chapter numbers. Therefore, at least during the development phase of a course, it makes sense to choose a larger increment so that chapters can be reorganized later without much effort.}\footnote{\ldeen{Ältere Programmierer kennen dieses Prinzip vielleicht noch von Programmiersprachen wie BASIC}{Older programmers may still be familiar with this principle from programming languages such as BASIC}.}
 
+\ldeen{  Die Themenbeschreibung im Verzeichnisnamen ist frei wählbar und soll nur als Gedächtnisstütze dienen, was der  
+  Inhalt der jeweiligen Einheit ist. Mehrere Worte können durch Unterstrich oder Gedankenstrich getrennt werden, aber in der Regel empfiehlt es sich, ein einzelnes aussagekräftiges Wort zu nutzen.}{  The topic description in the directory name can be chosen freely and is intended only as a reminder of what the content of the respective unit is. Multiple words can be separated by an underscore or a dash, but as a general rule, it is recommended to use a single, meaningful word.}
+
+  \ldeen{Der Verzeichnisname kann aber noch zusätzliche Informationen beinhalten. Insgesamt hat der Verzeichnisname     
+    einer Lehreinheit das folgende Format
+  }{
+    However, the directory name may also contain additional information. Overall, the directory name of a
+    course unit has the following format}:
+
+  \centerline{\texttt{<nummer>[<target>]-[<role>]-<topic>}}
+
+\ldeen{Die Teile in eckigen Klammern sind jeweils optional. Sie haben folgende Bedeutung
+}{
+  The parts in square brackets are optional. They have the following meanings
+}:
+
+
+\begin{description}
+\item [\texttt{target}] Beschreibt das Ziel dieser Einheit.
+  
+  \ldeen{Manchmal gibt es Material, das nur für bestimmte Arten von Materialien sinnvoll ist.
+  Beispielsweise werden häufig die organisatorischen Inhalte der Auftaktvorlesung nicht
+  mit im Skript stehen. Dies kann mit dem Target(bereich) beschrieben werden. Es ist ein Code
+  aus ein oder zwei Buchstaben
+  }{
+    Sometimes there is material that is only relevant for certain types of materials.
+  For example, the organizational details of the introductory lecture are often not
+  included in the lecture notes. This can be described using the "Target(scope)." It is a code
+  consisting of one or two letters
+  }:
+  \begin{itemize}
+    \item [\texttt{a}] \ldeen{Es ist nur Material für eine sogenannte Langform, also ein Skript oder 
+      ein Buch in dem Verzeichnis enthalten}{
+        The directory contains only material for a so-called long-form work, such as a script or 
+      a book
+      }.
+    \item [\texttt{b}] \ldeen{Das Verzeichnis enthält Material für eine Präsentation}{The directory contains materials for a presentation}.
+  \end{itemize}
+
+  \ldeen{Ein zusätzlicher zweiter Buchstabe kann es noch weiter einschränken. Beispielsweise steht "`\texttt{bh}"' für ausschließlich
+  Handouts, es werden also keine Slides erstellt.}{An additional second letter can narrow it down even further. For example, "`\texttt{bh}"' stands for handouts only, so no slides are created.}
+
+  \ldeen{Ohne eine Target-Spezifikation enthält das Verzeichnis Material für \emph{alle} konfigurierten
+    Dokumentarten}{Without a target specification, the directory contains material for \emph{all} configured
+    document types}.
+
+  \ldeen{Dieser Zielbereich ist erweiterbar, siehe die Dokumentation zu \texttt{ollm}.}{This target range can be extended; see the documentation for \texttt{ollm}.}
+  \item [\texttt{role}] \ldeen{Rolle, die die Einheit einnimmt. Dies wird stets durch einen einzelnen Buchstaben        
+      beschrieben:}{The role that the unit plays. This is always described by a single letter}
+  \begin{itemize}
+    \item [\texttt{a}] \ldeen{Die Einheit ist ein Anhang}{Unit is an appendix}.
+    \item [\texttt{c}] \ldeen{Dies ist synonym zu einer ausgelassenen Rollenangabe und steht für eine normale Einheit}{This is synonymous with an omitted role specification and represents a normal unit}.
+    \item [\texttt{e}] \ldeen{Die Einheit ist ein Ergänzung. Damit ist gemeint, dass sie zur vorhergehenden Einheit zugehörig ist, aber eine gewisse Eigenständigkeit besitzt. Beispielsweise könnte es ein Übungsblatt oder Ergänzungsmaterial sein.}{The unit is a supplement. This means that it is related to the preceding unit but has a certain degree of independence. For example, it could be a worksheet or supplementary material.}
+    \item [\texttt{i}] \ldeen{Diese Einheit integriert andere Einheiten. Beispielsweise würde die Integrationseinheit eines Vorlesungsskrits alle Skriptkapitel (die anderen Einheiten) zusammenfügen und ein Titelblatt, gemeinsames Inhaltsverzeichnis etc.\ hinzufügen. Jede Dokumentenart darf nur eine Integrationseinheit haben.}{This unit integrates other units. For example, the integration unit for a lecture transcript would combine all the transcript chapters (the other units) and add a title page, a common table of contents, etc. Each document type may have only one integration unit.}
+  \end{itemize}
+\end{description}
+
+\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black]
+  \ldeen*{Bitte beachten sie, dass der Aufbau der Verzeichnisnamen nicht nur Konvention ist: Sowohl die Hauptklasse @1 als auch das Tool @2 werten die Namen aus.}{Please note that the structure of the directory names is not merely a convention: Both the main class @1 and the tool @2 evaluate the names.}{\texttt{osglecture.cls}}{\texttt{ollm}}
+\end{tcolorbox}
 \end{document}
