@@ -38,6 +38,31 @@ cleanfiles={
     "*.ind"
 }
 
+-- All documented sources use osgdoc for their driver and langselect for the
+-- German/English variants.  Declare those as typesetting dependencies so a
+-- documentation build also works with an empty build/local tree.  l3build
+-- installs dependencies with its unpack target, which deliberately breaks the
+-- apparent documentation cycle between osgdoc and langselect.
+if module and module ~= "" then
+  typesetdeps = typesetdeps or { }
+
+  local function add_typeset_dependency(dependency)
+    for _, configured_dependency in ipairs(typesetdeps) do
+      if configured_dependency == dependency then
+        return
+      end
+    end
+    table.insert(typesetdeps, dependency)
+  end
+
+  if module ~= "osgdoc" then
+    add_typeset_dependency("../osgdoc")
+  end
+  if module ~= "langselect" then
+    add_typeset_dependency("../langselect")
+  end
+end
+
 -- It is (mainly) a luatex package
 tdsroot = "luatex"
 
