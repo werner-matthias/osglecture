@@ -146,6 +146,22 @@ load babel
   }
 \end{warnbox}
 
+\ldeen{
+  Deshalb prüft \lttheme{} beim Laden die unterstützte Version der Klasse.
+  Version~0.4.2 unterstützt \cls{ltx-talk}~0.5.3 vom 5.~August~2026.
+  Bei einem älteren oder neueren Stand bricht das Paket mit einer gezielten
+  Meldung ab. \cls{ltx-talk} bietet gegenwärtig keine eigenen Rollback-Releases
+  an; eine bereits mit \cs*{documentclass} geladene Klasse kann das Theme nicht
+  nachträglich ersetzen.
+}{
+  Therefore, \lttheme{} checks the supported class version when it is loaded.
+  Version~0.4.2 supports \cls{ltx-talk}~0.5.3 dated 5~August~2026.
+  With an older or newer release, the package stops with a targeted diagnostic.
+  \cls{ltx-talk} currently provides no rollback releases of its own; a class
+  already loaded by \cs*{documentclass} cannot subsequently be replaced by the
+  theme.
+}
+
 \subsection{\ldeen{Wer sollte diese Dokumentation lesen?}{Who sould read this documentation?}}
 
 \ldeen{
@@ -1084,6 +1100,19 @@ Slots, Templates und den Seitenstil bereitstellt.
     variant for that invocation. The previous geometry is restored after the
     title page.
   }
+  \command{LTXTalkHeaderRows}
+  \command{IfLTXTalkTitlePageTF}[\marg{Titelseitencode}\marg{Framecode}]
+  \ldeen{
+    Liefert Theme-Autoren die aktuell wirksame Zahl der Kopfzeilen bzw.
+    unterscheidet eine von \cs*{MakeLTXTalkTitle} erzeugte Titelseite von
+    einem gewöhnlichen Frame. Beide Schnittstellen bleiben auch dann gültig,
+    wenn die Basisklasse den Seitenkopf erst beim Ausschiffen aufbaut.
+  }{
+    Gives theme authors the effective number of header rows and distinguishes
+    a title page created by \cs*{MakeLTXTalkTitle} from an ordinary frame.
+    Both interfaces remain valid when the base class defers construction of
+    the running head until shipout.
+  }
 \end{commands}
 
 \subsection{\ldeen{Slot-Gestaltung}{Slot styling}}
@@ -1400,27 +1429,47 @@ Slots eines Teilthemes implementiert werden.
 %<*pkg>
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage{ltxtalk-theme}
-{2026/08/05}
-{v0.4.1}
+{2026/08/10}
+{v0.4.2}
 {Theme engine for ltx-talk}
 
 \RequirePackage{xcoffins}
 \RequirePackage{xcolor}
 
+\msg_new:nnnn { ltxtalk } { missing-class }
+  { Missing~document~class }
+  { The~ltxtalk-theme~package~requires~ltx-talk. }
+\msg_new:nnnn { ltxtalk } { class-too-old }
+  { Unsupported~ltx-talk~version }
+  {
+    ltxtalk-theme~v0.4.2~requires~ltx-talk~v0.5.3~from~2026-08-05.
+    Update~the~ltx-talk~document~class~before~loading~this~theme~engine.
+  }
+\msg_new:nnnn { ltxtalk } { class-too-new }
+  { Untested~ltx-talk~version }
+  {
+    ltxtalk-theme~v0.4.2~was~tested~with~ltx-talk~v0.5.3~from~2026-08-05.
+    The~loaded~class~is~newer.~Install~a~compatible~theme-engine~release~or~
+    update~its~declared~compatibility~range~after~running~the~test~suite.
+  }
+
 % \ldeen*{Das Paket ist nur sinnvoll, wenn @1 geladen ist.}{
 %  The package is only useful, if @1 is loaded. 
 % }{\cls*{ltx-talk}}
 \@ifclassloaded{ltx-talk}
-  {}
+  {
+    \@ifclasslater{ltx-talk}{2026/08/05}
+      {}
+      {\msg_fatal:nn { ltxtalk } { class-too-old }}
+    \@ifclasslater{ltx-talk}{2026/08/06}
+      {\msg_fatal:nn { ltxtalk } { class-too-new }}
+      {}
+  }
   { 
     \msg_error:nnnn { ltxtalk } { missing-class }
       { This~package~requires~the~ltx-talk~document~class }
       { Please~use~\token_to_str:N \documentclass{ltx-talk} } 
   }
-
-\msg_new:nnnn { ltxtalk } { missing-class }
-  { Missing~document~class }
-  { The~ltxtalk-theme~package~requires~ltx-talk. }
 
 % ==========================================
 % NACHRICHTEN
@@ -1584,6 +1633,17 @@ Slots eines Teilthemes implementiert werden.
 \prop_new:N \g__ltxtalk_title_layout_options_prop
 \prop_new:N \g__ltxtalk_title_layout_code_prop
 \tl_new:N \g__ltxtalk_title_layout_tl
+\bool_new:N \l__ltxtalk_title_page_bool
+\int_new:N \g__ltxtalk_title_header_rows_int
+\int_new:N \g__ltxtalk_saved_header_grid_rows_int
+
+\NewExpandableDocumentCommand \LTXTalkHeaderRows {}
+  {\bool_if:NTF \l__ltxtalk_title_page_bool
+     {\int_use:N \g__ltxtalk_title_header_rows_int}
+     {\int_use:N \l__ltxtalk_header_rows_int}}
+
+\NewDocumentCommand \IfLTXTalkTitlePageTF {m m}
+  {\bool_if:NTF \l__ltxtalk_title_page_bool {#1}{#2}}
 
 \NewDocumentCommand \DeclareLTXTalkTitleLayout { m m m }
   {
@@ -1604,6 +1664,26 @@ Slots eines Teilthemes implementiert werden.
         \prop_get:NVN \g__ltxtalk_title_layout_options_prop \l_tmpa_tl \l_tmpc_tl
         \group_begin:
           \keys_set:nV {ltxtalk/layout} \l_tmpc_tl
+          % ltx-talk 0.5.3 can defer construction of the running head until
+          % after the frame group.  Keep the small amount of state needed by
+          % header sockets alive until this page has actually shipped.
+          \bool_gset_true:N \l__ltxtalk_title_page_bool
+          \int_gset_eq:NN \g__ltxtalk_title_header_rows_int
+            \l__ltxtalk_header_rows_int
+          \prop_if_exist:NT \g__ltxtalk_area_grid_rows_prop
+            {
+              \prop_get:NnN \g__ltxtalk_area_grid_rows_prop {header} \l_tmpa_tl
+              \int_gset:Nn \g__ltxtalk_saved_header_grid_rows_int {\l_tmpa_tl}
+              \prop_gput:NnV \g__ltxtalk_area_grid_rows_prop {header}
+                \l__ltxtalk_header_rows_int
+            }
+          \AddToHookNext{shipout/after}
+            {
+              \bool_gset_false:N \l__ltxtalk_title_page_bool
+              \prop_if_exist:NT \g__ltxtalk_area_grid_rows_prop
+                {\prop_gput:Nnx \g__ltxtalk_area_grid_rows_prop {header}
+                  {\int_use:N \g__ltxtalk_saved_header_grid_rows_int}}
+            }
           \__ltxtalk_update_text_area:
           \begin{frame}[vertical-alignment=top]
             \thispagestyle{lttheme}
@@ -2249,8 +2329,8 @@ Slots eines Teilthemes implementiert werden.
         {short-institute}{\@shortinstitute}
         {date}{\@date}
         {short-date}{\@shortdate}
-        {section}{\tl_use:N \g__talk_section_tl}
-        {subsection}{\tl_use:N \g__talk_subsection_tl}
+        {section}{\insertsection}
+        {subsection}{\insertsubsection}
         {frametitle}{\tl_use:N \g__talk_frame_title_tl}
         {framesubtitle}{\tl_use:N \g__talk_frame_subtitle_tl}
         {framenumber}{\@framenumber}

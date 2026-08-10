@@ -579,19 +579,16 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
 \tl_new:N \g__ltxtalk_tuc_header_line_three_tl
 \tl_new:N \g__ltxtalk_tuc_title_image_tl
 \tl_new:N \g__ltxtalk_tuc_title_image_crop_tl
-\int_new:N \g__ltxtalk_tuc_header_rows_int
 \dim_new:N \g__ltxtalk_tuc_title_logo_raise_dim
 \dim_new:N \l__ltxtalk_tuc_crop_x_dim
 \dim_new:N \l__ltxtalk_tuc_crop_bottom_dim
 \dim_new:N \l__ltxtalk_tuc_crop_top_dim
-\bool_new:N \g__ltxtalk_tuc_title_bool
 \tl_gclear:N \g__ltxtalk_tuc_logo_tl
 \tl_gset:Nn \g__ltxtalk_tuc_title_logo_tl {osg.png}
 \tl_gset:Nn \g__ltxtalk_tuc_url_tl {https://www.tu-chemnitz.de/}
 \tl_gset:Nn \g__ltxtalk_tuc_header_instance_tl {title}
 \tl_gset:Nn \g__ltxtalk_tuc_title_instance_tl {osg}
 \tl_gset:Nn \g__ltxtalk_tuc_title_image_crop_tl {center}
-\int_gset:Nn \g__ltxtalk_tuc_header_rows_int {2}
 \dim_gset:Nn \g__ltxtalk_tuc_title_logo_raise_dim {0.21cm}
 
 \NewDocumentCommand \settucthemelogo {m}
@@ -631,13 +628,11 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
   {\UseLTXTalkLayout{tuc-2019-narrow}}
 \NewDocumentCommand \tuctwoheader {}
   {
-    \int_gset:Nn \g__ltxtalk_tuc_header_rows_int {2}
     \SetLTXTalkAreaGridRows{header}{2}
     \UseLTXTalkLayout{tuc-2019-header-two}
   }
 \NewDocumentCommand \tucthreeheader {}
   {
-    \int_gset:Nn \g__ltxtalk_tuc_header_rows_int {3}
     \SetLTXTalkAreaGridRows{header}{3}
     \UseLTXTalkLayout{tuc-2019-header-three}
   }
@@ -659,7 +654,7 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
       {
         \includegraphics
           [width=\bool_if:NTF \g_ltxtalk_chemnitz_bool {2.15cm}{1.63cm},
-           height=\bool_if:NTF \g__ltxtalk_tuc_title_bool {1.25cm}{0.82cm},
+           height=\IfLTXTalkTitlePageTF{1.25cm}{0.82cm},
            keepaspectratio]
           {\l_tmpa_tl}
       }
@@ -688,7 +683,7 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
                     {\UseLTXTalkMetadata[lines=1]{short-institute}}}
             }{}}
         {section}
-          {\int_compare:nNnTF {\g__ltxtalk_tuc_header_rows_int} = {3}
+          {\int_compare:nNnTF {\LTXTalkHeaderRows} = {3}
             {\int_case:nn {#1}
               {{1}{\UseLTXTalkMetadata[lines=1]{short-title}}
                {2}{\UseLTXTalkMetadata[lines=1]{section}}
@@ -710,7 +705,7 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
   }
 \cs_new_protected:Npn \__ltxtalk_tuc_teaching_header_line:n #1
   {
-    \int_compare:nNnTF {\g__ltxtalk_tuc_header_rows_int} = {3}
+    \int_compare:nNnTF {\LTXTalkHeaderRows} = {3}
       {\int_case:nn {#1}
         {{1}{\cs_if_exist:NTF \g__osglecture_metadata_course_tl
                 {\tl_use:N \g__osglecture_metadata_course_tl}
@@ -799,22 +794,13 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
 
     \DeclareLTXTalkTitleLayout{tuc-2019/osg}
       {header=true,header-height=2.4cm,header-rows=3,footer=false}
-      {\bool_set_true:N \g__ltxtalk_tuc_title_bool
-       \int_set:Nn \g__ltxtalk_tuc_header_rows_int {3}
-       \SetLTXTalkAreaGridRows{header}{3}
-       \__ltxtalk_tuc_title_osg:}
+      {\__ltxtalk_tuc_title_osg:}
     \DeclareLTXTalkTitleLayout{tuc-2019/talk}
       {header=true,header-height=2.4cm,header-rows=3,footer=false}
-      {\bool_set_true:N \g__ltxtalk_tuc_title_bool
-       \int_set:Nn \g__ltxtalk_tuc_header_rows_int {3}
-       \SetLTXTalkAreaGridRows{header}{3}
-       \__ltxtalk_tuc_title_talk:}
+      {\__ltxtalk_tuc_title_talk:}
     \DeclareLTXTalkTitleLayout{tuc-2019/image}
       {header=true,header-height=2.4cm,header-rows=3,footer=false}
-      {\bool_set_true:N \g__ltxtalk_tuc_title_bool
-       \int_set:Nn \g__ltxtalk_tuc_header_rows_int {3}
-       \SetLTXTalkAreaGridRows{header}{3}
-       \__ltxtalk_tuc_title_image:}
+      {\__ltxtalk_tuc_title_image:}
     \UseLTXTalkTitleLayout{tuc-2019/osg}
 
     \styleltxtalkslot{tuc-header-1}
@@ -909,10 +895,12 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
     \tl_if_blank:eF{\LTXTalkMetadata{subtitle}}
       {{\Large\color{ltxtalk-secondary}\LTXTalkMetadata{subtitle}\par}\medskip}
     \file_if_exist:VTF \g__ltxtalk_tuc_title_image_tl
-      {\noindent\skip_horizontal:n{-\LTXTalkCurrentLeftMargin}
-       \makebox[0pt][l]{\smash{\__ltxtalk_tuc_cover_image:Vn
+      {\par\nointerlineskip\noindent
+       \skip_horizontal:n{-\LTXTalkCurrentLeftMargin}
+       \makebox[0pt][l]{\__ltxtalk_tuc_cover_image:Vn
           \g__ltxtalk_tuc_title_image_tl
-          {\dim_eval:n{\paperheight-4.55cm}}}}}
+          {\dim_eval:n{\paperheight-4.55cm}}}
+       \par}
       {}
   }
 \cs_new_protected:Npn \__ltxtalk_tuc_cover_image:nn #1#2
@@ -942,7 +930,8 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
       {\dim_set:Nn \l__ltxtalk_tuc_crop_bottom_dim {.5\l_tmpa_dim}
        \dim_set_eq:NN \l__ltxtalk_tuc_crop_top_dim
          \l__ltxtalk_tuc_crop_bottom_dim}
-    \begin{tikzpicture}[baseline=#2]
+    \raisebox{-#2}[0pt][0pt]{%
+    \begin{tikzpicture}[baseline=0pt]
       \clip (0,0) rectangle (\paperwidth,#2);
       \str_case:VnF \g__ltxtalk_tuc_title_image_crop_tl
         {
@@ -959,7 +948,7 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
           {\box_use:N \l_tmpa_box};}
       \pgfresetboundingbox
       \path[use~as~bounding~box] (0,0) rectangle (\paperwidth,#2);
-    \end{tikzpicture}
+    \end{tikzpicture}}
   }
 \cs_generate_variant:Nn \__ltxtalk_tuc_cover_image:nn {Vn}
 

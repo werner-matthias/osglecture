@@ -2,6 +2,12 @@
 
 A flexible, accessible theme system for the ltx-talk presentation class.
 
+Version 0.4.2 is tested with `ltx-talk` 0.5.3 (2026-08-05) and checks this
+compatibility range when it is loaded. An older or newer class produces a
+targeted error instead of continuing with potentially incompatible layout
+interfaces. The class itself currently provides no LaTeX package rollback
+releases, so it cannot be replaced after `\documentclass` has loaded it.
+
 ## Quick Start
 
 ```latex
