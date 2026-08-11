@@ -219,7 +219,7 @@ load babel
 \RequirePackage{multicol,ragged2e}
 \RequirePackage{luatex85, shellesc}
 \AddToHook{class/cnltx-doc/before}{
-  \typeout{==>~First~Aid~for~cnltx-doc.cls~applied!}
+  \typeout{==>~Patch~for~cnltx-doc.cls~applied!}
 }
 \LoadClass{cnltx-doc}
 \mdfdefinestyle{cnltxmdframed}{
@@ -232,7 +232,6 @@ load babel
   color-scheme=blue
   }
 \RequirePackage[hidelinks]{hyperref}
-\RequirePackage{tcolorbox}
 \RequirePackage{osgdoc}
 \RequirePackage[oldstyle]{libertine}
 \setmonofont[
@@ -282,16 +281,7 @@ load babel
     }
   } 
 }
-\newtcolorbox{warnbox}[1]{
-  colback=red!5!white,
-  colframe=red!75!black,fonttitle=\bfseries,
-  title={#1}
-}
-\newtcolorbox{infobox}[1]{
-  colback=cnltx!5!white,
-  colframe=cnltxformalblue,fonttitle=\bfseries,
-  title={#1}
-}
+
 % \ldeen{
 %   Da die Titellei symbolische Fußnotenzeichen nutzt, wird die Nummer zurück gesetzt.
 % }{
@@ -316,11 +306,18 @@ load babel
   \def\error{\errmessage{LuaLaTeX~is~required~to~use~this~package.}\endinput}
 }
 \error
+
+% \ldeen{Ohne die \cls{osgdoc}- und damit auch \cls{cnltx-doc}-Klasse sollte \pkg{cnltx} geladen werden.}{
+% If there is no \cls{cnltx-doc} class--and thus no \cls{cnltx-doc} class--the package \pkg{cnltx} should be loaded.}
+\@ifclassloaded{osgdoc}{}{
+  \RequirePackage[example]{cnltx}
+}
+
+% \ldeen{Für \cs{AutoDocInput} brauchen wir \pkg{luacode} für das Parsing und \pkg{fancyverb}/pkg{fvextra} für die 
+% Darstellung}{For \cs{AutoDocInput}, we need \pkg{luacode} for parsing and \pkg{fancyverb}/pkg{fvextra} for rendering}.
 \RequirePackage{luacode}
 \RequirePackage{fvextra}
-
 \fvset{formatcom=\color{blue},numbers=left, breaklines, breakafter=~\{}
-
 \begin{luacode*}
   function texassert(v, msg)
     if v then
@@ -1007,4 +1004,16 @@ function fileinfo.usedate(filename)
    end
 end
 \end{luacode*}
+% 
+\RequirePackage{tcolorbox}
+\newtcolorbox{warnbox}[1]{
+  colback=red!5!white,
+  colframe=red!75!black,fonttitle=\bfseries,
+  title={#1}
+}
+\newtcolorbox{infobox}[1]{
+  colback=cnltxformalblue!5!white,
+  colframe=cnltxformalblue,fonttitle=\bfseries,
+  title={#1}
+}
 %</pkg>
