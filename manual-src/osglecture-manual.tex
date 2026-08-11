@@ -1,7 +1,8 @@
  \documentclass[
  ]{scrarticle}
 
-\usepackage{xcolor}
+\usepackage{osgdoc}
+%\usepackage{xcolor}
 \usepackage{hyperref}
 \usepackage{enumitem}
 \usepackage{fontspec}
@@ -14,6 +15,8 @@ map={de=german,en=english},
 targetlang={job=3},
 load babel
 ]{langselect}
+\usepackage{hologo}
+
 
 \colorlet{linkblue}{blue!50!black}
 \newcommand{\osglecture}{\textcolor{blue}{OSG Lecture}}
@@ -28,48 +31,70 @@ load babel
 \author{Matthias Werner}
 \title{\ldeen{Das OSG Lecture Bundle}{}}
 \subtitle{\ldeen{Benutzerhandbuch}{User Manual}}
+\KOMAoptions{parskip=half,toc=indented}
 
 \begin{document}
 \maketitle
-\part{\ldeen{Einführung}{introduction}}
+
+\begingroup
+\parskip=2pt
+\tableofcontents
+\endgroup
+
+\section{\ldeen{Einführung}{introduction}}
 \ldeen{Lehrmaterialien treten in vielerlei Formen und Versionen auf, beispielsweise als 
-Vorlesungsskript, Folien oder Handouts, und das möglicherweise jeweils in verschiedenen Sprachen.
-Dabei sind die Inhalte oft gleich oder ähnlich, und die Stukturen~-- beispielsweise die 
-Reihenfolge der Lehr- und Lerneinheiten sollten konsistent sein.
-Gleichzeitig werden Lehrmaterialien in der Regel permanent überarbeitet. Einzelne Lehreinheiten
-  werden modernisiert, reorganisiert oder gleich ganz entfernt, neue werden ergänzt.
-}{
+  Vorlesungsskript, Folien oder Handouts, und das möglicherweise jeweils in verschiedenen Sprachen.
+  Dabei sind die Inhalte oft gleich oder ähnlich, und die Stukturen~-- beispielsweise die 
+  Reihenfolge der Lehr- und Lerneinheiten sollten konsistent sein.}{
   Teaching materials come in many forms and versions, such as 
   lecture notes, slides, or handouts, and may be available in different languages.
   Yet the content is often the same or similar, and the structures—for example, the 
   order of the teaching and learning units—should be consistent.
+}
+\ldeen*{Mit anderen Worten: Die gleiche Sache (hier: semantische Information) soll in unterschiedlicher Gestalt auftreten. In der Informatik oder in der Chemie nennt man dieses Konzept auch \emph{Polymorphie}@1.}{
+  In other words: The same thing (here semantic information) should appear in different forms.
+In computer science or chemistry, this concept is also known as \emph{polymorphism}@1
+}{\footnote{\ldeen{
+  Vielleicht wären \emph{Polyrepräsentation} oder sogar \emph{Multimodalität} noch passendere Begriffe,
+  aber ersteres ist nicht sehr etabliert und beim zweiteren müsste ich vermutlich mit Kulturwissenschaftlern und Semiotikern darüber diskutieren, ob unterschiedliche Sprachen als \emph{Modi} aufzufassen sind.
+  Außerdem bin ich Informatiker, da liegt die Polymorphie nahe.
+  }{
+    Perhaps \emph{poly-representation} or even \emph{multimodality} would be even more appropriate terms,
+  but the former isn’t very well established, and with the latter, I’d probably have to discuss with cultural studies scholars and semioticians whether different languages should be understood as \emph{modes}.
+  Besides, I’m a computer scientist, so polymorphism seems like a natural choice.}
+}}
+
+\ldeen{
+  Gleichzeitig werden Lehrmaterialien in der Regel permanent überarbeitet. Einzelne Lehreinheiten
+  werden modernisiert, reorganisiert oder gleich ganz entfernt, neue werden ergänzt.
+}{
   At the same time, teaching materials are generally revised on an ongoing basis. 
   Individual teaching units are updated, reorganized, or removed entirely, while new ones 
   are added.
 }
-
 \ldeen*{
   Dabei stets die gewünschte Konsistenz aufrechtzuerhalten, ist schwierig. Das @1 Bundle 
-  versucht Lehrende, dabei zu unterstützen. Sie folgt dabei einer zentralen Idee:
+  versucht, Lehrende dabei zu unterstützen. Es folgt dabei einer zentralen Idee:
 }{
   Maintaining the desired consistency throughout this process is difficult. The @1 Bundle 
   aims to support instructors in this effort. It is based on a central idea:
 }{\osglecture}
  
-\begin{quote}
-\textbf{\ldeen{Es sollten so wenig wie möglich Redundanzen auftreten.
+\begin{infobox}{}\sffamily
+\ldeen{Es sollten so \textbf{wenig} wie möglich \textbf{Redundanzen} auftreten.
   }{
-    Redundancies should be kept to a minimum.
-  }}
+    \textbf{Redundancies} should be kept to a \textbf{minimum}.
+  }\medskip
 
-  \textbf{\ldeen{Wo Redundanzen notwendig sind (beispielsweise bei verschiedenen Textversionen), 
+  \ldeen{Wo Redundanzen notwendig sind (beispielsweise bei verschiedenen Textversionen), 
   ist die Aufrechterhaltung von Konsistenz einfacher, wenn aufeinander 
-  bezogenes Quellmaterial möglichst nahe beieinander ist.
+  bezogenes Quellmaterial \textbf{möglichst nahe} beieinander ist.
   }{
     Where redundancies are necessary (for example, with different versions of a text), 
     it is easier to maintain consistency if related 
-    source material is located as close together as possible.}}
-\end{quote}
+    source material is located as \textbf{close together} as possible.}
+\end{infobox}
+
 
 \ldeen*{Daher soll @1 u.\,a.\ ermöglichen
 }{
@@ -95,8 +120,10 @@ Gleichzeitig werden Lehrmaterialien in der Regel permanent überarbeitet. Einzel
   }{
     rapid deployment of the various types of document}.
 \end{itemize}
+
+
 \ldeen*{Dabei wurde von Modalitäten und Arbeitsabläufen ausgegangen, die 
-  an der Professur für Betriebssystem (\emph{Operating Systems Group, OSG}) 
+  an der Professur für Betriebssysteme (\emph{Operating Systems Group, OSG}) 
   der TU Chemnitz derzeit üblich sind.
   Wenn Sie nicht dort tätig sind und z.\,B.\ andere Abläufe haben, könnte 
   @1 trotzdem für Sie nützlich sein: einzelne Pakete des Bundles lassen sich 
@@ -117,12 +144,16 @@ Gleichzeitig werden Lehrmaterialien in der Regel permanent überarbeitet. Einzel
 {\textcolor{blue}{OSGBeamer}\footnote{\url{https://github.com/tuc-osg/osgbeamer}}}
 {\footnote{\url{https://ctan.org/pkg/beamer}}}
 
+\subsection{\ldeen{Polymorphie}{Polymorphism} in \osglecture}
+\ldeen{Es ist eine alte \hologo{TeX}-Idee, Texte je nach Kontext unterschiedlich darzustellen. Die \hologo{TeX}-Variante \hologo{ConTeXt} leitet beispielsweise ihren Namen auch davon ab. 
+Die folgenden Beispiele zeigen den Einsatz in \osglecture}{It is a long-standing \hologo{TeX} concept to render text differently depending on the context. The \hologo{TeX} variant \hologo{ConTeXt}, for example, derives its name from this concept. 
+The following examples demonstrate its use in \osglecture}.
 %\part{\ldeen{Kurztutorial}{Short Tutorial}}{}
 %
 %TODO
 
-\part{\ldeen{Konzepte}{Concepts}}
-\section{\ldeen{Lehreinheit}{Course Unit}}
+\section{\ldeen{Konzepte}{Concepts}}
+\subsection{\ldeen{Lehreinheit}{Course Unit}}
 \ldeen{Ein Kurs ist aus Sicht von \osglecture\ eine Serie von zusammenhängenden 
 Lehreinheiten, z.\,B. Vorlesungen oder Übungen (oder beidem), die 
 typischerweise im Laufe eines Semesters gehalten werden.}{
@@ -142,7 +173,7 @@ unterschiedlich sein. In der OSG gibt es einige typische Lehrszenarien}{
   The set of teaching materials required for a course can vary quite
 a lot. At the OSG, there are a number of typical teaching scenarios
 }:
-
+\
 \begin{enumerate}
   \item \label{it:ts:lec}\ldeen{Es gibt Präsentationen, die die Lehrenden benutzen, 
         während die Studierenden dazu passende Handouts erhalten.
@@ -168,7 +199,7 @@ a lot. At the OSG, there are a number of typical teaching scenarios
   welche konkrete Klasse geladen wird (z.\,B. \texttt{article}, \texttt{book}, \texttt{ltx-talk} oder \texttt{beamer}) und sorgt dafür, dass es ein gemeinsames Interface gibt.}{In this context, @1 acts as a \emph{metaclass}: It essentially determines
   which specific class is loaded (e.g., \texttt{article}, \texttt{book}, \texttt{ltx-talk}, or \texttt{beamer}) and ensures that there is a common interface.}
 
-\section{\ldeen{Verzeichnisstruktur}{Directory Structure}}
+\subsection{\ldeen{Verzeichnisstruktur}{Directory Structure}}
 \ldeen{
   Die Materialien jedes Kurs' sind in einem eigenen Verzeichnis, dem sogenannten (Kurs-)Projektverzeichnis 
   oder (bezogen auf das Projekt) Rootverzeichnis.
@@ -276,7 +307,7 @@ a lot. At the OSG, there are a number of typical teaching scenarios
   \end{itemize}
 \end{description}
 
-\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black]
+\begin{warnbox}{}
   \ldeen*{Bitte beachten sie, dass der Aufbau der Verzeichnisnamen nicht nur Konvention ist: Sowohl die Hauptklasse @1 als auch das Tool @2 werten die Namen aus.}{Please note that the structure of the directory names is not merely a convention: Both the main class @1 and the tool @2 evaluate the names.}{\texttt{osglecture.cls}}{\texttt{ollm}}
-\end{tcolorbox}
+\end{warnbox}
 \end{document}
