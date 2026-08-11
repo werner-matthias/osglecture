@@ -12,6 +12,8 @@ use File::Find qw(find);
 use File::Path qw(make_path remove_tree);
 use File::Spec;
 use JSON::PP;
+use OLLM::Path;
+use OLLM::StateLock;
 use OLLM::Version qw($VERSION);
 
 sub prepare {
@@ -24,10 +26,10 @@ sub prepare {
   my $structure = $arg{structure} // die "missing project structure";
   my $manifest = $arg{manifest} // die "missing project manifest";
   my %unit = map { $_->{physical_unit} => $_ } @{ $structure->{units} };
+  OLLM::Path::require_within(
+    $cwd, $root, "working directory '$cwd' is outside project root '$root'",
+  );
   my $relative = File::Spec->abs2rel($cwd, $root);
-  die "working directory '$cwd' is outside project root '$root'\n"
-    if File::Spec->file_name_is_absolute($relative)
-      || $relative =~ /\A\.\.(?:[\\\/]|\z)/;
   my ($physical) = File::Spec->splitdir($relative);
   $physical = undef if !defined($physical) || $physical eq '.'
     || !exists $unit{$physical};
@@ -125,14 +127,7 @@ sub _assert_builds_idle {
 
 sub _maintenance_lock {
   my ($root) = @_;
-  my $directory = File::Spec->catdir($root, '.osglecture');
-  make_path($directory);
-  my $path = File::Spec->catfile($directory, '.state.lock');
-  open my $handle, '>>', $path
-    or die "cannot open OLLM state lock '$path': $!\n";
-  flock($handle, LOCK_EX)
-    or die "cannot lock OLLM state '$path': $!\n";
-  return $handle;
+  return OLLM::StateLock::acquire($root);
 }
 
 sub _clean_plan {
@@ -320,10 +315,9 @@ sub _current_record {
 sub _remove_path {
   my ($path, $root) = @_;
   my $maintenance_root = File::Spec->catdir($root, '.osglecture');
-  my $relative = File::Spec->abs2rel($path, $maintenance_root);
+  my ($relative, $outside) = OLLM::Path::classify($path, $maintenance_root);
   die "refusing to remove path outside OLLM state: '$path'\n"
-    if File::Spec->file_name_is_absolute($relative)
-      || $relative =~ /\A\.\.(?:[\\\/]|\z)/ || $relative eq '.';
+    if $outside || $relative eq '.';
   if (-d $path && !-l $path) {
     remove_tree($path, {error => \my $errors});
     die "cannot remove '$path'\n" if @$errors;

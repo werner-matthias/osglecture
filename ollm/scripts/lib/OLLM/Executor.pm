@@ -11,6 +11,7 @@ use File::Basename qw(dirname);
 use File::Path qw(make_path);
 use File::Spec;
 use OLLM::BuildFile;
+use OLLM::Path;
 use OLLM::State;
 use OLLM::Version qw($VERSION);
 
@@ -165,21 +166,26 @@ sub _prepare_build_directory {
 
 sub _require_within {
   my ($path, $root, $label) = @_;
-  my $relative = File::Spec->abs2rel($path, $root);
-  die "$label '$path' resolves outside project root '$root'\n"
-    if File::Spec->file_name_is_absolute($relative)
-      || $relative =~ /\A\.\.(?:[\\\/]|\z)/;
+  OLLM::Path::require_within(
+    $path, $root, "$label '$path' resolves outside project root '$root'",
+  );
+}
+
+my %SHELL_ESCAPE_FLAG = (
+  off        => '--no-shell-escape',
+  restricted => '--shell-restricted',
+  full       => '--shell-escape',
+);
+
+sub _shell_escape_flag {
+  my ($policy) = @_;
+  return $SHELL_ESCAPE_FLAG{$policy}
+    // die "unknown shell-escape policy '$policy'";
 }
 
 sub command_for_spec {
   my ($class, $spec, $request, $latexmk_rc) = @_;
-  my %shell_option = (
-    off        => '--no-shell-escape',
-    restricted => '--shell-restricted',
-    full       => '--shell-escape',
-  );
-  my $shell = $shell_option{$spec->{shell_escape}}
-    // die "unknown shell-escape policy '$spec->{shell_escape}'";
+  my $shell = _shell_escape_flag($spec->{shell_escape});
   my $engine = join ' ',
     'lualatex',
     $shell,
@@ -369,13 +375,8 @@ sub _execute_standalone {
   $class->validate_request($resolved);
   my $request = $resolved->{request};
   my $spec = $resolved->{standalone_spec};
-  my %shell_option = (
-    off        => '--no-shell-escape',
-    restricted => '--shell-restricted',
-    full       => '--shell-escape',
-  );
   my $engine = join ' ',
-    'lualatex', $shell_option{$spec->{shell_escape}},
+    'lualatex', _shell_escape_flag($spec->{shell_escape}),
     '--synctex=1', '--interaction=nonstopmode', '--halt-on-error', '%O', '%S';
   my @command = (
     'latexmk', '-norc',

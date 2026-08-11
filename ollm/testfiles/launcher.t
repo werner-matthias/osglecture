@@ -6,6 +6,9 @@ use Cwd ();
 use File::Temp ();
 use Test::More;
 
+use lib 'scripts/vendor/TOML-Tiny-0.22/lib';
+use lib 'scripts/lib';
+
 my $version = qx{$^X scripts/ollm --version};
 is $?, 0, 'version exits successfully';
 like $version, qr/^ollm 0\.12\.0-dev/m, 'version is reported';

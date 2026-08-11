@@ -16,6 +16,9 @@ use JSON::PP;
 use Time::HiRes qw(time);
 
 use OLLM::BuildFile;
+use OLLM::Digest;
+use OLLM::Path;
+use OLLM::StateLock;
 use OLLM::Version qw($VERSION);
 our $SCHEMA = 1;
 my $attempt_counter = 0;
@@ -166,14 +169,7 @@ sub promote {
 
 sub _state_lock {
   my ($spec) = @_;
-  my $directory = File::Spec->catdir($spec->{project_root}, '.osglecture');
-  make_path($directory);
-  my $path = File::Spec->catfile($directory, '.state.lock');
-  open my $handle, '>>', $path
-    or die "cannot open OLLM state lock '$path': $!\n";
-  flock($handle, LOCK_EX)
-    or die "cannot lock OLLM state '$path': $!\n";
-  return $handle;
+  return OLLM::StateLock::acquire($spec->{project_root});
 }
 
 sub _current_results {
@@ -295,11 +291,7 @@ sub _export_label {
 
 sub _file_digest {
   my ($path) = @_;
-  open my $handle, '<:raw', $path or die "cannot read artifact '$path': $!\n";
-  my $digest = Digest::SHA->new(256);
-  $digest->addfile($handle);
-  close $handle or die "cannot close artifact '$path': $!\n";
-  return $digest->hexdigest;
+  return OLLM::Digest::sha256_hex_of_file($path);
 }
 
 sub _read_result {
@@ -419,10 +411,10 @@ sub _prepare_directory {
   }
   my $canonical = abs_path($ancestor)
     // die "cannot resolve state-directory ancestor '$ancestor'\n";
-  my $relative = File::Spec->abs2rel($canonical, $root);
-  die "state directory '$path' resolves outside project root '$root'\n"
-    if File::Spec->file_name_is_absolute($relative)
-      || $relative =~ /\A\.\.(?:[\\\/]|\z)/;
+  OLLM::Path::require_within(
+    $canonical, $root,
+    "state directory '$path' resolves outside project root '$root'",
+  );
   make_path($path);
 }
 

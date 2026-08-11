@@ -5,12 +5,13 @@ use strict;
 use warnings;
 
 use Cwd qw(abs_path);
-use Digest::SHA qw(sha256_hex);
 use File::Basename qw(basename dirname);
 use File::Copy qw(copy);
 use File::Spec;
 use File::Temp qw(tempfile);
 
+use OLLM::Digest;
+use OLLM::Path;
 use OLLM::State;
 
 sub prepare {
@@ -25,10 +26,9 @@ sub prepare {
     // die "working directory not found: $arg{start_dir}";
   my $structure = $arg{structure} // die "missing project structure";
   my %unit = map { $_->{physical_unit} => $_ } @{ $structure->{units} };
-  my $relative = File::Spec->abs2rel($cwd, $root);
+  my ($relative, $outside) = OLLM::Path::classify($cwd, $root);
   my $physical;
-  if ($relative ne '.' && !File::Spec->file_name_is_absolute($relative)
-      && $relative !~ /\A\.\.(?:[\\\/] |\z)/x) {
+  if (!$outside && $relative ne '.') {
     ($physical) = File::Spec->splitdir($relative);
     $physical = undef if !exists $unit{$physical};
   }
@@ -225,10 +225,7 @@ sub _copy_one {
 
 sub _digest {
   my ($path) = @_;
-  open my $handle, '<:raw', $path or die "cannot read '$path': $!";
-  my $sha = Digest::SHA->new(256); $sha->addfile($handle);
-  close $handle or die "cannot close '$path': $!";
-  return $sha->hexdigest;
+  return OLLM::Digest::sha256_hex_of_file($path);
 }
 
 1;

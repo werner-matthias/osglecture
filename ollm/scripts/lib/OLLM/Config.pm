@@ -38,6 +38,32 @@ sub resolve_request {
         legacy       => $plan->{legacy},
       );
 
+  my $request = _base_request($plan, $standalone, $located);
+
+  die "--legacy was requested, but no ollmconfig.pl was found"
+    if $plan->{legacy} && !$standalone && $located->{kind} eq 'none';
+  die "legacy manifest found at $located->{path}; use --legacy to build it "
+    . "or run 'ollm convertconfig' to create ollmconfig.toml"
+    if $located->{kind} eq 'legacy-unselected';
+
+  return $class->_resolve_none_request($request, $standalone, $start)
+    if $located->{kind} eq 'none';
+
+  if ($located->{kind} eq 'legacy') {
+    return {
+      request => $request,
+      configuration => {
+        kind => 'legacy',
+        path => $located->{path},
+      },
+    };
+  }
+
+  return $class->_resolve_toml_request($request, $located, $start, %arg);
+}
+
+sub _base_request {
+  my ($plan, $standalone, $located) = @_;
   my %request = (
     action          => $plan->{action},
     all             => $plan->{all} ? 1 : 0,
@@ -59,63 +85,52 @@ sub resolve_request {
   );
   $request{language} = $plan->{language} if defined $plan->{language};
   $request{debug} = $plan->{debug} if defined $plan->{debug};
+  return \%request;
+}
 
-  die "--legacy was requested, but no ollmconfig.pl was found"
-    if $plan->{legacy} && !$standalone && $located->{kind} eq 'none';
-  die "legacy manifest found at $located->{path}; use --legacy to build it "
-    . "or run 'ollm convertconfig' to create ollmconfig.toml"
-    if $located->{kind} eq 'legacy-unselected';
-
-  if ($located->{kind} eq 'none') {
-    if (!$standalone) {
-      return {
-        request => \%request,
-        configuration => {
-          kind   => 'none',
-          parser => $class->parser_info,
-        },
-      };
-    }
-    die "standalone builds take document type and language from "
-      . "osglecture class options; remove the explicit OLLM target/language"
-      if $request{target_explicit} || $request{language_explicit};
-    die "--all requires a series manifest and is not available in standalone mode"
-      if $request{all};
-    my $source_candidate = File::Spec->rel2abs($request{source}, $start);
-    my $source = abs_path($source_candidate)
-      // die "source file not found: $source_candidate";
-    die "source is not a regular file: $source" if !-f $source;
-    my ($volume, $directories, $filename) = File::Spec->splitpath($source);
-    (my $job_id = $filename) =~ s/\.[^.]+\z//;
-    die "cannot derive a job name from standalone source '$source'"
-      if $job_id eq '';
-    $request{source} = $source;
+sub _resolve_none_request {
+  my ($class, $request, $standalone, $start) = @_;
+  if (!$standalone) {
     return {
-      request => \%request,
+      request => $request,
       configuration => {
         kind   => 'none',
         parser => $class->parser_info,
       },
-      standalone_spec => {
-        context          => 'standalone',
-        source           => $source,
-        source_directory => dirname($source),
-        job_id           => $job_id,
-        shell_escape     => 'restricted',
-      },
     };
   }
+  die "standalone builds take document type and language from "
+    . "osglecture class options; remove the explicit OLLM target/language"
+    if $request->{target_explicit} || $request->{language_explicit};
+  die "--all requires a series manifest and is not available in standalone mode"
+    if $request->{all};
+  my $source_candidate = File::Spec->rel2abs($request->{source}, $start);
+  my $source = abs_path($source_candidate)
+    // die "source file not found: $source_candidate";
+  die "source is not a regular file: $source" if !-f $source;
+  my ($volume, $directories, $filename) = File::Spec->splitpath($source);
+  (my $job_id = $filename) =~ s/\.[^.]+\z//;
+  die "cannot derive a job name from standalone source '$source'"
+    if $job_id eq '';
+  $request->{source} = $source;
+  return {
+    request => $request,
+    configuration => {
+      kind   => 'none',
+      parser => $class->parser_info,
+    },
+    standalone_spec => {
+      context          => 'standalone',
+      source           => $source,
+      source_directory => dirname($source),
+      job_id           => $job_id,
+      shell_escape     => 'restricted',
+    },
+  };
+}
 
-  if ($located->{kind} eq 'legacy') {
-    return {
-      request => \%request,
-      configuration => {
-        kind => 'legacy',
-        path => $located->{path},
-      },
-    };
-  }
-
+sub _resolve_toml_request {
+  my ($class, $request, $located, $start, %arg) = @_;
   my $manifest = $class->load_manifest($located->{path});
   my $user_defaults = $class->load_user_defaults;
   $manifest->{bundle_preset} //=
@@ -128,11 +143,11 @@ sub resolve_request {
     project_root   => $root,
     bundle_path    => $arg{definitions_dir},
   );
-  $request{project_root} = $root;
-  $request{series_id} = $manifest->{project}{id};
+  $request->{project_root} = $root;
+  $request->{series_id} = $manifest->{project}{id};
 
   my @builds = _select_builds(
-    request       => \%request,
+    request       => $request,
     manifest      => $manifest,
     definitions   => $definitions,
     structure     => $structure,
@@ -140,25 +155,25 @@ sub resolve_request {
     start         => $start,
     manifest_path => $located->{path},
   );
-  $request{builds} = [map {
+  $request->{builds} = [map {
     +{
       target        => $_->{target},
       language      => $_->{language},
-      source        => $request{source},
+      source        => $request->{source},
       physical_unit => $_->{physical_unit},
     }
   } @builds];
   if (@builds == 1) {
-    $request{target} = $builds[0]{target};
-    $request{language} = $builds[0]{language};
+    $request->{target} = $builds[0]{target};
+    $request->{language} = $builds[0]{language};
   } else {
-    delete $request{target};
-    delete $request{language};
+    delete $request->{target};
+    delete $request->{language};
   }
 
   my $resolved = {
     manifest => $manifest,
-    request => \%request,
+    request => $request,
     configuration => {
       kind    => 'toml',
       path    => $located->{path},
@@ -174,37 +189,41 @@ sub resolve_request {
         ? $manifest->{build}{resolve}{max_rounds} : 8,
     },
   };
-  require OLLM::BuildFile;
-  {
-    my @specs = map {
-      OLLM::BuildFile->build_spec(
-        resolved       => $resolved,
-        manifest       => $manifest,
-        unit_directory => File::Spec->catdir($root, $_->{physical_unit}),
-        target          => $_->{target},
-        language        => $_->{language},
-      )
-    } @builds;
-    my (%job, %directory);
-    for my $spec (@specs) {
-      my $job_key = lc $spec->{job_id};
-      die "build matrix produces job ids that collide on "
-        . "case-insensitive filesystems: '$job{$job_key}' and "
-        . "'$spec->{job_id}'"
-        if exists $job{$job_key};
-      $job{$job_key} = $spec->{job_id};
-      my $directory_key = lc $spec->{build_directory};
-      die "build matrix assigns more than one build to directory "
-        . "'$spec->{build_directory}'"
-        if $directory{$directory_key}++;
-    }
-    if (@specs == 1) {
-      $resolved->{build_spec} = $specs[0];
-    } else {
-      $resolved->{build_specs} = \@specs;
-    }
-  }
+  _attach_build_specs($resolved, $manifest, $root, @builds);
   return $resolved;
+}
+
+sub _attach_build_specs {
+  my ($resolved, $manifest, $root, @builds) = @_;
+  require OLLM::BuildFile;
+  my @specs = map {
+    OLLM::BuildFile->build_spec(
+      resolved       => $resolved,
+      manifest       => $manifest,
+      unit_directory => File::Spec->catdir($root, $_->{physical_unit}),
+      target          => $_->{target},
+      language        => $_->{language},
+    )
+  } @builds;
+  my (%job, %directory);
+  for my $spec (@specs) {
+    my $job_key = lc $spec->{job_id};
+    die "build matrix produces job ids that collide on "
+      . "case-insensitive filesystems: '$job{$job_key}' and "
+      . "'$spec->{job_id}'"
+      if exists $job{$job_key};
+    $job{$job_key} = $spec->{job_id};
+    my $directory_key = lc $spec->{build_directory};
+    die "build matrix assigns more than one build to directory "
+      . "'$spec->{build_directory}'"
+      if $directory{$directory_key}++;
+  }
+  if (@specs == 1) {
+    $resolved->{build_spec} = $specs[0];
+  } else {
+    $resolved->{build_specs} = \@specs;
+  }
+  return;
 }
 
 sub _select_builds {
@@ -413,42 +432,63 @@ sub validate_manifest {
   _known_keys($manifest,
     [qw(schema bundle_preset project languages targets security deployment build)],
     $path, $lines, '');
-  if (!defined $manifest->{schema} || ref $manifest->{schema}
-      || $manifest->{schema} != $MANIFEST_SCHEMA) {
-    my $actual = defined($manifest->{schema}) && !ref($manifest->{schema})
-      ? $manifest->{schema} : '<missing or non-scalar>';
-    _fail_at($path, $lines, 'schema',
-      "unsupported project-manifest schema $actual; "
-      . "this OLLM supports project-manifest schema $MANIFEST_SCHEMA");
-  }
+  _validate_schema($manifest, $path, $lines);
   _require_string($manifest, 'bundle_preset', $path)
     if exists $manifest->{bundle_preset};
 
+  _validate_project_section($manifest, $path, $lines);
+  my %available = _validate_languages_section($manifest, $path, $lines);
+  _validate_targets_section($manifest, $path, $lines, \%available);
+
+  _validate_security_section($manifest, $path, $lines)
+    if exists $manifest->{security};
+  _validate_deployment($manifest, $path, $lines)
+    if exists $manifest->{deployment};
+  _validate_build_section($manifest, $path, $lines)
+    if exists $manifest->{build};
+  return 1;
+}
+
+sub _validate_schema {
+  my ($manifest, $path, $lines) = @_;
+  return if defined($manifest->{schema}) && !ref($manifest->{schema})
+    && $manifest->{schema} == $MANIFEST_SCHEMA;
+  my $actual = defined($manifest->{schema}) && !ref($manifest->{schema})
+    ? $manifest->{schema} : '<missing or non-scalar>';
+  _fail_at($path, $lines, 'schema',
+    "unsupported project-manifest schema $actual; "
+    . "this OLLM supports project-manifest schema $MANIFEST_SCHEMA");
+}
+
+sub _validate_project_section {
+  my ($manifest, $path, $lines) = @_;
   _require_table($manifest, 'project', $path);
   _known_keys($manifest->{project}, [qw(id tex)], $path, $lines, 'project');
   _require_string($manifest->{project}, 'id', "$path: project");
-  if (exists $manifest->{project}{tex}) {
-    my $tex = $manifest->{project}{tex};
-    die "$path: project.tex must be a table" if ref $tex ne 'HASH';
-    _known_keys($tex, [qw(directory config)], $path, $lines, 'project.tex');
-    _require_string($tex, $_, "$path: project.tex") for keys %$tex;
-    if (exists $tex->{directory}) {
-      _fail_at($path, $lines, 'project.tex.directory',
-        'project.tex.directory must be project-root-relative')
-        if File::Spec->file_name_is_absolute($tex->{directory});
-      _fail_at($path, $lines, 'project.tex.directory',
-        'project.tex.directory must not be empty')
-        if $tex->{directory} eq '';
-    }
-    if (exists $tex->{config}) {
-      _fail_at($path, $lines, 'project.tex.config',
-        'project.tex.config must be a filename without directory components')
-        if $tex->{config} eq ''
-          || File::Spec->file_name_is_absolute($tex->{config})
-          || $tex->{config} =~ m{[\\/]};
-    }
+  return if !exists $manifest->{project}{tex};
+  my $tex = $manifest->{project}{tex};
+  die "$path: project.tex must be a table" if ref $tex ne 'HASH';
+  _known_keys($tex, [qw(directory config)], $path, $lines, 'project.tex');
+  _require_string($tex, $_, "$path: project.tex") for keys %$tex;
+  if (exists $tex->{directory}) {
+    _fail_at($path, $lines, 'project.tex.directory',
+      'project.tex.directory must be project-root-relative')
+      if File::Spec->file_name_is_absolute($tex->{directory});
+    _fail_at($path, $lines, 'project.tex.directory',
+      'project.tex.directory must not be empty')
+      if $tex->{directory} eq '';
   }
+  if (exists $tex->{config}) {
+    _fail_at($path, $lines, 'project.tex.config',
+      'project.tex.config must be a filename without directory components')
+      if $tex->{config} eq ''
+        || File::Spec->file_name_is_absolute($tex->{config})
+        || $tex->{config} =~ m{[\\/]};
+  }
+}
 
+sub _validate_languages_section {
+  my ($manifest, $path, $lines) = @_;
   _require_table($manifest, 'languages', $path);
   _known_keys($manifest->{languages}, [qw(available default)],
     $path, $lines, 'languages');
@@ -468,6 +508,11 @@ sub validate_manifest {
   );
   die "$path: default language '$default' is not listed in languages.available"
     if !$available{$default};
+  return %available;
+}
+
+sub _validate_targets_section {
+  my ($manifest, $path, $lines, $available) = @_;
   _require_table($manifest, 'targets', $path);
   die "$path: targets must not be empty" if !keys %{ $manifest->{targets} };
   my %target_folded;
@@ -501,51 +546,49 @@ sub validate_manifest {
     }
     for my $language (@$languages) {
       die "$path: target '$target' uses unavailable language '$language'"
-        if !$available{$language};
+        if !$available->{$language};
     }
   }
+}
 
-  if (exists $manifest->{security}) {
-    die "$path: security must be a table"
-      if ref $manifest->{security} ne 'HASH';
-    _known_keys($manifest->{security}, [qw(shell_escape deployment)],
-      $path, $lines, 'security');
-    if (exists $manifest->{security}{shell_escape}) {
-      my $policy = _require_string(
-        $manifest->{security}, 'shell_escape', "$path: security",
-      );
-      die "$path: invalid security.shell_escape '$policy'"
-        if $policy !~ /\A(?:off|restricted|full)\z/;
-    }
-    if (exists $manifest->{security}{deployment}) {
-      my $security = $manifest->{security}{deployment};
-      die "$path: security.deployment must be a table"
-        if ref $security ne 'HASH';
-      _known_keys($security, [qw(overwrite)], $path, $lines,
-        'security.deployment');
-      my $overwrite = _require_string(
-        $security, 'overwrite', "$path: security.deployment",
-      );
-      die "$path: invalid security.deployment.overwrite '$overwrite'"
-        if $overwrite !~ /\A(?:explicit|automatic)\z/;
-    }
+sub _validate_security_section {
+  my ($manifest, $path, $lines) = @_;
+  die "$path: security must be a table"
+    if ref $manifest->{security} ne 'HASH';
+  _known_keys($manifest->{security}, [qw(shell_escape deployment)],
+    $path, $lines, 'security');
+  if (exists $manifest->{security}{shell_escape}) {
+    my $policy = _require_string(
+      $manifest->{security}, 'shell_escape', "$path: security",
+    );
+    die "$path: invalid security.shell_escape '$policy'"
+      if $policy !~ /\A(?:off|restricted|full)\z/;
   }
-  _validate_deployment($manifest, $path, $lines) if exists $manifest->{deployment};
-  if (exists $manifest->{build}) {
-    die "$path: build must be a table" if ref $manifest->{build} ne 'HASH';
-    _known_keys($manifest->{build}, [qw(resolve)], $path, $lines, 'build');
-    if (exists $manifest->{build}{resolve}) {
-      my $resolve = $manifest->{build}{resolve};
-      die "$path: build.resolve must be a table" if ref $resolve ne 'HASH';
-      _known_keys($resolve, [qw(max_rounds)], $path, $lines, 'build.resolve');
-      if (exists $resolve->{max_rounds}) {
-        die "$path: build.resolve.max_rounds must be a positive integer"
-          if ref($resolve->{max_rounds})
-            || $resolve->{max_rounds} !~ /\A[1-9][0-9]*\z/;
-      }
-    }
-  }
-  return 1;
+  return if !exists $manifest->{security}{deployment};
+  my $security = $manifest->{security}{deployment};
+  die "$path: security.deployment must be a table"
+    if ref $security ne 'HASH';
+  _known_keys($security, [qw(overwrite)], $path, $lines,
+    'security.deployment');
+  my $overwrite = _require_string(
+    $security, 'overwrite', "$path: security.deployment",
+  );
+  die "$path: invalid security.deployment.overwrite '$overwrite'"
+    if $overwrite !~ /\A(?:explicit|automatic)\z/;
+}
+
+sub _validate_build_section {
+  my ($manifest, $path, $lines) = @_;
+  die "$path: build must be a table" if ref $manifest->{build} ne 'HASH';
+  _known_keys($manifest->{build}, [qw(resolve)], $path, $lines, 'build');
+  return if !exists $manifest->{build}{resolve};
+  my $resolve = $manifest->{build}{resolve};
+  die "$path: build.resolve must be a table" if ref $resolve ne 'HASH';
+  _known_keys($resolve, [qw(max_rounds)], $path, $lines, 'build.resolve');
+  return if !exists $resolve->{max_rounds};
+  die "$path: build.resolve.max_rounds must be a positive integer"
+    if ref($resolve->{max_rounds})
+      || $resolve->{max_rounds} !~ /\A[1-9][0-9]*\z/;
 }
 
 sub _validate_deployment {

@@ -212,6 +212,5 @@ sub _literal_list {
 }
 
 sub _quote { my ($v) = @_; $v =~ s/([\\"])/\\$1/g; return qq{"$v"}; }
-sub _key { my ($v) = @_; return $v =~ /\A[A-Za-z0-9_-]+\z/ ? $v : _quote($v); }
 
 1;

@@ -10,6 +10,7 @@ use File::Spec;
 use OLLM::State;
 use OLLM::Version qw($VERSION);
 use OLLM::BuildFile;
+use OLLM::Path;
 
 sub prepare {
   my ($class, %arg) = @_;
@@ -21,9 +22,7 @@ sub prepare {
   my $manifest = $arg{manifest} // die "missing project manifest";
   my $structure = $arg{structure} // die "missing project structure";
   my %unit = map { $_->{physical_unit} => $_ } @{ $structure->{units} };
-  my $relative = File::Spec->abs2rel($cwd, $root);
-  my $outside = File::Spec->file_name_is_absolute($relative)
-    || $relative =~ /\A\.\.(?:[\\\/]|\z)/;
+  my ($relative, $outside) = OLLM::Path::classify($cwd, $root);
   my $physical;
   if (!$outside && $relative ne '.') {
     ($physical) = File::Spec->splitdir($relative);

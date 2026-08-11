@@ -11,6 +11,7 @@ use File::Path qw(make_path);
 use File::Spec;
 use File::Temp qw(tempfile);
 use JSON::PP;
+use OLLM::Path;
 use OLLM::Version qw($VERSION);
 our $SCHEMA = 1;
 
@@ -341,10 +342,9 @@ sub _validate_job_atom {
 
 sub _require_within {
   my ($path, $root, $label) = @_;
-  my $relative = File::Spec->abs2rel($path, $root);
-  die "$label '$path' is outside project root '$root'"
-    if File::Spec->file_name_is_absolute($relative)
-      || $relative =~ /\A\.\.(?:[\\\/]|\z)/;
+  OLLM::Path::require_within(
+    $path, $root, "$label '$path' is outside project root '$root'",
+  );
 }
 
 sub _tex_atom {

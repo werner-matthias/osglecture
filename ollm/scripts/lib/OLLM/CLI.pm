@@ -9,6 +9,7 @@ use File::Basename qw(dirname);
 use File::Spec;
 use JSON::PP;
 use OLLM::Config;
+use OLLM::Path;
 use OLLM::Version qw($VERSION);
 
 my %ACTION = map { $_ => 1 }
@@ -454,6 +455,44 @@ sub _migration {
   return 0;
 }
 
+sub _locate_project {
+  my ($class, $plan, $default_error) = @_;
+  my $cwd = getcwd();
+  my $located = eval {
+    OLLM::Config->find_manifest(
+      start_dir => $cwd, config => $plan->{config},
+      project_root => $plan->{project_root},
+    );
+  };
+  if (!$located || $located->{kind} ne 'toml') {
+    my $error = $@ || $default_error;
+    chomp $error;
+    print STDERR "ollm: $error\n";
+    return;
+  }
+  my $manifest = eval { OLLM::Config->load_manifest($located->{path}) };
+  if (!$manifest) {
+    my $error = $@ || 'cannot load project manifest';
+    chomp $error;
+    print STDERR "ollm: $error\n";
+    return;
+  }
+  return {
+    cwd => $cwd, located => $located, manifest => $manifest,
+    root => dirname($located->{path}),
+  };
+}
+
+# A project selected explicitly (--project-root/--config) may point at a
+# manifest above the current directory; commands that otherwise operate on
+# the unit under the cwd then fall back to running from the project root.
+sub _start_dir {
+  my ($class, $plan, $cwd, $root) = @_;
+  return $cwd
+    if !(defined($plan->{project_root}) || defined($plan->{config}));
+  return OLLM::Path::is_outside($cwd, $root) ? $root : $cwd;
+}
+
 sub _deployment {
   my ($class, $plan) = @_;
   for my $option (qw(dry_run legacy level rebuild resolve stale_units)) {
@@ -466,30 +505,11 @@ sub _deployment {
     print STDERR "ollm: deploy does not accept a source or latexmk options\n";
     return 2;
   }
-  my $cwd = getcwd();
-  my $located = eval {
-    OLLM::Config->find_manifest(
-      start_dir => $cwd, config => $plan->{config},
-      project_root => $plan->{project_root},
-    );
-  };
-  if (!$located || $located->{kind} ne 'toml') {
-    my $error = $@ || 'deploy requires an ollmconfig.toml project';
-    chomp $error; print STDERR "ollm: $error\n"; return 2;
-  }
-  my $manifest = eval { OLLM::Config->load_manifest($located->{path}) };
-  if (!$manifest) {
-    my $error = $@ || 'cannot load project manifest'; chomp $error;
-    print STDERR "ollm: $error\n"; return 2;
-  }
-  my $root = dirname($located->{path});
-  my $start = $cwd;
-  my $relative = File::Spec->abs2rel($cwd, $root);
-  if ((defined($plan->{project_root}) || defined($plan->{config}))
-      && (File::Spec->file_name_is_absolute($relative)
-        || $relative =~ /\A\.\.(?:[\\\/]|\z)/)) {
-    $start = $root;
-  }
+  my $project = $class->_locate_project(
+    $plan, 'deploy requires an ollmconfig.toml project',
+  ) or return 2;
+  my ($cwd, $manifest, $root) = @{$project}{qw(cwd manifest root)};
+  my $start = $class->_start_dir($plan, $cwd, $root);
   require OLLM::Deployment;
   my $request = eval {
     OLLM::Deployment->prepare(
@@ -525,34 +545,11 @@ sub _deployment {
 
 sub _maintenance {
   my ($class, $plan) = @_;
-  my $cwd = getcwd();
-  my $located = eval {
-    OLLM::Config->find_manifest(
-      start_dir => $cwd, config => $plan->{config},
-      project_root => $plan->{project_root},
-    );
-  };
-  if (!$located || $located->{kind} ne 'toml') {
-    my $error = $@ || 'clean and prune require an ollmconfig.toml project';
-    chomp $error;
-    print STDERR "ollm: $error\n";
-    return 2;
-  }
-  my $manifest = eval { OLLM::Config->load_manifest($located->{path}) };
-  if (!$manifest) {
-    my $error = $@ || 'cannot load project manifest';
-    chomp $error;
-    print STDERR "ollm: $error\n";
-    return 2;
-  }
-  my $root = dirname($located->{path});
-  my $start = $cwd;
-  my $relative = File::Spec->abs2rel($cwd, $root);
-  if ((defined($plan->{project_root}) || defined($plan->{config}))
-      && (File::Spec->file_name_is_absolute($relative)
-        || $relative =~ /\A\.\.(?:[\\\/]|\z)/)) {
-    $start = $root;
-  }
+  my $project = $class->_locate_project(
+    $plan, 'clean and prune require an ollmconfig.toml project',
+  ) or return 2;
+  my ($cwd, $manifest, $root) = @{$project}{qw(cwd manifest root)};
+  my $start = $class->_start_dir($plan, $cwd, $root);
   require OLLM::Maintenance;
   my $request = eval {
     OLLM::Maintenance->prepare(
@@ -605,27 +602,11 @@ sub _inspection {
     print STDERR "ollm: $plan->{action} does not accept a source or latexmk options\n";
     return 2;
   }
-  my $cwd = getcwd();
-  my $located = eval {
-    OLLM::Config->find_manifest(
-      start_dir => $cwd, config => $plan->{config},
-      project_root => $plan->{project_root},
-    );
-  };
-  if (!$located || $located->{kind} ne 'toml') {
-    my $error = $@ || 'report and check require an ollmconfig.toml project';
-    chomp $error;
-    print STDERR "ollm: $error\n";
-    return 2;
-  }
-  my $manifest = eval { OLLM::Config->load_manifest($located->{path}) };
-  if (!$manifest) {
-    my $error = $@ || 'cannot load project manifest';
-    chomp $error;
-    print STDERR "ollm: $error\n";
-    return 2;
-  }
-  my $root = dirname($located->{path});
+  my $project = $class->_locate_project(
+    $plan, 'report and check require an ollmconfig.toml project',
+  ) or return 2;
+  my ($cwd, $located, $manifest, $root) =
+    @{$project}{qw(cwd located manifest root)};
   my $definitions = eval {
     OLLM::Config->resolve_definitions(
       manifest => $manifest, manifest_path => $located->{path},
@@ -640,13 +621,7 @@ sub _inspection {
     print STDERR "ollm: $error\n";
     return 2;
   }
-  my $start = $cwd;
-  my $relative = File::Spec->abs2rel($cwd, $root);
-  if ((defined($plan->{project_root}) || defined($plan->{config}))
-      && (File::Spec->file_name_is_absolute($relative)
-        || $relative =~ /\A\.\.(?:[\\\/]|\z)/)) {
-    $start = $root;
-  }
+  my $start = $class->_start_dir($plan, $cwd, $root);
   require OLLM::Inspection;
   my $request = eval {
     OLLM::Inspection->prepare(
@@ -823,12 +798,14 @@ sub _doctor {
   my $parser = OLLM::Config->parser_info;
   $ok = 0 if !$parser->{available};
 
+  my ($kpsewhich_check) = grep { $_->{program} eq 'kpsewhich' } @checks;
+  my $kpsewhich = $kpsewhich_check->{found};
   my @tex_files = (
-    map({ _kpsewhich_check($_, 1) } qw(
+    map({ _kpsewhich_check($_, 1, $kpsewhich) } qw(
       osglecture.cls osglecture-project.sty osglecture-structure.sty
       hyperref.sty
     )),
-    map({ _kpsewhich_check($_, 0) } qw(varioref.sty tagpdf.sty tagpax.sty)),
+    map({ _kpsewhich_check($_, 0, $kpsewhich) } qw(varioref.sty tagpdf.sty tagpax.sty)),
   );
   $ok = 0 if grep { $_->{required} && !$_->{ok} } @tex_files;
 
@@ -969,8 +946,7 @@ sub _program_doctor_check {
 }
 
 sub _kpsewhich_check {
-  my ($name, $required) = @_;
-  my $kpsewhich = _find_program('kpsewhich');
+  my ($name, $required, $kpsewhich) = @_;
   return { name => $name, required => $required ? JSON::PP::true : JSON::PP::false,
     ok => JSON::PP::false } if !$kpsewhich;
   my $path = _capture_first_line($kpsewhich, $name);
