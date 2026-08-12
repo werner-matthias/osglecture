@@ -5,7 +5,7 @@
 \preamble
 
 ========================================================================
- osgdoc tools - support for documentation
+ tagpax - import of tagged PDF documents
 
  (C) 2022-2026 Matthias Werner
  E-mail: matthias.werner@informatik.tu-chemnitz.de
@@ -32,7 +32,7 @@
 \ProvidesExplPackage{tagpax}
 {2026/07/23}
 {v0.8.5-dev}
-{Native tagged PDF document import}
+{import of tagged PDF documents}
 %</package>
 %<*driver> 
 \DocumentMetadata{}
@@ -96,9 +96,9 @@ load-preamble+
 
 \ldeen*{
   Es gibt häufig den Fall, dass fertige PDF-Dokumente in andere eingebaut werden, beispielsweise bei Proceedings 
-  und Sammelbänden. Dafür hat sich \name{Andreas}{Matthias}' umfangreiches Paket \needpackage{pdfpages} bewährt.
+  und Sammelbänden. Dafür hat sich \name{Andreas Matthias}' umfangreiches Paket \needpackage{pdfpages} bewährt.
   Um aus den eingebundenen Dokumenten PDF-Annotationen zu übernehmen, beispielsweise zur Erstellung von gemeinsamen
-  Inhaltsverzeichnisen, kann zusätzlich \name{Ulrike}{Fischer}s \needpackage{newpax} oder dessen auf Java basierendes Vorgängerprojekt \needpackage{pax} von \name{Heiko}{Oberdiek} genutzt werden.
+  Inhaltsverzeichnisen, kann zusätzlich \name{Ulrike Fischer}s \needpackage{newpax} oder dessen auf Java basierendes Vorgängerprojekt \needpackage{pax} von \name{Heiko Oberdiek} genutzt werden.
 
   Jedoch gibt es aus der Perspektive der Barrierefreiheit ein Problem: Auch wenn die eingebundenen Dokumente
   (über \cs{MetaDocumentdata}) korrekt getaggt sind, gehen diese Informationen beim Einbinden verloren.
@@ -106,9 +106,9 @@ load-preamble+
   das Gesamtdokument zu übernehmen.
 }{
   It is often the case that finished PDF documents are embedded into others, for example in proceedings 
-  and anthologies. \name{Andreas}{Matthias}’s comprehensive package \needpackage{pdfpages} has proven useful for this purpose.
+  and anthologies. \name{Andreas Matthias}’s comprehensive package \needpackage{pdfpages} has proven useful for this purpose.
   To extract PDF annotations from the embedded documents-—for example, to create combined
-  tables of contents-—you can also use \name{Ulrike}{Fischer}’s \needpackage{newpax} or its Java-based predecessor project, \needpackage{pax}, by \name{Heiko}{Oberdiek}.
+  tables of contents-—you can also use \name{Ulrike Fischer}’s \needpackage{newpax} or its Java-based predecessor project, \needpackage{pax}, by \name{Heiko Oberdiek}.
 
   However, there is a problem from an accessibility perspective: Even if the embedded documents
   are correctly tagged (via \cs{MetaDocumentdata}), this information is lost during embedding.
@@ -118,28 +118,24 @@ load-preamble+
 
 \medskip
 \noindent
-\colorbox{cnltxblue!20!white}{\parbox{\linewidth}{
-\rule{\linewidth}{0pt}
-  \begin{quote}
-    \textbf{\ldeen{Achtung}{Note}!}\par
-    \ldeen{
-      Dieses Paket ist \textbf{kein} Ersatz für die oben genannten.
+
+\begin{infobox}{\ldeen{Achtung}{Note}}
+    \ldeen*{
+      Dieses Paket ist \textbf{kein} Ersatz für die oben genannten Pakete @1 und @2.
       Es ist (zumindest derzeit) nur auf den Anwendungsfall der Inkludierung von vollständigen,
       korrekt getaggten PDF-Dokumenten in der Originalreihenfolge der Seiten ausgelegt.
       Die vielfältigen Möglichkeiten zu weiteren Manipulation sind in \thepkg{} nicht möglich.
       }{
-      This package is \textbf{not} a substitute for the ones mentioned above.
+      This package is \textbf{not} a substitute for the pakets @1 and @2 mentioned above.
       It is (at least for now) designed only for the specific use case of including complete,
       correctly tagged PDF documents in their original page order.
       The various options for further manipulation are not available in \thepkg.
-    }
-  \end{quote}
-  }
-}
+    }{\pkg{pdfpages}}{\pkg{pax}/\pkg{newpax}}
+\end{infobox}
 \medskip
 
 
-\ldeen{Beim Einbinden eines Subdokuments wird seine äußere
+\ldeen*{Beim Einbinden eines Subdokuments wird seine äußere
   @1-Struktur entfernt; ihre Kinder werden im Master unter
   einem neuen @2 eingehängt. Vorhandene MCIDs bleiben dabei erhalten.
 }{When a subdocument is embedded, its outer
@@ -155,10 +151,10 @@ load-preamble+
 }{
   Activate PDF management and automatic tagging before the document class with
   @1. 
-}{\cs{DocumentMetadata}\Marg{tagging=on}}{\code{testphase}}
+}{\cs{DocumentMetadata}\Marg{tagging=on}}
 
 \begin{Verbatim}
-%\DocumentMetadata{tagging=on,lang=de}
+\DocumentMetadata{tagging=on}
 \documentclass{book}
 \usepackage{tagpax}
 \end{Verbatim}
