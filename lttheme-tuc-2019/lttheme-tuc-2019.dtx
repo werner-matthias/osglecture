@@ -583,6 +583,143 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
 \dim_new:N \l__ltxtalk_tuc_crop_x_dim
 \dim_new:N \l__ltxtalk_tuc_crop_bottom_dim
 \dim_new:N \l__ltxtalk_tuc_crop_top_dim
+% \ldeen{Geometrische Grundmaße der Kopfzeile: die Zeilenhöhe von
+%   \cs{footnotesize}\cs{sffamily} in dieser Klasse (gemessen als
+%   \cs{baselineskip}), der horizontale Randabstand (Seitenrand zu Logo,
+%   und Logo zu Trennstrich), der Abstand zwischen Trennstrich und Text
+%   sowie die Strichstärke des Trennstrichs. Logo, Trennstrich und
+%   Navigationstext werden ausschließlich aus diesen Maßen abgeleitet,
+%   damit sie zwangsläufig konsistent zueinander stehen.}{
+%   Basic header geometry: the line height of \cs{footnotesize}\cs{sffamily}
+%   in this class (measured as \cs{baselineskip}), the horizontal margin
+%   (page edge to logo, and logo to divider), the gap between the divider
+%   and the text, and the divider's rule thickness. The logo, divider, and
+%   navigation text are derived exclusively from these measures so they
+%   are necessarily consistent with one another.}
+\dim_const:Nn \c__ltxtalk_tuc_header_line_dim {11pt}
+\dim_const:Nn \c__ltxtalk_tuc_header_margin_dim {0.4cm}
+\dim_const:Nn \c__ltxtalk_tuc_header_text_gap_dim {0.4cm}
+\dim_const:Nn \c__ltxtalk_tuc_header_rule_thickness_dim {0.4pt}
+% \ldeen{Höhe des Navigationstextblocks: die Zeilenzahl mal die
+%   Zeilenhöhe, ohne Zuschlag. Logo und Trennstrich übernehmen exakt diese
+%   Höhe, damit ihre Ober- und Unterkante mit der obersten und untersten
+%   Textzeile fluchten.}{
+%   Height of the navigation text block: the line count times the line
+%   height, with no further padding. The logo and divider take on exactly
+%   this height, so that their top and bottom edges align with the
+%   topmost and bottommost text line.}
+\cs_new:Npn \__ltxtalk_tuc_header_content_height:
+  {\dimexpr \c__ltxtalk_tuc_header_line_dim*\LTXTalkHeaderRows \relax}
+% \ldeen{Der obere (und wegen der Zentrierung gleich große untere)
+%   Abstand des Kopfzeilenmaterials zur tatsächlich sichtbaren
+%   Kopfzeilenfläche. Diese ist um \cs{headsep} niedriger als
+%   \cs{l__ltxtalk_header_height_dim}, da der Seitenstil die Kopfzeilenhöhe
+%   der \pkg{geometry}-Kopfzone entnimmt.}{
+%   The top (and, by centering, equally sized bottom) distance of the
+%   header material from the actually visible header area. That area is
+%   shorter than \cs{l__ltxtalk_header_height_dim} by \cs{headsep}, because
+%   the page style derives the header height from \pkg{geometry}'s head
+%   zone.}
+\cs_new:Npn \__ltxtalk_tuc_header_margin_y:
+  {
+    \dimexpr
+      (
+        \l__ltxtalk_header_height_dim-\headsep
+        -\__ltxtalk_tuc_header_content_height:
+      )/2
+    \relax
+  }
+% \ldeen{Y-Position von Logo, Trennstrich und oberster Textzeile innerhalb
+%   der Kopfzeilenfläche. Deren interner Nullpunkt liegt um \cs{headsep}
+%   \emph{oberhalb} des sichtbar bleibenden Bereichs (derselbe \cs{headsep},
+%   der die sichtbare Fläche gegenüber \cs{l__ltxtalk_header_height_dim}
+%   verkürzt); der obere Randabstand wird deshalb ab diesem verschobenen
+%   Nullpunkt gezählt, nicht ab der sichtbaren Oberkante.}{
+%   Y position of the logo, divider, and topmost text line within the
+%   header area. That area's internal origin sits \cs{headsep}
+%   \emph{above} the region that stays visible (the same \cs{headsep} that
+%   shortens the visible area relative to \cs{l__ltxtalk_header_height_dim});
+%   the top margin is therefore counted from that shifted origin, not from
+%   the visible top edge.}
+\cs_new:Npn \__ltxtalk_tuc_header_y_offset:
+  {\dimexpr \headsep+\__ltxtalk_tuc_header_margin_y: \relax}
+% \ldeen{Ermittelt die aktuell zu verwendende Logodatei (explizit gesetzt,
+%   Jubiläumslogo oder Standardlogo) in \cs{l__ltxtalk_tuc_logo_file_tl}.
+%   Sowohl die Anzeige des Logos als auch die Vermessung seiner Breite
+%   nutzen diese eine Stelle, damit beide nie auseinanderlaufen.}{
+%   Determines the logo file currently in effect (explicit override,
+%   anniversary logo, or default logo) into \cs{l__ltxtalk_tuc_logo_file_tl}.
+%   Both displaying the logo and measuring its width use this single
+%   place so the two can never diverge.}
+\tl_new:N \l__ltxtalk_tuc_logo_file_tl
+\cs_new_protected:Npn \__ltxtalk_tuc_set_logo_file:
+  {
+    \tl_if_blank:VTF \g__ltxtalk_tuc_logo_tl
+      {
+        \bool_if:NTF \g_ltxtalk_chemnitz_bool
+          {
+            \str_if_eq:eeTF {\languagename}{english}
+              {\tl_set:Nn \l__ltxtalk_tuc_logo_file_tl {tuckhseng_white.pdf}}
+              {\tl_set:Nn \l__ltxtalk_tuc_logo_file_tl {tuckhs_white.pdf}}
+          }
+          {\tl_set:Nn \l__ltxtalk_tuc_logo_file_tl {tuc_white.pdf}}
+      }
+      {\tl_set_eq:NN \l__ltxtalk_tuc_logo_file_tl \g__ltxtalk_tuc_logo_tl}
+  }
+% \ldeen{Vermisst die Breite, mit der das aktuelle Logo bei der aktuellen
+%   Höhe des Navigationstextblocks tatsächlich gesetzt wird, und legt sie
+%   in \cs{g__ltxtalk_tuc_header_logo_width_dim} ab. Trennstrich, Text und
+%   die linke Logospalte im schmalen Layout richten sich nach diesem Wert,
+%   damit sie unabhängig vom Seitenverhältnis des jeweiligen Logos
+%   zueinander passen.}{
+%   Measures the width at which the current logo is actually set at the
+%   current navigation-text-block height, and stores it in
+%   \cs{g__ltxtalk_tuc_header_logo_width_dim}. The divider, the text, and
+%   the left logo column in the narrow layout are all derived from this
+%   value, so they stay consistent regardless of the aspect ratio of
+%   whichever logo is in effect.}
+\dim_new:N \g__ltxtalk_tuc_header_logo_width_dim
+\cs_new_protected:Npn \__ltxtalk_tuc_measure_header_logo_width:
+  {
+    \__ltxtalk_tuc_set_logo_file:
+    \hbox_set:Nn \l_tmpa_box
+      {
+        \file_if_exist:VTF \l__ltxtalk_tuc_logo_file_tl
+          {
+            \includegraphics
+              [height=\__ltxtalk_tuc_header_content_height:,
+               keepaspectratio]
+              {\l__ltxtalk_tuc_logo_file_tl}
+          }
+          {\sffamily\bfseries TU~CHEMNITZ}
+      }
+    \dim_gset:Nn \g__ltxtalk_tuc_header_logo_width_dim {\box_wd:N \l_tmpa_box}
+  }
+% \ldeen{X-Position des Trennstrichs bzw.\ Startpunkt des Navigationstexts:
+%   Randabstand, Logobreite, nochmals Randabstand (Trennstrich), dann noch
+%   Strichstärke und Textabstand (Text). So ist der Abstand vom linken Rand
+%   zum Logo per Konstruktion gleich dem Abstand vom Logo zum Trennstrich.}{
+%   X position of the divider, and the starting point of the navigation
+%   text: margin, logo width, margin again (divider), then also rule
+%   thickness and text gap (text). This makes the distance from the left
+%   edge to the logo equal, by construction, to the distance from the logo
+%   to the divider.}
+\cs_new:Npn \__ltxtalk_tuc_header_rule_x:
+  {
+    \dimexpr
+      \c__ltxtalk_tuc_header_margin_dim
+      +\g__ltxtalk_tuc_header_logo_width_dim
+      +\c__ltxtalk_tuc_header_margin_dim
+    \relax
+  }
+\cs_new:Npn \__ltxtalk_tuc_header_text_x:
+  {
+    \dimexpr
+      \__ltxtalk_tuc_header_rule_x:
+      +\c__ltxtalk_tuc_header_rule_thickness_dim
+      +\c__ltxtalk_tuc_header_text_gap_dim
+    \relax
+  }
 \tl_gclear:N \g__ltxtalk_tuc_logo_tl
 \tl_gset:Nn \g__ltxtalk_tuc_title_logo_tl {osg.png}
 \tl_gset:Nn \g__ltxtalk_tuc_url_tl {https://www.tu-chemnitz.de/}
@@ -603,8 +740,24 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
   {\seq_gset_from_clist:Nn \g__ltxtalk_tuc_left_logos_seq {#1}}
 \NewDocumentCommand \addtucthemeleftlogo {m}
   {\seq_gput_right:Nn \g__ltxtalk_tuc_left_logos_seq {#1}}
+% \ldeen{Ein unbekannter Instanzname fiel bisher stillschweigend auf die
+%   Rückfallzeilen (Titel/Untertitel/Institut, unabhängig von der
+%   Zeilenzahl) zurück, was leicht als ignorierter Aufruf missverstanden
+%   werden kann. Ungültige Werte werden deshalb jetzt zurückgewiesen.}{
+%   An unrecognized instance name used to silently fall back to the
+%   default lines (title/subtitle/institute, regardless of the row
+%   count), which is easily mistaken for an ignored call. Invalid values
+%   are therefore now rejected.}
 \NewDocumentCommand \settucthemeheader {m}
-  {\tl_gset:Nn \g__ltxtalk_tuc_header_instance_tl {#1}}
+  {
+    \str_case:nnF {#1}
+      {{title}{}{section}{}{teaching}{}{custom}{}}
+      {
+        \msg_error:nneee { tuc-2019 } { unknown-choice }
+          { settucthemeheader } { title, section, teaching, custom } {#1}
+      }
+    \tl_gset:Nn \g__ltxtalk_tuc_header_instance_tl {#1}
+  }
 \NewDocumentCommand \settucthemeheaderlines {m m m}
   {
     \tl_gset:Nn \g__ltxtalk_tuc_header_instance_tl {custom}
@@ -624,39 +777,50 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
   }
 \NewDocumentCommand \tucwideframe {}
   {\UseLTXTalkLayout{tuc-2019-wide}}
+% \ldeen{Die Logobreite wird neu vermessen, bevor das schmale Layout die
+%   linke Spaltenbreite aus \cs{g__ltxtalk_tuc_header_logo_width_dim}
+%   übernimmt, damit sie auch bei einer zwischenzeitlich gewechselten
+%   Kopfzeilenhöhe oder einem anderen Logo aktuell ist.}{
+%   The logo width is re-measured before the narrow layout adopts the
+%   left column width from \cs{g__ltxtalk_tuc_header_logo_width_dim}, so it
+%   is current even after an intervening header-height or logo change.}
 \NewDocumentCommand \tucnarrowframe {}
-  {\UseLTXTalkLayout{tuc-2019-narrow}}
+  {
+    \__ltxtalk_tuc_measure_header_logo_width:
+    \UseLTXTalkLayout{tuc-2019-narrow}
+  }
 \NewDocumentCommand \tuctwoheader {}
   {
-    \SetLTXTalkAreaGridRows{header}{2}
     \UseLTXTalkLayout{tuc-2019-header-two}
+    \__ltxtalk_tuc_measure_header_logo_width:
   }
 \NewDocumentCommand \tucthreeheader {}
   {
-    \SetLTXTalkAreaGridRows{header}{3}
     \UseLTXTalkLayout{tuc-2019-header-three}
+    \__ltxtalk_tuc_measure_header_logo_width:
   }
 
+% \ldeen{Vermisst die Logobreite bei jeder Darstellung neu, statt sich auf
+%   einen zuvor (etwa von \cs{tucnarrowframe}) eingetragenen Wert zu
+%   verlassen: Titelseiten setzen Kopfzeilenhöhe und Zeilenzahl über einen
+%   eigenen Mechanismus, ohne die Breite eigens neu zu berechnen. Ohne
+%   diese Vermessung stünde der Trennstrich auf Titelseiten zu weit links
+%   und würde in ein (bei drei Zeilen) breiteres Logo hineinragen.}{
+%   Re-measures the logo width on every display instead of relying on a
+%   value entered earlier (say, by \cs{tucnarrowframe}): title pages set
+%   the header height and row count through their own mechanism, without
+%   separately recomputing the width. Without this measurement, the
+%   divider on title pages would sit too far left and intrude into a (with
+%   three rows) wider logo.}
 \cs_new_protected:Npn \__ltxtalk_tuc_logo:
   {
-    \tl_if_blank:VTF \g__ltxtalk_tuc_logo_tl
-      {
-        \bool_if:NTF \g_ltxtalk_chemnitz_bool
-          {
-            \str_if_eq:eeTF {\languagename}{english}
-              {\tl_set:Nn \l_tmpa_tl {tuckhseng_white.pdf}}
-              {\tl_set:Nn \l_tmpa_tl {tuckhs_white.pdf}}
-          }
-          {\tl_set:Nn \l_tmpa_tl {tuc_white.pdf}}
-      }
-      {\tl_set_eq:NN \l_tmpa_tl \g__ltxtalk_tuc_logo_tl}
-    \file_if_exist:VTF \l_tmpa_tl
+    \__ltxtalk_tuc_measure_header_logo_width:
+    \file_if_exist:VTF \l__ltxtalk_tuc_logo_file_tl
       {
         \includegraphics
-          [width=\bool_if:NTF \g_ltxtalk_chemnitz_bool {2.15cm}{1.63cm},
-           height=\IfLTXTalkTitlePageTF{1.25cm}{0.82cm},
+          [height=\__ltxtalk_tuc_header_content_height:,
            keepaspectratio]
-          {\l_tmpa_tl}
+          {\l__ltxtalk_tuc_logo_file_tl}
       }
       {\sffamily\bfseries TU~CHEMNITZ}
   }
@@ -668,20 +832,35 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
       }
       {}
   }
+% \ldeen{Wie bei \code{section} entscheidet \cs{LTXTalkHeaderRows} über
+%   zwei oder drei Zeilen; ohne diese Abfrage würde \code{title} bei
+%   gesetztem Untertitel stets die dritte Zeile befüllen und sie damit
+%   auch im Zweizeilenmodus über den unteren Rand der Kopfzeile
+%   hinausschieben.}{
+%   As with \code{section}, \cs{LTXTalkHeaderRows} decides between two and
+%   three lines; without this check, \code{title} would always populate
+%   the third line whenever a subtitle is set, pushing it past the
+%   header's bottom edge even in two-line mode.}
 \cs_new_protected:Npn \__ltxtalk_tuc_header_line:n #1
   {
     \str_case:VnF \g__ltxtalk_tuc_header_instance_tl
       {
         {title}
-          {\int_case:nnF {#1}
-            {
-              {1}{\UseLTXTalkMetadata[lines=1]{short-title}}
-              {2}{\tl_if_blank:eTF{\LTXTalkMetadata{short-subtitle}}
-                    {\UseLTXTalkMetadata[lines=1]{short-institute}}
-                    {\UseLTXTalkMetadata[lines=1]{short-subtitle}}}
-              {3}{\tl_if_blank:eF{\LTXTalkMetadata{short-subtitle}}
-                    {\UseLTXTalkMetadata[lines=1]{short-institute}}}
-            }{}}
+          {\int_compare:nNnTF {\LTXTalkHeaderRows} = {3}
+            {\int_case:nnF {#1}
+              {
+                {1}{\UseLTXTalkMetadata[lines=1]{short-title}}
+                {2}{\tl_if_blank:eTF{\LTXTalkMetadata{short-subtitle}}
+                      {\UseLTXTalkMetadata[lines=1]{short-institute}}
+                      {\UseLTXTalkMetadata[lines=1]{short-subtitle}}}
+                {3}{\tl_if_blank:eF{\LTXTalkMetadata{short-subtitle}}
+                      {\UseLTXTalkMetadata[lines=1]{short-institute}}}
+              }{}}
+            {\int_case:nnF {#1}
+              {
+                {1}{\UseLTXTalkMetadata[lines=1]{short-title}}
+                {2}{\UseLTXTalkMetadata[lines=1]{short-subtitle}}
+              }{}}}
         {section}
           {\int_compare:nNnTF {\LTXTalkHeaderRows} = {3}
             {\int_case:nn {#1}
@@ -729,26 +908,51 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
   {
     \DeclareLTXTalkLayout{tuc-2019-wide}
       {left-margin=false}
+    % \ldeen{Breite und Content-Einzug der schmalen Spalte folgen der
+    %   vermessenen Logobreite (\cs{__ltxtalk_tuc_header_rule_x:} bzw.\
+    %   \cs{__ltxtalk_tuc_header_text_x:}), damit die Logos der linken
+    %   Spalte per Konstruktion links- und rechtsbündig zum Kopfzeilenlogo
+    %   stehen.}{
+    %   The narrow column's width and content inset follow the measured
+    %   logo width (\cs{__ltxtalk_tuc_header_rule_x:} and
+    %   \cs{__ltxtalk_tuc_header_text_x:} respectively), so the left
+    %   column's logos are, by construction, left- and right-aligned with
+    %   the header logo.}
     \DeclareLTXTalkLayout{tuc-2019-narrow}
       {
         left-margin=true,
-        left-area-width=2.485cm,
-        content-inset-left=2.89cm
+        left-area-width=\__ltxtalk_tuc_header_rule_x:,
+        content-inset-left=\__ltxtalk_tuc_header_text_x:
       }
     \DeclareLTXTalkLayout{tuc-2019-header-two}
       {header-height=1.45cm,header-rows=2}
     \DeclareLTXTalkLayout{tuc-2019-header-three}
-      {header-height=1.78cm,header-rows=3}
+      {header-height=2cm,header-rows=3}
     \ltxtalksetup
       {
         header = true,
         header-height = 1.45cm,
+        header-rows = 2,
         left-margin = false,
         right-margin = false,
         footer = true,
         footer-height = 0.52cm
       }
-    
+    % \ldeen{Logo, Trennstrich und Navigationszeilen der Kopfzeile werden
+    %   nicht mehr über ein Raster positioniert (siehe unten), aber
+    %   \cs{MakeLTXTalkTitle} der Themenengine erwartet dennoch einen
+    %   Eintrag für \code{header} in der internen Zeilenzahl-Property, um
+    %   ihn für die Dauer der Titelseite zu sichern und danach
+    %   wiederherzustellen. Ein einmaliger Platzhalterwert genügt dafür.}{
+    %   The logo, divider, and navigation lines of the header are no
+    %   longer positioned via a grid (see below), but the theme engine's
+    %   \cs{MakeLTXTalkTitle} still expects a \code{header} entry in the
+    %   internal row-count property, to save and restore it for the
+    %   duration of the title page. A one-time placeholder value is
+    %   sufficient for that.}
+    \SetLTXTalkAreaGridRows{header}{2}
+    \__ltxtalk_tuc_measure_header_logo_width:
+
     \setltxtalkcolors
       {
         secondary = {HTML}{333333},
@@ -769,17 +973,37 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
     
     \setltxtalktitleplacement{frametitle=content,section=none}
 
-    \DeclareLTXTalkAreaGrid{header}
-      {0.4cm,2.485cm,0.4cm,0.4pt,0.4cm,*}{2}
+    % \ldeen{Logo, Trennstrich und Navigationszeilen werden nicht mehr über
+    %   ein Zeilenraster, sondern über explizite, aus der Logobreite und
+    %   der Höhe des Textblocks berechnete Positionen gesetzt. Das erzwingt
+    %   die fünf Ausrichtungsbedingungen (Ober-/Unterkante von Logo,
+    %   Trennstrich und Text; horizontale Ränder; vertikale Zentrierung
+    %   gegenüber der sichtbaren Kopfzeilenfläche) durch Konstruktion statt
+    %   durch Annäherung.}{
+    %   The logo, divider, and navigation lines are no longer positioned
+    %   via a row grid but via explicit positions computed from the logo
+    %   width and the text block's height. This enforces the five
+    %   alignment requirements (top/bottom edges of the logo, divider, and
+    %   text; horizontal margins; vertical centering against the visible
+    %   header area) by construction rather than by approximation.}
     \defineltxtalkslot{tuc-header-logo}{header}{custom}{role=artifact}
     \setltxtalkslotcontent{tuc-header-logo}{\__ltxtalk_tuc_logo:}
-    \PositionLTXTalkSlotInGrid{tuc-header-logo}{2}{1}{1}{3}
+    \positionltxtalkslot{tuc-header-logo}
+      {\c__ltxtalk_tuc_header_margin_dim}
+      {\__ltxtalk_tuc_header_y_offset:}
+      {\g__ltxtalk_tuc_header_logo_width_dim}
+      {\__ltxtalk_tuc_header_content_height:}
     \styleltxtalkslot{tuc-header-logo}{align=left,color=white}
 
     \defineltxtalkslot{tuc-header-rule}{header}{custom}{role=artifact}
     \setltxtalkslotcontent{tuc-header-rule}
-      {\color{white}\rule{0.4pt}{1.05cm}}
-    \PositionLTXTalkSlotInGrid{tuc-header-rule}{4}{1}{1}{3}
+      {\color{white}\rule{\c__ltxtalk_tuc_header_rule_thickness_dim}
+        {\__ltxtalk_tuc_header_content_height:}}
+    \positionltxtalkslot{tuc-header-rule}
+      {\__ltxtalk_tuc_header_rule_x:}
+      {\__ltxtalk_tuc_header_y_offset:}
+      {\c__ltxtalk_tuc_header_rule_thickness_dim}
+      {\__ltxtalk_tuc_header_content_height:}
     \styleltxtalkslot{tuc-header-rule}{align=center,color=white}
 
     \int_step_inline:nn {3}
@@ -787,7 +1011,17 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
         \defineltxtalkslot{tuc-header-##1}{header}{custom}{role=navigation}
         \setltxtalkslotcontent{tuc-header-##1}
           {\__ltxtalk_tuc_header_line:n {##1}}
-        \PositionLTXTalkSlotInGrid{tuc-header-##1}{6}{##1}{1}{1}
+        \positionltxtalkslot{tuc-header-##1}
+          {\__ltxtalk_tuc_header_text_x:}
+          {\dimexpr
+            \__ltxtalk_tuc_header_y_offset:
+            +\c__ltxtalk_tuc_header_line_dim*(##1-1)
+           \relax}
+          {\dimexpr
+            \paperwidth-\__ltxtalk_tuc_header_text_x:
+            -\c__ltxtalk_tuc_header_margin_dim
+           \relax}
+          {\c__ltxtalk_tuc_header_line_dim}
         \styleltxtalkslot{tuc-header-##1}
           {align=left,color=white,font=\footnotesize\sffamily}
       }
@@ -818,14 +1052,25 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
     \styleltxtalkslot{tuc-framesubtitle}
       {align=left,color=ltxtalk-secondary,font=\normalsize\sffamily}
 
+    % \ldeen{Jedes Logo der linken Spalte wird auf die vermessene Breite des
+    %   Kopfzeilenlogos gesetzt und dort mit demselben Randabstand
+    %   platziert wie das Kopfzeilenlogo selbst, damit beide unabhängig vom
+    %   Seitenverhältnis links- und rechtsbündig zueinander stehen.}{
+    %   Every logo in the left column is set to the measured width of the
+    %   header logo and placed there with the same margin as the header
+    %   logo itself, so the two stay left- and right-aligned regardless of
+    %   aspect ratio.}
     \defineltxtalkslot{tuc-left-logos}{left}{logo}{role=artifact,alt-text=Logos}
     \setltxtalkslotcontent{tuc-left-logos}
       {
         \seq_map_inline:Nn \g__ltxtalk_tuc_left_logos_seq
-          {\file_if_exist:nT {##1}{\includegraphics[width=2.485cm]{##1}\\[0.3cm]}}
+          {\file_if_exist:nT {##1}
+            {\includegraphics[width=\g__ltxtalk_tuc_header_logo_width_dim]{##1}\\[0.3cm]}}
       }
-    \positionltxtalkslot{tuc-left-logos}{center}{top}{2.485cm}{\textheight}
-    \styleltxtalkslot{tuc-left-logos}{align=center}
+    \positionltxtalkslot{tuc-left-logos}
+      {\c__ltxtalk_tuc_header_margin_dim}{top}
+      {\g__ltxtalk_tuc_header_logo_width_dim}{\textheight}
+    \styleltxtalkslot{tuc-left-logos}{align=left}
 
     \defineltxtalkslot{tuc-author}{footer}{custom}{role=note}
     \setltxtalkslotcontent{tuc-author}{\LTXTalkMetadata{short-author}}
@@ -860,15 +1105,40 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
       }
   }
 
+% \ldeen{Der Abstand vor dem Textblock wird aus der Kopfzeilengeometrie
+%   abgeleitet (Textstart minus Randabstand minus Logospaltenbreite), damit
+%   der Titeltextblock exakt dort beginnt, wo auch der Navigationstext der
+%   Kopfzeile beginnt (Vorgabe 4: Textblock linksbündig zur Logospalte,
+%   analog zum schmalen Layout).}{
+%   The gap before the text block is derived from the header geometry
+%   (text start minus margin minus logo column width), so the title text
+%   block starts exactly where the header's navigation text starts
+%   (requirement 4: text block left-aligned with the logo column, matching
+%   the narrow layout). This requires a fresh, synchronous measurement of
+%   the logo width here: \cs{MakeLTXTalkTitle} sets the title's own
+%   header-height and -rows synchronously, but the header itself (and thus
+%   the deferred logo measurement inside \cs{__ltxtalk_tuc_logo:}) is only
+%   built later, at shipout; without re-measuring here, this text block
+%   would compute its gap from whichever width the previous frame's
+%   header last left behind.}
 \cs_new_protected:Npn \__ltxtalk_tuc_title_osg:
   {
+    \__ltxtalk_tuc_measure_header_logo_width:
     \vspace*{2.75cm}\noindent
-    \skip_horizontal:n {\dim_eval:n{0.4cm-\LTXTalkCurrentLeftMargin}}
+    \skip_horizontal:n
+      {\dim_eval:n{\c__ltxtalk_tuc_header_margin_dim-\LTXTalkCurrentLeftMargin}}
     \begin{minipage}[t]{2.485cm}
       \vspace{0pt}\par\vspace{\dim_eval:n{-\g__ltxtalk_tuc_title_logo_raise_dim}}
       \centering\__ltxtalk_tuc_title_logo:
     \end{minipage}
-    \skip_horizontal:n {0.4cm+0.4pt+0.4cm}
+    \skip_horizontal:n
+      {
+        \dim_eval:n
+          {
+            \__ltxtalk_tuc_header_text_x:
+            -\c__ltxtalk_tuc_header_margin_dim-2.485cm
+          }
+      }
     \begin{minipage}[t]{0.62\paperwidth}
       \vspace{0pt}\sffamily
       \Large\bfseries \LTXTalkMetadata{title}\par\vspace{0.8cm}
