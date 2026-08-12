@@ -1,0 +1,10 @@
+\input regression-test
+\DocumentMetadata{}
+\documentclass[standalone,doctype=slides,profile=ltx-talk]{osglecture}
+\begin{document}
+\START
+\lecture[Short unit]{Long unit}{unit-one}
+\TYPE{adapter=\OsgLectureAdapter}
+\TYPE{unit=\OsgLectureUnitId}
+\END
+\end{document}

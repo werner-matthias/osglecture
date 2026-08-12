@@ -3,6 +3,7 @@
 \DeclareOsgLectureProfile{book}
   {
     backend = book,
+    adapter = book,
     capabilities = {longform,print},
     class = book,
     document-metadata = supported,

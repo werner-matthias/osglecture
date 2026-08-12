@@ -30,6 +30,7 @@
 \tl_new:N \l__osglecture_document_profile_tl
 \tl_new:N \l__osglecture_target_profile_class_tl
 \tl_new:N \l__osglecture_backend_tl
+\tl_new:N \l__osglecture_adapter_tl
 \tl_new:N \l__osglecture_base_class_tl
 \tl_new:N \l__osglecture_language_tl
 \tl_new:N \l__osglecture_base_options_tl
@@ -208,6 +209,11 @@
     \osglecture_profile_value:Vn
       \l__osglecture_document_profile_tl {backend}
   }
+\tl_set:Ne \l__osglecture_adapter_tl
+  {
+    \osglecture_profile_value:Vn
+      \l__osglecture_document_profile_tl {adapter}
+  }
 \tl_set:Ne \l__osglecture_base_class_tl
   {
     \osglecture_profile_value:Vn
@@ -312,6 +318,8 @@
   { \tl_use:N \l__osglecture_document_profile_tl }
 \NewExpandableDocumentCommand \OsgLectureBackend { }
   { \tl_use:N \l__osglecture_backend_tl }
+\NewExpandableDocumentCommand \OsgLectureAdapter { }
+  { \tl_use:N \l__osglecture_adapter_tl }
 \NewExpandableDocumentCommand \OsgLectureLanguage { }
   { \tl_use:N \l__osglecture_language_tl }
 \NewDocumentCommand \OsgLectureStandaloneTF { m m }
@@ -336,6 +344,8 @@
 \RequirePackage{osglecture-presitemize}
 \RequirePackage{osglecture-twocolumns}
 \ExplSyntaxOn
+\RequirePackage{osglecture-adapters}
+\exp_args:NV \OsgLectureLoadAdapter \l__osglecture_adapter_tl
 \RequirePackage{osglecture-structure}
 \RequirePackage{osglecture-references}
 \ExplSyntaxOn

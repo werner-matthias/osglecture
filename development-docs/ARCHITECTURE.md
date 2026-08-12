@@ -62,7 +62,7 @@ weitere Profile ergänzt werden, ohne die Kernklasse um Backendfälle zu
 erweitern.
 
 Der stabile Deskriptorvertrag umfasst `engine`, `capabilities`, `backend`, `class`, `doctypes`,
-`class-options`, `document-metadata`, `modes`, `mode-setup-file`,
+`adapter`, `class-options`, `document-metadata`, `modes`, `mode-setup-file`,
 `setup-file`, `course-target` und `event-target`.
 `engine` ist derzeit auf `lualatex` beschränkt. `capabilities` beschreibt
 fachliche Fähigkeiten wie `presentation`, `longform` und `print`, aber keine
@@ -70,6 +70,13 @@ externen Programme. Eine spätere tex4ht- oder Pandoc-Pipeline bleibt ein vom
 TeX-Profil getrennter Buildvertrag.
 `mode-setup-file` wird vor Aktivierung und Finalisierung des Modusgraphen
 geladen; `setup-file` danach. Nur die erste Datei darf den Graphen erweitern.
+`backend` bezeichnet die technische Backendfamilie, `adapter` die konkrete
+Abbildung der osglecture-Semantik. Fehlt `adapter`, gilt aus
+Kompatibilitätsgründen zunächst der Backendname. Mitgelieferte Profile nennen
+beide Werte ausdrücklich. Der ausgewählte Adapter wird nach Basisklasse und
+finalisiertem Modusgraphen, aber vor der Installation der öffentlichen
+Strukturwrapper geladen; dadurch kann er native Befehle sichern, ohne den
+Framebody an sich zu ziehen.
 
 Mitgeliefert werden zunächst:
 
@@ -570,6 +577,25 @@ Für den Strukturvertrag gelten folgende Invarianten:
 Zähler-Aliase sind lediglich eine mögliche Backendimplementierung. Kein Paket
 darf konkrete Beamer- oder KOMA-Zähler als bundleweite Unit-Identität
 voraussetzen.
+
+Die profilunabhängigen Gliederungsbefehle dürfen im optionalen Argument neben
+einem schlüssellosen Kurztitel die getrennten Titelprojektionen `shorttitle`,
+`toc`, `bookmark`, `running` und `nameref` sowie `label` und die native
+Nummerierungswahl führen. `subtitle` ist eine optionale semantische Ergänzung
+desselben Headings. Er eröffnet keine weitere Gliederungsebene, verbraucht
+keinen zusätzlichen Zähler und wird bei der automatischen Projektion eines
+Gliederungstitels auf den folgenden Präsentationsframe nicht als weiterer
+Frame-Titelslot gezählt. Ein Adapter beziehungsweise Design darf ihn als
+zweite Zeile desselben Headings darstellen; TOC-, Bookmark-, Running- und
+Nameref-Titel ändern sich dadurch nur bei ausdrücklicher Angabe.
+
+Der im entstehenden LaTeX-Heading-Vertrag vorgesehene Schlüssel `quote` wird
+nicht mit einer abweichenden osglecture-Semantik belegt. Der Kern darf ihn als
+Standardfeld transportieren, verspricht aber zunächst weder Darstellung noch
+portable Autorensemantik. Ein fachlich bestimmtes Epigraph aus Zitattext,
+Urheber und Quelle gehört in ein registriertes Projekt- oder Fachpaket. Ein
+solches Paket darf die Ausgabe beispielsweise auf `longform` beschränken,
+ohne daraus eine weitere Gliederungsebene zu machen.
 
 ### 3.7 Modusabhängigkeit soll semantisch bleiben
 

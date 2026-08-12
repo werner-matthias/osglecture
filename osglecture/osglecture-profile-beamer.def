@@ -3,6 +3,7 @@
 \DeclareOsgLectureProfile{beamer}
   {
     backend = beamer,
+    adapter = beamer,
     capabilities = {presentation,print},
     class = beamer,
     document-metadata = forbidden,

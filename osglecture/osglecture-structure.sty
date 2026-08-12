@@ -79,20 +79,7 @@
 \cs_new_protected:Npn \__osglecture_lecture:nnn #1#2#3
   {
     \__osglecture_unit_declare:nnn {#1}{#2}{#3}
-    \cs_if_eq:NNTF \__osglecture_native_lecture \scan_stop:
-      {
-        \cs_if_exist:NT \chapter
-          {
-            \tl_if_blank:nTF {#1}
-              { \chapter{#2} }
-              { \chapter[#1]{#2} }
-          }
-      }
-      {
-        \tl_if_blank:nTF {#1}
-          { \__osglecture_native_lecture{#2}{#3} }
-          { \__osglecture_native_lecture[#1]{#2}{#3} }
-      }
+    \osglecture_adapter_lecture:nnn {#1}{#2}{#3}
     \tl_if_empty:NT \g__osglecture_deployment_chapter_tl
       {
         \cs_if_exist:NT \thechapter
@@ -104,16 +91,10 @@
   { \tl_gset:Nn \g__osglecture_deployment_chapter_tl {#1} }
 
 \cs_if_exist:NTF \lecture
-  {
-    \cs_new_eq:NN \__osglecture_native_lecture \lecture
-    \RenewDocumentCommand \lecture { O{} m m }
-      { \__osglecture_lecture:nnn {#1}{#2}{#3} }
-  }
-  {
-    \cs_new_eq:NN \__osglecture_native_lecture \scan_stop:
-    \NewDocumentCommand \lecture { O{} m m }
-      { \__osglecture_lecture:nnn {#1}{#2}{#3} }
-  }
+  { \RenewDocumentCommand \lecture { O{} m m }
+      { \__osglecture_lecture:nnn {#1}{#2}{#3} } }
+  { \NewDocumentCommand \lecture { O{} m m }
+      { \__osglecture_lecture:nnn {#1}{#2}{#3} } }
 
 \cs_new_protected:Npn \__osglecture_result_write:
   {

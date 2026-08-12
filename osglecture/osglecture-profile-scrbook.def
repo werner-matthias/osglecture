@@ -3,6 +3,7 @@
 \DeclareOsgLectureProfile{scrbook}
   {
     backend = scrbook,
+    adapter = scrbook,
     capabilities = {longform,print},
     class = scrbook,
     document-metadata = supported,

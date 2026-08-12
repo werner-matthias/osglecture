@@ -9,6 +9,7 @@
 
 \prop_new:N \g__osglecture_profiles_prop
 \tl_new:N \l__osglecture_profile_backend_tl
+\tl_new:N \l__osglecture_profile_adapter_tl
 \tl_new:N \l__osglecture_profile_engine_tl
 \tl_new:N \l__osglecture_profile_capabilities_tl
 \tl_new:N \l__osglecture_profile_class_tl
@@ -41,6 +42,7 @@
     engine .initial:n = lualatex,
     capabilities .clist_set:N = \l__osglecture_profile_capabilities_tl,
     backend .tl_set:N = \l__osglecture_profile_backend_tl,
+    adapter .tl_set:N = \l__osglecture_profile_adapter_tl,
     class .tl_set:N = \l__osglecture_profile_class_tl,
     doctypes .clist_set:N = \l__osglecture_profile_doctypes_tl,
     class-options .tl_set:N = \l__osglecture_profile_options_tl,
@@ -61,6 +63,7 @@
 \NewDocumentCommand \DeclareOsgLectureProfile { m m }
   {
     \tl_clear:N \l__osglecture_profile_backend_tl
+    \tl_clear:N \l__osglecture_profile_adapter_tl
     \tl_set:Nn \l__osglecture_profile_engine_tl {lualatex}
     \tl_clear:N \l__osglecture_profile_capabilities_tl
     \tl_clear:N \l__osglecture_profile_class_tl
@@ -75,12 +78,17 @@
     \keys_set:nn { osglecture/profile } {#2}
     \tl_if_empty:NT \l__osglecture_profile_backend_tl
       { \msg_fatal:nnnn {osglecture-profiles}{incomplete-profile}{#1}{backend} }
+    \tl_if_empty:NT \l__osglecture_profile_adapter_tl
+      { \tl_set_eq:NN \l__osglecture_profile_adapter_tl
+          \l__osglecture_profile_backend_tl }
     \tl_if_empty:NT \l__osglecture_profile_class_tl
       { \msg_fatal:nnnn {osglecture-profiles}{incomplete-profile}{#1}{class} }
     \tl_if_empty:NT \l__osglecture_profile_doctypes_tl
       { \msg_fatal:nnnn {osglecture-profiles}{incomplete-profile}{#1}{doctypes} }
     \prop_gput:NnV \g__osglecture_profiles_prop {#1/backend}
       \l__osglecture_profile_backend_tl
+    \prop_gput:NnV \g__osglecture_profiles_prop {#1/adapter}
+      \l__osglecture_profile_adapter_tl
     \prop_gput:NnV \g__osglecture_profiles_prop {#1/engine}
       \l__osglecture_profile_engine_tl
     \prop_gput:NnV \g__osglecture_profiles_prop {#1/capabilities}

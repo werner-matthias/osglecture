@@ -1,0 +1,34 @@
+\NeedsTeXFormat{LaTeX2e}[2024/06/01]
+\ProvidesExplPackage
+  {osglecture-adapters}
+  {2026/08/12}
+  {0.1.0}
+  {Backend adapter loader for osglecture}
+
+\ExplSyntaxOn
+
+\msg_new:nnnn { osglecture-adapters } { unknown-adapter }
+  { Unknown~osglecture~adapter~'#1'. }
+  { Install~osglecture-adapter-#1.def~or~select~another~document~profile. }
+\msg_new:nnnn { osglecture-adapters } { incomplete-adapter }
+  { Adapter~'#1'~does~not~provide~'#2'. }
+  { Every~structure~adapter~must~implement~the~common~adapter~contract. }
+
+\tl_new:N \g__osglecture_adapter_name_tl
+
+\NewDocumentCommand \OsgLectureLoadAdapter { m }
+  {
+    \file_if_exist:nTF {osglecture-adapter-#1.def}
+      {
+        \tl_gset:Nn \g__osglecture_adapter_name_tl {#1}
+        \file_input:n {osglecture-adapter-#1.def}
+        \cs_if_exist:NF \osglecture_adapter_lecture:nnn
+          { \msg_fatal:nnnn {osglecture-adapters}{incomplete-adapter}
+              {#1}{lecture} }
+        \cs_if_exist:NT \osglecture_adapter_install:
+          { \osglecture_adapter_install: }
+      }
+      { \msg_fatal:nnn {osglecture-adapters}{unknown-adapter}{#1} }
+  }
+
+\ExplSyntaxOff

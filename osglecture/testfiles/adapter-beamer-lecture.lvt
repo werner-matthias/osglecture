@@ -1,0 +1,10 @@
+\input regression-test
+\documentclass[standalone,doctype=slides]{osglecture}
+\begin{document}
+\START
+\lecture[Short unit]{Long unit}{unit-one}
+\TYPE{adapter=\OsgLectureAdapter}
+\TYPE{unit=\OsgLectureUnitId}
+\TYPE{lecture=\thelecture}
+\END
+\end{document}

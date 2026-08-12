@@ -1,10 +1,11 @@
 \documentclass{osglecture}
-\usepackage{seriesexample}
 
 \begin{document}
 \lecture[Anwendung]{Anwendung des Prinzips}{application}
 
-\begin{seriessection}{Anschluss an die erste Unit}
+\section{Anschluss an die erste Unit}
+\begin{frame}
+  \frametitle{Anschluss an die erste Unit}
   Die Trennung von Inhalt und Darstellung wurde bereits in
   Abschnitt~\olref[introduction]{sec:shared-source} eingeführt.
 
@@ -13,11 +14,14 @@
     \anditem OLLM registriert die zuletzt erfolgreich gebaute Projektion
     \thereforeitem Die Quelle \finite{bleibt} unabhängig von Buildpfaden
   \end{presitemize}
-\end{seriessection}
+\end{frame}
 
-\begin{seriessection}{Beobachtung für die Adapterentwicklung}
-  Das projektlokale Environment \texttt{seriessection} überbrückt derzeit den
-  Unterschied zwischen Beamer-Frame und Langform-Abschnitt. Gerade diese kleine
-  Brücke ist ein Kandidat für einen späteren gemeinsamen Adaptervertrag.
-\end{seriessection}
+\section{Beobachtung für die Adapterentwicklung}
+\begin{frame}
+  \frametitle{Beobachtung für die Adapterentwicklung}
+  Die Quelle verwendet jetzt unmittelbar die profilunabhängige Struktur aus
+  \texttt{section}, \texttt{frame} und \texttt{frametitle}. ltx-talk und
+  Beamer behalten ihre nativen Frames; der Langformadapter setzt denselben
+  Frame als Inhaltscontainer.
+\end{frame}
 \end{document}

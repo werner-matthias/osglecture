@@ -18,8 +18,7 @@ series-minimal/
 │   ├── documentmetadata.tex
 │   ├── osglecture-profile-series-ltx-talk.def
 │   ├── projectconfig.tex
-│   ├── seriesexample-talk-modes.tex
-│   └── seriesexample.sty
+│   └── seriesexample-talk-modes.tex
 ├── 010-introduction/main.tex
 └── 020-application/main.tex
 ```
@@ -34,7 +33,8 @@ new `talk` doctype. `projectconfig.tex` contains mode-specific series metadata
 and selects concrete profiles per target: `slides` uses `beamer`, while `talk`
 uses the project-local `series-ltx-talk` profile. That profile selects the
 `ltx-talk` base class and declares `talk` as a presentation mode through its
-early `mode-setup-file`.
+early `mode-setup-file`. The `lttheme` and `lttheme-tuc-2019` regression suites
+can be run independently of this deliberately unthemed structural example.
 The long-form `script` target uses the built-in standard `book` default.
 All osglecture metadata remains available semantically. Until the planned
 bundle-owned title page is implemented, the native Book title machinery only
@@ -47,18 +47,18 @@ therefore inputs the user-owned `documentmetadata.tex` for `talk` and `script`.
 The file enables tagging. osglecture validates the resulting kernel state against the selected
 profile's `required`, `supported`, or `forbidden` capability.
 
-`seriesexample.sty` is a project-local package loaded after the class. Its
-`seriessection` environment maps one semantic source construct to a Beamer
-section plus frame in presentation mode and to an ordinary section in
-long-form mode. This helper is intentionally part of the case study: it marks
-the seam that may later move into the base-class adapter contract.
+The unit sources use the profile-independent `section`, `frame`, and
+`frametitle` interfaces directly. ltx-talk and Beamer retain their native
+normal-frame scanners, while the long-form adapter treats a frame as a content
+container and suppresses its frame title by default. No project-local
+`seriessection` bridge is needed anymore.
 
 The sources additionally exercise:
 
 - logical unit declarations with stable IDs;
 - `presitemize` as list versus connected prose;
 - presentation-default `twocolumns` behaviour;
-- project-local packages from the shared TeX directory;
+- project-local profiles and mode setup from the shared TeX directory;
 - a cross-unit `\olref` resolved through OLLM's promoted reference state.
 
 ## Build sequence
@@ -82,9 +82,10 @@ ollm build script
 The second unit then links to the matching `introduction` projection: slides,
 talk, and script each refer to the same target and language in the first
 unit. Rebuilding the second unit may be necessary after changing a label in
-the first unit. Automated
-dependency-fixpoint builds with `ollm build --resolve` remain a documented
-TODO; this example therefore states the order explicitly.
+the first unit. Automated dependency-fixpoint builds are available through
+`ollm build --resolve`; the explicit order above remains useful for showing
+the initial bootstrap in which the producing unit's logical ID is not yet
+known to OLLM.
 
 To inspect all six BuildSpecs without invoking LaTeX, run `ollm build --all
 --dry-run` once in each unit directory.
