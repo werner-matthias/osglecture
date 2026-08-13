@@ -136,6 +136,9 @@
     \twocol_parse:n {#1}
     \seq_set_split:Nnn \l_twocol_body_seq { \nextcolumn } {#2}
 
+    \par
+    \twocol_tag_begin:
+
     \twocol_set_box:NNn \l_twocol_a_box \l_twocol_a_dim
       { \seq_item:Nn \l_twocol_body_seq {1} }
 
@@ -149,8 +152,6 @@
           { \box_ht:N \l_twocol_b_box + \box_dp:N \l_twocol_b_box }
       }
 
-    \par\noindent
-    \twocol_tag_begin:
     \hbox to \linewidth
       {
         \hbox to \l_twocol_a_dim

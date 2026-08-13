@@ -3345,10 +3345,32 @@ Slots eines Teilthemes implementiert werden.
           }
       }
   }
+% \ldeen{Kein führendes \cs{par}\cs{noindent} vor dem Slot-Inhalt: Für den
+%   Slot-Typ \code{frametitle} ruft \cs{__ltxtalk_slot_content:n} die
+%   klasseneigene Funktion \cs{__talk_frame_title:n} auf, die bei aktivem
+%   Tagging den Inhalt explizit taggt und dafür \cs{tagpdfparaOff} lokal
+%   setzt. Ein vorangehender \cs{par} löst jedoch bereits den
+%   automatischen Absatz-Tagging-Hook von tagpdf für einen (leeren) Absatz
+%   aus, bevor \cs{tagpdfparaOff} greift; dieser Hook bleibt dann
+%   unausgeglichen offen und tagpdf bricht den Lauf mit \emph{"the number
+%   of automatic begin and end text-unit para hooks differ"} fatal ab.
+%   Das schließende \cs{par} nach dem Inhalt bleibt nötig, damit der Slot
+%   sauber als eigener Absatz endet, bevor nachfolgender Frame-Inhalt
+%   beginnt.}{
+%   No leading \cs{par}\cs{noindent} before the slot content: for the
+%   \code{frametitle} slot type, \cs{__ltxtalk_slot_content:n} calls the
+%   class's own \cs{__talk_frame_title:n}, which explicitly tags the
+%   content when tagging is active and locally sets \cs{tagpdfparaOff}
+%   for that. A preceding \cs{par}, however, already fires tagpdf's
+%   automatic per-paragraph tagging hook for an (empty) paragraph before
+%   \cs{tagpdfparaOff} takes effect; that hook then stays unbalanced and
+%   tagpdf aborts the run fatally with \emph{"the number of automatic
+%   begin and end text-unit para hooks differ"}. The trailing \cs{par}
+%   after the content remains necessary so the slot cleanly ends its own
+%   paragraph before subsequent frame content begins.}
 \cs_new_protected:Npn \__ltxtalk_render_content_slot_aux:w
   #1#2#3#4 \q_stop #5
   {
-    \par \noindent
     \UseInstance {lttheme-slot}{#5}{\__ltxtalk_slot_content:n {#5}}
     \par
   }
