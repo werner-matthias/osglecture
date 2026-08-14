@@ -17,6 +17,20 @@ are represented in the IR but remain unresolved by the native writer.
 
 ## Data flow and ownership
 
+The same architecture is available as a reusable TikZ figure in
+`tagpax-architecture.tikz`. Include it with:
+
+```latex
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,backgrounds,fit,positioning}
+% ...
+\begin{figure}
+  \centering
+  \resizebox{\linewidth}{!}{\input{tagpax-architecture.tikz}}
+  \caption{The tagpax semantic and PDF-writing architecture.}
+\end{figure}
+```
+
 ```text
 tagged source PDF
     |

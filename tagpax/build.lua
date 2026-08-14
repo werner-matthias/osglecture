@@ -20,15 +20,12 @@ installfiles = {
 typesetfiles = { "tagpax.dtx" }
 
 textfiles = {
-  "README.md",
-  "CHANGELOG.md",
-  "doc/*.md"
+  "README-tagpax.md",
 }
 
 docfiles = {
-  "README.md",
-  "CHANGELOG.md",
-  "doc/*.md"
+  "README-tagpax.md",
+  "*.tikz"
 }
 
 checkruns = 1
