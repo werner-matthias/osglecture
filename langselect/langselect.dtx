@@ -1065,10 +1065,18 @@ Section~@1.%
   \PackageError{\packagename}{The~options~'load~babel'~and~'load~polyglossia'
     \MessageBreak are~mutual~exclusive,~you~can't~use~both}{Use~one~load~option,~only.}
 }
+% \ldeen{Wenn bereits (etwa handgeladen, oder von der Dokumentklasse) ein
+% Sprachpaket aktiv ist, laden wir @1/@2 nicht selbst nach -- ein zweiter
+% Ladeversuch mit ggf.\ abweichenden Optionen wäre ein harter Fehler. Die
+% Zielsprache wird trotzdem weiter unten aktiviert, siehe @3.}{If a language
+% package is already active (e.g.\ loaded by hand, or by the document class),
+% we don't load @1/@2 ourselves -- a second load attempt with possibly
+% differing options would be a hard error. The target language is still
+% activated further below, see @3.}{\pkg{babel}}{\pkg{polyglossia}}{\cs{selectlanguage}}
 \bool_if:nT{
   ( \cs_if_exist_p:c{ver@babel.sty} || \cs_if_exist_p:c{ver@polyglossia.sty} )
   &&
-  ( \ols_load_babel && \ols_load_polyglossia )
+  ( \ols_load_babel || \ols_load_polyglossia )
 }{
   \bool_set_false:N \ols_load_babel
   \bool_set_false:N \ols_load_polyglossia
