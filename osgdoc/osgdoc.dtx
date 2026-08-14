@@ -49,8 +49,6 @@ targetlang={job=2},
 load babel
 ]{langselect}
 
-\def\pkgname{osgdoc}
-\def\thepkg{\pkg{\pkgname}}
 \newpackagename{\cnltx}{cnltx-doc}
 
 \makeindex
@@ -100,7 +98,7 @@ load babel
 }
 \subsection{osgdoc.cls}
 \ldeen{Die Klasse wird auf dem üblichen Weg geladen}{The class is loaded in the usual way}:
-\cs{documentclass}\oarg{options}\Marg{osgdoc}
+\cs*{documentclass}\oarg{options}\Marg{osgdoc}
 
 \ldeen*{Die Optionen und zur Verfügung gestellten Befehle der Basisklasse @1 entnehmen Sie bitte der Dokumentation des @2-Pakets.}{
   For a documentation of options and provided commands of the base class @1, please see the @2 package documentation.}{\cnltx}{\needpackage{cnltx}}
@@ -125,7 +123,7 @@ load babel
 
   \begin{quote}
     \begin{options}
-      \opt{mode}\Default{tex}
+      \opt*{mode}\Default{tex}
       \ldeen{
         Dies bestimmt, welcher Art von Guards und Kommentaren genutzt werden können, siehe folgende Tabelle.
       }{
@@ -138,8 +136,8 @@ load babel
         \code{lua}&\code{--<*\meta{Guard}>} / \code{--</\meta{Guard}>} &\code{-- \meta{\ldeen{Kommentar}{comment}}} / \code{--[[ \meta{\ldeen{Kommentar}{comment}} ]]}\\
         \code{tex/lua}&\code{\%<*\meta{Guard}>} / \code{\%</\meta{Guard}>} &\code{-- \meta{\ldeen{Kommentar}{comment}}} / \code{--[[ \meta{\ldeen{Kommentar}{comment}} ]]}\\\hline
       \end{tabular}
-      \opt{file}\ldeen{Name der Datei, die eingebunden werden soll.}{Name of file to include.}
-      \opt{guard}\ldeen{
+      \opt*{file}\ldeen{Name der Datei, die eingebunden werden soll.}{Name of file to include.}
+      \opt*{guard}\ldeen{
         Name des Guards. Es sind nur einfache Namen zulässig, keine komplexen Guardausdrücke.}{
         Name of the guard. Only simple names are allowed here, no complex guard expressions.}
     \end{options}
@@ -197,18 +195,18 @@ load babel
 \section{Implementation}
 \MaybeStop{\ldeen*{Um die Implementationsbeschreibung zu erhalten, kommentieren Sie bitte \cs{OnlyDescription} in \code{osgdoc.dtx} aus.}{To view the implementation description, please uncomment \cs{OnlyDescription} in \code{osgdoc.dtx}.}}
 
-\subsection{Class \pkgname.cls}
+\subsection{Class \osgdoc.cls}
 \AutoDocInput{osgdoc.dtx}{cls}
-\subsection{Package \pkgname.sty}
+\subsection{Package \osgdoc.sty}
 \AutoDocInput{osgdoc.dtx}{pkg}
 \end{document}
 %</driver>
 %<*cls>
 \ExplSyntaxOn
-% \ldeen*{Zunächst müssen wir @1 patchen. Dazu muss aber der nicht mehr gültige @2-Ruf abgefangen 
+% \ldeen*{Zunächst müssen wir @1 patchen. Dazu muss der nicht mehr gültige @2-Ruf abgefangen 
 %   werden.
 % }{
-% First, we need to patch @1. To do that, however, we need to intercept the @2 call, which is no longer valid. 
+% First, we need to patch @1. To do that, we need to intercept the @2 call, which is no longer valid. 
 % }{\cls*{cnltx-doc}}{\cs{AfterPackage!}}
 \AddToHook{class/scrartcl/after}{
   \NewCommandCopy{\originalAfterPackage}{\AfterPackage}
@@ -262,7 +260,7 @@ load babel
 %   loaded @4 (or @7) by then. This preserves @1's original behaviour for
 %   anyone \emph{not} doing their own language loading, while packages such as
 %   @5 (or a manual @8) get precedence whenever they are present.
-% }{\cls*{cnltx-doc}}{\code{load-preamble}}{\code{load-preamble-/+}}{\pkg{babel}}{\pkg{langselect}}{\cs{RequirePackage}}{\pkg{polyglossia}}{\cs{usepackage}[ngerman]\Marg{babel}}
+% }{\cls*{cnltx-doc}}{\code{load-preamble}}{\code{load-preamble-/+}}{\pkg{babel}}{\pkg{langselect}}{\cs*{RequirePackage}}{\pkg{polyglossia}}{\cs*{usepackage}[ngerman]\Marg{babel}}
 \declare@file@substitution{babel.sty}{}
 \AddToHook{class/cnltx-doc/before}{
   \typeout{==>~Patch~for~cnltx-doc.cls~applied!}
@@ -278,7 +276,7 @@ load babel
 %   rather than reimplementing it here a second time --, it is passed to @1 as
 %   a default. @3 ensures that any further options the user explicitly gives
 %   (e.g.\ @4, @5, @6) are likewise passed through to @1 unchanged.
-% }{\cls*{cnltx-doc}}{\code{load-preamble+}}{\cs{DeclareOption*}}{\code{load-fonts=false}}{\code{add-index}}{\code{babel-options}}
+% }{\cls*{cnltx-doc}}{\code{load-preamble+}}{\cs*{DeclareOption*}}{\code{load-fonts=false}}{\code{add-index}}{\code{babel-options}}
 \PassOptionsToClass{load-preamble+}{cnltx-doc}
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{cnltx-doc}}
 \ProcessOptions\relax
@@ -333,12 +331,12 @@ load babel
 \renewcommand{\packageformat}{\color{cnltxformalblue}\sffamily}
 % \ldeen{
 %   Manchmal ist ein Paket in einem Bundle, so dass das Verzeichnis einen anderen Namen hat.
-%   Für diese Fälle wird für die \cs{needXXX}-Macros zusätzlich eine Sternvariante zur Verfügung gestellt, die bei der URL
+%   Für diese Fälle wird für die \cs*{needXXX}-Macros zusätzlich eine Sternvariante zur Verfügung gestellt, die bei der URL
 %   nur das optionale Argument (Pfad) ausgibt.
 %   Außerdem sollte nur noch https genutzt werden.
 % }{
 %   Sometimes a package is part of a bundle, thus the directory has a different name.
-%   In these cases, an starred variant of the \cs{needXXX} macros is also provided, which, in the URL,
+%   In these cases, an starred variant of the \cs*{needXXX} macros is also provided, which, in the URL,
 %   outputs only the optional argument (path). 
 %   Also, today should https be used only.
 % }
@@ -388,8 +386,8 @@ load babel
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
 \ProvidesExplPackage
 {osgdoc}
-{2026/08/04}
-{v0.2.0}
+{2026/08/14}
+{v0.3.2}
 {small tools for documentation}
 \sys_if_engine_luatex:TF{
   \def\error{}
