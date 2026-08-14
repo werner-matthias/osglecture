@@ -33,7 +33,7 @@
 \ProvidesExplClass
 {osgdoc}
 {2026/08/14}
-{v0.3.2}
+{v0.3.3}
 {A thin wrapper around cnltx-doc}
 \ExplSyntaxOff
 %</cls>
@@ -998,9 +998,9 @@ luatexbase.add_to_callback(
 \NewDocumentCommand{\OnlyDescription}{}{
   \boolfalse{osgdocimpl}
 }
-\NewDocumentCommand{\MaybeStop}{m}{
+\NewDocumentCommand{\MaybeStop}{+m}{
   \ifbool{osgdocimpl}{
-    \def\osgterminate\relax
+    \def\osgterminate{\relax}
   }{
     #1
     \def\osgterminate{\end{document}\endinput}
