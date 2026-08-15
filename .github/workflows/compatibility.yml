@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   compatibility:
-    name: ${{ matrix.module }} · TeX Live ${{ matrix.distribution.texlive }}
+    name: ${{ matrix.component.name }} · TeX Live ${{ matrix.distribution.texlive }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
@@ -20,15 +20,34 @@ jobs:
       fail-fast: false
       max-parallel: 6
       matrix:
-        module:
-          - ollm
-          - osgdoc
-          - langselect
-          - lttheme
-          - lttheme-tuc-2019
-          - osglecture-modes
-          - osglecture
-          - tagpax
+        component:
+          - name: ollm
+            directory: ollm
+            config: build
+          - name: osgdoc
+            directory: osgdoc
+            config: build
+          - name: langselect
+            directory: langselect
+            config: build
+          - name: lttheme
+            directory: lttheme
+            config: build
+          - name: lttheme-tuc-2019
+            directory: lttheme-tuc-2019
+            config: build
+          - name: osglecture-modes-core
+            directory: osglecture-modes
+            config: core
+          - name: osglecture-modes-ltxtalk
+            directory: osglecture-modes
+            config: ltxtalk
+          - name: osglecture
+            directory: osglecture
+            config: build
+          - name: tagpax
+            directory: tagpax
+            config: build
         distribution:
           - texlive: "2024"
             image: texlive/texlive:TL2024-historic
@@ -49,15 +68,18 @@ jobs:
           lualatex --version
           l3build version
 
-      - name: Test ${{ matrix.module }}
-        working-directory: ${{ matrix.module }}
-        run: l3build check
+      - name: Test ${{ matrix.component.name }}
+        working-directory: ${{ matrix.component.directory }}
+        run: l3build check --config ${{ matrix.component.config }}
 
       - name: Show test differences
         if: failure()
         shell: bash
         run: |
-          test_dir="${{ matrix.module }}/build/test"
+          test_dir="build/test"
+          if [[ "${{ matrix.component.config }}" != "build" ]]; then
+            test_dir="build/test-${{ matrix.component.config }}"
+          fi
           if [[ ! -d "$test_dir" ]]; then
             echo "No build/test directory was produced."
             exit 0
@@ -73,10 +95,10 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v6
         with:
-          name: compatibility-${{ matrix.module }}-tl${{ matrix.distribution.texlive }}
+          name: compatibility-${{ matrix.component.name }}-tl${{ matrix.distribution.texlive }}
           path: |
-            ${{ matrix.module }}/build/test/*.diff
-            ${{ matrix.module }}/build/test/*.log
-            ${{ matrix.module }}/build/test/*.pdf
+            build/test*/*.diff
+            build/test*/*.log
+            build/test*/*.pdf
           if-no-files-found: warn
           retention-days: 7
