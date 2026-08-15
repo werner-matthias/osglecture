@@ -226,8 +226,12 @@ close $document_handle;
 
 my $old_directory = getcwd();
 chdir $temporary or die "cannot enter $temporary: $!";
-local $ENV{TEXINPUTS} = abs_path(File::Spec->catdir($old_directory, '..', 'osglecture')) . ':';
-local $ENV{TEXMFVAR} = $ENV{TEXMFVAR} // '/tmp/osglecture-texmfvar.RxNSOL';
+my $texinputs_separator = $^O eq 'MSWin32' ? ';' : ':';
+local $ENV{TEXINPUTS} =
+  abs_path(File::Spec->catdir($old_directory, '..', 'osglecture'))
+  . $texinputs_separator;
+local $ENV{TEXMFVAR} = $ENV{TEXMFVAR}
+  // File::Spec->catdir($temporary, 'texmf-var');
 open my $tex_output, '>', File::Spec->catfile($temporary, 'lualatex.out')
   or die $!;
 my $status;

@@ -83,7 +83,8 @@ my $separator = $^O eq 'MSWin32' ? ';' : ':';
 local $ENV{TEXINPUTS} = $texinputs . $separator
   . abs_path('../osglecture') . $separator
   . ($ENV{TEXINPUTS} // '');
-local $ENV{TEXMFVAR} = $ENV{TEXMFVAR} // '/tmp/osglecture-texmf-var';
+local $ENV{TEXMFVAR} = $ENV{TEXMFVAR}
+  // File::Spec->catdir($root, 'texmf-var');
 my $status = OLLM::Executor->execute(
   resolved    => $resolved,
   latexmk_rc  => abs_path('scripts/ollm-latexmk.rc'),

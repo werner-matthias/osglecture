@@ -331,6 +331,8 @@ if ($^O ne 'MSWin32') {
 my $symlink_root = tempdir(CLEANUP => 1);
 my $symlink_target = tempdir(CLEANUP => 1);
 SKIP: {
+  skip 'symbolic-link safety is covered on POSIX platforms', 1
+    if $^O eq 'MSWin32';
   skip 'symbolic links are unavailable', 1
     if !symlink($symlink_target, File::Spec->catdir(
       $symlink_root, '.osglecture',

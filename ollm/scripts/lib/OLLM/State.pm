@@ -108,7 +108,7 @@ sub promote {
   );
   die "generation already exists: $final\n" if -e $final;
   my $temporary = File::Spec->catdir(
-    $generations, ".pending-$spec->{generation_id}-$$",
+    $generations, '.pending-' . substr($spec->{generation_id}, 0, 12) . "-$$",
   );
   mkdir $temporary or die "cannot create pending generation '$temporary': $!\n";
   eval {

@@ -39,7 +39,7 @@ use version; our $VERSION = version->declare('0.11.1');
 
 use File::Basename;
 use File::Copy;
-use File::Which;
+use File::Spec;
 use Getopt::Long qw(GetOptions);
 use Pod::Usage;
 use Cwd qw(cwd getcwd);
@@ -47,6 +47,21 @@ use Term::ANSIColor;
 
 no warnings 'experimental::signatures';
 package main;
+
+sub _find_program {
+  my ($program) = @_;
+  my @extensions = $^O eq 'MSWin32'
+    ? grep { length } split /;/, ($ENV{PATHEXT} // '.COM;.EXE;.BAT;.CMD')
+    : ('');
+  for my $directory (File::Spec->path()) {
+    for my $extension (@extensions) {
+      my $candidate = File::Spec->catfile($directory, $program . $extension);
+      return $candidate if -f $candidate && -x _;
+    }
+  }
+  return;
+}
+
 #####################################
 # Config-Variablen und Defaults     #
 #####################################
@@ -300,7 +315,7 @@ sub publish(){
   # In case of restrictions, check pdf toolkit
   if (keys %deploy_restriction != 0) {
     die "Deploy restrictions are not implemented yet";
-    my $pdftk = which('pdftk');
+    my $pdftk = _find_program('pdftk');
     if (!defined($pdftk)){
       print colored('Error: Configuration requests pdf restrictions, but I can\'t find \'pdftk\'.','red');
       exit(-1);
