@@ -18,7 +18,8 @@ installfiles = {
   "osglecture-profile-*.def",
   "osglecture-osgbeamer.code.tex",
   "osglecture-presitemize.sty",
-  "osglecture-twocolumns.sty"
+  "osglecture-twocolumns.sty",
+  "osglecture-series-index.lua",
 }
 sourcefiles = {
   "osglecture.cls",
@@ -33,7 +34,8 @@ sourcefiles = {
   "osglecture-profile-*.def",
   "osglecture-osgbeamer.code.tex",
   "osglecture-presitemize.sty",
-  "osglecture-twocolumns.sty"
+  "osglecture-twocolumns.sty",
+  "osglecture-series-index.lua",
 }
 typesetfiles = { }
 textfiles = { "README.md", "ARCHITECTURE.md" }

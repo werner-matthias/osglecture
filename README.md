@@ -14,3 +14,10 @@ Currently, the following packages are included:
 * **ltxtalk-theme**: theme engine to allow easy and flexible design of themes for ltx-talk (`./lttheme`)
 * **ltxtalk-theme-tuc-2019**: presentation theme of TU Chemnitz for ltx-talk (`./lttheme-tuc-2019`)
 * **osgdoc**: support for documentation (`./osgdoc`) 
+
+## Installation
+```
+l3build check
+l3build install
+ollm doctor
+```

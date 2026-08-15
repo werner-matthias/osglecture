@@ -1,0 +1,70 @@
+\input regression-test
+\documentclass{article}
+\begin{document}
+\START
+\directlua{
+  local series_index = require("osglecture-series-index")
+  local function report(key, value)
+    texio.write_nl("log", key .. "=" .. tostring(value))
+  end
+  local parsed = assert(series_index.parse_unit_name("025as-e-side-track"))
+  report("parse-number", parsed.physical_number)
+  report("parse-scope", parsed.scope)
+  report("parse-role", parsed.role)
+  report("parse-slug", parsed.slug)
+
+  local entries = {
+    "090as-i-collection", "README.md", "040bs-slides-later",
+    "030as-script-later", "020b-slides-only", "015a-script-only",
+    "010-introduction", "not-a-unit"
+  }
+  local result = assert(series_index.analyze(entries, "010-introduction", {
+    doctype = "script", unit_scopes = {"a", "as"}
+  }))
+  report("count", rawlen(result.units))
+  report("doctype", result.doctype)
+  report("current", result.current.name)
+  report("next", result.next.name)
+  report("last-role", result.units[rawlen(result.units)].role)
+
+  local slides = assert(series_index.analyze(entries, "010-introduction", {
+    doctype = "slides", unit_scopes = {"b", "bs"}
+  }))
+  report("slides-next", slides.next.name)
+  report("different-next", slides.next.name ~= result.next.name)
+
+  local first = assert(series_index.analyze({"020-second", "010-first"}, "010-first", {
+    doctype = "talk", unit_scopes = {}
+  }))
+  report("first-previous", first.previous == nil)
+  report("first-next", first.next.name)
+
+  local missing, message = series_index.analyze({"010-first"}, "020-missing", {
+    doctype = "script", unit_scopes = {"a", "as"}
+  })
+  report("missing-result", missing == nil)
+  report("missing-message", message:match("not present") ~= nil)
+
+  local fake_lfs = {
+    attributes = function() return "directory" end,
+    currentdir = function() return "/course/015-e-background/sections" end,
+    dir = function(path)
+      assert(path == "/course")
+      local names = {".", "..", "020-processes", "015-e-background", "010-introduction"}
+      local index = 0
+      return function()
+        index = index + 1
+        return names[index]
+      end
+    end,
+  }
+  local located = assert(series_index.locate(nil, {
+    lfs = fake_lfs, doctype = "script", unit_scopes = {"a", "as"}
+  }))
+  report("located-series", located.series_directory)
+  report("located-unit", located.unit_directory)
+  report("located-previous", located.previous.name)
+  report("located-next", located.next.name)
+}
+\END
+\end{document}

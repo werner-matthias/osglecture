@@ -50,6 +50,7 @@ tex_files=(
   osglecture-modes.sty
   osglecture-modes-ltxtalk.sty
   osglecture-modes-ltxtalk.lua
+  osglecture-series-index.lua
   osglecture.cls
   osglecture-project.sty
   osglecture-structure.sty
