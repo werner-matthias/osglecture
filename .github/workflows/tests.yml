@@ -14,9 +14,22 @@ concurrency:
 
 jobs:
   test:
-    name: Current TeX Live
+    name: ${{ matrix.module }} · Current TeX Live
     runs-on: ubuntu-latest
     timeout-minutes: 45
+
+    strategy:
+      fail-fast: false
+      matrix:
+        module:
+          - ollm
+          - osgdoc
+          - langselect
+          - lttheme
+          - lttheme-tuc-2019
+          - osglecture-modes
+          - osglecture
+          - tagpax
 
     container:
       image: texlive/texlive:latest
@@ -30,7 +43,8 @@ jobs:
           lualatex --version
           l3build version
 
-      - name: Run bundle tests
+      - name: Test ${{ matrix.module }}
+        working-directory: ${{ matrix.module }}
         run: l3build check
 
       - name: Show test differences
@@ -52,7 +66,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v6
         with:
-          name: test-failures
+          name: test-failures-${{ matrix.module }}
           path: |
             build/test/*.diff
             build/test/*.log
