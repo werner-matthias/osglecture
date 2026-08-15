@@ -51,8 +51,17 @@
   }
 \msg_new:nnn { osglecture-references } { unknown-option }
   { Unknown~reference-address~key~'#1'. }
-\msg_new:nnn { osglecture-references } { missing-document }
-  { No~reference~export~is~registered~for~'#1';~using~an~undefined~reference. }
+\msg_new:nnn { osglecture-references } { unknown-unit }
+  {
+    Logical~unit~'#1'~is~not~known~in~this~series.~Build~that~unit~once~
+    before~resolving~references~to~it;~using~an~undefined~reference.
+  }
+\msg_new:nnn { osglecture-references } { missing-projection }
+  {
+    Logical~unit~'#1'~is~known~as~physical~unit~'#2',~but~no~reference~
+    export~is~available~for~the~requested~document~type~and~language.~
+    Build~that~projection;~using~an~undefined~reference.
+  }
 \msg_new:nnn { osglecture-references } { missing-registration-key }
   { Reference-document~registration~does~not~define~'#1'. }
 \msg_new:nnn { osglecture-references } { replace-standard }
@@ -253,8 +262,24 @@
             \exp_after:wN \__olref_import_aux:nnn \l_tmpa_tl
           }
           {
-            \msg_warning:nnV {osglecture-references}{missing-document}
-              \l__olref_identity_tl
+            \cs_if_exist:NTF \OsgLectureSeriesUnitKnownTF
+              {
+                \exp_args:NV \OsgLectureSeriesUnitKnownTF \l__olref_unit_tl
+                  {
+                    \msg_warning:nnxx
+                      {osglecture-references}{missing-projection}
+                      {\l__olref_unit_tl}
+                      {\OsgLectureSeriesPhysicalUnit{\l__olref_unit_tl}}
+                  }
+                  {
+                    \msg_warning:nnV {osglecture-references}{unknown-unit}
+                      \l__olref_unit_tl
+                  }
+              }
+              {
+                \msg_warning:nnV {osglecture-references}{unknown-unit}
+                  \l__olref_unit_tl
+              }
           }
         \prop_gput:NVn
           \g__olref_imported_prop \l__olref_identity_tl {true}

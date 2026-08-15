@@ -83,6 +83,8 @@ my $separator = $^O eq 'MSWin32' ? ';' : ':';
 local $ENV{TEXINPUTS} = $texinputs . $separator
   . abs_path('../osglecture') . $separator
   . ($ENV{TEXINPUTS} // '');
+local $ENV{LUAINPUTS} = abs_path('../osglecture') . $separator
+  . ($ENV{LUAINPUTS} // '');
 local $ENV{TEXMFVAR} = $ENV{TEXMFVAR}
   // File::Spec->catdir($root, 'texmf-var');
 my $status = OLLM::Executor->execute(
@@ -154,6 +156,54 @@ is_deeply $consumer_result->{dependencies}, [{
   label => 'sec:scheduling',
   target_generation => $resolved->{build_spec}{generation_id},
 }], 'the promoted consumer records its actual external document dependency';
+
+my $unknown_consumer = File::Spec->catdir($root, '040-unknown-consumer');
+make_path($unknown_consumer);
+open my $unknown_source, '>:raw',
+  File::Spec->catfile($unknown_consumer, 'main.tex') or die $!;
+print {$unknown_source} <<'TEX';
+\documentclass[doctype=script]{osglecture}
+\begin{document}
+\lecture{Unknown consumer}{unknown-consumer}
+See \olref[never-built]{missing-label}.
+\end{document}
+TEX
+close $unknown_source;
+my $unknown_resolved = OLLM::Config->resolve_request(
+  start_dir       => $unknown_consumer,
+  definitions_dir => abs_path('scripts/definitions'),
+  plan => {
+    action => 'build', all => 0, dry_run => 0, latexmk_args => ['-silent'],
+    legacy_args => [], non_interactive => 1, rebuild => 0, resolve => 0,
+    source => 'main.tex', target => 'script',
+  },
+);
+is(
+  OLLM::Executor->execute(
+    resolved => $unknown_resolved,
+    latexmk_rc => abs_path('scripts/ollm-latexmk.rc'),
+  ),
+  0,
+  'an unresolved logical unit remains a normal LaTeX build result',
+);
+my $unknown_spec = $unknown_resolved->{build_spec};
+open my $unknown_log, '<:raw', File::Spec->catfile(
+  $unknown_spec->{build_directory}, "$unknown_spec->{job_id}.log",
+) or die $!;
+my $unknown_log_text = do { local $/; <$unknown_log> };
+close $unknown_log;
+like $unknown_log_text,
+  qr/Logical unit 'never-built' is not known.*in this series/s,
+  'LaTeX explains that an unknown logical unit must first be built';
+eval {
+  OLLM::Resolver->execute(
+    resolved => $unknown_resolved,
+    latexmk_rc => abs_path('scripts/ollm-latexmk.rc'),
+  );
+};
+like $@,
+  qr/physical unit is unknown; build that unit once before resolving references/,
+  '--resolve reports the unknown mapping instead of searching every unit';
 
 open $source, '>:raw', File::Spec->catfile($unit, 'main.tex') or die $!;
 print {$source} <<'TEX';

@@ -1,6 +1,7 @@
 -- osglecture-series-index.lua -- doctype-specific physical series index
 
 local series_index = {}
+local active_index
 
 local separator = package.config:sub(1, 1)
 
@@ -132,6 +133,48 @@ function series_index.locate(start_path, options)
     path = parent
   end
   return nil, "no series-unit directory found above " .. tostring(start_path or lfs.currentdir())
+end
+
+function series_index.initialize(start_path, context)
+  local result, error_message = series_index.locate(start_path, context)
+  if not result then return nil, error_message end
+  active_index = result
+  return result
+end
+
+function series_index.current()
+  return active_index
+end
+
+function series_index.initialize_tex(start_path, context)
+  local result, error_message = series_index.initialize(start_path, context)
+  if not result then return nil, error_message end
+  local function set(name, value)
+    token.set_macro(name, value == nil and "" or tostring(value), "global")
+  end
+  set("OsgLectureSeriesAvailableFlag", "1")
+  set("OsgLectureSeriesPosition", result.position)
+  set("OsgLectureSeriesCurrentPhysicalUnit", result.current.name)
+  set("OsgLectureSeriesPreviousPhysicalUnit",
+    result.previous and result.previous.name or "")
+  set("OsgLectureSeriesNextPhysicalUnit",
+    result.next and result.next.name or "")
+  return result
+end
+
+function series_index.initialize_tex_csv(start_path, doctype, scopes_csv)
+  local scopes = {}
+  for scope in string.gmatch(scopes_csv or "", "[^,]+") do
+    table.insert(scopes, scope)
+  end
+  local result, error_message = series_index.initialize_tex(start_path, {
+    doctype = doctype,
+    unit_scopes = scopes,
+  })
+  if not result then
+    tex.error("osglecture series index initialization failed", {error_message})
+  end
+  return result
 end
 
 return series_index

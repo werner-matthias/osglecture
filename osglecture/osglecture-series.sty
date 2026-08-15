@@ -1,0 +1,105 @@
+\NeedsTeXFormat{LaTeX2e}[2022/06/01]
+\ProvidesExplPackage
+  {osglecture-series}
+  {2026/08/15}
+  {0.1.0}
+  {Series index bridge for osglecture}
+
+\ExplSyntaxOn
+
+\cs_new:Npn \OsgLectureSeriesAvailableFlag { 0 }
+\cs_new:Npn \OsgLectureSeriesPosition { }
+\cs_new:Npn \OsgLectureSeriesCurrentPhysicalUnit { }
+\cs_new:Npn \OsgLectureSeriesPreviousPhysicalUnit { }
+\cs_new:Npn \OsgLectureSeriesNextPhysicalUnit { }
+
+\prop_new:N \g__osglecture_series_physical_to_logical_prop
+\prop_new:N \g__osglecture_series_logical_to_physical_prop
+\tl_new:N \l__osglecture_series_physical_tl
+\tl_new:N \l__osglecture_series_logical_tl
+
+\msg_new:nnnn { osglecture-series } { index-failed }
+  { Cannot~initialize~the~series~index:~#1 }
+  { Check~the~source~directory~and~the~target's~unit_scopes. }
+
+\NewDocumentCommand \OsgLectureSeriesAvailableTF { m m }
+  {
+    \str_if_eq:eeTF { \OsgLectureSeriesAvailableFlag } { 1 } {#1} {#2}
+  }
+
+\msg_new:nnn { osglecture-series } { inconsistent-unit }
+  { Inconsistent~physical/logical~series-unit~mapping:~#1. }
+
+\keys_define:nn { osglecture/series-unit }
+  {
+    physical .tl_set:N = \l__osglecture_series_physical_tl,
+    unit .tl_set:N = \l__osglecture_series_logical_tl,
+  }
+
+\NewDocumentCommand \OsgLectureSeriesUnit { m }
+  {
+    \tl_clear:N \l__osglecture_series_physical_tl
+    \tl_clear:N \l__osglecture_series_logical_tl
+    \keys_set:nn { osglecture/series-unit } {#1}
+    \prop_get:NVNT \g__osglecture_series_physical_to_logical_prop
+      \l__osglecture_series_physical_tl \l_tmpa_tl
+      {
+        \tl_if_eq:VVF \l_tmpa_tl \l__osglecture_series_logical_tl
+          {
+            \msg_error:nnx { osglecture-series } { inconsistent-unit }
+              {
+                physical~unit~'\l__osglecture_series_physical_tl'~maps~to~both~
+                '\l_tmpa_tl'~and~'\l__osglecture_series_logical_tl'
+              }
+          }
+      }
+    \prop_get:NVNT \g__osglecture_series_logical_to_physical_prop
+      \l__osglecture_series_logical_tl \l_tmpa_tl
+      {
+        \tl_if_eq:VVF \l_tmpa_tl \l__osglecture_series_physical_tl
+          {
+            \msg_error:nnx { osglecture-series } { inconsistent-unit }
+              {
+                logical~unit~'\l__osglecture_series_logical_tl'~maps~to~both~
+                '\l_tmpa_tl'~and~'\l__osglecture_series_physical_tl'
+              }
+          }
+      }
+    \prop_gput:NVV \g__osglecture_series_physical_to_logical_prop
+      \l__osglecture_series_physical_tl \l__osglecture_series_logical_tl
+    \prop_gput:NVV \g__osglecture_series_logical_to_physical_prop
+      \l__osglecture_series_logical_tl \l__osglecture_series_physical_tl
+  }
+
+\NewExpandableDocumentCommand \OsgLectureSeriesLogicalUnit { m }
+  { \prop_item:Nn \g__osglecture_series_physical_to_logical_prop {#1} }
+\NewExpandableDocumentCommand \OsgLectureSeriesPhysicalUnit { m }
+  { \prop_item:Nn \g__osglecture_series_logical_to_physical_prop {#1} }
+\NewDocumentCommand \OsgLectureSeriesUnitKnownTF { m m m }
+  {
+    \prop_if_in:NnTF \g__osglecture_series_logical_to_physical_prop
+      {#1} {#2} {#3}
+  }
+
+\cs_new_protected:Npn \__osglecture_series_initialize:nnn #1#2#3
+  {
+    \directlua{
+      require("osglecture-series-index").initialize_tex_csv(
+        "\luaescapestring{#1}", "\luaescapestring{#2}",
+        "\luaescapestring{#3}")
+    }
+  }
+
+\OsgLectureBuildLoadedTF
+  {
+    \tl_if_empty:eF { \OsgLectureBuildValue{source-directory} }
+      {
+        \exp_args:Neee \__osglecture_series_initialize:nnn
+          { \OsgLectureBuildValue{source-directory} }
+          { \OsgLectureBuildValue{doctype} }
+          { \OsgLectureBuildValue{applicable-unit-scopes} }
+      }
+  }
+  { }
+
+\ExplSyntaxOff

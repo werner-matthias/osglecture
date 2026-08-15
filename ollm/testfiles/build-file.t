@@ -51,6 +51,8 @@ is $spec->{shell_escape}, 'restricted',
   'manifest shell-escape policy reaches the build specification';
 is $spec->{profile_class}, 'longform',
   'target profile class reaches the build specification';
+is_deeply $spec->{applicable_unit_scopes}, ['a', 'as'],
+  'target unit scopes reach the build specification';
 is $spec->{document_metadata_policy}, 'required',
   'project target overrides the definition metadata policy';
 is $spec->{shared_tex_directory},
@@ -163,6 +165,10 @@ like $content, qr/job-id=\{bs-020-script-de-processes\}/,
   'rendered build file binds itself to the job id';
 like $content, qr/profile-class=\{longform\}/,
   'rendered build file contains only the target profile class';
+like $content, qr/applicable-unit-scopes=\{a,as\}/,
+  'rendered build file contains the doctype-specific unit scopes';
+like $content, qr/source-directory=\{[^}]*020-processes\}/,
+  'rendered build file identifies the source unit directory';
 like $content, qr/document-metadata-policy=\{required\}/,
   'rendered build file contains the effective early metadata policy';
 like $content, qr/shared-tex-directory=\{[^}]*Include\}/,

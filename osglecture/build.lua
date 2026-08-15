@@ -20,6 +20,7 @@ installfiles = {
   "osglecture-presitemize.sty",
   "osglecture-twocolumns.sty",
   "osglecture-series-index.lua",
+  "osglecture-series.sty",
 }
 sourcefiles = {
   "osglecture.cls",
@@ -36,6 +37,7 @@ sourcefiles = {
   "osglecture-presitemize.sty",
   "osglecture-twocolumns.sty",
   "osglecture-series-index.lua",
+  "osglecture-series.sty",
 }
 typesetfiles = { }
 textfiles = { "README.md", "ARCHITECTURE.md" }

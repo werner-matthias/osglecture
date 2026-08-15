@@ -98,6 +98,9 @@ my $registry_text = do { local $/; <$registry> };
 close $registry;
 like $registry_text, qr/unit=\{processes\}/,
   'registry exposes the logical unit identity';
+like $registry_text,
+  qr/\\OsgLectureSeriesUnit\{physical=\{020-processes\},unit=\{processes\}\}/,
+  'registry exposes the general physical/logical series-unit mapping';
 like $registry_text, qr/reference[.]osgref/,
   'registry points at the promoted reference projection';
 like $registry_text, qr/document[.]pdf/,

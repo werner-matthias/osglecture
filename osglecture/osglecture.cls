@@ -329,6 +329,7 @@
       { \OsgLectureBuildLoadedTF {#2} {#1} }
   }
 
+\RequirePackage{osglecture-series}
 \RequirePackage{osglecture-metadata}
 \ExplSyntaxOn
 \exp_args:Nx \OsgLectureConfigureMetadata

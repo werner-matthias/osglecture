@@ -59,6 +59,8 @@
     document-metadata-policy .choices:nn = { required, disabled }
       { \__osglecture_build_put:nn {document-metadata-policy} {#1} },
     doctype             .code:n = \__osglecture_build_put:nn {doctype} {#1},
+    applicable-unit-scopes .code:n =
+      \__osglecture_build_put:nn {applicable-unit-scopes} {#1},
     language            .code:n = \__osglecture_build_put:nn {language} {#1},
     available-languages .code:n =
       \__osglecture_build_put:nn {available-languages} {#1},
@@ -66,6 +68,8 @@
       \__osglecture_build_put:nn {bundle-preset} {#1},
     shared-tex-directory .code:n =
       \__osglecture_build_put:nn {shared-tex-directory} {#1},
+    source-directory .code:n =
+      \__osglecture_build_put:nn {source-directory} {#1},
     project-config-file .code:n =
       \__osglecture_build_put:nn {project-config-file} {#1},
     shell-escape        .code:n =
@@ -81,8 +85,9 @@
     \clist_map_inline:nn
       {schema,job-id,context,series-id,physical-unit,physical-number,
        unit-scope,unit-role,target,profile-class,document-metadata-policy,
-       doctype,language,
+       doctype,applicable-unit-scopes,language,
        available-languages,bundle-preset,
+       source-directory,
        structure-signature,
        config-signature}
       {

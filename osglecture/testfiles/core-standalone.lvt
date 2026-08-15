@@ -8,5 +8,9 @@
 \TYPE{doctype=\OsgLectureDocumentType}
 \TYPE{profile=\OsgLectureDocumentProfile}
 \TYPE{backend=\OsgLectureBackend}
+\OsgLectureSeriesAvailableTF
+  {\TYPE{series=true}}
+  {\TYPE{series=false}}
+\TYPE{series-position=\OsgLectureSeriesPosition}
 \END
 \end{document}
