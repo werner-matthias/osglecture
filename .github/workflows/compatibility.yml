@@ -1,0 +1,82 @@
+name: Distribution compatibility
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: compatibility-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compatibility:
+    name: ${{ matrix.module }} · TeX Live ${{ matrix.distribution.texlive }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        module:
+          - ollm
+          - osgdoc
+          - langselect
+          - lttheme
+          - lttheme-tuc-2019
+          - osglecture-modes
+          - osglecture
+          - tagpax
+        distribution:
+          - texlive: "2024"
+            image: texlive/texlive:TL2024-historic
+          - texlive: "2025"
+            image: texlive/texlive:TL2025-historic
+          - texlive: current
+            image: texlive/texlive:latest
+
+    container:
+      image: ${{ matrix.distribution.image }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Show environment
+        run: |
+          lualatex --version
+          l3build version
+
+      - name: Test ${{ matrix.module }}
+        working-directory: ${{ matrix.module }}
+        run: l3build check
+
+      - name: Show test differences
+        if: failure()
+        shell: bash
+        run: |
+          test_dir="${{ matrix.module }}/build/test"
+          if [[ ! -d "$test_dir" ]]; then
+            echo "No build/test directory was produced."
+            exit 0
+          fi
+
+          while IFS= read -r file; do
+            echo "::group::$file"
+            sed -n '1,500p' "$file"
+            echo "::endgroup::"
+          done < <(find "$test_dir" -type f -name '*.diff' -print)
+
+      - name: Upload failed test output
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: compatibility-${{ matrix.module }}-tl${{ matrix.distribution.texlive }}
+          path: |
+            ${{ matrix.module }}/build/test/*.diff
+            ${{ matrix.module }}/build/test/*.log
+            ${{ matrix.module }}/build/test/*.pdf
+          if-no-files-found: warn
+          retention-days: 7
