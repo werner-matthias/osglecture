@@ -13,12 +13,12 @@ use lib 'scripts/vendor/TOML-Tiny-0.22/lib';
 use lib 'scripts/lib';
 
 use OLLM::Config;
+use OLLM::CLI;
 use OLLM::Executor;
 use OLLM::Resolver;
 use OLLM::State;
 
-my $latexmk = qx{command -v latexmk 2>/dev/null};
-chomp $latexmk;
+my $latexmk = OLLM::CLI::_find_program('latexmk');
 if (!$latexmk) {
   plan skip_all => 'latexmk is not available';
 }

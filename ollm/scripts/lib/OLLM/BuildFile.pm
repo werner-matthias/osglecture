@@ -275,8 +275,9 @@ sub _logical_ordinal {
 sub write_atomic {
   my ($class, $path, $content) = @_;
   my ($volume, $directories, $filename) = File::Spec->splitpath($path);
-  $directories = '.' if $directories eq '';
-  my ($handle, $temporary) = tempfile('.ollm-build-XXXXXX', DIR => $directories);
+  my $directory = File::Spec->catpath($volume, $directories, '');
+  $directory = '.' if $directory eq '';
+  my ($handle, $temporary) = tempfile('.ollm-build-XXXXXX', DIR => $directory);
   binmode $handle, ':raw';
   print {$handle} $content or die "cannot write '$temporary': $!";
   close $handle or die "cannot close '$temporary': $!";

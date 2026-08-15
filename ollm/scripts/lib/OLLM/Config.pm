@@ -375,11 +375,11 @@ sub find_manifest {
     if ($arg{legacy}) {
       die "--legacy --config requires a Perl manifest, not '$path'"
         if $path !~ /\.pl\z/i;
-      return { kind => 'legacy', path => abs_path($path) };
+      return { kind => 'legacy', path => _canonical_path($path) };
     }
     die "--config accepts only a TOML manifest; use --legacy for '$path'"
       if $path !~ /\.toml\z/i;
-    return { kind => 'toml', path => abs_path($path) };
+    return { kind => 'toml', path => _canonical_path($path) };
   }
 
   if (defined $arg{project_root}) {
@@ -917,15 +917,22 @@ sub _manifest_in {
   my $toml = File::Spec->catfile($directory, 'ollmconfig.toml');
   my $perl = File::Spec->catfile($directory, 'ollmconfig.pl');
   if ($legacy) {
-    return { kind => 'legacy', path => abs_path($perl) } if -f $perl;
+    return { kind => 'legacy', path => _canonical_path($perl) } if -f $perl;
     die "no ollmconfig.pl found in project root $directory" if $required;
     return { kind => 'none' };
   }
-  return { kind => 'toml', path => abs_path($toml) } if -f $toml;
+  return { kind => 'toml', path => _canonical_path($toml) } if -f $toml;
   die "no ollmconfig.toml found in project root $directory"
     if $required;
-  return { kind => 'legacy-unselected', path => abs_path($perl) } if -f $perl;
+  return { kind => 'legacy-unselected', path => _canonical_path($perl) }
+    if -f $perl;
   return { kind => 'none' };
+}
+
+sub _canonical_path {
+  my ($path) = @_;
+  my $absolute = abs_path($path);
+  return defined $absolute ? File::Spec->canonpath($absolute) : undef;
 }
 
 sub _absolute_directory {

@@ -61,7 +61,7 @@ is $spec->{project_config_file}, 'projectconfig.tex',
 like $spec->{project_config_signature}, qr/\A[0-9a-f]{64}\z/,
   'project configuration contents are signed into the build contract';
 like $spec->{build_directory},
-  qr{[.]osglecture/build/020-processes/script/de\z},
+  qr{[.]osglecture[\\/]build[\\/]020-processes[\\/]script[\\/]de\z},
   'build directory is isolated by unit, target, and language';
 is $spec->{aux_directory}, $spec->{build_directory},
   'auxiliary state stays inside the isolated build directory';
