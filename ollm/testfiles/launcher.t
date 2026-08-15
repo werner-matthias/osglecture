@@ -11,7 +11,7 @@ use lib 'scripts/lib';
 
 my $version = qx{$^X scripts/ollm --version};
 is $?, 0, 'version exits successfully';
-like $version, qr/^ollm 0\.12\.0-dev/m, 'version is reported';
+like $version, qr/^ollm 0\.13\.0-dev/m, 'version is reported';
 
 my $outside = File::Temp::tempdir(CLEANUP => 1);
 my $launcher = Cwd::abs_path('scripts/ollm');
