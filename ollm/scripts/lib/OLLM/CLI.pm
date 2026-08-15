@@ -6,7 +6,9 @@ use warnings;
 
 use Cwd qw(abs_path getcwd);
 use File::Basename qw(dirname);
+use File::Path qw(make_path);
 use File::Spec;
+use File::Temp qw(tempdir);
 use JSON::PP;
 use OLLM::Config;
 use OLLM::Path;
@@ -23,6 +25,7 @@ my %TARGET_ALIAS = (
   script       => 'script',
   slides       => 'slides',
 );
+my $DOCTOR_TEXMF_DIRECTORY;
 
 sub run {
   my ($class, %arg) = @_;
@@ -794,20 +797,43 @@ sub _doctor {
   }
   my @checks = map { _program_doctor_check($_) }
     qw(perl latexmk lualatex kpsewhich);
-  my $ok = !grep { !defined $_->{found} } @checks;
+  my $ok = !grep { !$_->{ok} } @checks;
   my $parser = OLLM::Config->parser_info;
   $ok = 0 if !$parser->{available};
 
   my ($kpsewhich_check) = grep { $_->{program} eq 'kpsewhich' } @checks;
   my $kpsewhich = $kpsewhich_check->{found};
   my @tex_files = (
-    map({ _kpsewhich_check($_, 1, $kpsewhich) } qw(
+    map({ _kpsewhich_check($_, 1, $kpsewhich, 'osglecture') } qw(
       osglecture.cls osglecture-project.sty osglecture-structure.sty
-      hyperref.sty
     )),
-    map({ _kpsewhich_check($_, 0, $kpsewhich) } qw(varioref.sty tagpdf.sty tagpax.sty)),
+    _kpsewhich_check('hyperref.sty', 1, $kpsewhich, 'hyperref'),
+    map({ _kpsewhich_check($_, 0, $kpsewhich, $_ eq 'varioref.sty' ? 'tools' : $_ =~ /tagpax/ ? 'tagpax' : 'latex-lab') }
+      qw(varioref.sty tagpdf.sty tagpax.sty)),
   );
   $ok = 0 if grep { $_->{required} && !$_->{ok} } @tex_files;
+
+  my ($lualatex_check) = grep { $_->{program} eq 'lualatex' } @checks;
+  my $runtime = _lualatex_doctor_probe($lualatex_check->{found}, 'article');
+  $ok = 0 if !$runtime->{ok};
+  my @ltxtalk_checks = (
+    _kpsewhich_check('ltx-talk.cls', 0, $kpsewhich, 'ltx-talk'),
+    _kpsewhich_check('NewCMSans10-Regular.otf', 0, $kpsewhich, 'newcomputermodern'),
+    _kpsewhich_check('NewCMSansMath-Regular.otf', 0, $kpsewhich, 'newcomputermodern'),
+  );
+  my $ltxtalk_files_ok = !grep { !$_->{ok} } @ltxtalk_checks;
+  my $ltxtalk_runtime = $ltxtalk_files_ok
+    ? _lualatex_doctor_probe($lualatex_check->{found}, 'ltx-talk')
+    : { ok => JSON::PP::false, skipped => JSON::PP::true,
+        message => 'required ltx-talk files are unavailable' };
+  my $ltxtalk_ok = $ltxtalk_files_ok && $ltxtalk_runtime->{ok};
+  my @capabilities = ({
+    name => 'ltx-talk-adapter', required => JSON::PP::false,
+    ok => $ltxtalk_ok ? JSON::PP::true : JSON::PP::false,
+    checks => \@ltxtalk_checks, runtime => $ltxtalk_runtime,
+    (!$ltxtalk_ok ? (remediation =>
+      'Update/install the TeX Live packages ltx-talk and newcomputermodern (tlmgr install ltx-talk newcomputermodern).') : ()),
+  });
 
   my $project;
   my $located = eval {
@@ -900,6 +926,8 @@ sub _doctor {
       ok      => $ok ? JSON::PP::true : JSON::PP::false,
       checks  => \@checks,
       tex_files => \@tex_files,
+      runtime => $runtime,
+      capabilities => \@capabilities,
       toml_parser => $parser,
       project => $project,
     });
@@ -913,6 +941,15 @@ sub _doctor {
     for my $file (@tex_files) {
       printf "%-10s %s\n", $file->{name},
         $file->{ok} ? $file->{path} : 'NOT FOUND';
+    }
+    printf "%-10s %s%s\n", 'LuaTeX', $runtime->{ok} ? 'OK' : 'FAILED',
+      $runtime->{format_date} ? " (LaTeX $runtime->{format_date})" : '';
+    for my $capability (@capabilities) {
+      printf "Capability %-20s %s%s\n", $capability->{name},
+        $capability->{ok} ? 'OK' : 'UNAVAILABLE',
+        $capability->{required} ? '' : ' (optional)';
+      print "  Repair: $capability->{remediation}\n"
+        if !$capability->{ok} && $capability->{remediation};
     }
     if ($parser->{available}) {
       printf "%-10s %s %s (%s)\n", 'TOML',
@@ -942,18 +979,70 @@ sub _program_doctor_check {
     my @command = $program eq 'perl' ? ($found, '-v') : ($found, '--version');
     $version = _capture_first_line(@command);
   }
-  return { program => $program, found => $found, version => $version };
+  my $ok = defined($found) && defined($version) && $version ne '';
+  return { program => $program, found => $found, version => $version,
+    ok => $ok ? JSON::PP::true : JSON::PP::false,
+    (!$ok ? (remediation => "Install $program and ensure it is available on PATH.") : ()) };
 }
 
 sub _kpsewhich_check {
-  my ($name, $required, $kpsewhich) = @_;
+  my ($name, $required, $kpsewhich, $package) = @_;
   return { name => $name, required => $required ? JSON::PP::true : JSON::PP::false,
-    ok => JSON::PP::false } if !$kpsewhich;
+    package => $package, ok => JSON::PP::false,
+    remediation => "Install the TeX Live package $package (tlmgr install $package)." }
+      if !$kpsewhich;
   my $path = _capture_first_line($kpsewhich, $name);
   return { name => $name,
     required => $required ? JSON::PP::true : JSON::PP::false,
+    package => $package,
     ok => $path ? JSON::PP::true : JSON::PP::false,
-    ($path ? (path => $path) : ()) };
+    ($path ? (path => $path) : (remediation =>
+      "Install the TeX Live package $package (tlmgr install $package).")) };
+}
+
+sub _lualatex_doctor_probe {
+  my ($lualatex, $document_class) = @_;
+  return { ok => JSON::PP::false, message => 'lualatex is unavailable' }
+    if !$lualatex;
+  $DOCTOR_TEXMF_DIRECTORY //=
+    tempdir('ollm-doctor-XXXXXX', TMPDIR => 1, CLEANUP => 1);
+  my $directory = $DOCTOR_TEXMF_DIRECTORY;
+  my $source = join '',
+    ($document_class eq 'ltx-talk' ? "\\DocumentMetadata{}" : ''),
+    "\\documentclass{$document_class}",
+    "\\makeatletter\\typeout{OLLM-DOCTOR-FORMAT:\\fmtversion}\\makeatother",
+    "\\begin{document}doctor\\end{document}";
+  my @command = ($lualatex, '-interaction=nonstopmode', '-halt-on-error',
+    "-output-directory=$directory", $source);
+  my ($closed, $exit_code, $output) = _capture_doctor_command(@command);
+  if (!$closed && $output =~ /no writeable cache path/) {
+    my $cache = File::Spec->catdir($directory, 'texmf-cache');
+    make_path($cache);
+    local $ENV{TEXMFVAR} = $cache;
+    local $ENV{TEXMFCACHE} = $cache;
+    ($closed, $exit_code, $output) = _capture_doctor_command(@command);
+  }
+  my ($format_date) = $output =~ /OLLM-DOCTOR-FORMAT:(\d{4}-\d{2}-\d{2})/;
+  my $diagnostic = $output;
+  $diagnostic =~ s/\A.*?(![^\n]*(?:\n|\z))/$1/s if $diagnostic =~ /!/;
+  $diagnostic = substr($diagnostic, -800) if length($diagnostic) > 800;
+  $diagnostic =~ s/\s+\z//;
+  return {
+    ok => $closed ? JSON::PP::true : JSON::PP::false,
+    exit_code => $exit_code,
+    document_class => $document_class,
+    (defined($format_date) ? (format_date => $format_date) : ()),
+    (!$closed ? (message => 'LuaLaTeX could not compile the runtime probe',
+      diagnostic => $diagnostic) : ()),
+  };
+}
+
+sub _capture_doctor_command {
+  my (@command) = @_;
+  open my $handle, '-|', @command or return (0, 127, "cannot start command: $!");
+  my $output = do { local $/; <$handle> // '' };
+  my $closed = close $handle;
+  return ($closed, $? >> 8, $output);
 }
 
 sub _capture_first_line {

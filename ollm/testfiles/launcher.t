@@ -74,6 +74,14 @@ like $doctor, qr/"schema"\s*:\s*"org\.osglecture\.ollm\.doctor"/,
   'doctor always emits its versioned JSON result even when a tool is missing';
 like $doctor, qr/"tex_files"\s*:/,
   'doctor reports TeX package discovery';
+like $doctor, qr/"runtime"\s*:/,
+  'doctor verifies LuaLaTeX by compiling a probe';
+like $doctor, qr/"capabilities"\s*:/,
+  'doctor reports optional integrations separately';
+like $doctor, qr/"name"\s*:\s*"ltx-talk-adapter"/,
+  'doctor isolates the optional ltx-talk adapter';
+like $doctor, qr/"package"\s*:\s*"newcomputermodern"/,
+  'doctor provides TeX Live package names for repair';
 like $doctor, qr/"project"\s*:/,
   'doctor distinguishes global and project-aware checks';
 
