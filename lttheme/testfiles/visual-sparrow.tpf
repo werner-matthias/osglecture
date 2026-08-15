@@ -9,7 +9,7 @@ endobj
 [BINARY STREAM]
 endobj
 30 0 obj
-<< /Type /Metadata /Subtype /XML /Length 12375 >>      
+<< /Type /Metadata /Subtype /XML /Length 12377 >>      
 stream
 <?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
 <x:xmpmeta xmlns:x="adobe:ns:meta/">
@@ -215,7 +215,7 @@ stream
      </rdf:li>
     </rdf:Bag>
    </pdfaExtension:schemas>
-   <pdf:Producer>luahbtex-1.24.0</pdf:Producer>
+   <pdf:Producer>luahbtex-NN.NN.NN</pdf:Producer>
    <pdf:PDFVersion>2.0</pdf:PDFVersion>
    <dc:creator>
     <rdf:Seq>
@@ -250,7 +250,7 @@ stream
    <xmp:ModifyDate>2016-05-20T09:00:00Z</xmp:ModifyDate>
    <xmp:MetadataDate>2016-05-20T09:00:00Z</xmp:MetadataDate>
    <xmpMM:DocumentID>uuid:1cfe8669-434a-4d7f-89a1-bed11912f503</xmpMM:DocumentID>
-   <xmpMM:InstanceID>uuid:61d2c078-c199-4b92-81b4-c18e0662c22d</xmpMM:InstanceID>
+   <xmpMM:InstanceID>uuid:0a57c455-157a-4141-8c19-6237d832fc80</xmpMM:InstanceID>
    <prism:complianceProfile>three</prism:complianceProfile>
    <prism:pageCount>2</prism:pageCount>
   </rdf:Description>
@@ -300,16 +300,16 @@ endobj
 [BINARY STREAM]
 endobj
 73 0 obj
-<< /Producer (luahbtex-1.24.0)/Creator <FEFF004C006100540065005800200077006900740068002000680079007000650072007200650066>/Title <FEFF005000440046002D0053006900630068007400740065007300740020006600FC00720020006C0074007400680065006D0065>/Author <FEFF00410064006100200042006500690073007000690065006C>/CreationDate (D:20160520090000Z)/ModDate (D:20160520090000Z) /Trapped /False /PTEX.FullBanner (This is LuaHBTeX, Version 1.24.0 (TeX Live 2026)) >>
+<< /Producer (LuaTeX)/Creator <FEFF004C006100540065005800200077006900740068002000680079007000650072007200650066>/Title <FEFF005000440046002D0053006900630068007400740065007300740020006600FC00720020006C0074007400680065006D0065>/Author <FEFF00410064006100200042006500690073007000690065006C>/CreationDate (D:20160520090000Z)/ModDate (D:20160520090000Z) /Trapped /False >>
 endobj
 29 0 obj
 << /Type /ObjStm /N 42 /First 312 /Filter /FlateDecode /Length 1561 >>       
 [BINARY STREAM]
 endobj
 74 0 obj
-<< /Type /XRef /Index [ 0 75 ] /Size 75 /W [ 1 2 1 ] /Root 72 0 R /Info 73 0 R /ID [ <CC67EA4CF7950E88EA170082202D1415> <CC67EA4CF7950E88EA170082202D1415> ] /Filter /FlateDecode /Length 189 >>        
+<< /Type /XRef /Index [ 0 75 ] /Size 75 /W [ 1 2 1 ] /Root 72 0 R /Info 73 0 R /ID [ <2350CAD05F8A7AF0AA4058486855344F> <2350CAD05F8A7AF0AA4058486855344F> ] /Filter /FlateDecode /Length 188 >>        
 [BINARY STREAM]
 endobj
 startxref
-28010
+27935
 %%EOF

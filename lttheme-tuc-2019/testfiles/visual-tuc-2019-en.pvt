@@ -1,4 +1,7 @@
 \DocumentMetadata{}
+\ExplSyntaxOn
+\pdfmeta_set_regression_data:
+\ExplSyntaxOff
 \documentclass{ltx-talk}
 \usepackage[english]{babel}
 \usepackage[chemnitz2025]{ltxtalk-theme-tuc-2019}

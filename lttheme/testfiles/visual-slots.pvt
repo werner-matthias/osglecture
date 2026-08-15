@@ -1,4 +1,7 @@
 \DocumentMetadata{}
+\ExplSyntaxOn
+\pdfmeta_set_regression_data:
+\ExplSyntaxOff
 \documentclass{ltx-talk}
 
 \usepackage{ltxtalk-theme}
