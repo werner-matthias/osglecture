@@ -6,6 +6,17 @@ maindir = ".."
 checkdeps = { "../lttheme" }
 typesetdeps = { "../lttheme" }
 
+-- Make the logos selected automatically by the theme available in l3build's
+-- isolated test directory.  A developer installation may provide these via a
+-- local TEXMF tree, but a clean CI installation deliberately does not.
+supportdir = maindir .. "/images/logos"
+checksuppfiles = {
+    "osg.png",
+    "tuc_white.pdf",
+    "tuckhs_white.pdf",
+    "tuckhseng_white.pdf",
+}
+
 
 sourcefiles = {
     "example-tuc-2019.tex",
