@@ -32,3 +32,30 @@ jobs:
 
       - name: Run bundle tests
         run: l3build check
+
+      - name: Show test differences
+        if: failure()
+        shell: bash
+        run: |
+          if [[ ! -d build/test ]]; then
+            echo "No build/test directory was produced."
+            exit 0
+          fi
+
+          while IFS= read -r file; do
+            echo "::group::$file"
+            sed -n '1,500p' "$file"
+            echo "::endgroup::"
+          done < <(find build/test -type f -name '*.diff' -print)
+
+      - name: Upload failed test output
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: test-failures
+          path: |
+            build/test/*.diff
+            build/test/*.log
+            build/test/*.pdf
+          if-no-files-found: warn
+          retention-days: 14
