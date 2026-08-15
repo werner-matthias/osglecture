@@ -43,7 +43,6 @@ use File::Which;
 use Getopt::Long qw(GetOptions);
 use Pod::Usage;
 use Cwd qw(cwd getcwd);
-use List::MoreUtils qw(firstidx);
 use Term::ANSIColor;
 
 no warnings 'experimental::signatures';
@@ -455,7 +454,13 @@ sub lect_descr($type) {
   } 
   my $topic_dir = basename(getcwd());
   my @all_dirs = doc_dirs($type);
-  my $index = firstidx { /$topic_dir/ } @all_dirs;
+  my $index = -1;
+  for my $candidate_index (0 .. $#all_dirs) {
+    if ($all_dirs[$candidate_index] =~ /$topic_dir/) {
+      $index = $candidate_index;
+      last;
+    }
+  }
   my ( $topic ) = $topic_dir=~ /[0-9][0-9][0-9][ab]?\-(.*)\s*$/;
   return ( $index,  $topic);
 }
