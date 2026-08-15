@@ -37,5 +37,8 @@ sourcefiles = {
 }
 typesetfiles = { }
 textfiles = { "README.md", "ARCHITECTURE.md" }
+checksuppfiles = {
+  "reference-source.osgref.aux",
+}
 
 dofile("../build.lua")
