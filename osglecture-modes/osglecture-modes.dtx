@@ -603,9 +603,11 @@ Text\\<slides>[3ex]
   {
     mode .tl_gset:N = \g_osglecture_modes_option_mode_tl,
     mode .initial:n = auto,
-    full .bool_gset:N =
+    native-mode-compatibility .bool_gset:N =
       \g_osglecture_modes_native_compatibility_bool,
     native-mode-compatibility .initial:n = true,
+    full .meta:n = { native-mode-compatibility = #1 },
+    full .default:n = true,
   }
 \ProcessKeyOptions [ osglecture_modes ]
 
@@ -1307,6 +1309,16 @@ Text\\<slides>[3ex]
           {#2}
           { \osglecture_modes_if_active:nT {#1} {#2} }
       }
+  }
+
+% \only is implemented specially by both beamer and ltx-talk and no longer
+% passes through their common overlay decoders in every case. Bind it through
+% the signature-aware adapter so portable modes are handled directly while
+% native overlay specifications are still delegated unchanged.
+\bool_if:NT \g_osglecture_modes_native_compatibility_bool
+  {
+    \cs_if_exist:NT \only
+      { \MakeOverlayAwareCommand[arguments={+m}]{\only} }
   }
 
 \AddToHook{begindocument/before}{\osglecture_modes_finalize_commands:}
