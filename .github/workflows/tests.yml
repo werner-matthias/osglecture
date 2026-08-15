@@ -1,0 +1,34 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Current TeX Live
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    container:
+      image: texlive/texlive:latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Show environment
+        run: |
+          lualatex --version
+          l3build version
+
+      - name: Run bundle tests
+        run: l3build check
