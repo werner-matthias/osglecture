@@ -56,14 +56,15 @@ like $plan, qr/"schema"\s*:\s*"org\.osglecture\.ollm\.build-request"/,
   'JSON plan has a versioned schema';
 like $plan, qr/"target"\s*:\s*"slides"/, 'JSON plan contains default target';
 
-my $report = qx{$^X scripts/ollm report --project-root=../examples/series-minimal --format=json};
+my $dormant_project = Cwd::abs_path('testfiles/fixtures/project');
+my $report = qx{$^X scripts/ollm report --project-root="$dormant_project" --format=json};
 is $?, 0, 'report describes a project with dormant units successfully';
 like $report, qr/"schema"\s*:\s*"org\.osglecture\.ollm\.report"/,
   'report JSON has a versioned schema';
 like $report, qr/"status"\s*:\s*"dormant"/,
   'report exposes an unused unbuilt unit without failing';
 
-my $check = qx{$^X scripts/ollm check --project-root=../examples/series-minimal --format=json};
+my $check = qx{$^X scripts/ollm check --project-root="$dormant_project" --format=json};
 is $?, 0, 'series check does not require a dormant unit to be built';
 like $check, qr/"schema"\s*:\s*"org\.osglecture\.ollm\.check"/,
   'check JSON has a versioned schema';
