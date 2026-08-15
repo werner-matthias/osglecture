@@ -110,8 +110,10 @@ jobs:
             collection-langgerman
             ltx-talk
             tagpdf
+            show-pdf-tags
             fontawesome5
             dejavu
+            newcomputermodern
 
       - name: Show environment
         run: |
