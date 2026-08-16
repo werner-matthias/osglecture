@@ -139,10 +139,22 @@ local function directory_entries(path, lfs)
   local ok, iterator, state = pcall(lfs.dir, path)
   if not ok then return nil, iterator end
   if not iterator then return nil, state end
+  local first_ok, first = pcall(iterator, state)
+  local diagnostic = string.format(
+    "path=%q [bytes=%s]; iterator=%s; state=%s (%s); first=%s (%q)",
+    tostring(path), bytes(tostring(path)), type(iterator), type(state),
+    tostring(state), first_ok and type(first) or "error", tostring(first))
+  if not first_ok then
+    return nil, "cannot read first series-directory entry: " .. tostring(first)
+      .. "; " .. diagnostic
+  end
+  if first ~= nil and first ~= "." and first ~= ".." then
+    entries[#entries + 1] = first
+  end
   for name in iterator, state do
     if name ~= "." and name ~= ".." then entries[#entries + 1] = name end
   end
-  return entries
+  return entries, nil, diagnostic
 end
 
 function series_index.locate(start_path, options)
@@ -155,10 +167,13 @@ function series_index.locate(start_path, options)
     local name = basename(path)
     if series_index.parse_unit_name(name) then
       local root = dirname(path)
-      local entries, error_message = directory_entries(root, lfs)
+      local entries, error_message, directory_diagnostic = directory_entries(root, lfs)
       if not entries then return nil, "cannot read series directory " .. root .. ": " .. tostring(error_message) end
       local result, analyze_error = series_index.analyze(entries, name, options)
-      if not result then return nil, analyze_error end
+      if not result then
+        return nil, analyze_error .. "; directory diagnostics: "
+          .. tostring(directory_diagnostic)
+      end
       result.unit_directory = path
       result.series_directory = root
       for _, unit in ipairs(result.units) do
