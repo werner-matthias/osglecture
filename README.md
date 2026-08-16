@@ -23,3 +23,21 @@ l3build check
 l3build install
 ollm doctor
 ```
+
+## Compatibility
+In total, the bundle requires an up-to-date TeX installation.
+However, few packages run with older distributions.
+The following table show the compatibility with the TeXLive/MacTeX distributions
+of the last years.
+
+| Package          | 2024 | 2025 | 2026 |
+|------------------|:----:|:----:|:----:|
+| osglecture       | :x:  | :+1: | :+1: |
+| ollm             | :x:  | :+1: | :+1: |
+| osglecuture-mode | :+1: | :+1: | :+1: |
+| langselect       | :+1: | :+1: | :+1: |
+| tagpax           | :+1: | :+1: | :+1: |
+| lttheme          | :x:  | :x:  | :+1: |
+| ltheme-TUC2019   | :x:  | :x:  | :+1: |
+| osgdoc           | :+1: | :+1: | :+1: |
+
