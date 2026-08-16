@@ -18,6 +18,28 @@ use OLLM::Executor;
 use OLLM::Resolver;
 use OLLM::State;
 
+sub _execute_and_preserve_log {
+  my ($resolved, $latexmk_rc, $label) = @_;
+  my $status = OLLM::Executor->execute(
+    resolved => $resolved,
+    latexmk_rc => $latexmk_rc,
+  );
+  if ($status) {
+    my $spec = $resolved->{build_spec};
+    my $source = File::Spec->catfile(
+      $spec->{build_directory}, "$spec->{job_id}.log",
+    );
+    if (-f $source) {
+      my $destination = File::Spec->catdir('..', 'build', 'test');
+      make_path($destination);
+      copy($source, File::Spec->catfile(
+        $destination, "ollm-reference-lifecycle-$label.log",
+      )) or warn "cannot preserve failed lifecycle log '$source': $!\n";
+    }
+  }
+  return $status;
+}
+
 my $latexmk = OLLM::CLI::_find_program('latexmk');
 if (!$latexmk) {
   plan skip_all => 'latexmk is not available';
@@ -80,16 +102,19 @@ ok !defined($resolved->{build_spec}{unit_id}),
   'first concrete BuildSpec has no slug-derived logical unit-id';
 
 my $separator = $^O eq 'MSWin32' ? ';' : ':';
-local $ENV{TEXINPUTS} = $texinputs . $separator
-  . abs_path('../osglecture') . $separator
+my $osglecture_path = abs_path('../osglecture');
+$osglecture_path =~ s{\\}{/}g;
+my $texinputs_path = $texinputs;
+$texinputs_path =~ s{\\}{/}g;
+local $ENV{TEXINPUTS} = $texinputs_path . $separator
+  . $osglecture_path . $separator
   . ($ENV{TEXINPUTS} // '');
-local $ENV{LUAINPUTS} = abs_path('../osglecture') . $separator
+local $ENV{LUAINPUTS} = $osglecture_path . $separator
   . ($ENV{LUAINPUTS} // '');
 local $ENV{TEXMFVAR} = $ENV{TEXMFVAR}
   // File::Spec->catdir($root, 'texmf-var');
-my $status = OLLM::Executor->execute(
-  resolved    => $resolved,
-  latexmk_rc  => abs_path('scripts/ollm-latexmk.rc'),
+my $status = _execute_and_preserve_log(
+  $resolved, abs_path('scripts/ollm-latexmk.rc'), 'producer-initial',
 );
 is $status, 0, 'a real LuaLaTeX build completes and promotes its state';
 is(
@@ -133,9 +158,8 @@ my $consumer_resolved = OLLM::Config->resolve_request(
     source => 'main.tex', target => 'script',
   },
 );
-my $consumer_status = OLLM::Executor->execute(
-  resolved    => $consumer_resolved,
-  latexmk_rc  => abs_path('scripts/ollm-latexmk.rc'),
+my $consumer_status = _execute_and_preserve_log(
+  $consumer_resolved, abs_path('scripts/ollm-latexmk.rc'), 'consumer',
 );
 is $consumer_status, 0,
   'a second unit resolves and promotes an external reference';
@@ -179,9 +203,9 @@ my $unknown_resolved = OLLM::Config->resolve_request(
   },
 );
 is(
-  OLLM::Executor->execute(
-    resolved => $unknown_resolved,
-    latexmk_rc => abs_path('scripts/ollm-latexmk.rc'),
+  _execute_and_preserve_log(
+    $unknown_resolved, abs_path('scripts/ollm-latexmk.rc'),
+    'unknown-consumer',
   ),
   0,
   'an unresolved logical unit remains a normal LaTeX build result',
@@ -216,8 +240,8 @@ Lifecycle fixture.
 \end{document}
 TEX
 close $source;
-my $producer_status = OLLM::Executor->execute(
-  resolved => $resolved, latexmk_rc => abs_path('scripts/ollm-latexmk.rc'),
+my $producer_status = _execute_and_preserve_log(
+  $resolved, abs_path('scripts/ollm-latexmk.rc'), 'producer-changed',
 );
 is $producer_status, 0, 'the producer can publish a changed label generation';
 my ($changed_producer) = grep {
