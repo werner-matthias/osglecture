@@ -67,6 +67,31 @@
   report("located-unit", located.unit_directory)
   report("located-previous", located.previous.name)
   report("located-next", located.next.name)
+
+  local windows_paths = {}
+  local windows_lfs = {
+    attributes = function(path)
+      windows_paths.attributes = path
+      return "directory"
+    end,
+    currentdir = function() return "C:/course/010-introduction" end,
+    dir = function(path)
+      windows_paths.dir = path
+      local names = {".", "..", "020-processes", "010-introduction"}
+      local index = 0
+      return function()
+        index = index + 1
+        return names[index]
+      end
+    end,
+  }
+  assert(series_index.locate(nil, {
+    lfs = windows_lfs, path_separator = "\\",
+    doctype = "script", unit_scopes = {"a", "as"}
+  }))
+  report("windows-attributes-native", windows_paths.attributes ==
+    "C:\\course\\010-introduction")
+  report("windows-dir-native", windows_paths.dir == "C:\\course")
 }
 \END
 \end{document}

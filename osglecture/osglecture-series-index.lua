@@ -34,6 +34,13 @@ local function join(left, right)
   return left .. separator .. right
 end
 
+local function filesystem_path(path, path_separator)
+  if (path_separator or separator) == "\\" then
+    return (path:gsub("/", "\\"))
+  end
+  return path
+end
+
 function series_index.parse_unit_name(name)
   if type(name) ~= "string" then return nil, "unit name must be a string" end
   local number, scope, tail = name:match("^(%d%d%d)(%l*)%-(.+)$")
@@ -134,10 +141,10 @@ function series_index.analyze(entries, current_name, context)
   }
 end
 
-local function directory_entries(path, lfs)
+local function directory_entries(path, lfs, path_separator)
   local ok, result = pcall(function()
     local entries = {}
-    for name in lfs.dir(path) do
+    for name in lfs.dir(filesystem_path(path, path_separator)) do
       if name ~= "." and name ~= ".." then entries[#entries + 1] = name end
     end
     return entries
@@ -150,13 +157,17 @@ function series_index.locate(start_path, options)
   options = options or {}
   local lfs = options.lfs or require("lfs")
   local path = start_path or lfs.currentdir()
-  if lfs.attributes(path, "mode") == "file" then path = dirname(path) end
+  if lfs.attributes(filesystem_path(path, options.path_separator), "mode")
+      == "file" then
+    path = dirname(path)
+  end
 
   while true do
     local name = basename(path)
     if series_index.parse_unit_name(name) then
       local root = dirname(path)
-      local entries, error_message = directory_entries(root, lfs)
+      local entries, error_message = directory_entries(
+        root, lfs, options.path_separator)
       if not entries then return nil, "cannot read series directory " .. root .. ": " .. tostring(error_message) end
       local result, analyze_error = series_index.analyze(entries, name, options)
       if not result then return nil, analyze_error end
