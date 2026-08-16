@@ -34,10 +34,11 @@ of the last years.
 |------------------|:----:|:----:|:----:|
 | osglecture       | :x:  | :+1: | :+1: |
 | ollm             | :x:  | :+1: | :+1: |
-| osglecuture-mode | :+1: | :+1: | :+1: |
+| osglecuture-mode[^1] | :+1: | :+1: | :+1: |
 | langselect       | :+1: | :+1: | :+1: |
 | tagpax           | :+1: | :+1: | :+1: |
 | lttheme          | :x:  | :x:  | :+1: |
 | ltheme-TUC2019   | :x:  | :x:  | :+1: |
 | osgdoc           | :+1: | :+1: | :+1: |
 
+[^1]: With ltx-talk bridge 2026 only
