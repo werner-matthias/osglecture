@@ -1,0 +1,87 @@
+name: Tests · Windows
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-windows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Windows · Current TeX Live
+    runs-on: windows-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Install TeX Live
+        uses: zauguin/install-texlive@v4
+        with:
+          cache_version: 1
+          packages: >
+            scheme-small
+            l3build
+            latex-bin
+            luatex
+            luaotfload
+            latexmk
+            collection-latexrecommended
+            collection-latexextra
+            collection-luatex
+            collection-fontsrecommended
+            collection-pictures
+            collection-langenglish
+            collection-langgerman
+            ltx-talk
+            tagpdf
+            show-pdf-tags
+            fontawesome5
+            dejavu
+            newcomputermodern
+
+      - name: Show environment
+        run: |
+          lualatex --version
+          l3build version
+
+      - name: Test bundle
+        run: l3build check
+
+      - name: Test bundle installation
+        shell: pwsh
+        run: ./.github/scripts/install-smoke-test.ps1
+
+      - name: Show test differences
+        if: failure()
+        shell: pwsh
+        run: |
+          if (-not (Test-Path build/test)) {
+            Write-Output "No build/test directory was produced."
+            exit 0
+          }
+
+          Get-ChildItem build/test -Filter *.diff -File | ForEach-Object {
+            Write-Output "::group::$($_.FullName)"
+            Get-Content $_.FullName -TotalCount 500
+            Write-Output "::endgroup::"
+          }
+
+      - name: Upload failed test output
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: test-failures-Windows
+          path: |
+            build/test/*.diff
+            build/test/*.log
+            build/test/*.pdf
+          if-no-files-found: warn
+          retention-days: 14

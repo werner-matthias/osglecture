@@ -1,6 +1,8 @@
 # OSG Lecture
 
-[![Tests](https://github.com/werner-matthias/osglecture/actions/workflows/tests.yml/badge.svg)](https://github.com/werner-matthias/osglecture/actions/workflows/tests.yml)
+[![Linux](https://github.com/werner-matthias/osglecture/actions/workflows/tests-linux.yml/badge.svg)](https://github.com/werner-matthias/osglecture/actions/workflows/tests-linux.yml)
+[![macOS](https://github.com/werner-matthias/osglecture/actions/workflows/tests-macos.yml/badge.svg)](https://github.com/werner-matthias/osglecture/actions/workflows/tests-macos.yml)
+[![Windows](https://github.com/werner-matthias/osglecture/actions/workflows/tests-windows.yml/badge.svg)](https://github.com/werner-matthias/osglecture/actions/workflows/tests-windows.yml)
 
 LaTeX bundle for generating lecture materials at the Operating Systems Group at the TU Chemnitz.
 

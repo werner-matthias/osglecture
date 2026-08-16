@@ -1,0 +1,86 @@
+name: Tests · macOS
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-macos-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: macOS · Current TeX Live
+    runs-on: macos-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Install TeX Live
+        uses: zauguin/install-texlive@v4
+        with:
+          cache_version: 1
+          packages: >
+            scheme-small
+            l3build
+            latex-bin
+            luatex
+            luaotfload
+            latexmk
+            collection-latexrecommended
+            collection-latexextra
+            collection-luatex
+            collection-fontsrecommended
+            collection-pictures
+            collection-langenglish
+            collection-langgerman
+            ltx-talk
+            tagpdf
+            show-pdf-tags
+            fontawesome5
+            dejavu
+            newcomputermodern
+
+      - name: Show environment
+        run: |
+          lualatex --version
+          l3build version
+
+      - name: Test bundle
+        run: l3build check
+
+      - name: Test bundle installation
+        run: bash .github/scripts/install-smoke-test.sh
+
+      - name: Show test differences
+        if: failure()
+        shell: bash
+        run: |
+          if [[ ! -d build/test ]]; then
+            echo "No build/test directory was produced."
+            exit 0
+          fi
+
+          while IFS= read -r file; do
+            echo "::group::$file"
+            sed -n '1,500p' "$file"
+            echo "::endgroup::"
+          done < <(find build/test -type f -name '*.diff' -print)
+
+      - name: Upload failed test output
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: test-failures-macOS
+          path: |
+            build/test/*.diff
+            build/test/*.log
+            build/test/*.pdf
+          if-no-files-found: warn
+          retention-days: 14
