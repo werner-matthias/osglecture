@@ -1353,6 +1353,13 @@ PDF-Artefakte auf der LaTeX-Ebene nach logischen Unit-IDs:
 \includeunits{introduction...scheduling,appendix-posix}
 ```
 
+Implementiert ist zunächst `\includeunit`: Die Befehlsreihenfolge bestimmt
+unmittelbar die Ausgabereihenfolge. Jede logische ID wird gegen den
+jobgebundenen Snapshot aufgelöst, durch `tagpax` importiert und als verwendete
+Integrationsgeneration protokolliert. Mehrere Imports erhalten getrennte
+Namespaces für ihre externen Streams. Listen- und Bereichssyntax bleiben eine
+Komforterweiterung; sie verändern das Ordnungsprinzip nicht.
+
 `...` bezeichnet einen inklusiven Bereich in der logischen Serienreihenfolge.
 Anhänge und andere Rollen können ausdrücklich genannt werden. Die vollständige
 Integrationsmenge wird vor dem Schreiben der Seiten normalisiert. `tagpax`

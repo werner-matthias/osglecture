@@ -393,6 +393,19 @@ sub _read_dependencies {
     or die "cannot read reference-use file '$path': $!\n";
   my @dependencies;
   while (my $line = <$handle>) {
+    if ($line =~ /\\OsgLectureIntegrationUse/) {
+      my @match = $line =~
+        /\\OsgLectureIntegrationUse
+          \{([^{}]*)\}\{([^{}]*)\}\{([^{}]*)\}\{([^{}]*)\}\{([^{}]*)\}/x;
+      die "invalid integration-use record in '$path'\n" if !@match;
+      die "integration-use generation does not match the current build\n"
+        if $match[0] ne $spec->{generation_id};
+      push @dependencies, {
+        kind => 'integration', target_generation => $match[1],
+        unit_id => $match[2], doctype => $match[3], language => $match[4],
+      };
+      next;
+    }
     next if $line !~ /\\OsgLectureReferenceUse/;
     my @match = $line =~
       /\\OsgLectureReferenceUse

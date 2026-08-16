@@ -44,13 +44,16 @@ local function roots(ir)
   return list
 end
 
-local function walk_ir(filename, phase)
+local function walk_ir(filename, phase, prefix)
   -- The same deterministic traversal drives two phases. “reserve” allocates
   -- StructElems and kid slots; “bind” fills slots whose PDF objects exist only
   -- after pages have been constructed.
   local ir = ir_reader.read(filename)
   local by_parent = sorted_kids(ir)
   local mcr_serial = 0
+  local function stream_id(id)
+    return tostring(prefix or "0") .. "." .. tostring(id or "page")
+  end
 
   local function out(s)
     tex.sprint(catlatex, s)
@@ -77,7 +80,7 @@ local function walk_ir(filename, phase)
             or "\\TagPaxBackendBindMCR"
           out(string.format("%s{%d}{%s}{%s}{%s}{%s}", command,
               mcr_serial, tex_escape(kid.page or (stream and stream.page) or "0"),
-              tex_escape(kid.mcid or "0"), tex_escape(kid.stream or "page"),
+              tex_escape(kid.mcid or "0"), tex_escape(stream_id(kid.stream)),
               tex_escape(target_parent)))
         end
       elseif kid.kind == "objr" and phase == "reserve" then
@@ -105,19 +108,19 @@ local function walk_ir(filename, phase)
   if phase == "bind" then out("\\TagPaxBackendDocumentEnd") end
 end
 
-function M.emit_reservations(filename)
-  walk_ir(filename, "reserve")
+function M.emit_reservations(filename, prefix)
+  walk_ir(filename, "reserve", prefix)
 end
 
-function M.emit_bindings(filename)
-  walk_ir(filename, "bind")
+function M.emit_bindings(filename, prefix)
+  walk_ir(filename, "bind", prefix)
 end
 
 -- Compatibility entry point for callers which only need the old, monolithic
 -- emitter. Native inclusion deliberately uses the two phase API above.
-function M.emit_tex(filename)
-  M.emit_reservations(filename)
-  M.emit_bindings(filename)
+function M.emit_tex(filename, prefix)
+  M.emit_reservations(filename, prefix)
+  M.emit_bindings(filename, prefix)
 end
 
 return M

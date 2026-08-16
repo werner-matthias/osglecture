@@ -530,7 +530,12 @@ without explicit \code{macrocode} environments.
 \msg_new:nnn {tagpax}{deprecated-command}
   {Command~\token_to_str:N #1~is~deprecated;~use~\token_to_str:N #2~instead.}
 \NewDocumentCommand\tagpaxextract{O{}m}{
-  \directlua{local m=require('tagpax'); m.extract([[#2]], [[#1]]~='' and [[#1]] or nil)}
+  \directlua{
+    local m=require('tagpax')
+    local input="\luaescapestring{#2}"
+    local output="\luaescapestring{#1}"
+    m.extract(input, output ~= '' and output or nil)
+  }
 }
 \NewDocumentCommand\TagPaxExtract{O{}m}{
   \msg_warning:nnnn {tagpax}{deprecated-command}
@@ -547,12 +552,14 @@ without explicit \code{macrocode} environments.
   \tl_clear:N \l__tagpax_pagecommand_tl
   \keys_set:nn {tagpax/include}{#1}
   \directlua{require('tagpax-backend').emit_reservations(
-    [[\luaescapestring{\l__tagpax_ir_tl}]])}
+    [[\luaescapestring{\l__tagpax_ir_tl}]],
+    [[\luaescapestring{\l__tagpax_import_id_tl}]])}
   \directlua{require('tagpax-native').emit_page_imports(
     [[\luaescapestring{#2}]],[[\luaescapestring{\l__tagpax_ir_tl}]],
     [[\luaescapestring{\l__tagpax_import_id_tl}]])}
   \directlua{require('tagpax-backend').emit_bindings(
-    [[\luaescapestring{\l__tagpax_ir_tl}]])}
+    [[\luaescapestring{\l__tagpax_ir_tl}]],
+    [[\luaescapestring{\l__tagpax_import_id_tl}]])}
   \group_end:
 }
 
@@ -984,6 +991,7 @@ without explicit \code{macrocode} environments.
 
 \cs_new_protected:Npn \TagPaxBackendDocumentBegin
   {
+    \seq_gclear:N \g__tagpax_bridge_stream_seq
     \prop_gclear:N \g__tagpax_backend_node_prop
     \prop_gclear:N \g__tagpax_backend_objr_prop
     \prop_gclear:N \g__tagpax_backend_annotation_parent_prop

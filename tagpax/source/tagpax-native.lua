@@ -24,7 +24,7 @@ function M.emit_page_imports(pdf, irfile, prefix)
   local ir=ir_reader.read(irfile)
   local pages=assert(ir.source and tonumber(ir.source.pages), "IR has no source page count")
   for page=1,pages do
-    local sid="p"..page
+    local sid=tostring(prefix or "0")..".p"..page
     tex.sprint(catlatex, string.format(
       "\\TagPaxImportOnePage{%s}{%d}{%s}{%s}{%s}",
       esc(pdf),page,sid,esc(irfile),esc(prefix or "0")

@@ -359,6 +359,13 @@
 \RequirePackage{osglecture-references}
 \RequirePackage{osglecture-continuation}
 \ExplSyntaxOn
+\OsgLectureBuildLoadedTF
+  {
+    \str_if_eq:eeT {\OsgLectureBuildValue{unit-role}} {i}
+      { \RequirePackage{osglecture-integration} }
+  }
+  { }
+\ExplSyntaxOn
 
 \tl_set:Ne \l__osglecture_setup_file_tl
   {

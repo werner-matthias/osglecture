@@ -316,5 +316,26 @@ registriert externe Exporte mit
 `\OsgLectureReferenceDocument{unit=...,type=...,lang=...,aux=...,pdf=...}`
 und wird sowohl von expliziten Querreferenzen als auch von der Continuation
 gelesen. Promotion, Snapshot-Erzeugung und die Fixpunktauflösung externer
-Referenzen sind implementiert; die eigentliche `tagpax`-Dokumentintegration
-steht noch aus.
+Referenzen sind implementiert.
+
+## Dokumentintegration
+
+In einer durch ihre Verzeichnisrolle `i` gekennzeichneten Integrationsunit lädt
+die Klasse automatisch `osglecture-integration`. Beispielsweise importiert
+
+```latex
+\includeunit{introduction}
+\includeunit{application}
+```
+
+die beiden passenden Projektionen genau in Befehlsreihenfolge. Die logischen
+Unit-IDs werden gegen den jobgebundenen Snapshot für den aktuellen Doctype und
+die aktuelle Sprache aufgelöst. `tagpax` übernimmt Seiten, Struktur,
+Destinationen, Links, Inhaltsverzeichniseinträge und Outlines. Jeder Import
+wird mit seiner tatsächlich verwendeten Generation als Integrationsabhängigkeit
+protokolliert.
+
+Dieser Pfad setzt derzeit ein Tagged PDF mit `StructTreeRoot` voraus. `tagpax`
+weist ein ungetaggtes PDF momentan zurück. Ein expliziter Fallback auf
+`pdfpages` plus `newpax` ist daher noch als eigener Robustheitsmodus zu
+implementieren; er kann naturgemäß keine fehlende Dokumentstruktur herstellen.

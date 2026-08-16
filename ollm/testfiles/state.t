@@ -63,6 +63,9 @@ open my $used, '>:raw',
 print {$used}
   "\\OsgLectureReferenceUse{$generation}{", ('d' x 64),
   "}{other}{script}{de}{sec:other}{page}\n";
+print {$used}
+  "\\OsgLectureIntegrationUse{$generation}{", ('e' x 64),
+  "}{included}{script}{de}\n";
 close $used;
 
 my $published = OLLM::State->promote($spec);
@@ -84,6 +87,10 @@ is_deeply $record->{dependencies}, [{
   kind => 'external-reference', unit_id => 'other',
   doctype => 'script', language => 'de', property => 'page',
   label => 'sec:other', target_generation => 'd' x 64,
+}, {
+  kind => 'integration', unit_id => 'included',
+  doctype => 'script', language => 'de',
+  target_generation => 'e' x 64,
 }], 'actual external-document use is retained at document granularity';
 
 my %next = %$spec;

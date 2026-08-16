@@ -1,11 +1,11 @@
 # Vertical series example
 
 This example is a small end-to-end case study for the current OLLM and
-`osglecture` contracts. It contains two logical units and builds each unit as
-as a Beamer presentation (`slides`), an extended `ltx-talk` presentation
-(`talk`), and a
-long-form report (`script`). The second unit refers to a labelled section in
-the first one.
+`osglecture` contracts. It contains two logical units and one integration
+unit. Each logical unit builds as a Beamer presentation (`slides`), an
+extended `ltx-talk` presentation (`talk`), and a long-form report (`script`).
+The second unit refers to a labelled section in the first one; the integration
+unit combines both script PDFs.
 
 ## Structure
 
@@ -20,7 +20,8 @@ series-minimal/
 │   ├── projectconfig.tex
 │   └── seriesexample-talk-modes.tex
 ├── 010-introduction/main.tex
-└── 020-application/main.tex
+├── 020-application/main.tex
+└── 900-i-collection/main.tex
 ```
 
 OLLM discovers `ollmconfig.toml` from either unit directory. Shared TeX files
@@ -59,7 +60,9 @@ The sources additionally exercise:
 - `presitemize` as list versus connected prose;
 - presentation-default `twocolumns` behaviour;
 - project-local profiles and mode setup from the shared TeX directory;
-- a cross-unit `\olref` resolved through OLLM's promoted reference state.
+- a cross-unit `\olref` resolved through OLLM's promoted reference state;
+- continuation of page and section counters in the long form;
+- tagged integration through `tagpax` in `\includeunit` command order.
 
 ## Build sequence
 
@@ -77,6 +80,9 @@ cd ../020-application
 ollm build slides
 ollm build --target=talk
 ollm build script
+
+cd ../900-i-collection
+ollm build script
 ```
 
 The second unit then links to the matching `introduction` projection: slides,
@@ -87,8 +93,22 @@ the first unit. Automated dependency-fixpoint builds are available through
 the initial bootstrap in which the producing unit's logical ID is not yet
 known to OLLM.
 
-To inspect all six BuildSpecs without invoking LaTeX, run `ollm build --all
---dry-run` once in each unit directory.
+The integration unit deliberately contains no `\lecture` declaration. Its
+role comes from the directory name `900-i-collection`. It selects promoted
+script PDFs by logical Unit ID:
+
+```tex
+\includeunit{introduction}
+\includeunit{application}
+```
+
+Command order is output order. `osglecture-integration` resolves each ID
+against the job-bound registry, lets `tagpax` extract and import the tagged
+PDF, and records the exact source generation as an integration dependency for
+`ollm check` and `ollm build --resolve`.
+
+To inspect the BuildSpecs without invoking LaTeX, run `ollm build --all
+--dry-run` in the project.
 
 ## Expected defaults
 
