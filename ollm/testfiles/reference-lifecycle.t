@@ -139,6 +139,9 @@ close $continuation_export;
 like $continuation_export_text,
   qr/\\OsgLectureContinuationCounter\{section\}\{1\}/,
   'the promoted reference export contains the final section counter';
+like $continuation_export_text,
+  qr/\\OsgLectureContinuationCounter\{page\}\{2\}/,
+  'the promoted reference export contains the next physical page number';
 
 my %next = %{ $resolved->{build_spec} };
 delete $next{generation_id};
@@ -162,6 +165,7 @@ print {$consumer_source} <<'TEX';
 \documentclass[doctype=script]{osglecture}
 \begin{document}
 \lecture{Consumer}{consumer}
+\typeout{CONTINUATION-PAGE=\arabic{page}}
 \typeout{CONTINUATION-BEFORE=\arabic{section}}
 \section{Continued section}
 \typeout{CONTINUATION-AFTER=\arabic{section}}
@@ -191,6 +195,8 @@ my $consumer_log_text = do { local $/; <$consumer_log> };
 close $consumer_log;
 unlike $consumer_log_text, qr/Reference .* undefined/,
   'the external label is resolved through the promoted aux projection';
+like $consumer_log_text, qr/CONTINUATION-PAGE=2/,
+  'the consumer starts with the physical page after its predecessor';
 like $consumer_log_text, qr/CONTINUATION-BEFORE=1/,
   'the consumer imports the previous unit section counter';
 like $consumer_log_text, qr/CONTINUATION-AFTER=2/,

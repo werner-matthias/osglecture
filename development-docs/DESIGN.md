@@ -1093,6 +1093,11 @@ OLLM: Der Lua-Serienindex liefert die vorherige normale physische Unit
 (Integrationsunits werden übersprungen), LaTeX löst deren bekannte logische
 Identität auf und übernimmt den Zählerstand nach `\lecture`. Fehlt die
 promotierte Projektion, bleibt das Ergebnis mit einer Warnung lokal nummeriert.
+Der Exportzeitpunkt nach dem letzten Shipout ist für `page` beabsichtigt: Der
+Counter bezeichnet dort die letzte ausgelieferte Seite, daher exportiert die
+Continuation als nächste Seitennummer ausdrücklich `page + 1`. Andere
+konfigurierte LaTeX-Counter werden mit ihrem abschließenden Wert übernommen und
+anschließend durch ihre normalen Befehle weitergezählt.
 Beispiele:
 
 ```text

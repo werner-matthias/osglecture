@@ -56,7 +56,7 @@ absichtlich getrennte Namensräume:
   class/beamer = {framefootnotes, aspectratio=43},
   mode/longform = {
     continuation = {
-      counters = {chapter, section, figure, table, equation}
+      counters = {page, chapter, section, figure, table, equation}
     }
   },
   mode/script = {
@@ -86,6 +86,15 @@ Referenzexport für denselben Doctype und dieselbe Sprache und werden nach
 wieder zurücksetzt. `continuation={none}` schaltet die Übernahme für einen
 spezifischeren Mode aus. Ist die Vorgänger-Unit oder ihre Projektion noch nicht
 gebaut, warnt LaTeX und verwendet die normalen Anfangswerte.
+
+Es können beliebige bereits definierte LaTeX-Counter angegeben werden, etwa
+`footnote`, `theorem` oder projektspezifische Zähler. `page` ist ausdrücklich
+unterstützt: Da der Export nach dem letzten Shipout erfolgt, enthält der
+LaTeX-Counter dort die Nummer der zuletzt ausgelieferten Seite. Für `page` wird
+daher ausdrücklich der um eins erhöhte Wert exportiert; bei einer einseitigen
+ersten Unit beginnt die zweite Unit auf Seite 2. Bei Theoremumgebungen ist der
+tatsächlich besitzende Counter anzugeben, falls mehrere Umgebungen eine
+Nummerierung teilen.
 
 Der Targetvertrag liefert nur `profile-class=presentation|longform`. Die Klasse
 wählt damit zunächst einen der beiden Profilschlüssel; eine targetspezifische

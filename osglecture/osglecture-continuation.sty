@@ -121,7 +121,12 @@
             \exp_args:Ne \OsgLectureWriteReferenceExport
               {
                 \token_to_str:N \OsgLectureContinuationCounter
-                {\exp_not:n {##1}}{\int_use:c {c@##1}}
+                {\exp_not:n {##1}}
+                {
+                  \str_if_eq:nnTF {##1}{page}
+                    { \int_eval:n { \int_use:c {c@page} + 1 } }
+                    { \int_use:c {c@##1} }
+                }
               }
           }
           { \msg_warning:nnn {osglecture-continuation}{unknown-counter}{##1} }
