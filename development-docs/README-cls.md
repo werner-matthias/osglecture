@@ -36,24 +36,63 @@ nach Finalisierung des Modusgraphen angewendet:
 \author<longform>[Mustermann]{Max Mustermann}
 ```
 
-Basisklassenoptionen und TeX-Projektpolicy werden deklarativ gesetzt:
+Profile und targetspezifische Profilausnahmen werden gesondert ausgewählt:
 
 ```latex
 \LectureProjectSetup{
-  class-options={twoside,open=right},
   presentation-profile=beamer,
   longform-profile=book
 }
-\LectureProjectEnforce{theme=osg-accessible}
 \LectureTargetSetup{slides}{profile=beamer}
 \LectureTargetSetup{handout}{profile=ltx-talk}
 ```
 
+Frühe Klassenoptionen und modeabhängige osglecture-Dienste verwenden
+absichtlich getrennte Namensräume:
+
+```latex
+\OsgLectureSetup{
+  class/scrbook = {twoside, open=right, 11pt},
+  class/beamer = {framefootnotes, aspectratio=43},
+  mode/longform = {
+    continuation = {
+      counters = {chapter, section, figure, table, equation}
+    }
+  },
+  mode/script = {
+    continuation = {
+      counters = {section, figure, table, equation}
+    }
+  }
+}
+```
+
+`class/<name>` enthält unveränderte Optionen für die tatsächliche Basisklasse
+und wird vor `\LoadClass` ausgewertet. `mode/<name>` wird nach Finalisierung
+des Mode-Graphen in der Reihenfolge allgemein nach spezifisch verarbeitet.
+Darum überschreibt im Beispiel `mode/script` die Zählerliste aus
+`mode/longform`. Nackte Schlüssel wie `article` oder `beamer` sind nicht
+zulässig, weil dieselben Namen Klassen und Modes bezeichnen können.
+
+Weitere Kernmodule können mit `\DeclareOsgLectureModeSetupArea` einen eigenen
+Unterschlüssel in den Mode-Blöcken registrieren, ohne den äußeren
+`\OsgLectureSetup`-Parser zu verändern.
+
+Der Bereich `continuation` übernimmt die aufgelisteten LaTeX-Zähler aus der
+vorherigen normalen Unit der Serie. Integrationsunits werden bei der Suche nach
+dem Vorgänger übersprungen. Die Werte stammen aus deren promotiertem
+Referenzexport für denselben Doctype und dieselbe Sprache und werden nach
+`\lecture` angewandt, damit eine Basisklasse sie nicht beim Anlegen des Kapitels
+wieder zurücksetzt. `continuation={none}` schaltet die Übernahme für einen
+spezifischeren Mode aus. Ist die Vorgänger-Unit oder ihre Projektion noch nicht
+gebaut, warnt LaTeX und verwendet die normalen Anfangswerte.
+
 Der Targetvertrag liefert nur `profile-class=presentation|longform`. Die Klasse
 wählt damit zunächst einen der beiden Profilschlüssel; eine targetspezifische
-Auswahl hat Vorrang. `identity-profile`, `theme`,
-`numbering` und `references` sind bereits registriert; ihre konsumierenden
-Subsysteme sind noch TODO.
+Auswahl hat Vorrang. Die ältere Projektpolicy-Schnittstelle bleibt vorerst zur
+Kompatibilität bestehen; Referenzoptionen wie `legacy` und `replace` gehören
+jedoch weiterhin unmittelbar zu `\OsgLectureReferencesSetup` und nicht in die
+neue allgemeine Setup-Hierarchie.
 
 Metadatenfelder sind generisch erweiterbar:
 
@@ -65,10 +104,30 @@ Metadatenfelder sind generisch erweiterbar:
 Später stehen `\OsgLectureMetadataValue{supervisor}` und
 `\OsgLectureMetadataShortValue{supervisor}` zur Verfügung. Eine Metadatenvorgabe
 kann mit `\EnforceLectureProjectConfiguration{...}` verbindlich gemacht werden.
-Die Priorität lautet `Fallback < Profil < Projekt < Unit < Enforcement`. Die
-Datei ist in dieser frühen Phase keine
-allgemeine Paket- oder Imperativschnittstelle; öffentliche späte Hooks werden
-separat definiert.
+Die Priorität lautet `Fallback < Profil < Projekt < Unit < Enforcement`.
+
+Frei programmierbare Präambelfragmente werden beim frühen Lesen lediglich
+registriert und nach dem Laden der Basisklasse, der Modes und des Adapters in
+Deklarationsreihenfolge ausgeführt:
+
+```latex
+\IncludeOsgLecturePreamble{common}
+\IncludeOsgLecturePreamble<projector>{presentation}
+\IncludeOsgLecturePreamble[class=beamer]{beamer-adjustments}
+```
+
+Das Winkelargument ist stets ein Ausdruck des Mode-Graphen; insbesondere ist
+`<beamer>` ein Modus und keine Klassenbedingung. Die tatsächliche
+Basisklasse wird ausschließlich mit `class=...` ausgewählt. Beide Bedingungen
+können kombiniert werden.
+
+Für `\IncludeOsgLecturePreamble{name}` sucht die Klasse zuerst nach `name.tex`
+im konfigurierten Shared-TeX-Verzeichnis, also normalerweise neben
+`projectconfig.tex`. Anschließend sucht sie
+`osglecture-preamble-name.tex` über den normalen TeX-Suchpfad. Dadurch können
+Nutzer und das Bundle wiederverwendbare Standardfragmente bereitstellen,
+während eine projektlokale Datei stets Vorrang hat. Die Fragmente dürfen
+gewöhnliche Präambelbefehle einschließlich `\usepackage` enthalten.
 
 ## Präsentationslisten in gemeinsamer Quelle
 
@@ -242,9 +301,11 @@ sind ausschließlich innerhalb des aktuellen Dokuments sinnvoll. Der alte
 Befehl `\xrefdist` ist ein Adapter auf `\vpageref` und wird nur durch
 `legacy=true` bereitgestellt.
 
-Alle gewöhnlichen Labels werden in `<jobname>.osgref.aux` gespiegelt. Der
-derzeitige erste Implementierungsschnitt erwartet, dass ein von OLLM später
-generierter Snapshot externe Exporte mit
+Alle gewöhnlichen Labels und die konfigurierten abschließenden Zählerstände
+werden in `<jobname>.osgref.aux` gespiegelt. Der von OLLM erzeugte Snapshot
+registriert externe Exporte mit
 `\OsgLectureReferenceDocument{unit=...,type=...,lang=...,aux=...,pdf=...}`
-registriert. Promotion, Snapshot-Erzeugung, Fixpunktauflösung und die
-`tagpax`-Integrationsbefehle sind noch nicht implementiert.
+und wird sowohl von expliziten Querreferenzen als auch von der Continuation
+gelesen. Promotion, Snapshot-Erzeugung und die Fixpunktauflösung externer
+Referenzen sind implementiert; die eigentliche `tagpax`-Dokumentintegration
+steht noch aus.

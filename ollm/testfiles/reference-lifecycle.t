@@ -66,6 +66,10 @@ my $unit = File::Spec->catdir($root, '020-processes');
 my $shared = File::Spec->catdir($root, 'Include');
 make_path($unit, $shared);
 copy(
+  'testfiles/fixtures/project/Include/projectconfig.tex',
+  File::Spec->catfile($shared, 'projectconfig.tex'),
+) or die $!;
+copy(
   'testfiles/fixtures/project/ollmconfig.toml',
   File::Spec->catfile($root, 'ollmconfig.toml'),
 ) or die $!;
@@ -122,6 +126,19 @@ is(
   'processes',
   'the promoted mapping comes from the explicit lecture declaration',
 );
+my ($initial_producer) = grep {
+  $_->{physical_unit} eq '020-processes'
+} OLLM::State->_current_results($resolved->{build_spec});
+my $producer_export = File::Spec->catfile(
+  OLLM::State->_generation_directory($resolved->{build_spec}, $initial_producer),
+  'reference.osgref.aux',
+);
+open my $continuation_export, '<:raw', $producer_export or die $!;
+my $continuation_export_text = do { local $/; <$continuation_export> };
+close $continuation_export;
+like $continuation_export_text,
+  qr/\\OsgLectureContinuationCounter\{section\}\{1\}/,
+  'the promoted reference export contains the final section counter';
 
 my %next = %{ $resolved->{build_spec} };
 delete $next{generation_id};
@@ -145,6 +162,9 @@ print {$consumer_source} <<'TEX';
 \documentclass[doctype=script]{osglecture}
 \begin{document}
 \lecture{Consumer}{consumer}
+\typeout{CONTINUATION-BEFORE=\arabic{section}}
+\section{Continued section}
+\typeout{CONTINUATION-AFTER=\arabic{section}}
 See \olref[processes]{sec:scheduling}.
 \end{document}
 TEX
@@ -171,6 +191,10 @@ my $consumer_log_text = do { local $/; <$consumer_log> };
 close $consumer_log;
 unlike $consumer_log_text, qr/Reference .* undefined/,
   'the external label is resolved through the promoted aux projection';
+like $consumer_log_text, qr/CONTINUATION-BEFORE=1/,
+  'the consumer imports the previous unit section counter';
+like $consumer_log_text, qr/CONTINUATION-AFTER=2/,
+  'the next section continues the imported numbering';
 my ($consumer_result) = grep {
   $_->{physical_unit} eq '030-consumer'
 } OLLM::State->_current_results($consumer_spec);

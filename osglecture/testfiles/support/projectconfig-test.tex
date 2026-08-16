@@ -1,8 +1,17 @@
 \def\ProjectConfigLoaded{true}
 \LectureProjectSetup{
-  class-options=twoside,
   longform-profile=scrbook,
   numbering=section
+}
+\OsgLectureSetup{
+  class/scrbook = {oneside},
+  class/beamer = {framefootnotes},
+  mode/longform = {
+    continuation = {counters={chapter,section}}
+  },
+  mode/script = {
+    continuation = {counters={section,figure}}
+  }
 }
 \LectureProjectEnforce{theme=osg-accessible}
 \LectureTargetSetup{script}{profile=scrbook}
@@ -13,3 +22,10 @@
 }
 \supervisor<longform>[A.~Prof.]{Ada Professor}
 \title<longform>[P.~Title]{Project Title}
+\IncludeOsgLecturePreamble{project-preamble-common}
+\IncludeOsgLecturePreamble<article>{project-preamble-longform}
+\IncludeOsgLecturePreamble<projector>{project-preamble-projector}
+\IncludeOsgLecturePreamble[class=scrbook]{project-preamble-scrbook}
+\IncludeOsgLecturePreamble{installed-test}
+% A false condition must not try to resolve the fragment.
+\IncludeOsgLecturePreamble[class=beamer]{intentionally-missing}

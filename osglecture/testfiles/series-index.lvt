@@ -39,6 +39,13 @@
   report("first-previous", first.previous == nil)
   report("first-next", first.next.name)
 
+  local after_integration = assert(series_index.analyze({
+    "010-first", "020-i-collection", "030-third"
+  }, "030-third", {doctype = "script", unit_scopes = {}}))
+  report("physical-previous", after_integration.previous.name)
+  report("continuation-previous",
+    after_integration.previous_continuation.name)
+
   local missing, message = series_index.analyze({"010-first"}, "020-missing", {
     doctype = "script", unit_scopes = {"a", "as"}
   })

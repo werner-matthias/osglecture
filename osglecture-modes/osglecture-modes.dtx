@@ -195,6 +195,7 @@ der Klasse \cls*{osglecture} wird an dieses Paket weitergereicht.
   \command{AddLectureModes}[\marg{list}]
   \command{FinalizeLectureModes}
   \command{LectureModes}
+  \command{ActiveLectureModes}
   \command{IfLectureModeTF}[\marg{expression}\marg{true}\marg{false}]
   \command{IfLectureModeT}[\marg{expression}\marg{true}]
   \command{IfLectureModeF}[\marg{expression}\marg{false}]
@@ -582,6 +583,7 @@ Text\\<slides>[3ex]
 \prop_new:N \g_osglecture_modes_active_prop
 \seq_new:N  \g_osglecture_modes_known_seq
 \seq_new:N  \g_osglecture_modes_seed_seq
+\seq_new:N  \g_osglecture_modes_active_order_seq
 \bool_new:N \g_osglecture_modes_frozen_bool
 \bool_new:N \g_osglecture_modes_native_compatibility_bool
 \tl_new:N   \g_osglecture_modes_option_mode_tl
@@ -755,6 +757,8 @@ Text\\<slides>[3ex]
                       }
                   }
               }
+            \bool_if:NT \l_osglecture_modes_mark_active_bool
+              { \seq_gput_right:Nn \g_osglecture_modes_active_order_seq {#1} }
             \prop_remove:Nn \l_osglecture_modes_visiting_prop {#1}
             \prop_put:Nnn \l_osglecture_modes_visited_prop {#1} { }
           }
@@ -780,6 +784,7 @@ Text\\<slides>[3ex]
       {
         \osglecture_modes_validate_aliases:
         \prop_gclear:N \g_osglecture_modes_active_prop
+        \seq_gclear:N \g_osglecture_modes_active_order_seq
         \prop_clear:N \l_osglecture_modes_visiting_prop
         \prop_clear:N \l_osglecture_modes_visited_prop
         \bool_set_false:N \l_osglecture_modes_mark_active_bool
@@ -794,6 +799,8 @@ Text\\<slides>[3ex]
       }
   }
 \NewDocumentCommand \FinalizeLectureModes { } { \osglecture_modes_finalize: }
+\NewExpandableDocumentCommand \ActiveLectureModes { }
+  { \seq_use:Nn \g_osglecture_modes_active_order_seq {,} }
 
 \prg_new_conditional:Npnn \osglecture_modes_if_active:n #1 { T, F, TF }
   {
@@ -1192,7 +1199,7 @@ Text\\<slides>[3ex]
 \DeclareLectureMode[parents=presentation]{trans}
 \DeclareLectureMode{longform}
 \DeclareLectureMode[parents={longform,print}]{article}
-\DeclareLectureMode[parents={longform,print}]{script}
+\DeclareLectureMode[parents=article]{script}
 \DeclareLectureMode{print}
 \DeclareLectureMode[parents=longform]{web}
 \DeclareLectureModeAlias{slides}{projector}

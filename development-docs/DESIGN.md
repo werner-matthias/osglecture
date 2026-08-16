@@ -1057,8 +1057,9 @@ Buildverzeichnis:
 <jobname>.osgref.aux
 ```
 
-Sie enthält ausschließlich die öffentliche Referenzoberfläche des Dokuments
-und kann durch `xr`, `hyperref` oder eine L3-basierte Importschicht gelesen
+Sie enthält die öffentliche Referenzoberfläche des Dokuments sowie die für den
+aktuellen Mode konfigurierten abschließenden Zählerstände. Labels können durch
+`xr`/`hyperref`, Zählerstände durch die L3-basierte Continuation-Schicht gelesen
 werden.
 
 Die normale Build-`.aux` wird nicht veröffentlicht, da sie backend- und
@@ -1085,6 +1086,13 @@ Referenzrecord enthält Konsumenten- und Zielgeneration, Unit-ID, Doctype,
 Sprache, Label und die verwendete Property (`ref`, `page`, `name` oder
 `autoref`). Dadurch kann `check` fehlende Labels und gegenüber einer neuen
 Zielgeneration veraltete Konsumenten unterscheiden.
+
+Continuation nutzt dieselbe physisch-logische Zuordnung und denselben
+jobgebundenen Referenzsnapshot, benötigt aber keine zusätzliche Auflösung in
+OLLM: Der Lua-Serienindex liefert die vorherige normale physische Unit
+(Integrationsunits werden übersprungen), LaTeX löst deren bekannte logische
+Identität auf und übernimmt den Zählerstand nach `\lecture`. Fehlt die
+promotierte Projektion, bleibt das Ergebnis mit einer Warnung lokal nummeriert.
 Beispiele:
 
 ```text

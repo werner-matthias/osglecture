@@ -33,6 +33,8 @@
 \bool_new:N \g__olref_replacements_installed_bool
 \iow_new:N \g__olref_export_iow
 \iow_new:N \g__olref_used_iow
+\cs_generate_variant:Nn \prop_if_in:NnTF { NV }
+\cs_generate_variant:Nn \prop_get:NnN { NV }
 
 \tl_new:N \l__olref_unit_tl
 \tl_new:N \l__olref_type_tl
@@ -209,10 +211,40 @@
       }
   }
 
+\NewDocumentCommand \OsgLectureReferenceDocumentTF { m m m m m }
+  {
+    \tl_set:Ne \l__olref_identity_tl
+      { \__olref_identity:nnn {#1}{#2}{#3} }
+    \prop_if_in:NVTF \g__olref_documents_prop \l__olref_identity_tl
+      {#4} {#5}
+  }
+\cs_new:Npn \__olref_document_aux:nnn #1#2#3 {#1}
+\cs_new:Npn \__olref_document_generation:nnn #1#2#3 {#3}
+\NewDocumentCommand \OsgLectureReferenceDocumentAuxTo { m m m m }
+  {
+    \tl_set:Ne \l__olref_identity_tl
+      { \__olref_identity:nnn {#1}{#2}{#3} }
+    \prop_get:NVN \g__olref_documents_prop \l__olref_identity_tl #4
+    \tl_set:Ne #4
+      { \exp_after:wN \__olref_document_aux:nnn #4 }
+  }
+\NewDocumentCommand \OsgLectureReferenceDocumentGenerationTo { m m m m }
+  {
+    \tl_set:Ne \l__olref_identity_tl
+      { \__olref_identity:nnn {#1}{#2}{#3} }
+    \prop_get:NVN \g__olref_documents_prop \l__olref_identity_tl #4
+    \tl_set:Ne #4
+      { \exp_after:wN \__olref_document_generation:nnn #4 }
+  }
+
+\NewDocumentCommand \OsgLectureWriteReferenceExport { m }
+  { \iow_now:Ne \g__olref_export_iow { \exp_not:n {#1} } }
+
 \ProvideDocumentCommand \OsgLectureReferenceExport
   { m m m m m m m } { }
 \ProvideDocumentCommand \OsgLectureReferenceUse
   { m m m m m m m } { }
+\ProvideDocumentCommand \OsgLectureContinuationCounter { m m } { }
 
 \cs_new_protected:Npn \__olref_use_write:nn #1#2
   {

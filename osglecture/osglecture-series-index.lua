@@ -130,6 +130,13 @@ function series_index.analyze(entries, current_name, context)
       .. tostring(current_name) .. "; observed entries: "
       .. (#observed > 0 and table.concat(observed, "; ") or "<none>")
   end
+  local previous_continuation
+  for index = position - 1, 1, -1 do
+    if units[index].role ~= "i" then
+      previous_continuation = units[index]
+      break
+    end
+  end
   return {
     doctype = context.doctype,
     unit_scopes = context.unit_scopes or {},
@@ -137,6 +144,7 @@ function series_index.analyze(entries, current_name, context)
     position = position,
     current = units[position],
     previous = units[position - 1],
+    previous_continuation = previous_continuation,
     next = units[position + 1],
   }
 end
@@ -207,6 +215,8 @@ function series_index.initialize_tex(start_path, context)
   set("OsgLectureSeriesCurrentPhysicalUnit", result.current.name)
   set("OsgLectureSeriesPreviousPhysicalUnit",
     result.previous and result.previous.name or "")
+  set("OsgLectureSeriesPreviousContinuationPhysicalUnit",
+    result.previous_continuation and result.previous_continuation.name or "")
   set("OsgLectureSeriesNextPhysicalUnit",
     result.next and result.next.name or "")
   return result
