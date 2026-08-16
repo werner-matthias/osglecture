@@ -44,6 +44,8 @@
   })
   report("missing-result", missing == nil)
   report("missing-message", message:match("not present") ~= nil)
+  report("missing-observed", message:match("observed entries") ~= nil)
+  report("missing-bytes", message:match("bytes=30 31 30 2D") ~= nil)
 
   local fake_lfs = {
     attributes = function() return "directory" end,

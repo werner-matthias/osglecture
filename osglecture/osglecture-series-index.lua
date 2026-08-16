@@ -1,4 +1,13 @@
--- osglecture-series-index.lua -- doctype-specific physical series index
+--[[
+  Package: osglecture
+  Module: osglecture-series-index.lua
+  Date:
+  2026-08-15
+  Version:
+  v0.8.5-dev
+  Description:
+  doctype-specific physical series index
+]]
 
 local series_index = {}
 local active_index
@@ -57,6 +66,28 @@ local function scope_set(unit_scopes)
   return allowed
 end
 
+local function bytes(value)
+  local result = {}
+  for index = 1, #value do
+    result[#result + 1] = string.format("%02X", string.byte(value, index))
+  end
+  return table.concat(result, " ")
+end
+
+local function describe_entry(name, allowed)
+  if type(name) ~= "string" then
+    return string.format("%q [type=%s]", tostring(name), type(name))
+  end
+  local unit, parse_error = series_index.parse_unit_name(name)
+  if not unit then
+    return string.format("%q [not-unit: %s; bytes=%s]",
+      name, parse_error, bytes(name))
+  end
+  return string.format("%q [scope=%q; applicable=%s; bytes=%s]",
+    name, unit.scope, tostring(unit.scope == "" or allowed[unit.scope] == true),
+    bytes(name))
+end
+
 function series_index.analyze(entries, current_name, context)
   if type(entries) ~= "table" then return nil, "directory entries must be a table" end
   if type(context) ~= "table" or type(context.doctype) ~= "string"
@@ -83,7 +114,14 @@ function series_index.analyze(entries, current_name, context)
     end
   end
   if not position then
-    return nil, "current unit is not present in the series directory: " .. tostring(current_name)
+    local observed = {}
+    for _, name in ipairs(entries) do
+      observed[#observed + 1] = describe_entry(name, allowed)
+    end
+    table.sort(observed)
+    return nil, "current unit is not present in the series directory: "
+      .. tostring(current_name) .. "; observed entries: "
+      .. (#observed > 0 and table.concat(observed, "; ") or "<none>")
   end
   return {
     doctype = context.doctype,
