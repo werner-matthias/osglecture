@@ -1354,8 +1354,41 @@ Duplikation, statt neue Komplexität einzuführen.
      `osglecture-series.sty`s Erfolgspfad -- `l3build`s Testverzeichnis
      heißt nie so; diese Lücke schließt derzeit nur
      `reference-lifecycle.t`.
-6. Nach hergestellter Testparität den entsprechenden Perl-Code in
-   `Config.pm` entfernen.
+6. [x] `OLLM::Config::structure_snapshot` delegiert jetzt an
+   `OLLM::LuaManifest::discover_units` statt selbst `opendir`/Regex-basiert
+   zu scannen; die lokale Verzeichnisgrammatik-Parsung in `Config.pm` ist
+   damit entfernt. Die Signaturberechnung (SHA-256 über kanonischem JSON)
+   bleibt unverändert und damit stabil gegenüber Schritt 3s bereits
+   vorhandenem `structure_snapshot`-gegen-`discover_units`-Vergleich in
+   `ollm check`. Da `structure_snapshot` weiterhin von `resolve_request`
+   aufgerufen wird (dem heißen Pfad jedes Builds), löst jeder Aufruf jetzt
+   einen `texlua`-Unterprozess aus statt eines lokalen Verzeichnis-Scans --
+   für einzelne Builds unauffällig, bei `--all` mit vielen
+   Einheit/Ziel/Sprache-Kombinationen im selben Prozess spürbar öfter als
+   nötig, da sich die Verzeichnisstruktur zwischen den Kombinationen eines
+   Laufs nicht ändert.
+   - **Dabei gefunden und behoben:** Ein erster Versuch, das mit einer
+     einfachen Pro-Projektwurzel-Memoisierung in `discover_units` zu lösen,
+     brach zwei `config.t`-Tests, die genau das Gegenteil verifizieren:
+     dass Umbenennen/Umordnen einer Einheit die Struktursignatur *ändert*
+     ("renaming or reordering a unit changes the structure signature",
+     "collection scope diagnoses ambiguous integration units" -- beide
+     rufen `structure_snapshot` mehrfach für denselben `project_root` auf,
+     nachdem sich die tatsächliche Verzeichnisstruktur im selben
+     Prozess geändert hat). Das ist kein Testartefakt, sondern ein reales
+     Korrektheitsproblem: Die Struktursignatur wird für
+     Build-Cache-Invalidierung verwendet und muss den tatsächlichen Zustand
+     zum Aufrufzeitpunkt widerspiegeln. Die Memoisierung wurde vollständig
+     entfernt statt korrigiert -- Korrektheit hat Vorrang vor der
+     spekulativen, nicht gemessenen Latenzeinsparung. Eine spätere,
+     korrekte Cache-Invalidierung (z.B. über einen Verzeichnis-mtime- oder
+     Inhaltshash) bliebe möglich, ist aber kein Teil dieses Schritts.
+   - Getestet: bestehende Suiten unverändert (`ollm/testfiles/config.t`,
+     `build-file.t`, `reference-lifecycle.t`, `lua-manifest.t`) laufen jetzt
+     gegen die neue Implementierung und bestehen weiterhin (326/326 Tests);
+     kein neuer Test nötig, da `structure_snapshot`s öffentlicher Vertrag
+     (Rückgabeform, Signaturstabilität, Verhalten bei Umbenennung)
+     unverändert bleibt und bereits abgedeckt ist.
 7. Bei jedem Schritt Tests und Dokumentation gemeinsam mit dem Code ändern,
    nicht nachträglich; `HISTORY.md` entsprechend kürzen.
 

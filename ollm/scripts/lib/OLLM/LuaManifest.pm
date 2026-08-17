@@ -110,7 +110,11 @@ sub toml_info {
 
 # Returns a list of unit hashes shaped like
 # OLLM::Config::structure_snapshot's own "units" entries, so callers can
-# compare the two directly.
+# compare the two directly. Not cached: structure_snapshot's own signature
+# is used for build-cache invalidation and must reflect the directory
+# structure at call time even if it changed since an earlier call in the
+# same process (renaming or reordering a unit mid-run is a real scenario,
+# not just a test artifact).
 sub discover_units {
   my ($project_root) = @_;
   my $rows = _run('discover-units', $project_root);

@@ -327,40 +327,31 @@ sub _unit_allows_definition {
   } @{ $unit_scopes // [] };
 }
 
+# Directory-grammar parsing and discovery live in the shared Lua module
+# (osglecture-series-index.lua, called via OLLM::LuaManifest), not here:
+# see osglecture/ARCHITECTURE.md section 12 and HISTORY.md. This function
+# keeps only what is genuinely OLLM's own concern -- the structure
+# signature is OLLM's build-state invalidation value, not something the
+# class needs to compute.
 sub structure_snapshot {
   my ($class, %arg) = @_;
   my $root = _absolute_directory(
     $arg{project_root} // die("missing project root"),
     'project root',
   );
-  opendir my $directory, $root
-    or die "cannot read project root '$root': $!";
-  my @names = sort grep {
-    $_ ne '.' && $_ ne '..'
-      && -d File::Spec->catdir($root, $_)
-      && /\A\d{3}[a-z]{0,2}-(?:(?:a|e|i)-)?.+\z/
-  } readdir $directory;
-  closedir $directory
-    or die "cannot close project root '$root': $!";
-
-  my @units = map {
-    /\A(\d{3})([a-z]{0,2})-(?:(a|e|i)-)?(.+)\z/
-      or die "internal error while parsing series unit directory '$_'";
-    {
-      physical_unit   => $_,
-      physical_number => $1,
-      unit_scope      => $2,
-      unit_role       => $3 // 'content',
-      slug            => $4,
-    }
-  } @names;
+  require OLLM::LuaManifest;
+  my $units = eval { OLLM::LuaManifest::discover_units($root) };
+  if (!$units) {
+    my $error = $@ || 'unknown error'; chomp $error;
+    die "cannot discover series units in '$root': $error\n";
+  }
   my $canonical = JSON::PP->new->canonical->encode({
     schema => 1,
-    units  => \@units,
+    units  => $units,
   });
   return {
     schema    => 1,
-    units     => \@units,
+    units     => $units,
     signature => sha256_hex($canonical),
   };
 }

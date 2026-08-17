@@ -57,26 +57,24 @@ Der Code setzt es erst teilweise um. Konkret zum Zeitpunkt dieses Eintrags
   nicht mehr (Schritte 4 und 5 sind abgeschlossen, siehe `ARCHITECTURE.md`
   Abschnitt 12).
 - OLLM ruft das Modul jetzt über `texlua` auf (`OLLM::LuaManifest`,
-  `osglecture-manifest-cli.lua`), aber schmaler als Schritt 3 ursprünglich
-  formuliert: `ollm doctor` meldet den Lua-seitigen TOML-Parser zusätzlich
-  zum Perl-seitigen (informativ, nicht Voraussetzung); `ollm check` vergleicht
-  bei jedem Lauf die eigene Verzeichnis-Discovery gegen die des Moduls und
-  meldet eine Abweichung als Warnung. Eine vollständige Umstellung war nicht
-  sinnvoll möglich: `OLLM::Config::structure_snapshot` wird auch von
-  `resolve_request` verwendet, dem heißen Pfad jedes gewöhnlichen Builds --
-  ihn global auf einen `texlua`-Unterprozess umzustellen, hätte jedem Build
-  diese Latenz aufgezwungen, weit über den Umfang von „check/doctor"
-  hinaus. Außerdem validiert und mergt `OLLM::Config` Manifestinhalt mit
-  OLLM-eigenen Regeln (Zieldefaults, Sprachabgleich), die das bewusst
-  minimale gemeinsame Modul nicht nachbildet; das wäre ein eigenes,
-  größeres Vorhaben.
-- `OLLM::Config.pm` liest weiterhin das vollständige Projektmanifest und
-  löst Serienstruktur, Sprachliste und Bundle-Preset-Inhalt selbst auf, statt
-  dafür das gemeinsame Modul zu nutzen -- das bleibt so, bis Schritt 6. Die
-  generierte Auftragsdatei transportiert diese Werte seit Schritt 4 nicht
-  mehr; `OLLM::Config.pm` berechnet sie weiterhin unabhängig für den
-  internen `BuildSpec` (Zustandsführung, `--all`), nicht mehr aber für die
-  Klasse.
+  `osglecture-manifest-cli.lua`): `ollm doctor` meldet den Lua-seitigen
+  TOML-Parser zusätzlich zum Perl-seitigen (informativ, nicht
+  Voraussetzung); `ollm check` vergleicht bei jedem Lauf die eigene
+  Verzeichnis-Discovery gegen die des Moduls und meldet eine Abweichung als
+  Warnung; und seit Schritt 6 delegiert auch `OLLM::Config::structure_snapshot`
+  selbst -- der heiße Pfad jedes gewöhnlichen Builds über `resolve_request`
+  -- an `OLLM::LuaManifest::discover_units` statt an eine frühere lokale
+  `opendir`/Regex-Parsung der Verzeichnisgrammatik. Jeder
+  `structure_snapshot`-Aufruf löst dadurch einen `texlua`-Unterprozess aus;
+  bei `--all` mit vielen Einheiten ist das öfter als strukturell nötig (die
+  Verzeichnisstruktur ändert sich innerhalb eines Laufs normalerweise
+  nicht), aber ein früherer Memoisierungsversuch erwies sich als unsicher
+  (er brach den Vertrag, dass Umbenennen/Umordnen einer Einheit die
+  Struktursignatur ändert) und wurde zugunsten von Korrektheit wieder
+  entfernt, siehe Schritt 6 in `ARCHITECTURE.md` Abschnitt 12. `OLLM::Config`
+  validiert und mergt Manifestinhalt weiterhin mit OLLM-eigenen Regeln
+  (Zieldefaults, Sprachabgleich), die das bewusst minimale gemeinsame Modul
+  nicht nachbildet; das bleibt eigenständiger Perl-Code.
 
 Dieser Abschnitt wird bei jedem Migrationsschritt aus `ARCHITECTURE.md`
 Abschnitt 12 aktualisiert, bis die Liste leer ist. Wer wissen will, ob eine
