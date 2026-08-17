@@ -7,7 +7,7 @@
   Description:
   inspection API over the extractor and IR
 ]]
-
+--<*pkg>
 local ir_module = require("tagpax-ir")
 local validator = require("tagpax-validate")
 local M = {}
@@ -15,6 +15,11 @@ local M = {}
 function M.from_pdf(filename, output)
   -- Parse the artifact just written: this validates exactly what later builds
   -- consume, rather than a privileged in-memory extractor representation.
+  --
+  -- \ldeen*{Bewusst lazy: @1 verlangt beim Laden @2. Wer nur @3 nutzt, soll
+  -- diese Abhängigkeit nicht erzwungen bekommen.}{Deliberately lazy: @1
+  -- asserts @2 at load time. Callers who only use @3 should not be forced
+  -- to pay for that dependency.}{\code{tagpax.lua}}{\code{pdfe}}{\code{from\_file}}
   local facade = require("tagpax")
   output = facade.extract(filename, output)
   local ir = ir_module.read(output)
@@ -43,3 +48,4 @@ function M.summary(ir)
 end
 
 return M
+--</pkg>

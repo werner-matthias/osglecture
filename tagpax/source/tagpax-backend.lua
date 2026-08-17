@@ -12,44 +12,18 @@ local ir_reader = require("tagpax-ir")
 local M = {}
 local catlatex = luatexbase.registernumber("catcodetable@latex")
 
--- All output is executable TeX. Escape identifiers and select LaTeX catcodes
--- explicitly so Lua's current callback context cannot reinterpret them.
-local function tex_escape(s)
-  s = tostring(s or "")
-  return (s:gsub("([{}%%#\\])", "\\%1"))
-end
-
-local function sorted_kids(ir)
-  -- Source /K order is semantic: nodes, MCRs and OBJRs may be interleaved.
-  local by_parent = {}
-  for _, kid in ipairs(ir.kids or {}) do
-    local list = by_parent[kid.parent]
-    if not list then list = {}; by_parent[kid.parent] = list end
-    list[#list + 1] = kid
-  end
-  for _, list in pairs(by_parent) do
-    table.sort(list, function(a,b)
-      return tonumber(a.index or 0) < tonumber(b.index or 0)
-    end)
-  end
-  return by_parent
-end
-
-local function roots(ir)
-  local list = {}
-  for _, root in ipairs(ir.roots or {}) do list[#list + 1] = root end
-  table.sort(list, function(a,b)
-    return tonumber(a.index or 0) < tonumber(b.index or 0)
-  end)
-  return list
-end
+-- \ldeen*{Escaping und Traversierungsreihenfolge sind in @1 gebündelt und
+-- werden von mehreren Modulen geteilt; siehe dort für Details.}{Escaping and
+-- traversal order live together in @1 and are shared across modules; see
+-- there for details.}{\code{tagpax-ir.lua}}
+local tex_escape = ir_reader.tex_escape
 
 local function walk_ir(filename, phase)
   -- The same deterministic traversal drives two phases. “reserve” allocates
   -- StructElems and kid slots; “bind” fills slots whose PDF objects exist only
   -- after pages have been constructed.
   local ir = ir_reader.read(filename)
-  local by_parent = sorted_kids(ir)
+  local by_parent = ir_reader.sorted_kids_by_parent(ir)
   local mcr_serial = 0
 
   local function out(s)
@@ -90,7 +64,7 @@ local function walk_ir(filename, phase)
   if phase == "reserve" then out("\\TagPaxBackendDocumentBegin") end
   -- A source Document is a transport wrapper. Its children attach directly to
   -- the synthetic contribution Part; other roots remain explicit children.
-  for _, root in ipairs(roots(ir)) do
+  for _, root in ipairs(ir_reader.sorted_roots(ir)) do
     local node = ir.nodes[root.node]
     if node and node.role == "Document" then
       emit_kids(root.node, "@wrapper")
