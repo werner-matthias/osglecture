@@ -98,4 +98,34 @@ is $plan->{action}, 'convertconfig', 'migration command accepts a plus prefix';
 eval { OLLM::CLI->parse(qw(clean --level=unknown)) };
 like $@, qr/invalid --level/, 'unknown clean level is rejected';
 
+# _structure_drift compares OLLM's own structure_snapshot discovery against
+# the shared Lua module's (osglecture/ARCHITECTURE.md section 12); see
+# testfiles/lua-manifest.t for the corresponding end-to-end agreement check
+# against a real project fixture.
+{
+  my @same_a = ({ physical_unit => '010-a', physical_number => '010',
+    unit_scope => '', unit_role => 'content', slug => 'a' });
+  my @same_b = ({ physical_unit => '010-a', physical_number => '010',
+    unit_scope => '', unit_role => 'content', slug => 'a' });
+  is OLLM::CLI::_structure_drift(\@same_a, \@same_b), undef,
+    '_structure_drift reports no drift for identical unit lists';
+
+  my @missing_b = ();
+  like OLLM::CLI::_structure_drift(\@same_a, \@missing_b),
+    qr/only in Perl: 010-a/,
+    '_structure_drift reports a unit missing from the Lua side';
+
+  my @extra_b = (@same_b, { physical_unit => '020-b', physical_number => '020',
+    unit_scope => '', unit_role => 'content', slug => 'b' });
+  like OLLM::CLI::_structure_drift(\@same_a, \@extra_b),
+    qr/only in Lua: 020-b/,
+    '_structure_drift reports a unit only found by the Lua side';
+
+  my @wrong_role = ({ physical_unit => '010-a', physical_number => '010',
+    unit_scope => '', unit_role => 'appendix', slug => 'a' });
+  like OLLM::CLI::_structure_drift(\@same_a, \@wrong_role),
+    qr/field mismatch: 010-a\.unit_role/,
+    '_structure_drift reports a field-level mismatch';
+}
+
 done_testing;

@@ -1272,11 +1272,33 @@ Duplikation, statt neue Komplexität einzuführen.
    Pfad-Grundfunktionen dafür jetzt exportiert sind). Getestet über
    `testfiles/manifest.lvt` mit derselben Testdisziplin wie
    `series-index.lvt`; verifiziert sowohl über `\directlua` innerhalb eines
-   echten Laufs als auch eigenständig über `texlua`. Noch nicht angebunden:
-   weder `osglecture.cls` (Schritt 5) noch OLLM (Schritt 3) rufen es bisher
-   auf.
-3. `ollm check`/`ollm doctor` auf dasselbe Modul über `texlua` umstellen,
-   statt eine zweite Parser-Implementierung in Perl zu pflegen.
+   echten Laufs als auch eigenständig über `texlua`. Zum Zeitpunkt dieses
+   Schritts noch nicht angebunden; `osglecture.cls` ist es weiterhin nicht
+   (Schritt 5), OLLM inzwischen teilweise (siehe Schritt 3).
+3. [x] `ollm check`/`ollm doctor` rufen das Modul über `texlua` auf --
+   `OLLM::LuaManifest` (Perl-Bridge) und `osglecture-manifest-cli.lua`
+   (Lua-seitiger, zeilenorientierter Einstiegspunkt). `ollm doctor` meldet
+   zusätzlich zum Perl-Parser den Lua-seitigen (`osglecture-toml.lua`),
+   informativ, ohne Voraussetzung zu sein. `ollm check` vergleicht bei jedem
+   Lauf `OLLM::Config::structure_snapshot`s eigene Discovery gegen die des
+   Moduls und meldet eine Abweichung als Warnung (`lua-discovery-drift`).
+   Getestet in `testfiles/lua-manifest.t` (16 Assertions, inklusive
+   Cross-Check gegen `structure_snapshot` an einem echten Fixture) und
+   `testfiles/cli.t` (Vergleichslogik isoliert).
+
+   Bewusst *nicht* migriert: `structure_snapshot` selbst bleibt
+   Perl-implementiert und bleibt die für `resolve_request` (den heißen Pfad
+   jedes gewöhnlichen Builds, nicht nur `check`/`doctor`) maßgebliche
+   Quelle. Sie global auf `texlua` umzustellen hätte jedem Build einen
+   Unterprozessaufruf aufgezwungen -- ein größerer Eingriff, als „check/
+   doctor umstellen" hergibt. Ebenso migriert diese Umstellung nicht die
+   Manifestvalidierung selbst (Zieldefaults, Sprachabgleich, erzwungene
+   Konfiguration): Das gemeinsame Modul liest bewusst nur Rohwerte, ohne
+   OLLMs eigene Regeln nachzubilden. `check`s neuer Vergleich ist deshalb
+   eine echte, wertvolle Zusatzprüfung (sie hätte die in Abschnitt „Bereits
+   vorhandene Duplikation" beschriebene Divergenz sofort gemeldet), aber
+   noch kein Ersatz der Perl-Implementierung -- der bleibt Schritt 6
+   vorbehalten.
 4. Die Auftragsdatei auf den in Schritt 1 festgelegten minimalen Schlüsselsatz
    verkleinern.
 5. Das Bootstrapping der Klasse so erweitern, dass es Projektinhalt

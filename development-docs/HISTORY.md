@@ -48,20 +48,30 @@ Der Code setzt es erst teilweise um. Konkret zum Zeitpunkt dieses Eintrags
 
 - Das gemeinsame Lua-Modul (`osglecture-manifest.lua`, mit vendoriertem
   TOML-1.0-Leser `osglecture-toml.lua`, siehe `osglecture/THIRD_PARTY.md`)
-  existiert und ist getestet (`testfiles/manifest.lvt`), aber noch von
-  niemandem verbunden: `osglecture.cls` liest `shared-tex-directory` und
-  `project-config-file` weiterhin aus der Auftragsdatei, nicht über das
-  Modul (Schritt 5 steht noch aus), und OLLM ruft es nicht über `texlua` auf
-  (Schritt 3 steht noch aus).
+  existiert und ist getestet (`testfiles/manifest.lvt`). `osglecture.cls`
+  liest `shared-tex-directory` und `project-config-file` weiterhin aus der
+  Auftragsdatei, nicht über das Modul (Schritt 5 steht noch aus).
+- OLLM ruft das Modul jetzt über `texlua` auf (`OLLM::LuaManifest`,
+  `osglecture-manifest-cli.lua`), aber schmaler als Schritt 3 ursprünglich
+  formuliert: `ollm doctor` meldet den Lua-seitigen TOML-Parser zusätzlich
+  zum Perl-seitigen (informativ, nicht Voraussetzung); `ollm check` vergleicht
+  bei jedem Lauf die eigene Verzeichnis-Discovery gegen die des Moduls und
+  meldet eine Abweichung als Warnung. Eine vollständige Umstellung war nicht
+  sinnvoll möglich: `OLLM::Config::structure_snapshot` wird auch von
+  `resolve_request` verwendet, dem heißen Pfad jedes gewöhnlichen Builds --
+  ihn global auf einen `texlua`-Unterprozess umzustellen, hätte jedem Build
+  diese Latenz aufgezwungen, weit über den Umfang von „check/doctor"
+  hinaus. Außerdem validiert und mergt `OLLM::Config` Manifestinhalt mit
+  OLLM-eigenen Regeln (Zieldefaults, Sprachabgleich), die das bewusst
+  minimale gemeinsame Modul nicht nachbildet; das wäre ein eigenes,
+  größeres Vorhaben.
 - `OLLM::Config.pm` liest weiterhin das vollständige Projektmanifest und
   löst Serienstruktur, Sprachliste und Bundle-Preset-Inhalt selbst auf, statt
-  dafür das gemeinsame Modul zu nutzen.
+  dafür das gemeinsame Modul zu nutzen -- das bleibt so, bis Schritt 6.
 - Die generierte Auftragsdatei (`<jobname>.osgbuild.tex`) enthält weiterhin
   den vollständigen, in `ARCHITECTURE.md` Abschnitt 12 klassifizierten
   Schlüsselsatz, nicht nur den für die Auftragsentscheidung nötigen
   Ausschnitt.
-- `ollm check`/`ollm doctor` parsen das Manifest weiterhin direkt in Perl,
-  nicht über `texlua` und das gemeinsame Modul.
 
 Dieser Abschnitt wird bei jedem Migrationsschritt aus `ARCHITECTURE.md`
 Abschnitt 12 aktualisiert, bis die Liste leer ist. Wer wissen will, ob eine

@@ -647,9 +647,61 @@ sub _inspection {
     print STDERR "ollm: $error\n";
     return 1;
   }
+  if ($plan->{action} eq 'check') {
+    require OLLM::LuaManifest;
+    if (OLLM::LuaManifest::available()) {
+      my $drift = eval {
+        _structure_drift($request->{structure}{units},
+          OLLM::LuaManifest::discover_units($root));
+      };
+      if ($@) {
+        my $error = $@; chomp $error;
+        push @{ $report->{issues} }, { severity => 'warning',
+          code => 'lua-discovery-unavailable',
+          message => "cannot cross-check series discovery via the shared "
+            . "Lua module: $error" };
+      } elsif ($drift) {
+        push @{ $report->{issues} }, { severity => 'warning',
+          code => 'lua-discovery-drift',
+          message => "series discovery disagrees with the shared Lua "
+            . "module ($drift); see osglecture/ARCHITECTURE.md section 12" };
+      }
+    }
+  }
   _print_inspection($plan, $report);
   return 3 if $plan->{action} eq 'check' && !$report->{ok};
   return 0;
+}
+
+# Compares OLLM::Config::structure_snapshot's own discovery against the
+# shared Lua module's (see osglecture/ARCHITECTURE.md section 12): they
+# implement the same series-unit directory grammar independently today, and
+# this is the check that would catch them drifting apart. Returns undef if
+# they agree, otherwise a short human-readable description of the
+# difference.
+sub _structure_drift {
+  my ($perl_units, $lua_units) = @_;
+  my %perl_by_name = map { $_->{physical_unit} => $_ } @$perl_units;
+  my %lua_by_name = map { $_->{physical_unit} => $_ } @$lua_units;
+  my @perl_only = grep { !exists $lua_by_name{$_} } sort keys %perl_by_name;
+  my @lua_only = grep { !exists $perl_by_name{$_} } sort keys %lua_by_name;
+  my @mismatched;
+  for my $name (sort keys %perl_by_name) {
+    next if !exists $lua_by_name{$name};
+    my ($p, $l) = ($perl_by_name{$name}, $lua_by_name{$name});
+    for my $field (qw(physical_number unit_scope unit_role slug)) {
+      if (($p->{$field} // '') ne ($l->{$field} // '')) {
+        push @mismatched, "$name.$field";
+        last;
+      }
+    }
+  }
+  return undef if !@perl_only && !@lua_only && !@mismatched;
+  my @parts;
+  push @parts, 'only in Perl: ' . join(', ', @perl_only) if @perl_only;
+  push @parts, 'only in Lua: ' . join(', ', @lua_only) if @lua_only;
+  push @parts, 'field mismatch: ' . join(', ', @mismatched) if @mismatched;
+  return join('; ', @parts);
 }
 
 sub _print_inspection {
@@ -800,6 +852,11 @@ sub _doctor {
   my $ok = !grep { !$_->{ok} } @checks;
   my $parser = OLLM::Config->parser_info;
   $ok = 0 if !$parser->{available};
+  require OLLM::LuaManifest;
+  my $lua_parser = OLLM::LuaManifest::toml_info();
+  # Not yet required by any OLLM action (see osglecture/ARCHITECTURE.md
+  # section 12, steps 3/5/6), so its absence is reported but does not fail
+  # doctor overall -- unlike the Perl-side $parser above.
 
   my ($kpsewhich_check) = grep { $_->{program} eq 'kpsewhich' } @checks;
   my $kpsewhich = $kpsewhich_check->{found};
@@ -929,6 +986,7 @@ sub _doctor {
       runtime => $runtime,
       capabilities => \@capabilities,
       toml_parser => $parser,
+      lua_toml_parser => $lua_parser,
       project => $project,
     });
   } else {
@@ -956,6 +1014,12 @@ sub _doctor {
         $parser->{name}, $parser->{version}, $parser->{source};
     } else {
       printf "%-10s NOT FOUND: %s\n", 'TOML', $parser->{error};
+    }
+    if ($lua_parser->{available}) {
+      printf "%-10s %s %s (%s)\n", 'TOML (Lua)',
+        $lua_parser->{name}, $lua_parser->{version}, $lua_parser->{source};
+    } else {
+      printf "%-10s not found (optional): %s\n", 'TOML (Lua)', $lua_parser->{error};
     }
     if ($project->{present}) {
       print "Project:   $project->{path}\n";
