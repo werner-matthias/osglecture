@@ -1,6 +1,6 @@
 # osglecture – Grundideen und Leitlinien für eine Überarbeitung
 
-**Arbeitsdokument · Stand 29. Juli 2026**
+**Arbeitsdokument · Stand 29. Juli 2026, ergänzt um Abschnitt 12 am 17. August 2026**
 
 ## Zweck und Einordnung
 
@@ -1109,6 +1109,155 @@ Die Architektur ist ausreichend klar, wenn sich folgende Fragen jeweils mit eine
 - Welche Abhängigkeiten sind für welchen Modus erforderlich?
 - Wie wird eine alte Quelle migriert?
 - Welche Tests beweisen semantische und visuelle Gleichwertigkeit?
+
+## 12. Die OLLM-Grenze
+
+OLLM hat genau zwei Aufgaben: sicherzustellen, dass die korrekte Projektion
+gebaut wird, und das Deployment der Ergebnisse. Warum ältere Codeteile darüber
+hinausgehen, steht gesammelt in [`HISTORY.md`](./HISTORY.md); dieser Abschnitt
+beschreibt nur das verbindliche Zieldesign.
+
+**Leitlinie:** Jede OLLM-Verantwortlichkeit wird gegen genau zwei Fragen
+geprüft: Ist sie nötig, um zu entscheiden, *was* gebaut werden soll, und den
+Bau *korrekt* durchzuführen (Auftrag)? Oder ist sie nötig, um ein bereits
+validiertes Ergebnis an seinen Zielort zu bringen (Deployment)? Trifft keine
+der beiden Fragen zu, gehört die Verantwortlichkeit nicht zu OLLM.
+
+### Ein gemeinsames Modul für Projektinhalt und Discovery
+
+Projektinhalt -- Serienstruktur, Verzeichnisgrammatik, verfügbare Sprachen,
+Bundle-Preset-Inhalt -- wird von einem gemeinsamen Lua-Modul gelesen, nicht
+von OLLM. Dieses Modul ist:
+
+- über `\directlua` aus einem echten Kompilierlauf aufrufbar: `osglecture`
+  liest sein eigenes Projektumfeld selbst, das ist der primäre Verbraucher;
+- über `texlua` eigenständig aufrufbar, ohne einen vollständigen LaTeX-Lauf
+  zu benötigen.
+
+OLLM ist Nutzer dieses Moduls, nicht Parallelimplementierer. Wo OLLM
+Projektinhalt für eigene Aufgaben braucht -- Serien-Discovery für
+`build --all`, eine schnelle Konsistenzprüfung in `ollm check`/`ollm doctor`
+ohne vollständigen Kompilierlauf --, ruft es dasselbe Modul über `texlua` auf,
+statt eine zweite, unabhängige Interpretation in Perl zu pflegen. Damit gibt
+es weiterhin genau einen Parser und eine Merge-/Prioritätslogik; nur die
+Sprache dieser einen Implementierung ist Lua, nicht Perl.
+
+Für Manifestinhalt, der Teil der Auftragsentscheidung ist (siehe unten),
+bleibt der schmale, als `TOML::Tiny` vendorierte Perl-Parser in OLLM
+maßgeblich -- mit derselben Portabilitätsbegründung, mit der auch das
+gemeinsame Lua-Modul einen vendorierten, reinen Lua-TOML-Leser ohne externe
+Abhängigkeit benötigt: LuaLaTeX und das minimale Windows-Perl garantieren
+beide keine zusätzlich installierten Bibliotheken.
+
+### Was strukturell bei OLLM bleibt
+
+Drei Gründe binden Verantwortlichkeit zwingend an OLLM als externen Prozess,
+unabhängig vom gemeinsamen Modul:
+
+- **Entscheidung vor dem Start.** Der Aufruf des Backends (Jobname, Engine-
+  Flags, Shell-Escape-Modus) muss feststehen, bevor die Engine läuft. Ein
+  laufender TeX-Lauf kann seine eigenen Aufrufparameter nicht rückwirkend
+  bestimmen.
+- **Transaktionale Zustandsführung.** Eine Generation gilt erst nach
+  erfolgreichem Bau als gültig und wird atomar veröffentlicht, ohne den
+  vorherigen guten Zustand zu gefährden; Sperren verhindern nebenläufige
+  Bauversuche. Das erfordert einen Supervisor außerhalb der Engine, da TeX
+  sich selbst nicht zurückrollen kann.
+- **Deployment.** Das Kopieren validierter Artefakte an ihren Zielort ist per
+  Definition ein Schritt nach dem TeX-Lauf.
+
+Ein minimales Artefaktregister (welche Unit hat aktuell eine gültige,
+veröffentlichte Generation, und wo liegt sie) gehört ebenfalls hierher: Es
+trägt sowohl zur Korrektheit bei (eine Unit, die auf eine veraltete
+Nachbar-Generation verweist, ist nicht korrekt gebaut) als auch zum
+Deployment.
+
+### Klassifikation der Auftragsdatei-Schlüssel
+
+| Schlüssel | Ziel | Begründung |
+|---|---|---|
+| `schema` | OLLM | Vertrag zwischen OLLM und Klasse, kein Projektinhalt |
+| `job-id` | OLLM | Identität des Auftrags |
+| `context` | OLLM | Art des Auftrags |
+| `series-id` | OLLM | Registrierschlüssel für Artefaktregister/Generationen |
+| `physical-unit` | gemeinsames Modul | aus dem Verzeichnisnamen ableitbar (`lfs.currentdir()`) |
+| `physical-number` | gemeinsames Modul | aus `physical-unit` regelbasiert ableitbar |
+| `logical-ordinal` | gemeinsames Modul | Ergebnis von Serien-Discovery |
+| `unit-scope` | gemeinsames Modul | aus `physical-unit` regelbasiert ableitbar |
+| `unit-role` | gemeinsames Modul | aus `physical-unit` regelbasiert ableitbar |
+| `unit-id` | OLLM | stammt aus einem früheren validierten Lauf, ist ein Registerwert |
+| `generation-id` | OLLM | reine Build-Zustandsführung |
+| `target` | OLLM | Kern der Auftragsentscheidung |
+| `profile-class` | Grenzfall | folgt aus der Zielregistrierung von `target`; siehe unten |
+| `document-metadata-policy` | Grenzfall | folgt ebenso aus der Zielregistrierung |
+| `doctype` | OLLM | Kern der Auftragsentscheidung |
+| `applicable-unit-scopes` | Grenzfall | Wert aus der Zielregistrierung, konsumiert von der Serienlogik im gemeinsamen Modul |
+| `language` | OLLM | Kern der Auftragsentscheidung |
+| `available-languages` | gemeinsames Modul | Projektinhalt, keine Auftragsentscheidung |
+| `bundle-preset` | gemeinsames Modul | Projektinhalt (Feature-/Theme-Vorgabe) |
+| `shared-tex-directory` | gemeinsames Modul | konventionsbasiert relativ zum Manifest auflösbar |
+| `source-directory` | gemeinsames Modul | redundant zu `lfs.currentdir()` |
+| `project-config-file` | gemeinsames Modul | konventionsbasiert relativ zum Manifest auflösbar |
+| `shell-escape` | OLLM | bestimmt die Engine-Aufrufparameter |
+| `structure-signature` | OLLM | Invalidierung von Generationen, reine Build-Zustandsführung |
+| `config-signature` | OLLM | dieselbe Begründung |
+
+„Gemeinsames Modul" heißt: Die Klasse liest den Wert direkt selbst; die
+Auftragsdatei transportiert ihn nicht mehr. Braucht OLLM denselben Wert für
+eigene Zwecke (siehe oben), bezieht es ihn bei Bedarf über `texlua` aus
+demselben Modul, statt ihn selbst zu parsen.
+
+Die drei mit „Grenzfall" markierten Schlüssel hängen an der Zielregistrierung
+(welches `target` welchen `doctype`, welche `profile-class` und welche
+`applicable-unit-scopes` besitzt). Ob diese Registrierung langfristig
+ebenfalls in das gemeinsame Modul wandert, ist eine eigene, hier nicht
+entschiedene Frage (siehe „Offene Fragen").
+
+### Erster Migrationsschritt
+
+`OLLM::Config.pm` (`_series_units`) und `osglecture-series-index.lua`
+(`parse_unit_name`) implementieren heute unabhängig voneinander denselben
+Verzeichnisnamens-Vertrag, in zwei Sprachen. Der naheliegendste erste Schritt
+entfernt `physical-number`/`unit-scope`/`unit-role` aus der Auftragsdatei und
+lässt sowohl die Klasse als auch OLLM (über `texlua`) dieselbe
+`osglecture-series-index.lua`-Logik nutzen -- er verringert bestehende
+Duplikation, statt neue Komplexität einzuführen.
+
+### Schrittfolge
+
+1. Den minimalen Schlüsselsatz festlegen, den OLLM zur Auftragsentscheidung
+   tatsächlich braucht (im Kern: `target`/`doctype`/`language`-Auflösung samt
+   der drei Grenzfälle).
+2. Das gemeinsame Modul (TOML-Lesen, Discovery, Namensinterpretation) nach
+   dem Vorbild von `osglecture-series-index.lua` mit derselben Testdisziplin
+   aufbauen -- sowohl über `\directlua` innerhalb eines echten Laufs als auch
+   eigenständig über `texlua` aufrufbar.
+3. `ollm check`/`ollm doctor` auf dasselbe Modul über `texlua` umstellen,
+   statt eine zweite Parser-Implementierung in Perl zu pflegen.
+4. Die Auftragsdatei auf den in Schritt 1 festgelegten minimalen Schlüsselsatz
+   verkleinern.
+5. Das Bootstrapping der Klasse so erweitern, dass es Projektinhalt
+   (Serienstruktur, verfügbare Sprachen, Bundle-Preset) selbst über das
+   gemeinsame Modul liest.
+6. Nach hergestellter Testparität den entsprechenden Perl-Code in
+   `Config.pm` entfernen.
+7. Bei jedem Schritt Tests und Dokumentation gemeinsam mit dem Code ändern,
+   nicht nachträglich; `HISTORY.md` entsprechend kürzen.
+
+### Offene Fragen
+
+- Heute kann OLLM eine ungültige Konfiguration ablehnen, bevor die Engine
+  überhaupt startet. Wandert Validierung in den TeX-Lauf, verschiebt sich
+  dieser Fehlerzeitpunkt nach hinten. Das ist vermutlich vertretbar, sollte
+  aber als bewusste Entscheidung getroffen werden, nicht als Nebenwirkung.
+- Ob die drei „Grenzfall"-Schlüssel (und damit die Zielregistrierung selbst)
+  langfristig ebenfalls in das gemeinsame Modul wandern, ist bewusst
+  offengelassen und sollte erst nach Abschluss der
+  Verzeichnis-Discovery-Migration erneut bewertet werden.
+- Die projektübergreifende Referenzregistrierung (Abschnitt 3.9) bleibt
+  vorerst unangetastet: Sie spannt sich über mehrere TeX-Läufe und mehrere
+  Units und bleibt damit ein genuines Supervisor-Thema, unabhängig vom
+  Ausgang dieser Neuausrichtung.
 
 ## Schlussfolgerung
 

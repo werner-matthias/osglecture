@@ -2,10 +2,29 @@
 
 Dieses Glossar legt die bundleweit verwendeten Begriffe verbindlich fest. Die
 ausführlichen Entwurfsentscheidungen und Rationales stehen weiterhin in
-`ollm/DESIGN.md` und `osglecture/ARCHITECTURE.md`; dieses Dokument definiert
-dagegen die gemeinsame Sprache beider Komponenten.
+`DESIGN.md` und `ARCHITECTURE.md`; dieses Dokument definiert dagegen die
+gemeinsame Sprache beider Komponenten. Es beschreibt das Zieldesign; wo die
+Implementierung davon abweicht, steht das gesammelt in
+[`HISTORY.md`](./HISTORY.md).
 
 ## Konfiguration und Auswahl
+
+### Gemeinsames Modul
+
+Das **gemeinsame Modul** ist die einzige Interpretation von Projektinhalt aus
+`ollmconfig.toml` -- Serienstruktur, Verzeichnisgrammatik, verfügbare
+Sprachen, Bundle-Preset-Inhalt --, im Unterschied zum schmalen, zur
+Auftragsentscheidung gehörenden Manifestausschnitt, den OLLM selbst liest
+(siehe Auftragsdatei). Es ist in Lua implementiert, nach dem Vorbild von
+`osglecture-series-index.lua`.
+
+- Aufrufbar über `\directlua` innerhalb eines echten Kompilierlaufs: der
+  primäre Verbraucher ist `osglecture` selbst.
+- Aufrufbar eigenständig über `texlua`, ohne vollständigen LaTeX-Lauf: so
+  nutzt OLLM dieselbe Implementierung für Serien-Discovery (`build --all`)
+  und für `ollm check`/`ollm doctor`.
+- Zuständig: gemeinsam von `osglecture` und OLLM genutzt, mit genau einer
+  Implementierung.
 
 ### Bundle-Preset
 
@@ -17,8 +36,8 @@ konkrete Dokumentdarstellung.
 - TOML-Manifest und Nutzerdefaults: `bundle_preset = "OSG lecture/1"`
 - Definitionsart: `kind = "bundle-preset"`
 - BuildSpec: `bundle_preset`
-- Auftragsdatei: `bundle-preset`
-- Zuständig: OLLM
+- Zuständig: gemeinsames Modul; die Klasse liest Namen und Inhalt selbst,
+  die Auftragsdatei transportiert ihn nicht
 
 Name und Hauptversion bilden zusammen die opake Identität. `/1` ist somit die
 Generation des Presets. Ein Bundle-Preset darf Dokumentprofil-Defaults
@@ -41,6 +60,11 @@ und die Dokumentprofile für Präsentation und Skript festlegen.
 Das **Projektmanifest** ist `ollmconfig.toml` an der Projektwurzel. Es beschreibt
 Projektidentität, Sprachen, Targets, Sicherheitsrichtlinie und gezielte
 Projekt-Overrides. Es markiert zugleich die Projektwurzel.
+
+OLLM und das gemeinsame Modul lesen unterschiedliche Ausschnitte desselben
+Manifests: OLLM den zur Auftragsentscheidung gehörenden (Targets,
+Sicherheitsrichtlinie), das gemeinsame Modul den übrigen Projektinhalt
+(Sprachen, Bundle-Preset, Serienstruktur).
 
 ### Projektpolicy
 
@@ -128,8 +152,11 @@ Scope-Code im Verzeichnisnamen, beispielsweise `a`, `as`, `b` oder `bh`,
 bestimmt, für welche Targets die Einheit in `--all` berücksichtigt wird.
 
 - Verzeichnisname: `<Nummer><Scope-Code>-<Slug>`
-- Targetdefinition: `unit_scopes`
-- BuildSpec und Auftragsdatei: `unit_scope` beziehungsweise `unit-scope`
+- Targetdefinition: `unit_scopes` (bleibt Teil der Zielregistrierung, siehe
+  Dokumentprofil)
+- BuildSpec: `unit_scope`
+- Zuständig: gemeinsames Modul; aus dem Verzeichnisnamen ableitbar, die
+  Auftragsdatei transportiert `unit-scope` nicht mehr
 
 Die vorhandenen Scope-Codes bleiben aus Kompatibilitätsgründen bestehen. Der
 Unit-Scope hat keine Beziehung zum Dokumentprofil oder Bundle-Preset.
@@ -138,6 +165,10 @@ Unit-Scope hat keine Beziehung zum Dokumentprofil oder Bundle-Preset.
 
 Die **Rolle** beschreibt die strukturelle Aufgabe einer Serieneinheit,
 beispielsweise `content`, `appendix`, `excursus` oder `integration`.
+
+- Verzeichnisname: das reservierte Rollenzeichen nach der Nummer
+- Zuständig: gemeinsames Modul; aus dem Verzeichnisnamen ableitbar, die
+  Auftragsdatei transportiert `unit-role` nicht mehr
 
 ### Edition
 
@@ -172,10 +203,13 @@ Build.
 ### Auftragsdatei
 
 Die **Auftragsdatei** ist die von OLLM atomar erzeugte Datei
-`<job-id>.osgbuild.tex`. Sie transportiert den BuildSpec in validierter,
-TeX-lesbarer Form. Sie wählt keine Konfiguration neu aus. Ein Serienprozess
-erhält ihren konkreten Pfad vor `\documentclass` im Symbol
-`\OSGLectureJobFile`; der Dateiname wird nicht heuristisch gesucht.
+`<job-id>.osgbuild.tex`. Sie transportiert den zur Auftragsentscheidung
+gehörenden Teil des BuildSpec in validierter, TeX-lesbarer Form -- nicht den
+vollständigen BuildSpec; Projektinhalt wie `physical-unit` oder `unit-scope`
+liest die Klasse selbst über das gemeinsame Modul. Sie wählt keine
+Konfiguration neu aus. Ein Serienprozess erhält ihren konkreten Pfad vor
+`\documentclass` im Symbol `\OSGLectureJobFile`; der Dateiname wird nicht
+heuristisch gesucht.
 
 ### Gemeinsames TeX-Verzeichnis
 
@@ -224,9 +258,11 @@ und stabilen Slug.
 **Unit**, **Lecture** und **Kapitel** sind Projekt-, Autoren- und
 Langformperspektive derselben fachlichen Struktureinheit.
 
-- `unit-id` ist ihre stabile, vom sichtbaren Titel unabhängige Identität.
-- `physical-unit` bezeichnet das physische Quellverzeichnis.
-- `physical-number` beschreibt die Sortierung.
+- `unit-id` ist ihre stabile, vom sichtbaren Titel unabhängige Identität;
+  Zuständig: OLLM (Registerwert aus einem validierten Zustand).
+- `physical-unit` bezeichnet das physische Quellverzeichnis; Zuständig:
+  gemeinsames Modul.
+- `physical-number` beschreibt die Sortierung; Zuständig: gemeinsames Modul.
 - Die vorgesehene Autorenoberfläche ist `\lecture[Kurz]{Lang}`.
 - Ein Präsentationsadapter realisiert daraus Unit-Titel und native
   Lecture-Information; ein Langformadapter eine Kapitelüberschrift.

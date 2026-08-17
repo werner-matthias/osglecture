@@ -1,11 +1,6 @@
 Dieses Dokument enthält sowohl tatsächliche ToDos als auch längerfristige
 Featurewünsche.
 
-# OLLM
-* [x] clean/prune
-* [x] resolve für Abhängigkeiten
-* [x] report/check
-
 # osglecture + Ergänzungspakete
 * [x] Übergreifende Links
 * [x] Querreferenzen zwischen Folien und Script
@@ -13,11 +8,10 @@ Featurewünsche.
 * [x] Lang-/Kurzformunterstützung auf Sprachebene
 * [ ] Integrationsworkflow
 * [ ] tagging bei presitemize und twocolumns
+* [ ] Cat-code sichere Includes
 
 # lttheme
-* [x] TUC-Theme isolieren
-* [x] Beispielthemen analog Beamer
-* [x] Unterstützung für innere Themes
+* [ ] Unterstützung für innere Themes
 
 # Ergänzungspakete
 * [ ] ANSI-Terminal

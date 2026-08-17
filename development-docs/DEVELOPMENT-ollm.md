@@ -31,8 +31,12 @@ Fontcache, kann `TEXMFVAR` auf ein temporäres Verzeichnis zeigen.
 ## Relevante Entwicklungsdokumente
 
 - `DESIGN.md`: Systemgrenzen, Datenverträge, Zustandsmodell und Rationales;
-- `ARCHITECTURE.md`: osglecture-Klassenarchitektur;
+- `ARCHITECTURE.md`: osglecture-Klassenarchitektur sowie, in Abschnitt 12,
+  die verbindliche Zielaufteilung der Verantwortung zwischen OLLM und
+  `osglecture`;
 - `GLOSSARY.md`: bundleweit verbindliche Terminologie;
-- `DEPENDENCIES-ollm.md`: Laufzeitabhängigkeiten, gebündelter TOML-Parser und
+- `DEPENDENCIES-ollm.md`: Laufzeitabhängigkeiten, gebündelte TOML-Parser und
   Windows-Hinweise;
+- `HISTORY.md`: warum einzelne Codestellen dem in den übrigen Dokumenten
+  beschriebenen Zieldesign noch nicht entsprechen;
 - `ToDo.md`: noch offene Funktionen und längerfristige Ideen.

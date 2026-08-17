@@ -8,9 +8,12 @@ Architekturvertrag ist in `ARCHITECTURE.md` beschrieben.
 
 Bei einem OLLM-Serienbuild prüft die Klasse zunächst das durch
 `\OSGLectureProjectManifestFile` bezeichnete TOML-Manifest auf Existenz und
-lädt ausschließlich die durch `\OSGLectureJobFile` bezeichnete Auftragsdatei.
-Aus deren BuildSpec lädt sie anschließend die Projektkonfiguration.
-Standardmäßig ist dies
+lädt die durch `\OSGLectureJobFile` bezeichnete Auftragsdatei. Diese
+transportiert nur den zur Auftragsentscheidung gehörenden Teil des BuildSpec
+(Target, Doctype, Sprache und verwandte Werte, siehe `ARCHITECTURE.md`
+Abschnitt 12). Projektinhalt -- darunter Ort und Name der Projektkonfiguration
+-- liest die Klasse über das gemeinsame Lua-Modul direkt aus dem
+Projektmanifest. Standardmäßig ist dies
 `Include/projectconfig.tex`; Verzeichnis und Dateiname werden im
 Projektmanifest konfiguriert:
 

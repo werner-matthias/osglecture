@@ -17,7 +17,13 @@ Modern text and math fonts without making plain `osglecture-modes` unusable
 when that optional stack is absent or too old. Failed checks name the relevant
 TeX Live package and an appropriate `tlmgr install` command.
 
-## TOML parser
+## TOML parsers
+
+There are two TOML readers, for two different slices of the same manifest
+(see `ARCHITECTURE.md` section 12), not two competing implementations of the
+same content.
+
+### OLLM (Perl)
 
 End users do not normally install a TOML module. OLLM includes the read-only
 portion of `TOML::Tiny` 0.22 and loads it relative to the OLLM launcher:
@@ -29,7 +35,19 @@ vendor/TOML-Tiny-0.22/lib/TOML/Tiny/Tokenizer.pm
 ```
 
 This parser supports TOML 1.0. The selected parser path only uses modules that
-are part of Perl itself. OLLM does not use the TOML writer.
+are part of Perl itself. OLLM does not use the TOML writer. It reads only the
+slice of the manifest needed to decide what to build (target, doctype,
+language, and related registry lookups).
+
+### Shared module (Lua)
+
+Project content that isn't needed for the build decision itself -- series
+structure, available languages, bundle-preset content -- is read by a shared
+Lua module, callable both from a real compile (`\directlua`) and standalone
+via `texlua`. It vendors its own pure-Lua TOML reader under the same
+portability constraint as the Perl parser: no dependency on anything outside
+what ships with a normal TeX Live install. `ollm doctor` reports name,
+version, and origin of both parsers.
 
 If the bundled files are missing, reinstalling OLLM is the preferred repair.
 As a fallback, a full Perl installation can provide the upstream distribution:

@@ -4,6 +4,10 @@
 **Gegenstand:** Neuentwurf des OSG LaTeX Lecture Maker  
 **Ausgangsbasis:** OLLM 0.11.1 und `osglecture` 0.6.0
 
+Dieses Dokument beschreibt das Zieldesign. Wo die heutige Implementierung
+davon abweicht, steht das gesammelt in [`HISTORY.md`](./HISTORY.md); dieses
+Dokument wiederholt das nicht an jeder betroffenen Stelle.
+
 ## 1. Zweck dieses Dokuments
 
 Dieses Dokument spezifiziert die geplante Verantwortung, die öffentliche
@@ -35,7 +39,9 @@ OLLM soll:
 3. mehrere Dokumenttypen und Sprachvarianten eines Kapitels verwalten;
 4. parallele Builds durch eindeutige Identitäten und getrennte
    Buildverzeichnisse ermöglichen;
-5. einen normalisierten Buildauftrag für `osglecture` erzeugen;
+5. einen minimalen, normalisierten Buildauftrag für `osglecture` erzeugen --
+   nur den für die Auftragsentscheidung nötigen Ausschnitt, nicht den
+   vollständigen Projektinhalt (siehe Abschnitt 4.2);
 6. Ergebnisse und dokumentübergreifende Inkonsistenzen auswerten;
 7. Diagnose, Checks, Clean und Prune anbieten;
 8. unter Unix, macOS und Windows installierbar sein;
@@ -61,7 +67,9 @@ OLLM soll nicht:
 
 - die Wiederholungsläufe von LaTeX selbst steuern;
 - Biber, Indexer oder ähnliche Werkzeuge an `latexmk` vorbei orchestrieren;
-- die fachliche Serientopologie unabhängig von `osglecture` implementieren;
+- eine eigene, von `osglecture` unabhängige Implementierung der
+  Verzeichnisgrammatik oder der Serientopologie führen; beide werden von dem
+  in Abschnitt 4.2 beschriebenen gemeinsamen Modul gelesen;
 - TeX-Quellen nach Referenzen durchsuchen;
 - Themes, Backends oder Nummerierung selbst interpretieren;
 - die interne Datenbank `.fdb_latexmk` lesen oder erweitern;
@@ -73,7 +81,7 @@ OLLM soll nicht:
 ```text
 ollmconfig.toml
       |
-      | Projektwerte, Profil, Buildmatrix
+      | Auftragsentscheidung: Targets, Profile, Buildmatrix
       v
      OLLM
       |
@@ -86,7 +94,7 @@ ollmconfig.toml
       v
   osglecture
       |
-      | Serientopologie, Dokumentsemantik, Referenzen
+      | Dokumentsemantik, Referenzen
       | <jobname>.osgresult.aux
       | Referenzexporte
       v
@@ -95,6 +103,22 @@ ollmconfig.toml
       | Check, Report, Status
       v
 OLLM-Deploymentphase
+```
+
+Serientopologie, verfügbare Sprachen und Bundle-Preset-Inhalt fließen nicht
+über die Auftragsdatei, sondern über ein gemeinsames Lua-Modul, das
+`ollmconfig.toml` direkt liest:
+
+```text
+ollmconfig.toml
+      |
+      | Projektinhalt: Serie, Sprachen, Preset, Verzeichnisgrammatik
+      v
+gemeinsames Lua-Modul
+      ^                                    ^
+      | \directlua (Kompilierlauf)         | texlua (eigenständig)
+      |                                    |
+  osglecture                     OLLM (Discovery, check, doctor)
 ```
 
 ### 4.1 OLLM und latexmk
@@ -116,17 +140,29 @@ duplizieren und wäre schlechter wartbar.
 
 ### 4.2 OLLM und osglecture
 
-OLLM wählt einen Build aus; `osglecture` interpretiert ihn. OLLM übergibt unter
-anderem Dokumenttyp und Sprache, kennt aber nicht die Bedeutung konkreter
-Themes, Referenzbefehle oder Kapitelzähler.
+OLLM wählt einen Build aus; `osglecture` interpretiert ihn. OLLM übergibt
+target, doctype und Sprache als Teil der Auftragsentscheidung; die Bedeutung
+konkreter Themes, Referenzbefehle oder Kapitelzähler kennt es nicht.
 
-Die Klasse liest nicht selbst `ollmconfig.toml`. OLLM ist der einzige Parser des
-Projektmanifests und schreibt die für den konkreten Build benötigten effektiven
-Werte in eine TeX-Auftragsdatei.
+Projektinhalt, der nicht selbst Teil der Auftragsentscheidung ist --
+Serienstruktur, verfügbare Sprachen, Bundle-Preset-Inhalt, Verzeichnisgrammatik
+-- liest die Klasse selbst, über ein gemeinsames Lua-Modul, das sowohl aus
+einem echten Kompilierlauf per `\directlua` als auch eigenständig über
+`texlua` aufrufbar ist. OLLM nutzt für eigene Zwecke -- Serien-Discovery für
+`build --all`, `ollm check`/`ollm doctor` ohne vollständigen Kompilierlauf --
+denselben `texlua`-Zugriff auf dieselbe Implementierung, statt eine zweite,
+unabhängige Interpretation in Perl zu pflegen.
 
-**Rationale:** Ein einziger Parser vermeidet unterschiedliche Merge-,
-Validierungs- und Prioritätsregeln in Perl und LuaLaTeX. Gleichzeitig bleibt
-die Klasse ohne TOML-Abhängigkeit.
+Für den schmalen, tatsächlich zur Auftragsentscheidung gehörenden
+Manifestausschnitt bleibt der in OLLM vendorierte `TOML::Tiny`-Parser
+maßgeblich; Abschnitt 7.7 beschreibt beide Parser.
+
+**Rationale:** Es gibt weiterhin genau eine Implementierung pro
+Manifestausschnitt, nicht unterschiedliche Merge-, Validierungs- und
+Prioritätsregeln in Perl und Lua. Für Projektinhalt liegt diese eine
+Implementierung im gemeinsamen Lua-Modul: Die Klasse ist dessen primärer und
+häufigster Verbraucher, und OLLM erreicht dieselbe Logik über `texlua`, ohne
+sie zu duplizieren.
 
 ### 4.3 OLLM und Nachbarpakete
 
@@ -270,6 +306,11 @@ Kapitel 2 sein. Außerdem soll eine Änderung der Reihenfolge Referenzen nicht a
 Umbenennung der fachlichen Einheit erscheinen lassen.
 
 ## 6. Verzeichnisgrammatik
+
+Die folgende Grammatik ist ein bundleweiter Vertrag, kein internes
+OLLM-Datenformat. Interpretiert wird sie an genau einer Stelle: dem in
+Abschnitt 4.2 beschriebenen gemeinsamen Lua-Modul. `osglecture` nutzt es
+kompilierzeitseitig, OLLM über `texlua` für Discovery und Diagnose.
 
 ### 6.1 Form
 
@@ -720,26 +761,33 @@ reserviert.
 
 ### 7.7 TOML-Parser
 
-Nur OLLM liest TOML. Ausgeliefert wird der reine Parserteil von
-`TOML::Tiny` 0.22 (`Parser`, `Tokenizer`, `Grammar`) in unveränderter Form samt
-Upstream-Lizenz. OLLM verwendet den strikten Lesemodus und benötigt weder den
-TOML-Writer noch dessen zusätzliche Formatierungsabhängigkeiten.
+Es gibt zwei TOML-Leser, für zwei unterschiedliche Ausschnitte desselben
+Manifests, nicht zwei konkurrierende Implementierungen desselben Inhalts:
 
-Der Parser unterstützt TOML 1.0 und benötigt auf dem verwendeten Pfad nur
-Perl-Core-Module. Name, Version und Herkunft erscheinen in `ollm doctor` und
-in der normalisierten Konfigurationsinformation.
+- OLLM liest den schmalen, zur Auftragsentscheidung gehörenden Ausschnitt
+  (siehe Abschnitt 4.2) mit dem vendorierten Parserteil von `TOML::Tiny` 0.22
+  (`Parser`, `Tokenizer`, `Grammar`) in unveränderter Form samt
+  Upstream-Lizenz. OLLM verwendet den strikten Lesemodus und benötigt weder
+  den TOML-Writer noch dessen zusätzliche Formatierungsabhängigkeiten.
+- Das gemeinsame Lua-Modul (Abschnitt 4.2) liest den übrigen Projektinhalt mit
+  einem ebenso vendorierten, reinen Lua-TOML-Leser -- aus einem echten
+  Kompilierlauf über `\directlua`, eigenständig über `texlua`.
+
+Beide Parser unterstützen TOML 1.0. Name, Version und Herkunft beider
+Implementierungen erscheinen in `ollm doctor`.
 
 **Rationale:** TeX Live empfiehlt, Abhängigkeiten von Sprachmodulen für
 ausgelieferte Skripte möglichst zu vermeiden, und garantiert insbesondere im
-minimalen Windows-Perl keine CPAN-Drittmodule. Eine zwingende Abhängigkeit von
-einer lokalen `TOML::Tiny`-Installation würde daher gerade das
+minimalen Windows-Perl keine CPAN-Drittmodule und in LuaLaTeX keine
+zusätzlich installierten Lua-Bibliotheken. Eine zwingende Abhängigkeit von
+einer lokal installierten Bibliothek würde daher in beiden Fällen das
 Portabilitätsziel verletzen. Ein eigener Teilparser wäre dagegen semantisch
-gefährlich. Die gebündelte, versionierte Upstream-Implementierung vermeidet
-beide Probleme.
+gefährlich. Die gebündelten, versionierten Upstream-Implementierungen
+vermeiden beide Probleme -- auf der Perl- wie auf der Lua-Seite.
 
-Eine separat per CPAN installierte Fassung ist nur für Entwicklung und
-Vergleich vorgesehen; OLLM verwendet im Betrieb die mitgelieferte, getestete
-Version.
+Separat per CPAN oder LuaRocks installierte Fassungen sind nur für
+Entwicklung und Vergleich vorgesehen; im Betrieb werden ausschließlich die
+mitgelieferten, getesteten Versionen verwendet.
 
 ## 8. BuildRequest und BuildSpec
 
@@ -788,6 +836,13 @@ enforced LaTeX configuration
 shell-escape policy
 config-signature
 ```
+
+Der BuildSpec ist OLLMs interne Repräsentation und umfasst mehr als die in
+Abschnitt 10 beschriebene Auftragsdatei: Für `--all` und die eigene
+Zustandsführung braucht OLLM `physical-unit` und `unit-scope` auch dann, wenn
+die Klasse sie nicht mehr über die Auftragsdatei erhält. OLLM bezieht diese
+Werte über `texlua` aus demselben gemeinsamen Modul, das auch die Klasse
+nutzt (Abschnitt 4.2), statt sie unabhängig zu parsen.
 
 `--all` erzeugt ausschließlich im Projektmanifest vorgesehene Builds innerhalb
 des gewählten Build-Scopes, zusätzlich gefiltert durch Unit-Scopes und Rolle.
@@ -915,20 +970,26 @@ Beispiel:
 
 ```tex
 \OsgLectureBuildSetup{
-  schema               = 1,
-  job-id               = {bs-020-slides-de-processes},
-  context              = series,
-  series-id            = {bs},
-  series-root          = {...},
-  unit-scope           = b,
-  doctype              = slides,
-  language             = de,
-  available-languages  = {de,en},
-  bundle-preset        = {OSG lecture/1},
-  profile-class        = presentation,
-  config-signature     = {...}
+  schema                    = 1,
+  job-id                    = {bs-020-slides-de-processes},
+  context                   = series,
+  series-id                 = {bs},
+  target                    = slides,
+  doctype                   = slides,
+  profile-class             = presentation,
+  document-metadata-policy  = disabled,
+  applicable-unit-scopes    = {b,bs},
+  language                  = de,
+  shell-escape              = restricted,
+  structure-signature       = {...},
+  config-signature          = {...}
 }
 ```
+
+Serienstruktur, verfügbare Sprachen, Bundle-Preset-Inhalt und die
+Verzeichnisgrammatik der aktuellen Einheit stehen nicht in dieser Datei; die
+Klasse liest sie bei Bedarf selbst über das gemeinsame Lua-Modul aus
+`ollmconfig.toml` (Abschnitt 4.2).
 
 Die Klasse lädt im Serienmodus die durch `\jobname` bestimmte Datei. Sie prüft,
 dass deren `job-id` mit `\jobname` übereinstimmt.
@@ -937,14 +998,17 @@ dass deren `job-id` mit `\jobname` übereinstimmt.
 versehentlich der Jobname eines Builds mit dem Auftrag eines anderen kombiniert
 wird.
 
-Der erste implementierte Vertrag umfasst Schema, Job- und Serienidentität,
-physische Einheit, Rolle und Profil der Einheit, Target, Dokumenttyp, Sprache,
-Sprachmenge und -mapping, ausgewähltes Bundle-Preset sowie eine
-Konfigurationssignatur. Der LaTeX-Leser liegt getrennt in
-`osglecture-config.sty`, damit der Vertrag ohne die noch nicht vollständig
-geschlossene Hauptklasse getestet werden kann. `osglecture.cls` lädt diesen
-Baustein und bevorzugt eine passende Auftragsdatei gegenüber der bisherigen
-Ableitung von Dokumenttyp und Sprache aus dem Jobnamen.
+Der Vertrag umfasst genau die in `ARCHITECTURE.md` Abschnitt 12 als „OLLM"
+klassifizierten Schlüssel: Schema- und Jobidentität, Target, Dokumenttyp und
+Sprache als Kern der Auftragsentscheidung, die davon abhängenden
+Grenzfall-Schlüssel (`profile-class`, `document-metadata-policy`,
+`applicable-unit-scopes`) sowie Engine- und Zustandsführungswerte
+(`shell-escape`, die Signaturen). `unit-id` und `generation-id` treten hinzu,
+sobald sie aus einem validierten Zustand bekannt sind. Der LaTeX-Leser liegt
+getrennt in `osglecture-config.sty`, damit der Vertrag ohne die
+Hauptklasse getestet werden kann. `osglecture.cls` lädt diesen Baustein und
+bevorzugt eine passende Auftragsdatei gegenüber der Ableitung von Dokumenttyp
+und Sprache aus dem Jobnamen.
 
 Die Konfigurationssignatur ist SHA-256 über das normalisierte Manifest, die
 aufgelösten Bundle-Preset- und Targetdefinitionen sowie die für den konkreten Build
@@ -1707,7 +1771,8 @@ nicht.
 `doctor` unterscheidet globale und projektbezogene Prüfungen. Global meldet
 es Pfad und Version von Perl, `latexmk`, LuaLaTeX und `kpsewhich`, die
 Verfügbarkeit zentraler beziehungsweise optionaler TeX-Pakete sowie Version
-und Herkunft des TOML-Parsers. Innerhalb eines Projekts validiert es außerdem
+und Herkunft beider TOML-Parser (Abschnitt 7.7). Innerhalb eines Projekts
+validiert es außerdem
 Manifest und Definitionen, Projektkonfiguration, erforderliche
 Dokumentmetadaten, Schreibrechte, Zustandslesbarkeit und die deklarierte
 Shell-Escape-Policy. Noch nicht als harte Mindestanforderung implementiert
