@@ -29,11 +29,11 @@ sub _find_texlua {
 
 sub _find_cli_script {
   return $CLI_SCRIPT_PATH if defined $CLI_SCRIPT_PATH;
+  require OLLM::CLI;
   my $kpsewhich = OLLM::CLI::_find_program('kpsewhich');
   if ($kpsewhich) {
-    my $path = qx{$kpsewhich $CLI_SCRIPT_NAME 2>/dev/null};
-    chomp $path;
-    if ($path) {
+    my $path = OLLM::CLI::_capture_first_line($kpsewhich, $CLI_SCRIPT_NAME);
+    if (defined($path) && length($path)) {
       $CLI_SCRIPT_PATH = $path;
       return $CLI_SCRIPT_PATH;
     }
@@ -72,11 +72,21 @@ sub error {
 # Runs "texlua <cli-script> <command> <args...>" and returns its stdout
 # split into lines, each further split on tab (the CLI script's TSV
 # convention). Dies with the subprocess's stderr on a non-zero exit.
+#
+# Uses the list form of open (like OLLM::CLI::_capture_doctor_command)
+# rather than a shell-interpolated qx{}: quoting a command line for a
+# shell is platform-specific (POSIX quoting rules do not apply to
+# cmd.exe), so escaping arguments ourselves and handing the result to a
+# shell breaks on Windows in particular for paths containing backslashes.
+# The list form bypasses the shell entirely on every platform.
 sub _run {
   my (@args) = @_;
   die "$LOOKUP_ERROR\n" if !available();
   my @command = (_find_texlua(), _find_cli_script(), @args);
-  my $output = qx{@{[ join ' ', map { quotemeta } @command ]} 2>&1};
+  open my $handle, '-|', @command
+    or die "cannot run osglecture-manifest-cli.lua: $!\n";
+  my $output = do { local $/; <$handle> // '' };
+  close $handle;
   my $status = $? >> 8;
   if ($status != 0) {
     chomp $output;
