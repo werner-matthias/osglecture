@@ -310,7 +310,7 @@
 % earlier \code{kvoptions.sty} corruption in this file). @4 therefore loads
 % the actual class file with the syntax mode temporarily reset to normal
 % catcodes.}{\code{\ExplSyntaxOn}}{\code{scrbook}}{expl3}{Below}
-\cs_set:Npe \OsgLectureTmpLoadClass
+\edef \OsgLectureTmpLoadClass
   { \exp_not:N \LoadClass {\l__osglecture_base_class_tl} }
 \ExplSyntaxOff
 \OsgLectureTmpLoadClass

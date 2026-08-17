@@ -41,4 +41,4 @@ of the last years.
 | ltheme-TUC2019   | :x:  | :x:  | :+1: |
 | osgdoc           | :+1: | :+1: | :+1: |
 
-[^1]: With ltx-talk bridge 2026 only
+[^1]: With ltx-talk bridge: only 2026, no 2024/2025
