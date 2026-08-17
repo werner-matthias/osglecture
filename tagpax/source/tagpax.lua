@@ -7,7 +7,7 @@
   Description:
   semantic tagged-PDF extractor
 ]]
-
+--<*pkg>
 -- determine version and date for compatibility check
 local function package_info(filename)
   local path = kpse and kpse.find_file(filename, "lua") or filename
@@ -30,6 +30,14 @@ local function package_info(filename)
   }
 end
 local M = package_info("tagpax.lua")
+
+-- \ldeen*{Diese beiden Module hängen selbst nicht von @1 ab; ein zirkulärer
+-- Require entsteht also nicht, und eager Laden am Dateianfang ist
+-- unbedenklich.}{These two modules do not themselves depend on @1, so no
+-- circular require results, and eager loading at the top of the file is
+-- safe.}{\code{tagpax.lua}}
+local ir_reader = require("tagpax-ir")
+local validator = require("tagpax-validate")
 
 local pdfe = assert(pdfe, "tagpax requires LuaTeX's pdfe library")
 
@@ -205,7 +213,6 @@ local function min_page(a, b)
   if not b or b == 0 then return a end
   return math.min(a, b)
 end
-
 
 -- Page inference -----------------------------------------------------------
 -- A StructElem may omit /Pg. ParentTree arrays then reveal where it is used;
@@ -620,17 +627,26 @@ end
 -- Reading and validation have dedicated modules. These forwarding functions
 -- preserve the early public API without maintaining duplicate implementations.
 function M.read(filename)
-  return require("tagpax-ir").read(filename)
+  return ir_reader.read(filename)
 end
 
 function M.validate(ir)
-  return require("tagpax-validate").validate(ir)
+  return validator.validate(ir)
 end
 
 -- TeX navigation adapter ---------------------------------------------------
--- Only validated heading records cross from Lua into macro arguments.
+-- \ldeen*{Nur validierte Heading-Datensätze überqueren die Grenze von Lua zu
+-- \TeX-Makroargumenten. Das Escaping selbst stammt aus @1 (dort auch mit
+-- Begründung, warum es alle relevanten Zeichen abdecken muss); hier kommt
+-- nur noch die Normalisierung eingebetteter Zeilenumbrüche hinzu, die
+-- innerhalb eines einzelnen \TeX-Arguments nicht zulässig sind.}{Only
+-- validated heading records cross from Lua into \TeX\ macro arguments. The
+-- escaping itself lives in @1 (with the rationale for covering every
+-- relevant character); only the normalization of embedded line breaks --
+-- not permitted inside a single \TeX\ argument -- is added here.
+-- }{\code{tagpax-ir.lua}}
 local function tex_escape(s)
-  return (tostring(s or ""):gsub("([%%#{}])", "\\%1"):gsub("\r?\n", " "))
+  return (ir_reader.tex_escape(s):gsub("\r?\n", " "))
 end
 
 function M.emit_tex_headings(filename)
@@ -648,3 +664,4 @@ function M.emit_tex_headings(filename)
 end
 
 return M
+--</pkg>
