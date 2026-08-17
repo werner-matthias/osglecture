@@ -1,0 +1,69 @@
+\input regression-test
+\documentclass{article}
+\begin{document}
+\START
+\directlua{
+  local function report(key, value)
+    texio.write_nl("log", key .. "=" .. tostring(value))
+  end
+  local manifest = require("osglecture-manifest")
+
+  local fake_lfs = {
+    attributes = function(path)
+      if path == "/course/ollmconfig.toml" then return "file" end
+      return nil
+    end,
+    currentdir = function() return "/course/010-introduction/sections" end,
+  }
+  local found, find_error = manifest.find(nil, {lfs = fake_lfs})
+  report("find-fake-root", found and found.project_root)
+  report("find-fake-manifest", found and found.manifest_path)
+
+  local empty_lfs = {
+    attributes = function() return nil end,
+    currentdir = function() return "/nowhere" end,
+  }
+  local missing, missing_error = manifest.find(nil, {lfs = empty_lfs})
+  report("find-missing", missing)
+  report("find-missing-message",
+    missing_error ~= nil and missing_error:find("no project manifest", 1, true) ~= nil)
+
+  local loaded, load_error = manifest.load("manifest-fixture/010-introduction")
+  report("load-ok", loaded ~= nil)
+  report("load-error", load_error)
+  report("load-project-root", loaded and loaded.project_root)
+
+  local loaded_again = manifest.load("manifest-fixture/010-introduction")
+  report("load-cache-identity",
+    loaded ~= nil and loaded_again ~= nil and loaded.manifest == loaded_again.manifest)
+
+  if loaded then
+    local langs = manifest.available_languages(loaded.manifest)
+    report("languages-joined", table.concat(langs, ","))
+    report("bundle-preset", manifest.bundle_preset(loaded.manifest))
+
+    local shared = manifest.shared_tex(loaded.manifest, loaded.project_root)
+    report("shared-directory", shared.shared_tex_directory)
+    report("shared-config", shared.project_config_file)
+    report("shared-config-path", shared.project_config_path)
+  end
+
+  local minimal_manifest = {schema = 1}
+  local minimal_langs = manifest.available_languages(minimal_manifest)
+  report("languages-default-joined", table.concat(minimal_langs, ","))
+  report("bundle-preset-default", manifest.bundle_preset(minimal_manifest))
+
+  local minimal_shared = manifest.shared_tex(minimal_manifest, "/proj")
+  report("shared-default-directory", minimal_shared.shared_tex_directory)
+  report("shared-default-config", minimal_shared.project_config_file)
+
+  local bad_result, bad_error = manifest.read("manifest-fixture-invalid.toml")
+  report("read-invalid-result", bad_result)
+  report("read-invalid-has-message", bad_error ~= nil)
+
+  local missing_file, missing_file_error = manifest.read("does-not-exist.toml")
+  report("read-missing-result", missing_file)
+  report("read-missing-has-message", missing_file_error ~= nil)
+}
+\END
+\end{document}

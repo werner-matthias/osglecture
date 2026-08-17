@@ -46,9 +46,13 @@ Die Entwicklungsdokumente beschreiben dieses Zieldesign bereits vollständig.
 Der Code setzt es erst teilweise um. Konkret zum Zeitpunkt dieses Eintrags
 (17. August 2026):
 
-- Es existiert noch kein gemeinsames Lua-Modul für Manifestinhalt und
-  Verzeichnis-Discovery. `osglecture-series-index.lua` deckt nur die
-  Verzeichnis-Discovery ab, nicht das TOML-Manifest.
+- Das gemeinsame Lua-Modul (`osglecture-manifest.lua`, mit vendoriertem
+  TOML-1.0-Leser `osglecture-toml.lua`, siehe `osglecture/THIRD_PARTY.md`)
+  existiert und ist getestet (`testfiles/manifest.lvt`), aber noch von
+  niemandem verbunden: `osglecture.cls` liest `shared-tex-directory` und
+  `project-config-file` weiterhin aus der Auftragsdatei, nicht über das
+  Modul (Schritt 5 steht noch aus), und OLLM ruft es nicht über `texlua` auf
+  (Schritt 3 steht noch aus).
 - `OLLM::Config.pm` liest weiterhin das vollständige Projektmanifest und
   löst Serienstruktur, Sprachliste und Bundle-Preset-Inhalt selbst auf, statt
   dafür das gemeinsame Modul zu nutzen.

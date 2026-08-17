@@ -1,0 +1,13 @@
+schema = 1
+bundle_preset = "OSG lecture/1"
+
+[project]
+id = "manifest-fixture"
+
+[project.tex]
+directory = "Include"
+config = "projectconfig.tex"
+
+[languages]
+available = ["de", "en"]
+default = "de"

@@ -41,6 +41,16 @@ local function join(left, right)
   return left .. separator .. right
 end
 
+-- \ldeen{Exportiert die Windows-gehärteten Pfad-Grundfunktionen, damit
+-- andere Module (etwa das gemeinsame Manifest-Modul) sie wiederverwenden,
+-- statt eine eigene, ungeprüfte Kopie zu pflegen.}{Exports the
+-- Windows-hardened path primitives so other modules (such as the shared
+-- manifest module) can reuse them instead of maintaining their own,
+-- unverified copy.}
+series_index.basename = basename
+series_index.dirname = dirname
+series_index.join = join
+
 function series_index.parse_unit_name(name)
   if type(name) ~= "string" then return nil, "unit name must be a string" end
   local number, scope, tail = name:match("^(%d%d%d)(%l*)%-(.+)$")
@@ -174,7 +184,14 @@ local function directory_entries(path, lfs)
   return result
 end
 
-function series_index.locate(start_path, options)
+-- \ldeen*{Reine Verzeichniswanderung ohne Geschwister-Analyse: von @1
+-- unabhängige Aufrufer (etwa das Manifest-Modul) brauchen nur die
+-- Serienwurzel, nicht Doctype oder Unit-Scopes. @2 nutzt diese Funktion
+-- intern und ergänzt die Analyse.}{Pure upward walk without sibling
+-- analysis: callers that do not need a doctype (such as the manifest
+-- module) only need the series root, not doctype or unit scopes. @2 uses
+-- this function internally and adds the analysis.}{\code{series\_index.analyze}}{\code{series\_index.locate}}
+function series_index.locate_unit_ancestor(start_path, options)
   options = options or {}
   local lfs = options.lfs or require("lfs")
   local path = start_path or lfs.currentdir()
@@ -185,23 +202,36 @@ function series_index.locate(start_path, options)
   while true do
     local name = basename(path)
     if series_index.parse_unit_name(name) then
-      local root = dirname(path)
-      local entries, error_message = directory_entries(root, lfs)
-      if not entries then return nil, "cannot read series directory " .. root .. ": " .. tostring(error_message) end
-      local result, analyze_error = series_index.analyze(entries, name, options)
-      if not result then return nil, analyze_error end
-      result.unit_directory = path
-      result.series_directory = root
-      for _, unit in ipairs(result.units) do
-        unit.path = join(root, unit.name)
-      end
-      return result
+      return {
+        unit_directory = path,
+        series_directory = dirname(path),
+        unit_name = name,
+      }
     end
     local parent = dirname(path)
     if parent == path or (path == "." and parent == ".") then break end
     path = parent
   end
   return nil, "no series-unit directory found above " .. tostring(start_path or lfs.currentdir())
+end
+
+function series_index.locate(start_path, options)
+  options = options or {}
+  local lfs = options.lfs or require("lfs")
+  local ancestor, ancestor_error = series_index.locate_unit_ancestor(start_path, options)
+  if not ancestor then return nil, ancestor_error end
+
+  local root = ancestor.series_directory
+  local entries, error_message = directory_entries(root, lfs)
+  if not entries then return nil, "cannot read series directory " .. root .. ": " .. tostring(error_message) end
+  local result, analyze_error = series_index.analyze(entries, ancestor.unit_name, options)
+  if not result then return nil, analyze_error end
+  result.unit_directory = ancestor.unit_directory
+  result.series_directory = root
+  for _, unit in ipairs(result.units) do
+    unit.path = join(root, unit.name)
+  end
+  return result
 end
 
 function series_index.initialize(start_path, context)

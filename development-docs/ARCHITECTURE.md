@@ -1213,6 +1213,42 @@ Die drei mit „Grenzfall" markierten Schlüssel hängen an der Zielregistrierun
 ebenfalls in das gemeinsame Modul wandert, ist eine eigene, hier nicht
 entschiedene Frage (siehe „Offene Fragen").
 
+### Schritt 1: verifizierter Schlüsselsatz (17. August 2026, abgeschlossen)
+
+Die Klassifikation oben stand bereits fest; Schritt 1 hat sie gegen jeden
+tatsächlichen Verbraucher in `osglecture/*.sty` und `osglecture.cls` geprüft
+(vollständige Suche nach `\OsgLectureBuildValue{<jeder „gemeinsames
+Modul"-Schlüssel>}`). Zwei Ergebnisse verfeinern die Klassifikation, ohne sie
+zu ändern:
+
+- **`physical-unit`, `unit-role` und `logical-ordinal` sind nicht nur
+  Eingabe, sondern auch Ausgabe.** `osglecture-structure.sty`
+  (`__osglecture_result_write:`) schreibt alle drei zusammen mit `unit-id` in
+  `<jobname>.osgresult.aux` zurück an OLLM. Das ist bereits der etablierte
+  Mechanismus für `unit-id` (ein Wert, den die Klasse liefert, nicht
+  empfängt); er trägt ohne Änderung auch die drei jetzt migrierenden Werte.
+  Zusätzlich entscheidet `unit-role` in `osglecture.cls:364`, ob
+  `osglecture-integration` geladen wird -- eine echte Bootstrap-Entscheidung,
+  nicht nur Berichtsdaten. Schritt 5 muss diese Stellen auf das gemeinsame
+  Modul umstellen, nicht nur auf Wegfall der Eingabe prüfen.
+- **`shared-tex-directory` und `project-config-file` werden vor `\LoadClass`
+  gelesen** (`osglecture.cls`, direkt nach der Doctype-/Profilklassen-
+  Standardsetzung, vor der Basisklassenwahl). Das gemeinsame Modul muss also
+  an diesem frühen Punkt aufrufbar sein -- vor jeder anderen Paketladung,
+  ausschließlich auf `\directlua` und `lfs` gestützt. Das ist technisch
+  unproblematisch (`\directlua` funktioniert ab Formatstart), aber eine
+  konkrete Anforderung an den Zuschnitt des Moduls in Schritt 2.
+
+Ebenfalls bestätigt: `unit-scope`, `physical-number`, `available-languages`
+und `bundle-preset` werden heute zwar als Pflichtschlüssel validiert, aber von
+keiner Stelle in `osglecture` je gelesen. Ihr Wegfall aus der Auftragsdatei
+(Schritt 4) hat damit keine Verhaltensauswirkung auf die Klasse; er verlangt
+lediglich, sie aus der Pflichtschlüsselliste in
+`__osglecture_build_validate:` (`osglecture-config.sty`) zu entfernen.
+
+Der minimale Schlüsselsatz aus der Tabelle oben ist damit bestätigt und bereit
+für Schritt 2.
+
 ### Erster Migrationsschritt
 
 `OLLM::Config.pm` (`_series_units`) und `osglecture-series-index.lua`
@@ -1225,13 +1261,20 @@ Duplikation, statt neue Komplexität einzuführen.
 
 ### Schrittfolge
 
-1. Den minimalen Schlüsselsatz festlegen, den OLLM zur Auftragsentscheidung
+1. [x] Den minimalen Schlüsselsatz festlegen, den OLLM zur Auftragsentscheidung
    tatsächlich braucht (im Kern: `target`/`doctype`/`language`-Auflösung samt
-   der drei Grenzfälle).
-2. Das gemeinsame Modul (TOML-Lesen, Discovery, Namensinterpretation) nach
-   dem Vorbild von `osglecture-series-index.lua` mit derselben Testdisziplin
-   aufbauen -- sowohl über `\directlua` innerhalb eines echten Laufs als auch
-   eigenständig über `texlua` aufrufbar.
+   der drei Grenzfälle) -- verifiziert gegen alle tatsächlichen Verbraucher,
+   siehe „Schritt 1: verifizierter Schlüsselsatz" oben.
+2. [x] Das gemeinsame Modul (TOML-Lesen, Discovery, Namensinterpretation)
+   aufbauen -- `osglecture-manifest.lua`, mit vendoriertem TOML-1.0-Leser
+   `osglecture-toml.lua` (siehe `osglecture/THIRD_PARTY.md`), Discovery
+   durch Wiederverwendung von `osglecture-series-index.lua` (dessen
+   Pfad-Grundfunktionen dafür jetzt exportiert sind). Getestet über
+   `testfiles/manifest.lvt` mit derselben Testdisziplin wie
+   `series-index.lvt`; verifiziert sowohl über `\directlua` innerhalb eines
+   echten Laufs als auch eigenständig über `texlua`. Noch nicht angebunden:
+   weder `osglecture.cls` (Schritt 5) noch OLLM (Schritt 3) rufen es bisher
+   auf.
 3. `ollm check`/`ollm doctor` auf dasselbe Modul über `texlua` umstellen,
    statt eine zweite Parser-Implementierung in Perl zu pflegen.
 4. Die Auftragsdatei auf den in Schritt 1 festgelegten minimalen Schlüsselsatz

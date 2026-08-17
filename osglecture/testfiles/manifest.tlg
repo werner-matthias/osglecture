@@ -1,0 +1,23 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+find-fake-root=/course
+find-fake-manifest=/course/ollmconfig.toml
+find-missing=nil
+find-missing-message=true
+load-ok=true
+load-error=nil
+load-project-root=manifest-fixture
+load-cache-identity=true
+languages-joined=de,en
+bundle-preset=OSG lecture/1
+shared-directory=manifest-fixture/Include
+shared-config=projectconfig.tex
+shared-config-path=manifest-fixture/Include/projectconfig.tex
+languages-default-joined=
+bundle-preset-default=nil
+shared-default-directory=/proj/Include
+shared-default-config=projectconfig.tex
+read-invalid-result=nil
+read-invalid-has-message=true
+read-missing-result=nil
+read-missing-has-message=true

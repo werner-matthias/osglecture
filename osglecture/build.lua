@@ -24,6 +24,8 @@ installfiles = {
   "osglecture-twocolumns.sty",
   "osglecture-series-index.lua",
   "osglecture-series.sty",
+  "osglecture-toml.lua",
+  "osglecture-manifest.lua",
 }
 sourcefiles = {
   "osglecture.cls",
@@ -44,6 +46,8 @@ sourcefiles = {
   "osglecture-twocolumns.sty",
   "osglecture-series-index.lua",
   "osglecture-series.sty",
+  "osglecture-toml.lua",
+  "osglecture-manifest.lua",
 }
 typesetfiles = { }
 textfiles = { "README.md", "ARCHITECTURE.md" }

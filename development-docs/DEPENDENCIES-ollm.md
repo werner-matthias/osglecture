@@ -46,8 +46,20 @@ structure, available languages, bundle-preset content -- is read by a shared
 Lua module, callable both from a real compile (`\directlua`) and standalone
 via `texlua`. It vendors its own pure-Lua TOML reader under the same
 portability constraint as the Perl parser: no dependency on anything outside
-what ships with a normal TeX Live install. `ollm doctor` reports name,
-version, and origin of both parsers.
+what ships with a normal TeX Live install.
+
+Both files live in the `osglecture` package, not in `ollm`, since
+`osglecture` is their primary consumer:
+
+- `osglecture/osglecture-manifest.lua`: manifest reading and the project-root
+  discovery it needs (reusing `osglecture-series-index.lua`'s path
+  utilities).
+- `osglecture/osglecture-toml.lua`: the vendored TOML 1.0 reader; see
+  `osglecture/THIRD_PARTY.md` for provenance and license.
+
+OLLM does not call this module yet (see `HISTORY.md`); once it does,
+`ollm doctor` will report name, version, and origin of both parsers, the
+same way it already does for `TOML::Tiny`.
 
 If the bundled files are missing, reinstalling OLLM is the preferred repair.
 As a fallback, a full Perl installation can provide the upstream distribution:
