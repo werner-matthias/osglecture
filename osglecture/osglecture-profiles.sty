@@ -8,6 +8,7 @@
 \ExplSyntaxOn
 
 \prop_new:N \g__osglecture_profiles_prop
+\seq_new:N \g__osglecture_profile_classes_seq
 \tl_new:N \l__osglecture_profile_backend_tl
 \tl_new:N \l__osglecture_profile_adapter_tl
 \tl_new:N \l__osglecture_profile_engine_tl
@@ -95,6 +96,10 @@
       \l__osglecture_profile_capabilities_tl
     \prop_gput:NnV \g__osglecture_profiles_prop {#1/class}
       \l__osglecture_profile_class_tl
+    \seq_if_in:NVF \g__osglecture_profile_classes_seq
+      \l__osglecture_profile_class_tl
+      { \seq_gput_right:NV \g__osglecture_profile_classes_seq
+          \l__osglecture_profile_class_tl }
     \prop_gput:NnV \g__osglecture_profiles_prop {#1/doctypes}
       \l__osglecture_profile_doctypes_tl
     \prop_gput:NnV \g__osglecture_profiles_prop {#1/class-options}
@@ -112,6 +117,9 @@
     \prop_gput:NnV \g__osglecture_profiles_prop {#1/document-metadata}
       \l__osglecture_profile_metadata_tl
   }
+
+\NewDocumentCommand \OsgLectureProfileClassKnownTF { m m m }
+  { \seq_if_in:NnTF \g__osglecture_profile_classes_seq {#1} {#2} {#3} }
 
 \NewDocumentCommand \DeclareOsgLectureProfileClassOptions { m m m }
   { \prop_gput:Nnn \g__osglecture_profiles_prop {#1/class-options/#2} {#3} }

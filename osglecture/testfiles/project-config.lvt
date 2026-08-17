@@ -2,12 +2,24 @@
 \def\OSGLectureProjectManifestFile{project-config-manifest.toml}
 \def\OSGLectureJobFile{project-config.osgbuild.tex}
 \documentclass{osglecture}
+\OsgLectureSeriesUnit{physical={020-processes},unit={processes}}
 \title[U.~Title]{Unit Title}
 % An identical local value is compatible with project enforcement.
 \author[L.~Author]{Longform Author}
 \begin{document}
 \START
 \TYPE{project-config-loaded=\ProjectConfigLoaded}
+\TYPE{project-preamble-common=\ProjectPreambleCommon}
+\TYPE{project-preamble-longform=\ProjectPreambleLongform}
+\ifdefined\ProjectPreambleProjector
+  \TYPE{project-preamble-projector=loaded}
+\else
+  \TYPE{project-preamble-projector=skipped}
+\fi
+\TYPE{project-preamble-class=\ProjectPreambleScrbook}
+\TYPE{project-preamble-installed=\ProjectPreambleInstalled}
+\TYPE{active-modes=\ActiveLectureModes}
+\TYPE{continuation-counters=\OsgLectureContinuationCounters}
 \TYPE{project-author=\OsgLectureAuthor}
 \TYPE{project-short-author=\OsgLectureShortAuthor}
 \TYPE{project-supervisor=\OsgLectureMetadataValue{supervisor}}
@@ -17,14 +29,23 @@
 \TYPE{project-numbering=\OsgLectureProjectValue{numbering}}
 \TYPE{project-theme=\OsgLectureProjectValue{theme}}
 \TYPE{target-profile=\OsgLectureDocumentProfile}
+\TYPE{job-unit-scopes=\OsgLectureBuildValue{applicable-unit-scopes}}
+\OsgLectureSeriesAvailableTF
+  {\TYPE{series=true}}
+  {\TYPE{series=false}}
+\TYPE{series-logical=\OsgLectureSeriesLogicalUnit{020-processes}}
+\TYPE{series-physical=\OsgLectureSeriesPhysicalUnit{processes}}
+\OsgLectureSeriesUnitKnownTF{processes}
+  {\TYPE{series-unit-known=true}}
+  {\TYPE{series-unit-known=false}}
 \OsgLectureProjectEnforcedTF{theme}
   {\TYPE{project-theme-enforced=true}}
   {\TYPE{project-theme-enforced=false}}
 \makeatletter
 \if@twoside
-  \TYPE{project-class-options=early}
-\else
   \TYPE{project-class-options=missing}
+\else
+  \TYPE{project-class-options=early}
 \fi
 \makeatother
 \END

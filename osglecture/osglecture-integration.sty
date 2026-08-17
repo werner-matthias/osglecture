@@ -1,0 +1,57 @@
+\NeedsTeXFormat{LaTeX2e}[2024/06/01]
+\ProvidesExplPackage
+  {osglecture-integration}
+  {2026/08/16}
+  {0.1.0}
+  {Logical-unit PDF integration through tagpax}
+
+\RequirePackage{osglecture-config}
+\RequirePackage{osglecture-references}
+\RequirePackage{tagpax}
+
+\ExplSyntaxOn
+
+\tl_new:N \l__osglecture_integration_pdf_tl
+\tl_new:N \l__osglecture_integration_ir_tl
+\tl_new:N \l__osglecture_integration_generation_tl
+
+\msg_new:nnn {osglecture-integration}{missing-projection}
+  {
+    Logical~unit~'#1'~has~no~promoted~projection~for~the~current~document~type~
+    and~language.~Build~that~unit~before~integrating~it.
+  }
+
+\cs_new_protected:Npn \__osglecture_integration_include:n #1
+  {
+    \OsgLectureReferenceDocumentTF
+      {#1}{\OsgLectureDocumentType}{\OsgLectureLanguage}
+      {
+        \OsgLectureReferenceDocumentPdfTo
+          {#1}{\OsgLectureDocumentType}{\OsgLectureLanguage}
+          \l__osglecture_integration_pdf_tl
+        \OsgLectureReferenceDocumentGenerationTo
+          {#1}{\OsgLectureDocumentType}{\OsgLectureLanguage}
+          \l__osglecture_integration_generation_tl
+        \tl_set:Ne \l__osglecture_integration_ir_tl
+          { \jobname-osglecture-#1.tagpax }
+        \tagpaxextract[\l__osglecture_integration_ir_tl]
+          {\l__osglecture_integration_pdf_tl}
+        \tagpaxinclude[ir=\l__osglecture_integration_ir_tl]
+          {\l__osglecture_integration_pdf_tl}
+        \exp_args:Ne \OsgLectureWriteReferenceUse
+          {
+            \token_to_str:N \OsgLectureIntegrationUse
+            {\OsgLectureBuildValue{generation-id}}
+            {\exp_not:V \l__osglecture_integration_generation_tl}
+            {\exp_not:n {#1}}
+            {\OsgLectureDocumentType}
+            {\OsgLectureLanguage}
+          }
+      }
+      { \msg_error:nnn {osglecture-integration}{missing-projection}{#1} }
+  }
+
+\NewDocumentCommand \includeunit { m }
+  { \__osglecture_integration_include:n {#1} }
+
+\ExplSyntaxOff

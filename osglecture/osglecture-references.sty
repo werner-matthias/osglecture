@@ -33,6 +33,8 @@
 \bool_new:N \g__olref_replacements_installed_bool
 \iow_new:N \g__olref_export_iow
 \iow_new:N \g__olref_used_iow
+\cs_generate_variant:Nn \prop_if_in:NnTF { NV }
+\cs_generate_variant:Nn \prop_get:NnN { NV }
 
 \tl_new:N \l__olref_unit_tl
 \tl_new:N \l__olref_type_tl
@@ -51,8 +53,17 @@
   }
 \msg_new:nnn { osglecture-references } { unknown-option }
   { Unknown~reference-address~key~'#1'. }
-\msg_new:nnn { osglecture-references } { missing-document }
-  { No~reference~export~is~registered~for~'#1';~using~an~undefined~reference. }
+\msg_new:nnn { osglecture-references } { unknown-unit }
+  {
+    Logical~unit~'#1'~is~not~known~in~this~series.~Build~that~unit~once~
+    before~resolving~references~to~it;~using~an~undefined~reference.
+  }
+\msg_new:nnn { osglecture-references } { missing-projection }
+  {
+    Logical~unit~'#1'~is~known~as~physical~unit~'#2',~but~no~reference~
+    export~is~available~for~the~requested~document~type~and~language.~
+    Build~that~projection;~using~an~undefined~reference.
+  }
 \msg_new:nnn { osglecture-references } { missing-registration-key }
   { Reference-document~registration~does~not~define~'#1'. }
 \msg_new:nnn { osglecture-references } { replace-standard }
@@ -200,10 +211,52 @@
       }
   }
 
+\NewDocumentCommand \OsgLectureReferenceDocumentTF { m m m m m }
+  {
+    \tl_set:Ne \l__olref_identity_tl
+      { \__olref_identity:nnn {#1}{#2}{#3} }
+    \prop_if_in:NVTF \g__olref_documents_prop \l__olref_identity_tl
+      {#4} {#5}
+  }
+\cs_new:Npn \__olref_document_aux:nnn #1#2#3 {#1}
+\cs_new:Npn \__olref_document_pdf:nnn #1#2#3 {#2}
+\cs_new:Npn \__olref_document_generation:nnn #1#2#3 {#3}
+\NewDocumentCommand \OsgLectureReferenceDocumentAuxTo { m m m m }
+  {
+    \tl_set:Ne \l__olref_identity_tl
+      { \__olref_identity:nnn {#1}{#2}{#3} }
+    \prop_get:NVN \g__olref_documents_prop \l__olref_identity_tl #4
+    \tl_set:Ne #4
+      { \exp_after:wN \__olref_document_aux:nnn #4 }
+  }
+\NewDocumentCommand \OsgLectureReferenceDocumentPdfTo { m m m m }
+  {
+    \tl_set:Ne \l__olref_identity_tl
+      { \__olref_identity:nnn {#1}{#2}{#3} }
+    \prop_get:NVN \g__olref_documents_prop \l__olref_identity_tl #4
+    \tl_set:Ne #4
+      { \exp_after:wN \__olref_document_pdf:nnn #4 }
+  }
+\NewDocumentCommand \OsgLectureReferenceDocumentGenerationTo { m m m m }
+  {
+    \tl_set:Ne \l__olref_identity_tl
+      { \__olref_identity:nnn {#1}{#2}{#3} }
+    \prop_get:NVN \g__olref_documents_prop \l__olref_identity_tl #4
+    \tl_set:Ne #4
+      { \exp_after:wN \__olref_document_generation:nnn #4 }
+  }
+
+\NewDocumentCommand \OsgLectureWriteReferenceExport { m }
+  { \iow_now:Ne \g__olref_export_iow { \exp_not:n {#1} } }
+\NewDocumentCommand \OsgLectureWriteReferenceUse { m }
+  { \iow_now:Ne \g__olref_used_iow { \exp_not:n {#1} } }
+
 \ProvideDocumentCommand \OsgLectureReferenceExport
   { m m m m m m m } { }
 \ProvideDocumentCommand \OsgLectureReferenceUse
   { m m m m m m m } { }
+\ProvideDocumentCommand \OsgLectureContinuationCounter { m m } { }
+\ProvideDocumentCommand \OsgLectureIntegrationUse { m m m m m } { }
 
 \cs_new_protected:Npn \__olref_use_write:nn #1#2
   {
@@ -253,8 +306,24 @@
             \exp_after:wN \__olref_import_aux:nnn \l_tmpa_tl
           }
           {
-            \msg_warning:nnV {osglecture-references}{missing-document}
-              \l__olref_identity_tl
+            \cs_if_exist:NTF \OsgLectureSeriesUnitKnownTF
+              {
+                \exp_args:NV \OsgLectureSeriesUnitKnownTF \l__olref_unit_tl
+                  {
+                    \msg_warning:nnxx
+                      {osglecture-references}{missing-projection}
+                      {\l__olref_unit_tl}
+                      {\OsgLectureSeriesPhysicalUnit{\l__olref_unit_tl}}
+                  }
+                  {
+                    \msg_warning:nnV {osglecture-references}{unknown-unit}
+                      \l__olref_unit_tl
+                  }
+              }
+              {
+                \msg_warning:nnV {osglecture-references}{unknown-unit}
+                  \l__olref_unit_tl
+              }
           }
         \prop_gput:NVn
           \g__olref_imported_prop \l__olref_identity_tl {true}

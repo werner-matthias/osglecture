@@ -1057,8 +1057,9 @@ Buildverzeichnis:
 <jobname>.osgref.aux
 ```
 
-Sie enthält ausschließlich die öffentliche Referenzoberfläche des Dokuments
-und kann durch `xr`, `hyperref` oder eine L3-basierte Importschicht gelesen
+Sie enthält die öffentliche Referenzoberfläche des Dokuments sowie die für den
+aktuellen Mode konfigurierten abschließenden Zählerstände. Labels können durch
+`xr`/`hyperref`, Zählerstände durch die L3-basierte Continuation-Schicht gelesen
 werden.
 
 Die normale Build-`.aux` wird nicht veröffentlicht, da sie backend- und
@@ -1085,6 +1086,18 @@ Referenzrecord enthält Konsumenten- und Zielgeneration, Unit-ID, Doctype,
 Sprache, Label und die verwendete Property (`ref`, `page`, `name` oder
 `autoref`). Dadurch kann `check` fehlende Labels und gegenüber einer neuen
 Zielgeneration veraltete Konsumenten unterscheiden.
+
+Continuation nutzt dieselbe physisch-logische Zuordnung und denselben
+jobgebundenen Referenzsnapshot, benötigt aber keine zusätzliche Auflösung in
+OLLM: Der Lua-Serienindex liefert die vorherige normale physische Unit
+(Integrationsunits werden übersprungen), LaTeX löst deren bekannte logische
+Identität auf und übernimmt den Zählerstand nach `\lecture`. Fehlt die
+promotierte Projektion, bleibt das Ergebnis mit einer Warnung lokal nummeriert.
+Der Exportzeitpunkt nach dem letzten Shipout ist für `page` beabsichtigt: Der
+Counter bezeichnet dort die letzte ausgelieferte Seite, daher exportiert die
+Continuation als nächste Seitennummer ausdrücklich `page + 1`. Andere
+konfigurierte LaTeX-Counter werden mit ihrem abschließenden Wert übernommen und
+anschließend durch ihre normalen Befehle weitergezählt.
 Beispiele:
 
 ```text
@@ -1339,6 +1352,13 @@ PDF-Artefakte auf der LaTeX-Ebene nach logischen Unit-IDs:
 \includeunits{introduction,processes,appendix-posix}
 \includeunits{introduction...scheduling,appendix-posix}
 ```
+
+Implementiert ist zunächst `\includeunit`: Die Befehlsreihenfolge bestimmt
+unmittelbar die Ausgabereihenfolge. Jede logische ID wird gegen den
+jobgebundenen Snapshot aufgelöst, durch `tagpax` importiert und als verwendete
+Integrationsgeneration protokolliert. Mehrere Imports erhalten getrennte
+Namespaces für ihre externen Streams. Listen- und Bereichssyntax bleiben eine
+Komforterweiterung; sie verändern das Ordnungsprinzip nicht.
 
 `...` bezeichnet einen inklusiven Bereich in der logischen Serienreihenfolge.
 Anhänge und andere Rollen können ausdrücklich genannt werden. Die vollständige

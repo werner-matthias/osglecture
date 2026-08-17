@@ -1,0 +1,104 @@
+name: Distribution compatibility
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: compatibility-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compatibility:
+    name: ${{ matrix.component.name }} · TeX Live ${{ matrix.distribution.texlive }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        component:
+          - name: ollm
+            directory: ollm
+            config: build
+          - name: osgdoc
+            directory: osgdoc
+            config: build
+          - name: langselect
+            directory: langselect
+            config: build
+          - name: lttheme
+            directory: lttheme
+            config: build
+          - name: lttheme-tuc-2019
+            directory: lttheme-tuc-2019
+            config: build
+          - name: osglecture-modes-core
+            directory: osglecture-modes
+            config: core
+          - name: osglecture-modes-ltxtalk
+            directory: osglecture-modes
+            config: ltxtalk
+          - name: osglecture
+            directory: osglecture
+            config: build
+          - name: tagpax
+            directory: tagpax
+            config: build
+        distribution:
+          - texlive: "2024"
+            image: texlive/texlive:TL2024-historic
+          - texlive: "2025"
+            image: texlive/texlive:TL2025-historic
+          - texlive: current
+            image: texlive/texlive:latest
+
+    container:
+      image: ${{ matrix.distribution.image }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Show environment
+        run: |
+          lualatex --version
+          l3build version
+
+      - name: Test ${{ matrix.component.name }}
+        working-directory: ${{ matrix.component.directory }}
+        run: l3build check --config ${{ matrix.component.config }}
+
+      - name: Show test differences
+        if: failure()
+        shell: bash
+        run: |
+          test_dir="build/test"
+          if [[ "${{ matrix.component.config }}" != "build" ]]; then
+            test_dir="build/test-${{ matrix.component.config }}"
+          fi
+          if [[ ! -d "$test_dir" ]]; then
+            echo "No build/test directory was produced."
+            exit 0
+          fi
+
+          while IFS= read -r file; do
+            echo "::group::$file"
+            sed -n '1,500p' "$file"
+            echo "::endgroup::"
+          done < <(find "$test_dir" -type f -name '*.diff' -print)
+
+      - name: Upload failed test output
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: compatibility-${{ matrix.component.name }}-tl${{ matrix.distribution.texlive }}
+          path: |
+            build/test*/*.diff
+            build/test*/*.log
+            build/test*/*.pdf
+          if-no-files-found: warn
+          retention-days: 7

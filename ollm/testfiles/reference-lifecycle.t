@@ -13,12 +13,34 @@ use lib 'scripts/vendor/TOML-Tiny-0.22/lib';
 use lib 'scripts/lib';
 
 use OLLM::Config;
+use OLLM::CLI;
 use OLLM::Executor;
 use OLLM::Resolver;
 use OLLM::State;
 
-my $latexmk = qx{command -v latexmk 2>/dev/null};
-chomp $latexmk;
+sub _execute_and_preserve_log {
+  my ($resolved, $latexmk_rc, $label) = @_;
+  my $status = OLLM::Executor->execute(
+    resolved => $resolved,
+    latexmk_rc => $latexmk_rc,
+  );
+  if ($status) {
+    my $spec = $resolved->{build_spec};
+    my $source = File::Spec->catfile(
+      $spec->{build_directory}, "$spec->{job_id}.log",
+    );
+    if (-f $source) {
+      my $destination = File::Spec->catdir('..', 'build', 'test');
+      make_path($destination);
+      copy($source, File::Spec->catfile(
+        $destination, "ollm-reference-lifecycle-$label.log",
+      )) or warn "cannot preserve failed lifecycle log '$source': $!\n";
+    }
+  }
+  return $status;
+}
+
+my $latexmk = OLLM::CLI::_find_program('latexmk');
 if (!$latexmk) {
   plan skip_all => 'latexmk is not available';
 }
@@ -43,6 +65,10 @@ if ($unpack_status != 0) {
 my $unit = File::Spec->catdir($root, '020-processes');
 my $shared = File::Spec->catdir($root, 'Include');
 make_path($unit, $shared);
+copy(
+  'testfiles/fixtures/project/Include/projectconfig.tex',
+  File::Spec->catfile($shared, 'projectconfig.tex'),
+) or die $!;
 copy(
   'testfiles/fixtures/project/ollmconfig.toml',
   File::Spec->catfile($root, 'ollmconfig.toml'),
@@ -80,13 +106,19 @@ ok !defined($resolved->{build_spec}{unit_id}),
   'first concrete BuildSpec has no slug-derived logical unit-id';
 
 my $separator = $^O eq 'MSWin32' ? ';' : ':';
-local $ENV{TEXINPUTS} = $texinputs . $separator
-  . abs_path('../osglecture') . $separator
+my $osglecture_path = abs_path('../osglecture');
+$osglecture_path =~ s{\\}{/}g;
+my $texinputs_path = $texinputs;
+$texinputs_path =~ s{\\}{/}g;
+local $ENV{TEXINPUTS} = $texinputs_path . $separator
+  . $osglecture_path . $separator
   . ($ENV{TEXINPUTS} // '');
-local $ENV{TEXMFVAR} = $ENV{TEXMFVAR} // '/tmp/osglecture-texmf-var';
-my $status = OLLM::Executor->execute(
-  resolved    => $resolved,
-  latexmk_rc  => abs_path('scripts/ollm-latexmk.rc'),
+local $ENV{LUAINPUTS} = $osglecture_path . $separator
+  . ($ENV{LUAINPUTS} // '');
+local $ENV{TEXMFVAR} = $ENV{TEXMFVAR}
+  // File::Spec->catdir($root, 'texmf-var');
+my $status = _execute_and_preserve_log(
+  $resolved, abs_path('scripts/ollm-latexmk.rc'), 'producer-initial',
 );
 is $status, 0, 'a real LuaLaTeX build completes and promotes its state';
 is(
@@ -94,6 +126,22 @@ is(
   'processes',
   'the promoted mapping comes from the explicit lecture declaration',
 );
+my ($initial_producer) = grep {
+  $_->{physical_unit} eq '020-processes'
+} OLLM::State->_current_results($resolved->{build_spec});
+my $producer_export = File::Spec->catfile(
+  OLLM::State->_generation_directory($resolved->{build_spec}, $initial_producer),
+  'reference.osgref.aux',
+);
+open my $continuation_export, '<:raw', $producer_export or die $!;
+my $continuation_export_text = do { local $/; <$continuation_export> };
+close $continuation_export;
+like $continuation_export_text,
+  qr/\\OsgLectureContinuationCounter\{section\}\{1\}/,
+  'the promoted reference export contains the final section counter';
+like $continuation_export_text,
+  qr/\\OsgLectureContinuationCounter\{page\}\{2\}/,
+  'the promoted reference export contains the next physical page number';
 
 my %next = %{ $resolved->{build_spec} };
 delete $next{generation_id};
@@ -117,6 +165,10 @@ print {$consumer_source} <<'TEX';
 \documentclass[doctype=script]{osglecture}
 \begin{document}
 \lecture{Consumer}{consumer}
+\typeout{CONTINUATION-PAGE=\arabic{page}}
+\typeout{CONTINUATION-BEFORE=\arabic{section}}
+\section{Continued section}
+\typeout{CONTINUATION-AFTER=\arabic{section}}
 See \olref[processes]{sec:scheduling}.
 \end{document}
 TEX
@@ -130,9 +182,8 @@ my $consumer_resolved = OLLM::Config->resolve_request(
     source => 'main.tex', target => 'script',
   },
 );
-my $consumer_status = OLLM::Executor->execute(
-  resolved    => $consumer_resolved,
-  latexmk_rc  => abs_path('scripts/ollm-latexmk.rc'),
+my $consumer_status = _execute_and_preserve_log(
+  $consumer_resolved, abs_path('scripts/ollm-latexmk.rc'), 'consumer',
 );
 is $consumer_status, 0,
   'a second unit resolves and promotes an external reference';
@@ -144,6 +195,12 @@ my $consumer_log_text = do { local $/; <$consumer_log> };
 close $consumer_log;
 unlike $consumer_log_text, qr/Reference .* undefined/,
   'the external label is resolved through the promoted aux projection';
+like $consumer_log_text, qr/CONTINUATION-PAGE=2/,
+  'the consumer starts with the physical page after its predecessor';
+like $consumer_log_text, qr/CONTINUATION-BEFORE=1/,
+  'the consumer imports the previous unit section counter';
+like $consumer_log_text, qr/CONTINUATION-AFTER=2/,
+  'the next section continues the imported numbering';
 my ($consumer_result) = grep {
   $_->{physical_unit} eq '030-consumer'
 } OLLM::State->_current_results($consumer_spec);
@@ -153,6 +210,54 @@ is_deeply $consumer_result->{dependencies}, [{
   label => 'sec:scheduling',
   target_generation => $resolved->{build_spec}{generation_id},
 }], 'the promoted consumer records its actual external document dependency';
+
+my $unknown_consumer = File::Spec->catdir($root, '040-unknown-consumer');
+make_path($unknown_consumer);
+open my $unknown_source, '>:raw',
+  File::Spec->catfile($unknown_consumer, 'main.tex') or die $!;
+print {$unknown_source} <<'TEX';
+\documentclass[doctype=script]{osglecture}
+\begin{document}
+\lecture{Unknown consumer}{unknown-consumer}
+See \olref[never-built]{missing-label}.
+\end{document}
+TEX
+close $unknown_source;
+my $unknown_resolved = OLLM::Config->resolve_request(
+  start_dir       => $unknown_consumer,
+  definitions_dir => abs_path('scripts/definitions'),
+  plan => {
+    action => 'build', all => 0, dry_run => 0, latexmk_args => ['-silent'],
+    legacy_args => [], non_interactive => 1, rebuild => 0, resolve => 0,
+    source => 'main.tex', target => 'script',
+  },
+);
+is(
+  _execute_and_preserve_log(
+    $unknown_resolved, abs_path('scripts/ollm-latexmk.rc'),
+    'unknown-consumer',
+  ),
+  0,
+  'an unresolved logical unit remains a normal LaTeX build result',
+);
+my $unknown_spec = $unknown_resolved->{build_spec};
+open my $unknown_log, '<:raw', File::Spec->catfile(
+  $unknown_spec->{build_directory}, "$unknown_spec->{job_id}.log",
+) or die $!;
+my $unknown_log_text = do { local $/; <$unknown_log> };
+close $unknown_log;
+like $unknown_log_text,
+  qr/Logical unit 'never-built' is not known.*in this series/s,
+  'LaTeX explains that an unknown logical unit must first be built';
+eval {
+  OLLM::Resolver->execute(
+    resolved => $unknown_resolved,
+    latexmk_rc => abs_path('scripts/ollm-latexmk.rc'),
+  );
+};
+like $@,
+  qr/physical unit is unknown; build that unit once before resolving references/,
+  '--resolve reports the unknown mapping instead of searching every unit';
 
 open $source, '>:raw', File::Spec->catfile($unit, 'main.tex') or die $!;
 print {$source} <<'TEX';
@@ -165,8 +270,8 @@ Lifecycle fixture.
 \end{document}
 TEX
 close $source;
-my $producer_status = OLLM::Executor->execute(
-  resolved => $resolved, latexmk_rc => abs_path('scripts/ollm-latexmk.rc'),
+my $producer_status = _execute_and_preserve_log(
+  $resolved, abs_path('scripts/ollm-latexmk.rc'), 'producer-changed',
 );
 is $producer_status, 0, 'the producer can publish a changed label generation';
 my ($changed_producer) = grep {

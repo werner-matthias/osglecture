@@ -4,3 +4,5 @@ standalone=true
 doctype=script
 profile=book
 backend=book
+series=false
+series-position=

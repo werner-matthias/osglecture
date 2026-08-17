@@ -16,10 +16,26 @@
 \prop_new:N \g__osglecture_project_policy_priority_prop
 \prop_new:N \g__osglecture_project_policy_enforced_prop
 \prop_new:N \g__osglecture_project_target_profile_prop
+\prop_new:N \g__osglecture_setup_class_prop
+\prop_new:N \g__osglecture_setup_mode_prop
+\seq_new:N \g__osglecture_project_preamble_seq
 \tl_new:N \l__osglecture_project_target_tl
+\tl_new:N \l__osglecture_preamble_class_tl
+\tl_new:N \l__osglecture_preamble_current_class_tl
+\bool_new:N \l__osglecture_preamble_include_bool
 \msg_new:nnnn {osglecture-project}{enforced-conflict}
   { Configuration~'#1'~is~enforced~as~'#2';~cannot~set~'#3'. }
   { Change~the~project~enforcement~instead~of~overriding~it~locally. }
+\msg_new:nnnn {osglecture-project}{preamble-not-found}
+  { Preamble~fragment~'#1'~was~not~found. }
+  { Put~'#1.tex'~in~the~shared~TeX~directory~or~install~
+    'osglecture-preamble-#1.tex'~in~a~TeX~tree. }
+\msg_new:nnnn {osglecture-project}{invalid-setup-key}
+  { Unknown~osglecture~setup~key~'#1'. }
+  { Use~an~explicit~'class/<name>'~or~'mode/<name>'~key. }
+\msg_new:nnnn {osglecture-project}{unknown-setup-class}
+  { Unknown~base~class~'#1'~in~osglecture~setup. }
+  { Load~or~declare~a~document~profile~for~that~class~before~using~its~setup. }
 \cs_new_protected:Npn \__osglecture_metadata_receiver:nnnnn #1#2#3#4#5
   {
     \seq_gput_right:Nx \g__osglecture_metadata_pending_seq
@@ -75,6 +91,144 @@
 
 \NewDocumentCommand \LectureProjectSetup { m }
   { \keys_set:nn { osglecture/project } {#1} }
+
+% The outer setup namespace is deliberately explicit: class/article and
+% mode/article remain unambiguous even when LaTeX ecosystems reuse names.
+\cs_new_protected:Npn \__osglecture_setup_append:Nnn #1#2#3
+  {
+    \prop_get:NnNTF #1 {#2} \l_tmpa_tl
+      { \prop_gput:Nnx #1 {#2} { \exp_not:V \l_tmpa_tl , \exp_not:n {#3} } }
+      { \prop_gput:Nnn #1 {#2} {#3} }
+  }
+
+\cs_new_protected:Npn \__osglecture_setup_store:nn #1#2
+  {
+    \regex_extract_once:nnNTF
+      { \A (class|mode) / ([^/]+) \Z } {#1} \l_tmpa_seq
+      {
+        \tl_set:Ne \l_tmpa_tl { \seq_item:Nn \l_tmpa_seq {2} }
+        \tl_set:Ne \l_tmpb_tl { \seq_item:Nn \l_tmpa_seq {3} }
+        \str_case:Vn \l_tmpa_tl
+          {
+            {class}
+              {
+                \exp_args:NV \OsgLectureProfileClassKnownTF \l_tmpb_tl
+                  { \exp_args:NNV \__osglecture_setup_append:Nnn
+                      \g__osglecture_setup_class_prop \l_tmpb_tl {#2} }
+                  { \msg_error:nnV {osglecture-project}{unknown-setup-class}
+                      \l_tmpb_tl }
+              }
+            {mode}
+              { \exp_args:NNV \__osglecture_setup_append:Nnn
+                  \g__osglecture_setup_mode_prop \l_tmpb_tl {#2} }
+          }
+      }
+      { \msg_error:nnn {osglecture-project}{invalid-setup-key}{#1} }
+  }
+
+\cs_new_protected:Npn \__osglecture_setup_missing_value:n #1
+  { \msg_error:nnn {osglecture-project}{invalid-setup-key}{#1} }
+
+\NewDocumentCommand \OsgLectureSetup { m }
+  {
+    \keyval_parse:NNn
+      \__osglecture_setup_missing_value:n
+      \__osglecture_setup_store:nn
+      {#1}
+  }
+
+\NewExpandableDocumentCommand \OsgLectureSetupClassOptions { m }
+  { \prop_item:Nn \g__osglecture_setup_class_prop {#1} }
+
+\NewDocumentCommand \DeclareOsgLectureModeSetupArea { m m }
+  {
+    \keys_define:nn { osglecture/setup/mode }
+      { #1 .code:n = { #2 {##1} } }
+  }
+\cs_new_protected:Npn \osglecture_project_apply_mode_setup:
+  {
+    \exp_args:Ne \clist_map_inline:nn { \ActiveLectureModes }
+      {
+        \prop_get:NnNT \g__osglecture_setup_mode_prop {##1} \l_tmpa_tl
+          { \exp_args:NnV \keys_set:nn { osglecture/setup/mode } \l_tmpa_tl }
+      }
+  }
+
+% Preamble fragments are registered while projectconfig.tex is read, before the
+% base class is known.  osglecture.cls executes the queue after loading the
+% class, finalizing the mode graph, and installing the adapters.
+\keys_define:nn { osglecture/preamble-include }
+  {
+    class .tl_set:N = \l__osglecture_preamble_class_tl,
+  }
+
+\NewDocumentCommand \IncludeOsgLecturePreamble { d<> O{} m }
+  {
+    \seq_gput_right:Nx \g__osglecture_project_preamble_seq
+      {
+        \exp_not:N \__osglecture_preamble_consider:nnn
+          { \IfNoValueTF{#1}{}{\exp_not:n{#1}} }
+          { \exp_not:n{#2} }
+          { \exp_not:n{#3} }
+      }
+  }
+
+\cs_new_protected:Npn \__osglecture_preamble_consider:nnn #1#2#3
+  {
+    \bool_set_true:N \l__osglecture_preamble_include_bool
+    \tl_clear:N \l__osglecture_preamble_class_tl
+    \keys_set:nn { osglecture/preamble-include } {#2}
+    \tl_if_blank:nF {#1}
+      {
+        \IfLectureModeTF {#1} { }
+          { \bool_set_false:N \l__osglecture_preamble_include_bool }
+      }
+    \tl_if_empty:NF \l__osglecture_preamble_class_tl
+      {
+        \exp_args:NNV \clist_if_in:NnF \l__osglecture_preamble_class_tl
+          \l__osglecture_preamble_current_class_tl
+          { \bool_set_false:N \l__osglecture_preamble_include_bool }
+      }
+    \bool_if:NT \l__osglecture_preamble_include_bool
+      { \__osglecture_preamble_input:n {#3} }
+  }
+
+\cs_new_protected:Npn \__osglecture_preamble_input:n #1
+  {
+    \tl_clear:N \l_tmpa_tl
+    \cs_if_exist:NT \OsgLectureBuildValue
+      { \tl_set:Ne \l_tmpa_tl { \OsgLectureBuildValue{shared-tex-directory} } }
+    \tl_if_empty:NF \l_tmpa_tl
+      {
+        \tl_put_right:Nn \l_tmpa_tl { /#1.tex }
+        \file_if_exist:VTF \l_tmpa_tl
+          {
+            \iow_term:x
+              { osglecture:~loading~preamble~fragment~'#1'~from~'\l_tmpa_tl' }
+            \exp_args:NV \file_input:n \l_tmpa_tl
+            \tl_set:Nn \l_tmpa_tl { found }
+          }
+          { \tl_clear:N \l_tmpa_tl }
+      }
+    \tl_if_empty:NT \l_tmpa_tl
+      {
+        \tl_set:Nn \l_tmpb_tl { osglecture-preamble-#1.tex }
+        \file_if_exist:VTF \l_tmpb_tl
+          {
+            \iow_term:x
+              { osglecture:~loading~installed~preamble~fragment~'#1' }
+            \exp_args:NV \file_input:n \l_tmpb_tl
+          }
+          { \msg_error:nnn {osglecture-project}{preamble-not-found}{#1} }
+      }
+  }
+
+\cs_new_protected:Npn \osglecture_project_include_preambles:n #1
+  {
+    \tl_set:Nn \l__osglecture_preamble_current_class_tl {#1}
+    \seq_map_inline:Nn \g__osglecture_project_preamble_seq
+      {##1}
+  }
 \keys_define:nn { osglecture/project-target }
   {
     profile .code:n =

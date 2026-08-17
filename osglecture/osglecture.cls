@@ -263,6 +263,14 @@
     \tl_if_empty:NF \l__osglecture_selected_options_tl
       { \tl_put_right:Nn \l__osglecture_selected_options_tl {,} }
     \tl_put_right:NV \l__osglecture_selected_options_tl \l_tmpa_tl
+      }
+\tl_set:Ne \l_tmpa_tl
+  { \exp_args:NV \OsgLectureSetupClassOptions \l__osglecture_base_class_tl }
+\tl_if_empty:NF \l_tmpa_tl
+  {
+    \tl_if_empty:NF \l__osglecture_selected_options_tl
+      { \tl_put_right:Nn \l__osglecture_selected_options_tl {,} }
+    \tl_put_right:NV \l__osglecture_selected_options_tl \l_tmpa_tl
   }
 \tl_if_empty:NF \l__osglecture_base_options_tl
   {
@@ -329,6 +337,7 @@
       { \OsgLectureBuildLoadedTF {#2} {#1} }
   }
 
+\RequirePackage{osglecture-series}
 \RequirePackage{osglecture-metadata}
 \ExplSyntaxOn
 \exp_args:Nx \OsgLectureConfigureMetadata
@@ -348,6 +357,14 @@
 \exp_args:NV \OsgLectureLoadAdapter \l__osglecture_adapter_tl
 \RequirePackage{osglecture-structure}
 \RequirePackage{osglecture-references}
+\RequirePackage{osglecture-continuation}
+\ExplSyntaxOn
+\OsgLectureBuildLoadedTF
+  {
+    \str_if_eq:eeT {\OsgLectureBuildValue{unit-role}} {i}
+      { \RequirePackage{osglecture-integration} }
+  }
+  { }
 \ExplSyntaxOn
 
 \tl_set:Ne \l__osglecture_setup_file_tl
@@ -359,5 +376,8 @@
 \tl_if_empty:NF \l__osglecture_setup_file_tl
   { \exp_args:NV \file_input:n \l__osglecture_setup_file_tl }
 \osglecture_configuration_priority_set:n {30}
+\osglecture_project_apply_mode_setup:
+\exp_args:NV \osglecture_project_include_preambles:n
+  \l__osglecture_base_class_tl
 
 \ExplSyntaxOff

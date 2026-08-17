@@ -29,6 +29,7 @@
   { Keep~the~explicit~unit-id~stable~or~remove~the~stale~OLLM~state. }
 
 \bool_gset_true:N \g__osglecture_unit_valid_bool
+\NewHook{osglecture/lecture/after}
 
 \cs_new_protected:Npn \__osglecture_unit_validate:n #1
   {
@@ -80,6 +81,7 @@
   {
     \__osglecture_unit_declare:nnn {#1}{#2}{#3}
     \osglecture_adapter_lecture:nnn {#1}{#2}{#3}
+    \UseHook{osglecture/lecture/after}
     \tl_if_empty:NT \g__osglecture_deployment_chapter_tl
       {
         \cs_if_exist:NT \thechapter

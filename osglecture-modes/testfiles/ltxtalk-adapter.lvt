@@ -12,6 +12,14 @@
 \only<slides>{\TYPE{ONLY SLIDES YES}}
 \only<article>{\TYPE{ONLY ARTICLE NO}}
 \uncover<slides>{\TYPE{UNCOVER SLIDES YES}}
+\visible<slides>{\TYPE{VISIBLE SLIDES YES}}
+\invisible<slides>{\TYPE{INVISIBLE SLIDES YES}}
+\alt<slides>{\TYPE{ALT SLIDES YES}}{\TYPE{ALT SLIDES NO}}
+\alt<article>{\TYPE{ALT ARTICLE NO}}{\TYPE{ALT ARTICLE FALLBACK YES}}
+\action<slides>{\TYPE{ACTION SLIDES YES}}
 \begin{onlyenv}<slides>\TYPE{ONLYENV SLIDES YES}\end{onlyenv}
+\begin{uncoverenv}<slides>\TYPE{UNCOVERENV SLIDES YES}\end{uncoverenv}
+\begin{visibleenv}<slides>\TYPE{VISIBLEENV SLIDES YES}\end{visibleenv}
+\begin{invisibleenv}<slides>\TYPE{INVISIBLEENV SLIDES YES}\end{invisibleenv}
 \END
 \end{document}

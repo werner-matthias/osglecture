@@ -1,0 +1,147 @@
+\NeedsTeXFormat{LaTeX2e}[2024/06/01]
+\ProvidesExplPackage
+  {osglecture-continuation}
+  {2026/08/16}
+  {0.1.0}
+  {Mode-aware counter continuation between series units}
+
+\RequirePackage{osglecture-project}
+\RequirePackage{osglecture-series}
+\RequirePackage{osglecture-references}
+
+\ExplSyntaxOn
+
+\clist_new:N \g__osglecture_continuation_counters_clist
+\tl_new:N \l__osglecture_continuation_physical_tl
+\tl_new:N \l__osglecture_continuation_unit_tl
+\tl_new:N \l__osglecture_continuation_aux_tl
+\prop_new:N \g__osglecture_continuation_values_prop
+
+\msg_new:nnn { osglecture-continuation } { unknown-previous-unit }
+  {
+    Previous~physical~unit~'#1'~has~no~known~logical~identity.~Build~that~unit~
+    once~before~continuing~its~counters;~using~the~normal~initial~values.
+  }
+\msg_new:nnn { osglecture-continuation } { missing-projection }
+  {
+    Previous~logical~unit~'#1'~has~no~promoted~projection~for~the~current~
+    document~type~and~language;~using~the~normal~initial~counter~values.
+  }
+\msg_new:nnn { osglecture-continuation } { unknown-counter }
+  { Cannot~continue~unknown~LaTeX~counter~'#1'. }
+
+\keys_define:nn { osglecture/setup/continuation }
+  {
+    counters .clist_gset:N = \g__osglecture_continuation_counters_clist,
+    none .code:n = { \clist_gclear:N \g__osglecture_continuation_counters_clist },
+    none .value_forbidden:n = true,
+  }
+\cs_new_protected:Npn \__osglecture_continuation_setup:n #1
+  { \keys_set:nn { osglecture/setup/continuation } {#1} }
+\DeclareOsgLectureModeSetupArea{continuation}
+  {\__osglecture_continuation_setup:n}
+
+\NewExpandableDocumentCommand \OsgLectureContinuationCounters { }
+  { \clist_use:Nn \g__osglecture_continuation_counters_clist {,} }
+
+\cs_new_protected:Npn \__osglecture_continuation_restore:nn #1#2
+  {
+    \clist_if_in:NnT \g__osglecture_continuation_counters_clist {#1}
+      {
+        \cs_if_exist:cTF { c@#1 }
+          { \prop_gput:Nnn \g__osglecture_continuation_values_prop {#1}{#2} }
+          { \msg_warning:nnn {osglecture-continuation}{unknown-counter}{#1} }
+      }
+  }
+
+\cs_new_protected:Npn \__osglecture_continuation_apply:
+  {
+    \prop_map_inline:Nn \g__osglecture_continuation_values_prop
+      { \int_gset:cn { c@##1 } {##2} }
+  }
+
+\cs_new_protected:Npn \__osglecture_continuation_input:
+  {
+    \OsgLectureReferenceDocumentAuxTo
+      {\l__osglecture_continuation_unit_tl}
+      {\OsgLectureDocumentType}
+      {\OsgLectureLanguage}
+      \l__osglecture_continuation_aux_tl
+    \group_begin:
+      \cs_set_protected:Npn \newlabel ##1##2 { }
+      \cs_set_protected:Npn \OsgLectureReferenceExport
+        ##1##2##3##4##5##6##7 { }
+      \cs_set_eq:NN \OsgLectureContinuationCounter
+        \__osglecture_continuation_restore:nn
+      \exp_args:NV \file_input:n \l__osglecture_continuation_aux_tl
+    \group_end:
+  }
+
+\cs_new_protected:Npn \__osglecture_continuation_import:
+  {
+    \clist_if_empty:NF \g__osglecture_continuation_counters_clist
+      {
+        \tl_set:Ne \l__osglecture_continuation_physical_tl
+          { \OsgLectureSeriesPreviousContinuationPhysicalUnit }
+        \tl_if_empty:NF \l__osglecture_continuation_physical_tl
+          {
+            \tl_set:Ne \l__osglecture_continuation_unit_tl
+              {
+                \exp_args:NV \OsgLectureSeriesLogicalUnit
+                  \l__osglecture_continuation_physical_tl
+              }
+            \tl_if_empty:NTF \l__osglecture_continuation_unit_tl
+              {
+                \msg_warning:nnV {osglecture-continuation}
+                  {unknown-previous-unit}
+                  \l__osglecture_continuation_physical_tl
+              }
+              {
+                \OsgLectureReferenceDocumentTF
+                  {\l__osglecture_continuation_unit_tl}
+                  {\OsgLectureDocumentType}
+                  {\OsgLectureLanguage}
+                  { \__osglecture_continuation_input: }
+                  {
+                    \msg_warning:nnV {osglecture-continuation}
+                      {missing-projection}
+                      \l__osglecture_continuation_unit_tl
+                  }
+              }
+          }
+      }
+  }
+
+\cs_new_protected:Npn \__osglecture_continuation_export:
+  {
+    \clist_map_inline:Nn \g__osglecture_continuation_counters_clist
+      {
+        \cs_if_exist:cTF { c@##1 }
+          {
+            \exp_args:Ne \OsgLectureWriteReferenceExport
+              {
+                \token_to_str:N \OsgLectureContinuationCounter
+                {\exp_not:n {##1}}
+                {
+                  \str_if_eq:nnTF {##1}{page}
+                    { \int_eval:n { \int_use:c {c@page} + 1 } }
+                    { \int_use:c {c@##1} }
+                }
+              }
+          }
+          { \msg_warning:nnn {osglecture-continuation}{unknown-counter}{##1} }
+      }
+  }
+
+\AddToHook{begindocument/before}[osglecture-continuation/import]
+  { \__osglecture_continuation_import: }
+\DeclareHookRule{begindocument/before}{osglecture-continuation/import}
+  {after}{osglecture-references/setup}
+\AddToHook{osglecture/lecture/after}[osglecture-continuation/apply]
+  { \__osglecture_continuation_apply: }
+\AddToHook{enddocument/afterlastpage}[osglecture-continuation/export]
+  { \__osglecture_continuation_export: }
+\DeclareHookRule{enddocument/afterlastpage}{osglecture-continuation/export}
+  {before}{osglecture-references/export}
+
+\ExplSyntaxOff

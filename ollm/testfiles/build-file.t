@@ -51,6 +51,8 @@ is $spec->{shell_escape}, 'restricted',
   'manifest shell-escape policy reaches the build specification';
 is $spec->{profile_class}, 'longform',
   'target profile class reaches the build specification';
+is_deeply $spec->{applicable_unit_scopes}, ['a', 'as'],
+  'target unit scopes reach the build specification';
 is $spec->{document_metadata_policy}, 'required',
   'project target overrides the definition metadata policy';
 is $spec->{shared_tex_directory},
@@ -61,7 +63,7 @@ is $spec->{project_config_file}, 'projectconfig.tex',
 like $spec->{project_config_signature}, qr/\A[0-9a-f]{64}\z/,
   'project configuration contents are signed into the build contract';
 like $spec->{build_directory},
-  qr{[.]osglecture/build/020-processes/script/de\z},
+  qr{[.]osglecture[\\/]build[\\/]020-processes[\\/]script[\\/]de\z},
   'build directory is isolated by unit, target, and language';
 is $spec->{aux_directory}, $spec->{build_directory},
   'auxiliary state stays inside the isolated build directory';
@@ -163,6 +165,10 @@ like $content, qr/job-id=\{bs-020-script-de-processes\}/,
   'rendered build file binds itself to the job id';
 like $content, qr/profile-class=\{longform\}/,
   'rendered build file contains only the target profile class';
+like $content, qr/applicable-unit-scopes=\{a,as\}/,
+  'rendered build file contains the doctype-specific unit scopes';
+like $content, qr/source-directory=\{[^}]*020-processes\}/,
+  'rendered build file identifies the source unit directory';
 like $content, qr/document-metadata-policy=\{required\}/,
   'rendered build file contains the effective early metadata policy';
 like $content, qr/shared-tex-directory=\{[^}]*Include\}/,
@@ -226,8 +232,12 @@ close $document_handle;
 
 my $old_directory = getcwd();
 chdir $temporary or die "cannot enter $temporary: $!";
-local $ENV{TEXINPUTS} = abs_path(File::Spec->catdir($old_directory, '..', 'osglecture')) . ':';
-local $ENV{TEXMFVAR} = $ENV{TEXMFVAR} // '/tmp/osglecture-texmfvar.RxNSOL';
+my $texinputs_separator = $^O eq 'MSWin32' ? ';' : ':';
+local $ENV{TEXINPUTS} =
+  abs_path(File::Spec->catdir($old_directory, '..', 'osglecture'))
+  . $texinputs_separator;
+local $ENV{TEXMFVAR} = $ENV{TEXMFVAR}
+  // File::Spec->catdir($temporary, 'texmf-var');
 open my $tex_output, '>', File::Spec->catfile($temporary, 'lualatex.out')
   or die $!;
 my $status;

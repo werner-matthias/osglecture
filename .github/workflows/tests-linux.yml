@@ -1,0 +1,95 @@
+name: Tests · Linux
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-linux-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  install-smoke:
+    name: Bundle installation · Current TeX Live
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    container:
+      image: texlive/texlive:latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Show environment
+        run: |
+          lualatex --version
+          l3build version
+
+      - name: Install, locate, compile, and uninstall
+        run: bash .github/scripts/install-smoke-test.sh
+
+  test:
+    name: ${{ matrix.module }} · Current TeX Live
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    strategy:
+      fail-fast: false
+      matrix:
+        module:
+          - ollm
+          - osgdoc
+          - langselect
+          - lttheme
+          - lttheme-tuc-2019
+          - osglecture-modes
+          - osglecture
+          - tagpax
+
+    container:
+      image: texlive/texlive:latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Show environment
+        run: |
+          lualatex --version
+          l3build version
+
+      - name: Test ${{ matrix.module }}
+        working-directory: ${{ matrix.module }}
+        run: l3build check
+
+      - name: Show test differences
+        if: failure()
+        shell: bash
+        run: |
+          if [[ ! -d build/test ]]; then
+            echo "No build/test directory was produced."
+            exit 0
+          fi
+
+          while IFS= read -r file; do
+            echo "::group::$file"
+            sed -n '1,500p' "$file"
+            echo "::endgroup::"
+          done < <(find build/test -type f -name '*.diff' -print)
+
+      - name: Upload failed test output
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: test-failures-${{ matrix.module }}-Linux
+          path: |
+            build/test/*.diff
+            build/test/*.log
+            build/test/*.pdf
+          if-no-files-found: warn
+          retention-days: 14

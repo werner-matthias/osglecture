@@ -10,6 +10,12 @@ OLLM currently expects these programs:
 
 Run `ollm doctor` to see the executables and TOML parser selected by the
 current installation. Use `ollm doctor --format=json` in automated checks.
+The Doctor also compiles a minimal LuaLaTeX document. Its JSON output keeps
+optional capabilities separate from required runtime checks. In particular,
+the `ltx-talk-adapter` capability checks `ltx-talk.cls` and the New Computer
+Modern text and math fonts without making plain `osglecture-modes` unusable
+when that optional stack is absent or too old. Failed checks name the relevant
+TeX Live package and an appropriate `tlmgr install` command.
 
 ## TOML parser
 

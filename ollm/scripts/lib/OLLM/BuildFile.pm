@@ -176,6 +176,7 @@ sub build_spec {
     unit_id             => undef,
     target              => $target_name,
     doctype             => $doctype,
+    applicable_unit_scopes => $target->{unit_scopes} // [],
     profile_class       => $profile_class,
     document_metadata_policy => $document_metadata_policy,
     language            => $language,
@@ -228,10 +229,13 @@ sub render {
     "  document-metadata-policy={"
       . _tex_atom($spec->{document_metadata_policy}) . "},",
     "  doctype={" . _tex_atom($spec->{doctype}) . "},",
+    "  applicable-unit-scopes={" . join(',',
+      map { _tex_atom($_) } @{ $spec->{applicable_unit_scopes} }) . "},",
     "  language={" . _tex_atom($spec->{language}) . "},",
     "  available-languages={" . join(',', @languages) . "},",
     "  bundle-preset={" . _tex_atom($spec->{bundle_preset}) . "},",
     "  shared-tex-directory={" . _tex_path($spec->{shared_tex_directory}) . "},",
+    "  source-directory={" . _tex_path($spec->{source_directory}) . "},",
     "  project-config-file={" . _tex_atom($spec->{project_config_file}) . "},",
     "  shell-escape={" . _tex_atom($spec->{shell_escape}) . "},",
     "  structure-signature={" . _tex_atom($spec->{structure_signature}) . "},",
@@ -275,8 +279,9 @@ sub _logical_ordinal {
 sub write_atomic {
   my ($class, $path, $content) = @_;
   my ($volume, $directories, $filename) = File::Spec->splitpath($path);
-  $directories = '.' if $directories eq '';
-  my ($handle, $temporary) = tempfile('.ollm-build-XXXXXX', DIR => $directories);
+  my $directory = File::Spec->catpath($volume, $directories, '');
+  $directory = '.' if $directory eq '';
+  my ($handle, $temporary) = tempfile('.ollm-build-XXXXXX', DIR => $directory);
   binmode $handle, ':raw';
   print {$handle} $content or die "cannot write '$temporary': $!";
   close $handle or die "cannot close '$temporary': $!";

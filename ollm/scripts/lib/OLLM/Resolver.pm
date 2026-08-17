@@ -83,7 +83,8 @@ sub execute {
           my $description = ($dependency->{kind} // '') eq 'integration'
             ? "integration for document type '$dependency->{doctype}'"
             : "logical unit '$dependency->{unit_id}'";
-          die "cannot resolve $description: it has never been built\n"
+          die "cannot resolve $description: its physical unit is unknown; "
+            . "build that unit once before resolving references to it\n"
             if !@directories;
           die "cannot resolve ambiguous $description\n" if @directories > 1;
           my $spec = $class->_build_spec($resolved, $dependency, $directories[0]);

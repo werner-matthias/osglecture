@@ -1,0 +1,27 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+parse-number=025
+parse-scope=as
+parse-role=e
+parse-slug=side-track
+count=4
+doctype=script
+current=010-introduction
+next=015a-script-only
+last-role=i
+slides-next=020b-slides-only
+different-next=true
+first-previous=true
+first-next=020-second
+physical-previous=020-i-collection
+continuation-previous=010-first
+missing-result=true
+missing-message=true
+missing-observed=true
+missing-bytes=true
+located-series=/course
+located-unit=/course/015-e-background
+located-previous=010-introduction
+located-next=020-processes
+windows-attributes-native=true
+windows-dir-native=true

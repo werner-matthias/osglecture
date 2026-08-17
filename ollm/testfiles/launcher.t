@@ -11,7 +11,7 @@ use lib 'scripts/lib';
 
 my $version = qx{$^X scripts/ollm --version};
 is $?, 0, 'version exits successfully';
-like $version, qr/^ollm 0\.12\.0-dev/m, 'version is reported';
+like $version, qr/^ollm 0\.13\.0-dev/m, 'version is reported';
 
 my $outside = File::Temp::tempdir(CLEANUP => 1);
 my $launcher = Cwd::abs_path('scripts/ollm');
@@ -56,14 +56,15 @@ like $plan, qr/"schema"\s*:\s*"org\.osglecture\.ollm\.build-request"/,
   'JSON plan has a versioned schema';
 like $plan, qr/"target"\s*:\s*"slides"/, 'JSON plan contains default target';
 
-my $report = qx{$^X scripts/ollm report --project-root=../examples/series-minimal --format=json};
+my $dormant_project = Cwd::abs_path('testfiles/fixtures/project');
+my $report = qx{$^X scripts/ollm report --project-root="$dormant_project" --format=json};
 is $?, 0, 'report describes a project with dormant units successfully';
 like $report, qr/"schema"\s*:\s*"org\.osglecture\.ollm\.report"/,
   'report JSON has a versioned schema';
 like $report, qr/"status"\s*:\s*"dormant"/,
   'report exposes an unused unbuilt unit without failing';
 
-my $check = qx{$^X scripts/ollm check --project-root=../examples/series-minimal --format=json};
+my $check = qx{$^X scripts/ollm check --project-root="$dormant_project" --format=json};
 is $?, 0, 'series check does not require a dormant unit to be built';
 like $check, qr/"schema"\s*:\s*"org\.osglecture\.ollm\.check"/,
   'check JSON has a versioned schema';
@@ -73,6 +74,14 @@ like $doctor, qr/"schema"\s*:\s*"org\.osglecture\.ollm\.doctor"/,
   'doctor always emits its versioned JSON result even when a tool is missing';
 like $doctor, qr/"tex_files"\s*:/,
   'doctor reports TeX package discovery';
+like $doctor, qr/"runtime"\s*:/,
+  'doctor verifies LuaLaTeX by compiling a probe';
+like $doctor, qr/"capabilities"\s*:/,
+  'doctor reports optional integrations separately';
+like $doctor, qr/"name"\s*:\s*"ltx-talk-adapter"/,
+  'doctor isolates the optional ltx-talk adapter';
+like $doctor, qr/"package"\s*:\s*"newcomputermodern"/,
+  'doctor provides TeX Live package names for repair';
 like $doctor, qr/"project"\s*:/,
   'doctor distinguishes global and project-aware checks';
 

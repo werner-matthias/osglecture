@@ -1,0 +1,104 @@
+\input regression-test
+\documentclass{article}
+\begin{document}
+\START
+\directlua{
+  local series_index = require("osglecture-series-index")
+  local function report(key, value)
+    texio.write_nl("log", key .. "=" .. tostring(value))
+  end
+  local parsed = assert(series_index.parse_unit_name("025as-e-side-track"))
+  report("parse-number", parsed.physical_number)
+  report("parse-scope", parsed.scope)
+  report("parse-role", parsed.role)
+  report("parse-slug", parsed.slug)
+
+  local entries = {
+    "090as-i-collection", "README.md", "040bs-slides-later",
+    "030as-script-later", "020b-slides-only", "015a-script-only",
+    "010-introduction", "not-a-unit"
+  }
+  local result = assert(series_index.analyze(entries, "010-introduction", {
+    doctype = "script", unit_scopes = {"a", "as"}
+  }))
+  report("count", rawlen(result.units))
+  report("doctype", result.doctype)
+  report("current", result.current.name)
+  report("next", result.next.name)
+  report("last-role", result.units[rawlen(result.units)].role)
+
+  local slides = assert(series_index.analyze(entries, "010-introduction", {
+    doctype = "slides", unit_scopes = {"b", "bs"}
+  }))
+  report("slides-next", slides.next.name)
+  report("different-next", slides.next.name ~= result.next.name)
+
+  local first = assert(series_index.analyze({"020-second", "010-first"}, "010-first", {
+    doctype = "talk", unit_scopes = {}
+  }))
+  report("first-previous", first.previous == nil)
+  report("first-next", first.next.name)
+
+  local after_integration = assert(series_index.analyze({
+    "010-first", "020-i-collection", "030-third"
+  }, "030-third", {doctype = "script", unit_scopes = {}}))
+  report("physical-previous", after_integration.previous.name)
+  report("continuation-previous",
+    after_integration.previous_continuation.name)
+
+  local missing, message = series_index.analyze({"010-first"}, "020-missing", {
+    doctype = "script", unit_scopes = {"a", "as"}
+  })
+  report("missing-result", missing == nil)
+  report("missing-message", message:match("not present") ~= nil)
+  report("missing-observed", message:match("observed entries") ~= nil)
+  report("missing-bytes", message:match("bytes=30 31 30 2D") ~= nil)
+
+  local fake_lfs = {
+    attributes = function() return "directory" end,
+    currentdir = function() return "/course/015-e-background/sections" end,
+    dir = function(path)
+      assert(path == "/course")
+      local names = {".", "..", "020-processes", "015-e-background", "010-introduction"}
+      local index = 0
+      return function()
+        index = index + 1
+        return names[index]
+      end
+    end,
+  }
+  local located = assert(series_index.locate(nil, {
+    lfs = fake_lfs, doctype = "script", unit_scopes = {"a", "as"}
+  }))
+  report("located-series", located.series_directory)
+  report("located-unit", located.unit_directory)
+  report("located-previous", located.previous.name)
+  report("located-next", located.next.name)
+
+  local windows_paths = {}
+  local windows_lfs = {
+    attributes = function(path)
+      windows_paths.attributes = path
+      return "directory"
+    end,
+    currentdir = function() return "C:/course/010-introduction" end,
+    dir = function(path)
+      windows_paths.dir = path
+      local names = {".", "..", "020-processes", "010-introduction"}
+      local index = 0
+      return function()
+        index = index + 1
+        return names[index]
+      end
+    end,
+  }
+  assert(series_index.locate(nil, {
+    lfs = windows_lfs, path_separator = "\\",
+    doctype = "script", unit_scopes = {"a", "as"}
+  }))
+  report("windows-attributes-native", windows_paths.attributes ==
+    "C:\\course\\010-introduction")
+  report("windows-dir-native", windows_paths.dir == "C:\\course")
+}
+\END
+\end{document}
