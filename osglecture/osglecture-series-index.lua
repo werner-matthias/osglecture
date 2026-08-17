@@ -185,7 +185,24 @@ end
 -- therefore neither necessary nor risk-free: the detection originally used
 -- for that, based on \code{package.config}, was never exercised against
 -- real \LuaTeX\ on Windows by any test.}{\code{lfs.dir}}{OLLM}
+-- \ldeen*{Der Existenz-/Verzeichnis-Vortest ist nötig, weil sich
+-- \code{lfs.dir} bei einem fehlenden Verzeichnis plattformabhängig
+-- verhält: Auf einigen Plattformen löst der Aufruf selbst innerhalb des
+-- @1 einen Fehler aus, auf anderen liefert er kommentarlos einen sofort
+-- erschöpften Iterator (leere Ergebnisliste statt Fehlermeldung). Ohne
+-- diesen Vortest wäre @2 auf solchen Plattformen für ein fehlendes
+-- Verzeichnis nicht von einem leeren Verzeichnis zu unterscheiden.}{The
+-- existence/directory pre-check is necessary because \code{lfs.dir}'s
+-- behavior for a missing directory is platform-dependent: on some
+-- platforms the call itself raises an error inside the @1, on others it
+-- silently returns an already-exhausted iterator (an empty result list
+-- instead of an error). Without this pre-check, @2 could not distinguish
+-- a missing directory from an empty one on such platforms.}{\code{pcall}}{\code{discover\_units}}
 local function directory_entries(path, lfs)
+  local mode = lfs.attributes(path, "mode")
+  if mode ~= "directory" then
+    return nil, "cannot open " .. tostring(path) .. ": not a directory"
+  end
   local ok, result = pcall(function()
     local entries = {}
     for name in lfs.dir(path) do

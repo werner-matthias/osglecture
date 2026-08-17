@@ -75,10 +75,10 @@
   report("located-previous", located.previous.name)
   report("located-next", located.next.name)
 
-  local windows_paths = {}
+  local windows_paths = {attributes = {}}
   local windows_lfs = {
     attributes = function(path)
-      windows_paths.attributes = path
+      table.insert(windows_paths.attributes, path)
       return "directory"
     end,
     currentdir = function() return "C:/course/010-introduction" end,
@@ -96,8 +96,11 @@
     lfs = windows_lfs,
     doctype = "script", unit_scopes = {"a", "as"}
   }))
-  report("windows-attributes-unconverted", windows_paths.attributes ==
-    "C:/course/010-introduction")
+  local windows_attributes_unconverted = true
+  for _, path in ipairs(windows_paths.attributes) do
+    if path:find("\\", 1, true) then windows_attributes_unconverted = false end
+  end
+  report("windows-attributes-unconverted", windows_attributes_unconverted)
   report("windows-dir-unconverted", windows_paths.dir == "C:/course")
 
   local drive_root_lfs = {

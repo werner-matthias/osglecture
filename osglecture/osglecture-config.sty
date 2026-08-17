@@ -10,6 +10,26 @@
 \prop_new:N \g__osglecture_build_prop
 \bool_new:N \g__osglecture_build_loaded_bool
 
+% \ldeen{\code{l3kernel} deklariert nur \code{\l_tmpa_tl}/\code{\l_tmpb_tl}
+% als generische Scratch-\code{tl}-Variablen; \code{c}/\code{d} sind kein
+% garantierter Teil des Kernels. \code{osglecture.cls},
+% \code{osglecture-project.sty} und \code{osglecture-metadata.sty}
+% benötigen wegen verschachtelter Nachschlagevorgänge dennoch vier
+% gleichzeitige Scratch-Variablen und verwenden dafür (in Anlehnung an die
+% Kernelkonvention) \code{c}/\code{d} zusätzlich. Die Existenzprüfung
+% verhindert einen Fehler auf Systemen, auf denen diese Namen bereits durch
+% ein anderes geladenes Paket belegt sind.}{\code{l3kernel} only declares
+% \code{\l_tmpa_tl}/\code{\l_tmpb_tl} as generic scratch \code{tl}
+% variables; \code{c}/\code{d} are not a guaranteed part of the kernel.
+% \code{osglecture.cls}, \code{osglecture-project.sty} and
+% \code{osglecture-metadata.sty} nonetheless need four simultaneous scratch
+% variables because of nested lookups, and use \code{c}/\code{d} for that
+% (following the kernel's own naming convention). The existence check
+% avoids an error on systems where these names are already taken by some
+% other loaded package.}
+\cs_if_exist:NF \l_tmpc_tl { \tl_new:N \l_tmpc_tl }
+\cs_if_exist:NF \l_tmpd_tl { \tl_new:N \l_tmpd_tl }
+
 % \ldeen{Defaults für die von \code{osglecture-manifest.lua}s
 % \code{manifest.load\_tex} global gesetzten Makros: Ohne diese
 % Vorabdeklaration wäre eine Referenz vor dem ersten (erfolgreichen oder
