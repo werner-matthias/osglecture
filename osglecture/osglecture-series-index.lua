@@ -12,7 +12,20 @@
 local series_index = {}
 local active_index
 
-local separator = package.config:sub(1, 1)
+-- \ldeen{Konstruierte Pfade verwenden immer den Vorwärtsschrägstrich, nie
+-- den plattformabhängigen \code{package.config}-Trenner: Die
+-- Windows-Dateisystem-API akzeptiert ihn nativ (siehe die Begründung bei
+-- \code{directory\_entries} unten), und nur so liefert dieses Modul auf
+-- allen drei getesteten Plattformen denselben String für denselben
+-- logischen Pfad -- Voraussetzung für die plattformübergreifende
+-- \code{l3build}-Referenzdatei dieses Tests.}{Constructed paths always use
+-- the forward slash, never the platform-dependent \code{package.config}
+-- separator: the Windows filesystem API accepts it natively (see the
+-- rationale at \code{directory\_entries} below), and only this way does
+-- the module produce the same string for the same logical path on all
+-- three tested platforms -- a prerequisite for this test's cross-platform
+-- \code{l3build} reference file.}
+local separator = "/"
 
 local function basename(path)
   local value = path:gsub("[\\/]+$", "")
@@ -182,6 +195,27 @@ local function directory_entries(path, lfs)
   end)
   if not ok then return nil, result end
   return result
+end
+
+-- \ldeen{Listet und parst alle Serieneinheiten unter @1, ohne nach Doctype
+-- oder Unit-Scopes zu filtern -- die Rollenzuordnung, die @2 (Perl) heute
+-- unabhängig implementiert. Wird von OLLM über \code{texlua} aufgerufen, um
+-- diese Duplikation durch einen einzigen Aufrufer zu ersetzen.}{Lists and
+-- parses every series unit under @1, without filtering by doctype or unit
+-- scopes -- the same job @2 (Perl) implements independently today. Called
+-- by OLLM via \code{texlua} to replace that duplication with a single
+-- caller.}{project\_root}{\code{OLLM::Config::structure\_snapshot}}
+function series_index.discover_units(project_root, lfs)
+  lfs = lfs or require("lfs")
+  local entries, error_message = directory_entries(project_root, lfs)
+  if not entries then return nil, error_message end
+  local units = {}
+  for _, name in ipairs(entries) do
+    local unit = series_index.parse_unit_name(name)
+    if unit then units[#units + 1] = unit end
+  end
+  table.sort(units, function(left, right) return left.name < right.name end)
+  return units
 end
 
 -- \ldeen*{Reine Verzeichniswanderung ohne Geschwister-Analyse: von @1
