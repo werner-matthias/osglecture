@@ -93,12 +93,23 @@
     end,
   }
   assert(series_index.locate(nil, {
-    lfs = windows_lfs, path_separator = "\\",
+    lfs = windows_lfs,
     doctype = "script", unit_scopes = {"a", "as"}
   }))
-  report("windows-attributes-native", windows_paths.attributes ==
-    "C:\\course\\010-introduction")
-  report("windows-dir-native", windows_paths.dir == "C:\\course")
+  report("windows-attributes-unconverted", windows_paths.attributes ==
+    "C:/course/010-introduction")
+  report("windows-dir-unconverted", windows_paths.dir == "C:/course")
+
+  local drive_root_lfs = {
+    attributes = function() return "directory" end,
+    currentdir = function() return "C:/temp" end,
+    dir = function() error("dir must not be called: no unit exists above C:/temp") end,
+  }
+  local drive_missing, drive_message = series_index.locate(nil, {
+    lfs = drive_root_lfs, doctype = "script", unit_scopes = {"a", "as"}
+  })
+  report("drive-root-terminates", drive_missing == nil)
+  report("drive-root-message", drive_message:find("no series-unit directory found", 1, true) ~= nil)
 }
 \END
 \end{document}

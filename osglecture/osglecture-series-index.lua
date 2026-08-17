@@ -19,11 +19,18 @@ local function basename(path)
   return value:match("([^\\/]+)$") or value
 end
 
+-- A path made only of separators (POSIX root) or a bare drive letter
+-- (Windows root, e.g. "C:") has no parent of its own; dirname must return a
+-- value equal to its input so the caller's walk-upward loop reaches a fixed
+-- point and terminates, instead of silently collapsing to ".".
 local function dirname(path)
   local value = path:gsub("[\\/]+$", "")
   local parent = value:match("^(.*)[\\/][^\\/]+$")
   if not parent or parent == "" then
-    return value:match("^[\\/]") and separator or "."
+    if value:match("^[\\/]") then return separator end
+    local drive = value:match("^(%a:)$")
+    if drive then return drive .. separator end
+    return "."
   end
   return parent
 end
@@ -32,13 +39,6 @@ local function join(left, right)
   if left == "." then return right end
   if left:match("[\\/]$") then return left .. right end
   return left .. separator .. right
-end
-
-local function filesystem_path(path, path_separator)
-  if (path_separator or separator) == "\\" then
-    return (path:gsub("/", "\\"))
-  end
-  return path
 end
 
 function series_index.parse_unit_name(name)
@@ -149,10 +149,23 @@ function series_index.analyze(entries, current_name, context)
   }
 end
 
-local function directory_entries(path, lfs, path_separator)
+-- \ldeen*{@1 nimmt Pfade unverändert, wie sie hereinkommen: @2 schreibt
+-- \code{source-directory} immer mit Vorwärtsschrägstrichen (auch auf
+-- Windows), und die Windows-Dateisystem-API -- die @1 letztlich aufruft --
+-- akzeptiert beide Trenner nativ. Eine Rückkonvertierung auf Backslashes
+-- ist daher weder nötig noch unbedenklich: die dafür ursprünglich genutzte
+-- Erkennung über \code{package.config} wurde von keinem Test gegen echtes
+-- \LuaTeX\ auf Windows abgesichert.}{@1 takes paths exactly as they arrive:
+-- @2 always writes \code{source-directory} with forward slashes (even on
+-- Windows), and the Windows filesystem API -- which @1 ultimately calls --
+-- accepts either separator natively. Converting back to backslashes was
+-- therefore neither necessary nor risk-free: the detection originally used
+-- for that, based on \code{package.config}, was never exercised against
+-- real \LuaTeX\ on Windows by any test.}{\code{lfs.dir}}{OLLM}
+local function directory_entries(path, lfs)
   local ok, result = pcall(function()
     local entries = {}
-    for name in lfs.dir(filesystem_path(path, path_separator)) do
+    for name in lfs.dir(path) do
       if name ~= "." and name ~= ".." then entries[#entries + 1] = name end
     end
     return entries
@@ -165,8 +178,7 @@ function series_index.locate(start_path, options)
   options = options or {}
   local lfs = options.lfs or require("lfs")
   local path = start_path or lfs.currentdir()
-  if lfs.attributes(filesystem_path(path, options.path_separator), "mode")
-      == "file" then
+  if lfs.attributes(path, "mode") == "file" then
     path = dirname(path)
   end
 
@@ -174,8 +186,7 @@ function series_index.locate(start_path, options)
     local name = basename(path)
     if series_index.parse_unit_name(name) then
       local root = dirname(path)
-      local entries, error_message = directory_entries(
-        root, lfs, options.path_separator)
+      local entries, error_message = directory_entries(root, lfs)
       if not entries then return nil, "cannot read series directory " .. root .. ": " .. tostring(error_message) end
       local result, analyze_error = series_index.analyze(entries, name, options)
       if not result then return nil, analyze_error end
