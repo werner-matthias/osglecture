@@ -7,34 +7,18 @@
   Description:
   build a target-independent import plan
 ]]
-
+--<*pkg>
+local ir_reader = require("tagpax-ir")
 local validator = require("tagpax-validate")
 local M = {}
 
--- Index ordered relations once; all later projections reuse source /K order.
-local function sorted_kids(ir)
-  local by_parent = {}
-  for _, kid in ipairs(ir.kids or {}) do
-    local list = by_parent[kid.parent]
-    if not list then list = {}; by_parent[kid.parent] = list end
-    list[#list + 1] = kid
-  end
-  for _, list in pairs(by_parent) do
-    table.sort(list, function(a, b)
-      return tonumber(a.index or 0) < tonumber(b.index or 0)
-    end)
-  end
-  return by_parent
-end
-
-local function root_nodes(ir)
-  -- Root records carry explicit indices because table iteration is unordered.
-  local roots = {}
-  table.sort(ir.roots, function(a, b)
-    return tonumber(a.index or 0) < tonumber(b.index or 0)
-  end)
-  for _, root in ipairs(ir.roots) do roots[#roots + 1] = root.node end
-  return roots
+-- \ldeen*{Sortierung und Elterngruppierung stammen aus @1 und werden dort
+-- zentral gepflegt.}{Sorting and parent grouping live in @1 and are
+-- maintained there centrally.}{\code{tagpax-ir.lua}}
+local function root_node_ids(ir)
+  local ids = {}
+  for _, root in ipairs(ir_reader.sorted_roots(ir)) do ids[#ids + 1] = root.node end
+  return ids
 end
 
 local function source_children(ir, parent, by_parent)
@@ -59,7 +43,7 @@ function M.plan(ir, bindings, options)
   bindings.streams = bindings.streams or {}
   options = options or {}
 
-  local by_parent = sorted_kids(ir)
+  local by_parent = ir_reader.sorted_kids_by_parent(ir)
   local plan = {
     version = 1,
     wrapper_role = options.wrapper_role or "Part",
@@ -67,7 +51,7 @@ function M.plan(ir, bindings, options)
     edges = {},
     mcrs = {},
     unresolved = {},
-    source_roots = root_nodes(ir),
+    source_roots = root_node_ids(ir),
   }
 
   local root_set = {}
@@ -182,3 +166,4 @@ function M.assert_resolved(plan)
 end
 
 return M
+--</pkg>

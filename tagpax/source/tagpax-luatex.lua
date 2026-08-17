@@ -7,17 +7,21 @@
   Description:
   controlled LuaTeX page Form-XObject import
 ]]
-
+--<*pkg>
 local ir_reader = require("tagpax-ir")
 local M = { version = "0.8.5-dev" }
 -- LuaTeX image userdata must stay reachable until shipout has consumed it.
 local images = {}
 
+-- \ldeen*{Geöffnete Quell-PDFs bleiben für die Dauer des Laufs offen, siehe
+-- @1 unten.}{Opened source PDFs stay open for the duration of the run, see
+-- @1 below.}{\code{open\_document}}
+local documents = {}
+
 -- TeX/PDF boundary helpers -------------------------------------------------
-local function tex_escape(s)
-  s = tostring(s or "")
-  return (s:gsub("([{}%%#\\])", "\\%1"))
-end
+-- \ldeen*{Escaping stammt aus @1 und wird dort zentral gepflegt.}{Escaping
+-- lives in @1 and is maintained there centrally.}{\code{tagpax-ir.lua}}
+local tex_escape = ir_reader.tex_escape
 
 local function hex(s)
   return (tostring(s or ""):gsub(".", function(c)
@@ -121,6 +125,29 @@ local function emit_destination(destination, prefix, image_width, geometry, medi
   tex.sprint("\\TagPaxPageDestination{" .. tex_escape(name) .. "}{" .. kind .. "}")
 end
 
+-- \ldeen*{@1 wird einmal pro Seite aufgerufen. Ohne Cache würde @2 die
+-- Quell-PDF für jede Seite erneut öffnen -- Öffnen liest Xref und Trailer
+-- neu ein, ein reiner Overhead gegenüber einmaligem Öffnen und
+-- Wiederverwenden.}{@1 is called once per page. Without caching, @2 would
+-- reopen the source PDF for every page -- opening re-reads the xref table
+-- and trailer, pure overhead compared to opening once and reusing the
+-- result.}{\code{write\_page(...)}}{\code{pdfe.open}}
+local function open_document(filename)
+  local document = documents[filename]
+  if not document then
+    document = assert(pdfe.open(filename))
+    documents[filename] = document
+  end
+  return document
+end
+
+-- \ldeen{Schließt jedes zwischengespeicherte Quelldokument genau einmal, am
+-- Ende des Laufs.}{Closes every cached source document exactly once, at the
+-- end of the run.}
+luatexbase.add_to_callback("stop_run", function()
+  for _, document in pairs(documents) do pdfe.close(document) end
+end, "tagpax: close cached source PDFs")
+
 --- Write one source PDF page as a Form XObject into the current TeX list.
 -- @param filename source PDF
 -- @param page one-based page number
@@ -152,7 +179,7 @@ function M.write_page(filename, page, structparents, stream_id, irfile, prefix, 
   local ir = ir_reader.read(irfile)
   -- Phase 2: reopen only for MediaBox and /Rotate. Semantic objects always
   -- come from the already extracted IR.
-  local document = assert(pdfe.open(filename))
+  local document = open_document(filename)
   local source_page = pdfe.getpage(document, page)
   local media = pdfe.getbox(source_page, "MediaBox")
   if media then
@@ -214,7 +241,8 @@ function M.write_page(filename, page, structparents, stream_id, irfile, prefix, 
       end
     end
   end
-  pdfe.close(document)
+  -- The source document is left open; the stop_run callback registered
+  -- below closes every cached document once, at the end of the run.
   -- Phase 3: publish the late Form object reference for MCR binding.
   tex.sprint(string.format(
     "\\TagPaxBackendForm{%s}{%d 0 R}{%s}",
@@ -224,3 +252,4 @@ function M.write_page(filename, page, structparents, stream_id, irfile, prefix, 
 end
 
 return M
+--</pkg>

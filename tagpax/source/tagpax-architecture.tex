@@ -1,92 +1,88 @@
 % tagpax architecture overview
 % Requires: \usetikzlibrary{arrows.meta,backgrounds,fit,positioning}
 \begin{tikzpicture}[
-  font=\sffamily\small,
-  >={Stealth[length=2.2mm]},
+  font=\sffamily\footnotesize,
+  >={Stealth[length=2mm]},
   flow/.style={->, semithick, draw=black!70},
   late/.style={->, semithick, dashed, draw=blue!65!black},
   box/.style={
     draw=black!65,
     rounded corners=1.5pt,
     align=center,
-    minimum height=10mm,
-    text width=31mm,
-    inner sep=2.5mm,
+    text width=26mm,
+    inner sep=2mm,
     fill=white
   },
   source/.style={box, fill=orange!12},
   semantic/.style={box, fill=green!11},
   execution/.style={box, fill=blue!9},
   owner/.style={box, fill=violet!10},
-  phase/.style={
-    box,
-    text width=27mm,
-    minimum height=18mm,
-    fill=blue!7
-  },
+  phase/.style={box, minimum height=15mm, fill=blue!7},
   boundary/.style={
     draw=black!35,
     rounded corners=3pt,
     dashed,
-    inner sep=4mm
+    inner sep=3mm
   },
-  label/.style={font=\sffamily\scriptsize\bfseries, text=black!65}
+  zonelabel/.style={font=\sffamily\scriptsize\bfseries, text=black!65, label distance=0.5mm}
 ]
 
 % The top row is the stable semantic pipeline.  PDF object identities stop at
 % the inspector; all following components communicate through canonical IR.
-\node[source] (pdf) {Tagged source PDF\\[-1pt]
+\node[source] (pdf) {Tagged source PDF\\[1pt]
   \scriptsize pages, structure, links, destinations};
-\node[semantic, right=14mm of pdf] (inspect) {Inspector\\[-1pt]
+\node[semantic, right=9mm of pdf] (inspect) {Inspector\\[1pt]
   \texttt{tagpax.lua}};
-\node[semantic, right=14mm of inspect] (ir) {Canonical IR\\[-1pt]
+\node[semantic, right=5mm of inspect] (ir) {Canonical IR\\[1pt]
   \scriptsize\texttt{.tagpax} / Lua tables};
-\node[semantic, right=14mm of ir] (validate) {Validation and planning\\[-1pt]
-  \texttt{tagpax-validate.lua}\\
-  \texttt{tagpax-import.lua}};
+\node[semantic, right=5mm of ir] (validate) {Validation and planning\\[1pt]
+  \texttt{validate.lua}\\ \texttt{import.lua}};
 
-\draw[flow] (pdf) -- node[above, font=\scriptsize] {semantic inspection} (inspect);
-\draw[flow] (inspect) -- node[above, font=\scriptsize] {serialize} (ir);
+\draw[flow] (pdf) -- (inspect);
+\draw[flow] (inspect) -- (ir);
 \draw[flow] (ir) -- (validate);
 
 % Object references for Forms and annotations are allocated late.  The three
 % boxes make that temporal constraint visible without implying three IRs.
-\node[phase, below=22mm of inspect, xshift=5mm] (reserve) {
+\node[phase, below=17mm of inspect] (reserve) {
   \textbf{1. Reserve}\\[2pt]
-  StructElems and ordered\\MCR/OBJR slots};
-\node[phase, right=8mm of reserve] (write) {
+  StructElems and\\ordered MCR/OBJR slots};
+\node[phase, right=6mm of reserve] (write) {
   \textbf{2. Write and bind}\\[2pt]
   page Forms, geometry,\\destinations, annotations};
-\node[phase, right=8mm of write] (finalize) {
+\node[phase, right=6mm of write] (finalize) {
   \textbf{3. Finalize}\\[2pt]
   MCID bindings and\\ParentTree arrays};
 
-\draw[flow] (ir.south) |- (reserve.north);
+% All inter-row connectors bend inside the empty gap between rows: they drop
+% to an intermediate coordinate first and only then turn, so the corner never
+% grazes a neighbouring box.
+\draw[flow] (ir.south) -- ++(0,-7mm) -| (reserve.north);
 \draw[flow] (reserve) -- (write);
 \draw[flow] (write) -- (finalize);
 
 % The page writer deliberately reopens the source only for page content and
 % final geometry; semantic PDF objects are never rediscovered on this path.
-\draw[late] (pdf.south) |- node[pos=.72, below, font=\scriptsize,
-  text=blue!65!black] {page content + MediaBox/Rotate only} (write.west);
+\draw[late] (pdf.south) -- ++(0,-11mm) -| (write.north)
+  node[pos=0.25, above, font=\scriptsize, text=blue!65!black] {raw page content only};
 
-\node[owner, below=18mm of write] (bridge) {Isolated \texttt{tagpdf} bridge\\[-1pt]
+\node[owner, below=17mm of write] (bridge) {Isolated \texttt{tagpdf} bridge\\[1pt]
   \scriptsize explicit parents, deferred references};
-\node[owner, right=14mm of bridge] (master) {Tagged master PDF\\[-1pt]
+\node[owner, right=10mm of bridge] (master) {Tagged master PDF\\[1pt]
   \scriptsize one StructTreeRoot and ParentTree};
 
-\draw[flow] (finalize.south) |- (bridge.east);
+\draw[flow] (finalize.south) -- ++(0,-11mm) -| (bridge.north);
 \draw[flow] (bridge) -- (master);
 
 % Dashed frames denote ownership boundaries rather than additional runtime
 % components.  In particular, tagpdf remains the sole owner of global trees.
 \begin{scope}[on background layer]
   \node[boundary, fit=(inspect)(ir)(validate),
-    label={[label]above:semantic layer}] {};
+    label={[zonelabel]above:semantic layer}] {};
   \node[boundary, fit=(reserve)(write)(finalize),
-    label={[label]below:TeX-facing execution}] {};
+    label={[zonelabel]below:TeX-facing execution}] {};
   \node[boundary, fit=(bridge)(master),
-    label={[label]below:LaTeX PDF management / \texttt{tagpdf} ownership}] {};
+    label={[zonelabel]below:LaTeX PDF management / \texttt{tagpdf} ownership}] {};
 \end{scope}
 
 \end{tikzpicture}
