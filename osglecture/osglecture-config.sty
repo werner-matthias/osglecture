@@ -117,10 +117,23 @@
 \NewDocumentCommand \OsgLectureBuildLoadedTF { m m }
   { \bool_if:NTF \g__osglecture_build_loaded_bool {#1} {#2} }
 
+% ExplSyntaxOn sets catcode 126 (the tilde) to 10 (space), since expl3
+% source uses a tilde as a visible-space marker. The build file is read
+% while this class stays in expl3 syntax, so a tilde in a path value (e.g.
+% a Windows short/8.3 directory name such as "RUNNER~1") would silently
+% become a plain space at tokenization time -- unrecoverable by any later
+% escaping, since the character identity is lost, not just its catcode.
+% Setting it back to 12 (other) for the read makes it an inert character,
+% safe to store and pass on to TeX or Lua code afterwards.
 \NewDocumentCommand \OsgLectureLoadBuildFile { m }
   {
     \file_if_exist:nTF {#1}
-      { \file_input:n {#1} }
+      {
+        \group_begin:
+        \char_set_catcode:nn {126} {12}
+        \file_input:n {#1}
+        \group_end:
+      }
       { \msg_error:nnn {osglecture-config}{file-not-found}{#1} }
   }
 

@@ -1,0 +1,18 @@
+\input regression-test
+\def\OSGLectureProjectManifestFile{project-config-manifest.toml}
+\documentclass{article}
+\usepackage{osglecture-config}
+\begin{document}
+\START
+\ExplSyntaxOn
+\OsgLectureLoadBuildFile{tilde-source.osgbuild.tex}
+\ExplSyntaxOff
+\TYPE{source-directory=\OsgLectureBuildValue{source-directory}}
+\ExplSyntaxOn
+\directlua{
+  texio.write_nl("log", "lua-source-directory=" ..
+    "\luaescapestring{\OsgLectureBuildValue{source-directory}}")
+}
+\ExplSyntaxOff
+\END
+\end{document}
