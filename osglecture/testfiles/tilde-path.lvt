@@ -7,11 +7,11 @@
 \ExplSyntaxOn
 \OsgLectureLoadBuildFile{tilde-source.osgbuild.tex}
 \ExplSyntaxOff
-\TYPE{source-directory=\OsgLectureBuildValue{source-directory}}
+\TYPE{series-id=\OsgLectureBuildValue{series-id}}
 \ExplSyntaxOn
 \directlua{
-  texio.write_nl("log", "lua-source-directory=" ..
-    "\luaescapestring{\OsgLectureBuildValue{source-directory}}")
+  texio.write_nl("log", "lua-series-id=" ..
+    "\luaescapestring{\OsgLectureBuildValue{series-id}}")
 }
 \ExplSyntaxOff
 \END

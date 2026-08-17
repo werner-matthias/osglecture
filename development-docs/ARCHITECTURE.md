@@ -1299,11 +1299,61 @@ Duplikation, statt neue Komplexität einzuführen.
    vorhandene Duplikation" beschriebene Divergenz sofort gemeldet), aber
    noch kein Ersatz der Perl-Implementierung -- der bleibt Schritt 6
    vorbehalten.
-4. Die Auftragsdatei auf den in Schritt 1 festgelegten minimalen Schlüsselsatz
-   verkleinern.
-5. Das Bootstrapping der Klasse so erweitern, dass es Projektinhalt
-   (Serienstruktur, verfügbare Sprachen, Bundle-Preset) selbst über das
-   gemeinsame Modul liest.
+4. [x] Die Auftragsdatei auf den in Schritt 1 festgelegten minimalen
+   Schlüsselsatz verkleinert -- `BuildFile.pm::render` emittiert nur noch die
+   als „OLLM"/„Grenzfall" klassifizierten Schlüssel;
+   `osglecture-config.sty`s `.code:n`-Einträge und Pflichtschlüsselliste für
+   die zehn „gemeinsames Modul"-Schlüssel entfernt, sodass eine ältere OLLM,
+   die sie noch sendet, einen klaren „unknown key"-Fehler erzeugt statt
+   stillschweigend ignoriert zu werden. `$spec` (OLLMs interne
+   Repräsentation) behält alle Werte weiterhin.
+5. [x] Bootstrapping der Klasse erweitert -- **vor** Schritt 4 umgesetzt, da
+   Schritt 1 bereits zeigte, dass die Klasse `physical-unit`, `unit-role`,
+   `logical-ordinal`, `shared-tex-directory` und `project-config-file`
+   aktiv konsumiert (nicht nur weiterreicht); die Reihenfolge aus diesem
+   Abschnitt beschreibt die Zielarchitektur, nicht zwingend sichere
+   Ausführungsreihenfolge.
+   - `osglecture.cls` liest `shared-tex-directory`/`project-config-file`
+     jetzt über `osglecture-manifest.lua`s `manifest.load_tex` (neue Makros
+     `\OsgLectureManifest...`, Defaults in `osglecture-config.sty`).
+   - `osglecture-series.sty`s Serieninitialisierung braucht `source-directory`
+     nicht mehr; ein Vorabtest mit `series_index.locate_unit_ancestor`
+     ersetzt den früheren Leer-Test und bewahrt dieselbe stille
+     Nicht-Verfügbarkeit ohne passendes Vorfahrenverzeichnis.
+   - `osglecture.cls`s Entscheidung, `osglecture-integration` zu laden, und
+     `osglecture-structure.sty`s `osgresult.aux`-Schreibfunktion lesen
+     `physical-unit`/`unit-role` jetzt über die neue, robustere
+     `series_index.current_unit` (reine Namensinterpretation des aktuellen
+     Verzeichnisses, ohne auf einen Serienwurzel-Fund angewiesen zu sein)
+     statt über die Auftragsdatei; `logical-ordinal` kommt über
+     `\OsgLectureSeriesPosition`, dieselbe Größe, die die Serienanzeige
+     bereits berechnet.
+   - **Dabei gefunden und behoben:** `\ExplSyntaxOn` setzt Leerzeichen auf
+     Katcode~9 (ignoriert), nicht Katcode~10 wie normales LaTeX. Lua-Code mit
+     mehreren Anweisungen (`local x = ...`, `if ... then`) direkt im
+     `\directlua`-Quelltext verliert dadurch beim Tokenisieren seine
+     trennenden Leerzeichen vollständig (`local x` wird zu `localx`) und ist
+     kein gültiges Lua mehr -- ein einzeiliger, verketteter Aufruf wie
+     `require(...).funktion(...)` bleibt dagegen sicher, da er keine
+     Leerzeichen zur Token-Trennung braucht. Betroffen war die erste Fassung
+     der neuen Serieninitialisierung; sichtbar wurde es nicht durch einen der
+     `l3build`-Tests (die laufen nie mit einem tatsächlich
+     serieneinheit-förmigen Arbeitsverzeichnis), sondern durch
+     `ollm/testfiles/reference-lifecycle.t`, den einzigen Test mit einem
+     echten OLLM-erzeugten Build und echtem LuaLaTeX-Lauf. Die Funktion
+     `series_index.initialize_tex_csv_if_available` kapselt Vorabtest und
+     bedingten Aufruf jetzt vollständig in der `.lua`-Datei, sodass der
+     `\directlua`-Aufruf wieder ein sicherer Einzeiler ist.
+   - Getestet über `testfiles/series-index.lvt` (neue Assertions für
+     `current_unit`/`current_unit_tex`, einschließlich des
+     `role=i`-Falls), `testfiles/project-config.lvt` (Projektkonfiguration
+     jetzt über ein echtes `ollmconfig.toml`-Fixture gefunden, nicht über
+     die Auftragsdatei) und `ollm/testfiles/reference-lifecycle.t` (echter
+     Kompilierlauf, s.o.). Weiterhin nicht abgedeckt: ein `l3build`-Test mit
+     tatsächlich serieneinheit-förmigem Arbeitsverzeichnis für
+     `osglecture-series.sty`s Erfolgspfad -- `l3build`s Testverzeichnis
+     heißt nie so; diese Lücke schließt derzeit nur
+     `reference-lifecycle.t`.
 6. Nach hergestellter Testparität den entsprechenden Perl-Code in
    `Config.pm` entfernen.
 7. Bei jedem Schritt Tests und Dokumentation gemeinsam mit dem Code ändern,

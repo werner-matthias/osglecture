@@ -1,0 +1,13 @@
+schema = 1
+bundle_preset = "OSG lecture/1"
+
+[project]
+id = "project-config-test"
+
+[project.tex]
+directory = "."
+config = "projectconfig-test.tex"
+
+[languages]
+available = ["de"]
+default = "de"

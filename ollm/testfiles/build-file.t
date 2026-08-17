@@ -167,16 +167,23 @@ like $content, qr/profile-class=\{longform\}/,
   'rendered build file contains only the target profile class';
 like $content, qr/applicable-unit-scopes=\{a,as\}/,
   'rendered build file contains the doctype-specific unit scopes';
-like $content, qr/source-directory=\{[^}]*020-processes\}/,
-  'rendered build file identifies the source unit directory';
 like $content, qr/document-metadata-policy=\{required\}/,
   'rendered build file contains the effective early metadata policy';
-like $content, qr/shared-tex-directory=\{[^}]*Include\}/,
-  'rendered build file contains the absolute shared TeX directory';
-like $content, qr/project-config-file=\{projectconfig[.]tex\}/,
-  'rendered build file contains the project configuration filename';
-like $content, qr/bundle-preset=\{OSG lecture\/1\}/,
-  'rendered build file contains the resolved bundle preset';
+# Per osglecture/ARCHITECTURE.md section 12, source-directory,
+# shared-tex-directory, project-config-file and bundle-preset are project
+# content the class now reads itself via the shared Lua module -- they stay
+# part of OLLM's internal BuildSpec (needed for signatures and discovery)
+# but are deliberately absent from the rendered, TeX-facing build file.
+like $spec->{source_directory}, qr/020-processes\z/,
+  'BuildSpec identifies the source unit directory';
+like $spec->{shared_tex_directory}, qr/Include\z/,
+  'BuildSpec contains the absolute shared TeX directory';
+is $spec->{project_config_file}, 'projectconfig.tex',
+  'BuildSpec contains the project configuration filename';
+is $spec->{bundle_preset}, 'OSG lecture/1',
+  'BuildSpec contains the resolved bundle preset';
+unlike $content, qr/source-directory=|shared-tex-directory=|project-config-file=|bundle-preset=/,
+  'rendered build file omits project-content keys the class now reads itself';
 like $content, qr/shell-escape=\{restricted\}/,
   'rendered build file records the shell-escape policy';
 like $content, qr/structure-signature=\{[0-9a-f]{64}\}/,

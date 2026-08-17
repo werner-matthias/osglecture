@@ -147,20 +147,27 @@
       {\tl_set:Nn \l__osglecture_target_profile_class_tl {longform}}
   }
 
+% \ldeen{Ort und Name der Projektkonfiguration kommen nicht mehr aus der
+% Auftragsdatei, sondern aus dem gemeinsamen Manifest-Modul (siehe
+% ARCHITECTURE.md Abschnitt 12): Es liest \code{[project.tex]} direkt aus
+% dem Projektmanifest, das es selbst ausgehend vom Arbeitsverzeichnis
+% findet. Ein fehlgeschlagenes Laden bleibt wie zuvor still -- die Klasse
+% lädt dann einfach keine Projektkonfiguration.}{Location and name of the
+% project configuration no longer come from the build file, but from the
+% shared manifest module (see ARCHITECTURE.md section 12): it reads
+% \code{[project.tex]} directly from the project manifest, which it finds
+% itself starting from the working directory. A failed load stays silent
+% as before -- the class then simply loads no project configuration.}
 \OsgLectureBuildLoadedTF
   {
-    \tl_set:Ne \l_tmpa_tl { \OsgLectureBuildValue{shared-tex-directory} }
-    \tl_set:Ne \l_tmpb_tl { \OsgLectureBuildValue{project-config-file} }
-    \tl_if_empty:NF \l_tmpa_tl
+    \directlua{ require("osglecture-manifest").load_tex() }
+    \str_if_eq:eeT { \OsgLectureManifestAvailableFlag } { 1 }
       {
-        \tl_if_empty:NF \l_tmpb_tl
-          {
-            \tl_set:Ne \l__osglecture_project_config_tl
-              { \l_tmpa_tl / \l_tmpb_tl }
-            \file_if_exist:VTF \l__osglecture_project_config_tl
-              { \exp_args:NV \file_input:n \l__osglecture_project_config_tl }
-              { }
-          }
+        \tl_set:Ne \l__osglecture_project_config_tl
+          { \OsgLectureManifestProjectConfigPath }
+        \file_if_exist:VTF \l__osglecture_project_config_tl
+          { \exp_args:NV \file_input:n \l__osglecture_project_config_tl }
+          { }
       }
   }
   { }
@@ -361,7 +368,8 @@
 \ExplSyntaxOn
 \OsgLectureBuildLoadedTF
   {
-    \str_if_eq:eeT {\OsgLectureBuildValue{unit-role}} {i}
+    \directlua{ require("osglecture-series-index").current_unit_tex() }
+    \str_if_eq:eeT { \OsgLectureUnitRole } { i }
       { \RequirePackage{osglecture-integration} }
   }
   { }

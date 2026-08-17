@@ -196,8 +196,11 @@
 \cs_new_protected:Npn \__osglecture_preamble_input:n #1
   {
     \tl_clear:N \l_tmpa_tl
-    \cs_if_exist:NT \OsgLectureBuildValue
-      { \tl_set:Ne \l_tmpa_tl { \OsgLectureBuildValue{shared-tex-directory} } }
+    \cs_if_exist:NT \OsgLectureManifestAvailableFlag
+      {
+        \str_if_eq:eeT { \OsgLectureManifestAvailableFlag } { 1 }
+          { \tl_set:Ne \l_tmpa_tl { \OsgLectureManifestSharedTexDirectory } }
+      }
     \tl_if_empty:NF \l_tmpa_tl
       {
         \tl_put_right:Nn \l_tmpa_tl { /#1.tex }

@@ -110,6 +110,29 @@
   })
   report("drive-root-terminates", drive_missing == nil)
   report("drive-root-message", drive_message:find("no series-unit directory found", 1, true) ~= nil)
+
+  local unit_lfs = {
+    attributes = function() return "directory" end,
+  }
+  local integration_unit = series_index.current_unit("/course/900-i-collection", unit_lfs)
+  report("current-unit-name", integration_unit and integration_unit.name)
+  report("current-unit-role", integration_unit and integration_unit.role)
+  report("current-unit-number", integration_unit and integration_unit.physical_number)
+
+  local non_unit = series_index.current_unit("/course/Include", unit_lfs)
+  report("current-unit-non-unit", non_unit)
+
+  local default_lfs = {
+    attributes = function() return "directory" end,
+    currentdir = function() return "/course/020a-processes" end,
+  }
+  local defaulted_unit = series_index.current_unit(nil, default_lfs)
+  report("current-unit-default-name", defaulted_unit and defaulted_unit.name)
+  report("current-unit-default-scope", defaulted_unit and defaulted_unit.scope)
+
+  series_index.current_unit_tex("/course/900-i-collection", unit_lfs)
+  report("current-unit-tex-physical-unit", token.get_macro("OsgLectureUnitPhysicalUnit"))
+  report("current-unit-tex-role", token.get_macro("OsgLectureUnitRole"))
 }
 \END
 \end{document}

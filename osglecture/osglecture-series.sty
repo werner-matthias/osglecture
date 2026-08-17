@@ -10,9 +10,12 @@
 \cs_new:Npn \OsgLectureSeriesAvailableFlag { 0 }
 \cs_new:Npn \OsgLectureSeriesPosition { }
 \cs_new:Npn \OsgLectureSeriesCurrentPhysicalUnit { }
+\cs_new:Npn \OsgLectureSeriesCurrentRole { }
 \cs_new:Npn \OsgLectureSeriesPreviousPhysicalUnit { }
 \cs_new:Npn \OsgLectureSeriesPreviousContinuationPhysicalUnit { }
 \cs_new:Npn \OsgLectureSeriesNextPhysicalUnit { }
+\cs_new:Npn \OsgLectureUnitPhysicalUnit { }
+\cs_new:Npn \OsgLectureUnitRole { }
 
 \prop_new:N \g__osglecture_series_physical_to_logical_prop
 \prop_new:N \g__osglecture_series_logical_to_physical_prop
@@ -82,24 +85,36 @@
       {#1} {#2} {#3}
   }
 
-\cs_new_protected:Npn \__osglecture_series_initialize:nnn #1#2#3
+% \ldeen*{Der Startpfad kommt nicht mehr aus der Auftragsdatei
+% (@1 ist redundant zu \code{lfs.currentdir()}, siehe
+% \code{ARCHITECTURE.md} Abschnitt 12), sondern implizit vom
+% Arbeitsverzeichnis des TeX-Laufs. Der Vorabtest mit @2 ersetzt den
+% früheren Leer-Test auf @1: Nur wenn überhaupt ein Serieneinheit-
+% artiges Vorfahrenverzeichnis existiert, wird die volle Initialisierung
+% (samt Scope-Analyse und Fehlermeldung bei echten Problemen) versucht.
+% Ohne dieses Vorfahrenverzeichnis bleibt die Serie wie zuvor still
+% nicht verfügbar, statt einen Fehler zu erzeugen.}{The start path no
+% longer comes from the build file (@1 is redundant with
+% \code{lfs.currentdir()}, see \code{ARCHITECTURE.md} section 12), but
+% implicitly from the TeX run's working directory. The pre-check with
+% @2 replaces the former empty-test on @1: the full initialization
+% (including scope analysis and error reporting for real problems) is
+% only attempted when a series-unit-shaped ancestor directory exists at
+% all. Without such an ancestor, the series stays silently unavailable,
+% as before, instead of raising an error.}{\code{source-directory}}{\code{series\_index.locate\_unit\_ancestor}}
+\cs_new_protected:Npn \__osglecture_series_initialize:nn #1#2
   {
     \directlua{
-      require("osglecture-series-index").initialize_tex_csv(
-        "\luaescapestring{#1}", "\luaescapestring{#2}",
-        "\luaescapestring{#3}")
+      require("osglecture-series-index").initialize_tex_csv_if_available(
+        nil, "\luaescapestring{#1}", "\luaescapestring{#2}")
     }
   }
 
 \OsgLectureBuildLoadedTF
   {
-    \tl_if_empty:eF { \OsgLectureBuildValue{source-directory} }
-      {
-        \exp_args:Neee \__osglecture_series_initialize:nnn
-          { \OsgLectureBuildValue{source-directory} }
-          { \OsgLectureBuildValue{doctype} }
-          { \OsgLectureBuildValue{applicable-unit-scopes} }
-      }
+    \exp_args:Nee \__osglecture_series_initialize:nn
+      { \OsgLectureBuildValue{doctype} }
+      { \OsgLectureBuildValue{applicable-unit-scopes} }
   }
   { }
 

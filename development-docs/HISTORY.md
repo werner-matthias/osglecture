@@ -49,8 +49,13 @@ Der Code setzt es erst teilweise um. Konkret zum Zeitpunkt dieses Eintrags
 - Das gemeinsame Lua-Modul (`osglecture-manifest.lua`, mit vendoriertem
   TOML-1.0-Leser `osglecture-toml.lua`, siehe `osglecture/THIRD_PARTY.md`)
   existiert und ist getestet (`testfiles/manifest.lvt`). `osglecture.cls`
-  liest `shared-tex-directory` und `project-config-file` weiterhin aus der
-  Auftragsdatei, nicht über das Modul (Schritt 5 steht noch aus).
+  liest `shared-tex-directory`/`project-config-file` jetzt über das Modul
+  (`manifest.load_tex`); `osglecture-series.sty` und die
+  `physical-unit`/`unit-role`-Konsumenten (`osglecture.cls`,
+  `osglecture-structure.sty`) über `series_index.current_unit`/
+  `initialize_tex_csv_if_available`. Die Auftragsdatei enthält diese Werte
+  nicht mehr (Schritte 4 und 5 sind abgeschlossen, siehe `ARCHITECTURE.md`
+  Abschnitt 12).
 - OLLM ruft das Modul jetzt über `texlua` auf (`OLLM::LuaManifest`,
   `osglecture-manifest-cli.lua`), aber schmaler als Schritt 3 ursprünglich
   formuliert: `ollm doctor` meldet den Lua-seitigen TOML-Parser zusätzlich
@@ -67,11 +72,11 @@ Der Code setzt es erst teilweise um. Konkret zum Zeitpunkt dieses Eintrags
   größeres Vorhaben.
 - `OLLM::Config.pm` liest weiterhin das vollständige Projektmanifest und
   löst Serienstruktur, Sprachliste und Bundle-Preset-Inhalt selbst auf, statt
-  dafür das gemeinsame Modul zu nutzen -- das bleibt so, bis Schritt 6.
-- Die generierte Auftragsdatei (`<jobname>.osgbuild.tex`) enthält weiterhin
-  den vollständigen, in `ARCHITECTURE.md` Abschnitt 12 klassifizierten
-  Schlüsselsatz, nicht nur den für die Auftragsentscheidung nötigen
-  Ausschnitt.
+  dafür das gemeinsame Modul zu nutzen -- das bleibt so, bis Schritt 6. Die
+  generierte Auftragsdatei transportiert diese Werte seit Schritt 4 nicht
+  mehr; `OLLM::Config.pm` berechnet sie weiterhin unabhängig für den
+  internen `BuildSpec` (Zustandsführung, `--all`), nicht mehr aber für die
+  Klasse.
 
 Dieser Abschnitt wird bei jedem Migrationsschritt aus `ARCHITECTURE.md`
 Abschnitt 12 aktualisiert, bis die Liste leer ist. Wer wissen will, ob eine

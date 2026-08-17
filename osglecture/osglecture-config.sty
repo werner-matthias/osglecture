@@ -10,6 +10,23 @@
 \prop_new:N \g__osglecture_build_prop
 \bool_new:N \g__osglecture_build_loaded_bool
 
+% \ldeen{Defaults für die von \code{osglecture-manifest.lua}s
+% \code{manifest.load\_tex} global gesetzten Makros: Ohne diese
+% Vorabdeklaration wäre eine Referenz vor dem ersten (erfolgreichen oder
+% fehlgeschlagenen) Aufruf eine undefinierte Kontrollsequenz statt eines
+% leeren Werts.}{Defaults for the macros globally set by
+% \code{osglecture-manifest.lua}'s \code{manifest.load\_tex}: without this
+% pre-declaration, a reference before the first call (successful or
+% failed) would be an undefined control sequence rather than an empty
+% value.}
+\cs_new:Npn \OsgLectureManifestAvailableFlag { 0 }
+\cs_new:Npn \OsgLectureManifestProjectRoot { }
+\cs_new:Npn \OsgLectureManifestSharedTexDirectory { }
+\cs_new:Npn \OsgLectureManifestProjectConfigFile { }
+\cs_new:Npn \OsgLectureManifestProjectConfigPath { }
+\cs_new:Npn \OsgLectureManifestAvailableLanguages { }
+\cs_new:Npn \OsgLectureManifestBundlePreset { }
+
 \msg_new:nnnn { osglecture-config } { unsupported-schema }
   { Unsupported~osglecture~build-file~schema~'#1'. }
   { This~version~supports~build-file~schema~'1'. }
@@ -46,11 +63,6 @@
     job-id              .code:n = \__osglecture_build_put:nn {job-id} {#1},
     context             .code:n = \__osglecture_build_put:nn {context} {#1},
     series-id           .code:n = \__osglecture_build_put:nn {series-id} {#1},
-    physical-unit       .code:n = \__osglecture_build_put:nn {physical-unit} {#1},
-    physical-number     .code:n = \__osglecture_build_put:nn {physical-number} {#1},
-    logical-ordinal     .code:n = \__osglecture_build_put:nn {logical-ordinal} {#1},
-    unit-scope          .code:n = \__osglecture_build_put:nn {unit-scope} {#1},
-    unit-role           .code:n = \__osglecture_build_put:nn {unit-role} {#1},
     unit-id             .code:n = \__osglecture_build_put:nn {unit-id} {#1},
     generation-id       .code:n =
       \__osglecture_build_put:nn {generation-id} {#1},
@@ -62,16 +74,6 @@
     applicable-unit-scopes .code:n =
       \__osglecture_build_put:nn {applicable-unit-scopes} {#1},
     language            .code:n = \__osglecture_build_put:nn {language} {#1},
-    available-languages .code:n =
-      \__osglecture_build_put:nn {available-languages} {#1},
-    bundle-preset       .code:n =
-      \__osglecture_build_put:nn {bundle-preset} {#1},
-    shared-tex-directory .code:n =
-      \__osglecture_build_put:nn {shared-tex-directory} {#1},
-    source-directory .code:n =
-      \__osglecture_build_put:nn {source-directory} {#1},
-    project-config-file .code:n =
-      \__osglecture_build_put:nn {project-config-file} {#1},
     shell-escape        .code:n =
       \__osglecture_build_put:nn {shell-escape} {#1},
     structure-signature .code:n =
@@ -80,14 +82,17 @@
       \__osglecture_build_put:nn {config-signature} {#1},
   }
 
+% Required keys match exactly the "OLLM"/"Grenzfall" classification in
+% osglecture/ARCHITECTURE.md section 12. Everything classified "gemeinsames
+% Modul" there was removed above along with its .code:n entry: an older
+% OLLM that still sends those keys now gets a clear "unknown key" error
+% instead of the class silently ignoring them.
 \cs_new_protected:Npn \__osglecture_build_validate:
   {
     \clist_map_inline:nn
-      {schema,job-id,context,series-id,physical-unit,physical-number,
-       unit-scope,unit-role,target,profile-class,document-metadata-policy,
+      {schema,job-id,context,series-id,target,profile-class,
+       document-metadata-policy,
        doctype,applicable-unit-scopes,language,
-       available-languages,bundle-preset,
-       source-directory,
        structure-signature,
        config-signature}
       {

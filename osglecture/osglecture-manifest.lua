@@ -139,4 +139,39 @@ function manifest.shared_tex(project_manifest, project_root)
   }
 end
 
+-- \ldeen*{Kombiniert @1 mit den lesenden Zugriffen oben und setzt das
+-- Ergebnis als globale \TeX-Makros -- dasselbe Brückenmuster wie
+-- \code{series\_index.initialize\_tex}. Ein fehlgeschlagenes Laden ist hier
+-- kein Fehler: Der Aufrufer (\code{osglecture.cls}) prüft
+-- \code{OsgLectureManifestAvailableFlag} und lässt projektinhaltsabhängige
+-- Schritte aus, statt den Lauf abzubrechen -- dieselbe stille
+-- Rückfallsemantik, die die entfernte, leere \code{shared-tex-directory}
+-- vorher hatte.}{Combines @1 with the read accessors above and sets the
+-- result as global \TeX\ macros -- the same bridging pattern as
+-- \code{series\_index.initialize\_tex}. A failed load is not an error here:
+-- the caller (\code{osglecture.cls}) checks
+-- \code{OsgLectureManifestAvailableFlag} and skips project-content-dependent
+-- steps instead of aborting the run -- the same silent-fallback semantics
+-- the removed, empty \code{shared-tex-directory} had before.}{\code{manifest.load}}
+function manifest.load_tex(start_path, options)
+  local function set(name, value)
+    token.set_macro(name, value == nil and "" or tostring(value), "global")
+  end
+  local loaded, load_error = manifest.load(start_path, options)
+  if not loaded then
+    set("OsgLectureManifestAvailableFlag", "0")
+    return nil, load_error
+  end
+  local shared = manifest.shared_tex(loaded.manifest, loaded.project_root)
+  local langs = manifest.available_languages(loaded.manifest)
+  set("OsgLectureManifestAvailableFlag", "1")
+  set("OsgLectureManifestProjectRoot", loaded.project_root)
+  set("OsgLectureManifestSharedTexDirectory", shared.shared_tex_directory)
+  set("OsgLectureManifestProjectConfigFile", shared.project_config_file)
+  set("OsgLectureManifestProjectConfigPath", shared.project_config_path)
+  set("OsgLectureManifestAvailableLanguages", table.concat(langs, ","))
+  set("OsgLectureManifestBundlePreset", manifest.bundle_preset(loaded.manifest) or "")
+  return loaded
+end
+
 return manifest

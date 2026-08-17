@@ -218,6 +218,27 @@ function series_index.discover_units(project_root, lfs)
   return units
 end
 
+-- \ldeen{Parst nur den Namen von @1 selbst (Default: das
+-- Arbeitsverzeichnis), ohne Serienwurzel oder Geschwister zu suchen. Für
+-- Entscheidungen, die ausschließlich von der Identität der aktuellen
+-- Einheit abhängen (etwa ob die Rolle \code{integration} ist), ist das
+-- robuster als der volle @1-basierte Seriencheck: Es kann nicht an einem
+-- fehlenden Serienwurzel-Vorfahren oder einem Scope-Fehler bei
+-- Geschwistern scheitern.}{Parses only @1's own name (default: the
+-- working directory), without searching for a series root or siblings.
+-- For decisions that depend solely on the current unit's own identity
+-- (such as whether its role is \code{integration}), this is more robust
+-- than the full series check: it cannot fail because of a missing series
+-- root ancestor or a sibling scope error.}{path}
+function series_index.current_unit(path, lfs)
+  lfs = lfs or require("lfs")
+  path = path or lfs.currentdir()
+  if lfs.attributes(path, "mode") == "file" then
+    path = dirname(path)
+  end
+  return series_index.parse_unit_name(basename(path))
+end
+
 -- \ldeen*{Reine Verzeichniswanderung ohne Geschwister-Analyse: von @1
 -- unabhängige Aufrufer (etwa das Manifest-Modul) brauchen nur die
 -- Serienwurzel, nicht Doctype oder Unit-Scopes. @2 nutzt diese Funktion
@@ -279,6 +300,25 @@ function series_index.current()
   return active_index
 end
 
+-- \ldeen{Brückenfunktion zu \code{series\_index.current\_unit} nach
+-- demselben Muster wie \code{series\_index.initialize\_tex}: setzt
+-- \code{\textbackslash OsgLectureUnitPhysicalUnit} und
+-- \code{\textbackslash OsgLectureUnitRole} global, leer bei fehlendem
+-- Vorfahren.}{Bridge function to \code{series\_index.current\_unit}
+-- following the same pattern as \code{series\_index.initialize\_tex}: sets
+-- \code{\textbackslash OsgLectureUnitPhysicalUnit} and
+-- \code{\textbackslash OsgLectureUnitRole} globally, empty when there is
+-- no matching directory.}
+function series_index.current_unit_tex(path, lfs)
+  local unit = series_index.current_unit(path, lfs)
+  local function set(name, value)
+    token.set_macro(name, value == nil and "" or tostring(value), "global")
+  end
+  set("OsgLectureUnitPhysicalUnit", unit and unit.name or "")
+  set("OsgLectureUnitRole", unit and unit.role or "")
+  return unit
+end
+
 function series_index.initialize_tex(start_path, context)
   local result, error_message = series_index.initialize(start_path, context)
   if not result then return nil, error_message end
@@ -288,6 +328,7 @@ function series_index.initialize_tex(start_path, context)
   set("OsgLectureSeriesAvailableFlag", "1")
   set("OsgLectureSeriesPosition", result.position)
   set("OsgLectureSeriesCurrentPhysicalUnit", result.current.name)
+  set("OsgLectureSeriesCurrentRole", result.current.role)
   set("OsgLectureSeriesPreviousPhysicalUnit",
     result.previous and result.previous.name or "")
   set("OsgLectureSeriesPreviousContinuationPhysicalUnit",
@@ -310,6 +351,32 @@ function series_index.initialize_tex_csv(start_path, doctype, scopes_csv)
     tex.error("osglecture series index initialization failed", {error_message})
   end
   return result
+end
+
+-- \ldeen*{Fasst den Vorabtest mit @1 und den bedingten Aufruf von @2 in
+-- einer einzigen Funktion zusammen. Der Grund ist nicht nur Bequemlichkeit:
+-- \code{\textbackslash ExplSyntaxOn} setzt Leerzeichen auf Katcode~9
+-- (ignoriert), nicht auf das gewöhnliche Katcode~10 -- ein \code{local}
+-- oder \code{if}/\code{then} direkt im \TeX-Quelltext eines
+-- \code{\textbackslash directlua}-Aufrufs würde deshalb beim Tokenisieren
+-- seine trennenden Leerzeichen vollständig verlieren (etwa
+-- \code{local x} zu \code{localx}) und wäre kein gültiges Lua mehr. Ein
+-- einzeiliger, verkettender Aufruf wie @2 braucht dagegen keine
+-- Leerzeichen zur Token-Trennung und bleibt sicher.}{Combines the
+-- pre-check with @1 and the conditional call to @2 into a single
+-- function. The reason is not just convenience:
+-- \code{\textbackslash ExplSyntaxOn} sets the space character to
+-- catcode~9 (ignored), not the usual catcode~10 -- a \code{local} or
+-- \code{if}/\code{then} written directly in the \TeX\ source of a
+-- \code{\textbackslash directlua} call would therefore lose its
+-- separating spaces entirely at tokenization time (e.g.\ \code{local x}
+-- becoming \code{localx}) and stop being valid Lua. A single-line,
+-- chained call like @2 needs no spaces for token separation and stays
+-- safe.}{\code{locate\_unit\_ancestor}}{\code{initialize\_tex\_csv}}
+function series_index.initialize_tex_csv_if_available(start_path, doctype, scopes_csv)
+  if series_index.locate_unit_ancestor(start_path) then
+    return series_index.initialize_tex_csv(start_path, doctype, scopes_csv)
+  end
 end
 
 return series_index

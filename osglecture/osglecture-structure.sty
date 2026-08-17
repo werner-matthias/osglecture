@@ -106,7 +106,7 @@
         \tl_if_empty:NF \l_tmpa_tl
           {
             \str_if_eq:eeF
-              { \OsgLectureBuildValue{unit-role} } {i}
+              { \OsgLectureUnitRole } {i}
               {
                 \bool_if:NF \g__osglecture_unit_declared_bool
                   {
@@ -117,7 +117,7 @@
             \bool_if:NT \g__osglecture_unit_valid_bool
               {
                 \str_if_eq:eeT
-                  { \OsgLectureBuildValue{unit-role} } {i}
+                  { \OsgLectureUnitRole } {i}
                   {
                     \tl_gclear:N \g__osglecture_unit_id_tl
                     \tl_gclear:N \g__osglecture_deployment_chapter_tl
@@ -132,8 +132,8 @@
                         {\OsgLectureBuildValue{job-id}}
                         {\OsgLectureBuildValue{series-id}}
                         {\exp_not:V \g__osglecture_unit_id_tl}
-                        {\OsgLectureBuildValue{physical-unit}}
-                        {\OsgLectureBuildValue{unit-role}}
+                        {\OsgLectureUnitPhysicalUnit}
+                        {\OsgLectureUnitRole}
                         {\OsgLectureBuildValue{doctype}}
                         {\OsgLectureBuildValue{language}}
                   }
@@ -141,7 +141,7 @@
                   {
                     \token_to_str:N \OsgLectureDeploymentResult
                     {\exp_not:V \g__osglecture_deployment_chapter_tl}
-                    {\OsgLectureBuildValue{logical-ordinal}}
+                    {\OsgLectureSeriesPosition}
                   }
                 \iow_close:N \g__osglecture_result_iow
               }
