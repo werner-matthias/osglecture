@@ -13,6 +13,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  lint-directlua:
+    name: Lint · \directlua catcode safety
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Lint \directlua call sites
+        run: |
+          find . \( -name build -o -name .git -o -path '*/vendor/*' \) -prune -o \
+            -type f \( -name '*.dtx' -o -name '*.sty' -o -name '*.cls' \
+                       -o -name '*.tex' -o -name '*.lvt' \) -print0 \
+            | xargs -0 --no-run-if-empty perl .github/scripts/lint-directlua.pl
+
   install-smoke:
     name: Bundle installation · Current TeX Live
     runs-on: ubuntu-latest
