@@ -623,6 +623,16 @@ function M.extract(filename, outname)
   return outname
 end
 
+-- \tagpaxextract's O{} default argument arrives as an empty string, not
+-- nil; \ExplSyntaxOn also sets space to catcode 9 (ignored), so a
+-- multi-statement "local x = ...; local y = ..." body inline in \directlua
+-- silently loses its separating spaces and becomes invalid Lua. This
+-- wrapper keeps the empty-to-nil conversion here, in a real .lua file, so
+-- the \directlua call site can stay a single safe chained expression.
+function M.extract_command(filename, outname)
+  return M.extract(filename, outname ~= "" and outname or nil)
+end
+
 -- Compatibility facade ----------------------------------------------------
 -- Reading and validation have dedicated modules. These forwarding functions
 -- preserve the early public API without maintaining duplicate implementations.

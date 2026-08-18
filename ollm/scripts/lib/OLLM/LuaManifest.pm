@@ -4,6 +4,8 @@ use v5.30;
 use strict;
 use warnings;
 
+use Cwd qw(abs_path);
+use File::Basename qw(dirname);
 use File::Spec;
 
 # Bridge to the shared Lua module (osglecture-manifest.lua /
@@ -38,12 +40,15 @@ sub _find_cli_script {
       return $CLI_SCRIPT_PATH;
     }
   }
-  # Development fallback: this file's own bundle ships osglecture as a
-  # sibling directory, so the script is reachable without an installed
-  # TDS tree. A real installation is expected to resolve via kpsewhich
-  # above instead.
+  # Development fallback: this module's own bundle (ollm/) ships osglecture
+  # as a sibling directory, so the script is reachable without an installed
+  # TDS tree. Resolved relative to this module's own file location, not the
+  # caller's current working directory: a caller running "ollm" from an
+  # arbitrary project directory (not from inside ollm/) must still find it.
+  # A real installation is expected to resolve via kpsewhich above instead.
+  my $module_dir = dirname(abs_path(__FILE__));
   my $sibling = File::Spec->catfile(
-    File::Spec->updir, 'osglecture', $CLI_SCRIPT_NAME,
+    $module_dir, (File::Spec->updir) x 4, 'osglecture', $CLI_SCRIPT_NAME,
   );
   $CLI_SCRIPT_PATH = -f $sibling ? File::Spec->rel2abs($sibling) : '';
   return $CLI_SCRIPT_PATH;

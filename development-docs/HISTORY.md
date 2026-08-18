@@ -42,41 +42,18 @@ geplante Schrittfolge.
 
 ## Stand der Umsetzung
 
-Die Entwicklungsdokumente beschreiben dieses Zieldesign bereits vollständig.
-Der Code setzt es erst teilweise um. Konkret zum Zeitpunkt dieses Eintrags
-(17. August 2026):
+Die in `ARCHITECTURE.md` Abschnitt 12 festgehaltene Schrittfolge (Schritte 1
+bis 6) ist seit dem 17. August 2026 vollständig umgesetzt: Das gemeinsame
+Lua-Modul existiert und ist getestet, `osglecture.cls` liest Projektinhalt
+(Manifest, Serienstruktur, `physical-unit`/`unit-role`/`logical-ordinal`)
+selbst darüber, die Auftragsdatei transportiert nur noch die in der
+Klassifikationstabelle als „OLLM"/„Grenzfall" markierten Schlüssel, und
+`OLLM::Config::structure_snapshot` delegiert die Verzeichnis-Discovery an
+dasselbe Modul statt an eine eigene Parsung. Was in Abschnitt 12 als
+strukturell bei OLLM verbleibend beschrieben ist (Auftragsentscheidung,
+Zustandsführung, Deployment, sowie die eigene Manifestvalidierung mit
+OLLM-Regeln) bleibt bewusst so -- das ist Zieldesign, keine Lücke.
 
-- Das gemeinsame Lua-Modul (`osglecture-manifest.lua`, mit vendoriertem
-  TOML-1.0-Leser `osglecture-toml.lua`, siehe `osglecture/THIRD_PARTY.md`)
-  existiert und ist getestet (`testfiles/manifest.lvt`). `osglecture.cls`
-  liest `shared-tex-directory`/`project-config-file` jetzt über das Modul
-  (`manifest.load_tex`); `osglecture-series.sty` und die
-  `physical-unit`/`unit-role`-Konsumenten (`osglecture.cls`,
-  `osglecture-structure.sty`) über `series_index.current_unit`/
-  `initialize_tex_csv_if_available`. Die Auftragsdatei enthält diese Werte
-  nicht mehr (Schritte 4 und 5 sind abgeschlossen, siehe `ARCHITECTURE.md`
-  Abschnitt 12).
-- OLLM ruft das Modul jetzt über `texlua` auf (`OLLM::LuaManifest`,
-  `osglecture-manifest-cli.lua`): `ollm doctor` meldet den Lua-seitigen
-  TOML-Parser zusätzlich zum Perl-seitigen (informativ, nicht
-  Voraussetzung); `ollm check` vergleicht bei jedem Lauf die eigene
-  Verzeichnis-Discovery gegen die des Moduls und meldet eine Abweichung als
-  Warnung; und seit Schritt 6 delegiert auch `OLLM::Config::structure_snapshot`
-  selbst -- der heiße Pfad jedes gewöhnlichen Builds über `resolve_request`
-  -- an `OLLM::LuaManifest::discover_units` statt an eine frühere lokale
-  `opendir`/Regex-Parsung der Verzeichnisgrammatik. Jeder
-  `structure_snapshot`-Aufruf löst dadurch einen `texlua`-Unterprozess aus;
-  bei `--all` mit vielen Einheiten ist das öfter als strukturell nötig (die
-  Verzeichnisstruktur ändert sich innerhalb eines Laufs normalerweise
-  nicht), aber ein früherer Memoisierungsversuch erwies sich als unsicher
-  (er brach den Vertrag, dass Umbenennen/Umordnen einer Einheit die
-  Struktursignatur ändert) und wurde zugunsten von Korrektheit wieder
-  entfernt, siehe Schritt 6 in `ARCHITECTURE.md` Abschnitt 12. `OLLM::Config`
-  validiert und mergt Manifestinhalt weiterhin mit OLLM-eigenen Regeln
-  (Zieldefaults, Sprachabgleich), die das bewusst minimale gemeinsame Modul
-  nicht nachbildet; das bleibt eigenständiger Perl-Code.
-
-Dieser Abschnitt wird bei jedem Migrationsschritt aus `ARCHITECTURE.md`
-Abschnitt 12 aktualisiert, bis die Liste leer ist. Wer wissen will, ob eine
-konkrete Codestelle dem beschriebenen Design bereits entspricht, prüft diese
-Liste -- nicht die übrigen Dokumente, die bewusst nur das Zieldesign zeigen.
+Damit ist diese Liste leer: Code und Entwicklungsdokumente stimmen an
+diesem Punkt überein. Dieser Abschnitt bleibt für den nächsten Fall stehen,
+in dem eine neue Design-Entscheidung der Umsetzung vorausläuft.

@@ -116,11 +116,13 @@
               }
             \bool_if:NT \g__osglecture_unit_valid_bool
               {
+                \tl_set:Ne \l_tmpb_tl { \OsgLectureSeriesPosition }
                 \str_if_eq:eeT
                   { \OsgLectureUnitRole } {i}
                   {
                     \tl_gclear:N \g__osglecture_unit_id_tl
                     \tl_gclear:N \g__osglecture_deployment_chapter_tl
+                    \tl_clear:N \l_tmpb_tl
                   }
                 \iow_open:Nn \g__osglecture_result_iow
                   {\jobname.osgresult.aux}
@@ -141,7 +143,7 @@
                   {
                     \token_to_str:N \OsgLectureDeploymentResult
                     {\exp_not:V \g__osglecture_deployment_chapter_tl}
-                    {\OsgLectureSeriesPosition}
+                    {\exp_not:V \l_tmpb_tl}
                   }
                 \iow_close:N \g__osglecture_result_iow
               }
