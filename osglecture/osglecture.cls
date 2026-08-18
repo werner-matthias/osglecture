@@ -291,30 +291,33 @@
     \exp_args:NVV \PassOptionsToClass
       \l__osglecture_selected_options_tl \l__osglecture_base_class_tl
   }
-% \ldeen*{@1 setzt Leerzeichen (Katcode~32) auf Katcode~9 (ignoriert),
-% nicht Katcode~10 wie normales \LaTeX. Legacy-Basisklassen wie KOMA-Skripts
-% @2 verwenden intern eigene, nicht-@3-basierte Makros (etwa
+% \ldeen*{@1 setzt Leerzeichen (Katcode~32) auf Katcode~9 (ignoriert), nicht
+% Katcode~10 wie normales \LaTeX. Legacy-Basisklassen wie KOMA-Skripts @2
+% verwenden intern eigene, nicht-@3-basierte Makros (etwa
 % \code{\@pr@videpackage}), deren Parametermuster ein Leerzeichen als
 % Trenntoken erwarten -- unter Katcode~9 verschwindet dieses Trenntoken beim
 % Tokenisieren spurlos, das Muster passt nicht mehr, und die Klasse bricht
 % mit einer Kaskade von Folgefehlern ab (dasselbe Symptombild wie bei einer
-% früheren \code{kvoptions.sty}-Korruption in dieser Datei). @4 lädt die
-% eigentliche Klassendatei deshalb mit temporär auf normale Katcodes
-% zurückgesetztem Syntaxmodus.}{@1 sets space (catcode~32) to catcode~9
-% (ignored), not catcode~10 as normal \LaTeX\ does. Legacy base classes such
-% as KOMA-Script's @2 use their own, non-@3-based macros internally (e.g.
-% \code{\@pr@videpackage}), whose parameter patterns expect a space as a
-% delimiter token -- under catcode~9 that delimiter vanishes without a trace
-% during tokenization, the pattern no longer matches, and the class aborts
-% with a cascade of follow-on errors (the same symptom picture as an
-% earlier \code{kvoptions.sty} corruption in this file). @4 therefore loads
-% the actual class file with the syntax mode temporarily reset to normal
-% catcodes.}{\code{\ExplSyntaxOn}}{\code{scrbook}}{expl3}{Below}
-\edef \OsgLectureTmpLoadClass
-  { \exp_not:N \LoadClass {\l__osglecture_base_class_tl} }
-\ExplSyntaxOff
-\OsgLectureTmpLoadClass
-\ExplSyntaxOn
+% früheren \code{kvoptions.sty}-Korruption in dieser Datei). Die
+% Katcode-Änderung darf hier nicht in einer \TeX-Gruppe stehen: @4 verbietet
+% das Laden einer Klasse innerhalb einer Gruppe explizit
+% ("Loading a class or package in a group"). Die Wiederherstellung erfolgt
+% deshalb durch eine zweite, ungruppierte Zuweisung direkt nach @4.}
+% {@1 sets space (catcode~32) to catcode~9 (ignored), not catcode~10 as
+% normal \LaTeX\ does. Legacy base classes such as KOMA-Script's @2 use
+% their own, non-@3-based macros internally (e.g. \code{\@pr@videpackage}),
+% whose parameter patterns expect a space as a delimiter token -- under
+% catcode~9 that delimiter vanishes without a trace during tokenization,
+% the pattern no longer matches, and the class aborts with a cascade of
+% follow-on errors (the same symptom picture as an earlier
+% \code{kvoptions.sty} corruption in this file). The catcode change must
+% not be inside a \TeX\ group here: @4 explicitly forbids loading a class
+% inside a group ("Loading a class or package in a group"). Restoration is
+% therefore a second, ungrouped assignment right after @4.}
+% {\code{\ExplSyntaxOn}}{\code{scrbook}}{expl3}{\code{\LoadClass}}
+\char_set_catcode:nn {32}{10}
+\exp_args:NV \LoadClass \l__osglecture_base_class_tl
+\char_set_catcode:nn {32}{9}
 
 \bool_if:NF \l__osglecture_native_mode_compatibility_bool
   { \PassOptionsToPackage{native-mode-compatibility=false}{osglecture-modes} }
