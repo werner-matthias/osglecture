@@ -599,7 +599,7 @@ eval {
 like $@, qr/name 'mismatch' and doctype 'different' differ/,
   'schema 1 rejects a silent target/doctype mismatch';
 
-my $bundle_example = abs_path('../examples/series-minimal');
+my $bundle_example = abs_path('../examples/series-modern');
 my $bundle_chapter = File::Spec->catdir($bundle_example, '010-introduction');
 my $bundle_manifest = OLLM::Config->find_manifest(start_dir => $bundle_chapter);
 is $bundle_manifest->{path},
@@ -614,10 +614,10 @@ my $bundle_definitions = OLLM::Config->resolve_definitions(
 );
 is $bundle_definitions->{bundle_preset}{reference}, 'OSG lecture/1',
   'bundle-level example resolves its bundled preset';
-is $bundle_definitions->{targets}{slides}{document_metadata}, 'disabled',
-  'example retains the Beamer target metadata default';
 is $bundle_definitions->{targets}{talk}{document_metadata}, 'required',
-  'example overrides metadata policy for its ltx-talk target';
+  'example resolves its custom ltx-talk target metadata default';
+is $bundle_definitions->{targets}{script}{document_metadata}, 'required',
+  'example overrides metadata policy for its script target';
 my %resolve_manifest = (%$bundle_data,
   build => { resolve => { max_rounds => 3 } },
 );
