@@ -1,0 +1,36 @@
+\documentclass{osglecture}
+
+\begin{document}
+\lecture[\lende{Shared source}{Gemeinsame Quelle}]
+  {\lende{A shared source}{Eine gemeinsame Quelle}}{introduction}
+
+\section{\lende{One source, two presentations}{Eine Quelle, zwei Darstellungen}}
+\begin{frame}
+  \frametitle{\lende{One source, two presentations}{Eine Quelle, zwei Darstellungen}}
+  \label{sec:shared-source}
+  \begin{presitemize}
+    \item \lende{A unit contains the subject-matter content}%
+      {Eine Unit enthält den fachlichen Inhalt}
+    \anditem \lende{target \emph{talk} produces a presentation}%
+      {das Target \emph{talk} erzeugt eine Präsentation}
+    \anditem \lende{target \emph{script} produces a long form}%
+      {das Target \emph{script} erzeugt eine Langform}
+    \thereforeitem \lende{We \finite{need} to maintain changes only once}%
+      {Wir \finite{müssen} Änderungen nur einmal pflegen}
+  \end{presitemize}
+\end{frame}
+
+\section{Mode-aware Layout}
+\begin{frame}
+  \frametitle{Mode-aware Layout}
+  \begin{twocolumns}[t,.46]
+    \lende{In presentations, these two parts sit side by side by default.}%
+      {In Präsentationen stehen diese beiden Teile standardmäßig nebeneinander.}
+    \nextcolumn
+    \lende{In the long form, they follow one another with no separate source
+      variant needed.}%
+      {In der Langform folgen sie ohne zusätzliche Quelltextvariante
+      aufeinander.}
+  \end{twocolumns}
+\end{frame}
+\end{document}

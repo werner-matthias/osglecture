@@ -1,0 +1,39 @@
+\documentclass{osglecture}
+
+\begin{document}
+\lecture[\lende{Application}{Anwendung}]
+  {\lende{Applying the principle}{Anwendung des Prinzips}}{application}
+
+\section{\lende{Connecting to the first unit}{Anschluss an die erste Unit}}
+\begin{frame}
+  \frametitle{\lende{Connecting to the first unit}{Anschluss an die erste Unit}}
+  \lende{The separation of content and presentation was already introduced
+    in Section}{Die Trennung von Inhalt und Darstellung wurde bereits in
+    Abschnitt}~\olref[introduction]{sec:shared-source}%
+  \lende{.}{ eingeführt.}
+
+  \begin{presitemize}
+    \item \lende{The reference uses the logical unit ID \emph{introduction}}%
+      {Die Referenz verwendet die logische Unit-ID \emph{introduction}}
+    \anditem \lende{OLLM registers the most recently successful build's
+      projection}{OLLM registriert die zuletzt erfolgreich gebaute Projektion}
+    \thereforeitem \lende{The source \finite{remains} independent of build
+      paths}{Die Quelle \finite{bleibt} unabhängig von Buildpfaden}
+  \end{presitemize}
+\end{frame}
+
+\section{\lende{Observation for adapter development}%
+  {Beobachtung für die Adapterentwicklung}}
+\begin{frame}
+  \frametitle{\lende{Observation for adapter development}%
+    {Beobachtung für die Adapterentwicklung}}
+  \lende{The source now directly uses the profile-independent structure of
+    \texttt{section}, \texttt{frame}, and \texttt{frametitle}. ltx-talk
+    keeps its native frames; the long-form adapter sets the same frame as a
+    content container.}%
+    {Die Quelle verwendet jetzt unmittelbar die profilunabhängige Struktur
+    aus \texttt{section}, \texttt{frame} und \texttt{frametitle}. ltx-talk
+    behält seine nativen Frames; der Langformadapter setzt denselben Frame
+    als Inhaltscontainer.}
+\end{frame}
+\end{document}

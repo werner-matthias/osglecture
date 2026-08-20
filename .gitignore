@@ -16,6 +16,9 @@ test/standalone/main.synctex.gz
 **/*.code
 **/*-cnltx*
 **/build/*
+**/.osglecture/state/*
+examples/**/*.tagpax
+examples/**/*-osglecture-integration.registry
 /doc/*.pdf
 /doc/ollm/
 /legacy

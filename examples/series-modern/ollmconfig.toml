@@ -1,0 +1,24 @@
+schema = 1
+bundle_preset = "OSG lecture/1"
+
+[project]
+id = "modern"
+
+[project.tex]
+directory = "Include"
+config = "projectconfig.tex"
+
+[languages]
+available = ["de", "en"]
+default = "de"
+
+[targets.talk]
+languages = ["de", "en"]
+document_metadata = "required"
+
+[targets.script]
+languages = ["de", "en"]
+document_metadata = "required"
+
+[security]
+shell_escape = "restricted"

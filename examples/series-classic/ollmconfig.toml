@@ -2,7 +2,7 @@ schema = 1
 bundle_preset = "OSG lecture/1"
 
 [project]
-id = "example"
+id = "classic"
 
 [project.tex]
 directory = "Include"
@@ -16,13 +16,9 @@ default = "de"
 languages = ["de"]
 document_metadata = "disabled"
 
-[targets.talk]
-languages = ["de"]
-document_metadata = "required"
-
 [targets.script]
 languages = ["de"]
-document_metadata = "required"
+document_metadata = "disabled"
 
 [security]
 shell_escape = "restricted"
