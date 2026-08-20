@@ -27,6 +27,7 @@ installfiles = {
   "osglecture-toml.lua",
   "osglecture-manifest.lua",
   "osglecture-manifest-cli.lua",
+  "osglecture-integration.lua",
 }
 sourcefiles = {
   "osglecture.cls",
@@ -50,6 +51,7 @@ sourcefiles = {
   "osglecture-toml.lua",
   "osglecture-manifest.lua",
   "osglecture-manifest-cli.lua",
+  "osglecture-integration.lua",
 }
 typesetfiles = { }
 checksuppfiles = {

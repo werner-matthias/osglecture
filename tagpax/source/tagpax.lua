@@ -402,6 +402,30 @@ function M.extract(filename, outname)
               record.subtype = "Link"
               record.llx, record.lly = rect[1], rect[2]
               record.urx, record.ury = rect[3], rect[4]
+              -- \ldeen*{Diese Schlüssel werden von @1 nur geschrieben, wenn
+              -- ein Link von einer logisch identifizierten externen
+              -- Einheit (z.B. via @2s \olref) stammt; sie erlauben es
+              -- einem Konsumenten der IR (z.B. der
+              -- osglecture-Integrationsschicht), eine @3-Annotation
+              -- nachträglich als projektintern zu erkennen und in einen
+              -- internen Sprung umzuschreiben, ohne dass @1 selbst
+              -- irgendetwas über osglecture-Semantik wissen
+              -- muss.}{These keys are only written by @1 when a link
+              -- originates from a logically identified external unit
+              -- (e.g. via @2's \olref); they let a consumer of the IR
+              -- (e.g. the osglecture integration layer) later recognize a
+              -- @3 annotation as project-internal and rewrite it into an
+              -- internal jump, without @1 itself needing to know
+              -- anything about osglecture semantics.}{\code{tagpax}}
+              -- {\code{osglecture}}{\code{GoToR}}
+              local osg_unit = pdf_string(annot, "OSGLectureUnit")
+              if osg_unit then
+                record["osglecture-unit"] = osg_unit
+                record["osglecture-doctype"] = pdf_string(annot, "OSGLectureType")
+                record["osglecture-lang"] = pdf_string(annot, "OSGLectureLang")
+                record["osglecture-source-page"] =
+                  tonumber(pdf_string(annot, "OSGLectureSourcePage"))
+              end
               annotations[#annotations + 1] = record
               local object_number = ref_number(annot_item)
               if object_number then annotation_by_object[object_number] = record end
@@ -605,6 +629,8 @@ function M.extract(filename, outname)
         "id", "page", "subtype", "action", "destination", "uri", "file",
         "remote-destination", "remote-page", "remote-view", "parent",
         "llx", "lly", "urx", "ury",
+        "osglecture-unit", "osglecture-doctype", "osglecture-lang",
+        "osglecture-source-page",
       },
       id = annotation.id, page = annotation.page, subtype = annotation.subtype,
       action = annotation.action, destination = annotation.destination,
@@ -615,6 +641,10 @@ function M.extract(filename, outname)
       parent = annotation.parent,
       llx = annotation.llx, lly = annotation.lly,
       urx = annotation.urx, ury = annotation.ury,
+      ["osglecture-unit"] = annotation["osglecture-unit"],
+      ["osglecture-doctype"] = annotation["osglecture-doctype"],
+      ["osglecture-lang"] = annotation["osglecture-lang"],
+      ["osglecture-source-page"] = annotation["osglecture-source-page"],
     })
   end
 

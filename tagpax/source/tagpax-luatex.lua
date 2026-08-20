@@ -10,6 +10,37 @@
 --<*pkg>
 local ir_reader = require("tagpax-ir")
 local M = { version = "0.8.5-dev" }
+
+-- \ldeen*{Generischer Erweiterungspunkt: ein Konsument (z.\,B. die
+-- osglecture-Integrationsschicht) kann diese Funktion setzen, um eine
+-- \code{GoToR}-Annotation vor der Emission in einen internen Sprung
+-- umzuschreiben. @1 selbst kennt weder osglecture-Semantik noch die
+-- Bedeutung etwaiger zusätzlicher Annotationsschlüssel -- die Funktion
+-- erhält den vollständigen IR-Annotationsdatensatz und antwortet entweder
+-- mit \code{nil} (unverändert als @2 emittieren, der Default) oder mit
+-- \code{prefix, page} (als interner Sprung zu
+-- \code{tagpax.<prefix>.page.<page>} emittieren -- derselbe
+-- Seiten-Zieltyp, den @1 für jede importierte Seite ohnehin schon
+-- anlegt).}{Generic extension point: a consumer (e.g. the osglecture
+-- integration layer) may set this function to rewrite a \code{GoToR}
+-- annotation into an internal jump before emission. @1 itself knows
+-- neither osglecture semantics nor the meaning of any extra annotation
+-- keys -- the function receives the full IR annotation record and
+-- answers either with \code{nil} (emit unchanged as @2, the default) or
+-- with \code{prefix, page} (emit as an internal jump to
+-- \code{tagpax.<prefix>.page.<page>} -- the same page-destination type
+-- @1 already creates for every imported page anyway).}{\code{tagpax}}
+-- {\code{GoToR}}
+M.resolve_goToR = nil
+
+-- \ldeen*{Nicht von @1 selbst gefüllt oder gelesen -- ein leeres, immer
+-- vorhandenes Tabellenobjekt, das ein Konsument (typischerweise über
+-- @2) mit eigenen Daten befüllt und aus seiner eigenen @2-Funktion
+-- heraus abfragt.}{Not populated or read by @1 itself -- an empty,
+-- always-present table object that a consumer (typically via @2)
+-- populates with its own data and queries from within its own @2
+-- function.}{\code{tagpax}}{\code{resolve\_goToR}}
+M.known_units = {}
 -- LuaTeX image userdata must stay reachable until shipout has consumed it.
 local images = {}
 
@@ -221,20 +252,32 @@ function M.write_page(filename, page, structparents, stream_id, irfile, prefix, 
               "{" .. tex_escape(annotation.id) .. "}{" .. hex(annotation.uri) .. "}"
             )
           elseif annotation.action == "GoToR" then
-            local target = annotation["remote-destination"]
-            if target then
-              tex.sprint(
-                "\\TagPaxGoToRNameOverlay" .. geometry ..
-                "{" .. tex_escape(annotation.id) .. "}{" ..
-                hex(annotation.file) .. "}{" .. hex(target) .. "}"
-              )
+            local resolved_prefix, resolved_page
+            if M.resolve_goToR then
+              resolved_prefix, resolved_page = M.resolve_goToR(annotation)
+            end
+            if resolved_prefix and resolved_page then
+              tex.sprint(string.format(
+                "\\TagPaxGotoOverlay%s{%s}{tagpax.%s.page.%s}",
+                geometry, tex_escape(annotation.id), tex_escape(resolved_prefix),
+                tex_escape(tostring(resolved_page))
+              ))
             else
-              tex.sprint(
-                "\\TagPaxGoToRPageOverlay" .. geometry ..
-                "{" .. tex_escape(annotation.id) .. "}{" .. hex(annotation.file) .. "}{" ..
-                tostring(annotation["remote-page"] or 0) .. "}{" ..
-                tex_escape(annotation["remote-view"] or "Fit") .. "}"
-              )
+              local target = annotation["remote-destination"]
+              if target then
+                tex.sprint(
+                  "\\TagPaxGoToRNameOverlay" .. geometry ..
+                  "{" .. tex_escape(annotation.id) .. "}{" ..
+                  hex(annotation.file) .. "}{" .. hex(target) .. "}"
+                )
+              else
+                tex.sprint(
+                  "\\TagPaxGoToRPageOverlay" .. geometry ..
+                  "{" .. tex_escape(annotation.id) .. "}{" .. hex(annotation.file) .. "}{" ..
+                  tostring(annotation["remote-page"] or 0) .. "}{" ..
+                  tex_escape(annotation["remote-view"] or "Fit") .. "}"
+                )
+              end
             end
           end
         end

@@ -16,6 +16,7 @@
 \prop_new:N \g__osglecture_project_policy_priority_prop
 \prop_new:N \g__osglecture_project_policy_enforced_prop
 \prop_new:N \g__osglecture_project_target_profile_prop
+\prop_new:N \g__osglecture_project_target_filecolor_prop
 \prop_new:N \g__osglecture_setup_class_prop
 \prop_new:N \g__osglecture_setup_mode_prop
 \seq_new:N \g__osglecture_project_preamble_seq
@@ -232,10 +233,22 @@
     \seq_map_inline:Nn \g__osglecture_project_preamble_seq
       {##1}
   }
+% \ldeen*{@1 steuert die Farbe, in der @2 dokumentübergreifende
+% @3-Ziele einfärbt (hyperrefs \code{filecolor}, getrennt von
+% \code{linkcolor}). Unkonfiguriert bleibt @2s eigener Default aktiv --
+% @4 setzt \code{filecolor} nur, wenn diese Eigenschaft für das aktuelle
+% Target tatsächlich gesetzt wurde.}{@1 controls the color @2 uses for
+% cross-document @3 targets (hyperref's \code{filecolor}, distinct from
+% \code{linkcolor}). Left unconfigured, @2's own default stays in
+% effect -- @4 only sets \code{filecolor} when this property was
+% actually set for the current target.}{\code{filecolor}}{hyperref}{\cs{olref}}{\code{osglecture-references.sty}}
 \keys_define:nn { osglecture/project-target }
   {
     profile .code:n =
       { \prop_gput:NVn \g__osglecture_project_target_profile_prop
+          \l__osglecture_project_target_tl {#1} },
+    filecolor .code:n =
+      { \prop_gput:NVn \g__osglecture_project_target_filecolor_prop
           \l__osglecture_project_target_tl {#1} },
   }
 \NewDocumentCommand \LectureTargetSetup { m m }
@@ -245,6 +258,8 @@
   }
 \NewExpandableDocumentCommand \OsgLectureTargetProfile { m }
   { \prop_item:Nn \g__osglecture_project_target_profile_prop {#1} }
+\NewExpandableDocumentCommand \OsgLectureTargetFileColor { m }
+  { \prop_item:Nn \g__osglecture_project_target_filecolor_prop {#1} }
 \NewDocumentCommand \LectureProjectEnforce { m }
   {
     \int_gset:Nn \g__osglecture_configuration_priority_int {40}

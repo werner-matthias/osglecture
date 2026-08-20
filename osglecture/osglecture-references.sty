@@ -16,6 +16,27 @@
 \PassOptionsToPackage{nospace,ngerman}{varioref}
 \ExplSyntaxOff
 \RequirePackage{hyperref}
+% \ldeen*{Unter \code{\DocumentMetadata}s Bootstrap bleibt
+% \cs{@pdfborder} leer statt, wie unter \code{colorlinks} sonst üblich,
+% auf "0 0 0" gesetzt zu werden -- die Zielfarben (\cs{@linkcolor},
+% \cs{@filecolor}) werden dabei korrekt gesetzt, nur die Rahmenbreite
+% nicht. Ein leeres \code{/Border[]} ist kein gültiges PDF-Array;
+% Betrachter fallen dann auf einen sichtbaren Standardrahmen zurück --
+% sichtbar nur bei über \cs{xr} importierten (dokumentübergreifenden)
+% Verweisen wie \cs{olref}, da nur diese den Datei-Verweis-Codepfad
+% (\code{GoToR}) durchlaufen. @1 erzwingt explizit denselben
+% randlosen Zustand, den \code{colorlinks} für alle anderen Verweisarten
+% bereits liefert.}{Under \code{\DocumentMetadata}'s bootstrap,
+% \cs{@pdfborder} stays empty instead of being set to "0 0 0" as usual
+% under \code{colorlinks} -- the target colors (\cs{@linkcolor},
+% \cs{@filecolor}) get set correctly, just not the border width. An empty
+% \code{/Border[]} is not a valid PDF array; viewers then fall back to a
+% visible default border -- visible only for cross-document references
+% imported via \cs{xr}, such as \cs{olref}, since only those go through
+% the file-link (\code{GoToR}) code path. @1 explicitly forces the same
+% borderless state that \code{colorlinks} already provides for every
+% other link type.}{\code{\hypersetup\{pdfborder=0~0~0\}}}
+\hypersetup{pdfborder=0 0 0}
 \RequirePackage{varioref}
 \RequirePackage{xr}
 
@@ -24,6 +45,51 @@
 \str_if_eq:VnTF \l__olref_initial_language_tl {de}
   { \cs_if_exist:NT \extrasngerman { \extrasngerman } }
   { \cs_if_exist:NT \extrasenglish { \extrasenglish } }
+
+% \ldeen*{Die Farbe, in der \cs{olref} dokumentübergreifende Ziele
+% einfärbt, ist projektseitig je Target konfigurierbar
+% (\code{\LectureTargetSetup\{<target>\}\{filecolor=<Farbe>\}} in
+% \file{projectconfig.tex}), damit unterschiedliche Doctypes
+% unterschiedliche Farbschemata verwenden können. Ohne Konfiguration
+% bleibt hyperrefs eigener \code{filecolor}-Default (cyan) unangetastet.
+% @1 setzt \cs{@filecolor} bewusst direkt statt über
+% \code{\hypersetup\{filecolor=...\}}: Unter \code{\DocumentMetadata}s
+% Bootstrap hat sich empirisch gezeigt, dass \code{hypersetup}s
+% \code{filecolor}-Schlüssel wirkungslos bleibt (unabhängig vom
+% Aufrufzeitpunkt -- Präambel, \code{begindocument}-Hooks oder
+% Dokumentanfang wurden alle getestet), während eine direkte Zuweisung
+% zuverlässig funktioniert. Das ist keine Abkürzung auf Kosten der
+% Farbmodell-Auflösung: Für einen einfachen Farbnamen ohne führende
+% eckige Klammer geht \cs{HyColor@UseColor} (in \code{hycolor.sty}, der
+% Konsument von \cs{@filecolor}) ohnehin über denselben
+% \code{\color\{...\}}-Pfad, den \code{hypersetup} für diesen Fall
+% erzeugt hätte.}{The color \cs{olref} uses for cross-document targets
+% is configurable per target from the project side
+% (\code{\LectureTargetSetup\{<target>\}\{filecolor=<color>\}} in
+% \file{projectconfig.tex}), so different doctypes can use different
+% color schemes. Left unconfigured, hyperref's own \code{filecolor}
+% default (cyan) stays untouched. @1 deliberately sets \cs{@filecolor}
+% directly instead of via \code{\hypersetup\{filecolor=...\}}: under
+% \code{\DocumentMetadata}'s bootstrap, \code{hypersetup}'s
+% \code{filecolor} key was found empirically to have no effect
+% (regardless of call timing -- preamble, \code{begindocument} hooks,
+% and document start were all tested), while a direct assignment works
+% reliably. This is not a shortcut at the expense of color-model
+% resolution: for a plain color name without a leading square bracket,
+% \cs{HyColor@UseColor} (in \code{hycolor.sty}, the consumer of
+% \cs{@filecolor}) goes through the same \code{\color\{...\}} path that
+% \code{hypersetup} would have produced for this case anyway.}
+% {\cs{\_\_olref\_apply\_filecolor:n}}
+\cs_new_protected:Npn \__olref_apply_filecolor:n #1
+  { \cs_set:Npn \@filecolor {#1} }
+\OsgLectureBuildLoadedTF
+  {
+    \tl_set:Ne \l_tmpa_tl
+      { \exp_args:Ne \OsgLectureTargetFileColor { \OsgLectureBuildValue{target} } }
+    \tl_if_empty:NF \l_tmpa_tl
+      { \exp_args:NV \__olref_apply_filecolor:n \l_tmpa_tl }
+  }
+  { }
 
 \prop_new:N \g__olref_documents_prop
 \prop_new:N \g__olref_imported_prop
@@ -209,6 +275,9 @@
         {\exp_not:V \l__olref_pdf_tl}
         {\exp_not:V \l__olref_generation_tl}
       }
+    \tl_set:Ne \l__olref_prefix_tl
+      { olr-\str_mdfive_hash:e {\l__olref_identity_tl}: }
+    \__olref_import_now:
   }
 
 \NewDocumentCommand \OsgLectureReferenceDocumentTF { m m m m m }
@@ -288,15 +357,37 @@
       }
   }
 
-\cs_new_protected:Npn \__olref_import:nn #1#2
+% \ldeen*{@1 (\code{\externaldocument}) ist nach Konvention ein
+% Präambelbefehl. @2 rief ihn früher beim ersten Gebrauch einer externen
+% Einheit lazy auf -- was in der Praxis mitten im Absatz passiert, sobald
+% der erste @3-Aufruf zu dieser Einheit im Fließtext steht. Ein
+% mitten-im-Absatz ausgeführtes @1 hinterlässt dort unsichtbares, aber
+% dehnbares Material, das der Zeilenumbruch-Algorithmus beim
+% Justieren ungleichmäßig auf die Zeile verteilt -- sichtbar als ein
+% überproportional großer Zwischenraum vor der eigentlichen Referenz.
+% Ein zweiter @3-Aufruf auf dieselbe Einheit (Import bereits geschehen,
+% @1 wird nicht erneut aufgerufen) zeigt das Problem nicht, was das
+% ursprünglich schwer reproduzierbar machte. @4 kapselt denselben
+% Importcode jetzt in einer eigenen Funktion, die sowohl von @2 (Fallback)
+% als auch eager von \cs{OsgLectureReferenceDocument} aufgerufen wird --
+% Letzteres läuft im \code{begindocument/before}-Hook, also sicher im
+% vertikalen Modus, bevor der erste Absatz beginnt.}{@1
+% (\code{\externaldocument}) is a preamble-only command by convention. @2
+% used to call it lazily on first use of an external unit -- which in
+% practice happens mid-paragraph, as soon as the first @3 call for that
+% unit sits in running text. An @1 executed mid-paragraph leaves invisible
+% but stretchable material behind that the line-breaking algorithm
+% distributes unevenly across the line when justifying -- visible as a
+% disproportionately large gap right before the actual reference. A
+% second @3 call to the same unit (import already done, @1 not called
+% again) does not show the problem, which originally made this hard to
+% reproduce. @4 now factors the same import code into its own function,
+% called both by @2 (fallback) and eagerly by
+% \cs{OsgLectureReferenceDocument} -- the latter runs in the
+% \code{begindocument/before} hook, i.e. safely in vertical mode, before
+% the first paragraph begins.}{\code{\externaldocument}}{\cs{\_\_olref\_import:nn}}{\cs{\olref}}{\cs{\_\_olref\_import\_now:}}
+\cs_new_protected:Npn \__olref_import_now:
   {
-    \tl_set:Ne \l__olref_identity_tl
-      {
-        \__olref_identity:nnn
-          {\l__olref_unit_tl}{\l__olref_type_tl}{\l__olref_lang_tl}
-      }
-    \tl_set:Ne \l__olref_prefix_tl
-      { olr-\str_mdfive_hash:e {\l__olref_identity_tl}: }
     \tl_clear:N \l__olref_generation_tl
     \prop_if_in:NVF \g__olref_imported_prop \l__olref_identity_tl
       {
@@ -328,6 +419,17 @@
         \prop_gput:NVn
           \g__olref_imported_prop \l__olref_identity_tl {true}
       }
+  }
+\cs_new_protected:Npn \__olref_import:nn #1#2
+  {
+    \tl_set:Ne \l__olref_identity_tl
+      {
+        \__olref_identity:nnn
+          {\l__olref_unit_tl}{\l__olref_type_tl}{\l__olref_lang_tl}
+      }
+    \tl_set:Ne \l__olref_prefix_tl
+      { olr-\str_mdfive_hash:e {\l__olref_identity_tl}: }
+    \__olref_import_now:
     \prop_get:NVNT \g__olref_documents_prop \l__olref_identity_tl \l_tmpa_tl
       { \exp_after:wN \__olref_generation_set:nnn \l_tmpa_tl }
     \__olref_use_write:nn {#1}{#2}
@@ -355,8 +457,151 @@
       }
   }
 
+% \ldeen*{Ein dokumentübergreifender @1-Verweis erzeugt normalerweise
+% über hyperrefs eigenes \cs{hyper@linkfile} einen reinen
+% \code{GoToR}-Link (Sprung in eine externe Datei) -- unabhängig davon,
+% ob das Ziel inzwischen (via \cs{includeunit}) real Teil desselben
+% integrierten Dokuments geworden ist. tagpax übernimmt beim
+% PDF-Zusammenführen jede Annotation unverändert und hat keine
+% Möglichkeit zu erkennen, dass ein \code{GoToR} nun eigentlich ein
+% interner Sprung sein müsste. @2 baut den Link deshalb nicht mehr über
+% hyperrefs Standardpfad (\cs{hyper@linkfile}), sondern bettet
+% zusätzlich die logische Zielidentität (Unit/Doctyp/Sprache) sowie die
+% Quellseite als eigene Schlüssel in die Annotation ein -- dieselbe
+% Identität, die \cs{includeunit} bereits kennt. So kann tagpax (bzw.
+% dessen Erweiterung) am Link selbst erkennen, ob das Ziel intern
+% verfügbar ist, ganz ohne fragile Dateipfad-Vergleiche. Zwei
+% Implementierungen sind nötig, je nachdem, ob \code{\DocumentMetadata}
+% für das aktuelle Target aktiv ist (in OSGLecture targetabhängig, siehe
+% \code{document\_metadata} in \file{ollmconfig.toml}): @3 dupliziert
+% hyperrefs klassische \cs{hyper@linkfile}-Struktur direkt
+% (\code{\pdfstartlink}/\code{\close@pdflink}, LuaTeX-spezifisch --
+% OSGLecture ist ohnehin LuaTeX-only), da diese Primitiv-Wrapper unter
+% \code{\DocumentMetadata} \emph{nicht} definiert sind (die
+% PDF-Management-Schicht übernimmt dort die Link-Erzeugung vollständig).
+% @4 nutzt stattdessen l3pdfannot, das unter \code{\DocumentMetadata}
+% zur Verfügung steht (aber ohne dieses selbst nicht -- ein
+% nachträgliches \code{\RequirePackage\{pdfmanagement\}} nach hyperref
+% scheitert an einem Hook-Sortierungskonflikt, die Schicht muss vor
+% hyperref/xcolor aktiviert werden). @5 wählt zur Aufrufzeit anhand von
+% \cs{IfDocumentMetadataTF} zwischen beiden. Der sichtbare Text wird in
+% beiden Fällen über das reguläre (aber unverlinkte,
+% \code{\ref*}-artige) \cs{\_\_olref\_original\_ref} aus der externen
+% \file{.aux} aufgelöst -- nur die Verlinkung selbst wird
+% ersetzt.}{A cross-unit @1 reference normally creates a plain
+% \code{GoToR} link (jump into an external file) via hyperref's own
+% \cs{hyper@linkfile} -- regardless of whether the target has since
+% (via \cs{includeunit}) become a real part of the same combined
+% document. tagpax carries every annotation over unchanged when merging
+% PDFs and has no way to tell that a \code{GoToR} should now actually
+% be an internal jump. @2 therefore no longer builds the link via
+% hyperref's standard path (\cs{hyper@linkfile}), but additionally
+% embeds the logical target identity (unit/doctype/language) plus the
+% source page as custom keys on the annotation -- the same identity
+% \cs{includeunit} already knows. This lets tagpax (or an extension of
+% it) recognize from the link itself whether the target is available
+% internally, without fragile file-path comparisons. Two
+% implementations are needed, depending on whether
+% \code{\DocumentMetadata} is active for the current target (in
+% OSGLecture this is target-dependent, see \code{document\_metadata} in
+% \file{ollmconfig.toml}): @3 duplicates hyperref's classic
+% \cs{hyper@linkfile} structure directly
+% (\code{\pdfstartlink}/\code{\close@pdflink}, LuaTeX-specific --
+% OSGLecture is LuaTeX-only anyway), since these primitive wrappers are
+% \emph{not} defined under \code{\DocumentMetadata} (the PDF management
+% layer takes over link creation entirely there). @4 uses l3pdfannot
+% instead, which is available under \code{\DocumentMetadata} (but not
+% without it -- loading it after the fact via \code{\RequirePackage
+% \{pdfmanagement\}} after hyperref fails with a hook-ordering conflict;
+% the layer must be activated before hyperref/xcolor). @5 picks between
+% the two at call time via \cs{IfDocumentMetadataTF}. The visible text
+% is resolved in both cases from the external \file{.aux} via the
+% regular (but unlinked, \code{\ref*}-like)
+% \cs{\_\_olref\_original\_ref} -- only the link creation itself is
+% replaced.}{\cs{olref}}{\cs{\_\_olref\_link\_goToR:nnnn}}
+% {\cs{\_\_olref\_link\_goToR\_classic:nnnn}}
+% {\cs{\_\_olref\_link\_goToR\_pdfannot:nnnn}}
+% {\cs{\_\_olref\_link\_goToR:nnnn}}
+\cs_new_protected:Npn \__olref_link_goToR_classic:nnnn #1#2#3#4
+  { % #1 = PDF path (xr URL), #2 = destination name, #3 = source page, #4 = display text
+    \begingroup
+      \def\Hy@pstringF{#1}
+      \Hy@CleanupFile\Hy@pstringF
+      \Hy@pstringdef\Hy@pstringF\Hy@pstringF
+      \Hy@pstringdef\Hy@pstringD{#2}
+      \leavevmode
+      \pdfstartlink
+        attr{%
+          /Border[\@pdfborder]%
+          /OSGLectureUnit(\l__olref_unit_tl)%
+          /OSGLectureType(\l__olref_type_tl)%
+          /OSGLectureLang(\l__olref_lang_tl)%
+          /OSGLectureSourcePage(#3)%
+        }%
+        user{%
+          /Subtype/Link%
+          /A<<%
+            /F(\Hy@pstringF)%
+            /S/GoToR%
+            /D(\Hy@pstringD)%
+          >>%
+        }%
+        \relax
+      \Hy@colorlink\@filecolor #4\Hy@xspace@end
+      \close@pdflink
+    \endgroup
+  }
+\cs_new_protected:Npn \__olref_link_goToR_pdfannot:nnnn #1#2#3#4
+  { % #1 = PDF path (xr URL), #2 = destination name, #3 = source page, #4 = display text
+    \group_begin:
+      \def\Hy@pstringF{#1}
+      \Hy@CleanupFile\Hy@pstringF
+      \Hy@pstringdef\Hy@pstringF\Hy@pstringF
+      \Hy@pstringdef\Hy@pstringD{#2}
+      \pdfannot_dict_put:nne {link/GoToR} {Border} {[\@pdfborder]}
+      \pdfannot_dict_put:nne {link/GoToR} {OSGLectureUnit} {(\l__olref_unit_tl)}
+      \pdfannot_dict_put:nne {link/GoToR} {OSGLectureType} {(\l__olref_type_tl)}
+      \pdfannot_dict_put:nne {link/GoToR} {OSGLectureLang} {(\l__olref_lang_tl)}
+      \pdfannot_dict_put:nnn {link/GoToR} {OSGLectureSourcePage} {(#3)}
+      \pdfannot_link:nnn { GoToR }
+        {
+          /A<<
+            /F(\Hy@pstringF)
+            /S/GoToR
+            /D(\Hy@pstringD)
+          >>
+        }
+        { \Hy@colorlink \@filecolor #4 \Hy@endcolorlink \Hy@xspace@end }
+    \group_end:
+  }
+\cs_new_protected:Npn \__olref_link_goToR:nnnn #1#2#3#4
+  {
+    \IfDocumentMetadataTF
+      { \__olref_link_goToR_pdfannot:nnnn {#1}{#2}{#3}{#4} }
+      { \__olref_link_goToR_classic:nnnn {#1}{#2}{#3}{#4} }
+  }
+\cs_new_protected:Npn \__olref_ref_external:n #1
+  { % #1 = prefixed label; dispatches on whether xr knows it
+    \cs_if_exist:cTF { r@#1 }
+      {
+        \tl_set_eq:Nc \l_tmpa_tl { r@#1 }
+        \exp_after:wN \__olref_ref_external_fields:nnnnnn
+          \l_tmpa_tl {#1}
+      }
+      { \__olref_original_ref {#1} }
+  }
+\cs_new_protected:Npn \__olref_ref_external_fields:nnnnnn #1#2#3#4#5#6
+  { % #1 number #2 page #3 title #4 anchor-name #5 xr-url #6 orig label
+    \tl_if_empty:nTF {#5}
+      { \__olref_original_ref {#6} }
+      { \__olref_link_goToR:nnnn {#5}{#4}{#2}{#1} }
+  }
 \cs_new_protected:Npn \__olref_ref:n #1
-  { \__olref_original_ref {#1} }
+  {
+    \tl_if_empty:NTF \l__olref_unit_tl
+      { \__olref_original_ref {#1} }
+      { \__olref_ref_external:n {#1} }
+  }
 \cs_new_protected:Npn \__olref_ref_star:n #1
   { \__olref_original_ref * {#1} }
 \cs_new_protected:Npn \__olref_pageref:n #1

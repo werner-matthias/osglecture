@@ -275,6 +275,17 @@ load-preamble+
     representation can be selected with @1.
   }{\option{ir}}
 %
+  \command{tagpaxlastprefix}
+  \ldeen*{
+    Expandierbar. Liefert den intern vergebenen Präfix des zuletzt
+    ausgeführten @1-Aufrufs -- z.\,B. um ihn extern zu protokollieren und in
+    einem späteren Lauf wiederzuverwenden.
+  }{
+    Expandable. Returns the internally assigned prefix of the most recently
+    executed @1 call -- e.g. to log it externally and reuse it in a later
+    run.
+  }{\cs{tagpaxinclude}}
+%
   \command{includepdf}[\oarg{\ldeen{Optionen}{options}\marg{\ldeen{PDF-File}{pdf file}}}]
   \ldeen*{Existiert nur bei gesetzter Paketoption @1. Importiert direkt das angegeben File.}{Exists only when the @1 package option is set. It directly imports the specified file.}{\option{pdfpages}}
 %
@@ -607,6 +618,7 @@ The bridge must not mutate the global \tagpdfpkg{} structure stack.
 \tl_new:N \l__tagpax_import_id_tl
 \tl_new:N \l__tagpax_import_stream_key_tl
 \int_new:N \g__tagpax_import_int
+\tl_new:N \g__tagpax_last_prefix_tl
 \prop_new:N \g__tagpax_heading_map_prop
 \prop_gput_from_keyval:Nn \g__tagpax_heading_map_prop {H2=chapter,H3=section,H4=subsection,H5=subsubsection,H6=paragraph}
 \keys_define:nn {tagpax/setup}{
@@ -670,6 +682,7 @@ The bridge must not mutate the global \tagpdfpkg{} structure stack.
   \group_begin:
   \int_gincr:N \g__tagpax_import_int
   \tl_set:Ne \l__tagpax_import_id_tl {\int_use:N\g__tagpax_import_int}
+  \tl_gset:Ne \g__tagpax_last_prefix_tl {\l__tagpax_import_id_tl}
   \tl_set:Nn \l__tagpax_file_tl {#2}
   \tl_set:Nn \l__tagpax_ir_tl {#2}
   \regex_replace_once:nnN { \.pdf\Z } {.tagpax} \l__tagpax_ir_tl
@@ -686,6 +699,7 @@ The bridge must not mutate the global \tagpdfpkg{} structure stack.
     [[\luaescapestring{\l__tagpax_import_id_tl}]])}
   \group_end:
 }
+\cs_new:Npn \tagpaxlastprefix { \g__tagpax_last_prefix_tl }
 
 \NewDocumentCommand\tagpaxroundtripinclude{O{}m}
   {\tagpaxinclude[#1]{#2}}
