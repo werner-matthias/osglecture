@@ -26,6 +26,7 @@ installfiles = {
   "osglecture-series.sty",
   "osglecture-toml.lua",
   "osglecture-manifest.lua",
+  "osglecture-manifest-cli.lua",
 }
 sourcefiles = {
   "osglecture.cls",
@@ -48,9 +49,9 @@ sourcefiles = {
   "osglecture-series.sty",
   "osglecture-toml.lua",
   "osglecture-manifest.lua",
+  "osglecture-manifest-cli.lua",
 }
 typesetfiles = { }
-textfiles = { "README.md", "ARCHITECTURE.md" }
 checksuppfiles = {
   "reference-source.osgref.aux",
 }

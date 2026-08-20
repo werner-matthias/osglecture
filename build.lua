@@ -11,6 +11,7 @@ modules = {
    "osglecture-modes",
    "osglecture",
    "tagpax",
+   "manual-src",
  }
 
 textfiles = textfiles or { 
