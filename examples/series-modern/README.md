@@ -81,10 +81,8 @@ together in four lines:
 \OsgLectureBuildLoadedTF
   { \edef\olsTargetLanguage{\OsgLectureBuildValue{language}} }
   { }
-\AtEndOfClass{
-  \RequirePackage[languages={en,de}]{langselect}
-  \title{\lende{One source, multiple documents}{Eine Quelle, mehrere Dokumente}}
-}
+\usepackage[languages={en,de}]{langselect}
+\title{\lende{One source, multiple documents}{Eine Quelle, mehrere Dokumente}}
 ```
 
 `\OsgLectureBuildValue{language}` is used rather than the more familiar
@@ -96,27 +94,28 @@ detection (job name, `\DocumentMetadata`, ...), so OLLM's per-language build
 directly determines which half of each `\lende{English}{German}` call ends
 up in the PDF, with no per-target duplication needed.
 
-`\RequirePackage{langselect}` (and `\title`, since it uses `\lende`) is
-wrapped in `\AtEndOfClass` rather than called directly, which matters for a
-reason independent of `langselect` itself: `projectconfig.tex` is read while
-`osglecture.cls` is still loading, *before* its own `\LoadClass` for the
-target's base class (here `ltx-talk`) has run. A package loaded at that
-point that probes "does the base class already define X" can get a false
+Nothing here defers execution explicitly -- `\usepackage` reads as an
+ordinary preamble line. `osglecture.cls` itself defers any
+`\usepackage`/`\RequirePackage` written directly in `projectconfig.tex`
+until right after the target's base class (here `ltx-talk`) has loaded,
+the same way it already defers `\title` and the other metadata fields (see
+`README-cls.md`). This matters for a reason independent of `langselect`
+itself: `projectconfig.tex` is read *before* `osglecture.cls`'s own
+`\LoadClass` for the target's base class has run, and a package that probes
+"does the base class already define X" at that point can get a false
 negative. `langselect`'s default `unified shorthands` option (babel/
 polyglossia quote-shorthand integration, harmless to leave on even though
 this example loads neither) pulls in `csquotes`, which defines a classic
-fallback `quote` environment if it finds none yet -- true at that point,
-since the base class hasn't loaded. `ltx-talk` then defines its own `quote`
-via `\NewDocumentEnvironment`, whose built-in check is unconditional -- it
-errors on *any* pre-existing `quote` -- so csquotes' fallback and `ltx-talk`'s
-own definition collide (`Environment 'quote' already defined`).
-`\AtEndOfClass` defers its argument to the end of `osglecture.cls`'s own
-body, i.e. after its nested `\LoadClass` has already completed, so
-`langselect`/`csquotes` see the base class's `quote` already in place and
-never install a fallback in the first place. This is worth reaching for
-generally, not just here: any `\usepackage` placed in `projectconfig.tex`
-that might care whether the target's base class has already loaded is safer
-wrapped in `\AtEndOfClass`.
+fallback `quote` environment if it finds none yet -- true before the base
+class has loaded. `ltx-talk` then defines its own `quote` via
+`\NewDocumentEnvironment`, whose built-in check is unconditional -- it
+errors on *any* pre-existing `quote` -- so csquotes' fallback and
+`ltx-talk`'s own definition would collide (`Environment 'quote' already
+defined`) if both ran before `\LoadClass`. Since the `\usepackage` call is
+deferred to right after `\LoadClass` and replayed in the same queue and
+order as `\title`, `langselect`/`csquotes` see the base class's `quote`
+already in place, and `\lende` is already defined by the time `\title`
+runs.
 
 The unit sources then use `\lende{English text}{German text}` wherever the
 two versions differ -- titles, headings, list items, running prose -- and

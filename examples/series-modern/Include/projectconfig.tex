@@ -6,22 +6,17 @@
 \OsgLectureBuildLoadedTF
   { \edef\olsTargetLanguage{\OsgLectureBuildValue{language}} }
   { }
-% projectconfig.tex is read while osglecture.cls is still loading, before
-% its own \LoadClass for the target's base class (here ltx-talk) has run.
-% Loading a package here that itself probes "does the base class already
-% define X" -- as langselect's default 'unified shorthands' does via
-% csquotes, which checks for an existing 'quote' environment -- gets a
-% false negative and installs its own fallback, which then collides with
-% the base class's own definition once \LoadClass does run
-% ("Environment 'quote' already defined"). \AtEndOfClass defers this
-% \RequirePackage (and anything depending on it, like \title using
-% \lende) to the end of osglecture.cls's own body, i.e. after its nested
-% \LoadClass has already completed -- the general-purpose fix for any
-% \usepackage call placed here, not specific to langselect.
-\AtEndOfClass{
-  \RequirePackage[languages={en,de}]{langselect}
-  \title{\lende{One source, multiple documents}{Eine Quelle, mehrere Dokumente}}
-}
+% osglecture.cls defers any \usepackage/\RequirePackage written directly
+% in projectconfig.tex until after the target's base class (here
+% ltx-talk) has loaded -- packages that themselves probe "does the base
+% class already define X", as langselect's default 'unified shorthands'
+% does via csquotes, would otherwise see a false negative this early and
+% could collide with the base class's own later definition. \title below
+% is deferred the same way (osglecture's existing metadata-field queue),
+% replayed in the same order right after \LoadClass, so \lende is already
+% available by the time it runs -- no special handling needed here.
+\usepackage[languages={en,de}]{langselect}
+\title{\lende{One source, multiple documents}{Eine Quelle, mehrere Dokumente}}
 \author<presentation>[M.~Mustermann]{Max Mustermann}
 \author<longform>[Mustermann]{Max Mustermann}
 \LectureTargetSetup{talk}{profile=series-ltx-talk}

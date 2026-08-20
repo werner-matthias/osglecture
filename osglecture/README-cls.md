@@ -141,6 +141,38 @@ Nutzer und das Bundle wiederverwendbare Standardfragmente bereitstellen,
 während eine projektlokale Datei stets Vorrang hat. Die Fragmente dürfen
 gewöhnliche Präambelbefehle einschließlich `\usepackage` enthalten.
 
+Die Sternvariante `\IncludeOsgLecturePreamble*{name}` ist der bewusste
+Ausstieg für Fragmente, die vor `\LoadClass` laufen müssen -- z.\,B. weil sie
+selbst `\LectureTargetSetup` aufrufen. Sie lädt sofort, mit derselben
+Dateisuche, aber ohne Modus- oder Klassenbedingung: Mode-Graph und Basisklasse
+stehen an dieser Stelle noch nicht fest, ein `<mode>`- oder `class=...`-Zusatz
+zur Sternform ist deshalb ein Fehler.
+
+### `\usepackage`/`\RequirePackage` direkt in `projectconfig.tex`
+
+`projectconfig.tex` wird gelesen, bevor die Zielbasisklasse geladen ist.
+Ein Paket, das dort direkt geladen wird und selbst prüft, ob die Basisklasse
+schon etwas definiert hat, sieht einen falschen Zustand -- ein bekannter
+Fall ist `langselect`s `unified shorthands`-Option, die `csquotes` lädt,
+welches wiederum eine eigene `quote`-Fallback-Umgebung anlegt, falls es
+noch keine vorfindet, was dann mit der `quote`-Definition mancher
+Basisklassen (z.\,B. `ltx-talk`) kollidiert. `osglecture.cls` fängt
+`\usepackage`- und `\RequirePackage`-Aufrufe deshalb während des frühen
+Lesens von `projectconfig.tex` genauso ab wie die Metadatenfelder oben: Sie
+werden in dieselbe reihenfolgeerhaltende Warteschlange eingereiht und erst
+nach `\LoadClass` abgespielt. Ein `\usepackage`-Aufruf gefolgt von `\title`
+mit einem vom Paket bereitgestellten Befehl funktioniert dadurch in
+normaler Leserichtung, ganz ohne dass Nutzer diesen Mechanismus überhaupt
+bemerken müssen.
+
+Dieses Verhalten ist ein Sicherheitsnetz für Paketladungen, die direkt in
+`projectconfig.tex` stehen; die empfohlene Konvention für umfangreicheren
+Präambelcode (Makros, mehrere Pakete, projektspezifische Definitionen)
+bleibt eine ausgelagerte Datei über `\IncludeOsgLecturePreamble`.
+`projectconfig.tex` selbst sollte damit überwiegend aus osglecture-typischem
+Code bestehen -- Zielprofilen, Metadatenfeldern, Modus-Setup -- es sei denn,
+eine Autorin weiß genau, warum sie etwas anderes direkt dort platziert.
+
 ## Präsentationslisten in gemeinsamer Quelle
 
 Die Umgebung `presitemize` setzt ihre Einträge in Präsentationen als normale

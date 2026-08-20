@@ -166,7 +166,11 @@
         \tl_set:Ne \l__osglecture_project_config_tl
           { \OsgLectureManifestProjectConfigPath }
         \file_if_exist:VTF \l__osglecture_project_config_tl
-          { \exp_args:NV \file_input:n \l__osglecture_project_config_tl }
+          {
+            \osglecture_project_intercept_package_commands:
+            \exp_args:NV \file_input:n \l__osglecture_project_config_tl
+            \osglecture_project_restore_package_commands:
+          }
           { }
       }
   }

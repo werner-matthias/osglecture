@@ -34,6 +34,15 @@
 \msg_new:nnnn {osglecture-project}{invalid-setup-key}
   { Unknown~osglecture~setup~key~'#1'. }
   { Use~an~explicit~'class/<name>'~or~'mode/<name>'~key. }
+\msg_new:nnnn {osglecture-project}{preamble-star-condition}
+  {
+    \string\IncludeOsgLecturePreamble*~loads~'#1'~immediately~and~cannot~
+    evaluate~a~mode~or~class~condition~at~that~point.
+  }
+  {
+    Drop~the~condition,~or~drop~the~star~to~defer~the~fragment~until~after~
+    the~base~class,~mode~graph,~and~adapter~are~known.
+  }
 \msg_new:nnnn {osglecture-project}{unknown-setup-class}
   { Unknown~base~class~'#1'~in~osglecture~setup. }
   { Load~or~declare~a~document~profile~for~that~class~before~using~its~setup. }
@@ -45,6 +54,66 @@
         {\exp_not:n{#1}}{\exp_not:n{#2}}{\exp_not:n{#3}}{\exp_not:n{#4}}
         {#5}
       }
+  }
+
+% \ldeen*{@1 wird während des frühen Lesens von \file{projectconfig.tex}
+% installiert (siehe @2 in \file{osglecture.cls}), \emph{bevor} die
+% Zielbasisklasse geladen ist. Ein Paket, das dort direkt geladen wird und
+% selbst prüft, ob die Basisklasse bereits etwas definiert hat, sieht
+% einen falschen Zustand -- @3 dokumentiert einen konkreten Fall
+% (\pkg{langselect}s \pkg{csquotes}-Integration kollidiert mit
+% \pkg*{ltx-talk}s eigener \env{quote}-Umgebung). @4 und @5 fangen
+% \cs{usepackage}/\cs{RequirePackage}-Aufrufe während dieses Fensters
+% deshalb genauso ab wie die vorhandenen Metadatenfelder: Sie werden in
+% dieselbe, reihenfolgeerhaltende Warteschlange @6 eingereiht und erst
+% abgespielt, nachdem \cs{LoadClass} gelaufen ist (siehe
+% \file{osglecture-metadata.sty}) -- ein Aufruf wie \cs{usepackage} gefolgt
+% von \cs{title} mit einem vom Paket bereitgestellten Befehl funktioniert
+% dadurch in normaler Leserichtung, ohne dass Nutzer \cs{AtEndOfClass}
+% kennen müssen. Das Sicherheitsnetz gilt gezielt für direkt in
+% \file{projectconfig.tex} geschriebene Paketladungen; die empfohlene
+% Konvention für umfangreicheren Präambelcode bleibt eine ausgelagerte
+% Datei über @7.}{@1 is installed while \file{projectconfig.tex} is read
+% early (see @2 in \file{osglecture.cls}), \emph{before} the target base
+% class has loaded. A package loaded directly there that itself checks
+% whether the base class has already defined something sees a false
+% state -- @3 documents a concrete case (\pkg{langselect}'s
+% \pkg{csquotes} integration collides with \pkg*{ltx-talk}'s own
+% \env{quote} environment). @4 and @5 therefore intercept
+% \cs{usepackage}/\cs{RequirePackage} calls during this window the same
+% way the existing metadata fields already are: they are enqueued into
+% the same order-preserving queue @6 and only replayed after
+% \cs{LoadClass} has run (see \file{osglecture-metadata.sty}) -- a call
+% like \cs{usepackage} followed by \cs{title} using a command the package
+% provides then works in normal reading order, with no need for users to
+% know about \cs{AtEndOfClass}. This safety net targets package loads
+% written directly in \file{projectconfig.tex}; the recommended
+% convention for more substantial preamble code remains an outsourced
+% file via @7.}{\cs{osglecture\_project\_intercept\_package\_commands:}}
+% {\cs{\_\_osglecture\_project\_config\_tl}}{examples/series-modern}
+% {\cs{osglecture\_project\_restore\_package\_commands:}}
+% {\cs{osglecture\_project\_intercept\_package\_commands:}}
+% {\cs{g\_\_osglecture\_metadata\_pending\_seq}}{\cs{IncludeOsgLecturePreamble}}
+\cs_new_eq:NN \__osglecture_project_real_RequirePackage \RequirePackage
+\cs_new_protected:Npn \__osglecture_project_package_record:nn #1#2
+  { \__osglecture_project_real_RequirePackage [#1] {#2} }
+\NewDocumentCommand \__osglecture_project_proxy_RequirePackage { O{} m }
+  {
+    \seq_gput_right:Nx \g__osglecture_metadata_pending_seq
+      {
+        \exp_not:N \__osglecture_project_package_record:nn
+          {\exp_not:n{#1}} {\exp_not:n{#2}}
+      }
+  }
+\cs_new_protected:Npn \osglecture_project_intercept_package_commands:
+  {
+    \cs_set_eq:NN \RequirePackage \__osglecture_project_proxy_RequirePackage
+    \cs_set_eq:NN \usepackage \__osglecture_project_proxy_RequirePackage
+  }
+\cs_new_protected:Npn \osglecture_project_restore_package_commands:
+  {
+    \cs_set_eq:NN \RequirePackage \__osglecture_project_real_RequirePackage
+    \cs_set_eq:NN \usepackage \__osglecture_project_real_RequirePackage
   }
 
 \int_gset:Nn \g__osglecture_configuration_priority_int {20}
@@ -163,14 +232,40 @@
     class .tl_set:N = \l__osglecture_preamble_class_tl,
   }
 
-\NewDocumentCommand \IncludeOsgLecturePreamble { d<> O{} m }
+% \ldeen*{Die unsternierte Form bleibt der Normalfall: @1 registriert das
+% Fragment nur und spielt es -- ggf. bedingt durch Modus/Klasse -- erst
+% nach @2 ab (siehe @3 oben). Die Sternvariante ist der bewusste Ausstieg
+% für Nutzer, die wissen, dass ihr Fragment vor @2 laufen muss (z.\,B.
+% weil es selbst \cs{LectureTargetSetup} aufruft); sie lädt sofort, mit
+% derselben Dateisuche wie die unsternierte Form, aber ohne Modus-/
+% Klassenbedingung, da Modus-Graph und Basisklasse an dieser Stelle noch
+% nicht feststehen.}{The unstarred form remains the normal case: @1 only
+% registers the fragment and replays it -- possibly conditioned on
+% mode/class -- only after @2 (see @3 above). The starred variant is the
+% deliberate opt-out for users who know their fragment must run before
+% @2 (e.g. because it itself calls \cs{LectureTargetSetup}); it loads
+% immediately, using the same file lookup as the unstarred form, but
+% without a mode/class condition, since the mode graph and base class
+% are not yet known at that point.}{\cs{IncludeOsgLecturePreamble}}
+% {\cs{LoadClass}}{\cs{osglecture\_project\_intercept\_package\_commands:}}
+\NewDocumentCommand \IncludeOsgLecturePreamble { s d<> O{} m }
   {
-    \seq_gput_right:Nx \g__osglecture_project_preamble_seq
+    \IfBooleanTF{#1}
       {
-        \exp_not:N \__osglecture_preamble_consider:nnn
-          { \IfNoValueTF{#1}{}{\exp_not:n{#1}} }
-          { \exp_not:n{#2} }
-          { \exp_not:n{#3} }
+        \IfNoValueF{#2}
+          { \msg_error:nnn {osglecture-project}{preamble-star-condition}{#4} }
+        \tl_if_empty:nF {#3}
+          { \msg_error:nnn {osglecture-project}{preamble-star-condition}{#4} }
+        \__osglecture_preamble_input:n {#4}
+      }
+      {
+        \seq_gput_right:Nx \g__osglecture_project_preamble_seq
+          {
+            \exp_not:N \__osglecture_preamble_consider:nnn
+              { \IfNoValueTF{#2}{}{\exp_not:n{#2}} }
+              { \exp_not:n{#3} }
+              { \exp_not:n{#4} }
+          }
       }
   }
 
