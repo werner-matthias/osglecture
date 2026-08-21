@@ -3,7 +3,7 @@ module = "osglecture"
 
 maindir=".."
 
-checkdeps = { "../osglecture-modes" }
+checkdeps = { "../osglecture-modes", "../tagpax" }
 
 installfiles = {
   "osglecture.cls",
