@@ -56,6 +56,6 @@ whatever is already in the table instead of overwriting those cells.
 ## Installation
 ```
 l3build check
-l3build install
+l3build --full install
 ollm doctor
 ```

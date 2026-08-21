@@ -9,9 +9,11 @@ use Test::More;
 use lib 'scripts/vendor/TOML-Tiny-0.22/lib';
 use lib 'scripts/lib';
 
+require OLLM::Version;
+
 my $version = qx{$^X scripts/ollm --version};
 is $?, 0, 'version exits successfully';
-like $version, qr/^ollm 0\.13\.0-dev/m, 'version is reported';
+like $version, qr/^ollm \Q$OLLM::Version::VERSION\E/m, 'version is reported';
 
 my $outside = File::Temp::tempdir(CLEANUP => 1);
 my $launcher = Cwd::abs_path('scripts/ollm');
@@ -43,7 +45,6 @@ like $standalone_output, qr/^Context:\s+standalone$/m,
 unlike $standalone_output, qr/Legacy Mode/,
   'standalone mode is not reported as legacy mode';
 
-require OLLM::Version;
 require OLLM::State;
 is $OLLM::State::VERSION, $OLLM::Version::VERSION,
   'internal modules use the central OLLM program version';
