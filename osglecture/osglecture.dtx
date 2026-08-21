@@ -50,6 +50,14 @@
 \expandafter\endbatchfile
 \fi
 %</driver>
+%<*class>
+\NeedsTeXFormat{LaTeX2e}[2022/06/01]
+\ProvidesExplClass
+  {osglecture}
+  {2026/08/21}
+  {v0.13.0}
+  {Profile-driven lecture documents}
+%</class>
 %<*driver>
 \DocumentMetadata{}
 \documentclass[
@@ -73,24 +81,17 @@ load-preamble+
   version = \UseVersionOf{osglecture.cls},
   date    = \UseDateOf{osglecture.cls},
   title   = {\ldeen{Die \pkg*{osglecture}-Klasse}{The \pkg*{osglecture}\ class}},
-  info    = {\ldeen{Profilgesteuerte Vorlesungsdokumente}{Profile-driven lecture documents}},
+  info    = {\ldeen{Metaklasse für Vorlesungsdokumente}{Meta class for lecture documents}},
   authors = {Matthias Werner[matthias.werner@informatik.tu-chemnitz.de]},
   abstract = {
-    \ldeen{
-      @1 ist die LuaLaTeX-Kernklasse des \pkg*{osglecture}-Bundles. Sie
-      projiziert eine gemeinsame Lehrquelle -- eine logische Serieneinheit --
-      auf Präsentationen und Langformen, ausgehend von einem gewählten
-      Dokumentprofil und einer Zielbasisklasse (\code{beamer}, \code{ltx-talk},
-      \code{book}, \code{scrbook}). Weitere Details zur Architektur stehen in
-      \file{ARCHITECTURE.md} und \file{README-cls.md} im Quellverzeichnis.
+    \ldeen*{
+      Die Klasse @1 ist die \LuaLaTeX-Kernklasse des \pkg*{osglecture}-Bundles. Sie
+      projiziert ein gemeinsame Lehrquellendokument auf 
+      auf Präsentationen und Langformen (Skript, Buch).
     }{
-      @1 is the LuaLaTeX core class of the \pkg*{osglecture} bundle. It
-      projects a shared teaching source -- a logical series unit -- onto
-      presentations and long-form documents, based on a selected document
-      profile and a target base class (\code{beamer}, \code{ltx-talk},
-      \code{book}, \code{scrbook}). Further architectural detail lives in
-      \file{ARCHITECTURE.md} and \file{README-cls.md} in the source
-      directory.
+      THe class @1 is the \LuaLaTeX core class of the \pkg*{osglecture} bundle. It
+      projects a shared teaching source onto
+      presentations and long-form documents (script or book)
     }{\cls*{osglecture}}
   },
   url = https://github.com/werner-matthias/osglecture,
@@ -100,7 +101,30 @@ load-preamble+
 %\OnlyDescription
 
 \begin{document}
+\ldeen{
+  Diese Dokumentation enthält nur eine Beschreibung der Klassenoptionen und die Implementation.
+  Für die Nutzung von \pkg*{osglecture} siehe \code{osglecture-manual-de.pdf}.}{
+  This documentation contains only a description of the class options and its implementation.
+  For information on using \pkg*{osglecture}, see \code{osglecture-manual-en.pdf}.
+}
+\section{\ldeen{Klassenoptionen}{Class options}}
 
+\begin{options}
+  \keybool{standalone}\Default{false}
+  \ldeen{Nutzung der Klasse außerhalb einer (Veranstaltungs-)Serie.}{Using the class outside of a (course) series}.
+  \keyval{doctype}{\ldeen{Typ}{type}}
+  \ldeen{Setzt den Zieltyp des Dokuments, wodurch u.\,a.\ die tatsächliche Basisklasse bestimmt wird.}{Sets the document's target type, which, among other things, determines its actual base class.}
+  (\ldeen{Dies ist in der Regel nur bei \option{standalone} nötig, sonst sollte es über \code{ollm} gesteuert werden.}{This is usually only necessary with \option{standalone}; otherwise, it should be controlled using \code{ollm}.})
+  \keyval{profile}{\ldeen{Profil}{profile}}
+  \ldeen{Überschreibt das zum Doctype gehörende Dokumentprofil (legt u.\,a.\ Basisklasse und Backend fest); wird sonst über Konfiguration geregelt.}{Overrides the document profile tied to the doctype (sets, among other things, the base class and backend); otherwise controlled via configuration.}
+  \keyval{class-options}{\ldeen{Ausdrücke}{expressions}}
+  \ldeen{Setzt Optionen in der Basisklasse}{Sets options of the base class}.
+  \keyval{lang}{\ldeen{Sprachcode}{language code}}
+  \ldeen{Wählt die Sprache des Zieldokuments aus.}{Selects the language of the target document.}
+  (\ldeen{Dies ist in der Regel nur bei \option{standalone} nötig, sonst sollte es über \code{ollm} gesteuert werden.}{This is usually only necessary with \option{standalone}; otherwise, it should be controlled using \code{ollm}.})
+  \keybool{patch-overlays}\Default{true}
+  \ldeen{Erweitert die Overlay-Syntax von \pkg*{ltx-talk} oder \pkg*{beamer} um portable Modusausdrücke.}{Extends the overlay syntax of \pkg*{ltx-talk} or \pkg*{beamer} to include portable mode expressions.}
+\end{options}
 \section{Implementation}
 \MaybeStop{\ldeen*{Um die Implementationsbeschreibung zu erhalten, kommentieren Sie bitte \cs{OnlyDescription} in \code{osglecture.dtx} aus.}{To view the implementation description, please uncomment \cs{OnlyDescription} in \code{osglecture.dtx}.}}
 
@@ -155,14 +179,7 @@ load-preamble+
 
 \end{document}
 %</driver>
-%<*class>
-\NeedsTeXFormat{LaTeX2e}[2022/06/01]
-\ProvidesExplClass
-  {osglecture}
-  {2026/08/21}
-  {v0.13.0}
-  {Profile-driven lecture documents}
-%</class>
+
 %<*config>
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
 \ProvidesExplPackage
@@ -259,10 +276,10 @@ load-preamble+
 %</series>
 %<*class>
 
-% \ldeen{Die unpublizierte historische Implementierung bleibt über die
-% Klassenoption @1 weiterhin explizit erreichbar.}{The unpublished
-% historical implementation remains reachable explicitly via the @1 class
-% option.}{\code{osgbeamer}}
+% \ldeen*{Die legacy Implementierung bleibt vorerst über die
+% Klassenoption @1 weiterhin erreichbar.}{
+% The legacy implementation remains reachable via the @1 class
+% option.}{\option{osgbeamer}}
 \@ifclasswith{osglecture}{osgbeamer}
   {
     \input{osglecture-osgbeamer.code.tex}
@@ -300,8 +317,8 @@ load-preamble+
 \bool_new:N \l__osglecture_profile_explicit_bool
 \bool_new:N \l__osglecture_language_explicit_bool
 \bool_new:N \l__osglecture_standalone_bool
-\bool_new:N \l__osglecture_native_mode_compatibility_bool
-\bool_set_true:N \l__osglecture_native_mode_compatibility_bool
+\bool_new:N \l__osglecture_patch_overlays_bool
+\bool_set_true:N \l__osglecture_patch_overlays_bool
 
 \msg_new:nnnn { osglecture } { profile-required }
   { Document~type~'#1'~has~no~default~document~profile. }
@@ -346,8 +363,8 @@ load-preamble+
         \bool_set_true:N \l__osglecture_language_explicit_bool
       },
     class-options .tl_set:N = \l__osglecture_base_options_tl,
-    native-mode-compatibility .bool_set:N =
-      \l__osglecture_native_mode_compatibility_bool,
+    patch-overlays .bool_set:N =
+      \l__osglecture_patch_overlays_bool,
   }
 
 \ProcessKeyOptions [ osglecture ]
@@ -404,17 +421,17 @@ load-preamble+
       {\tl_set:Nn \l__osglecture_target_profile_class_tl {longform}}
   }
 
-% \ldeen{Ort und Name der Projektkonfiguration kommen nicht mehr aus der
-% Auftragsdatei, sondern aus dem gemeinsamen Manifest-Modul (siehe
-% ARCHITECTURE.md Abschnitt 12): Es liest \code{[project.tex]} direkt aus
-% dem Projektmanifest, das es selbst ausgehend vom Arbeitsverzeichnis
-% findet. Ein fehlgeschlagenes Laden bleibt wie zuvor still -- die Klasse
-% lädt dann einfach keine Projektkonfiguration.}{Location and name of the
-% project configuration no longer come from the build file, but from the
-% shared manifest module (see ARCHITECTURE.md section 12): it reads
-% \code{[project.tex]} directly from the project manifest, which it finds
-% itself starting from the working directory. A failed load stays silent
-% as before -- the class then simply loads no project configuration.}
+% \ldeen{Ort und Name der Projektkonfiguration stammen aus dem
+% gemeinsamen Manifest-Modul (siehe ARCHITECTURE.md Abschnitt 12): Es
+% liest \code{[project.tex]} direkt aus dem Projektmanifest, das es
+% selbst ausgehend vom Arbeitsverzeichnis findet. Ein fehlgeschlagenes
+% Laden bleibt still -- die Klasse lädt dann einfach keine
+% Projektkonfiguration.}{Location and name of the project configuration
+% come from the shared manifest module (see ARCHITECTURE.md section 12):
+% it reads \code{[project.tex]} directly from the project manifest,
+% which it finds itself starting from the working directory. A failed
+% load stays silent -- the class then simply loads no project
+% configuration.}
 \OsgLectureBuildLoadedTF
   {
     \directlua{ require("osglecture-manifest").load_tex() }
@@ -555,7 +572,7 @@ load-preamble+
 % \ldeen*{@1 setzt Leerzeichen (Katcode~32) auf Katcode~9 (ignoriert), nicht
 % Katcode~10 wie normales \LaTeX. Legacy-Basisklassen wie KOMA-Skripts @2
 % verwenden intern eigene, nicht-@3-basierte Makros (etwa
-% \code{\@pr@videpackage}), deren Parametermuster ein Leerzeichen als
+% \cs{@pr@videpackage}), deren Parametermuster ein Leerzeichen als
 % Trenntoken erwarten -- unter Katcode~9 verschwindet dieses Trenntoken beim
 % Tokenisieren spurlos, das Muster passt nicht mehr, und die Klasse bricht
 % mit einer Kaskade von Folgefehlern ab (dasselbe Symptombild wie bei einer
@@ -566,7 +583,7 @@ load-preamble+
 % deshalb durch eine zweite, ungruppierte Zuweisung direkt nach @4.}
 % {@1 sets space (catcode~32) to catcode~9 (ignored), not catcode~10 as
 % normal \LaTeX\ does. Legacy base classes such as KOMA-Script's @2 use
-% their own, non-@3-based macros internally (e.g. \code{\@pr@videpackage}),
+% their own, non-@3-based macros internally (e.g. \cs{@pr@videpackage}),
 % whose parameter patterns expect a space as a delimiter token -- under
 % catcode~9 that delimiter vanishes without a trace during tokenization,
 % the pattern no longer matches, and the class aborts with a cascade of
@@ -575,13 +592,13 @@ load-preamble+
 % not be inside a \TeX\ group here: @4 explicitly forbids loading a class
 % inside a group ("Loading a class or package in a group"). Restoration is
 % therefore a second, ungrouped assignment right after @4.}
-% {\code{\ExplSyntaxOn}}{\code{scrbook}}{expl3}{\code{\LoadClass}}
+% {\cs{ExplSyntaxOn}}{\code{scrbook}}{expl3}{\cs{LoadClass}}
 \char_set_catcode:nn {32}{10}
 \exp_args:NV \LoadClass \l__osglecture_base_class_tl
 \char_set_catcode:nn {32}{9}
 
-\bool_if:NF \l__osglecture_native_mode_compatibility_bool
-  { \PassOptionsToPackage{native-mode-compatibility=false}{osglecture-modes} }
+\bool_if:NF \l__osglecture_patch_overlays_bool
+  { \PassOptionsToPackage{patch-overlays=false}{osglecture-modes} }
 \RequirePackage{osglecture-modes}
 \DeclareModeBehaviorClass{presentation-dynamic}
 \DeclareModeBehaviorClass{presentation-static}
@@ -706,7 +723,7 @@ load-preamble+
 \prop_new:N \g__osglecture_build_prop
 \bool_new:N \g__osglecture_build_loaded_bool
 
-% \ldeen{\code{l3kernel} deklariert nur \code{\l_tmpa_tl}/\code{\l_tmpb_tl}
+% \ldeen{\code{l3kernel} deklariert nur \cs{l\_tmpa\_tl}/\cs{l\_tmpb\_tl}
 % als generische Scratch-\code{tl}-Variablen; \code{c}/\code{d} sind kein
 % garantierter Teil des Kernels. \code{osglecture.cls},
 % \code{osglecture-project.sty} und \code{osglecture-metadata.sty}
@@ -715,7 +732,7 @@ load-preamble+
 % Kernelkonvention) \code{c}/\code{d} zusätzlich. Die Existenzprüfung
 % verhindert einen Fehler auf Systemen, auf denen diese Namen bereits durch
 % ein anderes geladenes Paket belegt sind.}{\code{l3kernel} only declares
-% \code{\l_tmpa_tl}/\code{\l_tmpb_tl} as generic scratch \code{tl}
+% \cs{l\_tmpa\_tl}/\cs{l\_tmpb\_tl} as generic scratch \code{tl}
 % variables; \code{c}/\code{d} are not a guaranteed part of the kernel.
 % \code{osglecture.cls}, \code{osglecture-project.sty} and
 % \code{osglecture-metadata.sty} nonetheless need four simultaneous scratch
@@ -798,11 +815,17 @@ load-preamble+
       \__osglecture_build_put:nn {config-signature} {#1},
   }
 
-% Required keys match exactly the "OLLM"/"Grenzfall" classification in
-% osglecture/ARCHITECTURE.md section 12. Everything classified "gemeinsames
-% Modul" there was removed above along with its .code:n entry: an older
-% OLLM that still sends those keys now gets a clear "unknown key" error
-% instead of the class silently ignoring them.
+% \ldeen{Die Pflichtschlüssel entsprechen genau der Klassifikation
+% "OLLM"/"Grenzfall" in \file{ARCHITECTURE.md} Abschnitt 12. Als
+% "gemeinsames Modul" klassifizierte Schlüssel haben hier bewusst
+% keinen \code{.code:n}-Eintrag: Eine Build-Datei, die einen solchen
+% Schlüssel trotzdem sendet, erhält dadurch einen klaren
+% "unknown key"-Fehler, statt stillschweigend ignoriert zu
+% werden.}{The required keys match exactly the "OLLM"/"Grenzfall"
+% classification in \file{ARCHITECTURE.md} section 12. Keys classified
+% as "gemeinsames Modul" deliberately have no \code{.code:n} entry here:
+% a build file that sends such a key regardless gets a clear
+% "unknown key" error instead of being silently ignored.}
 \cs_new_protected:Npn \__osglecture_build_validate:
   {
     \clist_map_inline:nn
@@ -1037,7 +1060,7 @@ load-preamble+
 \NewDocumentCommand \LectureProjectSetup { m }
   { \keys_set:nn { osglecture/project } {#1} }
 
-% \ldeen{Der äußere Setup-Namensraum ist absichtlich explizit:
+% \ldeen*{Der äußere Setup-Namensraum ist absichtlich explizit:
 % @1 und @2 bleiben eindeutig unterscheidbar, selbst wenn
 % \LaTeX-Ökosysteme denselben Namen für Basisklasse und Modus
 % wiederverwenden.}{The outer setup namespace is deliberately explicit:
@@ -1103,7 +1126,7 @@ load-preamble+
       }
   }
 
-% \ldeen{Präambelfragmente werden registriert, während @1 gelesen wird,
+% \ldeen*{Präambelfragmente werden registriert, während @1 gelesen wird,
 % bevor die Basisklasse bekannt ist. @2 spielt die Warteschlange erst ab,
 % nachdem die Klasse geladen, der Mode-Graph finalisiert und der Adapter
 % installiert ist.}{Preamble fragments are registered while @1 is read,
@@ -1359,7 +1382,7 @@ load-preamble+
 \NewDocumentCommand \OsgLectureConfigureMetadata { m }
   { \keys_set:nn { osglecture/metadata } {#1} }
 
-% \ldeen{Sichert die von der Basisklasse bereitgestellten
+% \ldeen*{Sichert die von der Basisklasse bereitgestellten
 % Metadatenbefehle (z.\,B. \cs{title}, \cs{author}) unter eigenem Namen,
 % bevor @1 sie unten durch die einheitlichen Proxys ersetzt: Nur so kann
 % @2 später den nativen Befehl der Basisklasse tatsächlich aufrufen,
@@ -1556,7 +1579,7 @@ load-preamble+
 \PassOptionsToPackage{nospace,ngerman}{varioref}
 \ExplSyntaxOff
 \RequirePackage{hyperref}
-% \ldeen*{Unter \code{\DocumentMetadata}s Bootstrap bleibt
+% \ldeen*{Unter \cs{DocumentMetadata}s Bootstrap bleibt
 % \cs{@pdfborder} leer statt, wie unter \code{colorlinks} sonst üblich,
 % auf "0 0 0" gesetzt zu werden -- die Zielfarben (\cs{@linkcolor},
 % \cs{@filecolor}) werden dabei korrekt gesetzt, nur die Rahmenbreite
@@ -1566,7 +1589,7 @@ load-preamble+
 % Verweisen wie \cs{olref}, da nur diese den Datei-Verweis-Codepfad
 % (\code{GoToR}) durchlaufen. @1 erzwingt explizit denselben
 % randlosen Zustand, den \code{colorlinks} für alle anderen Verweisarten
-% bereits liefert.}{Under \code{\DocumentMetadata}'s bootstrap,
+% bereits liefert.}{Under \cs{DocumentMetadata}'s bootstrap,
 % \cs{@pdfborder} stays empty instead of being set to "0 0 0" as usual
 % under \code{colorlinks} -- the target colors (\cs{@linkcolor},
 % \cs{@filecolor}) get set correctly, just not the border width. An empty
@@ -1575,7 +1598,7 @@ load-preamble+
 % imported via \cs{xr}, such as \cs{olref}, since only those go through
 % the file-link (\code{GoToR}) code path. @1 explicitly forces the same
 % borderless state that \code{colorlinks} already provides for every
-% other link type.}{\code{\hypersetup\{pdfborder=0~0~0\}}}
+% other link type.}{\cs{hypersetup}\code{\{pdfborder=0~0~0\}}}
 \hypersetup{pdfborder=0 0 0}
 \RequirePackage{varioref}
 \RequirePackage{xr}
@@ -1588,12 +1611,12 @@ load-preamble+
 
 % \ldeen*{Die Farbe, in der \cs{olref} dokumentübergreifende Ziele
 % einfärbt, ist projektseitig je Target konfigurierbar
-% (\code{\LectureTargetSetup\{<target>\}\{filecolor=<Farbe>\}} in
+% (\cs{LectureTargetSetup}\code{\{<target>\}\{filecolor=<Farbe>\}} in
 % \file{projectconfig.tex}), damit unterschiedliche Doctypes
 % unterschiedliche Farbschemata verwenden können. Ohne Konfiguration
 % bleibt hyperrefs eigener \code{filecolor}-Default (cyan) unangetastet.
 % @1 setzt \cs{@filecolor} bewusst direkt statt über
-% \code{\hypersetup\{filecolor=...\}}: Unter \code{\DocumentMetadata}s
+% \cs{hypersetup}\code{\{filecolor=...\}}: Unter \cs{DocumentMetadata}s
 % Bootstrap hat sich empirisch gezeigt, dass \code{hypersetup}s
 % \code{filecolor}-Schlüssel wirkungslos bleibt (unabhängig vom
 % Aufrufzeitpunkt -- Präambel, \code{begindocument}-Hooks oder
@@ -1602,22 +1625,22 @@ load-preamble+
 % Farbmodell-Auflösung: Für einen einfachen Farbnamen ohne führende
 % eckige Klammer geht \cs{HyColor@UseColor} (in \code{hycolor.sty}, der
 % Konsument von \cs{@filecolor}) ohnehin über denselben
-% \code{\color\{...\}}-Pfad, den \code{hypersetup} für diesen Fall
+% \cs{color}\code{\{...\}}-Pfad, den \code{hypersetup} für diesen Fall
 % erzeugt hätte.}{The color \cs{olref} uses for cross-document targets
 % is configurable per target from the project side
-% (\code{\LectureTargetSetup\{<target>\}\{filecolor=<color>\}} in
+% (\cs{LectureTargetSetup}\code{\{<target>\}\{filecolor=<color>\}} in
 % \file{projectconfig.tex}), so different doctypes can use different
 % color schemes. Left unconfigured, hyperref's own \code{filecolor}
 % default (cyan) stays untouched. @1 deliberately sets \cs{@filecolor}
-% directly instead of via \code{\hypersetup\{filecolor=...\}}: under
-% \code{\DocumentMetadata}'s bootstrap, \code{hypersetup}'s
+% directly instead of via \cs{hypersetup}\code{\{filecolor=...\}}: under
+% \cs{DocumentMetadata}'s bootstrap, \code{hypersetup}'s
 % \code{filecolor} key was found empirically to have no effect
 % (regardless of call timing -- preamble, \code{begindocument} hooks,
 % and document start were all tested), while a direct assignment works
 % reliably. This is not a shortcut at the expense of color-model
 % resolution: for a plain color name without a leading square bracket,
 % \cs{HyColor@UseColor} (in \code{hycolor.sty}, the consumer of
-% \cs{@filecolor}) goes through the same \code{\color\{...\}} path that
+% \cs{@filecolor}) goes through the same \cs{color}\code{\{...\}} path that
 % \code{hypersetup} would have produced for this case anyway.}
 % {\cs{\_\_olref\_apply\_filecolor:n}}
 \cs_new_protected:Npn \__olref_apply_filecolor:n #1
@@ -1897,35 +1920,31 @@ load-preamble+
       }
   }
 
-% \ldeen*{@1 (\code{\externaldocument}) ist nach Konvention ein
-% Präambelbefehl. @2 rief ihn früher beim ersten Gebrauch einer externen
-% Einheit lazy auf -- was in der Praxis mitten im Absatz passiert, sobald
-% der erste @3-Aufruf zu dieser Einheit im Fließtext steht. Ein
-% mitten-im-Absatz ausgeführtes @1 hinterlässt dort unsichtbares, aber
-% dehnbares Material, das der Zeilenumbruch-Algorithmus beim
-% Justieren ungleichmäßig auf die Zeile verteilt -- sichtbar als ein
-% überproportional großer Zwischenraum vor der eigentlichen Referenz.
-% Ein zweiter @3-Aufruf auf dieselbe Einheit (Import bereits geschehen,
-% @1 wird nicht erneut aufgerufen) zeigt das Problem nicht, was das
-% ursprünglich schwer reproduzierbar machte. @4 kapselt denselben
-% Importcode jetzt in einer eigenen Funktion, die sowohl von @2 (Fallback)
-% als auch eager von \cs{OsgLectureReferenceDocument} aufgerufen wird --
-% Letzteres läuft im \code{begindocument/before}-Hook, also sicher im
-% vertikalen Modus, bevor der erste Absatz beginnt.}{@1
-% (\code{\externaldocument}) is a preamble-only command by convention. @2
-% used to call it lazily on first use of an external unit -- which in
-% practice happens mid-paragraph, as soon as the first @3 call for that
-% unit sits in running text. An @1 executed mid-paragraph leaves invisible
-% but stretchable material behind that the line-breaking algorithm
-% distributes unevenly across the line when justifying -- visible as a
-% disproportionately large gap right before the actual reference. A
-% second @3 call to the same unit (import already done, @1 not called
-% again) does not show the problem, which originally made this hard to
-% reproduce. @4 now factors the same import code into its own function,
-% called both by @2 (fallback) and eagerly by
-% \cs{OsgLectureReferenceDocument} -- the latter runs in the
-% \code{begindocument/before} hook, i.e. safely in vertical mode, before
-% the first paragraph begins.}{\code{\externaldocument}}{\cs{\_\_olref\_import:nn}}{\cs{\olref}}{\cs{\_\_olref\_import\_now:}}
+% \ldeen*{@1 (\cs{externaldocument}) ist nach Konvention ein
+% Präambelbefehl. Ein mitten im Absatz ausgeführtes @1 hinterlässt dort
+% unsichtbares, aber dehnbares Material, das der Zeilenumbruch-Algorithmus
+% beim Justieren ungleichmäßig auf die Zeile verteilt -- sichtbar als ein
+% überproportional großer Zwischenraum vor der eigentlichen Referenz. Ein
+% erneuter @3-Aufruf auf eine bereits importierte Einheit zeigt dieses
+% Symptom nicht, da @1 dann nicht nochmal aufgerufen wird -- beim Testen
+% also leicht zu übersehen. @4 kapselt den Importcode deshalb in einer
+% eigenen, wiederverwendbaren Funktion: @2 ruft sie lazy als Fallback auf
+% (für noch nicht importierte Einheiten), \cs{OsgLectureReferenceDocument}
+% ruft sie zusätzlich eager auf -- Letzteres läuft im
+% \code{begindocument/before}-Hook und damit sicher im vertikalen Modus,
+% bevor der erste Absatz beginnt.}{@1 (\cs{externaldocument}) is a
+% preamble-only command by convention. An @1 executed mid-paragraph
+% leaves invisible but stretchable material behind that the
+% line-breaking algorithm distributes unevenly across the line when
+% justifying -- visible as a disproportionately large gap right before
+% the actual reference. A repeated @3 call for an already-imported unit
+% does not show this symptom, since @1 is not called again then -- easy
+% to miss while testing. @4 therefore factors the import code into its
+% own, reusable function: @2 calls it lazily as a fallback (for units
+% not yet imported), and \cs{OsgLectureReferenceDocument} additionally
+% calls it eagerly -- the latter runs in the \code{begindocument/before}
+% hook and is therefore safely in vertical mode, before the first
+% paragraph begins.}{\cs{externaldocument}}{\cs{\_\_olref\_import:nn}}{\cs{olref}}{\cs{\_\_olref\_import\_now:}}
 \cs_new_protected:Npn \__olref_import_now:
   {
     \tl_clear:N \l__olref_generation_tl
@@ -2011,22 +2030,22 @@ load-preamble+
 % Identität, die \cs{includeunit} bereits kennt. So kann tagpax (bzw.
 % dessen Erweiterung) am Link selbst erkennen, ob das Ziel intern
 % verfügbar ist, ganz ohne fragile Dateipfad-Vergleiche. Zwei
-% Implementierungen sind nötig, je nachdem, ob \code{\DocumentMetadata}
+% Implementierungen sind nötig, je nachdem, ob \cs{DocumentMetadata}
 % für das aktuelle Target aktiv ist (in OSGLecture targetabhängig, siehe
 % \code{document\_metadata} in \file{ollmconfig.toml}): @3 dupliziert
 % hyperrefs klassische \cs{hyper@linkfile}-Struktur direkt
-% (\code{\pdfstartlink}/\code{\close@pdflink}, LuaTeX-spezifisch --
+% (\cs{pdfstartlink}/\cs{close@pdflink}, LuaTeX-spezifisch --
 % OSGLecture ist ohnehin LuaTeX-only), da diese Primitiv-Wrapper unter
-% \code{\DocumentMetadata} \emph{nicht} definiert sind (die
+% \cs{DocumentMetadata} \emph{nicht} definiert sind (die
 % PDF-Management-Schicht übernimmt dort die Link-Erzeugung vollständig).
-% @4 nutzt stattdessen l3pdfannot, das unter \code{\DocumentMetadata}
+% @4 nutzt stattdessen l3pdfannot, das unter \cs{DocumentMetadata}
 % zur Verfügung steht (aber ohne dieses selbst nicht -- ein
-% nachträgliches \code{\RequirePackage\{pdfmanagement\}} nach hyperref
+% nachträgliches \cs{RequirePackage}\code{\{pdfmanagement\}} nach hyperref
 % scheitert an einem Hook-Sortierungskonflikt, die Schicht muss vor
 % hyperref/xcolor aktiviert werden). @5 wählt zur Aufrufzeit anhand von
 % \cs{IfDocumentMetadataTF} zwischen beiden. Der sichtbare Text wird in
 % beiden Fällen über das reguläre (aber unverlinkte,
-% \code{\ref*}-artige) \cs{\_\_olref\_original\_ref} aus der externen
+% \cs{ref}*-artige) \cs{\_\_olref\_original\_ref} aus der externen
 % \file{.aux} aufgelöst -- nur die Verlinkung selbst wird
 % ersetzt.}{A cross-unit @1 reference normally creates a plain
 % \code{GoToR} link (jump into an external file) via hyperref's own
@@ -2042,30 +2061,30 @@ load-preamble+
 % it) recognize from the link itself whether the target is available
 % internally, without fragile file-path comparisons. Two
 % implementations are needed, depending on whether
-% \code{\DocumentMetadata} is active for the current target (in
+% \cs{DocumentMetadata} is active for the current target (in
 % OSGLecture this is target-dependent, see \code{document\_metadata} in
 % \file{ollmconfig.toml}): @3 duplicates hyperref's classic
 % \cs{hyper@linkfile} structure directly
-% (\code{\pdfstartlink}/\code{\close@pdflink}, LuaTeX-specific --
+% (\cs{pdfstartlink}/\cs{close@pdflink}, LuaTeX-specific --
 % OSGLecture is LuaTeX-only anyway), since these primitive wrappers are
-% \emph{not} defined under \code{\DocumentMetadata} (the PDF management
+% \emph{not} defined under \cs{DocumentMetadata} (the PDF management
 % layer takes over link creation entirely there). @4 uses l3pdfannot
-% instead, which is available under \code{\DocumentMetadata} (but not
-% without it -- loading it after the fact via \code{\RequirePackage
-% \{pdfmanagement\}} after hyperref fails with a hook-ordering conflict;
+% instead, which is available under \cs{DocumentMetadata} (but not
+% without it -- loading it after the fact via \cs{RequirePackage}\code{\{pdfmanagement\}} after hyperref fails with a hook-ordering conflict;
 % the layer must be activated before hyperref/xcolor). @5 picks between
 % the two at call time via \cs{IfDocumentMetadataTF}. The visible text
 % is resolved in both cases from the external \file{.aux} via the
-% regular (but unlinked, \code{\ref*}-like)
+% regular (but unlinked, \cs{ref}*-like)
 % \cs{\_\_olref\_original\_ref} -- only the link creation itself is
 % replaced.}{\cs{olref}}{\cs{\_\_olref\_link\_goToR:nnnn}}
 % {\cs{\_\_olref\_link\_goToR\_classic:nnnn}}
 % {\cs{\_\_olref\_link\_goToR\_pdfannot:nnnn}}
 % {\cs{\_\_olref\_link\_goToR:nnnn}}
+% \ldeen{\#1 = PDF-Pfad (xr-URL), \#2 = Zielname, \#3 = Quellseite,
+% \#4 = Anzeigetext}{\#1 = PDF path (xr URL), \#2 = destination name,
+% \#3 = source page, \#4 = display text}
 \cs_new_protected:Npn \__olref_link_goToR_classic:nnnn #1#2#3#4
-  { % \ldeen{#1 = PDF-Pfad (xr-URL), #2 = Zielname, #3 = Quellseite,
-    % #4 = Anzeigetext}{#1 = PDF path (xr URL), #2 = destination name,
-    % #3 = source page, #4 = display text}
+  {
     \begingroup
       \def\Hy@pstringF{#1}
       \Hy@CleanupFile\Hy@pstringF
@@ -2093,10 +2112,11 @@ load-preamble+
       \close@pdflink
     \endgroup
   }
+% \ldeen{\#1 = PDF-Pfad (xr-URL), \#2 = Zielname, \#3 = Quellseite,
+% \#4 = Anzeigetext}{\#1 = PDF path (xr URL), \#2 = destination name,
+% \#3 = source page, \#4 = display text}
 \cs_new_protected:Npn \__olref_link_goToR_pdfannot:nnnn #1#2#3#4
-  { % \ldeen{#1 = PDF-Pfad (xr-URL), #2 = Zielname, #3 = Quellseite,
-    % #4 = Anzeigetext}{#1 = PDF path (xr URL), #2 = destination name,
-    % #3 = source page, #4 = display text}
+  {
     \group_begin:
       \def\Hy@pstringF{#1}
       \Hy@CleanupFile\Hy@pstringF
@@ -2124,9 +2144,10 @@ load-preamble+
       { \__olref_link_goToR_pdfannot:nnnn {#1}{#2}{#3}{#4} }
       { \__olref_link_goToR_classic:nnnn {#1}{#2}{#3}{#4} }
   }
+% \ldeen{\#1 = präfigiertes Label; unterscheidet danach, ob xr es
+% kennt}{\#1 = prefixed label; dispatches on whether xr knows it}
 \cs_new_protected:Npn \__olref_ref_external:n #1
-  { % \ldeen{#1 = präfigiertes Label; unterscheidet danach, ob xr es
-    % kennt}{#1 = prefixed label; dispatches on whether xr knows it}
+  {
     \cs_if_exist:cTF { r@#1 }
       {
         \tl_set_eq:Nc \l_tmpa_tl { r@#1 }
@@ -2135,10 +2156,11 @@ load-preamble+
       }
       { \__olref_original_ref {#1} }
   }
+% \ldeen{\#1 Nummer \#2 Seite \#3 Titel \#4 Ankername \#5 xr-URL
+% \#6 Original-Label}{\#1 number \#2 page \#3 title \#4 anchor-name
+% \#5 xr-url \#6 orig label}
 \cs_new_protected:Npn \__olref_ref_external_fields:nnnnnn #1#2#3#4#5#6
-  { % \ldeen{#1 Nummer #2 Seite #3 Titel #4 Ankername #5 xr-URL
-    % #6 Original-Label}{#1 number #2 page #3 title #4 anchor-name
-    % #5 xr-url #6 orig label}
+  {
     \tl_if_empty:nTF {#5}
       { \__olref_original_ref {#6} }
       { \__olref_link_goToR:nnnn {#5}{#4}{#2}{#1} }
@@ -2499,11 +2521,11 @@ load-preamble+
 
 % \ldeen{Die Hook-Reihenfolge ist bewusst festgelegt: Der Import muss nach
 % dem Setup von \pkg*{osglecture-references} laufen (dessen
-% \code{\jobname.osgrefs.tex} eingelesen sein muss), und der Export muss
+% \cs{jobname}\code{.osgrefs.tex} eingelesen sein muss), und der Export muss
 % vor dem Referenz-Export laufen, damit dessen Datei bereits offen bzw.
 % konsistent ist.}{The hook ordering is deliberate: the import must run
 % after \pkg*{osglecture-references}'s setup (whose
-% \code{\jobname.osgrefs.tex} must already be read), and the export must
+% \cs{jobname}\code{.osgrefs.tex} must already be read), and the export must
 % run before the reference export, so its file is already open and
 % consistent.}
 \AddToHook{begindocument/before}[osglecture-continuation/import]
@@ -2610,7 +2632,7 @@ load-preamble+
 % standalone protected command rather than part of a seemingly pure
 % lookup, because the decision has side effects (warning, state write)
 % that would not execute in an expansion context.}{\meta{doctype}}
-% {\code{\pkg{g\_\_osglecture\_integration\_mode\_prop}}}
+% {\cs{g\_\_osglecture\_integration\_mode\_prop}}
 \cs_new_protected:Npn \__osglecture_integration_decide_mode:n #1
   {
     \prop_if_in:NnF \g__osglecture_integration_mode_prop {#1}
@@ -2644,9 +2666,10 @@ load-preamble+
       }
   }
 
-% \ldeen*{Getaggter Pfad: unverändert der bisherige native tagpax-Import.}
-% {Tagged path: the previously existing native tagpax import,
-% unchanged.}
+% \ldeen{Getaggter Pfad: nativer tagpax-Import inklusive des für
+% spätere Cross-Referenzen benötigten Präfixes.}{Tagged path: native
+% tagpax import, including the prefix needed for later
+% cross-references.}
 \cs_new_protected:Npn \__osglecture_integration_include_tagged:nn #1#2
   {
     \tl_set:Ne \l__osglecture_integration_ir_tl
@@ -2843,7 +2866,7 @@ load-preamble+
     \__osglecture_unit_declare:nnn {#1}{#2}{#3}
     \osglecture_adapter_lecture:nnn {#1}{#2}{#3}
     \UseHook{osglecture/lecture/after}
-    % \ldeen{Fängt die von der Basisklasse beim @1-Aufruf tatsächlich
+    % \ldeen*{Fängt die von der Basisklasse beim @1-Aufruf tatsächlich
     % vergebene Kapitelnummer ab (falls vorhanden), damit sie unten in
     % \code{osgresult.aux} exportiert werden kann. \cs{OsgLectureDeploymentChapter}
     % erlaubt es, diesen Wert manuell zu überschreiben, falls die Basisklasse
@@ -2889,7 +2912,7 @@ load-preamble+
             \bool_if:NT \g__osglecture_unit_valid_bool
               {
                 \tl_set:Ne \l_tmpb_tl { \OsgLectureSeriesPosition }
-                % \ldeen{Integrationsunits (Rolle @1) haben keine eigene
+                % \ldeen*{Integrationsunits (Rolle @1) haben keine eigene
                 % logische Unit-Id, kein eigenes Kapitel und keine eigene
                 % Serienposition -- sie bündeln nur andere Units. Diese
                 % Felder werden deshalb vor dem Export geleert statt die
@@ -2956,7 +2979,7 @@ load-preamble+
 
 \tl_new:N \g__osglecture_adapter_name_tl
 
-% \ldeen{Vertrag für jede \file{osglecture-adapter-*.def}: @1 ist
+% \ldeen*{Vertrag für jede \file{osglecture-adapter-*.def}: @1 ist
 % Pflicht (überträgt \cs{lecture} auf die Zielbasisklasse); @2 ist
 % optional und nur nötig, wenn der Adapter zusätzlich vorhandene Befehle
 % der Zielklasse patchen oder deaktivieren muss (etwa
@@ -3130,7 +3153,7 @@ load-preamble+
 \cs_new:Npn \osglecture_profile_value:nn #1#2
   { \prop_item:Nn \g__osglecture_profiles_prop {#1/#2} }
 
-% \ldeen{Liefert zwei durch \cs{prop\_item:Nn} nacheinander expandierte
+% \ldeen*{Liefert zwei durch \cs{prop\_item:Nn} nacheinander expandierte
 % Werte, die der Aufrufer als eine kommaseparierte Optionsliste
 % zusammensetzt: die allgemeinen Klassenoptionen des Profils sowie die
 % (ggf. leeren) doctypspezifischen Zusatzoptionen aus @1. Zwei
@@ -3645,17 +3668,17 @@ load-preamble+
       }
   }
 
-% \ldeen{Die beiden Spaltenboxen werden nebeneinander als einzelne
+% \ldeen*{Die beiden Spaltenboxen werden nebeneinander als einzelne
 % \code{hbox}es gesetzt, nicht mit \LaTeX's echten \env{multicols}. Damit
 % der Struct-Tree dennoch einen zusammenhängenden Block statt zweier
 % unabhängiger Fragmente sieht, wird die gesamte Konstruktion vorab als
 % \code{Div}-Struktur getaggt (nur wenn @1 verfügbar ist, also unter
-% \code{\DocumentMetadata}).}{The two column boxes are typeset side by
+% \cs{DocumentMetadata}).}{The two column boxes are typeset side by
 % side as plain \code{hbox}es, not with \LaTeX's real \env{multicols}. So
 % the struct tree still sees one coherent block instead of two
 % independent fragments, the whole construction is tagged beforehand as
 % a \code{Div} structure (only when @1 is available, i.e.\ under
-% \code{\DocumentMetadata}).}{\cs{tagstructbegin}}
+% \cs{DocumentMetadata}).}{\cs{tagstructbegin}}
 \cs_new_protected:Npn \twocol_tag_begin:
   {
     \cs_if_exist:NT \tagstructbegin
@@ -3804,23 +3827,21 @@ load-preamble+
       {#1} {#2} {#3}
   }
 
-% \ldeen*{Der Startpfad kommt nicht mehr aus der Auftragsdatei
-% (@1 ist redundant zu \code{lfs.currentdir()}, siehe
-% \code{ARCHITECTURE.md} Abschnitt 12), sondern implizit vom
-% Arbeitsverzeichnis des TeX-Laufs. Der Vorabtest mit @2 ersetzt den
-% früheren Leer-Test auf @1: Nur wenn überhaupt ein Serieneinheit-
-% artiges Vorfahrenverzeichnis existiert, wird die volle Initialisierung
-% (samt Scope-Analyse und Fehlermeldung bei echten Problemen) versucht.
-% Ohne dieses Vorfahrenverzeichnis bleibt die Serie wie zuvor still
-% nicht verfügbar, statt einen Fehler zu erzeugen.}{The start path no
-% longer comes from the build file (@1 is redundant with
-% \code{lfs.currentdir()}, see \code{ARCHITECTURE.md} section 12), but
-% implicitly from the TeX run's working directory. The pre-check with
-% @2 replaces the former empty-test on @1: the full initialization
-% (including scope analysis and error reporting for real problems) is
-% only attempted when a series-unit-shaped ancestor directory exists at
-% all. Without such an ancestor, the series stays silently unavailable,
-% as before, instead of raising an error.}{\code{source-directory}}{\code{series\_index.locate\_unit\_ancestor}}
+% \ldeen*{Der Startpfad stammt implizit vom Arbeitsverzeichnis des
+% TeX-Laufs (@1 wäre redundant zu \code{lfs.currentdir()}, siehe
+% \code{ARCHITECTURE.md} Abschnitt 12). Der Vorabtest mit @2 sorgt
+% dafür, dass die volle Initialisierung (samt Scope-Analyse und
+% Fehlermeldung bei echten Problemen) nur versucht wird, wenn überhaupt
+% ein Serieneinheit-artiges Vorfahrenverzeichnis existiert. Ohne ein
+% solches Vorfahrenverzeichnis bleibt die Serie still nicht verfügbar,
+% statt einen Fehler zu erzeugen.}{The start path comes implicitly from
+% the TeX run's working directory (@1 would be redundant with
+% \code{lfs.currentdir()}, see \code{ARCHITECTURE.md} section 12). The
+% pre-check with @2 ensures the full initialization (including scope
+% analysis and error reporting for real problems) is only attempted
+% when a series-unit-shaped ancestor directory exists at all. Without
+% such an ancestor, the series stays silently unavailable, instead of
+% raising an error.}{\code{source-directory}}{\code{series\_index.locate\_unit\_ancestor}}
 \cs_new_protected:Npn \__osglecture_series_initialize:nn #1#2
   {
     \directlua{
