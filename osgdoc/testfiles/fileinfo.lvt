@@ -1,0 +1,26 @@
+\input regression-test
+\documentclass{article}
+\usepackage{osgdoc}
+\begin{document}
+\START
+\UseVersionOf{fixture-expl.sty}\quad\UseDateOf{fixture-expl.sty}
+
+\directlua{
+  local function report(key, value)
+    texio.write_nl("log", key .. "=" .. tostring(value))
+  end
+
+  fileinfo.getinfo("fixture-expl.sty")
+  report("expl-name", fileinfo.data["name"])
+  report("expl-date", fileinfo.data["date"])
+  report("expl-version", fileinfo.data["version"])
+  report("expl-type", fileinfo.data["type"])
+
+  fileinfo.getinfo("fixture-classic.sty")
+  report("classic-name", fileinfo.data["name"])
+  report("classic-date", fileinfo.data["date"])
+  report("classic-version", fileinfo.data["version"])
+  report("classic-type", fileinfo.data["type"])
+}
+\END
+\end{document}

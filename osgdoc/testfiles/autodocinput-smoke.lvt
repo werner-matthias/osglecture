@@ -1,0 +1,16 @@
+\input regression-test
+\documentclass{article}
+\usepackage{osgdoc}
+\begin{document}
+\START
+% \AutoDocInput renders the extracted guard content via fvextra, so this
+% is a smoke test (does it run at all, in both syntax modes it supports
+% for a %<*guard>/--<*guard> pair) rather than a content check: comparing
+% the typeset listing itself would tie this test to fvextra's own
+% formatting, which osgdoc does not control any more than it controls
+% cnltx's.
+\AutoDocInput{fixture-guarded.tex}{demo}
+\AutoDocInput[lua]{fixture-guarded.lua}{demo}
+\directlua{texio.write_nl("log", "autodocinput-completed=true")}
+\END
+\end{document}

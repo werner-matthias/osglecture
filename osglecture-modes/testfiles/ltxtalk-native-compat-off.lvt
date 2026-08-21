@@ -1,7 +1,7 @@
 \input regression-test.tex
 \DocumentMetadata{}
 \documentclass{ltx-talk}
-\usepackage[native-mode-compatibility=false]{osglecture-modes}
+\usepackage[patch-overlays=false]{osglecture-modes}
 \begin{document}
 \START
 \lecturemode<slides>{\TYPE{PORTABLE COMMAND YES}}

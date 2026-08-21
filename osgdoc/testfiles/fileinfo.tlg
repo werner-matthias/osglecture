@@ -1,0 +1,10 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+expl-name=fixture-expl
+expl-date=....-..-..
+expl-version=v1.2.3
+expl-type=package
+classic-name=fixture-classic
+classic-date=....-..-..
+classic-version=2.0
+classic-type=package

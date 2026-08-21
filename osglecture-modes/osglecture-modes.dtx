@@ -544,7 +544,7 @@ Text\\<slides>[3ex]
   und \pkg*{ltx-talk} reine Ausdrücke aus registrierten Modi. Unbekannte oder
   komplexe Spezifikationen, Beamers ungebundene Modusschalter und \cs{mode*}
   werden unverändert an das Backend delegiert. Diese Eingriffe lassen sich
-  mit \code{native-mode-compatibility=false} abschalten.
+  mit \code{patch-overlays=false} abschalten.
 }{
   If the loaded class has no \cs{mode} command, the package provides its
   portable inline form. If a native implementation already exists, the package
@@ -553,7 +553,7 @@ Text\\<slides>[3ex]
   pure expressions composed of registered modes. Unknown or complex
   specifications, Beamer's unbraced mode switches, and \cs{mode*} are
   delegated unchanged to the backend. Set
-  \code{native-mode-compatibility=false} to disable these patches.
+  \code{patch-overlays=false} to disable these patches.
 }
 
 \section{\ldeen{Einschränkungen}{Limitations}}
@@ -595,7 +595,7 @@ Text\\<slides>[3ex]
 \seq_new:N  \g_osglecture_modes_seed_seq
 \seq_new:N  \g_osglecture_modes_active_order_seq
 \bool_new:N \g_osglecture_modes_frozen_bool
-\bool_new:N \g_osglecture_modes_native_compatibility_bool
+\bool_new:N \g_osglecture_modes_patch_overlays_bool
 \tl_new:N   \g_osglecture_modes_option_mode_tl
 
 \msg_new:nnn { osglecture_modes } { frozen }
@@ -615,10 +615,10 @@ Text\\<slides>[3ex]
   {
     mode .tl_gset:N = \g_osglecture_modes_option_mode_tl,
     mode .initial:n = auto,
-    native-mode-compatibility .bool_gset:N =
-      \g_osglecture_modes_native_compatibility_bool,
-    native-mode-compatibility .initial:n = true,
-    full .meta:n = { native-mode-compatibility = #1 },
+    patch-overlays .bool_gset:N =
+      \g_osglecture_modes_patch_overlays_bool,
+    patch-overlays .initial:n = true,
+    full .meta:n = { patch-overlays = #1 },
     full .default:n = true,
   }
 \ProcessKeyOptions [ osglecture_modes ]
@@ -1252,7 +1252,7 @@ Text\\<slides>[3ex]
 
 % Let the native overlay decoders recognize a pure portable mode expression.
 % Everything else, especially mixed mode/overlay syntax, remains untouched.
-\bool_if:NT \g_osglecture_modes_native_compatibility_bool
+\bool_if:NT \g_osglecture_modes_patch_overlays_bool
   {
     \cs_if_exist:NT \beamer@masterdecode
       {
@@ -1294,7 +1294,7 @@ Text\\<slides>[3ex]
 % switching syntax or unknown/complex overlay specifications.
 \cs_if_exist:NTF \mode
   {
-    \bool_if:NT \g_osglecture_modes_native_compatibility_bool
+    \bool_if:NT \g_osglecture_modes_patch_overlays_bool
       {
         \cs_new_eq:NN \osglecture_modes_native_mode \mode
         \RenewDocumentCommand \mode { s d<> }
@@ -1332,7 +1332,7 @@ Text\\<slides>[3ex]
 % passes through their common overlay decoders in every case. Bind it through
 % the signature-aware adapter so portable modes are handled directly while
 % native overlay specifications are still delegated unchanged.
-\bool_if:NT \g_osglecture_modes_native_compatibility_bool
+\bool_if:NT \g_osglecture_modes_patch_overlays_bool
   {
     \cs_if_exist:NT \only
       { \MakeOverlayAwareCommand[arguments={+m}]{\only} }

@@ -40,23 +40,20 @@ sourcefiles = {
   "osglecture-manifest-cli.lua",
   "osglecture-integration.lua",
 }
--- Only osglecture.dtx carries a self-installing driver; the adapter and
--- profile dtx are pure docstrip sources pulled in via \from{...} from
--- osglecture.dtx's own \generate block, so they must not be unpacked
--- (run through the engine) on their own.
+-- Only osglecture.dtx is self-extracting. It also unpacks
+-- the adapter.dtx and profile dtx.
 unpackfiles = { "osglecture.dtx" }
-typesetfiles = { }
+
+typesetfiles = {
+  "osglecture.dtx"
+}
 checksuppfiles = {
   "reference-source.osgref.aux",
 }
 
--- Untagged PDF fixture for the osglecture-integration fallback path
--- (integration-untagged.lvt): a plain, ordinary article with no
--- \DocumentMetadata, so tagpax.is_tagged reports it as untagged. Written
--- directly into testdir instead of living as its own testfiles/*.tex
--- source, matching the approach in ../tagpax/build.lua, because plain
--- support .tex files are not reliably copied into testdir by the
--- surrounding checksuppfiles machinery.
+-- Untagged PDF fixture for the osglecture-integration fallback path.
+-- Copying plain support .tex files seems not to be 
+-- reliable, thus write directly to testdir.
 function checkinit_hook()
   local source = assert(io.open(testdir .. "/untagged-unit.tex", "w"))
   source:write(table.concat({
