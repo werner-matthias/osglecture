@@ -4,9 +4,11 @@
 % directory as this file). See osglecture.dtx for the license and the
 % list of generated files.
 %<*beamer>
-\ProvidesFile{osglecture-adapter-beamer.def}
-  [2026/08/21 v0.13.0 osglecture Beamer structure adapter]
-\ExplSyntaxOn
+\ProvidesExplFile
+  {osglecture-adapter-beamer.def}
+  {2026/08/21}
+  {v0.13.0}
+  {osglecture Beamer structure adapter}
 \cs_new_eq:NN \__osglecture_adapter_beamer_lecture \lecture
 \cs_new_protected:Npn \osglecture_adapter_lecture:nnn #1#2#3
   {
@@ -17,9 +19,11 @@
 \ExplSyntaxOff
 %</beamer>
 %<*book>
-\ProvidesFile{osglecture-adapter-book.def}
-  [2026/08/21 v0.13.0 osglecture book structure adapter]
-\ExplSyntaxOn
+\ProvidesExplFile
+  {osglecture-adapter-book.def}
+  {2026/08/21}
+  {v0.13.0}
+  {osglecture book structure adapter}
 \cs_new_eq:NN \__osglecture_adapter_book_chapter \chapter
 \cs_new_eq:NN \__osglecture_adapter_book_frame \frame
 \cs_new_eq:NN \__osglecture_adapter_book_endframe \endframe
@@ -56,9 +60,11 @@
 \ExplSyntaxOff
 %</book>
 %<*ltx-talk>
-\ProvidesFile{osglecture-adapter-ltx-talk.def}
-  [2026/08/21 v0.13.0 osglecture ltx-talk structure adapter]
-\ExplSyntaxOn
+\ProvidesExplFile
+  {osglecture-adapter-ltx-talk.def}
+  {2026/08/21}
+  {v0.13.0}
+  {osglecture ltx-talk structure adapter}
 % \ldeen{@1 stellt bereits die gewünschten nativen Schnittstellen für
 % \code{section}, \code{subsection}, \env{frame}, \env{frame*},
 % \cs{frametitle} und \cs{framesubtitle} bereit; dieser Adapter lässt
@@ -73,9 +79,11 @@
 \ExplSyntaxOff
 %</ltx-talk>
 %<*scrbook>
-\ProvidesFile{osglecture-adapter-scrbook.def}
-  [2026/08/21 v0.13.0 osglecture scrbook structure adapter]
-\ExplSyntaxOn
+\ProvidesExplFile
+  {osglecture-adapter-scrbook.def}
+  {2026/08/21}
+  {v0.13.0}
+  {osglecture scrbook structure adapter}
 \cs_new_eq:NN \__osglecture_adapter_scrbook_chapter \chapter
 \cs_new_eq:NN \__osglecture_adapter_scrbook_frame \frame
 \cs_new_eq:NN \__osglecture_adapter_scrbook_endframe \endframe

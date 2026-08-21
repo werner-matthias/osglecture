@@ -160,8 +160,104 @@ load-preamble+
 \ProvidesExplClass
   {osglecture}
   {2026/08/21}
-  {0.13.0}
+  {v0.13.0}
   {Profile-driven lecture documents}
+%</class>
+%<*config>
+\NeedsTeXFormat{LaTeX2e}[2022/06/01]
+\ProvidesExplPackage
+  {osglecture-config}
+  {2026/08/21}
+  {v0.13.0}
+  {Build-request reader for osglecture}
+%</config>
+%<*project>
+\NeedsTeXFormat{LaTeX2e}[2022/06/01]
+\ProvidesExplPackage
+  {osglecture-project}
+  {2026/08/21}
+  {v0.13.0}
+  {Deferred project configuration for osglecture}
+%</project>
+%<*metadata>
+\NeedsTeXFormat{LaTeX2e}[2022/06/01]
+\ProvidesExplPackage
+  {osglecture-metadata}
+  {2026/08/21}
+  {v0.13.0}
+  {Semantic and extensible metadata for osglecture}
+%</metadata>
+%<*references>
+\NeedsTeXFormat{LaTeX2e}[2024/06/01]
+\ProvidesExplPackage
+  {osglecture-references}
+  {2026/08/21}
+  {v0.13.0}
+  {Logical cross-unit references for osglecture}
+%</references>
+%<*continuation>
+\NeedsTeXFormat{LaTeX2e}[2024/06/01]
+\ProvidesExplPackage
+  {osglecture-continuation}
+  {2026/08/21}
+  {v0.13.0}
+  {Mode-aware counter continuation between series units}
+%</continuation>
+%<*integration>
+\NeedsTeXFormat{LaTeX2e}[2024/06/01]
+\ProvidesExplPackage
+  {osglecture-integration}
+  {2026/08/21}
+  {v0.13.0}
+  {Logical-unit PDF integration through tagpax}
+%</integration>
+%<*structure>
+\NeedsTeXFormat{LaTeX2e}[2024/06/01]
+\ProvidesExplPackage
+  {osglecture-structure}
+  {2026/08/21}
+  {v0.13.0}
+  {Logical unit structure and build-result export for osglecture}
+%</structure>
+%<*adapters>
+\NeedsTeXFormat{LaTeX2e}[2024/06/01]
+\ProvidesExplPackage
+  {osglecture-adapters}
+  {2026/08/21}
+  {v0.13.0}
+  {Backend adapter loader for osglecture}
+%</adapters>
+%<*profiles>
+\NeedsTeXFormat{LaTeX2e}[2022/06/01]
+\ProvidesExplPackage
+  {osglecture-profiles}
+  {2026/08/21}
+  {v0.13.0}
+  {Profile registry for osglecture}
+%</profiles>
+%<*presitemize>
+\ProvidesExplPackage
+  {osglecture-presitemize}
+  {2026/08/21}
+  {v0.13.0}
+  {Prose-aware presentation lists for osglecture}
+%</presitemize>
+%<*twocolumns>
+\ProvidesExplPackage
+  {osglecture-twocolumns}
+  {2026/08/21}
+  {v0.13.0}
+  {Mode-aware two-column layouts for osglecture}
+%</twocolumns>
+%<*series>
+\NeedsTeXFormat{LaTeX2e}[2022/06/01]
+\ProvidesExplPackage
+  {osglecture-series}
+  {2026/08/21}
+  {v0.13.0}
+  {Series index bridge for osglecture}
+%</series>
+%<*class>
 
 % \ldeen{Die unpublizierte historische Implementierung bleibt über die
 % Klassenoption @1 weiterhin explizit erreichbar.}{The unpublished
@@ -604,12 +700,6 @@ load-preamble+
 \ExplSyntaxOff
 %</class>
 %<*config>
-\NeedsTeXFormat{LaTeX2e}[2022/06/01]
-\ProvidesExplPackage
-  {osglecture-config}
-  {2026/08/21}
-  {0.13.0}
-  {Build-request reader for osglecture}
 
 \ExplSyntaxOn
 
@@ -789,12 +879,6 @@ load-preamble+
 \ExplSyntaxOff
 %</config>
 %<*project>
-\NeedsTeXFormat{LaTeX2e}[2022/06/01]
-\ProvidesExplPackage
-  {osglecture-project}
-  {2026/08/21}
-  {0.13.0}
-  {Deferred project configuration for osglecture}
 
 \ExplSyntaxOn
 
@@ -1249,12 +1333,6 @@ load-preamble+
 \ExplSyntaxOff
 %</project>
 %<*metadata>
-\NeedsTeXFormat{LaTeX2e}[2022/06/01]
-\ProvidesExplPackage
-  {osglecture-metadata}
-  {2026/08/21}
-  {0.13.0}
-  {Semantic and extensible metadata for osglecture}
 
 \RequirePackage{osglecture-project}
 \RequirePackage{osglecture-modes}
@@ -1466,12 +1544,6 @@ load-preamble+
 \ExplSyntaxOff
 %</metadata>
 %<*references>
-\NeedsTeXFormat{LaTeX2e}[2024/06/01]
-\ProvidesExplPackage
-  {osglecture-references}
-  {2026/08/21}
-  {0.13.0}
-  {Logical cross-unit references for osglecture}
 
 \RequirePackage{expl3}
 \ExplSyntaxOn
@@ -2285,12 +2357,6 @@ load-preamble+
 \ExplSyntaxOff
 %</references>
 %<*continuation>
-\NeedsTeXFormat{LaTeX2e}[2024/06/01]
-\ProvidesExplPackage
-  {osglecture-continuation}
-  {2026/08/21}
-  {0.13.0}
-  {Mode-aware counter continuation between series units}
 
 \RequirePackage{osglecture-project}
 \RequirePackage{osglecture-series}
@@ -2454,12 +2520,6 @@ load-preamble+
 \ExplSyntaxOff
 %</continuation>
 %<*integration>
-\NeedsTeXFormat{LaTeX2e}[2024/06/01]
-\ProvidesExplPackage
-  {osglecture-integration}
-  {2026/08/21}
-  {0.13.0}
-  {Logical-unit PDF integration through tagpax}
 
 \RequirePackage{osglecture-config}
 \RequirePackage{osglecture-references}
@@ -2705,12 +2765,6 @@ load-preamble+
 \ExplSyntaxOff
 %</integration>
 %<*structure>
-\NeedsTeXFormat{LaTeX2e}[2024/06/01]
-\ProvidesExplPackage
-  {osglecture-structure}
-  {2026/08/21}
-  {0.13.0}
-  {Logical unit structure and build-result export for osglecture}
 
 \ExplSyntaxOn
 
@@ -2890,12 +2944,6 @@ load-preamble+
 \ExplSyntaxOff
 %</structure>
 %<*adapters>
-\NeedsTeXFormat{LaTeX2e}[2024/06/01]
-\ProvidesExplPackage
-  {osglecture-adapters}
-  {2026/08/21}
-  {0.13.0}
-  {Backend adapter loader for osglecture}
 
 \ExplSyntaxOn
 
@@ -2937,12 +2985,6 @@ load-preamble+
 \ExplSyntaxOff
 %</adapters>
 %<*profiles>
-\NeedsTeXFormat{LaTeX2e}[2022/06/01]
-\ProvidesExplPackage
-  {osglecture-profiles}
-  {2026/08/21}
-  {0.13.0}
-  {Profile registry for osglecture}
 
 \ExplSyntaxOn
 
@@ -3119,11 +3161,6 @@ load-preamble+
 \ExplSyntaxOff
 %</profiles>
 %<*presitemize>
-\ProvidesExplPackage
-  {osglecture-presitemize}
-  {2026/08/21}
-  {0.13.0}
-  {Prose-aware presentation lists for osglecture}
 
 \RequirePackage{osglecture-modes}
 
@@ -3492,11 +3529,6 @@ load-preamble+
 \ExplSyntaxOff
 %</presitemize>
 %<*twocolumns>
-\ProvidesExplPackage
-  {osglecture-twocolumns}
-  {2026/08/21}
-  {0.13.0}
-  {Mode-aware two-column layouts for osglecture}
 
 \RequirePackage{osglecture-modes}
 
@@ -3691,12 +3723,6 @@ load-preamble+
 \ExplSyntaxOff
 %</twocolumns>
 %<*series>
-\NeedsTeXFormat{LaTeX2e}[2022/06/01]
-\ProvidesExplPackage
-  {osglecture-series}
-  {2026/08/21}
-  {0.13.0}
-  {Series index bridge for osglecture}
 
 \ExplSyntaxOn
 

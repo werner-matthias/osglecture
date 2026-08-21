@@ -33,7 +33,14 @@ Matthias Werner.
 }
 \expandafter\endbatchfile
 \fi
-
+%</driver>
+%<*package>
+\ProvidesExplPackage{osglecture-modes}
+  {2026/08/02}
+  {v0.4.0}
+  {Portable document-modes}
+%</package>
+%<*driver>
 \documentclass[load-preamble+]{osgdoc}
 
 \usepackage{enumitem}
@@ -340,8 +347,10 @@ languages = ["de", "en"]
 }{}
 
 \begin{verbatim}
-\ProvidesFile{osglecture-mode-studyguide.def}
-  [2026-07-29 studyguide mode setup]
+\ProvidesExplFile{osglecture-mode-studyguide.def}
+{2026/08/02}
+{v0.4.0}
+{studyguide mode setup}
 \DeclareLectureMode[parents={longform,print}]{studyguide}
 \AssignLectureModeBehavior{studyguide}{longform}
 \end{verbatim}
@@ -367,8 +376,10 @@ languages = ["de", "en"]
 }{}
 
 \begin{verbatim}
-\ProvidesFile{osglecture-profile-studyguide-scrbook.def}
-  [2026-07-29 studyguide scrbook profile]
+\ProvidesExplFile{osglecture-profile-studyguide-scrbook.def}
+{2026/08/02}
+{v0.4.0}
+{studyguide scrbook profile}
 \DeclareOsgLectureProfile{studyguide-scrbook}
   {
     backend = scrbook,
@@ -577,9 +588,6 @@ Text\\<slides>[3ex]
 
 %</driver>
 %<*package>
-\ProvidesExplPackage{osglecture-modes}{2026-08-02}{0.4.0}
-  {Portable document-modes}
-
 \prop_new:N \g_osglecture_modes_parents_prop
 \prop_new:N \g_osglecture_modes_alias_prop
 \prop_new:N \g_osglecture_modes_active_prop
@@ -1335,8 +1343,8 @@ Text\\<slides>[3ex]
 
 %<*ltxtalk>
 \ProvidesExplPackage{osglecture-modes-ltxtalk}
-{2026-08-02}
-{0.4.0}
+{2026/08/02}
+{v0.4.0}
 {ltx-talk adapter with ignore-non-frame-text}
 
 \RequirePackage{osglecture-modes}

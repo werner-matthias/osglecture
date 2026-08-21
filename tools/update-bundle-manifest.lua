@@ -30,20 +30,17 @@ local modules = {
     extractor = "perl_version" },
 }
 
--- Editorial annotation appended to a module's name cell in the README
--- table (kept here, not inferred, since it documents a structural fact
--- about the module rather than something the scanner can discover).
+-- Editorial annotation appended to a module's name cell in the README table
+-- (not inferred)
 local NOTES = {
   ["osglecture-modes"] = "[^1]",
 }
 
 -- Distribution-compatibility columns are filled in by hand after running
 -- the "Distribution compatibility" GitHub Actions workflow (see
--- .github/workflows/compatibility.yml); this script never derives them
--- itself. It re-reads whatever is currently in the README table before
--- rebuilding it, so a version bump does not wipe out that manual work.
--- These are only the initial seed values, from the last manual reading
--- of that workflow's results at the time the tables were merged.
+-- .github/workflows/compatibility.yml); this script re-reads whatever is
+-- currently in the README table before rebuilding it => a version bump does
+-- not wipe out that manual work.
 local COMPAT_HEADERS = { "TL 2024", "TL 2025", "TL current" }
 local COMPAT_SEED = {
   osglecture           = { ":x:",  ":+1:", ":+1:" },
@@ -73,11 +70,7 @@ local function read_file(path)
   return content
 end
 
--- Driver sections (between %<*driver> and %</driver>) hold documentation
--- prose, including illustrative \Provides* snippets inside \begin{verbatim}
--- blocks that are never actually docstripped into an installed file (e.g.
--- osglecture-modes.dtx's studyguide tutorial). Only the non-driver,
--- actually-generated code sections should be scanned for real versions.
+-- Only the non-driver code sections should be scanned for real versions.
 local function strip_driver_sections(content)
   return (content:gsub("%%<%*driver>.-%%</driver>", ""))
 end
