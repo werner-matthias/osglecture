@@ -815,9 +815,22 @@ The bridge must not mutate the global \tagpdfpkg{} structure stack.
     \__tag_seq_new:c { g__tag_struct_kids_\tl_use:N #3 _seq }
     \pdf_object_new_indexed:nn { __tag/struct } { \tl_use:N #3 }
     \__tag_struct_prop_gput:nne { \tl_use:N #3 } { Type } { /StructElem }
-    \pdf_version_compare:NnTF < {2.0}
-      { \tl_set:Nn \l__tagpax_bridge_role_ns_tl {pdf} }
-      { \tl_set:Nn \l__tagpax_bridge_role_ns_tl {pdf2} }
+    % An imported role is usually a source-side LaTeX role (chapter,
+    % section, text, ...), not already a native pdf/pdf2 tag. Resolving it
+    % in the tag's own namespace first -- the same namespace tagpdf
+    % populated when it read the latex/latex-book/latex-lab namespaces at
+    % load time -- lets tagpdf translate it to its proper native role
+    % (chapter to H1, text to P, ...) instead of failing the lookup in
+    % pdf/pdf2 and falling back to the bare, unmapped tag name. Only a
+    % genuinely unknown role (absent from every namespace) still uses the
+    % pdf/pdf2 guess, matching prior behavior for that case.
+    \prop_get:NnNTF \g__tag_role_tags_NS_prop {#1} \l__tagpax_bridge_role_ns_tl
+      { }
+      {
+        \pdf_version_compare:NnTF < {2.0}
+          { \tl_set:Nn \l__tagpax_bridge_role_ns_tl {pdf} }
+          { \tl_set:Nn \l__tagpax_bridge_role_ns_tl {pdf2} }
+      }
     \__tag_role_get:nnNN
       {#1}
       {\l__tagpax_bridge_role_ns_tl}
