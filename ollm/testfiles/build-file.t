@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 use Cwd qw(abs_path getcwd);
+use File::Copy qw(copy);
 use File::Spec;
 use File::Path qw(make_path);
 use File::Temp qw(tempdir);
@@ -238,10 +239,28 @@ TEX
 close $document_handle;
 
 my $old_directory = getcwd();
+my $osglecture_source = File::Spec->catdir($old_directory, '..', 'osglecture');
 chdir $temporary or die "cannot enter $temporary: $!";
+# osglecture-config.sty is generated from osglecture.dtx (docstripped
+# together with its sibling adapters/profiles dtx, which must sit next to
+# it), not shipped as a loose file; unpack it here so \usepackage below
+# finds it via the normal cwd search, mirroring how osglecture-modes.dtx
+# is unpacked for the lifecycle test.
+for my $name (qw(
+  osglecture.dtx osglecture-adapters.dtx osglecture-profiles.dtx
+)) {
+  copy(File::Spec->catfile($osglecture_source, $name), $name)
+    or die "cannot stage $name: $!";
+}
+my $unpack_status = system(
+  'tex', '-interaction=batchmode', 'osglecture.dtx',
+);
+if ($unpack_status != 0) {
+  BAIL_OUT('cannot unpack osglecture for the build-file test');
+}
 my $texinputs_separator = $^O eq 'MSWin32' ? ';' : ':';
 local $ENV{TEXINPUTS} =
-  abs_path(File::Spec->catdir($old_directory, '..', 'osglecture'))
+  abs_path($osglecture_source)
   . $texinputs_separator;
 local $ENV{TEXMFVAR} = $ENV{TEXMFVAR}
   // File::Spec->catdir($temporary, 'texmf-var');

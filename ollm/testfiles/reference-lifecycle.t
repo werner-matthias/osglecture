@@ -62,6 +62,26 @@ chdir $old_directory or die $!;
 if ($unpack_status != 0) {
   BAIL_OUT('cannot unpack osglecture-modes for the lifecycle test');
 }
+# osglecture.cls/-*.sty are generated from osglecture.dtx (docstripped
+# together with its sibling adapters/profiles dtx, which must sit next to
+# it), not shipped as loose files; unpack them into the same scratch
+# texinputs directory as osglecture-modes above.
+for my $name (qw(
+  osglecture.dtx osglecture-adapters.dtx osglecture-profiles.dtx
+)) {
+  my $src = abs_path(File::Spec->catfile('..', 'osglecture', $name));
+  copy($src, File::Spec->catfile($texinputs, $name)) or die $!;
+}
+$old_directory = getcwd();
+chdir $texinputs or die $!;
+$unpack_status = system(
+  'tex', '-interaction=batchmode', 'osglecture.dtx',
+);
+chdir $old_directory or die $!;
+if ($unpack_status != 0) {
+  BAIL_OUT('cannot unpack osglecture for the lifecycle test');
+}
+
 my $unit = File::Spec->catdir($root, '020-processes');
 my $shared = File::Spec->catdir($root, 'Include');
 make_path($unit, $shared);
