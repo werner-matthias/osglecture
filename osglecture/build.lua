@@ -30,29 +30,21 @@ installfiles = {
   "osglecture-integration.lua",
 }
 sourcefiles = {
-  "osglecture.cls",
-  "osglecture-config.sty",
-  "osglecture-project.sty",
+  "osglecture.dtx",
+  "osglecture-adapters.dtx",
+  "osglecture-profiles.dtx",
   "osglecture-preamble-*.tex",
-  "osglecture-metadata.sty",
-  "osglecture-references.sty",
-  "osglecture-continuation.sty",
-  "osglecture-integration.sty",
-  "osglecture-structure.sty",
-  "osglecture-adapters.sty",
-  "osglecture-adapter-*.def",
-  "osglecture-profiles.sty",
-  "osglecture-profile-*.def",
-  "osglecture-osgbeamer.code.tex",
-  "osglecture-presitemize.sty",
-  "osglecture-twocolumns.sty",
   "osglecture-series-index.lua",
-  "osglecture-series.sty",
   "osglecture-toml.lua",
   "osglecture-manifest.lua",
   "osglecture-manifest-cli.lua",
   "osglecture-integration.lua",
 }
+-- Only osglecture.dtx carries a self-installing driver; the adapter and
+-- profile dtx are pure docstrip sources pulled in via \from{...} from
+-- osglecture.dtx's own \generate block, so they must not be unpacked
+-- (run through the engine) on their own.
+unpackfiles = { "osglecture.dtx" }
 typesetfiles = { }
 checksuppfiles = {
   "reference-source.osgref.aux",

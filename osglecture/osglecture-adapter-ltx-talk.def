@@ -1,9 +1,0 @@
-\ProvidesFile{osglecture-adapter-ltx-talk.def}
-  [2026/08/12 v0.1.0 osglecture ltx-talk structure adapter]
-\ExplSyntaxOn
-% ltx-talk already provides the intended native section, subsection, frame,
-% frame*, frametitle, and framesubtitle interfaces.  The first adapter stage
-% deliberately leaves their scanners untouched.  Its teaching header consumes
-% the unit metadata recorded by osglecture-structure.
-\cs_new_protected:Npn \osglecture_adapter_lecture:nnn #1#2#3 { }
-\ExplSyntaxOff

@@ -29,7 +29,7 @@ l3build -full install
 ```
 
 ## Documentation
-Please read `ollm-en.pdf` or `ollm-de.pdf` for documentation English or German.
+Please read `ollm-en.pdf` or `ollm-de.pdf` for documentation in English or German.
 
 ## TL;DR: Few Examples
 

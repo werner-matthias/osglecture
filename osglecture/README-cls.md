@@ -299,8 +299,11 @@ konfigurierten `osglecture-modes` auch ohne die Klasse geladen werden.
 
 ## Build
 
-Das Modul gehört zu `installfiles` und `sourcefiles`. Die üblichen Befehle
-lauten:
+Die Quelle liegt in drei docstrip-Dateien: `osglecture.dtx` (Klasse und
+Kernpakete, selbstinstallierender Treiber) sowie `osglecture-adapters.dtx`
+und `osglecture-profiles.dtx` (Adapter- bzw. Profil-`.def`-Dateien; beide
+ohne eigenen Treiber, werden über `osglecture.dtx`s `\generate`-Block
+ausgepackt). Die üblichen Befehle lauten:
 
 ```sh
 l3build check

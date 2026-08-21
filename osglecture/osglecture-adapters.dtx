@@ -1,0 +1,113 @@
+% osglecture-adapters.dtx: structure-adapter definitions for osglecture.
+% This file has no self-installing driver of its own; it is docstripped
+% by the \generate block in osglecture.dtx (which must run in the same
+% directory as this file). See osglecture.dtx for the license and the
+% list of generated files.
+%<*beamer>
+\ProvidesFile{osglecture-adapter-beamer.def}
+  [2026/08/21 v0.13.0 osglecture Beamer structure adapter]
+\ExplSyntaxOn
+\cs_new_eq:NN \__osglecture_adapter_beamer_lecture \lecture
+\cs_new_protected:Npn \osglecture_adapter_lecture:nnn #1#2#3
+  {
+    \tl_if_blank:nTF {#1}
+      { \__osglecture_adapter_beamer_lecture {#2} {#3} }
+      { \__osglecture_adapter_beamer_lecture [#1] {#2} {#3} }
+  }
+\ExplSyntaxOff
+%</beamer>
+%<*book>
+\ProvidesFile{osglecture-adapter-book.def}
+  [2026/08/21 v0.13.0 osglecture book structure adapter]
+\ExplSyntaxOn
+\cs_new_eq:NN \__osglecture_adapter_book_chapter \chapter
+\cs_new_eq:NN \__osglecture_adapter_book_frame \frame
+\cs_new_eq:NN \__osglecture_adapter_book_endframe \endframe
+\cs_new_protected:Npn \osglecture_adapter_lecture:nnn #1#2#3
+  {
+    \OsgLectureStandaloneTF
+      { }
+      {
+        \tl_if_blank:nTF {#1}
+          { \__osglecture_adapter_book_chapter {#2} }
+          { \__osglecture_adapter_book_chapter [#1] {#2} }
+      }
+  }
+% \ldeen{Die Zielbasisklasse kennt \env{frame}/\cs{frametitle} nicht mit
+% Beamer-Semantik; @1 neutralisiert sie zu reinen Inhalts-Durchreichern
+% (bzw. No-ops), damit gemeinsamer Quelltext mit \env{frame}-Umgebungen
+% in der Langform ohne Sonderfall als gewöhnlicher Fließtext
+% erscheint.}{The target base class has no \env{frame}/\cs{frametitle}
+% with beamer semantics; @1 neutralizes them into plain content
+% passthroughs (or no-ops), so shared source using \env{frame}
+% environments appears as ordinary running text in the long form,
+% without a special case.}{\cs{osglecture\_adapter\_install:}}
+\cs_new_protected:Npn \osglecture_adapter_install:
+  {
+    \RenewDocumentEnvironment {frame} { D<> {all} O{} +b }
+      {##3}
+      { }
+    \NewDocumentEnvironment {frame*} { D<> {all} O{} +b }
+      {##3}
+      { }
+    \NewDocumentCommand \frametitle { D<> {all} O{##3} m } { }
+    \NewDocumentCommand \framesubtitle { D<> {all} O{##3} m } { }
+  }
+\ExplSyntaxOff
+%</book>
+%<*ltx-talk>
+\ProvidesFile{osglecture-adapter-ltx-talk.def}
+  [2026/08/21 v0.13.0 osglecture ltx-talk structure adapter]
+\ExplSyntaxOn
+% \ldeen{@1 stellt bereits die gewünschten nativen Schnittstellen für
+% \code{section}, \code{subsection}, \env{frame}, \env{frame*},
+% \cs{frametitle} und \cs{framesubtitle} bereit; dieser Adapter lässt
+% ihre Scanner deshalb bewusst unangetastet. Der Lehrkopf von @1
+% übernimmt die von @2 erfassten Unit-Metadaten selbst.}{@1 already
+% provides the desired native interfaces for \code{section},
+% \code{subsection}, \env{frame}, \env{frame*}, \cs{frametitle}, and
+% \cs{framesubtitle}; this adapter therefore deliberately leaves their
+% scanners untouched. @1's own teaching header consumes the unit
+% metadata recorded by @2.}{\cls*{ltx-talk}}{\pkg*{osglecture-structure}}
+\cs_new_protected:Npn \osglecture_adapter_lecture:nnn #1#2#3 { }
+\ExplSyntaxOff
+%</ltx-talk>
+%<*scrbook>
+\ProvidesFile{osglecture-adapter-scrbook.def}
+  [2026/08/21 v0.13.0 osglecture scrbook structure adapter]
+\ExplSyntaxOn
+\cs_new_eq:NN \__osglecture_adapter_scrbook_chapter \chapter
+\cs_new_eq:NN \__osglecture_adapter_scrbook_frame \frame
+\cs_new_eq:NN \__osglecture_adapter_scrbook_endframe \endframe
+\cs_new_protected:Npn \osglecture_adapter_lecture:nnn #1#2#3
+  {
+    \OsgLectureStandaloneTF
+      { }
+      {
+        \tl_if_blank:nTF {#1}
+          { \__osglecture_adapter_scrbook_chapter {#2} }
+          { \__osglecture_adapter_scrbook_chapter [#1] {#2} }
+      }
+  }
+% \ldeen{Die Zielbasisklasse kennt \env{frame}/\cs{frametitle} nicht mit
+% Beamer-Semantik; @1 neutralisiert sie zu reinen Inhalts-Durchreichern
+% (bzw. No-ops), damit gemeinsamer Quelltext mit \env{frame}-Umgebungen
+% in der Langform ohne Sonderfall als gewöhnlicher Fließtext
+% erscheint.}{The target base class has no \env{frame}/\cs{frametitle}
+% with beamer semantics; @1 neutralizes them into plain content
+% passthroughs (or no-ops), so shared source using \env{frame}
+% environments appears as ordinary running text in the long form,
+% without a special case.}{\cs{osglecture\_adapter\_install:}}
+\cs_new_protected:Npn \osglecture_adapter_install:
+  {
+    \RenewDocumentEnvironment {frame} { D<> {all} O{} +b }
+      {##3}
+      { }
+    \NewDocumentEnvironment {frame*} { D<> {all} O{} +b }
+      {##3}
+      { }
+    \NewDocumentCommand \frametitle { D<> {all} O{##3} m } { }
+    \NewDocumentCommand \framesubtitle { D<> {all} O{##3} m } { }
+  }
+\ExplSyntaxOff
+%</scrbook>

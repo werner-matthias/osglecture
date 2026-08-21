@@ -1,0 +1,67 @@
+% osglecture-profiles.dtx: document-profile definitions for osglecture.
+% This file has no self-installing driver of its own; it is docstripped
+% by the \generate block in osglecture.dtx (which must run in the same
+% directory as this file). See osglecture.dtx for the license and the
+% list of generated files.
+%<*beamer>
+\ProvidesFile{osglecture-profile-beamer.def}
+  [2026/08/21 v0.13.0 osglecture Beamer profile]
+\DeclareOsgLectureProfile{beamer}
+  {
+    backend = beamer,
+    adapter = beamer,
+    capabilities = {presentation,print},
+    class = beamer,
+    document-metadata = forbidden,
+    doctypes = {slides,handout},
+    course-target = subtitle,
+    event-target = subtitle
+  }
+\DeclareOsgLectureProfileClassOptions{beamer}{handout}{handout}
+%</beamer>
+%<*book>
+\ProvidesFile{osglecture-profile-book.def}
+  [2026/08/21 v0.13.0 osglecture standard book profile]
+\DeclareOsgLectureProfile{book}
+  {
+    backend = book,
+    adapter = book,
+    capabilities = {longform,print},
+    class = book,
+    document-metadata = supported,
+    doctypes = {script,article},
+    course-target = none,
+    event-target = none
+  }
+%</book>
+%<*ltx-talk>
+\ProvidesFile{osglecture-profile-ltx-talk.def}
+  [2026/08/21 v0.13.0 osglecture ltx-talk profile]
+\DeclareOsgLectureProfile{ltx-talk}
+  {
+    backend = ltx-talk,
+    adapter = ltx-talk,
+    capabilities = {presentation,print},
+    class = ltx-talk,
+    doctypes = {slides,handout},
+    document-metadata = required,
+    course-target = subtitle,
+    event-target = subtitle
+  }
+\DeclareOsgLectureProfileClassOptions{ltx-talk}{handout}{mode=handout}
+%</ltx-talk>
+%<*scrbook>
+\ProvidesFile{osglecture-profile-scrbook.def}
+  [2026/08/21 v0.13.0 osglecture scrbook profile]
+\DeclareOsgLectureProfile{scrbook}
+  {
+    backend = scrbook,
+    adapter = scrbook,
+    capabilities = {longform,print},
+    class = scrbook,
+    document-metadata = supported,
+    doctypes = {script,article},
+    course-target = title,
+    event-target = subtitle
+  }
+%</scrbook>
