@@ -1,0 +1,41 @@
+\input regression-test
+\documentclass{article}
+\begin{document}
+\START
+\directlua{
+  local TAB = string.char(9)
+  local NL = string.char(10)
+  local function report(message) texio.write_nl("log", message) end
+  local integration = require("osglecture-integration")
+  integration.load_registry("integration-registry-bootstrap")
+  report("bootstrap-mode=" .. integration.previous_mode("script"))
+  report("bootstrap-units=" .. integration.previous_units_of("script"))
+  local tagged_path = "integration-registry-tagged-osglecture-integration.registry"
+  local f = assert(io.open(tagged_path, "w"))
+  f:write(table.concat({"introduction", "script", "de", "1", "1"}, TAB) .. NL)
+  f:write(table.concat({"application", "script", "de", "2", "1"}, TAB) .. NL)
+  f:close()
+  integration.load_registry("integration-registry-tagged")
+  report("tagged-mode=" .. integration.previous_mode("script"))
+  local mixed_path = "integration-registry-mixed-osglecture-integration.registry"
+  local g = assert(io.open(mixed_path, "w"))
+  g:write(table.concat({"introduction", "script", "de", "1", "1"}, TAB) .. NL)
+  g:write(table.concat({"application", "script", "de", "2", "0"}, TAB) .. NL)
+  g:close()
+  integration.load_registry("integration-registry-mixed")
+  report("mixed-mode=" .. integration.previous_mode("script"))
+  report("mixed-units=" .. integration.previous_units_of("script"))
+  integration.register_unit("introduction", "script", "de", "1", true)
+  integration.register_unit("application", "script", "de", "2", false)
+  local written = assert(io.open(
+    "integration-registry-mixed-osglecture-integration.registry", "r"))
+  local lines = {}
+  for line in written:lines() do table.insert(lines, line) end
+  written:close()
+  report("written-count=" .. tostring(rawlen(lines)))
+  report("written-1=" .. lines[1])
+  report("written-2=" .. lines[2])
+  report("probe-tagged=" .. tostring(integration.probe_tagged("untagged-unit.pdf")))
+}
+\END
+\end{document}

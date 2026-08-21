@@ -771,8 +771,17 @@ zwischen enthaltenen Units als `GoTo`, erhält dabei aber das vorhandene
 getaggte Link-Strukturelement und dessen OBJR. Das Integrationsprodukt
 reexportiert in der ersten Version keine Unitreferenzen.
 
-Die Integration verarbeitet ausschließlich bereits gebaute, getaggte
-Unit-PDFs; eine alternative Quellintegration gehört nicht zu diesem Vertrag.
+Die Integration verarbeitet ausschließlich bereits gebaute Unit-PDFs; eine
+Quellintegration gehört nicht zu diesem Vertrag. `tagpax` selbst bleibt
+strikt: Es importiert ausschließlich getaggte PDFs mit `StructTreeRoot` und
+degradiert nie stillschweigend. Oberhalb von `tagpax` entscheidet
+`osglecture-integration` pro Doctype zwischen dem nativen, getaggten Pfad und
+einem `pdfpages`/`newpax`-Fallback für Doctypes, deren Units ungetaggt
+vorliegen; diese Entscheidung wird anhand des im vorigen Lauf tatsächlich
+beobachteten Tag-Status getroffen, gilt einheitlich für den ganzen Doctype
+und erzwingt bei einem im vorigen Lauf beobachteten Mix aus getaggten und
+ungetaggten Units mit einer nachdrücklichen Warnung den ungetaggten Pfad
+(Details in `osglecture/README-cls.md`, Abschnitt „Dokumentintegration").
 Aus OLLM-Sicht ist das Integrationsverzeichnis eine gewöhnlich übersetzte Unit
 mit Rolle `i` (`integration`). OLLM soll den Snapshot der promotierten
 Artefakte, Rollen und Serienreihenfolge liefern, interpretiert aber weder

@@ -1,0 +1,33 @@
+\DocumentMetadata{testphase={phase-III,title,table,math,firstaid},lang=en-US}
+\input regression-test
+\documentclass{article}
+\usepackage{osglecture-integration}
+\providecommand\OsgLectureDocumentType{script}
+\providecommand\OsgLectureLanguage{de}
+\ExplSyntaxOn
+\prop_gput:Nnn \g__osglecture_build_prop {generation-id} {test-generation}
+% Bypasses the registry-driven preflight (covered separately by
+% osglecture-integration.lua's own tests) to isolate exactly the risky,
+% previously-unexercised part of this change: does the untagged fallback
+% branch itself (real pdfpages + newpax + Artifact wrapping) compile
+% against a genuinely untagged source PDF.
+\prop_gput:Nnn \g__osglecture_integration_mode_prop {script} {untagged}
+\ExplSyntaxOff
+\OsgLectureReferenceDocument{
+  unit=untagged-example,
+  type=script,
+  lang=de,
+  generation=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb,
+  aux=untagged-unit.osgref,
+  pdf=untagged-unit.pdf
+}
+\begin{document}
+\START
+\includeunit{untagged-example}
+\ExplSyntaxOn
+\TYPE{mode-after=\prop_item:Nn \g__osglecture_integration_mode_prop {script}}
+\TYPE{prefix-empty=\tl_if_empty_p:N \l__osglecture_integration_prefix_tl}
+\TYPE{page-after-include=\thepage}
+\ExplSyntaxOff
+\END
+\end{document}

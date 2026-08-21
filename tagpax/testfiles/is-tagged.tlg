@@ -1,0 +1,7 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+tagged=true
+untagged=false
+warning  (pdfe lib): no valid pdf file 'does-not-exist.pdf'
+missing-is-error=true
+missing-message=true

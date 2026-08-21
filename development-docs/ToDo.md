@@ -6,7 +6,10 @@ Featurewünsche.
 * [x] Querreferenzen zwischen Folien und Script
 * [x] Kapitelübergreifende Literaturreferenzen
 * [x] Lang-/Kurzformunterstützung auf Sprachebene
-* [ ] Integrationsworkflow
+* [ ] Integrationsworkflow (Fallback auf ungetaggte Quell-PDFs über
+  `pdfpages`/`newpax` ist umgesetzt, siehe `osglecture/README-cls.md`
+  Abschnitt „Dokumentintegration"; offen bleiben u.a. `\includeunits` und die
+  `...`-Bereichssyntax aus `DESIGN.md` §14.4)
 * [ ] tagging bei presitemize und twocolumns
 * [ ] Cat-code sichere Includes
 * [ ] Windows-CI: `\LoadClass` in `osglecture.cls` (Laden der Basisklasse,

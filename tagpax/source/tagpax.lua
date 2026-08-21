@@ -261,6 +261,26 @@ local function build_struct_page_map(root)
   return result
 end
 
+-- \ldeen*{Billige Existenzprüfung für Aufrufer, die vor einer echten
+-- Extraktion zwischen dem getaggten und einem ungetaggten Einbindungspfad
+-- entscheiden müssen (etwa @1). Anders als @2 bricht diese Funktion bei einem
+-- fehlenden \code{StructTreeRoot} nicht ab, sondern liefert einfach
+-- \code{false}; ein beschädigtes oder unlesbares PDF bleibt weiterhin ein
+-- harter Fehler, weil ein Aufrufer damit ohnehin keinen sinnvollen
+-- Rückfallpfad hätte.}{Cheap existence check for callers that must decide
+-- between the tagged and an untagged inclusion path before a real
+-- extraction (such as @1). Unlike @2, this function does not abort on a
+-- missing \code{StructTreeRoot}; it simply returns \code{false}. A corrupt
+-- or unreadable PDF remains a hard error, because a caller would not have a
+-- meaningful fallback for that case anyway.}{\code{osglecture-integration}}{\cs{M.extract}}
+function M.is_tagged(filename)
+  assert(type(filename) == "string" and filename ~= "", "missing PDF filename")
+  local doc = assert(pdfe.open(filename), "cannot open PDF: " .. filename)
+  local root = pdfe.getdictionary(doc.Catalog, "StructTreeRoot")
+  pdfe.close(doc)
+  return root ~= nil
+end
+
 function M.extract(filename, outname)
   -- Extraction is one transaction: open the source, serialize a canonical
   -- semantic snapshot, then close both handles.

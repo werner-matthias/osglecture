@@ -1,0 +1,15 @@
+\input regression-test.tex
+\documentclass{article}
+\begin{document}
+\START
+\directlua{
+  local tagpax = require("tagpax")
+  local function report(message) texio.write_nl("log", message) end
+  report("tagged=" .. tostring(tagpax.is_tagged("subdocument.pdf")))
+  report("untagged=" .. tostring(tagpax.is_tagged("untagged-subdocument.pdf")))
+  local ok, err = pcall(tagpax.is_tagged, "does-not-exist.pdf")
+  report("missing-is-error=" .. tostring(not ok))
+  report("missing-message=" .. tostring(err ~= nil and err:find("cannot open PDF", 1, true) ~= nil))
+}
+\END
+\end{document}

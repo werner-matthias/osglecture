@@ -1,0 +1,35 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+<untagged-unit.pdf, id=27, 614.295pt x 794.97pt>
+File: untagged-unit.pdf Graphic file (type pdf)
+<use untagged-unit.pdf>
+Package luatex.def Info: untagged-unit.pdf  used on input line ....
+(luatex.def)             Requested size: 614.29349pt x 794.96806pt.
+<untagged-unit.pdf, id=29, page=1, 614.295pt x 794.97pt>
+File: untagged-unit.pdf Graphic file (type pdf)
+<use untagged-unit.pdf, page 1>
+Package luatex.def Info: untagged-unit.pdf , page1 used on input line ....
+(luatex.def)             Requested size: 614.29349pt x 794.96806pt.
+File: untagged-unit.pdf Graphic file (type pdf)
+<use untagged-unit.pdf, page 1>
+Package luatex.def Info: untagged-unit.pdf , page1 used on input line ....
+(luatex.def)             Requested size: 614.58406pt x 795.3441pt.
+File: untagged-unit.pdf Graphic file (type pdf)
+<use untagged-unit.pdf, page 1>
+Package luatex.def Info: untagged-unit.pdf , page1 used on input line ....
+(luatex.def)             Requested size: 614.58406pt x 795.3441pt.
+File: untagged-unit.pdf Graphic file (type pdf)
+<use untagged-unit.pdf, page 1>
+Package luatex.def Info: untagged-unit.pdf , page1 used on input line ....
+(luatex.def)             Requested size: 614.58406pt x 795.3441pt.
+File: untagged-unit.pdf Graphic file (type pdf)
+<use untagged-unit.pdf, page 1>
+Package luatex.def Info: untagged-unit.pdf , page1 used on input line ....
+(luatex.def)             Requested size: 614.58406pt x 795.3441pt.
+* Missing: untagged-unit.newpax
+[1
+<./untagged-unit.pdf>]
+\OsgLectureIntegrationUse{test-generation}{bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb}{untagged-example}{script}{de}
+mode-after=untagged
+prefix-empty=\c_true_bool 
+page-after-include=2

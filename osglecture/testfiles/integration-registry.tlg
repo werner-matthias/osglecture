@@ -1,0 +1,12 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+Inserting `tagpax: close cached source PDFs' in `stop_run'.
+bootstrap-mode=unknown
+bootstrap-units=
+tagged-mode=tagged
+mixed-mode=mixed
+mixed-units=introduction, application
+written-count=2
+written-1=introduction^^Iscript^^Ide^^I1^^I1
+written-2=application^^Iscript^^Ide^^I2^^I0
+probe-tagged=false

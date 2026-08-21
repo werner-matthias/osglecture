@@ -370,7 +370,26 @@ Destinationen, Links, Inhaltsverzeichniseinträge und Outlines. Jeder Import
 wird mit seiner tatsächlich verwendeten Generation als Integrationsabhängigkeit
 protokolliert.
 
-Dieser Pfad setzt derzeit ein Tagged PDF mit `StructTreeRoot` voraus. `tagpax`
-weist ein ungetaggtes PDF momentan zurück. Ein expliziter Fallback auf
-`pdfpages` plus `newpax` ist daher noch als eigener Robustheitsmodus zu
-implementieren; er kann naturgemäß keine fehlende Dokumentstruktur herstellen.
+Der native Pfad setzt ein Tagged PDF mit `StructTreeRoot` voraus; `tagpax`
+selbst weist ein ungetaggtes PDF weiterhin zurück, seine Fehlerpolitik bleibt
+bewusst strikt. Oberhalb von `tagpax` entscheidet `osglecture-integration`
+jedoch pro Doctype, ob eine importierte Unit getaggt vorliegt, und weicht bei
+Bedarf auf `pdfpages` plus `newpax` aus. Diese Entscheidung wird zu Beginn
+eines Laufs anhand der im vorigen Lauf tatsächlich eingebundenen Units
+getroffen und gilt für den gesamten Doctype einheitlich -- ein einzelner
+Aufruf kann nicht mitten im Dokument zwischen beiden Pfaden wechseln. Für eine
+noch nie eingebundene Unit (Bootstrap) entscheidet der tatsächliche
+Tag-Status der ersten Unit dieses Doctypes; enthält der vorige Lauf für
+denselben Doctype sowohl getaggte als auch ungetaggte Units, erzwingt eine
+nachdrückliche Warnung den ungetaggten Pfad für den gesamten Doctype in
+diesem Lauf.
+
+Im ungetaggten Pfad werden die Seiten als `Artifact` importiert, damit der
+`StructTreeRoot` des Masterdokuments gültig bleibt -- der importierte Block
+ist dann bewusst nicht barrierefrei erschlossen (keine Vorlesereihenfolge,
+keine Überschriftenebenen). `newpax` rekonstruiert die in der Quelle bereits
+vorhandenen Links und deren Lesezeichen-/Gliederungseinträge auf die neuen
+Seitenpositionen; ein Inhaltsverzeichnis über mehrere Units bleibt damit auch
+im Fallback klickbar, ebenso `\olref`-Querverweise auf Labels innerhalb einer
+so eingebundenen Unit, da Hyperref-Destinationen unabhängig vom Struct-Tree
+entstehen. Verloren geht ausschließlich die Accessibility-Struktur selbst.
