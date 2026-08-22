@@ -1,0 +1,26 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osgstyler}
+
+\DeclareOsgMetricPalette{modern}{
+  spacing = {sm = {.4\baselineskip}, lg = {1.25\baselineskip}},
+  padding = {normal = {.75em}},
+  rule = {thin = {.5pt}, thick = {1.5pt}},
+  radius = {small = {3pt}, round = {8pt}}
+}
+
+\DeclareOsgMetricPalette{defaults}{}
+
+\begin{document}
+\UseOsgMetricPalette{modern}
+\START
+\TYPE{active=\OsgActiveMetricPalette}
+\TYPE{spacing-sm=\OsgMetric{spacing}{sm}}
+\TYPE{spacing-md=\OsgMetric{spacing}{md}}
+\TYPE{padding-normal=\OsgMetric{padding}{normal}}
+\TYPE{rule-thin=\OsgMetric{rule}{thin}}
+\TYPE{radius-round=\OsgMetric{radius}{round}}
+\TYPE{default-rule=\OsgMetricPaletteValue{defaults}{rule}{normal}}
+\TYPE{default-radius=\OsgMetricPaletteValue{defaults}{radius}{square}}
+\END
+\end{document}

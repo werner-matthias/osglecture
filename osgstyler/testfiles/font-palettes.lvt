@@ -1,0 +1,48 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osgstyler}
+
+\DeclareOsgFontPalette{editorial}{
+  main = {
+    font = {Latin Modern Roman},
+    description = {primary serif text face}
+  },
+  companion = {font = {TeX Gyre Pagella}},
+  display = {alias = companion},
+  accent = {font = {Latin Modern Sans}},
+  mono = {font = {Latin Modern Mono}},
+  symbol = {alias = main}
+}
+
+\DeclareOsgFontPalette{minimal}{
+  main = {font = {Latin Modern Roman}},
+  mono = {font = {Latin Modern Mono}}
+}
+
+\begin{document}
+\UseOsgFontPalette{editorial}
+\START
+\ExplSyntaxOn
+\OsgFontPaletteResolvedSlotTo{editorial}{main}\l_tmpa_tl
+\TYPE{editorial-main=\l_tmpa_tl}
+\OsgFontPaletteResolvedSlotTo{editorial}{display}\l_tmpa_tl
+\TYPE{editorial-display=\l_tmpa_tl}
+\OsgFontPaletteResolvedSlotTo{editorial}{symbol}\l_tmpa_tl
+\TYPE{editorial-symbol=\l_tmpa_tl}
+\OsgFontPaletteResolvedSlotTo{minimal}{companion}\l_tmpa_tl
+\TYPE{minimal-companion=\l_tmpa_tl}
+\OsgFontPaletteResolvedSlotTo{minimal}{display}\l_tmpa_tl
+\TYPE{minimal-display=\l_tmpa_tl}
+\OsgFontPaletteResolvedSlotTo{minimal}{accent}\l_tmpa_tl
+\TYPE{minimal-accent=\l_tmpa_tl}
+\ExplSyntaxOff
+\TYPE{font=\OsgFontPaletteValue{editorial}{companion}{font}}
+\TYPE{description=\OsgFontPaletteValue{editorial}{main}{description}}
+\TYPE{active=\OsgActiveFontPalette}
+\makeatletter
+{\UseOsgFont{main}\TYPE{main-family=\f@family}}
+{\UseOsgFont{display}\TYPE{display-family=\f@family}}
+{\UseOsgFont{symbol}\TYPE{symbol-family=\f@family}}
+\makeatother
+\END
+\end{document}

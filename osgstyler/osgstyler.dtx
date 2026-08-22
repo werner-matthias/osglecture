@@ -1,0 +1,1023 @@
+%<*driver>
+\def\nameofplainTeX{plain}
+\ifx\fmtname\nameofplainTeX
+\input l3docstrip.tex
+\keepsilent
+\askforoverwritefalse
+\preamble
+
+========================================================================
+ osgstyler - 
+
+ (C) 2026 Matthias Werner
+ E-mail: matthias.werner@informatik.tu-chemnitz.de
+
+ Released under the LaTeX Project Public License v1.3c or later
+ See http://www.latex-project.org/lppl.txt
+======================================================================== 
+
+\endpreamble
+\postamble
+
+ This work is "maintained" (as per LPPL maintenance status) by
+ Matthias Werner.
+\endpostamble
+
+\generate{
+  \file{osgstyler.sty}{\from{osgstyler.dtx}{pkg}}
+  }
+  \expandafter\endbatchfile
+\fi
+ \documentclass[
+load-preamble+
+]{osgdoc}
+
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage[
+languages={de,en},
+map={de=german,en=english},
+targetlang={job=2},
+load babel
+]{langselect}
+
+\newpackagename{\osgstyler}{osgstyler}
+\newpackagename{\lttalk}{ltx-talk}
+\newpackagename{\beamer}{beamer}
+
+\makeindex
+\setcnltx{
+  name  =  \pkgname,
+  version  = \UseVersionOf{osgstyler.sty},
+  date     = \UseDateOf{osgstyler.sty},
+  title    = {\ldeen{Das \osgstyler\ Paket}{The \osgstyler\ Package}},
+  info     = {\ldeen{Templatebasierte Stile für Standardformatierungen}{
+    Template-based styles for standard formattings},
+  authors  = {Matthias Werner[matthias.werner@informatik.tu-chemnitz.de]},
+  abstract={
+  \ldeen{   
+      Das Paket ist Teil des \pkg*{osglecture}-Bundles, kann aber auch unabhängig 
+      eingesetzt werden.
+    }{
+      The \lttalk{} class is a \LaTeX class for presentations and is intended 
+      to eventually replace the widely used \beamer{} class in order to enable PDF tagging 
+      for presentations.
+
+      The package is part of the \pkg*{osglecture} bundle, but can also be used independently.
+    }
+  },
+  url      =https://github.com/werner-matthias/osglecture,
+  build-title
+}
+\begin{document}
+% --------------------------------------------------------------------------
+% Documentation
+% --------------------------------------------------------------------------
+
+
+\end{document}
+%</driver>
+%<*pkg>
+\NeedsTeXFormat{LaTeX2e}[2024-06-01]
+\ProvidesExplPackage{osgstyler}
+{2026/08/22}
+{v0.0.1}
+{Template-based, reusable document styles}
+\RequirePackage{xcolor}
+\RequirePackage{fontspec}
+
+\ExplSyntaxOn
+
+% Font palettes contain a deliberately small, portable set of relational
+% slots.  A slot either owns a fontspec resource or aliases another slot.
+% The distinction is explicit so that a font called, for example, "main"
+% can never be mistaken for an alias.
+\clist_const:Nn \c__osgstyler_font_slots_clist
+  { main, companion, display, accent, mono, math, symbol }
+
+\prop_new:N \g__osgstyler_font_palette_prop
+\prop_new:N \g__osgstyler_font_family_prop
+\tl_new:N \g__osgstyler_font_palette_tl
+\tl_new:N \l__osgstyler_font_name_tl
+\tl_new:N \l__osgstyler_font_features_tl
+\tl_new:N \l__osgstyler_font_alias_tl
+\tl_new:N \l__osgstyler_font_description_tl
+\tl_new:N \l__osgstyler_font_resolution_kind_tl
+\tl_new:N \l__osgstyler_font_resolution_target_tl
+\tl_new:N \l__osgstyler_font_resolution_discard_tl
+\tl_new:N \l__osgstyler_font_load_name_tl
+\tl_new:N \l__osgstyler_font_load_features_tl
+\tl_new:N \l__osgstyler_font_load_family_tl
+\seq_new:N \l__osgstyler_font_resolution_seq
+
+\msg_new:nnnn { osgstyler } { unknown-font-slot }
+  { Unknown~font~palette~slot~'#1'. }
+  { The~portable~slots~are~main,~companion,~display,~accent,~mono,~math,~and~symbol. }
+\msg_new:nnnn { osgstyler } { incomplete-font-resource }
+  { Font~slot~'#2'~in~palette~'#1'~does~not~specify~a~font~or~an~alias. }
+  { Use~font={...}~for~a~resource~or~alias=...~for~an~alias. }
+\msg_new:nnnn { osgstyler } { conflicting-font-resource }
+  { Font~slot~'#2'~in~palette~'#1'~specifies~both~a~font~and~an~alias. }
+  { A~slot~must~either~own~a~fontspec~resource~or~alias~another~slot. }
+\msg_new:nnnn { osgstyler } { missing-main-font }
+  { Font~palette~'#1'~does~not~define~the~required~slot~'main'. }
+  { Add~main={font={...}}~to~the~palette. }
+\msg_new:nnnn { osgstyler } { unknown-font-palette }
+  { Unknown~font~palette~'#1'. }
+  { Declare~it~with~\token_to_str:N\DeclareOsgFontPalette~before~using~it. }
+\msg_new:nnnn { osgstyler } { unavailable-font-slot }
+  { Font~slot~'#2'~is~not~available~in~palette~'#1'. }
+  { Define~that~slot~or~one~of~its~standard~fallbacks. }
+\msg_new:nnnn { osgstyler } { font-alias-cycle }
+  { Font~palette~'#1'~contains~an~alias~cycle~at~slot~'#2'. }
+  { Change~the~aliases~so~that~they~eventually~resolve~to~a~font~resource. }
+\msg_new:nnnn { osgstyler } { math-font-selection }
+  { Font~slot~'math'~cannot~be~selected~as~a~text~font. }
+  { Query~it~for~a~unicode-math~adapter;~use~another~slot~for~text. }
+
+\keys_define:nn { osgstyler / font-resource }
+  {
+    font .tl_set:N = \l__osgstyler_font_name_tl,
+    features .tl_set:N = \l__osgstyler_font_features_tl,
+    alias .tl_set:N = \l__osgstyler_font_alias_tl,
+    description .tl_set:N = \l__osgstyler_font_description_tl,
+  }
+
+\cs_new_protected:Npn \__osgstyler_font_resource_store:nnn #1#2#3
+  {
+    \tl_clear:N \l__osgstyler_font_name_tl
+    \tl_clear:N \l__osgstyler_font_features_tl
+    \tl_clear:N \l__osgstyler_font_alias_tl
+    \tl_clear:N \l__osgstyler_font_description_tl
+    \keys_set:nn { osgstyler / font-resource } {#3}
+    \bool_lazy_and:nnTF
+      { ! \tl_if_empty_p:N \l__osgstyler_font_name_tl }
+      { ! \tl_if_empty_p:N \l__osgstyler_font_alias_tl }
+      { \msg_error:nnnn { osgstyler } { conflicting-font-resource } {#1} {#2} }
+      {
+        \tl_if_empty:NTF \l__osgstyler_font_name_tl
+          {
+            \tl_if_empty:NTF \l__osgstyler_font_alias_tl
+              { \msg_error:nnnn { osgstyler } { incomplete-font-resource } {#1} {#2} }
+              {
+                \clist_if_in:NVTF \c__osgstyler_font_slots_clist
+                  \l__osgstyler_font_alias_tl
+                  {
+                    \prop_gput:Nne \g__osgstyler_font_palette_prop
+                      { #1 / #2 / kind } { alias }
+                    \prop_gput:NnV \g__osgstyler_font_palette_prop
+                      { #1 / #2 / alias } \l__osgstyler_font_alias_tl
+                  }
+                  { \msg_error:nnV { osgstyler } { unknown-font-slot }
+                      \l__osgstyler_font_alias_tl }
+              }
+          }
+          {
+            \prop_gput:Nnn \g__osgstyler_font_palette_prop
+              { #1 / #2 / kind } { resource }
+            \prop_gput:NnV \g__osgstyler_font_palette_prop
+              { #1 / #2 / font } \l__osgstyler_font_name_tl
+            \prop_gput:NnV \g__osgstyler_font_palette_prop
+              { #1 / #2 / features } \l__osgstyler_font_features_tl
+          }
+        \tl_if_empty:NF \l__osgstyler_font_description_tl
+          { \prop_gput:NnV \g__osgstyler_font_palette_prop
+              { #1 / #2 / description } \l__osgstyler_font_description_tl }
+      }
+  }
+
+\cs_new_protected:Npn \__osgstyler_font_palette_declare:nn #1#2
+  {
+    \clist_map_inline:Nn \c__osgstyler_font_slots_clist
+      {
+        \clist_map_inline:nn { kind, font, features, alias, description }
+          { \prop_gremove:Nn \g__osgstyler_font_palette_prop
+              { #1 / ##1 / ####1 } }
+      }
+    \prop_gremove:Nn \g__osgstyler_font_palette_prop { #1 / declared }
+    \clist_map_inline:Nn \c__osgstyler_font_slots_clist
+      {
+        \keys_define:nn { osgstyler / font-palette / #1 }
+          { ##1 .code:n = \__osgstyler_font_resource_store:nnn {#1}{##1}{####1} }
+      }
+    \keys_set:nn { osgstyler / font-palette / #1 } {#2}
+    \prop_if_in:NnF \g__osgstyler_font_palette_prop { #1 / main / kind }
+      { \msg_error:nnn { osgstyler } { missing-main-font } {#1} }
+    \prop_gput:Nnn \g__osgstyler_font_palette_prop { #1 / declared } { true }
+  }
+
+\NewDocumentCommand \DeclareOsgFontPalette { m m }
+  { \__osgstyler_font_palette_declare:nn {#1}{#2} }
+
+% Default fallbacks deliberately express suitability, not morphology.
+\cs_new:Npn \__osgstyler_font_fallback:n #1
+  {
+    \str_case:nnF {#1}
+      {
+        { companion } { main }
+        { display }   { companion }
+        { accent }    { companion }
+        { symbol }    { main }
+      }
+      { }
+  }
+
+\cs_new_protected:Npn \__osgstyler_font_resolve:nnN #1#2#3
+  {
+    \seq_if_in:NnTF \l__osgstyler_font_resolution_seq {#2}
+      {
+        \msg_error:nnnn { osgstyler } { font-alias-cycle } {#1}{#2}
+        \tl_clear:N #3
+      }
+      {
+        \seq_put_right:Nn \l__osgstyler_font_resolution_seq {#2}
+        \prop_get:NnNTF \g__osgstyler_font_palette_prop
+          { #1 / #2 / kind } \l__osgstyler_font_resolution_kind_tl
+          {
+            \str_if_eq:VnTF \l__osgstyler_font_resolution_kind_tl { resource }
+              { \tl_set:Nn #3 {#2} }
+              {
+                \prop_get:NnN \g__osgstyler_font_palette_prop
+                  { #1 / #2 / alias } \l__osgstyler_font_resolution_target_tl
+                \exp_args:NnV \__osgstyler_font_resolve:nnN {#1}
+                  \l__osgstyler_font_resolution_target_tl #3
+              }
+          }
+          {
+            \tl_set:Ne \l__osgstyler_font_resolution_target_tl
+              { \__osgstyler_font_fallback:n {#2} }
+            \tl_if_empty:NTF \l__osgstyler_font_resolution_target_tl
+              {
+                \msg_error:nnnn { osgstyler } { unavailable-font-slot } {#1}{#2}
+                \tl_clear:N #3
+              }
+              { \exp_args:NnV \__osgstyler_font_resolve:nnN {#1}
+                  \l__osgstyler_font_resolution_target_tl #3 }
+          }
+        \seq_pop_right:NN \l__osgstyler_font_resolution_seq
+          \l__osgstyler_font_resolution_discard_tl
+      }
+  }
+
+\cs_new_protected:Npn \__osgstyler_font_slot_resolve:nnN #1#2#3
+  {
+    \clist_if_in:NnTF \c__osgstyler_font_slots_clist {#2}
+      {
+        \seq_clear:N \l__osgstyler_font_resolution_seq
+        \__osgstyler_font_resolve:nnN {#1}{#2} #3
+      }
+      {
+        \msg_error:nnn { osgstyler } { unknown-font-slot } {#2}
+        \tl_clear:N #3
+      }
+  }
+
+\NewDocumentCommand \OsgFontPaletteResolvedSlotTo { m m m }
+  { \__osgstyler_font_slot_resolve:nnN {#1}{#2} #3 }
+
+\NewExpandableDocumentCommand \OsgFontPaletteValue { m m m }
+  { \prop_item:Nn \g__osgstyler_font_palette_prop { #1 / #2 / #3 } }
+
+\cs_new_protected:Npn \__osgstyler_font_palette_use:n #1
+  {
+    \prop_if_in:NnTF \g__osgstyler_font_palette_prop { #1 / declared }
+      {
+        \tl_gset:Nn \g__osgstyler_font_palette_tl {#1}
+        \clist_map_inline:Nn \c__osgstyler_font_slots_clist
+          {
+            \str_if_eq:nnF {##1}{math}
+              {
+                \__osgstyler_font_slot_resolve:nnN {#1}{##1} \l_tmpa_tl
+                \tl_if_empty:NF \l_tmpa_tl
+                  {
+                    \prop_if_in:NeF \g__osgstyler_font_family_prop
+                      { #1 / \l_tmpa_tl }
+                      {
+                        \prop_get:NeN \g__osgstyler_font_palette_prop
+                          { #1 / \l_tmpa_tl / font }
+                          \l__osgstyler_font_load_name_tl
+                        \prop_get:NeN \g__osgstyler_font_palette_prop
+                          { #1 / \l_tmpa_tl / features }
+                          \l__osgstyler_font_load_features_tl
+                        \exp_args:NNVV \fontspec_gset_family:Nnn
+                          \l__osgstyler_font_load_family_tl
+                          \l__osgstyler_font_load_features_tl
+                          \l__osgstyler_font_load_name_tl
+                        \prop_gput:NeV \g__osgstyler_font_family_prop
+                          { #1 / \l_tmpa_tl }
+                          \l__osgstyler_font_load_family_tl
+                      }
+                  }
+              }
+          }
+      }
+      { \msg_error:nnn { osgstyler } { unknown-font-palette } {#1} }
+  }
+
+\NewDocumentCommand \UseOsgFontPalette { m }
+  { \__osgstyler_font_palette_use:n {#1} }
+
+\NewExpandableDocumentCommand \OsgActiveFontPalette { }
+  { \tl_use:N \g__osgstyler_font_palette_tl }
+
+\cs_new_protected:Npn \__osgstyler_font_select:n #1
+  {
+    \str_if_eq:nnTF {#1}{math}
+      { \msg_error:nn { osgstyler } { math-font-selection } }
+      {
+        \tl_if_empty:NTF \g__osgstyler_font_palette_tl
+          { \msg_error:nnn { osgstyler } { unknown-font-palette } { } }
+          {
+            \exp_args:NV \__osgstyler_font_slot_resolve:nnN
+              \g__osgstyler_font_palette_tl {#1} \l_tmpa_tl
+            \prop_get:NeN \g__osgstyler_font_family_prop
+              { \g__osgstyler_font_palette_tl / \l_tmpa_tl } \l_tmpb_tl
+            \fontfamily{\l_tmpb_tl}\selectfont
+          }
+      }
+  }
+
+\NewDocumentCommand \UseOsgFont { m }
+  { \__osgstyler_font_select:n {#1} }
+
+% Color palettes deliberately mirror lttheme's public color vocabulary and
+% value syntax.  osgstyler owns neutral, stable color names; a presentation
+% adapter can copy these colors without making the general package depend on
+% lttheme.
+\clist_const:Nn \c__osgstyler_color_slots_clist
+  { primary, secondary, accent, text, background, structure, alert, example }
+
+\prop_new:N \g__osgstyler_color_palette_prop
+\tl_new:N \g__osgstyler_color_palette_tl
+\seq_new:N \l__osgstyler_color_resolution_seq
+\tl_new:N \l__osgstyler_color_resolution_model_tl
+\tl_new:N \l__osgstyler_color_resolution_target_tl
+\tl_new:N \l__osgstyler_color_resolution_discard_tl
+\tl_new:N \l__osgstyler_color_name_tl
+
+\msg_new:nnnn { osgstyler } { unknown-color-slot }
+  { Unknown~color~palette~slot~'#1'. }
+  { The~portable~slots~are~primary,~secondary,~accent,~text,~background,~structure,~alert,~and~example. }
+\msg_new:nnnn { osgstyler } { missing-primary-color }
+  { Color~palette~'#1'~does~not~define~the~required~slot~'primary'. }
+  { Add~primary={model}{specification}~to~the~palette. }
+\msg_new:nnnn { osgstyler } { unknown-color-palette }
+  { Unknown~color~palette~'#1'. }
+  { Declare~it~with~\token_to_str:N\DeclareOsgColorPalette~before~using~it. }
+\msg_new:nnnn { osgstyler } { color-alias-cycle }
+  { Color~palette~'#1'~contains~an~alias~cycle~at~slot~'#2'. }
+  { Change~the~aliases~so~that~they~eventually~resolve~to~a~color~resource. }
+\msg_new:nnnn { osgstyler } { invalid-color-alias }
+  { Color~slot~'#2'~in~palette~'#1'~aliases~unknown~slot~'#3'. }
+  { Use~one~of~the~portable~color~slots~as~the~alias~target. }
+
+\cs_new_protected:Npn \__osgstyler_color_store:nnn #1#2#3
+  { \__osgstyler_color_store_aux:nnnn {#1}{#2} #3 }
+
+\cs_new_protected:Npn \__osgstyler_color_store_aux:nnnn #1#2#3#4
+  {
+    \str_if_eq:nnTF {#3}{alias}
+      {
+        \clist_if_in:NnTF \c__osgstyler_color_slots_clist {#4}
+          {
+            \prop_gput:Nnn \g__osgstyler_color_palette_prop
+              { #1 / #2 / kind } { alias }
+            \prop_gput:Nnn \g__osgstyler_color_palette_prop
+              { #1 / #2 / alias } {#4}
+          }
+          { \msg_error:nnnnn { osgstyler } { invalid-color-alias }
+              {#1}{#2}{#4} }
+      }
+      {
+        \prop_gput:Nnn \g__osgstyler_color_palette_prop
+          { #1 / #2 / kind } { resource }
+        \prop_gput:Nnn \g__osgstyler_color_palette_prop
+          { #1 / #2 / model } {#3}
+        \prop_gput:Nnn \g__osgstyler_color_palette_prop
+          { #1 / #2 / specification } {#4}
+      }
+  }
+
+\cs_new_protected:Npn \__osgstyler_color_palette_declare:nn #1#2
+  {
+    \clist_map_inline:Nn \c__osgstyler_color_slots_clist
+      {
+        \clist_map_inline:nn { kind, model, specification, alias }
+          { \prop_gremove:Nn \g__osgstyler_color_palette_prop
+              { #1 / ##1 / ####1 } }
+        \keys_define:nn { osgstyler / color-palette / #1 }
+          { ##1 .code:n = \__osgstyler_color_store:nnn {#1}{##1}{####1} }
+      }
+    \prop_gremove:Nn \g__osgstyler_color_palette_prop { #1 / declared }
+    \keys_set:nn { osgstyler / color-palette / #1 } {#2}
+    \prop_if_in:NnF \g__osgstyler_color_palette_prop { #1 / primary / kind }
+      { \msg_error:nnn { osgstyler } { missing-primary-color } {#1} }
+    \prop_gput:Nnn \g__osgstyler_color_palette_prop { #1 / declared } { true }
+  }
+
+\NewDocumentCommand \DeclareOsgColorPalette { m m }
+  { \__osgstyler_color_palette_declare:nn {#1}{#2} }
+
+\cs_new:Npn \__osgstyler_color_fallback:n #1
+  {
+    \str_case:nnF {#1}
+      {
+        { secondary } { primary }
+        { accent }    { secondary }
+        { structure } { primary }
+        { alert }     { primary }
+        { example }   { primary }
+      }
+      { }
+  }
+
+\cs_new_protected:Npn \__osgstyler_color_resolve:nnN #1#2#3
+  {
+    \seq_if_in:NnTF \l__osgstyler_color_resolution_seq {#2}
+      {
+        \msg_error:nnnn { osgstyler } { color-alias-cycle } {#1}{#2}
+        \tl_clear:N #3
+      }
+      {
+        \seq_put_right:Nn \l__osgstyler_color_resolution_seq {#2}
+        \prop_get:NnNTF \g__osgstyler_color_palette_prop
+          { #1 / #2 / kind } \l__osgstyler_color_resolution_model_tl
+          {
+            \str_if_eq:VnTF \l__osgstyler_color_resolution_model_tl { resource }
+              { \tl_set:Nn #3 {#2} }
+              {
+                \prop_get:NnN \g__osgstyler_color_palette_prop
+                  { #1 / #2 / alias } \l__osgstyler_color_resolution_target_tl
+                \exp_args:NnV \__osgstyler_color_resolve:nnN {#1}
+                  \l__osgstyler_color_resolution_target_tl #3
+              }
+          }
+          {
+            \tl_set:Ne \l__osgstyler_color_resolution_target_tl
+              { \__osgstyler_color_fallback:n {#2} }
+            \tl_if_empty:NTF \l__osgstyler_color_resolution_target_tl
+              { \tl_clear:N #3 }
+              { \exp_args:NnV \__osgstyler_color_resolve:nnN {#1}
+                  \l__osgstyler_color_resolution_target_tl #3 }
+          }
+        \seq_pop_right:NN \l__osgstyler_color_resolution_seq
+          \l__osgstyler_color_resolution_discard_tl
+      }
+  }
+
+\cs_new_protected:Npn \__osgstyler_color_slot_resolve:nnN #1#2#3
+  {
+    \clist_if_in:NnTF \c__osgstyler_color_slots_clist {#2}
+      {
+        \seq_clear:N \l__osgstyler_color_resolution_seq
+        \__osgstyler_color_resolve:nnN {#1}{#2} #3
+      }
+      {
+        \msg_error:nnn { osgstyler } { unknown-color-slot } {#2}
+        \tl_clear:N #3
+      }
+  }
+
+\NewDocumentCommand \OsgColorPaletteResolvedSlotTo { m m m }
+  { \__osgstyler_color_slot_resolve:nnN {#1}{#2} #3 }
+
+\NewExpandableDocumentCommand \OsgColorPaletteValue { m m m }
+  { \prop_item:Nn \g__osgstyler_color_palette_prop { #1 / #2 / #3 } }
+
+\cs_new:Npn \__osgstyler_color_name:n #1 { osgstyler-#1 }
+
+\NewExpandableDocumentCommand \OsgColorName { m }
+  { \__osgstyler_color_name:n {#1} }
+
+\cs_new_protected:Npn \__osgstyler_color_define_from_resource:nn #1#2
+  {
+    \prop_get:NnN \g__osgstyler_color_palette_prop
+      { #1 / #2 / model } \l__osgstyler_color_resolution_model_tl
+    \prop_get:NnN \g__osgstyler_color_palette_prop
+      { #1 / #2 / specification } \l__osgstyler_color_resolution_target_tl
+    \tl_set:Nx \l__osgstyler_color_name_tl
+      { \__osgstyler_color_name:n {#2} }
+    \use:e
+      {
+        \exp_not:N \definecolor
+          { \l__osgstyler_color_name_tl }
+          { \l__osgstyler_color_resolution_model_tl }
+          { \l__osgstyler_color_resolution_target_tl }
+      }
+  }
+
+\cs_new_protected:Npn \__osgstyler_color_palette_use:n #1
+  {
+    \prop_if_in:NnTF \g__osgstyler_color_palette_prop { #1 / declared }
+      {
+        \tl_gset:Nn \g__osgstyler_color_palette_tl {#1}
+        \clist_map_inline:Nn \c__osgstyler_color_slots_clist
+          {
+            \__osgstyler_color_slot_resolve:nnN {#1}{##1} \l_tmpa_tl
+            \tl_if_empty:NTF \l_tmpa_tl
+              {
+                \str_if_eq:nnTF {##1}{text}
+                  { \colorlet { osgstyler-text } { black } }
+                  { \str_if_eq:nnT {##1}{background}
+                      { \colorlet { osgstyler-background } { white } } }
+              }
+              {
+                \exp_args:NnV \__osgstyler_color_define_from_resource:nn
+                  {#1} \l_tmpa_tl
+                \tl_set:Nx \l_tmpb_tl { \__osgstyler_color_name:n {##1} }
+                \tl_set:Nx \l_tmpc_tl
+                  { \__osgstyler_color_name:n {\l_tmpa_tl} }
+                \use:e
+                  {
+                    \exp_not:N \colorlet
+                      { \l_tmpb_tl } { \l_tmpc_tl }
+                  }
+              }
+          }
+      }
+      { \msg_error:nnn { osgstyler } { unknown-color-palette } {#1} }
+  }
+
+\NewDocumentCommand \UseOsgColorPalette { m }
+  { \__osgstyler_color_palette_use:n {#1} }
+
+\NewExpandableDocumentCommand \OsgActiveColorPalette { }
+  { \tl_use:N \g__osgstyler_color_palette_tl }
+
+% Metric palettes provide a small, portable scale for layout and decoration
+% backends.  Every declaration starts from complete defaults and may override
+% only the values relevant to a theme.
+\clist_const:Nn \c__osgstyler_metric_categories_clist
+  { spacing, padding, rule, radius }
+\prop_new:N \g__osgstyler_metric_palette_prop
+\tl_new:N \g__osgstyler_metric_palette_tl
+\tl_new:N \l__osgstyler_metric_palette_tl
+\tl_new:N \l__osgstyler_metric_category_tl
+
+\msg_new:nnnn { osgstyler } { unknown-metric-palette }
+  { Unknown~metric~palette~'#1'. }
+  { Declare~it~with~\token_to_str:N\DeclareOsgMetricPalette~before~using~it. }
+
+\cs_new_protected:Npn \__osgstyler_metric_put:nn #1#2
+  {
+    \prop_gput:Nee \g__osgstyler_metric_palette_prop
+      {
+        \l__osgstyler_metric_palette_tl /
+        \l__osgstyler_metric_category_tl / #1
+      }
+      { \exp_not:n {#2} }
+  }
+
+\keys_define:nn { osgstyler / metric-palette / spacing }
+  {
+    none .code:n = \__osgstyler_metric_put:nn { none }{#1},
+    xs   .code:n = \__osgstyler_metric_put:nn { xs }{#1},
+    sm   .code:n = \__osgstyler_metric_put:nn { sm }{#1},
+    md   .code:n = \__osgstyler_metric_put:nn { md }{#1},
+    lg   .code:n = \__osgstyler_metric_put:nn { lg }{#1},
+    xl   .code:n = \__osgstyler_metric_put:nn { xl }{#1}
+  }
+\keys_define:nn { osgstyler / metric-palette / padding }
+  {
+    none    .code:n = \__osgstyler_metric_put:nn { none }{#1},
+    compact .code:n = \__osgstyler_metric_put:nn { compact }{#1},
+    normal  .code:n = \__osgstyler_metric_put:nn { normal }{#1},
+    roomy   .code:n = \__osgstyler_metric_put:nn { roomy }{#1}
+  }
+\keys_define:nn { osgstyler / metric-palette / rule }
+  {
+    hairline .code:n = \__osgstyler_metric_put:nn { hairline }{#1},
+    thin     .code:n = \__osgstyler_metric_put:nn { thin }{#1},
+    normal   .code:n = \__osgstyler_metric_put:nn { normal }{#1},
+    thick    .code:n = \__osgstyler_metric_put:nn { thick }{#1}
+  }
+\keys_define:nn { osgstyler / metric-palette / radius }
+  {
+    square .code:n = \__osgstyler_metric_put:nn { square }{#1},
+    small  .code:n = \__osgstyler_metric_put:nn { small }{#1},
+    medium .code:n = \__osgstyler_metric_put:nn { medium }{#1},
+    round  .code:n = \__osgstyler_metric_put:nn { round }{#1}
+  }
+
+\cs_new_protected:Npn \__osgstyler_metric_category:nn #1#2
+  {
+    \tl_set:Nn \l__osgstyler_metric_category_tl {#1}
+    \keys_set:nn { osgstyler / metric-palette / #1 } {#2}
+  }
+\keys_define:nn { osgstyler / metric-palette }
+  {
+    spacing .code:n = \__osgstyler_metric_category:nn { spacing }{#1},
+    padding .code:n = \__osgstyler_metric_category:nn { padding }{#1},
+    rule    .code:n = \__osgstyler_metric_category:nn { rule }{#1},
+    radius  .code:n = \__osgstyler_metric_category:nn { radius }{#1}
+  }
+
+\cs_new_protected:Npn \__osgstyler_metric_defaults:
+  {
+    \__osgstyler_metric_category:nn { spacing }
+      { none=0pt, xs=.25\baselineskip, sm=.5\baselineskip,
+        md=1\baselineskip, lg=1.5\baselineskip, xl=2\baselineskip }
+    \__osgstyler_metric_category:nn { padding }
+      { none=0pt, compact=.35em, normal=.65em, roomy=1em }
+    \__osgstyler_metric_category:nn { rule }
+      { hairline=.2pt, thin=.4pt, normal=.7pt, thick=1.2pt }
+    \__osgstyler_metric_category:nn { radius }
+      { square=0pt, small=2pt, medium=4pt, round=6pt }
+  }
+
+\cs_new_protected:Npn \__osgstyler_metric_palette_declare:nn #1#2
+  {
+    \tl_set:Nn \l__osgstyler_metric_palette_tl {#1}
+    \__osgstyler_metric_defaults:
+    \keys_set:nn { osgstyler / metric-palette } {#2}
+    \prop_gput:Nnn \g__osgstyler_metric_palette_prop
+      { #1 / declared } { true }
+  }
+
+\NewDocumentCommand \DeclareOsgMetricPalette { m m }
+  { \__osgstyler_metric_palette_declare:nn {#1}{#2} }
+
+\NewDocumentCommand \UseOsgMetricPalette { m }
+  {
+    \prop_if_in:NnTF \g__osgstyler_metric_palette_prop { #1 / declared }
+      { \tl_gset:Nn \g__osgstyler_metric_palette_tl {#1} }
+      { \msg_error:nnn { osgstyler } { unknown-metric-palette } {#1} }
+  }
+
+\NewExpandableDocumentCommand \OsgMetricPaletteValue { m m m }
+  { \prop_item:Nn \g__osgstyler_metric_palette_prop { #1 / #2 / #3 } }
+
+\NewExpandableDocumentCommand \OsgMetric { m m }
+  {
+    \prop_item:Ne \g__osgstyler_metric_palette_prop
+      { \g__osgstyler_metric_palette_tl / #1 / #2 }
+  }
+
+\NewExpandableDocumentCommand \OsgActiveMetricPalette { }
+  { \tl_use:N \g__osgstyler_metric_palette_tl }
+
+% Decorations are backend-neutral visual recipes.  A decoration may combine
+% any number of components; rendering packages consume the stored values.
+\clist_const:Nn \c__osgstyler_decoration_families_clist
+  { line, background, enclosure, margin, affix }
+\clist_const:Nn \c__osgstyler_decoration_line_properties_clist
+  { position, pattern, color, thickness, offset }
+\clist_const:Nn \c__osgstyler_decoration_background_properties_clist
+  { color, opacity, shape }
+\clist_const:Nn \c__osgstyler_decoration_enclosure_properties_clist
+  { border-color, fill-color, pattern, thickness, radius, padding }
+\clist_const:Nn \c__osgstyler_decoration_margin_properties_clist
+  { side, color, pattern, thickness, offset }
+\clist_const:Nn \c__osgstyler_decoration_affix_properties_clist
+  { position, content, symbol, color, font, gap }
+
+\prop_new:N \g__osgstyler_decoration_prop
+\tl_new:N \l__osgstyler_decoration_name_tl
+\tl_new:N \l__osgstyler_decoration_family_tl
+\tl_new:N \l__osgstyler_decoration_instance_tl
+
+\msg_new:nnnn { osgstyler } { unknown-decoration }
+  { Unknown~decoration~'#1'. }
+  { Declare~it~with~\token_to_str:N\DeclareOsgDecoration~before~using~it. }
+\msg_new:nnnn { osgstyler } { unknown-decoration-family }
+  { Unknown~decoration~family~'#1'. }
+  { The~families~are~line,~background,~enclosure,~margin,~and~affix. }
+\msg_new:nnnn { osgstyler } { invalid-decoration-color }
+  { Decoration~'#1'~uses~unknown~color~slot~'#2'. }
+  { Use~a~portable~color-palette~slot. }
+\msg_new:nnnn { osgstyler } { invalid-decoration-font }
+  { Decoration~'#1'~uses~unknown~font~slot~'#2'. }
+  { Use~a~portable~font-palette~slot. }
+\msg_new:nnnn { osgstyler } { conflicting-affix-content }
+  { Affix~instance~'#2'~in~decoration~'#1'~has~both~content~and~symbol. }
+  { Use~content={...}~for~literal~material~or~symbol=...~for~a~symbol~resource. }
+
+\cs_new_protected:Npn \__osgstyler_decoration_instance_register:
+  {
+    \prop_get:NeNTF \g__osgstyler_decoration_prop
+      {
+        \l__osgstyler_decoration_name_tl /
+        \l__osgstyler_decoration_family_tl / instances
+      }
+      \l_tmpa_tl
+      { }
+      { \tl_clear:N \l_tmpa_tl }
+    \exp_args:NNV \clist_if_in:NnF
+      \l_tmpa_tl \l__osgstyler_decoration_instance_tl
+      {
+        \exp_args:NNV \clist_put_right:Nn
+          \l_tmpa_tl \l__osgstyler_decoration_instance_tl
+        \prop_gput:Nee \g__osgstyler_decoration_prop
+          {
+            \l__osgstyler_decoration_name_tl /
+            \l__osgstyler_decoration_family_tl / instances
+          }
+          { \l_tmpa_tl }
+      }
+    \prop_gput:Nee \g__osgstyler_decoration_prop
+      {
+        \l__osgstyler_decoration_name_tl /
+        \l__osgstyler_decoration_family_tl /
+        \l__osgstyler_decoration_instance_tl / present
+      }
+      { true }
+  }
+
+\cs_new_protected:Npn \__osgstyler_decoration_put:nn #1#2
+  {
+    \__osgstyler_decoration_instance_register:
+    \prop_gput:Nee \g__osgstyler_decoration_prop
+      {
+        \l__osgstyler_decoration_name_tl /
+        \l__osgstyler_decoration_family_tl /
+        \l__osgstyler_decoration_instance_tl / #1
+      }
+      { \exp_not:n {#2} }
+  }
+
+\cs_new_protected:Npn \__osgstyler_decoration_color_put:nn #1#2
+  {
+    \clist_if_in:NnTF \c__osgstyler_color_slots_clist {#2}
+      { \__osgstyler_decoration_put:nn {#1}{#2} }
+      { \msg_error:nnxx { osgstyler } { invalid-decoration-color }
+          { \l__osgstyler_decoration_name_tl } {#2} }
+  }
+
+\cs_new_protected:Npn \__osgstyler_decoration_font_put:n #1
+  {
+    \clist_if_in:NnTF \c__osgstyler_font_slots_clist {#1}
+      { \__osgstyler_decoration_put:nn { font }{#1} }
+      { \msg_error:nnxx { osgstyler } { invalid-decoration-font }
+          { \l__osgstyler_decoration_name_tl } {#1} }
+  }
+
+\cs_new_protected:Npn \__osgstyler_decoration_affix_payload_put:nn #1#2
+  {
+    \__osgstyler_decoration_instance_register:
+    \str_if_eq:nnTF {#1}{content}
+      { \tl_set:Nn \l_tmpa_tl { symbol } }
+      { \tl_set:Nn \l_tmpa_tl { content } }
+    \prop_if_in:NeT \g__osgstyler_decoration_prop
+      {
+        \l__osgstyler_decoration_name_tl /
+        \l__osgstyler_decoration_family_tl /
+        \l__osgstyler_decoration_instance_tl / \l_tmpa_tl
+      }
+      {
+        \msg_error:nnxx { osgstyler } { conflicting-affix-content }
+          { \l__osgstyler_decoration_name_tl }
+          { \l__osgstyler_decoration_instance_tl }
+      }
+    \__osgstyler_decoration_put:nn {#1}{#2}
+  }
+
+\keys_define:nn { osgstyler / decoration / line }
+  {
+    position  .code:n = \__osgstyler_decoration_put:nn { position }{#1},
+    pattern   .code:n = \__osgstyler_decoration_put:nn { pattern }{#1},
+    color     .code:n = \__osgstyler_decoration_color_put:nn { color }{#1},
+    thickness .code:n = \__osgstyler_decoration_put:nn { thickness }{#1},
+    offset    .code:n = \__osgstyler_decoration_put:nn { offset }{#1}
+  }
+\keys_define:nn { osgstyler / decoration / background }
+  {
+    color   .code:n = \__osgstyler_decoration_color_put:nn { color }{#1},
+    opacity .code:n = \__osgstyler_decoration_put:nn { opacity }{#1},
+    shape   .code:n = \__osgstyler_decoration_put:nn { shape }{#1}
+  }
+\keys_define:nn { osgstyler / decoration / enclosure }
+  {
+    border-color .code:n =
+      \__osgstyler_decoration_color_put:nn { border-color }{#1},
+    fill-color .code:n =
+      \__osgstyler_decoration_color_put:nn { fill-color }{#1},
+    pattern   .code:n = \__osgstyler_decoration_put:nn { pattern }{#1},
+    thickness .code:n = \__osgstyler_decoration_put:nn { thickness }{#1},
+    radius    .code:n = \__osgstyler_decoration_put:nn { radius }{#1},
+    padding   .code:n = \__osgstyler_decoration_put:nn { padding }{#1}
+  }
+\keys_define:nn { osgstyler / decoration / margin }
+  {
+    side      .code:n = \__osgstyler_decoration_put:nn { side }{#1},
+    color     .code:n = \__osgstyler_decoration_color_put:nn { color }{#1},
+    pattern   .code:n = \__osgstyler_decoration_put:nn { pattern }{#1},
+    thickness .code:n = \__osgstyler_decoration_put:nn { thickness }{#1},
+    offset    .code:n = \__osgstyler_decoration_put:nn { offset }{#1}
+  }
+\keys_define:nn { osgstyler / decoration / affix }
+  {
+    position .choices:nn = { before, after }
+      { \__osgstyler_decoration_put:nn { position }{#1} },
+    content .code:n =
+      \__osgstyler_decoration_affix_payload_put:nn { content }{#1},
+    symbol .code:n =
+      \__osgstyler_decoration_affix_payload_put:nn { symbol }{#1},
+    color .code:n = \__osgstyler_decoration_color_put:nn { color }{#1},
+    font  .code:n = \__osgstyler_decoration_font_put:n {#1},
+    gap   .code:n = \__osgstyler_decoration_put:nn { gap }{#1}
+  }
+
+\cs_new_protected:Npn \__osgstyler_decoration_named_instance:n #1
+  {
+    \group_begin:
+      \tl_set:NV \l__osgstyler_decoration_instance_tl \l_keys_key_str
+      \exp_args:Ne \keys_set:nn
+        { osgstyler / decoration / \l__osgstyler_decoration_family_tl }
+        {#1}
+    \group_end:
+  }
+
+\clist_map_inline:Nn \c__osgstyler_decoration_families_clist
+  {
+    \keys_define:nn { osgstyler / decoration / #1 }
+      { unknown .code:n = \__osgstyler_decoration_named_instance:n {##1} }
+  }
+
+\cs_new_protected:Npn \__osgstyler_decoration_component:nn #1#2
+  {
+    \tl_set:Nn \l__osgstyler_decoration_family_tl {#1}
+    \tl_set:Nn \l__osgstyler_decoration_instance_tl { default }
+    \prop_gput:Nee \g__osgstyler_decoration_prop
+      { \l__osgstyler_decoration_name_tl / #1 / present } { true }
+    \keys_set:nn { osgstyler / decoration / #1 } {#2}
+  }
+
+\keys_define:nn { osgstyler / decoration }
+  {
+    line       .code:n = \__osgstyler_decoration_component:nn { line }{#1},
+    background .code:n = \__osgstyler_decoration_component:nn { background }{#1},
+    enclosure  .code:n = \__osgstyler_decoration_component:nn { enclosure }{#1},
+    margin     .code:n = \__osgstyler_decoration_component:nn { margin }{#1},
+    affix      .code:n = \__osgstyler_decoration_component:nn { affix }{#1}
+  }
+
+\cs_new_protected:Npn \__osgstyler_decoration_clear:n #1
+  {
+    \clist_map_inline:Nn \c__osgstyler_decoration_families_clist
+      {
+        \prop_gremove:Nn \g__osgstyler_decoration_prop { #1 / ##1 / present }
+        \prop_get:NnNT \g__osgstyler_decoration_prop
+          { #1 / ##1 / instances } \l_tmpa_tl
+          {
+            \clist_map_inline:Vn \l_tmpa_tl
+              {
+                \prop_gremove:Nn \g__osgstyler_decoration_prop
+                  { #1 / ##1 / ####1 / present }
+                \clist_map_inline:cn
+                  { c__osgstyler_decoration_##1_properties_clist }
+                  { \prop_gremove:Nn \g__osgstyler_decoration_prop
+                      { #1 / ##1 / ####1 / ########1 } }
+              }
+          }
+        \prop_gremove:Nn \g__osgstyler_decoration_prop
+          { #1 / ##1 / instances }
+      }
+  }
+
+\cs_new_protected:Npn \__osgstyler_decoration_declare:nn #1#2
+  {
+    \__osgstyler_decoration_clear:n {#1}
+    \tl_set:Nn \l__osgstyler_decoration_name_tl {#1}
+    \keys_set:nn { osgstyler / decoration } {#2}
+    \prop_gput:Nnn \g__osgstyler_decoration_prop { #1 / declared } { true }
+  }
+
+\NewDocumentCommand \DeclareOsgDecoration { m m }
+  { \__osgstyler_decoration_declare:nn {#1}{#2} }
+
+\NewExpandableDocumentCommand \OsgDecorationValue { m m m }
+  { \prop_item:Nn \g__osgstyler_decoration_prop { #1 / #2 / default / #3 } }
+
+\NewExpandableDocumentCommand \OsgDecorationInstanceValue { m m m m }
+  { \prop_item:Nn \g__osgstyler_decoration_prop { #1 / #2 / #3 / #4 } }
+
+\NewExpandableDocumentCommand \OsgDecorationInstances { m m }
+  { \prop_item:Nn \g__osgstyler_decoration_prop { #1 / #2 / instances } }
+
+\prg_new_conditional:Npnn \__osgstyler_decoration_component_if:nn #1#2
+  { T, F, TF }
+  {
+    \clist_if_in:NnTF \c__osgstyler_decoration_families_clist {#2}
+      {
+        \prop_if_in:NnTF \g__osgstyler_decoration_prop
+          { #1 / #2 / present }
+          { \prg_return_true: } { \prg_return_false: }
+      }
+      {
+        \msg_error:nnn { osgstyler } { unknown-decoration-family } {#2}
+        \prg_return_false:
+      }
+  }
+
+\NewDocumentCommand \OsgDecorationIfHasComponentTF { m m m m }
+  { \__osgstyler_decoration_component_if:nnTF {#1}{#2}{#3}{#4} }
+
+\NewDocumentCommand \OsgDecorationIfHasInstanceTF { m m m m m }
+  {
+    \prop_if_in:NnTF \g__osgstyler_decoration_prop
+      { #1 / #2 / #3 / present } {#4}{#5}
+  }
+
+\NewExpandableDocumentCommand \OsgDecorationFamilies { }
+  { \clist_use:Nn \c__osgstyler_decoration_families_clist { , } }
+
+% Inline styles are the first composition layer.  The template owns visual
+% resource selection and passes semantic and decorative work to replaceable
+% processors.  Their default implementations are transparent.
+\tl_new:N \l__osgstyler_inline_font_tl
+\tl_new:N \l__osgstyler_inline_color_tl
+\tl_new:N \l__osgstyler_inline_decoration_tl
+\tl_new:N \l__osgstyler_inline_semantics_tl
+
+\msg_new:nnnn { osgstyler } { unknown-decoration-for-style }
+  { Inline~style~uses~unknown~decoration~'#1'. }
+  { Declare~the~decoration~before~using~the~inline~style. }
+
+\cs_new_protected:Npn \__osgstyler_decoration_processor_default:nn #1#2 {#2}
+\cs_new_protected:Npn \__osgstyler_semantic_processor_default:nn #1#2 {#2}
+\cs_new_eq:NN \__osgstyler_decoration_processor:nn
+  \__osgstyler_decoration_processor_default:nn
+\cs_new_eq:NN \__osgstyler_semantic_processor:nn
+  \__osgstyler_semantic_processor_default:nn
+
+\NewDocumentCommand \SetOsgDecorationProcessor { m }
+  { \cs_gset_eq:NN \__osgstyler_decoration_processor:nn #1 }
+\NewDocumentCommand \SetOsgSemanticProcessor { m }
+  { \cs_gset_eq:NN \__osgstyler_semantic_processor:nn #1 }
+
+\cs_new_protected:Npn \__osgstyler_inline_visual_apply:n #1
+  {
+    \group_begin:
+      \tl_if_eq:VnF \l__osgstyler_inline_font_tl { none }
+        { \exp_args:NV \UseOsgFont \l__osgstyler_inline_font_tl }
+      \tl_if_eq:VnF \l__osgstyler_inline_color_tl { none }
+        {
+          \exp_args:NNV \clist_if_in:NnTF
+            \c__osgstyler_color_slots_clist \l__osgstyler_inline_color_tl
+            {
+              \use:e
+                {
+                  \exp_not:N \color
+                    { \OsgColorName { \l__osgstyler_inline_color_tl } }
+                }
+            }
+            { \msg_error:nnV { osgstyler } { unknown-color-slot }
+                \l__osgstyler_inline_color_tl }
+        }
+      \tl_if_eq:VnTF \l__osgstyler_inline_decoration_tl { none }
+        {#1}
+        {
+          \prop_if_in:NeTF \g__osgstyler_decoration_prop
+            { \l__osgstyler_inline_decoration_tl / declared }
+            {
+              \exp_args:NV \__osgstyler_decoration_processor:nn
+                \l__osgstyler_inline_decoration_tl {#1}
+            }
+            {
+              \msg_error:nnV { osgstyler } { unknown-decoration-for-style }
+                \l__osgstyler_inline_decoration_tl
+              #1
+            }
+        }
+    \group_end:
+  }
+
+\cs_new_protected:Npn \__osgstyler_inline_apply:n #1
+  {
+    \tl_if_eq:VnTF \l__osgstyler_inline_semantics_tl { none }
+      { \__osgstyler_inline_visual_apply:n {#1} }
+      {
+        \exp_args:NV \__osgstyler_semantic_processor:nn
+          \l__osgstyler_inline_semantics_tl
+          { \__osgstyler_inline_visual_apply:n {#1} }
+      }
+  }
+
+\NewTemplateType { osgstyler-inline } { 1 }
+\DeclareTemplateInterface { osgstyler-inline } { standard } { 1 }
+  {
+    font       : tokenlist = main,
+    color      : tokenlist = text,
+    decoration : tokenlist = none,
+    semantics  : tokenlist = none
+  }
+\DeclareTemplateCode { osgstyler-inline } { standard } { 1 }
+  {
+    font       = \l__osgstyler_inline_font_tl,
+    color      = \l__osgstyler_inline_color_tl,
+    decoration = \l__osgstyler_inline_decoration_tl,
+    semantics  = \l__osgstyler_inline_semantics_tl
+  }
+  { \__osgstyler_inline_apply:n {#1} }
+
+\NewDocumentCommand \DeclareOsgInlineStyle { m m }
+  { \DeclareInstance { osgstyler-inline } {#1} { standard } {#2} }
+
+\NewDocumentCommand \UseOsgInlineStyle { m m }
+  { \UseInstance { osgstyler-inline } {#1} {#2} }
+
+\ExplSyntaxOff
+
+
+
+%</pkg>

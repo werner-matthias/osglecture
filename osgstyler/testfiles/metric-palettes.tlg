@@ -1,0 +1,10 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+active=modern
+spacing-sm=.4\baselineskip 
+spacing-md=1\baselineskip 
+padding-normal=.75em
+rule-thin=.5pt
+radius-round=8pt
+default-rule=.7pt
+default-radius=0pt

@@ -1,0 +1,14 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+editorial-main=main
+editorial-display=companion
+editorial-symbol=main
+minimal-companion=main
+minimal-display=main
+minimal-accent=main
+font=TeX Gyre Pagella
+description=primary serif text face
+active=editorial
+main-family=LatinModernRoman(0)
+display-family=TeXGyrePagella(0)
+symbol-family=LatinModernRoman(0)

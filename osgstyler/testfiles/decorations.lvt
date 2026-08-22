@@ -1,0 +1,102 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osgstyler}
+
+\DeclareOsgDecoration{marked-important}{
+  line = {
+    position = below,
+    pattern = wavy,
+    color = alert,
+    thickness = {0.08em},
+    offset = {0.12em}
+  },
+  background = {
+    color = accent,
+    opacity = {.25},
+    shape = text
+  },
+  affix = {
+    warning = {
+      position = before,
+      content = {!},
+      color = alert,
+      font = accent,
+      gap = {.3em}
+    }
+  }
+}
+
+\DeclareOsgDecoration{boxed}{
+  enclosure = {
+    border-color = primary,
+    fill-color = background,
+    pattern = solid,
+    thickness = thin,
+    radius = {2pt},
+    padding = normal
+  },
+  margin = {
+    side = left,
+    color = accent,
+    pattern = solid,
+    thickness = thick,
+    offset = normal
+  },
+  affix = {
+    endmark = {
+      position = after,
+      symbol = proof-end,
+      color = text,
+      gap = {.25em}
+    }
+  }
+}
+
+\DeclareOsgDecoration{redeclared}{
+  line = {position = below, pattern = solid, color = primary}
+}
+\DeclareOsgDecoration{redeclared}{
+  background = {color = accent, opacity = {.1}, shape = text}
+}
+
+\DeclareOsgDecoration{over-and-under}{
+  line = {
+    under = {
+      position = below, pattern = solid, color = accent,
+      thickness = thin, offset = {.12em}
+    },
+    over = {
+      position = above, pattern = solid, color = accent,
+      thickness = thin, offset = {.08em}
+    }
+  }
+}
+
+\begin{document}
+\START
+\TYPE{families=\OsgDecorationFamilies}
+\TYPE{line-color=\OsgDecorationValue{marked-important}{line}{color}}
+\TYPE{line-pattern=\OsgDecorationValue{marked-important}{line}{pattern}}
+\TYPE{background-opacity=\OsgDecorationValue{marked-important}{background}{opacity}}
+\TYPE{affix-position=\OsgDecorationInstanceValue{marked-important}{affix}{warning}{position}}
+\TYPE{affix-content=\OsgDecorationInstanceValue{marked-important}{affix}{warning}{content}}
+\TYPE{affix-font=\OsgDecorationInstanceValue{marked-important}{affix}{warning}{font}}
+\TYPE{border=\OsgDecorationValue{boxed}{enclosure}{border-color}}
+\TYPE{radius=\OsgDecorationValue{boxed}{enclosure}{radius}}
+\TYPE{end-position=\OsgDecorationInstanceValue{boxed}{affix}{endmark}{position}}
+\TYPE{end-symbol=\OsgDecorationInstanceValue{boxed}{affix}{endmark}{symbol}}
+\TYPE{line-instances=\OsgDecorationInstances{over-and-under}{line}}
+\TYPE{under-position=\OsgDecorationInstanceValue{over-and-under}{line}{under}{position}}
+\TYPE{over-position=\OsgDecorationInstanceValue{over-and-under}{line}{over}{position}}
+\OsgDecorationIfHasComponentTF{marked-important}{line}
+  {\TYPE{has-line=yes}}{\TYPE{has-line=no}}
+\OsgDecorationIfHasComponentTF{marked-important}{enclosure}
+  {\TYPE{has-enclosure=yes}}{\TYPE{has-enclosure=no}}
+\OsgDecorationIfHasComponentTF{redeclared}{line}
+  {\TYPE{redeclared-line=yes}}{\TYPE{redeclared-line=no}}
+\OsgDecorationIfHasComponentTF{redeclared}{background}
+  {\TYPE{redeclared-background=yes}}{\TYPE{redeclared-background=no}}
+\OsgDecorationIfHasInstanceTF{over-and-under}{line}{under}
+  {\TYPE{has-under=yes}}{\TYPE{has-under=no}}
+\END
+\end{document}

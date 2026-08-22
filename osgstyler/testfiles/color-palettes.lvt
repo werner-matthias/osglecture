@@ -1,0 +1,42 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osgstyler}
+
+\DeclareOsgColorPalette{modern}{
+  primary    = {HTML}{2B3A67},
+  secondary  = {HTML}{496A81},
+  accent     = {HTML}{66999B},
+  text       = {HTML}{333333},
+  background = {HTML}{FFFFFF},
+  structure  = {alias}{primary},
+  alert      = {HTML}{B00020},
+  example    = {HTML}{166534}
+}
+
+\DeclareOsgColorPalette{minimal}{
+  primary = {rgb}{0.2,0.2,0.7}
+}
+
+\begin{document}
+\UseOsgColorPalette{modern}
+\START
+\ExplSyntaxOn
+\OsgColorPaletteResolvedSlotTo{modern}{structure}\l_tmpa_tl
+\TYPE{modern-structure=\l_tmpa_tl}
+\OsgColorPaletteResolvedSlotTo{minimal}{secondary}\l_tmpa_tl
+\TYPE{minimal-secondary=\l_tmpa_tl}
+\OsgColorPaletteResolvedSlotTo{minimal}{accent}\l_tmpa_tl
+\TYPE{minimal-accent=\l_tmpa_tl}
+\OsgColorPaletteResolvedSlotTo{minimal}{alert}\l_tmpa_tl
+\TYPE{minimal-alert=\l_tmpa_tl}
+\ExplSyntaxOff
+\TYPE{active=\OsgActiveColorPalette}
+\TYPE{name=\OsgColorName{structure}}
+\TYPE{primary-model=\OsgColorPaletteValue{modern}{primary}{model}}
+\TYPE{primary-spec=\OsgColorPaletteValue{modern}{primary}{specification}}
+\extractcolorspec{osgstyler-structure}\TestColor
+\TYPE{structure-color=\TestColor}
+\extractcolorspec{osgstyler-alert}\TestColor
+\TYPE{alert-color=\TestColor}
+\END
+\end{document}

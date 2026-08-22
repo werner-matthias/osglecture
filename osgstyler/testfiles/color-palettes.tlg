@@ -1,0 +1,12 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+modern-structure=primary
+minimal-secondary=primary
+minimal-accent=primary
+minimal-alert=primary
+active=modern
+name=osgstyler-structure
+primary-model=HTML
+primary-spec=2B3A67
+structure-color={rgb}{0.16864,0.22745,0.40392}
+alert-color={rgb}{0.6902,0,0.12549}

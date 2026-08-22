@@ -1,0 +1,49 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osgstyler}
+
+\DeclareOsgFontPalette{test}{
+  main = {font = {Latin Modern Roman}},
+  accent = {font = {Latin Modern Sans}}
+}
+\DeclareOsgColorPalette{test}{
+  primary = {HTML}{223344},
+  text = {HTML}{111111},
+  accent = {HTML}{CC5500}
+}
+\DeclareOsgDecoration{marker}{
+  background = {color = accent, opacity = {.2}, shape = text}
+}
+
+\DeclareOsgInlineStyle{important}{
+  font = accent,
+  color = accent,
+  decoration = marker,
+  semantics = emphasis
+}
+\DeclareOsgInlineStyle{plain}{
+  font = none,
+  color = none
+}
+
+\ExplSyntaxOn
+\cs_new_protected:Npn \__osgstyler_test_semantics:nn #1#2
+  { \TYPE{semantics=#1} #2 }
+\cs_new_protected:Npn \__osgstyler_test_decoration:nn #1#2
+  { \TYPE{decoration=#1} \TYPE{content=#2} }
+\cs_new_eq:NN \TestSemanticProcessor \__osgstyler_test_semantics:nn
+\cs_new_eq:NN \TestDecorationProcessor \__osgstyler_test_decoration:nn
+\ExplSyntaxOff
+
+\begin{document}
+\UseOsgFontPalette{test}
+\UseOsgColorPalette{test}
+\SetOsgSemanticProcessor{\TestSemanticProcessor}
+\SetOsgDecorationProcessor{\TestDecorationProcessor}
+\START
+\UseOsgInlineStyle{important}{Alpha}
+\TYPE{plain-before}
+\UseOsgInlineStyle{plain}{Beta}
+\TYPE{plain-after}
+\END
+\end{document}

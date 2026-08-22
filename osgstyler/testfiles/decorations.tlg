@@ -1,0 +1,21 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+families=line,background,enclosure,margin,affix
+line-color=alert
+line-pattern=wavy
+background-opacity=.25
+affix-position=before
+affix-content=!
+affix-font=accent
+border=primary
+radius=2pt
+end-position=after
+end-symbol=proof-end
+line-instances=under,over
+under-position=below
+over-position=above
+has-line=yes
+has-enclosure=no
+redeclared-line=no
+redeclared-background=yes
+has-under=yes

@@ -19,6 +19,7 @@ local modules = {
   { name = "osglecture-modes", files = { "osglecture-modes/osglecture-modes.dtx" } },
   { name = "tagpax",           files = { "tagpax/source/tagpax.dtx" } },
   { name = "langselect",       files = { "langselect/langselect.dtx" } },
+  { name = "osgstyler",        files = { "osgstyler/osgstyler.dtx" } },
   { name = "lttheme",          files = { "lttheme/lttheme.dtx" } },
   { name = "lttheme-tuc-2019", files = { "lttheme-tuc-2019/lttheme-tuc-2019.dtx" } },
   { name = "osgdoc",           files = { "osgdoc/osgdoc.dtx" } },
