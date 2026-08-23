@@ -39,7 +39,7 @@ jobs:
           - name: ollm
             directory: ollm
             config: build
-            expect_2024: fail
+            expect_2024: n/a
             expect_2025: pass
             expect_current: pass
           - name: osgdoc
@@ -113,13 +113,35 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
 
+      - name: Resolve compatibility expectation
+        id: expected
+        shell: bash
+        env:
+          TEXLIVE: ${{ matrix.distribution.texlive }}
+          EXPECT_2024: ${{ matrix.component.expect_2024 }}
+          EXPECT_2025: ${{ matrix.component.expect_2025 }}
+          EXPECT_CURRENT: ${{ matrix.component.expect_current }}
+        run: |
+          case "$TEXLIVE" in
+            2024) expected="$EXPECT_2024" ;;
+            2025) expected="$EXPECT_2025" ;;
+            current) expected="$EXPECT_CURRENT" ;;
+            *)
+              echo "::error::No compatibility expectation configured for TeX Live $TEXLIVE."
+              exit 1
+              ;;
+          esac
+          echo "value=$expected" >> "$GITHUB_OUTPUT"
+
       - name: Show environment
+        if: steps.expected.outputs.value != 'n/a'
         run: |
           lualatex --version
           l3build version
 
       - name: Test ${{ matrix.component.name }}
         id: compatibility-test
+        if: steps.expected.outputs.value != 'n/a'
         continue-on-error: true
         working-directory: ${{ matrix.component.directory }}
         env:
@@ -141,19 +163,16 @@ jobs:
         env:
           ACTUAL: ${{ steps.compatibility-test.outcome }}
           TEXLIVE: ${{ matrix.distribution.texlive }}
-          EXPECT_2024: ${{ matrix.component.expect_2024 }}
-          EXPECT_2025: ${{ matrix.component.expect_2025 }}
-          EXPECT_CURRENT: ${{ matrix.component.expect_current }}
+          EXPECTED: ${{ steps.expected.outputs.value }}
         run: |
-          case "$TEXLIVE" in
-            2024) expected="$EXPECT_2024" ;;
-            2025) expected="$EXPECT_2025" ;;
-            current) expected="$EXPECT_CURRENT" ;;
-            *)
-              echo "::error::No compatibility expectation configured for TeX Live $TEXLIVE."
+          if [[ "$EXPECTED" == "n/a" ]]; then
+            if [[ "$ACTUAL" != "skipped" ]]; then
+              echo "::error::A non-applicable compatibility test unexpectedly ran (outcome: $ACTUAL)."
               exit 1
-              ;;
-          esac
+            fi
+            echo "Not applicable for TeX Live $TEXLIVE; test skipped."
+            exit 0
+          fi
 
           case "$ACTUAL" in
             success) actual=pass ;;
@@ -164,11 +183,11 @@ jobs:
               ;;
           esac
 
-          echo "Expected: $expected"
+          echo "Expected: $EXPECTED"
           echo "Actual:   $actual"
 
-          if [[ "$actual" != "$expected" ]]; then
-            echo "::error::Compatibility changed for ${{ matrix.component.name }} on TeX Live $TEXLIVE: expected $expected, observed $actual."
+          if [[ "$actual" != "$EXPECTED" ]]; then
+            echo "::error::Compatibility changed for ${{ matrix.component.name }} on TeX Live $TEXLIVE: expected $EXPECTED, observed $actual."
             exit 1
           fi
 

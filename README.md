@@ -55,7 +55,7 @@ The `TL ...` columns are read from the expectations in the workflow above;
 | lttheme | v0.4.2 | 2026/08/10 | 7 | :red_circle: | :red_circle: | :green_circle: |
 | lttheme-tuc-2019 | v0.5.0 | 2026/08/05 | 1 | :red_circle: | :red_circle: | :green_circle: |
 | osgdoc | v0.3.3 | 2026/08/14 | 2 | :green_circle: | :green_circle: | :green_circle: |
-| ollm | v0.13.0-dev | n/a | 1 | :red_circle: | :green_circle: | :green_circle: |
+| ollm | v0.13.0-dev | n/a | 1 | :white_circle: | :green_circle: | :green_circle: |
 | ltx-talk support (osglecture + osglecture-modes) | n/a | n/a | n/a | :red_circle: | :red_circle: | :green_circle: |
 <!-- END MODULE VERSIONS -->
 
