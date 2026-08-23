@@ -30,6 +30,9 @@ jobs:
           - name: langselect
             directory: langselect
             config: build
+          - name: osgstyler
+            directory: osgstyler
+            config: build
           - name: lttheme
             directory: lttheme
             config: build
