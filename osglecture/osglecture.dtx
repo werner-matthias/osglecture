@@ -2697,7 +2697,15 @@ load-preamble+
 % order or heading levels.}{}
 \cs_new_protected:Npn \__osglecture_integration_include_untagged:nn #1#2
   {
-    \includepdf[pages=-,artifact] {#2}
+    \group_begin:
+      % pdfpages uses non-final \includegraphics calls to inspect the PDF.
+      % Older latex-lab versions do not yet recognize pdfpages' status flag
+      % and otherwise warn about missing alternative text for such a probe.
+      % The final call is independently marked by pdfpages' artifact option.
+      \cs_if_exist:NT \l_tag_graphic_mode_tl
+        { \tl_set:Nn \l_tag_graphic_mode_tl {artifact} }
+      \includepdf[pages=-,artifact] {#2}
+    \group_end:
     \tl_clear:N \l__osglecture_integration_prefix_tl
   }
 
