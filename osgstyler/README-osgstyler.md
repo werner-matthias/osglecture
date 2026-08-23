@@ -185,12 +185,24 @@ aliases:
 \BindOsgInlineCommand{\highlight}{highlight}
 ```
 
-Each managed command owns a one-input socket. Its saved implementation is the
-`original` plug, while every binding creates or selects a `style/<name>` plug.
+Each managed command owns a one-input socket. Its saved implementation is
+available through the `original` and public `default` plugs, while every
+binding creates or selects a `style/<name>` plug.
 Assignments obey normal TeX grouping, so a style may be changed locally.
-`\RestoreOsgInlineCommand{<command>}` selects the original plug again. Robust
+`\RestoreOsgInlineCommand{<command>}` selects its `default` plug again. Robust
 commands are preserved with `\NewCommandCopy`, avoiding recursion through an
 implementation replaced by the socket wrapper.
+
+All standard command sockets can be switched back together:
+
+```latex
+\UseOsgDefaultInlineCommands
+```
+
+For commands that existed when first bound, this restores their familiar
+LaTeX or package implementation. For commands introduced by `osgstyler`, the
+default plug transparently returns their argument. Like every socket
+assignment, the collective switch can be scoped with an ordinary TeX group.
 
 The styles `emphasis`, `strong`, `underline`, and `highlight` and their basic
 decorations are predefined. `\highlight` is available immediately;

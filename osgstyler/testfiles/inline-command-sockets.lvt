@@ -25,6 +25,12 @@
 \textbf{bold}
 \uline{underlined}
 \highlight{marked}
+\TYPE{defaults-before}
+{\UseOsgDefaultInlineCommands
+  \emph{original emphasis}\textbf{original bold}
+  \uline{plain underline}\highlight{plain highlight}}
+\TYPE{defaults-after}
+\emph{bound-again}
 \RestoreOsgInlineCommand{\ExistingCommand}
 \ExistingCommand{restored}
 \END

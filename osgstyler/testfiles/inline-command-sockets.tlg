@@ -7,4 +7,7 @@ semantics=strong
 semantics=strong
 semantics=emphasis
 semantics=strong
+defaults-before
+defaults-after
+semantics=emphasis
 original=restored

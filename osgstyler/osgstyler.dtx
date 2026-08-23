@@ -1078,12 +1078,19 @@ load babel
             \use:c
               { __osgstyler_inline_original_\cs_to_str:N #1:n } {##1}
           }
+        \NewSocketPlug { \l__osgstyler_inline_command_socket_tl } { default }
+          {
+            \use:c
+              { __osgstyler_inline_original_\cs_to_str:N #1:n } {##1}
+          }
         \prop_gput:Nee \g__osgstyler_inline_command_plug_prop
           { \l__osgstyler_inline_command_socket_tl / original } { true }
         \exp_args:NNV \__osgstyler_inline_command_define_existing:Nn
           #1 \l__osgstyler_inline_command_socket_tl
       }
       {
+        \NewSocketPlug { \l__osgstyler_inline_command_socket_tl } { default }
+          {##1}
         \exp_args:NNV \__osgstyler_inline_command_define_new:Nn
           #1 \l__osgstyler_inline_command_socket_tl
       }
@@ -1116,15 +1123,20 @@ load babel
     \prop_get:NeNTF \g__osgstyler_inline_command_socket_prop
       { \cs_to_str:N #1 } \l__osgstyler_inline_command_socket_tl
       {
-        \prop_if_in:NeTF \g__osgstyler_inline_command_plug_prop
-          { \l__osgstyler_inline_command_socket_tl / original }
-          { \AssignSocketPlug { \l__osgstyler_inline_command_socket_tl }
-              { original } }
-          { \AssignSocketPlug { \l__osgstyler_inline_command_socket_tl }
-              { identity } }
+        \AssignSocketPlug { \l__osgstyler_inline_command_socket_tl }
+          { default }
       }
       { \msg_error:nne { osgstyler } { unbound-inline-command }
           { \token_to_str:N #1 } }
+  }
+
+\cs_new_protected:Npn \__osgstyler_inline_command_default:N #1
+  {
+    \prop_get:NeNTF \g__osgstyler_inline_command_socket_prop
+      { \cs_to_str:N #1 } \l__osgstyler_inline_command_socket_tl
+      { }
+      { \__osgstyler_inline_command_socket_new:N #1 }
+    \AssignSocketPlug { \l__osgstyler_inline_command_socket_tl } { default }
   }
 
 \DeclareOsgDecoration { osgstyler-underline }
@@ -1156,6 +1168,14 @@ load babel
     \BindOsgInlineCommand \textbf { strong }
     \BindOsgInlineCommand \uline { underline }
     \BindOsgInlineCommand \highlight { highlight }
+  }
+
+\NewDocumentCommand \UseOsgDefaultInlineCommands { }
+  {
+    \__osgstyler_inline_command_default:N \emph
+    \__osgstyler_inline_command_default:N \textbf
+    \__osgstyler_inline_command_default:N \uline
+    \__osgstyler_inline_command_default:N \highlight
   }
 
 \BindOsgInlineCommand \highlight { highlight }
