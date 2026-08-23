@@ -31,23 +31,16 @@ local modules = {
     extractor = "perl_version" },
 }
 
--- Distribution-compatibility columns are filled in by hand after running
--- the "Distribution compatibility" GitHub Actions workflow (see
--- .github/workflows/compatibility.yml); this script re-reads whatever is
--- currently in the README table before rebuilding it => a version bump does
--- not wipe out that manual work.
+-- Distribution compatibility has a single point of truth: the expectations
+-- evaluated by the "Distribution compatibility" GitHub Actions workflow.
 local COMPAT_HEADERS = { "TL 2024", "TL 2025", "TL current" }
-local COMPAT_SEED = {
-  osglecture           = { ":x:",  ":+1:", ":+1:" },
-  ["osglecture-modes"] = { ":+1:", ":+1:", ":+1:" },
-  tagpax               = { ":+1:", ":+1:", ":+1:" },
-  langselect           = { ":+1:", ":+1:", ":+1:" },
-  lttheme              = { ":x:",  ":x:",  ":+1:" },
-  ["lttheme-tuc-2019"] = { ":x:",  ":x:",  ":+1:" },
-  osgdoc               = { ":+1:", ":+1:", ":+1:" },
-  ollm                 = { ":x:",  ":+1:", ":+1:" },
-  ["ltx-talk support (osglecture + osglecture-modes)"] =
-                         { ":x:",  ":x:",  ":+1:" },
+local WORKFLOW_TO_TABLE = {
+  ["osglecture-modes-core"] = "osglecture-modes",
+}
+local EXPECTATION_MARK = {
+  pass = ":green_circle:",
+  fail = ":red_circle:",
+  ["n/a"] = ":white_circle:",
 }
 
 local capabilities = {
@@ -70,6 +63,56 @@ local function read_file(path)
   fh:close()
   return content
 end
+
+local function unquote(value)
+  return value:match('^"(.*)"$') or value:match("^'(.*)'$") or value
+end
+
+-- This deliberately parses only the small, regular component matrix in our
+-- own workflow rather than pretending to be a general YAML parser.
+local function read_workflow_compat(path)
+  local content = assert(read_file(path), "cannot read compatibility workflow: " .. path)
+  local result = {}
+  local in_components = false
+  local current
+
+  for line in (content .. "\n"):gmatch("([^\n]*)\n") do
+    if line:match("^%s*component:%s*$") then
+      in_components = true
+    elseif in_components and line:match("^%s*distribution:%s*$") then
+      break
+    elseif in_components then
+      local name = line:match("^%s*%- name:%s*(.-)%s*$")
+      if name then
+        name = unquote(name)
+        name = WORKFLOW_TO_TABLE[name] or name
+        assert(not result[name], "duplicate compatibility table entry: " .. name)
+        current = {}
+        result[name] = current
+      elseif current then
+        local distribution, expectation =
+          line:match("^%s*expect_([%w]+):%s*([^%s#]+)")
+        if distribution == "2024" or distribution == "2025" or
+           distribution == "current" then
+          expectation = unquote(expectation)
+          local mark = EXPECTATION_MARK[expectation]
+          assert(mark, "unknown compatibility expectation: " .. expectation)
+          current[distribution] = mark
+        end
+      end
+    end
+  end
+
+  local ordered = {}
+  for name, values in pairs(result) do
+    assert(values["2024"] and values["2025"] and values.current,
+      "incomplete compatibility expectations for " .. name)
+    ordered[name] = { values["2024"], values["2025"], values.current }
+  end
+  return ordered
+end
+
+local workflow_compat = read_workflow_compat(".github/workflows/compatibility.yml")
 
 -- Only the non-driver code sections should be scanned for real versions.
 local function strip_driver_sections(content)
@@ -117,43 +160,6 @@ local function extract_provides(content)
   end
   return found
 end
-
--- Splits one "| a | b | c |" markdown table row into trimmed cell strings.
-local function split_row(row)
-  local body = row:match("^%s*|?(.-)|?%s*$") or row
-  local cells = {}
-  for cell in (body .. "|"):gmatch("(.-)|") do
-    table.insert(cells, (cell:gsub("^%s*(.-)%s*$", "%1")))
-  end
-  return cells
-end
-
--- Reads the compatibility columns currently in README.md's generated
--- table, keyed by module name (with any trailing "[^n]" note stripped),
--- so rebuilding the table preserves hand-edited compatibility marks.
-local function read_existing_compat(readme_path)
-  local content = read_file(readme_path)
-  if not content then return {} end
-  local block = content:match(
-    "<!%-%- BEGIN MODULE VERSIONS.-\n(.-)\n<!%-%- END MODULE VERSIONS %-%->")
-  if not block then return {} end
-  local compat = {}
-  for line in (block .. "\n"):gmatch("([^\n]*)\n") do
-    if line:match("^%s*|") and not line:match("^%s*|%s*%-") then
-      local cells = split_row(line)
-      local name = cells[1]
-      if name and name ~= "Module" then
-        name = name:gsub("%[%^%d+%]$", "")
-        if cells[5] and cells[6] and cells[7] then
-          compat[name] = { cells[5], cells[6], cells[7] }
-        end
-      end
-    end
-  end
-  return compat
-end
-
-local existing_compat = read_existing_compat("README.md")
 
 local report = {}
 for _, mod in ipairs(modules) do
@@ -211,14 +217,14 @@ for _, r in ipairs(report) do
   end
 end
 
--- Markdown table for README.md: version/date/file-count plus the
--- (manually maintained) distribution-compatibility columns.
+-- Markdown table for README.md: version/date/file-count plus compatibility
+-- expectations read from the workflow above.
 local header_cells = { "Module", "Version", "Date", "Files" }
 for _, h in ipairs(COMPAT_HEADERS) do table.insert(header_cells, h) end
 local lines = {
   "<!-- BEGIN MODULE VERSIONS " ..
     "(generated by tools/update-bundle-manifest.lua; " ..
-    "compatibility columns are hand-edited, see below) -->",
+    "compatibility from .github/workflows/compatibility.yml) -->",
   "| " .. table.concat(header_cells, " | ") .. " |",
   "|" .. string.rep("---|", #header_cells),
 }
@@ -232,13 +238,15 @@ for _, r in ipairs(report) do
     version_cell = "mixed (" .. table.concat(r.version_list, ", ") .. ")"
     date_cell = "mixed (" .. table.concat(r.date_list, ", ") .. ")"
   end
-  local compat = existing_compat[r.name] or COMPAT_SEED[r.name] or { "?", "?", "?" }
+  local compat = assert(workflow_compat[r.name],
+    "no workflow compatibility expectations for " .. r.name)
   local row_cells = { r.name, version_cell, date_cell, tostring(#r.entries) }
   for _, c in ipairs(compat) do table.insert(row_cells, c) end
   table.insert(lines, "| " .. table.concat(row_cells, " | ") .. " |")
 end
 for _, name in ipairs(capabilities) do
-  local compat = existing_compat[name] or COMPAT_SEED[name] or { "?", "?", "?" }
+  local compat = assert(workflow_compat[name],
+    "no workflow compatibility expectations for " .. name)
   local row_cells = { name, "n/a", "n/a", "n/a" }
   for _, c in ipairs(compat) do table.insert(row_cells, c) end
   table.insert(lines, "| " .. table.concat(row_cells, " | ") .. " |")

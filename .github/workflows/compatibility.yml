@@ -11,6 +11,21 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  manifest-sync:
+    name: Compatibility table is synchronized
+    runs-on: ubuntu-latest
+    container:
+      image: texlive/texlive:latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Regenerate bundle manifest
+        run: texlua tools/update-bundle-manifest.lua
+
+      - name: Check generated compatibility table
+        run: git diff --exit-code -- README.md
+
   compatibility:
     name: ${{ matrix.component.name }} · TeX Live ${{ matrix.distribution.texlive }}
     runs-on: ubuntu-latest

@@ -23,7 +23,9 @@
 }
 \begin{document}
 \START
+\OMIT
 \includeunit{untagged-example}
+\TIMO
 \ExplSyntaxOn
 \TYPE{mode-after=\prop_item:Nn \g__osglecture_integration_mode_prop {script}}
 \TYPE{prefix-empty=\tl_if_empty_p:N \l__osglecture_integration_prefix_tl}
