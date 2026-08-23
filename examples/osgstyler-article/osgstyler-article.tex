@@ -1,0 +1,174 @@
+\documentclass{article}
+
+\usepackage[a4paper,margin=28mm]{geometry}
+\usepackage{osgstyler-lua}
+
+% Resource palettes are independent of the document class and of individual
+% formatting roles.
+\DeclareOsgFontPalette{editorial}{
+  main      = {font = {Latin Modern Roman}},
+  companion = {font = {Latin Modern Sans}},
+  display   = {alias = companion},
+  accent    = {alias = companion},
+  mono      = {font = {Latin Modern Mono}},
+  symbol    = {alias = main}
+}
+
+\DeclareOsgColorPalette{editorial}{
+  primary    = {HTML}{244A73},
+  secondary  = {HTML}{4F6D7A},
+  accent     = {HTML}{D97706},
+  text       = {HTML}{202428},
+  background = {HTML}{FFFDF8},
+  structure  = {alias}{primary},
+  alert      = {HTML}{A61B1B},
+  example    = {HTML}{287A50}
+}
+
+\DeclareOsgMetricPalette{editorial}{
+  spacing = {xs = {.15em}, sm = {.35em}},
+  padding = {compact = {.22em}, normal = {.45em}},
+  rule    = {thin = {.45pt}, normal = {.75pt}},
+  radius  = {small = {2pt}}
+}
+
+% Decorations describe visual recipes. Several named instances of the same
+% family can be active at once.
+\DeclareOsgDecoration{double-line}{
+  line = {
+    under = {
+      position  = below,
+      pattern   = solid,
+      color     = primary,
+      thickness = rule/thin,
+      offset    = .12ex
+    },
+    over = {
+      position  = above,
+      pattern   = solid,
+      color     = primary,
+      thickness = rule/thin,
+      offset    = .12ex
+    }
+  }
+}
+
+\DeclareOsgDecoration{term-marker}{
+  background = {
+    color   = accent,
+    opacity = 1,
+    shape   = text
+  }
+}
+
+\DeclareOsgDecoration{inline-note}{
+  enclosure = {
+    border-color = secondary,
+    fill-color   = background,
+    pattern      = solid,
+    thickness    = rule/thin,
+    radius       = 0pt,
+    padding      = padding/compact
+  },
+  affix = {
+    label = {
+      position = before,
+      content  = {i},
+      color    = primary,
+      font     = accent,
+      gap      = spacing/sm
+    }
+  }
+}
+
+% Inline template instances combine typography, colors, decorations, and a
+% semantic role. The Lua backend renders the decoration; semantic processing
+% remains independently replaceable.
+\DeclareOsgInlineStyle{term}{
+  font       = none,
+  weight     = bold,
+  shape      = inherit,
+  color      = text,
+  decoration = term-marker,
+  semantics  = none
+}
+
+\DeclareOsgInlineStyle{doubly-emphasized}{
+  font       = none,
+  weight     = inherit,
+  shape      = inherit,
+  color      = primary,
+  decoration = double-line,
+  semantics  = emphasis
+}
+
+\DeclareOsgInlineStyle{note}{
+  font       = none,
+  weight     = inherit,
+  shape      = inherit,
+  color      = text,
+  decoration = inline-note,
+  semantics  = none
+}
+
+% The predefined instances can be themed without changing command bindings.
+\EditOsgInlineStyle{emphasis}{color = accent, shape = italic}
+\EditOsgInlineStyle{strong}{color = alert, weight = bold}
+
+% Existing and newly introduced author commands all use one-input sockets.
+\UseOsgStandardInlineCommands
+\BindOsgInlineCommand{\term}{term}
+\BindOsgInlineCommand{\doubleemph}{doubly-emphasized}
+\BindOsgInlineCommand{\inlinenote}{note}
+
+\UseOsgFontPalette{editorial}
+\UseOsgColorPalette{editorial}
+\UseOsgMetricPalette{editorial}
+
+\title{An \texttt{article} styled with \texttt{osgstyler}}
+\author{osglecture example}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Standard author commands}
+
+The familiar commands now select template instances: \emph{emphasis keeps its
+semantic role but receives the palette accent}, while \textbf{strong text uses
+the alert color}. The visual commands \uline{underline text} and
+\highlight{highlighted text} are rendered by the Lua backend.
+
+The bindings are ordinary sockets. They can be returned locally to their
+captured LaTeX defaults:
+
+\begin{quote}
+  \UseOsgDefaultInlineCommands
+  Here \emph{emphasis} and \textbf{bold text} use the original definitions;
+  commands introduced by \texttt{osgstyler}, such as
+  \uline{underline} and \highlight{highlight}, become transparent.
+\end{quote}
+
+Outside the quotation, the surrounding socket assignments are active again:
+\emph{accented emphasis}, \textbf{alert strong text}, and
+\highlight{a visible marker}.
+
+\section{Custom instances and commands}
+
+A project-specific command can be bound without defining its implementation
+twice. A \term{key term} combines bold text and a palette-based marker.
+The command \doubleemph{combines simultaneous overlining and underlining},
+including across ordinary line breaking when used in a longer passage.
+
+An enclosure and an affix can also be composed:
+\inlinenote{a short, unbreakable framed note}.
+
+\section{Resource switching}
+
+The styles above contain no literal font names and almost no literal
+dimensions. Fonts come from the font palette, colors from the color palette,
+and reusable dimensions from the metric palette. A theme can therefore replace
+the resources without redefining \verb|\term|, \verb|\doubleemph|, or any
+template instance.
+
+\end{document}

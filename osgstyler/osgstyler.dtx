@@ -1240,6 +1240,7 @@ load babel
 \dim_new:N \l__osgstyler_lua_offset_dim
 \dim_new:N \l__osgstyler_lua_top_dim
 \dim_new:N \l__osgstyler_lua_bottom_dim
+\dim_new:N \l__osgstyler_lua_cap_height_dim
 
 \cs_new_protected:Npn \__osgstyler_lua_value:nnnnN #1#2#3#4#5
   {
@@ -1307,11 +1308,15 @@ load babel
             }
           { above }
             {
+              \dim_set:Nn \l__osgstyler_lua_cap_height_dim
+                { \fontcharht\font `X }
               \dim_set:Nn \l__osgstyler_lua_top_dim
-                { \l__osgstyler_lua_offset_dim
+                { \l__osgstyler_lua_cap_height_dim
+                  +\l__osgstyler_lua_offset_dim
                   +\l__osgstyler_lua_thickness_dim }
-              \dim_set_eq:NN \l__osgstyler_lua_bottom_dim
-                \l__osgstyler_lua_offset_dim
+              \dim_set:Nn \l__osgstyler_lua_bottom_dim
+                { \l__osgstyler_lua_cap_height_dim
+                  +\l__osgstyler_lua_offset_dim }
             }
           { through }
             {

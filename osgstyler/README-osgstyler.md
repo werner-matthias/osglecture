@@ -236,4 +236,9 @@ inline margin decorations produce explicit warnings and use a documented
 fallback where possible. Semantic processing remains a separate backend
 concern.
 
+For `line` instances at `below`, the offset is measured downwards from the
+baseline. At `above`, it denotes the clearance above the current font's
+capital height. Consequently, overlines remain clear of ordinary capital
+letters when the font or font size changes.
+
 Run the regression tests with `l3build check`.
