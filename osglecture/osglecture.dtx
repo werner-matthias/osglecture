@@ -2679,15 +2679,17 @@ load-preamble+
     \tl_set:Ne \l__osglecture_integration_prefix_tl {\tagpaxlastprefix}
   }
 
-% \ldeen*{Ungetaggter Rückfallpfad: die Seiten werden als \code{Artifact}
-% importiert, damit der \code{StructTreeRoot} des Masterdokuments gültig
+% \ldeen*{Ungetaggter Rückfallpfad: die Seiten werden mit der
+% \code{artifact}-Option von \pkg{pdfpages} als Artefakte importiert, damit
+% der \code{StructTreeRoot} des Masterdokuments gültig
 % bleibt -- der importierte Block ist bewusst nicht barrierefrei
 % erschlossen. \pkg{newpax} rekonstruiert die in der Quelle bereits
 % vorhandenen Links und das Lesezeichen-/Gliederungsverzeichnis auf die
 % neuen Seitenpositionen; das ergibt ein klickbares Inhaltsverzeichnis auch
 % ohne Struct-Tree, aber keine Vorlesereihenfolge oder
 % Überschriftenebenen.}{Untagged fallback path: pages are imported as
-% \code{Artifact} so the master document's \code{StructTreeRoot} stays
+% artifacts using \pkg{pdfpages}' \code{artifact} option so the master
+% document's \code{StructTreeRoot} stays
 % valid -- the imported block is deliberately not made accessible.
 % \pkg{newpax} reconstructs the links and the bookmark/outline entries
 % already present in the source onto the new page positions, giving a
@@ -2695,9 +2697,7 @@ load-preamble+
 % order or heading levels.}{}
 \cs_new_protected:Npn \__osglecture_integration_include_untagged:nn #1#2
   {
-    \cs_if_exist:NT \tagstructbegin { \tagstructbegin { tag=Artifact } }
-    \includepdf[pages=-] {#2}
-    \cs_if_exist:NT \tagstructend { \tagstructend }
+    \includepdf[pages=-,artifact] {#2}
     \tl_clear:N \l__osglecture_integration_prefix_tl
   }
 
