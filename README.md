@@ -49,14 +49,14 @@ The `TL ...` columns are read from the expectations in the workflow above;
 |---|---|---|---|---|---|---|
 | osglecture | v0.13.0 | 2026/08/21 | 22 | :red_circle: | :green_circle: | :green_circle: |
 | osglecture-modes | v0.4.0 | 2026/08/02 | 2 | :green_circle: | :green_circle: | :green_circle: |
+| ltx-talk support (osglecture + osglecture-modes) | n/a | n/a | n/a | :red_circle: | :red_circle: | :green_circle: |
+| ollm | v0.13.0-dev | n/a | 1 | :white_circle: | :green_circle: | :green_circle: |
 | tagpax | v0.8.5-dev | 2026/07/23 | 2 | :green_circle: | :green_circle: | :green_circle: |
 | langselect | v1.0.2 | 2026/08/05 | 1 | :green_circle: | :green_circle: | :green_circle: |
 | osgstyler | v0.1.0-alpha | 2026/08/23 | 2 | :red_circle: | :red_circle: | :green_circle: |
 | lttheme | v0.4.2 | 2026/08/10 | 7 | :red_circle: | :red_circle: | :green_circle: |
 | lttheme-tuc-2019 | v0.5.0 | 2026/08/05 | 1 | :red_circle: | :red_circle: | :green_circle: |
 | osgdoc | v0.3.3 | 2026/08/14 | 2 | :green_circle: | :green_circle: | :green_circle: |
-| ollm | v0.13.0-dev | n/a | 1 | :white_circle: | :green_circle: | :green_circle: |
-| ltx-talk support (osglecture + osglecture-modes) | n/a | n/a | n/a | :red_circle: | :red_circle: | :green_circle: |
 <!-- END MODULE VERSIONS -->
 
 ## Installation

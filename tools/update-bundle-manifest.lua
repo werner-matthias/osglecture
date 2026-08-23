@@ -17,18 +17,18 @@ local modules = {
   -- of following the shared osglecture version.
   exclude = { ["osglecture-osgbeamer.code.tex"] = true } },
   { name = "osglecture-modes", files = { "osglecture-modes/osglecture-modes.dtx" } },
-  { name = "tagpax",           files = { "tagpax/source/tagpax.dtx" } },
-  { name = "langselect",       files = { "langselect/langselect.dtx" } },
-  { name = "osgstyler",        files = { "osgstyler/osgstyler.dtx" } },
-  { name = "lttheme",          files = { "lttheme/lttheme.dtx" } },
-  { name = "lttheme-tuc-2019", files = { "lttheme-tuc-2019/lttheme-tuc-2019.dtx" } },
-  { name = "osgdoc",           files = { "osgdoc/osgdoc.dtx" } },
   -- ollm is Perl, not a docstripped LaTeX package: it keeps its version
   -- as the single $VERSION in OLLM::Version, the same file ollm.tex's
   -- own driver already parses (with the same "VERSION = '...'" pattern)
   -- to fill in its documentation's version field.
   { name = "ollm", files = { "ollm/scripts/lib/OLLM/Version.pm" },
     extractor = "perl_version" },
+  { name = "tagpax",           files = { "tagpax/source/tagpax.dtx" } },
+  { name = "langselect",       files = { "langselect/langselect.dtx" } },
+  { name = "osgstyler",        files = { "osgstyler/osgstyler.dtx" } },
+  { name = "lttheme",          files = { "lttheme/lttheme.dtx" } },
+  { name = "lttheme-tuc-2019", files = { "lttheme-tuc-2019/lttheme-tuc-2019.dtx" } },
+  { name = "osgdoc",           files = { "osgdoc/osgdoc.dtx" } },
 }
 
 -- Distribution compatibility has a single point of truth: the expectations
@@ -43,8 +43,11 @@ local EXPECTATION_MARK = {
   ["n/a"] = ":white_circle:",
 }
 
-local capabilities = {
-  "ltx-talk support (osglecture + osglecture-modes)",
+-- Capability rows are placed directly after the module they extend.
+local capabilities_after = {
+  ["osglecture-modes"] = {
+    "ltx-talk support (osglecture + osglecture-modes)",
+  },
 }
 
 -- \Provides commands whose arguments are three braced groups:
@@ -243,13 +246,16 @@ for _, r in ipairs(report) do
   local row_cells = { r.name, version_cell, date_cell, tostring(#r.entries) }
   for _, c in ipairs(compat) do table.insert(row_cells, c) end
   table.insert(lines, "| " .. table.concat(row_cells, " | ") .. " |")
-end
-for _, name in ipairs(capabilities) do
-  local compat = assert(workflow_compat[name],
-    "no workflow compatibility expectations for " .. name)
-  local row_cells = { name, "n/a", "n/a", "n/a" }
-  for _, c in ipairs(compat) do table.insert(row_cells, c) end
-  table.insert(lines, "| " .. table.concat(row_cells, " | ") .. " |")
+  for _, name in ipairs(capabilities_after[r.name] or {}) do
+    local capability_compat = assert(workflow_compat[name],
+      "no workflow compatibility expectations for " .. name)
+    local capability_cells = { name, "n/a", "n/a", "n/a" }
+    for _, c in ipairs(capability_compat) do
+      table.insert(capability_cells, c)
+    end
+    table.insert(lines,
+      "| " .. table.concat(capability_cells, " | ") .. " |")
+  end
 end
 table.insert(lines, "<!-- END MODULE VERSIONS -->")
 local table_block = table.concat(lines, "\n")
