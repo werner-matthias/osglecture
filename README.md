@@ -70,6 +70,6 @@ ollm doctor
 
 ## Documentation
 See `osglecture-manual-en.pdf` or `osglecture-manual-de.pdf` for a user documentation
-in English, or German, repectively. (Well, not ready yet :shruk:)
+in English, or German, repectively. (Well, not ready yet :shrug:)
 
 Beside, the most packages have their own documentation.
