@@ -31,12 +31,6 @@ local modules = {
     extractor = "perl_version" },
 }
 
--- Editorial annotation appended to a module's name cell in the README table
--- (not inferred)
-local NOTES = {
-  ["osglecture-modes"] = "[^1]",
-}
-
 -- Distribution-compatibility columns are filled in by hand after running
 -- the "Distribution compatibility" GitHub Actions workflow (see
 -- .github/workflows/compatibility.yml); this script re-reads whatever is
@@ -52,6 +46,12 @@ local COMPAT_SEED = {
   ["lttheme-tuc-2019"] = { ":x:",  ":x:",  ":+1:" },
   osgdoc               = { ":+1:", ":+1:", ":+1:" },
   ollm                 = { ":x:",  ":+1:", ":+1:" },
+  ["ltx-talk support (osglecture + osglecture-modes)"] =
+                         { ":x:",  ":x:",  ":+1:" },
+}
+
+local capabilities = {
+  "ltx-talk support (osglecture + osglecture-modes)",
 }
 
 -- \Provides commands whose arguments are three braced groups:
@@ -233,8 +233,13 @@ for _, r in ipairs(report) do
     date_cell = "mixed (" .. table.concat(r.date_list, ", ") .. ")"
   end
   local compat = existing_compat[r.name] or COMPAT_SEED[r.name] or { "?", "?", "?" }
-  local name_cell = r.name .. (NOTES[r.name] or "")
-  local row_cells = { name_cell, version_cell, date_cell, tostring(#r.entries) }
+  local row_cells = { r.name, version_cell, date_cell, tostring(#r.entries) }
+  for _, c in ipairs(compat) do table.insert(row_cells, c) end
+  table.insert(lines, "| " .. table.concat(row_cells, " | ") .. " |")
+end
+for _, name in ipairs(capabilities) do
+  local compat = existing_compat[name] or COMPAT_SEED[name] or { "?", "?", "?" }
+  local row_cells = { name, "n/a", "n/a", "n/a" }
   for _, c in ipairs(compat) do table.insert(row_cells, c) end
   table.insert(lines, "| " .. table.concat(row_cells, " | ") .. " |")
 end

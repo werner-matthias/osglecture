@@ -63,15 +63,17 @@ jobs:
             expect_2024: pass
             expect_2025: pass
             expect_current: pass
-          - name: osglecture-modes-ltxtalk
+          - name: ltx-talk support (osglecture + osglecture-modes)
             directory: osglecture-modes
             config: ltxtalk
+            companion_directory: ../osglecture
+            companion_config: ltxtalk
             expect_2024: fail
             expect_2025: fail
             expect_current: pass
           - name: osglecture
             directory: osglecture
-            config: build
+            config: core
             expect_2024: fail
             expect_2025: pass
             expect_current: pass
@@ -105,7 +107,17 @@ jobs:
         id: compatibility-test
         continue-on-error: true
         working-directory: ${{ matrix.component.directory }}
-        run: l3build check --config ${{ matrix.component.config }}
+        env:
+          COMPANION_DIRECTORY: ${{ matrix.component.companion_directory }}
+          COMPANION_CONFIG: ${{ matrix.component.companion_config }}
+        run: |
+          l3build check --config ${{ matrix.component.config }}
+          if [[ -n "$COMPANION_DIRECTORY" ]]; then
+            (
+              cd "$COMPANION_DIRECTORY"
+              l3build check --config "$COMPANION_CONFIG"
+            )
+          fi
 
       - name: Compare result with compatibility expectation
         id: expectation
