@@ -15,14 +15,14 @@
 }
 
 \DeclareOsgColorPalette{editorial}{
-  primary    = {HTML}{244A73},
-  secondary  = {HTML}{4F6D7A},
-  accent     = {HTML}{D97706},
-  text       = {HTML}{202428},
-  background = {HTML}{FFFDF8},
+  primary    = {RGB}{36,74,115},
+  secondary  = {RGB}{79,109,122},
+  accent     = {RGB}{217,119,6},
+  text       = {RGB}{32,36,40},
+  background = {RGB}{255,253,248},
   structure  = {alias}{primary},
-  alert      = {HTML}{A61B1B},
-  example    = {HTML}{287A50}
+  alert      = {RGB}{166,27,27},
+  example    = {RGB}{40,122,80}
 }
 
 \DeclareOsgMetricPalette{editorial}{
@@ -157,10 +157,10 @@ Outside the quotation, the surrounding socket assignments are active again:
 
 A project-specific command can be bound without defining its implementation
 twice. A \term{key term} combines bold text and a palette-based marker.
-The command \doubleemph{combines simultaneous overlining and underlining},
-including across ordinary line breaking when used in a longer passage.
+The command can \doubleemph{combine overlining and underlining} in one style.
 
-An enclosure and an affix can also be composed:
+The standard command \fbox{uses the palette's primary colour}. An enclosure
+and an affix can also be composed:
 \inlinenote{a short, unbreakable framed note}.
 
 \section{Resource switching}

@@ -82,12 +82,14 @@ load babel
 \NeedsTeXFormat{LaTeX2e}[2024-06-01]
 \ProvidesExplPackage{osgstyler}
 {2026/08/23}
-{v0.0.1}
+{v0.1.0-alpha}
 {Template-based, reusable document styles}
 \RequirePackage{xcolor}
 \RequirePackage{fontspec}
 
 \ExplSyntaxOn
+
+\NewExpandableDocumentCommand \OsgStylerAPIVersion { } { 0.1.0-alpha }
 
 \cs_generate_variant:Nn \clist_map_inline:nn { V }
 
@@ -343,6 +345,17 @@ load babel
 \NewDocumentCommand \UseOsgFont { m }
   { \__osgstyler_font_select:n {#1} }
 
+\DeclareOsgFontPalette { osgstyler-default }
+  {
+    main      = { font = { Latin Modern Roman } },
+    companion = { font = { Latin Modern Sans } },
+    display   = { alias = companion },
+    accent    = { alias = companion },
+    mono      = { font = { Latin Modern Mono } },
+    symbol    = { alias = main }
+  }
+\UseOsgFontPalette { osgstyler-default }
+
 % Color palettes deliberately mirror lttheme's public color vocabulary and
 % value syntax.  osgstyler owns neutral, stable color names; a presentation
 % adapter can copy these colors without making the general package depend on
@@ -547,6 +560,19 @@ load babel
 \NewExpandableDocumentCommand \OsgActiveColorPalette { }
   { \tl_use:N \g__osgstyler_color_palette_tl }
 
+\DeclareOsgColorPalette { osgstyler-default }
+  {
+    primary    = { RGB } { 43,58,103 },
+    secondary  = { RGB } { 73,106,129 },
+    accent     = { RGB } { 102,153,155 },
+    text       = { RGB } { 51,51,51 },
+    background = { RGB } { 255,255,255 },
+    structure  = { alias } { primary },
+    alert      = { RGB } { 176,0,32 },
+    example    = { RGB } { 22,101,52 }
+  }
+\UseOsgColorPalette { osgstyler-default }
+
 % Metric palettes provide a small, portable scale for layout and decoration
 % backends.  Every declaration starts from complete defaults and may override
 % only the values relevant to a theme.
@@ -658,6 +684,9 @@ load babel
 
 \NewExpandableDocumentCommand \OsgActiveMetricPalette { }
   { \tl_use:N \g__osgstyler_metric_palette_tl }
+
+\DeclareOsgMetricPalette { osgstyler-default } { }
+\UseOsgMetricPalette { osgstyler-default }
 
 % Decorations are backend-neutral visual recipes.  A decoration may combine
 % any number of components; rendering packages consume the stored values.
@@ -1058,6 +1087,23 @@ load babel
 \NewDocumentCommand \EditOsgInlineStyle { m m }
   { \EditInstance { osgstyler-inline } {#1} {#2} }
 
+\prop_new:N \g__osgstyler_mode_aware_command_prop
+
+\cs_new_protected:Npn \__osgstyler_make_mode_aware:Nn #1#2
+  {
+    \cs_if_exist:NT \MakeOverlayAwareCommand
+      {
+        \prop_if_in:NeF \g__osgstyler_mode_aware_command_prop
+          { \cs_to_str:N #1 }
+          {
+            \MakeOverlayAwareCommand
+              [ arguments = {#2}, fallback = flatten ] #1
+            \prop_gput:Nee \g__osgstyler_mode_aware_command_prop
+              { \cs_to_str:N #1 } { true }
+          }
+      }
+  }
+
 \cs_new_protected:Npn \__osgstyler_inline_command_define_existing:Nn #1#2
   { \RenewDocumentCommand #1 { +m } { \UseSocket {#2} {##1} } }
 
@@ -1113,6 +1159,7 @@ load babel
           { \l__osgstyler_inline_command_socket_tl / #2 } { true }
       }
     \AssignSocketPlug { \l__osgstyler_inline_command_socket_tl } { style/#2 }
+    \__osgstyler_make_mode_aware:Nn #1 { +m }
   }
 
 \NewDocumentCommand \BindOsgInlineCommand { m m }
@@ -1150,6 +1197,12 @@ load babel
   }
 \DeclareOsgDecoration { osgstyler-highlight }
   { background = { color=accent, opacity=1, shape=text } }
+\DeclareOsgDecoration { osgstyler-frame }
+  {
+    enclosure =
+      { border-color=primary, fill-color=background, pattern=solid,
+        thickness=rule/thin, radius=0pt, padding=padding/normal }
+  }
 
 \DeclareOsgInlineStyle { emphasis }
   { font=none, weight=inherit, shape=italic, color=none,
@@ -1161,6 +1214,8 @@ load babel
   { font=none, color=none, decoration=osgstyler-underline, semantics=none }
 \DeclareOsgInlineStyle { highlight }
   { font=none, color=none, decoration=osgstyler-highlight, semantics=none }
+\DeclareOsgInlineStyle { frame }
+  { font=none, color=none, decoration=osgstyler-frame, semantics=none }
 
 \NewDocumentCommand \UseOsgStandardInlineCommands { }
   {
@@ -1168,6 +1223,7 @@ load babel
     \BindOsgInlineCommand \textbf { strong }
     \BindOsgInlineCommand \uline { underline }
     \BindOsgInlineCommand \highlight { highlight }
+    \BindOsgInlineCommand \fbox { frame }
   }
 
 \NewDocumentCommand \UseOsgDefaultInlineCommands { }
@@ -1176,9 +1232,87 @@ load babel
     \__osgstyler_inline_command_default:N \textbf
     \__osgstyler_inline_command_default:N \uline
     \__osgstyler_inline_command_default:N \highlight
+    \__osgstyler_inline_command_default:N \fbox
   }
 
 \BindOsgInlineCommand \highlight { highlight }
+
+% Optional osglecture-modes integration.  The direct style command and every
+% command managed by the binder accept a portable angle-bracket mode whenever
+% osglecture-modes is present.  Configuration commands deliberately remain
+% mode-independent.
+\bool_new:N \g__osgstyler_modes_integrated_bool
+
+\cs_new_protected:Npn \__osgstyler_modes_integrate:
+  {
+    \bool_if:NF \g__osgstyler_modes_integrated_bool
+      {
+        \bool_gset_true:N \g__osgstyler_modes_integrated_bool
+        \__osgstyler_make_mode_aware:Nn \UseOsgInlineStyle { m +m }
+        \prop_map_inline:Nn \g__osgstyler_inline_command_socket_prop
+          {
+            \exp_args:Nc \__osgstyler_make_mode_aware:Nn {##1} { +m }
+          }
+      }
+  }
+
+\AddToHook { package/osglecture-modes/after } [ osgstyler/modes ]
+  { \__osgstyler_modes_integrate: }
+\IfPackageLoadedTF { osglecture-modes }
+  { \__osgstyler_modes_integrate: } { }
+
+% Optional lttheme integration.  Exported colors preserve the public palette
+% vocabulary while keeping lttheme out of osgstyler's dependencies.
+\bool_new:N \g__osgstyler_lttheme_integrated_bool
+
+\cs_new_protected:Npn \__osgstyler_lttheme_sync_colors:
+  {
+    \clist_map_inline:Nn \c__osgstyler_color_slots_clist
+      {
+        \str_if_eq:nnTF {##1} { background }
+          { \tl_set:Nn \l_tmpa_tl { bg } }
+          { \tl_set:Nn \l_tmpa_tl {##1} }
+        \exp_args:Ne \color_export:nnN
+          { ltxtalk-\l_tmpa_tl } { HTML } \l_tmpb_tl
+        \prop_gput:Nnn \g__osgstyler_color_palette_prop
+          { lttheme / ##1 / kind } { resource }
+        \prop_gput:Nnn \g__osgstyler_color_palette_prop
+          { lttheme / ##1 / model } { HTML }
+        \prop_gput:Nne \g__osgstyler_color_palette_prop
+          { lttheme / ##1 / specification } { \l_tmpb_tl }
+        \use:e
+          {
+            \exp_not:N \definecolor
+              { osgstyler-##1 } { HTML } { \l_tmpb_tl }
+          }
+      }
+    \prop_gput:Nnn \g__osgstyler_color_palette_prop
+      { lttheme / declared } { true }
+    \tl_gset:Nn \g__osgstyler_color_palette_tl { lttheme }
+  }
+
+\cs_new_protected:Npn \__osgstyler_lttheme_integrate:
+  {
+    \bool_if:NF \g__osgstyler_lttheme_integrated_bool
+      {
+        \bool_gset_true:N \g__osgstyler_lttheme_integrated_bool
+        \AddToHook { cmd/useltxtalktheme/after }
+          [ osgstyler/lttheme/theme ]
+          { \__osgstyler_lttheme_sync_colors: }
+        \AddToHook { cmd/addltxtalktheme/after }
+          [ osgstyler/lttheme/add-theme ]
+          { \__osgstyler_lttheme_sync_colors: }
+        \AddToHook { cmd/setltxtalkcolors/after }
+          [ osgstyler/lttheme/colors ]
+          { \__osgstyler_lttheme_sync_colors: }
+        \__osgstyler_lttheme_sync_colors:
+      }
+  }
+
+\AddToHook { package/ltxtalk-theme/after } [ osgstyler/lttheme ]
+  { \__osgstyler_lttheme_integrate: }
+\IfPackageLoadedTF { ltxtalk-theme }
+  { \__osgstyler_lttheme_integrate: } { }
 
 \ExplSyntaxOff
 
@@ -1189,7 +1323,7 @@ load babel
 \NeedsTeXFormat{LaTeX2e}[2024-06-01]
 \ProvidesExplPackage{osgstyler-lua}
 {2026/08/23}
-{v0.0.1}
+{v0.1.0-alpha}
 {Lua reference backend for osgstyler decorations}
 \RequirePackage{osgstyler}
 \RequirePackage{luacolor}

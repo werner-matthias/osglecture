@@ -1,0 +1,41 @@
+\input regression-test.tex
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}
+\usepackage{osgstyler-lua}
+
+\ExplSyntaxOn
+\cs_new_protected:Npn \__osgstyler_test_tag_semantics:nn #1#2
+  {
+    \str_case:nnF {#1}
+      {
+        { emphasis }
+          {
+            \UseTaggingSocket { inline/begin }
+              { tag=\UseStructureName{text/emph} }
+            #2
+            \UseTaggingSocket { inline/end }
+          }
+        { strong }
+          {
+            \UseTaggingSocket { inline/begin } { tag=Strong }
+            #2
+            \UseTaggingSocket { inline/end }
+          }
+      }
+      {#2}
+  }
+\cs_new_eq:NN \TestTagSemantics \__osgstyler_test_tag_semantics:nn
+\ExplSyntaxOff
+
+\begin{document}
+
+\SetOsgSemanticProcessor{\TestTagSemantics}
+Plain text,
+\UseOsgInlineStyle{emphasis}{forwarded emphasis},
+\UseOsgInlineStyle{strong}{forwarded strong text}, and
+\UseOsgInlineStyle{highlight}{semantically neutral highlighting}.
+
+\clearpage
+\SHOWPDFTAGS
+
+\end{document}

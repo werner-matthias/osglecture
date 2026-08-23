@@ -1,0 +1,20 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage[mode=script]{osglecture-modes}
+\usepackage{osgstyler}
+\UseOsgStandardInlineCommands
+
+\ExplSyntaxOn
+\cs_new_protected:Npn \__osgstyler_test_reverse_semantics:nn #1#2
+  { \TYPE{reverse=#1} #2 }
+\cs_new_eq:NN \TestReverseSemantics \__osgstyler_test_reverse_semantics:nn
+\ExplSyntaxOff
+
+\begin{document}
+\SetOsgSemanticProcessor{\TestReverseSemantics}
+\START
+\emph<script>{shown}
+\emph<presentation>{omitted}
+\TYPE{reverse-modes=done}
+\END
+\end{document}

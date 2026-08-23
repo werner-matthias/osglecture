@@ -1,0 +1,21 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osgstyler}
+\usepackage{ltxtalk-theme}
+
+\begin{document}
+\START
+\TYPE{active=\OsgActiveColorPalette}
+\extractcolorspec{osgstyler-primary}\TestColor
+\TYPE{initial-primary=\TestColor}
+\useltxtalktheme{test}
+\extractcolorspec{osgstyler-primary}\TestColor
+\TYPE{theme-primary=\TestColor}
+\addltxtalktheme{extra}
+\extractcolorspec{osgstyler-accent}\TestColor
+\TYPE{added-accent=\TestColor}
+\setltxtalkcolors{160,30,30}
+\extractcolorspec{osgstyler-alert}\TestColor
+\TYPE{changed-alert=\TestColor}
+\END
+\end{document}

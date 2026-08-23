@@ -1,0 +1,17 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osgstyler-lua}
+
+\begin{document}
+\START
+\TYPE{font=\OsgActiveFontPalette}
+\TYPE{color=\OsgActiveColorPalette}
+\TYPE{metric=\OsgActiveMetricPalette}
+\TYPE{primary=\OsgColorPaletteValue{osgstyler-default}{primary}{specification}}
+\TYPE{rule=\OsgMetric{rule}{thin}}
+\highlight{zero-configuration highlight}
+\UseOsgStandardInlineCommands
+\fbox{zero-configuration frame}
+\TYPE{rendered=yes}
+\END
+\end{document}

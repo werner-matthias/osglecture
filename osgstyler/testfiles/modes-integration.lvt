@@ -1,0 +1,30 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osgstyler}
+\usepackage[mode=script]{osglecture-modes}
+
+\NewDocumentCommand\ProjectTerm{m}{#1}
+\DeclareOsgInlineStyle{project-term}{
+  font=none, color=none, decoration=none, semantics=emphasis
+}
+\UseOsgStandardInlineCommands
+\BindOsgInlineCommand{\ProjectTerm}{project-term}
+
+\ExplSyntaxOn
+\cs_new_protected:Npn \__osgstyler_test_semantics:nn #1#2
+  { \TYPE{semantics=#1} #2 }
+\cs_new_eq:NN \TestSemantics \__osgstyler_test_semantics:nn
+\ExplSyntaxOff
+
+\begin{document}
+\SetOsgSemanticProcessor{\TestSemantics}
+\START
+\emph<script>{active-emphasis}
+\emph<slides>{omitted-emphasis}
+\ProjectTerm<longform>{active-project-term}
+\ProjectTerm<presentation>{omitted-project-term}
+\UseOsgInlineStyle<script>{emphasis}{active-direct-style}
+\UseOsgInlineStyle<slides>{emphasis}{omitted-direct-style}
+\TYPE{modes=done}
+\END
+\end{document}

@@ -1,0 +1,124 @@
+\documentclass{article}
+
+\usepackage[a4paper,margin=28mm]{geometry}
+\usepackage{osgstyler-lua}
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable}
+
+% A compact Beamer-like theme. The concrete resources live in osgstyler
+% palettes; author commands and environments below only refer to their roles.
+\DeclareOsgFontPalette{lecture}{
+  main      = {font = {Latin Modern Roman}},
+  companion = {font = {Latin Modern Sans}},
+  display   = {alias = companion},
+  accent    = {alias = companion},
+  mono      = {font = {Latin Modern Mono}},
+  symbol    = {alias = main}
+}
+
+\DeclareOsgColorPalette{lecture}{
+  primary    = {RGB}{42,78,121},
+  secondary  = {RGB}{92,112,132},
+  accent     = {RGB}{42,78,121},
+  text       = {RGB}{28,32,36},
+  background = {RGB}{255,255,255},
+  structure  = {alias}{primary},
+  alert      = {RGB}{178,45,45},
+  example    = {RGB}{43,125,79}
+}
+
+\DeclareOsgMetricPalette{lecture}{
+  spacing = {sm = {.5\baselineskip}, md = {.9\baselineskip}},
+  padding = {compact = {.35em}, normal = {.65em}},
+  rule    = {thin = {.45pt}, normal = {.8pt}},
+  radius  = {small = {2pt}}
+}
+
+\UseOsgFontPalette{lecture}
+\UseOsgColorPalette{lecture}
+\UseOsgMetricPalette{lecture}
+
+% Beamer-like inline roles. Both spellings are provided deliberately:
+% \structure is Beamer's command, while \struct is a convenient short form.
+\DeclareOsgInlineStyle{alert-text}{
+  font = none, weight = bold, shape = inherit,
+  color = alert, decoration = none, semantics = strong
+}
+\DeclareOsgInlineStyle{structure-text}{
+  font = none, weight = bold, shape = inherit,
+  color = structure, decoration = none, semantics = none
+}
+\BindOsgInlineCommand{\alert}{alert-text}
+\BindOsgInlineCommand{\structure}{structure-text}
+\BindOsgInlineCommand{\struct}{structure-text}
+
+% tcolorbox is only the renderer. Colors, typography, rules, radii, padding,
+% and spacing are resolved through the active osgstyler palettes.
+\tcbset{
+  osg beamer block/.style={
+    breakable,
+    colback=\OsgColorName{background},
+    coltext=\OsgColorName{text},
+    boxrule=\OsgMetric{rule}{normal},
+    arc=\OsgMetric{radius}{small},
+    left=\OsgMetric{padding}{normal},
+    right=\OsgMetric{padding}{normal},
+    top=\OsgMetric{padding}{compact},
+    bottom=\OsgMetric{padding}{compact},
+    before skip=\OsgMetric{spacing}{md},
+    after skip=\OsgMetric{spacing}{md},
+    fonttitle=\UseOsgFont{accent}\bfseries,
+    coltitle=\OsgColorName{background}
+  }
+}
+
+\newtcolorbox{block}[1]{
+  osg beamer block,
+  title={#1},
+  colframe=\OsgColorName{structure},
+  colbacktitle=\OsgColorName{structure}
+}
+\newtcolorbox{alertblock}[1]{
+  osg beamer block,
+  title={#1},
+  colframe=\OsgColorName{alert},
+  colbacktitle=\OsgColorName{alert}
+}
+\newtcolorbox{exampleblock}[1]{
+  osg beamer block,
+  title={#1},
+  colframe=\OsgColorName{example},
+  colbacktitle=\OsgColorName{example}
+}
+
+\title{Beamer-like formatting with \texttt{osgstyler}}
+\author{osglecture example}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Inline roles}
+
+The commands \structure{structure the exposition}, \struct{use the same
+role through a short alias}, and \alert{draw attention to an important
+statement}. Their appearance can be changed without redefining the commands.
+
+\section{Block roles}
+
+\begin{block}{Ordinary block}
+  This corresponds to Beamer's neutral \texttt{block}. Its visual structure
+  uses the palette's \structure{structure colour}.
+\end{block}
+
+\begin{alertblock}{Alert block}
+  This material requires attention. Inline \alert{alert text} and the block
+  share a color role, but retain distinct inline and block semantics.
+\end{alertblock}
+
+\begin{exampleblock}{Example block}
+  Examples receive their own palette slot and can therefore remain visually
+  distinct when the complete theme is exchanged.
+\end{exampleblock}
+
+\end{document}

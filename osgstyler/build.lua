@@ -2,6 +2,8 @@ bundle = "osglecture"
 module = "osgstyler"
 maindir = ".."
 
+checkdeps = { "../osglecture-modes" }
+
 textfiles = {
     "README-osgstyler.md"
 }

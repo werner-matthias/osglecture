@@ -1,0 +1,16 @@
+\input regression-test.tex
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}
+\usepackage{osgstyler-lua}
+\UseOsgStandardInlineCommands
+
+\begin{document}
+
+Plain text, \emph{native emphasis}, \textbf{strong-looking text},
+\uline{underlined text}, \highlight{highlighted text}, and
+\fbox{framed text} remain in one accessible paragraph.
+
+\clearpage
+\SHOWPDFTAGS
+
+\end{document}

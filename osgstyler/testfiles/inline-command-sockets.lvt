@@ -25,10 +25,11 @@
 \textbf{bold}
 \uline{underlined}
 \highlight{marked}
+\fbox{framed}
 \TYPE{defaults-before}
 {\UseOsgDefaultInlineCommands
   \emph{original emphasis}\textbf{original bold}
-  \uline{plain underline}\highlight{plain highlight}}
+  \uline{plain underline}\highlight{plain highlight}\fbox{plain frame}}
 \TYPE{defaults-after}
 \emph{bound-again}
 \RestoreOsgInlineCommand{\ExistingCommand}

@@ -1,0 +1,7 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+active=lttheme
+initial-primary={rgb}{0.03923,0.07843,0.11766}
+theme-primary={rgb}{0.04315,0.08627,0.12941}
+added-accent={rgb}{0.30196,0.34511,0.38824}
+changed-alert={rgb}{0.62746,0.11766,0.11766}

@@ -1,0 +1,19 @@
+\NeedsTeXFormat{LaTeX2e}[2024-06-01]
+\ProvidesExplPackage{ltxtalk-theme}{2026/08/23}{v0.0.0}{Test stub}
+\RequirePackage{xcolor}
+\ExplSyntaxOn
+\color_set:nnn { ltxtalk-primary }   { RGB } { 10,20,30 }
+\color_set:nnn { ltxtalk-secondary } { RGB } { 40,50,60 }
+\color_set:nnn { ltxtalk-accent }    { RGB } { 70,80,90 }
+\color_set:nnn { ltxtalk-text }      { RGB } { 20,20,20 }
+\color_set:nnn { ltxtalk-bg }        { RGB } { 250,250,250 }
+\color_set:nnn { ltxtalk-structure } { RGB } { 10,20,30 }
+\color_set:nnn { ltxtalk-alert }     { RGB } { 150,20,20 }
+\color_set:nnn { ltxtalk-example }   { RGB } { 20,120,60 }
+\NewDocumentCommand \useltxtalktheme { m }
+  { \color_set:nnn { ltxtalk-primary } { RGB } { 11,22,33 } }
+\NewDocumentCommand \addltxtalktheme { m }
+  { \color_set:nnn { ltxtalk-accent } { RGB } { 77,88,99 } }
+\NewDocumentCommand \setltxtalkcolors { m }
+  { \color_set:nnn { ltxtalk-alert } { RGB } {#1} }
+\ExplSyntaxOff

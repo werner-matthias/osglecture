@@ -1,0 +1,13 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{ltxtalk-theme}
+\useltxtalktheme{test}
+\usepackage{osgstyler}
+
+\begin{document}
+\START
+\TYPE{reverse-active=\OsgActiveColorPalette}
+\extractcolorspec{osgstyler-primary}\TestColor
+\TYPE{reverse-primary=\TestColor}
+\END
+\end{document}
