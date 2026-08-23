@@ -24,33 +24,63 @@ jobs:
           - name: ollm
             directory: ollm
             config: build
+            expect_2024: fail
+            expect_2025: pass
+            expect_current: pass
           - name: osgdoc
             directory: osgdoc
             config: build
+            expect_2024: pass
+            expect_2025: pass
+            expect_current: pass
           - name: langselect
             directory: langselect
             config: build
+            expect_2024: pass
+            expect_2025: pass
+            expect_current: pass
           - name: osgstyler
             directory: osgstyler
             config: build
+            expect_2024: pass
+            expect_2025: pass
+            expect_current: pass
           - name: lttheme
             directory: lttheme
             config: build
+            expect_2024: fail
+            expect_2025: fail
+            expect_current: pass
           - name: lttheme-tuc-2019
             directory: lttheme-tuc-2019
             config: build
+            expect_2024: fail
+            expect_2025: fail
+            expect_current: pass
           - name: osglecture-modes-core
             directory: osglecture-modes
             config: core
+            expect_2024: pass
+            expect_2025: pass
+            expect_current: pass
           - name: osglecture-modes-ltxtalk
             directory: osglecture-modes
             config: ltxtalk
+            expect_2024: fail
+            expect_2025: fail
+            expect_current: pass
           - name: osglecture
             directory: osglecture
             config: build
+            expect_2024: fail
+            expect_2025: pass
+            expect_current: pass
           - name: tagpax
             directory: tagpax
             config: build
+            expect_2024: pass
+            expect_2025: pass
+            expect_current: pass
         distribution:
           - texlive: "2024"
             image: texlive/texlive:TL2024-historic
@@ -72,11 +102,53 @@ jobs:
           l3build version
 
       - name: Test ${{ matrix.component.name }}
+        id: compatibility-test
+        continue-on-error: true
         working-directory: ${{ matrix.component.directory }}
         run: l3build check --config ${{ matrix.component.config }}
 
+      - name: Compare result with compatibility expectation
+        id: expectation
+        if: always()
+        shell: bash
+        env:
+          ACTUAL: ${{ steps.compatibility-test.outcome }}
+          TEXLIVE: ${{ matrix.distribution.texlive }}
+          EXPECT_2024: ${{ matrix.component.expect_2024 }}
+          EXPECT_2025: ${{ matrix.component.expect_2025 }}
+          EXPECT_CURRENT: ${{ matrix.component.expect_current }}
+        run: |
+          case "$TEXLIVE" in
+            2024) expected="$EXPECT_2024" ;;
+            2025) expected="$EXPECT_2025" ;;
+            current) expected="$EXPECT_CURRENT" ;;
+            *)
+              echo "::error::No compatibility expectation configured for TeX Live $TEXLIVE."
+              exit 1
+              ;;
+          esac
+
+          case "$ACTUAL" in
+            success) actual=pass ;;
+            failure) actual=fail ;;
+            *)
+              echo "::error::Compatibility test ended with unexpected outcome '$ACTUAL'."
+              exit 1
+              ;;
+          esac
+
+          echo "Expected: $expected"
+          echo "Actual:   $actual"
+
+          if [[ "$actual" != "$expected" ]]; then
+            echo "::error::Compatibility changed for ${{ matrix.component.name }} on TeX Live $TEXLIVE: expected $expected, observed $actual."
+            exit 1
+          fi
+
+          echo "Compatibility matches the recorded expectation."
+
       - name: Show test differences
-        if: failure()
+        if: always() && steps.compatibility-test.outcome == 'failure'
         shell: bash
         run: |
           test_dir="build/test"
@@ -95,7 +167,7 @@ jobs:
           done < <(find "$test_dir" -type f -name '*.diff' -print)
 
       - name: Upload failed test output
-        if: failure()
+        if: always() && steps.expectation.outcome == 'failure' && steps.compatibility-test.outcome == 'failure'
         uses: actions/upload-artifact@v6
         with:
           name: compatibility-${{ matrix.component.name }}-tl${{ matrix.distribution.texlive }}
