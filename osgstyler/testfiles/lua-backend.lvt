@@ -1,0 +1,70 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osgstyler-lua}
+
+\DeclareOsgFontPalette{backend-test}{
+  main = {font = {Latin Modern Roman}},
+  accent = {font = {Latin Modern Sans}},
+  mono = {font = {Latin Modern Mono}}
+}
+\DeclareOsgColorPalette{backend-test}{
+  primary = {HTML}{223344},
+  text = {HTML}{111111},
+  background = {HTML}{FFFFFF},
+  accent = {HTML}{FFD966}
+}
+\DeclareOsgMetricPalette{backend-test}{
+  rule = {thin = {.4pt}},
+  padding = {compact = {.2em}}
+}
+
+\DeclareOsgDecoration{two-lines}{
+  line = {
+    under = {
+      position = below, pattern = solid, color = primary,
+      thickness = rule/thin, offset = {.08ex}
+    },
+    over = {
+      position = above, pattern = solid, color = primary,
+      thickness = rule/thin, offset = {.9ex}
+    }
+  }
+}
+\DeclareOsgDecoration{marker}{
+  background = {color = accent, opacity = 1, shape = text},
+  affix = {
+    open = {position = before, content = {[}, gap = {.1em}},
+    close = {position = after, content = {]}, gap = {.1em}}
+  }
+}
+\DeclareOsgDecoration{frame}{
+  enclosure = {
+    border-color = primary, fill-color = background,
+    pattern = solid, thickness = rule/thin,
+    radius = 0pt, padding = padding/compact
+  }
+}
+
+\DeclareOsgInlineStyle{lined}{
+  font = main, color = text, decoration = two-lines
+}
+\DeclareOsgInlineStyle{marked}{
+  font = main, color = text, decoration = marker
+}
+\DeclareOsgInlineStyle{framed}{
+  font = main, color = text, decoration = frame
+}
+
+\begin{document}
+\UseOsgFontPalette{backend-test}
+\UseOsgColorPalette{backend-test}
+\UseOsgMetricPalette{backend-test}
+\START
+\TYPE{backend=\OsgStylerLuaBackendActive}
+\TYPE{lines=\OsgDecorationInstances{two-lines}{line}}
+\UseOsgInlineStyle{lined}{over and under}
+\UseOsgInlineStyle{marked}{highlighted}
+\UseOsgInlineStyle{framed}{framed}
+\TYPE{rendered=yes}
+\END
+\end{document}

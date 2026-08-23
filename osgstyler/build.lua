@@ -8,6 +8,7 @@ textfiles = {
 
 installfiles = {
     "osgstyler.sty",
+    "osgstyler-lua.sty",
 }
 
 sourcefiles = {

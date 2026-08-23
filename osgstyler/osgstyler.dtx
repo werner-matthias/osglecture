@@ -25,6 +25,7 @@
 
 \generate{
   \file{osgstyler.sty}{\from{osgstyler.dtx}{pkg}}
+  \file{osgstyler-lua.sty}{\from{osgstyler.dtx}{lua-backend}}
   }
   \expandafter\endbatchfile
 \fi
@@ -80,13 +81,15 @@ load babel
 %<*pkg>
 \NeedsTeXFormat{LaTeX2e}[2024-06-01]
 \ProvidesExplPackage{osgstyler}
-{2026/08/22}
+{2026/08/23}
 {v0.0.1}
 {Template-based, reusable document styles}
 \RequirePackage{xcolor}
 \RequirePackage{fontspec}
 
 \ExplSyntaxOn
+
+\cs_generate_variant:Nn \clist_map_inline:nn { V }
 
 % Font palettes contain a deliberately small, portable set of relational
 % slots.  A slot either owns a fontspec resource or aliases another slot.
@@ -168,7 +171,7 @@ load babel
                     \prop_gput:NnV \g__osgstyler_font_palette_prop
                       { #1 / #2 / alias } \l__osgstyler_font_alias_tl
                   }
-                  { \msg_error:nnV { osgstyler } { unknown-font-slot }
+                  { \msg_error:nne { osgstyler } { unknown-font-slot }
                       \l__osgstyler_font_alias_tl }
               }
           }
@@ -928,10 +931,24 @@ load babel
 \tl_new:N \l__osgstyler_inline_color_tl
 \tl_new:N \l__osgstyler_inline_decoration_tl
 \tl_new:N \l__osgstyler_inline_semantics_tl
+\tl_new:N \l__osgstyler_inline_weight_tl
+\tl_new:N \l__osgstyler_inline_shape_tl
+\tl_new:N \l__osgstyler_inline_command_socket_tl
+\prop_new:N \g__osgstyler_inline_command_socket_prop
+\prop_new:N \g__osgstyler_inline_command_plug_prop
 
 \msg_new:nnnn { osgstyler } { unknown-decoration-for-style }
   { Inline~style~uses~unknown~decoration~'#1'. }
   { Declare~the~decoration~before~using~the~inline~style. }
+\msg_new:nnnn { osgstyler } { unknown-inline-weight }
+  { Unknown~inline~font~weight~'#1'. }
+  { Use~inherit,~regular,~or~bold. }
+\msg_new:nnnn { osgstyler } { unknown-inline-shape }
+  { Unknown~inline~font~shape~'#1'. }
+  { Use~inherit,~upright,~italic,~slanted,~or~small-caps. }
+\msg_new:nnnn { osgstyler } { unbound-inline-command }
+  { Command~'#1'~is~not~managed~by~osgstyler. }
+  { Bind~it~with~\token_to_str:N\BindOsgInlineCommand~first. }
 
 \cs_new_protected:Npn \__osgstyler_decoration_processor_default:nn #1#2 {#2}
 \cs_new_protected:Npn \__osgstyler_semantic_processor_default:nn #1#2 {#2}
@@ -950,6 +967,24 @@ load babel
     \group_begin:
       \tl_if_eq:VnF \l__osgstyler_inline_font_tl { none }
         { \exp_args:NV \UseOsgFont \l__osgstyler_inline_font_tl }
+      \str_case:VnF \l__osgstyler_inline_weight_tl
+        {
+          { inherit } { }
+          { regular } { \mdseries }
+          { bold }    { \bfseries }
+        }
+        { \msg_error:nne { osgstyler } { unknown-inline-weight }
+            { \l__osgstyler_inline_weight_tl } }
+      \str_case:VnF \l__osgstyler_inline_shape_tl
+        {
+          { inherit }    { }
+          { upright }    { \upshape }
+          { italic }     { \itshape }
+          { slanted }    { \slshape }
+          { small-caps } { \scshape }
+        }
+        { \msg_error:nne { osgstyler } { unknown-inline-shape }
+            { \l__osgstyler_inline_shape_tl } }
       \tl_if_eq:VnF \l__osgstyler_inline_color_tl { none }
         {
           \exp_args:NNV \clist_if_in:NnTF
@@ -961,7 +996,7 @@ load babel
                     { \OsgColorName { \l__osgstyler_inline_color_tl } }
                 }
             }
-            { \msg_error:nnV { osgstyler } { unknown-color-slot }
+            { \msg_error:nne { osgstyler } { unknown-color-slot }
                 \l__osgstyler_inline_color_tl }
         }
       \tl_if_eq:VnTF \l__osgstyler_inline_decoration_tl { none }
@@ -974,7 +1009,7 @@ load babel
                 \l__osgstyler_inline_decoration_tl {#1}
             }
             {
-              \msg_error:nnV { osgstyler } { unknown-decoration-for-style }
+              \msg_error:nne { osgstyler } { unknown-decoration-for-style }
                 \l__osgstyler_inline_decoration_tl
               #1
             }
@@ -997,6 +1032,8 @@ load babel
 \DeclareTemplateInterface { osgstyler-inline } { standard } { 1 }
   {
     font       : tokenlist = main,
+    weight     : tokenlist = inherit,
+    shape      : tokenlist = inherit,
     color      : tokenlist = text,
     decoration : tokenlist = none,
     semantics  : tokenlist = none
@@ -1004,6 +1041,8 @@ load babel
 \DeclareTemplateCode { osgstyler-inline } { standard } { 1 }
   {
     font       = \l__osgstyler_inline_font_tl,
+    weight     = \l__osgstyler_inline_weight_tl,
+    shape      = \l__osgstyler_inline_shape_tl,
     color      = \l__osgstyler_inline_color_tl,
     decoration = \l__osgstyler_inline_decoration_tl,
     semantics  = \l__osgstyler_inline_semantics_tl
@@ -1016,8 +1055,434 @@ load babel
 \NewDocumentCommand \UseOsgInlineStyle { m m }
   { \UseInstance { osgstyler-inline } {#1} {#2} }
 
+\NewDocumentCommand \EditOsgInlineStyle { m m }
+  { \EditInstance { osgstyler-inline } {#1} {#2} }
+
+\cs_new_protected:Npn \__osgstyler_inline_command_define_existing:Nn #1#2
+  { \RenewDocumentCommand #1 { +m } { \UseSocket {#2} {##1} } }
+
+\cs_new_protected:Npn \__osgstyler_inline_command_define_new:Nn #1#2
+  { \NewDocumentCommand #1 { +m } { \UseSocket {#2} {##1} } }
+
+\cs_new_protected:Npn \__osgstyler_inline_command_socket_new:N #1
+  {
+    \tl_set:Nx \l__osgstyler_inline_command_socket_tl
+      { osgstyler/inline-command/\cs_to_str:N #1 }
+    \NewSocket { \l__osgstyler_inline_command_socket_tl } { 1 }
+    \cs_if_exist:NTF #1
+      {
+        \exp_args:Nc \NewCommandCopy
+          { __osgstyler_inline_original_\cs_to_str:N #1:n } #1
+        \NewSocketPlug { \l__osgstyler_inline_command_socket_tl } { original }
+          {
+            \use:c
+              { __osgstyler_inline_original_\cs_to_str:N #1:n } {##1}
+          }
+        \prop_gput:Nee \g__osgstyler_inline_command_plug_prop
+          { \l__osgstyler_inline_command_socket_tl / original } { true }
+        \exp_args:NNV \__osgstyler_inline_command_define_existing:Nn
+          #1 \l__osgstyler_inline_command_socket_tl
+      }
+      {
+        \exp_args:NNV \__osgstyler_inline_command_define_new:Nn
+          #1 \l__osgstyler_inline_command_socket_tl
+      }
+    \prop_gput:Nee \g__osgstyler_inline_command_socket_prop
+      { \cs_to_str:N #1 } { \l__osgstyler_inline_command_socket_tl }
+  }
+
+\cs_new_protected:Npn \__osgstyler_inline_command_bind:Nn #1#2
+  {
+    \prop_get:NeNTF \g__osgstyler_inline_command_socket_prop
+      { \cs_to_str:N #1 } \l__osgstyler_inline_command_socket_tl
+      { }
+      { \__osgstyler_inline_command_socket_new:N #1 }
+    \prop_if_in:NeF \g__osgstyler_inline_command_plug_prop
+      { \l__osgstyler_inline_command_socket_tl / #2 }
+      {
+        \NewSocketPlug { \l__osgstyler_inline_command_socket_tl }
+          { style/#2 } { \UseOsgInlineStyle {#2} {##1} }
+        \prop_gput:Nee \g__osgstyler_inline_command_plug_prop
+          { \l__osgstyler_inline_command_socket_tl / #2 } { true }
+      }
+    \AssignSocketPlug { \l__osgstyler_inline_command_socket_tl } { style/#2 }
+  }
+
+\NewDocumentCommand \BindOsgInlineCommand { m m }
+  { \__osgstyler_inline_command_bind:Nn #1 {#2} }
+
+\NewDocumentCommand \RestoreOsgInlineCommand { m }
+  {
+    \prop_get:NeNTF \g__osgstyler_inline_command_socket_prop
+      { \cs_to_str:N #1 } \l__osgstyler_inline_command_socket_tl
+      {
+        \prop_if_in:NeTF \g__osgstyler_inline_command_plug_prop
+          { \l__osgstyler_inline_command_socket_tl / original }
+          { \AssignSocketPlug { \l__osgstyler_inline_command_socket_tl }
+              { original } }
+          { \AssignSocketPlug { \l__osgstyler_inline_command_socket_tl }
+              { identity } }
+      }
+      { \msg_error:nne { osgstyler } { unbound-inline-command }
+          { \token_to_str:N #1 } }
+  }
+
+\DeclareOsgDecoration { osgstyler-underline }
+  {
+    line =
+      {
+        default =
+          { position=below, pattern=solid, color=text,
+            thickness=rule/thin, offset=.1ex }
+      }
+  }
+\DeclareOsgDecoration { osgstyler-highlight }
+  { background = { color=accent, opacity=1, shape=text } }
+
+\DeclareOsgInlineStyle { emphasis }
+  { font=none, weight=inherit, shape=italic, color=none,
+    decoration=none, semantics=emphasis }
+\DeclareOsgInlineStyle { strong }
+  { font=none, weight=bold, shape=inherit, color=none,
+    decoration=none, semantics=strong }
+\DeclareOsgInlineStyle { underline }
+  { font=none, color=none, decoration=osgstyler-underline, semantics=none }
+\DeclareOsgInlineStyle { highlight }
+  { font=none, color=none, decoration=osgstyler-highlight, semantics=none }
+
+\NewDocumentCommand \UseOsgStandardInlineCommands { }
+  {
+    \BindOsgInlineCommand \emph { emphasis }
+    \BindOsgInlineCommand \textbf { strong }
+    \BindOsgInlineCommand \uline { underline }
+    \BindOsgInlineCommand \highlight { highlight }
+  }
+
+\BindOsgInlineCommand \highlight { highlight }
+
 \ExplSyntaxOff
 
 
 
 %</pkg>
+%<*lua-backend>
+\NeedsTeXFormat{LaTeX2e}[2024-06-01]
+\ProvidesExplPackage{osgstyler-lua}
+{2026/08/23}
+{v0.0.1}
+{Lua reference backend for osgstyler decorations}
+\RequirePackage{osgstyler}
+\RequirePackage{luacolor}
+\RequirePackage{lua-ul}
+
+\ExplSyntaxOn
+
+\msg_new:nnnn { osgstyler-lua } { luatex-required }
+  { The~osgstyler~Lua~backend~requires~LuaLaTeX. }
+  { Use~LuaLaTeX~or~load~a~different~osgstyler~backend. }
+\msg_new:nnnn { osgstyler-lua } { unsupported-pattern }
+  { Pattern~'#1'~is~not~supported~for~the~'#2'~component. }
+  { The~reference~backend~uses~a~solid~rule~instead. }
+\msg_new:nnnn { osgstyler-lua } { unsupported-opacity }
+  { Background~opacity~'#1'~is~not~supported. }
+  { The~reference~backend~uses~the~opaque~palette~color. }
+\msg_new:nnnn { osgstyler-lua } { unsupported-shape }
+  { Background~shape~'#1'~is~not~supported. }
+  { The~reference~backend~uses~the~normal~text~shape. }
+\msg_new:nnnn { osgstyler-lua } { unsupported-radius }
+  { Inline~enclosure~radius~'#1'~is~not~supported. }
+  { The~reference~backend~uses~square~corners. }
+\msg_new:nnnn { osgstyler-lua } { unsupported-margin }
+  { Margin~decoration~'#1'~cannot~be~rendered~inline. }
+  { Use~a~block~backend~for~margin~decorations. }
+\msg_new:nnnn { osgstyler-lua } { unresolved-symbol }
+  { Affix~symbol~'#1'~has~no~symbol~backend. }
+  { Use~literal~content~until~a~symbol~set~is~active. }
+
+\sys_if_engine_luatex:F
+  { \msg_fatal:nn { osgstyler-lua } { luatex-required } }
+
+\DeclareOsgMetricPalette { osgstyler-lua-default } { }
+\tl_if_empty:eT { \OsgActiveMetricPalette }
+  { \UseOsgMetricPalette { osgstyler-lua-default } }
+
+\tl_new:N \l__osgstyler_lua_content_tl
+\tl_new:N \l__osgstyler_lua_before_tl
+\tl_new:N \l__osgstyler_lua_after_tl
+\tl_new:N \l__osgstyler_lua_value_tl
+\tl_new:N \l__osgstyler_lua_gap_tl
+\tl_new:N \l__osgstyler_lua_color_tl
+\tl_new:N \l__osgstyler_lua_pattern_tl
+\tl_new:N \l__osgstyler_lua_position_tl
+\tl_new:N \l__osgstyler_lua_instances_tl
+\seq_new:N \l__osgstyler_lua_metric_seq
+\dim_new:N \l__osgstyler_lua_thickness_dim
+\dim_new:N \l__osgstyler_lua_offset_dim
+\dim_new:N \l__osgstyler_lua_top_dim
+\dim_new:N \l__osgstyler_lua_bottom_dim
+
+\cs_new_protected:Npn \__osgstyler_lua_value:nnnnN #1#2#3#4#5
+  {
+    \tl_set:Nx #5 { \OsgDecorationInstanceValue {#1}{#2}{#3}{#4} }
+  }
+
+\cs_new_protected:Npn \__osgstyler_lua_default:Nn #1#2
+  { \tl_if_empty:NT #1 { \tl_set:Nn #1 {#2} } }
+
+\cs_new_protected:Npn \__osgstyler_lua_metric_resolve:nN #1#2
+  {
+    \seq_set_split:Nnn \l__osgstyler_lua_metric_seq {/}{#1}
+    \int_compare:nNnTF { \seq_count:N \l__osgstyler_lua_metric_seq } = { 2 }
+      {
+        \tl_set:Nx #2
+          {
+            \OsgMetric
+              { \seq_item:Nn \l__osgstyler_lua_metric_seq {1} }
+              { \seq_item:Nn \l__osgstyler_lua_metric_seq {2} }
+          }
+      }
+      { \tl_set:Nn #2 {#1} }
+  }
+
+\cs_new_protected:Npn \__osgstyler_lua_line_apply:nnn #1#2#3
+  {
+    \group_begin:
+      \__osgstyler_lua_value:nnnnN {#1}{line}{#2}{position}
+        \l__osgstyler_lua_position_tl
+      \__osgstyler_lua_default:Nn \l__osgstyler_lua_position_tl { below }
+      \__osgstyler_lua_value:nnnnN {#1}{line}{#2}{pattern}
+        \l__osgstyler_lua_pattern_tl
+      \__osgstyler_lua_default:Nn \l__osgstyler_lua_pattern_tl { solid }
+      \str_if_eq:VnF \l__osgstyler_lua_pattern_tl { solid }
+        { \msg_warning:nnee { osgstyler-lua } { unsupported-pattern }
+            \l__osgstyler_lua_pattern_tl \l__osgstyler_lua_position_tl }
+      \__osgstyler_lua_value:nnnnN {#1}{line}{#2}{color}
+        \l__osgstyler_lua_color_tl
+      \__osgstyler_lua_default:Nn \l__osgstyler_lua_color_tl { text }
+      \tl_set:Nx \l__osgstyler_lua_color_tl
+        { \OsgColorName { \l__osgstyler_lua_color_tl } }
+      \__osgstyler_lua_value:nnnnN {#1}{line}{#2}{thickness}
+        \l__osgstyler_lua_value_tl
+      \__osgstyler_lua_default:Nn \l__osgstyler_lua_value_tl { rule/thin }
+      \exp_args:NV \__osgstyler_lua_metric_resolve:nN
+        \l__osgstyler_lua_value_tl \l__osgstyler_lua_value_tl
+      \dim_set:Nn \l__osgstyler_lua_thickness_dim
+        { \l__osgstyler_lua_value_tl }
+      \__osgstyler_lua_value:nnnnN {#1}{line}{#2}{offset}
+        \l__osgstyler_lua_value_tl
+      \__osgstyler_lua_default:Nn \l__osgstyler_lua_value_tl { .1ex }
+      \exp_args:NV \__osgstyler_lua_metric_resolve:nN
+        \l__osgstyler_lua_value_tl \l__osgstyler_lua_value_tl
+      \dim_set:Nn \l__osgstyler_lua_offset_dim
+        { \l__osgstyler_lua_value_tl }
+      \str_case:VnF \l__osgstyler_lua_position_tl
+        {
+          { below }
+            {
+              \dim_set:Nn \l__osgstyler_lua_top_dim
+                { -\l__osgstyler_lua_offset_dim }
+              \dim_set:Nn \l__osgstyler_lua_bottom_dim
+                { -\l__osgstyler_lua_offset_dim
+                  -\l__osgstyler_lua_thickness_dim }
+            }
+          { above }
+            {
+              \dim_set:Nn \l__osgstyler_lua_top_dim
+                { \l__osgstyler_lua_offset_dim
+                  +\l__osgstyler_lua_thickness_dim }
+              \dim_set_eq:NN \l__osgstyler_lua_bottom_dim
+                \l__osgstyler_lua_offset_dim
+            }
+          { through }
+            {
+              \dim_set:Nn \l__osgstyler_lua_top_dim
+                { \l__osgstyler_lua_offset_dim
+                  +.5\l__osgstyler_lua_thickness_dim }
+              \dim_set:Nn \l__osgstyler_lua_bottom_dim
+                { \l__osgstyler_lua_offset_dim
+                  -.5\l__osgstyler_lua_thickness_dim }
+            }
+        }
+        {
+          \dim_set:Nn \l__osgstyler_lua_top_dim
+            { -\l__osgstyler_lua_offset_dim }
+          \dim_set:Nn \l__osgstyler_lua_bottom_dim
+            { -\l__osgstyler_lua_offset_dim
+              -\l__osgstyler_lua_thickness_dim }
+        }
+      \underLine
+        [ color=\l__osgstyler_lua_color_tl,
+          top=\l__osgstyler_lua_top_dim,
+          bottom=\l__osgstyler_lua_bottom_dim ]
+        {#3}
+    \group_end:
+  }
+
+\cs_new_protected:Npn \__osgstyler_lua_background_apply:nnn #1#2#3
+  {
+    \group_begin:
+      \__osgstyler_lua_value:nnnnN {#1}{background}{#2}{color}
+        \l__osgstyler_lua_color_tl
+      \__osgstyler_lua_default:Nn \l__osgstyler_lua_color_tl { accent }
+      \tl_set:Nx \l__osgstyler_lua_color_tl
+        { \OsgColorName { \l__osgstyler_lua_color_tl } }
+      \__osgstyler_lua_value:nnnnN {#1}{background}{#2}{opacity}
+        \l__osgstyler_lua_value_tl
+      \tl_if_empty:NF \l__osgstyler_lua_value_tl
+        {
+          \str_if_eq:VnF \l__osgstyler_lua_value_tl { 1 }
+            { \msg_warning:nne { osgstyler-lua } { unsupported-opacity }
+                \l__osgstyler_lua_value_tl }
+        }
+      \__osgstyler_lua_value:nnnnN {#1}{background}{#2}{shape}
+        \l__osgstyler_lua_value_tl
+      \tl_if_empty:NF \l__osgstyler_lua_value_tl
+        {
+          \str_if_eq:VnF \l__osgstyler_lua_value_tl { text }
+            { \msg_warning:nne { osgstyler-lua } { unsupported-shape }
+                \l__osgstyler_lua_value_tl }
+        }
+      \highLight [\l__osgstyler_lua_color_tl] {#3}
+    \group_end:
+  }
+
+\cs_new_protected:Npn \__osgstyler_lua_affix_material:nnn #1#2#3
+  {
+    \__osgstyler_lua_value:nnnnN {#1}{affix}{#2}{gap}
+      \l__osgstyler_lua_gap_tl
+    \__osgstyler_lua_default:Nn \l__osgstyler_lua_gap_tl { 0pt }
+    \exp_args:NV \__osgstyler_lua_metric_resolve:nN
+      \l__osgstyler_lua_gap_tl \l__osgstyler_lua_gap_tl
+    \str_if_eq:nnT {#3}{after} { \hspace{\l__osgstyler_lua_gap_tl} }
+    \group_begin:
+      \__osgstyler_lua_value:nnnnN {#1}{affix}{#2}{font}
+        \l__osgstyler_lua_value_tl
+      \tl_if_empty:NF \l__osgstyler_lua_value_tl
+        { \exp_args:NV \UseOsgFont \l__osgstyler_lua_value_tl }
+      \__osgstyler_lua_value:nnnnN {#1}{affix}{#2}{color}
+        \l__osgstyler_lua_color_tl
+      \tl_if_empty:NF \l__osgstyler_lua_color_tl
+        {
+          \tl_set:Nx \l__osgstyler_lua_color_tl
+            { \OsgColorName { \l__osgstyler_lua_color_tl } }
+          \color{\l__osgstyler_lua_color_tl}
+        }
+      \__osgstyler_lua_value:nnnnN {#1}{affix}{#2}{content}
+        \l__osgstyler_lua_value_tl
+      \tl_if_empty:NTF \l__osgstyler_lua_value_tl
+        {
+          \__osgstyler_lua_value:nnnnN {#1}{affix}{#2}{symbol}
+            \l__osgstyler_lua_value_tl
+          \tl_if_empty:NF \l__osgstyler_lua_value_tl
+            { \msg_warning:nne { osgstyler-lua } { unresolved-symbol }
+                \l__osgstyler_lua_value_tl }
+        }
+        { \tl_use:N \l__osgstyler_lua_value_tl }
+    \group_end:
+    \str_if_eq:nnT {#3}{before} { \hspace{\l__osgstyler_lua_gap_tl} }
+  }
+
+\cs_new_protected:Npn \__osgstyler_lua_affixes_apply:nn #1#2
+  {
+    \tl_clear:N \l__osgstyler_lua_before_tl
+    \tl_clear:N \l__osgstyler_lua_after_tl
+    \tl_set:Nx \l__osgstyler_lua_instances_tl
+      { \OsgDecorationInstances {#1}{affix} }
+    \clist_map_inline:Vn \l__osgstyler_lua_instances_tl
+      {
+        \__osgstyler_lua_value:nnnnN {#1}{affix}{##1}{position}
+          \l__osgstyler_lua_position_tl
+        \str_if_eq:VnTF \l__osgstyler_lua_position_tl { after }
+          {
+            \tl_put_right:Nn \l__osgstyler_lua_after_tl
+              { \__osgstyler_lua_affix_material:nnn {#1}{##1}{after} }
+          }
+          {
+            \tl_put_right:Nn \l__osgstyler_lua_before_tl
+              { \__osgstyler_lua_affix_material:nnn {#1}{##1}{before} }
+          }
+      }
+    \tl_set:Nx \l__osgstyler_lua_content_tl
+      {
+        \exp_not:V \l__osgstyler_lua_before_tl
+        \exp_not:n {#2}
+        \exp_not:V \l__osgstyler_lua_after_tl
+      }
+  }
+
+\cs_new_protected:Npn \__osgstyler_lua_family_wrap:nnN #1#2#3
+  {
+    \tl_set:Nx \l__osgstyler_lua_instances_tl
+      { \OsgDecorationInstances {#1}{#2} }
+    \clist_map_inline:Vn \l__osgstyler_lua_instances_tl
+      {
+        \tl_set:Nx #3
+          {
+            \exp_not:c { __osgstyler_lua_#2_apply:nnn }
+              { \exp_not:n {#1} } { \exp_not:n {##1} }
+              { \exp_not:V #3 }
+          }
+      }
+  }
+
+\cs_new_protected:Npn \__osgstyler_lua_enclosure_apply:nnn #1#2#3
+  {
+    \group_begin:
+      \__osgstyler_lua_value:nnnnN {#1}{enclosure}{#2}{border-color}
+        \l__osgstyler_lua_color_tl
+      \__osgstyler_lua_default:Nn \l__osgstyler_lua_color_tl { primary }
+      \tl_set:Nx \l__osgstyler_lua_color_tl
+        { \OsgColorName { \l__osgstyler_lua_color_tl } }
+      \__osgstyler_lua_value:nnnnN {#1}{enclosure}{#2}{fill-color}
+        \l__osgstyler_lua_value_tl
+      \__osgstyler_lua_default:Nn \l__osgstyler_lua_value_tl { background }
+      \tl_set:Nx \l_tmpa_tl { \OsgColorName { \l__osgstyler_lua_value_tl } }
+      \__osgstyler_lua_value:nnnnN {#1}{enclosure}{#2}{thickness}
+        \l__osgstyler_lua_value_tl
+      \__osgstyler_lua_default:Nn \l__osgstyler_lua_value_tl { rule/thin }
+      \exp_args:NV \__osgstyler_lua_metric_resolve:nN
+        \l__osgstyler_lua_value_tl \l__osgstyler_lua_value_tl
+      \setlength\fboxrule{\l__osgstyler_lua_value_tl}
+      \__osgstyler_lua_value:nnnnN {#1}{enclosure}{#2}{padding}
+        \l__osgstyler_lua_value_tl
+      \__osgstyler_lua_default:Nn \l__osgstyler_lua_value_tl { padding/normal }
+      \exp_args:NV \__osgstyler_lua_metric_resolve:nN
+        \l__osgstyler_lua_value_tl \l__osgstyler_lua_value_tl
+      \setlength\fboxsep{\l__osgstyler_lua_value_tl}
+      \__osgstyler_lua_value:nnnnN {#1}{enclosure}{#2}{radius}
+        \l__osgstyler_lua_value_tl
+      \tl_if_empty:NF \l__osgstyler_lua_value_tl
+        {
+          \str_if_eq:VnF \l__osgstyler_lua_value_tl { 0pt }
+            { \msg_warning:nne { osgstyler-lua } { unsupported-radius }
+                \l__osgstyler_lua_value_tl }
+        }
+      \fcolorbox{\l__osgstyler_lua_color_tl}{\l_tmpa_tl}{#3}
+    \group_end:
+  }
+
+\cs_new_protected:Npn \__osgstyler_lua_decoration_processor:nn #1#2
+  {
+    \group_begin:
+      \__osgstyler_lua_affixes_apply:nn {#1}{#2}
+      \__osgstyler_lua_family_wrap:nnN {#1}{line}
+        \l__osgstyler_lua_content_tl
+      \__osgstyler_lua_family_wrap:nnN {#1}{background}
+        \l__osgstyler_lua_content_tl
+      \__osgstyler_lua_family_wrap:nnN {#1}{enclosure}
+        \l__osgstyler_lua_content_tl
+      \OsgDecorationIfHasComponentTF {#1}{margin}
+        { \msg_warning:nnn { osgstyler-lua } { unsupported-margin } {#1} }
+        { }
+      \tl_use:N \l__osgstyler_lua_content_tl
+    \group_end:
+  }
+
+\cs_new_eq:NN \OsgStylerLuaDecorationProcessor
+  \__osgstyler_lua_decoration_processor:nn
+\SetOsgDecorationProcessor { \OsgStylerLuaDecorationProcessor }
+
+\NewExpandableDocumentCommand \OsgStylerLuaBackendActive { } { true }
+
+\ExplSyntaxOff
+%</lua-backend>

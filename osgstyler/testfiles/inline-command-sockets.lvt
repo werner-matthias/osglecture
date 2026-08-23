@@ -1,0 +1,31 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osgstyler}
+
+\NewDocumentCommand\ExistingCommand{m}{\TYPE{original=#1}}
+\BindOsgInlineCommand{\ExistingCommand}{emphasis}
+\BindOsgInlineCommand{\NewStyledCommand}{strong}
+\UseOsgStandardInlineCommands
+
+\ExplSyntaxOn
+\cs_new_protected:Npn \__osgstyler_test_socket_semantics:nn #1#2
+  { \TYPE{semantics=#1} #2 }
+\cs_new_eq:NN \TestSocketSemantics \__osgstyler_test_socket_semantics:nn
+\ExplSyntaxOff
+
+\begin{document}
+\SetOsgSemanticProcessor{\TestSocketSemantics}
+\START
+\ExistingCommand{first}
+{\BindOsgInlineCommand{\ExistingCommand}{strong}\ExistingCommand{local}}
+\ExistingCommand{again}
+{\BindOsgInlineCommand{\ExistingCommand}{strong}\ExistingCommand{local-again}}
+\NewStyledCommand{new}
+\emph{emphasized}
+\textbf{bold}
+\uline{underlined}
+\highlight{marked}
+\RestoreOsgInlineCommand{\ExistingCommand}
+\ExistingCommand{restored}
+\END
+\end{document}

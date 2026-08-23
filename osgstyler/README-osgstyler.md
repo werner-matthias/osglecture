@@ -147,6 +147,8 @@ decoration, and semantics:
 ```latex
 \DeclareOsgInlineStyle{important}{
   font       = accent,
+  weight     = bold,
+  shape      = inherit,
   color      = accent,
   decoration = marked-important,
   semantics  = emphasis
@@ -157,7 +159,9 @@ This is \UseOsgInlineStyle{important}{important text}.
 
 The values `font=none`, `color=none`, `decoration=none`, and `semantics=none`
 leave the respective layer unchanged. Font and color selection are implemented
-by the standard template. Decoration rendering and semantic/tagging behavior
+by the standard template. The `weight` values are `inherit`, `regular`, and
+`bold`; `shape` accepts `inherit`, `upright`, `italic`, `slanted`, and
+`small-caps`. Decoration rendering and semantic/tagging behavior
 are deliberately delegated to interchangeable functions taking two arguments,
 the resource or role name and the content:
 
@@ -170,5 +174,54 @@ Both processors are transparent by default. Backends can therefore be added
 without replacing inline-style instances. The underlying kernel API remains
 available as `\DeclareInstance{osgstyler-inline}{...}{standard}{...}` and
 `\UseInstance{osgstyler-inline}{...}{...}`.
+
+Author commands are connected through kernel sockets rather than hard-wired
+aliases:
+
+```latex
+\BindOsgInlineCommand{\emph}{emphasis}
+\BindOsgInlineCommand{\textbf}{strong}
+\BindOsgInlineCommand{\uline}{underline}
+\BindOsgInlineCommand{\highlight}{highlight}
+```
+
+Each managed command owns a one-input socket. Its saved implementation is the
+`original` plug, while every binding creates or selects a `style/<name>` plug.
+Assignments obey normal TeX grouping, so a style may be changed locally.
+`\RestoreOsgInlineCommand{<command>}` selects the original plug again. Robust
+commands are preserved with `\NewCommandCopy`, avoiding recursion through an
+implementation replaced by the socket wrapper.
+
+The styles `emphasis`, `strong`, `underline`, and `highlight` and their basic
+decorations are predefined. `\highlight` is available immediately;
+`\UseOsgStandardInlineCommands` explicitly binds all four standard command
+names. Existing `\emph`, `\textbf`, or package-provided `\uline` definitions
+are therefore not replaced merely by loading `osgstyler`.
+
+## Lua reference backend
+
+The optional LuaLaTeX backend closes the rendering pipeline for testing and
+for straightforward production use:
+
+```latex
+\usepackage{osgstyler-lua}
+```
+
+It loads `osgstyler`, `luacolor`, and `lua-ul`, installs itself as the active
+decoration processor, and supplies a complete fallback metric palette if no
+metric palette is active yet. It currently renders:
+
+- any number of solid `line` instances at `below`, `above`, or `through`;
+- `background` highlighting with palette colors;
+- `affix` instances containing literal material at `before` or `after`;
+- unbreakable inline `enclosure` frames with configurable colors, rule width,
+  and padding.
+
+Dimension properties accept either literal dimensions or metric references
+such as `rule/thin`, `padding/compact`, and `spacing/xs`. Unsupported line
+patterns, opacity, background shapes, rounded corners, symbol references, and
+inline margin decorations produce explicit warnings and use a documented
+fallback where possible. Semantic processing remains a separate backend
+concern.
 
 Run the regression tests with `l3build check`.
