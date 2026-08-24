@@ -85,7 +85,7 @@ ok grep(
   @{ $calls[0]{command} },
 ), 'series build injects an unambiguous job-file symbol before the source';
 ok grep(
-  $_ =~ /\A-usepretex=\\edef\\OSGLectureProjectManifestFile/
+  $_ =~ /\A-pretex=\\edef\\OSGLectureProjectManifestFile/
     && index($_, 'ollmconfig.toml') >= 0,
   @{ $calls[0]{command} },
 ), 'series build identifies the manifest whose existence the class verifies';

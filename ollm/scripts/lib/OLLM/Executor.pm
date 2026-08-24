@@ -193,7 +193,7 @@ sub command_for_spec {
     '--interaction=nonstopmode',
     '--halt-on-error',
     '%O',
-    '%S';
+    '%P';
   my $build_file = File::Spec->catfile(
     $spec->{build_directory}, "$spec->{job_id}.osgbuild.tex",
   );
@@ -240,7 +240,12 @@ sub command_for_spec {
     "-outdir=$spec->{build_directory}",
     "-auxdir=$spec->{aux_directory}",
     "-pdflualatex=$engine",
-    "-usepretex=$pretex",
+    # -pretex (not -usepretex) only sets the %U substitution; -usepretex
+    # additionally calls latexmk's alt_tex_cmds, which unconditionally
+    # resets *every* engine command template (including -pdflualatex set
+    # above) to a bare "%O %P" -- silently discarding --halt-on-error and
+    # the other engine flags.
+    "-pretex=$pretex",
     ($request->{rebuild} ? ('-gg') : ()),
     @{ $request->{latexmk_args} // [] },
     $spec->{source},
