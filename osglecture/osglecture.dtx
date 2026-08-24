@@ -603,15 +603,13 @@ load-preamble+
 % {\cs{ExplSyntaxOn}}{\code{scrbook}}{expl3}{\cs{LoadClass}}
 \char_set_catcode:nn {32}{10}
 % TEMPORARY diagnostic for the Windows \@pr@videpackage investigation;
-% remove once the root cause is confirmed.
-\cs_set_eq:NN \OsgDebugOrigIfnch \@ifnch
-\def\@ifnch{%
-  \typeout{OSGDEBUG:~meaning-of-next-token=\meaning\@let@token
-    ~catcode-space=\the\catcode`\ }%
-  \OsgDebugOrigIfnch
-}
+% remove once the root cause is confirmed. \show never errors, even on
+% an undefined control sequence, so this cannot itself fail.
+\typeout{OSGDEBUG-BEFORE-SHOW}
+\show\@ifnch
+\show\@pr@videpackage
+\typeout{OSGDEBUG-AFTER-SHOW}
 \exp_args:NV \LoadClass \l__osglecture_base_class_tl
-\cs_set_eq:NN \@ifnch \OsgDebugOrigIfnch
 
 \bool_if:NF \l__osglecture_patch_overlays_bool
   { \PassOptionsToPackage{patch-overlays=false}{osglecture-modes} }
