@@ -438,16 +438,25 @@ load babel
   {
     \str_case:nnF {#1}
       {
-        { secondary }  { primary }
-        { accent }     { secondary }
-        { structure }  { primary }
-        { alert }      { primary }
-        { example }    { primary }
-        { text }       { primary }
-        { background } { primary }
+        { secondary } { primary }
+        { accent }    { secondary }
+        { structure } { primary }
+        { alert }     { primary }
+        { example }   { primary }
       }
       { }
   }
+
+% text/background are not aliased into the slot-fallback chain above:
+% every other slot's fallback is another *theme* color (ultimately
+% primary), which is appropriate for accents but not for body text or
+% the page background, where a theme accent color risks poor
+% contrast or an unintended colored background. Their fallback is
+% therefore a fixed neutral value, kept in its own small table rather
+% than special-cased in the resolution code.
+\prop_new:N \c__osgstyler_color_absolute_default_prop
+\prop_gput:Nnn \c__osgstyler_color_absolute_default_prop { text } { black }
+\prop_gput:Nnn \c__osgstyler_color_absolute_default_prop { background } { white }
 
 \cs_new_protected:Npn \__osgstyler_color_resolve:nnN #1#2#3
   {
@@ -533,7 +542,15 @@ load babel
           {
             \__osgstyler_color_slot_resolve:nnN {#1}{##1} \l_tmpa_tl
             \tl_if_empty:NTF \l_tmpa_tl
-              { }
+              {
+                \prop_if_in:NnT \c__osgstyler_color_absolute_default_prop {##1}
+                  {
+                    \prop_get:NnN \c__osgstyler_color_absolute_default_prop
+                      {##1} \l_tmpb_tl
+                    \exp_args:Nee \colorlet
+                      { \__osgstyler_color_name:n {##1} } { \l_tmpb_tl }
+                  }
+              }
               {
                 \exp_args:NnV \__osgstyler_color_define_from_resource:nn
                   {#1} \l_tmpa_tl
