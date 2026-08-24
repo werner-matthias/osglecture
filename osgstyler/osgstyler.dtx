@@ -438,11 +438,13 @@ load babel
   {
     \str_case:nnF {#1}
       {
-        { secondary } { primary }
-        { accent }    { secondary }
-        { structure } { primary }
-        { alert }     { primary }
-        { example }   { primary }
+        { secondary }  { primary }
+        { accent }     { secondary }
+        { structure }  { primary }
+        { alert }      { primary }
+        { example }    { primary }
+        { text }       { primary }
+        { background } { primary }
       }
       { }
   }
@@ -531,12 +533,7 @@ load babel
           {
             \__osgstyler_color_slot_resolve:nnN {#1}{##1} \l_tmpa_tl
             \tl_if_empty:NTF \l_tmpa_tl
-              {
-                \str_if_eq:nnTF {##1}{text}
-                  { \colorlet { osgstyler-text } { black } }
-                  { \str_if_eq:nnT {##1}{background}
-                      { \colorlet { osgstyler-background } { white } } }
-              }
+              { }
               {
                 \exp_args:NnV \__osgstyler_color_define_from_resource:nn
                   {#1} \l_tmpa_tl
@@ -1388,6 +1385,9 @@ load babel
 \msg_new:nnnn { osgstyler-lua } { unsupported-pattern }
   { Pattern~'#1'~is~not~supported~for~the~'#2'~component. }
   { The~reference~backend~uses~a~solid~rule~instead. }
+\msg_new:nnnn { osgstyler-lua } { unsupported-position }
+  { Line~position~'#1'~is~not~supported. }
+  { The~reference~backend~uses~the~'below'~position~instead. }
 \msg_new:nnnn { osgstyler-lua } { unsupported-opacity }
   { Background~opacity~'#1'~is~not~supported. }
   { The~reference~backend~uses~the~opaque~palette~color. }
@@ -1514,6 +1514,8 @@ load babel
             }
         }
         {
+          \msg_warning:nne { osgstyler-lua } { unsupported-position }
+            \l__osgstyler_lua_position_tl
           \dim_set:Nn \l__osgstyler_lua_top_dim
             { -\l__osgstyler_lua_offset_dim }
           \dim_set:Nn \l__osgstyler_lua_bottom_dim
