@@ -1,7 +1,8 @@
-langselect -- multiple language versions from a common source
+langselect - multiple language versions from a common source
 =========================================
 
 This package is part of the osglecture bundle.
+For documentation see `texdoc langselect-{en|de}` 
 
-Released under the LaTeX Project Public License v1.3c or later
+Released under the LaTeX Project Public License v1.3c or later.
 See http://www.latex-project.org/lppl.txt
