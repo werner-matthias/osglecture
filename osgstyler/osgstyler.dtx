@@ -981,15 +981,56 @@ load babel
 
 \cs_new_protected:Npn \__osgstyler_decoration_processor_default:nn #1#2 {#2}
 \cs_new_protected:Npn \__osgstyler_semantic_processor_default:nn #1#2 {#2}
-\cs_new_eq:NN \__osgstyler_decoration_processor:nn
-  \__osgstyler_decoration_processor_default:nn
-\cs_new_eq:NN \__osgstyler_semantic_processor:nn
-  \__osgstyler_semantic_processor_default:nn
+
+% Decoration and semantic processors are each stored as a sequence,
+% not a single macro, so that a later \AddOsg...Processor can extend
+% \SetOsg...Processor (which resets the sequence to one entry, so
+% today's replace-the-single-processor behavior is unchanged) without
+% breaking the storage format. Applying the sequence folds it left to
+% right: each processor wraps the previous one's output, so the
+% first-added processor sees the original content and the
+% last-added one sees the result of all earlier processors.
+\seq_new:N \g__osgstyler_decoration_processor_seq
+\seq_gput_right:Nn \g__osgstyler_decoration_processor_seq
+  { \__osgstyler_decoration_processor_default:nn }
+\seq_new:N \g__osgstyler_semantic_processor_seq
+\seq_gput_right:Nn \g__osgstyler_semantic_processor_seq
+  { \__osgstyler_semantic_processor_default:nn }
+
+\tl_new:N \l__osgstyler_processor_content_tl
+\cs_new_protected:Npn \__osgstyler_processor_chain_apply:Nnn #1#2#3
+  {
+    \group_begin:
+      \tl_set:Nn \l__osgstyler_processor_content_tl {#3}
+      \seq_map_inline:Nn #1
+        {
+          \tl_set:Nx \l__osgstyler_processor_content_tl
+            { ##1 {#2} { \exp_not:o {\l__osgstyler_processor_content_tl} } }
+        }
+      \tl_use:N \l__osgstyler_processor_content_tl
+    \group_end:
+  }
+\cs_new_protected:Npn \__osgstyler_decoration_processor:nn #1#2
+  {
+    \__osgstyler_processor_chain_apply:Nnn
+      \g__osgstyler_decoration_processor_seq {#1}{#2}
+  }
+\cs_new_protected:Npn \__osgstyler_semantic_processor:nn #1#2
+  {
+    \__osgstyler_processor_chain_apply:Nnn
+      \g__osgstyler_semantic_processor_seq {#1}{#2}
+  }
 
 \NewDocumentCommand \SetOsgDecorationProcessor { m }
-  { \cs_gset_eq:NN \__osgstyler_decoration_processor:nn #1 }
+  {
+    \seq_gclear:N \g__osgstyler_decoration_processor_seq
+    \seq_gput_right:Nn \g__osgstyler_decoration_processor_seq {#1}
+  }
 \NewDocumentCommand \SetOsgSemanticProcessor { m }
-  { \cs_gset_eq:NN \__osgstyler_semantic_processor:nn #1 }
+  {
+    \seq_gclear:N \g__osgstyler_semantic_processor_seq
+    \seq_gput_right:Nn \g__osgstyler_semantic_processor_seq {#1}
+  }
 
 \cs_new_protected:Npn \__osgstyler_inline_visual_apply:n #1
   {
