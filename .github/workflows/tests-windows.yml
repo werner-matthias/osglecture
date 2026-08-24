@@ -51,6 +51,13 @@ jobs:
         run: |
           lualatex --version
           l3build version
+          Write-Output "--- book.cls / kernel version check ---"
+          $bookCls = & kpsewhich book.cls
+          Write-Output "book.cls path: $bookCls"
+          Get-Content $bookCls -TotalCount 50 | Select-String "ProvidesClass"
+          $latexLtx = & kpsewhich latex.ltx
+          Write-Output "latex.ltx path: $latexLtx"
+          Get-Content $latexLtx | Select-String "edef.fmtversion" -Context 0,1
 
       # Manual-dispatch-only interactive debug session: run this workflow
       # via workflow_dispatch (not push/pull_request) to get an SSH shell
@@ -98,6 +105,5 @@ jobs:
             build/test/*.diff
             build/test/*.log
             build/test/*.pdf
-            build/test/*.cls
           if-no-files-found: warn
           retention-days: 14
