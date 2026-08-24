@@ -2,9 +2,9 @@
 
 Reusable, template-based styles for LaTeX documents.
 
-The public interface is currently an alpha API, reported by
-`\OsgStylerAPIVersion` as `0.1.0-alpha`. Test users should expect that names
-may still be refined before the first stable release.
+The public interface is still pre-1.0 (reported by `\OsgStylerAPIVersion`,
+currently `0.2.0`), and test users should expect that names may still be
+refined before the first stable release.
 
 `osgstyler` is part of the `osglecture` bundle but is designed for independent
 use. It currently provides font and color palettes. The font-palette registry

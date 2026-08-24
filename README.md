@@ -53,16 +53,16 @@ The `TL ...` columns are read from the expectations in the workflow above;
 | ollm | v0.13.0-dev | n/a | 1 | :white_circle: | :green_circle: | :green_circle: |
 | tagpax | v0.8.5-dev | 2026/07/23 | 2 | :green_circle: | :green_circle: | :green_circle: |
 | langselect | v1.0.2 | 2026/08/05 | 1 | :green_circle: | :green_circle: | :green_circle: |
-| osgstyler | v0.1.0-alpha | 2026/08/23 | 2 | :red_circle: | :red_circle: | :green_circle: |
-| lttheme | v0.4.2 | 2026/08/10 | 7 | :red_circle: | :red_circle: | :green_circle: |
-| lttheme-tuc-2019 | v0.5.0 | 2026/08/05 | 1 | :red_circle: | :red_circle: | :green_circle: |
+| osgstyler | v0.2.0 | 2026/08/24 | 2 | :red_circle: | :red_circle: | :green_circle: |
+| lttheme | v0.5.0 | 2026/08/24 | 7 | :red_circle: | :red_circle: | :green_circle: |
+| lttheme-tuc-2019 | v0.5.1 | 2026/08/24 | 1 | :red_circle: | :red_circle: | :green_circle: |
 | osgdoc | v0.3.3 | 2026/08/14 | 2 | :green_circle: | :green_circle: | :green_circle: |
 <!-- END MODULE VERSIONS -->
 
 ## Installation
 ```
 l3build check
-l3build --full install
+l3build install --full 
 ollm doctor
 ```
 
@@ -73,9 +73,12 @@ in English, or German, repectively. (Well, not ready yet :shrug:)
 Beside, the most packages have their own documentation.
 
 ## Bugs and Limitations
-Even though the individual packages vary considerably in terms of maturity, the bundle as a whole should definitely be considered experimental.
+Even though the individual packages vary considerably in terms of maturity, 
+the bundle as a whole should definitely be considered experimental.
 As such, it certainly still has some bugs.
 
 > [!IMPORTANT]
-> One of them is a stubborn osglecture/ollm bug that only occurs on Windows. This bug makes currently 
-> OSG Lecture practically unusable on Windows. Sorry, Windows users.
+> One of these bugs is a stubborn osglecture/ollm bug that only occurs on Windows. 
+> This bug currently renders OSG Lecture almost unusable on Windows, at least for
+> the main case of a lecture series.
+> Sorry, Windows users.

@@ -152,18 +152,21 @@ load babel
 
 \ldeen{
   Deshalb prüft \lttheme{} beim Laden die unterstützte Version der Klasse.
-  Version~0.4.2 unterstützt \cls{ltx-talk}~0.5.3 vom 5.~August~2026.
-  Bei einem älteren oder neueren Stand bricht das Paket mit einer gezielten
-  Meldung ab. \cls{ltx-talk} bietet gegenwärtig keine eigenen Rollback-Releases
-  an; eine bereits mit \cs*{documentclass} geladene Klasse kann das Theme nicht
-  nachträglich ersetzen.
+  Version~v\ltxtalkversion{} unterstützt \cls{ltx-talk}~v\c__ltxtalk_class_version_label_tl{}
+  vom 5.~August~2026. Bei einem älteren Stand bricht das Paket mit einer
+  gezielten Meldung ab; bei einem neueren Stand gibt es nur eine Warnung, da
+  dort noch keine bekannte Inkompatibilität vorliegt. \cls{ltx-talk} bietet
+  gegenwärtig keine eigenen Rollback-Releases an; eine bereits mit
+  \cs*{documentclass} geladene Klasse kann das Theme nicht nachträglich
+  ersetzen.
 }{
   Therefore, \lttheme{} checks the supported class version when it is loaded.
-  Version~0.4.2 supports \cls{ltx-talk}~0.5.3 dated 5~August~2026.
-  With an older or newer release, the package stops with a targeted diagnostic.
-  \cls{ltx-talk} currently provides no rollback releases of its own; a class
-  already loaded by \cs*{documentclass} cannot subsequently be replaced by the
-  theme.
+  Version~v\ltxtalkversion{} supports \cls{ltx-talk}~v\c__ltxtalk_class_version_label_tl{}
+  dated 5~August~2026. With an older release, the package stops with a
+  targeted diagnostic; with a newer one, it only warns, since no known
+  incompatibility exists yet. \cls{ltx-talk} currently provides no rollback
+  releases of its own; a class already loaded by \cs*{documentclass} cannot
+  subsequently be replaced by the theme.
 }
 
 \subsection{\ldeen{Wer sollte diese Dokumentation lesen?}{Who sould read this documentation?}}
@@ -1433,10 +1436,28 @@ Slots eines Teilthemes implementiert werden.
 %</driver>
 %<*pkg>
 \NeedsTeXFormat{LaTeX2e}
+% The version is defined once, here, and fed into \ProvidesExplPackage
+% below rather than repeated as a literal -- \ProvidesExplPackage adds
+% its own "v" prefix when printing the banner, so this constant holds
+% the bare number; error messages that need a "v" write it themselves
+% immediately before the macro (see the compatibility messages below).
+% A plain \def, not \tl_const:Nn: \ExplSyntaxOn is not active yet at
+% this point (\ProvidesExplPackage itself activates it for the rest
+% of the file), so a name with "_"/":" would not tokenize correctly.
+\def\ltxtalkversion{0.5.0}
 \ProvidesExplPackage{ltxtalk-theme}
-{2026/08/10}
-{v0.4.2}
+{2026/08/24}
+{\ltxtalkversion}
 {Theme engine for ltx-talk}
+
+% The currently-declared ltx-talk compatibility window: a fixed point
+% recalibrated when the class is retested, not something meant to
+% track the class's own live version. Feeds both the actual
+% \@ifclasslater checks below and the two messages that describe them,
+% so the two cannot silently drift apart from each other.
+\tl_const:Nn \c__ltxtalk_min_class_date_tl { 2026/08/05 }
+\tl_const:Nn \c__ltxtalk_max_class_date_tl { 2026/08/06 }
+\tl_const:Nn \c__ltxtalk_class_version_label_tl { 0.5.3 }
 
 \RequirePackage{xcoffins}
 \RequirePackage{xcolor}
@@ -1447,27 +1468,37 @@ Slots eines Teilthemes implementiert werden.
 \msg_new:nnnn { ltxtalk } { class-too-old }
   { Unsupported~ltx-talk~version }
   {
-    ltxtalk-theme~v0.4.2~requires~ltx-talk~v0.5.3~from~2026-08-05.
+    ltxtalk-theme~v\ltxtalkversion\space requires~ltx-talk~v\c__ltxtalk_class_version_label_tl\space
+    from~\c__ltxtalk_min_class_date_tl.~
     Update~the~ltx-talk~document~class~before~loading~this~theme~engine.
   }
+% \ldeen*{@1 gibt nur die Kurzform aus, ohne interaktive Hilfeabfrage;
+%   deshalb steht die relevante Information hier, nicht im Langtext unten.}{
+%   @1 only prints the short form, with no interactive help query; the
+%   relevant information therefore lives here, not in the long text below.
+% }{\cs*{msg_warning:nn}}
 \msg_new:nnnn { ltxtalk } { class-too-new }
-  { Untested~ltx-talk~version }
   {
-    ltxtalk-theme~v0.4.2~was~tested~with~ltx-talk~v0.5.3~from~2026-08-05.
-    The~loaded~class~is~newer.~Install~a~compatible~theme-engine~release~or~
-    update~its~declared~compatibility~range~after~running~the~test~suite.
+    Untested~ltx-talk~version:~loaded~class~is~newer~than~the~tested~
+    v\c__ltxtalk_class_version_label_tl.
+  }
+  {
+    ltxtalk-theme~v\ltxtalkversion\space was~tested~with~ltx-talk~v\c__ltxtalk_class_version_label_tl\space
+    from~\c__ltxtalk_min_class_date_tl.~This~is~only~a~warning,~since~an~
+    incompatibility~would~otherwise~already~have~failed~outright.~If~something~
+    looks~wrong,~a~newer~theme-engine~release~may~be~available.
   }
 
 % \ldeen*{Das Paket ist nur sinnvoll, wenn @1 geladen ist.}{
-%  The package is only useful, if @1 is loaded. 
+%  The package is only useful, if @1 is loaded.
 % }{\cls*{ltx-talk}}
 \@ifclassloaded{ltx-talk}
   {
-    \@ifclasslater{ltx-talk}{2026/08/05}
+    \@ifclasslater{ltx-talk}{\c__ltxtalk_min_class_date_tl}
       {}
       {\msg_fatal:nn { ltxtalk } { class-too-old }}
-    \@ifclasslater{ltx-talk}{2026/08/06}
-      {\msg_fatal:nn { ltxtalk } { class-too-new }}
+    \@ifclasslater{ltx-talk}{\c__ltxtalk_max_class_date_tl}
+      {\msg_warning:nn { ltxtalk } { class-too-new }}
       {}
   }
   { 
@@ -3532,8 +3563,8 @@ Slots eines Teilthemes implementiert werden.
 % \subsection{Minimal theme}
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage{ltxtalk-theme-minimal}
-{2026/08/10}
-{v0.4.2}
+{2026/08/24}
+{v0.5.0}
 {Minimal theme for ltx-talk}
 
 \RequirePackage{ltxtalk-theme}
@@ -3656,8 +3687,8 @@ Slots eines Teilthemes implementiert werden.
 % \subsection{Magpie theme (inspired by Beamer Madrid)}
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage{ltxtalk-theme-magpie}
-{2026/08/10}
-{v0.4.2}
+{2026/08/24}
+{v0.5.0}
 {Magpie theme for ltx-talk, inspired by Beamer Madrid}
 \RequirePackage{ltxtalk-theme}
 \cs_new_protected:Npn \__ltxtalk_magpie_theme_setup:
@@ -3717,8 +3748,8 @@ Slots eines Teilthemes implementiert werden.
 % \subsection{Hawk theme (inspired by Beamer Hannover)}
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage{ltxtalk-theme-hawk}
-{2026/08/10}
-{v0.4.2}
+{2026/08/24}
+{v0.5.0}
 {Hawk theme for ltx-talk, inspired by Beamer Hannover}
 \RequirePackage{ltxtalk-theme}
 \cs_new_protected:Npn \__ltxtalk_hawk_theme_setup:
@@ -3772,8 +3803,8 @@ Slots eines Teilthemes implementiert werden.
 %<*sparrow>
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage{ltxtalk-theme-sparrow}
-{2026/08/10}
-{v0.4.2}
+{2026/08/24}
+{v0.5.0}
 {Sparrow theme for ltx-talk, inspired by Beamer Szeged}
 \RequirePackage{ltxtalk-theme}
 \cs_new_protected:Npn \__ltxtalk_sparrow_theme_setup:
@@ -3830,8 +3861,8 @@ Slots eines Teilthemes implementiert werden.
 % \subsection{Anchovy colour theme (colours inspired by Beamer AnnArbor)}
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage{ltxtalk-theme-anchovy}
-{2026/08/10}
-{v0.4.2}
+{2026/08/24}
+{v0.5.0}
 {Anchovy colour theme for ltx-talk, inspired by Beamer AnnArbor}
 \RequirePackage{ltxtalk-theme}
 \cs_new_protected:Npn \__ltxtalk_anchovy_theme_setup:
@@ -3845,8 +3876,8 @@ Slots eines Teilthemes implementiert werden.
 % \subsection{Carp colour theme (colours inspired by Beamer CambridgeUS)}
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage{ltxtalk-theme-carp}
-{2026/08/10}
-{v0.4.2}
+{2026/08/24}
+{v0.5.0}
 {Carp colour theme for ltx-talk, inspired by Beamer CambridgeUS}
 \RequirePackage{ltxtalk-theme}
 \cs_new_protected:Npn \__ltxtalk_carp_theme_setup:

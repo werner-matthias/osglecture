@@ -81,15 +81,15 @@ load babel
 %<*pkg>
 \NeedsTeXFormat{LaTeX2e}[2024-06-01]
 \ProvidesExplPackage{osgstyler}
-{2026/08/23}
-{v0.1.0-alpha}
+{2026/08/24}
+{v0.2.0}
 {Template-based, reusable document styles}
 \RequirePackage{xcolor}
 \RequirePackage{fontspec}
 
 \ExplSyntaxOn
 
-\NewExpandableDocumentCommand \OsgStylerAPIVersion { } { 0.1.0-alpha }
+\NewExpandableDocumentCommand \OsgStylerAPIVersion { } { 0.2.0 }
 
 \cs_generate_variant:Nn \clist_map_inline:nn { V }
 
@@ -1421,8 +1421,8 @@ load babel
 %<*lua-backend>
 \NeedsTeXFormat{LaTeX2e}[2024-06-01]
 \ProvidesExplPackage{osgstyler-lua}
-{2026/08/23}
-{v0.1.0-alpha}
+{2026/08/24}
+{v0.2.0}
 {Lua reference backend for osgstyler decorations}
 \RequirePackage{osgstyler}
 \RequirePackage{luacolor}
