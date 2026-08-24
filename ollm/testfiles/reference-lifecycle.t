@@ -104,7 +104,9 @@ close $manifest_out;
 open my $source, '>:raw', File::Spec->catfile($unit, 'main.tex')
   or die $!;
 print {$source} <<'TEX';
-\documentclass[doctype=script]{osglecture}
+% TEMPORARY: profile=scrbook, to check whether the Windows
+% \@pr@videpackage failure is specific to the default book profile.
+\documentclass[doctype=script,profile=scrbook]{osglecture}
 \begin{document}
 \lecture[Processes]{Processes and scheduling}{processes}
 \section{Scheduling}\label{sec:scheduling}
