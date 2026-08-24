@@ -71,3 +71,11 @@ See `osglecture-manual-en.pdf` or `osglecture-manual-de.pdf` for a user document
 in English, or German, repectively. (Well, not ready yet :shrug:)
 
 Beside, the most packages have their own documentation.
+
+## Bugs and Limitations
+Even though the individual packages vary considerably in terms of maturity, the bundle as a whole should definitely be considered experimental.
+As such, it certainly still has some bugs.
+
+> [!IMPORTANT]
+> One of them is a stubborn osglecture/ollm bug that only occurs on Windows. This bug makes currently 
+> OSG Lecture practically unusable on Windows. Sorry, Windows users.
