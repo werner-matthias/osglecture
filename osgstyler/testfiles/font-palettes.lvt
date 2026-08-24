@@ -19,6 +19,27 @@
   mono = {font = {Latin Modern Mono}}
 }
 
+% Alias-cycle protection must resolve to empty rather than hang or
+% crash. Resolved before \START so the resulting error message does
+% not become part of the diffed log.
+\DeclareOsgFontPalette{cyclic}{
+  main      = {font = {Latin Modern Roman}},
+  companion = {alias = display},
+  display   = {alias = companion}
+}
+\ExplSyntaxOn
+\tl_new:N \g_test_cyclic_companion_tl
+\OsgFontPaletteResolvedSlotTo{cyclic}{companion}\l_tmpa_tl
+\tl_gset:Nx \g_test_cyclic_companion_tl {\l_tmpa_tl}
+
+% unknown-font-slot: resolving a slot name outside the portable set
+% must fail cleanly (empty result), not crash. Also triggered before
+% \START.
+\tl_new:N \g_test_unknown_font_slot_tl
+\OsgFontPaletteResolvedSlotTo{editorial}{bogus}\l_tmpa_tl
+\tl_gset:Nx \g_test_unknown_font_slot_tl {\l_tmpa_tl}
+\ExplSyntaxOff
+
 \begin{document}
 \UseOsgFontPalette{editorial}
 \START
@@ -35,6 +56,8 @@
 \TYPE{minimal-display=\l_tmpa_tl}
 \OsgFontPaletteResolvedSlotTo{minimal}{accent}\l_tmpa_tl
 \TYPE{minimal-accent=\l_tmpa_tl}
+\TYPE{cyclic-companion-empty=\tl_if_empty:NTF\g_test_cyclic_companion_tl{yes}{no}}
+\TYPE{unknown-font-slot-empty=\tl_if_empty:NTF\g_test_unknown_font_slot_tl{yes}{no}}
 \ExplSyntaxOff
 \TYPE{font=\OsgFontPaletteValue{editorial}{companion}{font}}
 \TYPE{description=\OsgFontPaletteValue{editorial}{main}{description}}

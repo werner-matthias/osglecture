@@ -4,12 +4,13 @@
 
 \DeclareOsgFontPalette{test}{
   main = {font = {Latin Modern Roman}},
-  accent = {font = {Latin Modern Sans}}
+  accent = {font = {Latin Modern Sans}},
+  mono = {alias = main}
 }
 \DeclareOsgColorPalette{test}{
-  primary = {HTML}{223344},
-  text = {HTML}{111111},
-  accent = {HTML}{CC5500}
+  primary = {model=HTML, value=223344},
+  text = {model=HTML, value=111111},
+  accent = {model=HTML, value=CC5500}
 }
 \DeclareOsgDecoration{marker}{
   background = {color = accent, opacity = {.2}, shape = text}
@@ -24,6 +25,12 @@
 \DeclareOsgInlineStyle{plain}{
   font = none,
   color = none
+}
+\DeclareOsgInlineStyle{broken}{
+  font = none,
+  color = none,
+  decoration = missing,
+  semantics = none
 }
 
 \ExplSyntaxOn
@@ -40,7 +47,13 @@
 \UseOsgColorPalette{test}
 \SetOsgSemanticProcessor{\TestSemanticProcessor}
 \SetOsgDecorationProcessor{\TestDecorationProcessor}
+% unknown-decoration-for-style must not halt compilation; the content
+% still comes through, just without the (missing) decoration applied.
+% Triggered before \START so the resulting error message does not
+% become part of the diffed log.
+\setbox0=\hbox{\UseOsgInlineStyle{broken}{unstyled}}
 \START
+\TYPE{broken-style-recovered=yes}
 \UseOsgInlineStyle{important}{Alpha}
 \TYPE{plain-before}
 \UseOsgInlineStyle{plain}{Beta}

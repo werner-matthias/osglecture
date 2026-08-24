@@ -12,6 +12,11 @@
 \setltxtalkitemize{
   level-1={I},level-2={II},level-3={III},level-4={IV}
 }
+% incomplete-color-resource must not touch the color it fails to
+% define; ltxtalk-primary should keep its earlier value. Attempted
+% before \START so the resulting error message does not become part
+% of the diffed log.
+\setltxtalkcolors{primary={model=RGB}}
 \begin{document}
 \begin{frame}{Inner theme}
   \begin{block}{Block}Normal content.\end{block}
@@ -34,6 +39,8 @@
 \cs_if_exist:NT \exampleblock {\TYPE{exampleblock:passed}}
 \str_if_eq:eeT {\labelitemi}{I} {\TYPE{itemize-level-1:passed}}
 \str_if_eq:eeT {\labelitemiv}{IV} {\TYPE{itemize-level-4:passed}}
+\color_export:nnN { ltxtalk-primary } { HTML } \l_tmpa_tl
+\TYPE{primary-after-incomplete-attempt=\l_tmpa_tl}
 \ExplSyntaxOff
 \END
 \end{document}

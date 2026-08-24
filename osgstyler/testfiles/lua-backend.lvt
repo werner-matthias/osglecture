@@ -8,10 +8,10 @@
   mono = {font = {Latin Modern Mono}}
 }
 \DeclareOsgColorPalette{backend-test}{
-  primary = {HTML}{223344},
-  text = {HTML}{111111},
-  background = {HTML}{FFFFFF},
-  accent = {HTML}{FFD966}
+  primary = {model=HTML, value=223344},
+  text = {model=HTML, value=111111},
+  background = {model=HTML, value=FFFFFF},
+  accent = {model=HTML, value=FFD966}
 }
 \DeclareOsgMetricPalette{backend-test}{
   rule = {thin = {.4pt}},

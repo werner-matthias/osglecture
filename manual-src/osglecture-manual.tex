@@ -152,6 +152,29 @@ The following examples demonstrate its use in \osglecture}.
 %TODO
 
 \section{\ldeen{Konzepte}{Concepts}}
+\subsection{\ldeen{Projekt}{Project}}
+\ldeen{
+  Als ein Projekt wird hier die Sammlung von zusammengehörigen Materialen verstanden.
+  Im Kontext unsewres Anwendungsfalls bedeutet dies Lehrmaterialien wie Vorlesungsfolien oder 
+  Skripts, auch wenn \osglecture\ auf andere Anwendungsfälle übertragbar ist.
+  Mit anderen Worten: Ein \osglecture-Projekt ist ein \emph{Kurse}.}{
+  In this context, a “project” refers to a collection of related materials.
+  In the context of our use case, this means teaching materials such as lecture slides or 
+  lecture notes, even though \osglecture\ can be applied to other use cases as well.
+  In other words: An \osglecture project is a \emph{course}.
+  }
+
+  \ldeen*{Alles Kursmaterialien stehen in einem Verzeichnis, welches in der Regel ein spezielles Manifest enthält.
+  Die Ausnahme zu dieser Regel sind sogenante \emph{standalone}-Projekte, ursprünglich für 
+  einen der oben angesprochenen anderen Anwendungsfälle gedacht waren, nämlich Konferenzbeiträge.
+  Dieser Spezialfall wird im Abschnitt~@1 betrachtet.
+  Im Folgendem gehen wir aber von Kursen aus.}{All course materials are located in a directory that typically contains a special manifest.
+  The exception to this rule are so-called \emph{standalone} projects, which were originally intended for
+  one of the other use cases mentioned above, namely conference papers.
+  This special case is discussed in Section~@1.
+  In what follows, however, we will focus on courses.}{\ref{??}}
+
+
 \subsection{\ldeen{Lehreinheit}{Course Unit}}
 \ldeen{Ein Kurs ist aus Sicht von \osglecture\ eine Serie von zusammenhängenden 
 Lehreinheiten, z.\,B. Vorlesungen oder Übungen (oder beidem), die 
@@ -265,7 +288,6 @@ a lot. At the OSG, there are a number of typical teaching scenarios
   The parts in square brackets are optional. They have the following meanings
 }:
 
-
 \begin{description}
 \item [\texttt{target}] Beschreibt das Ziel dieser Einheit.
   
@@ -309,4 +331,6 @@ a lot. At the OSG, there are a number of typical teaching scenarios
 \begin{warnbox}{}
   \ldeen*{Bitte beachten sie, dass der Aufbau der Verzeichnisnamen nicht nur Konvention ist: Sowohl die Hauptklasse @1 als auch das Tool @2 werten die Namen aus.}{Please note that the structure of the directory names is not merely a convention: Both the main class @1 and the tool @2 evaluate the names.}{\texttt{osglecture.cls}}{\texttt{ollm}}
 \end{warnbox}
+
+
 \end{document}
