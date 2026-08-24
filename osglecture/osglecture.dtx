@@ -576,11 +576,15 @@ load-preamble+
 % Trenntoken erwarten -- unter Katcode~9 verschwindet dieses Trenntoken beim
 % Tokenisieren spurlos, das Muster passt nicht mehr, und die Klasse bricht
 % mit einer Kaskade von Folgefehlern ab (dasselbe Symptombild wie bei einer
-% früheren \code{kvoptions.sty}-Korruption in dieser Datei). Die
-% Katcode-Änderung darf hier nicht in einer \TeX-Gruppe stehen: @4 verbietet
-% das Laden einer Klasse innerhalb einer Gruppe explizit
-% ("Loading a class or package in a group"). Die Wiederherstellung erfolgt
-% deshalb durch eine zweite, ungruppierte Zuweisung direkt nach @4.}
+% früheren \code{kvoptions.sty}-Korruption in dieser Datei). Dieselbe
+% \cs{@pr@videpackage}-Prüfung läuft nicht nur bei @4, sondern bei jedem
+% \cs{RequirePackage} weiterer legacy-artiger Pakete -- die
+% Katcode-10-Phase muss deshalb bis nach dem letzten solchen Aufruf
+% andauern; die Wiederherstellung auf Katcode~9 erfolgt daher erst kurz vor
+% der erneuten @1-Aktivierung, nicht unmittelbar nach @4. Die
+% Katcode-Änderung darf hier nicht in einer \TeX-Gruppe stehen: @4
+% verbietet das Laden einer Klasse innerhalb einer Gruppe explizit
+% ("Loading a class or package in a group").}
 % {@1 sets space (catcode~32) to catcode~9 (ignored), not catcode~10 as
 % normal \LaTeX\ does. Legacy base classes such as KOMA-Script's @2 use
 % their own, non-@3-based macros internally (e.g. \cs{@pr@videpackage}),
@@ -588,14 +592,17 @@ load-preamble+
 % catcode~9 that delimiter vanishes without a trace during tokenization,
 % the pattern no longer matches, and the class aborts with a cascade of
 % follow-on errors (the same symptom picture as an earlier
-% \code{kvoptions.sty} corruption in this file). The catcode change must
-% not be inside a \TeX\ group here: @4 explicitly forbids loading a class
-% inside a group ("Loading a class or package in a group"). Restoration is
-% therefore a second, ungrouped assignment right after @4.}
+% \code{kvoptions.sty} corruption in this file). The same
+% \cs{@pr@videpackage} check runs not only for @4 but for every
+% \cs{RequirePackage} of further legacy-style packages -- the catcode-10
+% window therefore has to last until after the last such call; restoring
+% catcode~9 happens only shortly before @1 is reactivated, not right after
+% @4. The catcode change must not be inside a \TeX\ group here: @4
+% explicitly forbids loading a class inside a group ("Loading a class or
+% package in a group").}
 % {\cs{ExplSyntaxOn}}{\code{scrbook}}{expl3}{\cs{LoadClass}}
 \char_set_catcode:nn {32}{10}
 \exp_args:NV \LoadClass \l__osglecture_base_class_tl
-\char_set_catcode:nn {32}{9}
 
 \bool_if:NF \l__osglecture_patch_overlays_bool
   { \PassOptionsToPackage{patch-overlays=false}{osglecture-modes} }
@@ -672,6 +679,7 @@ load-preamble+
 
 \RequirePackage{osglecture-series}
 \RequirePackage{osglecture-metadata}
+\char_set_catcode:nn {32}{9}
 \ExplSyntaxOn
 \exp_args:Nx \OsgLectureConfigureMetadata
   {
