@@ -3,9 +3,9 @@
 \documentclass{ltx-talk}
 \usepackage{ltxtalk-theme}
 \setltxtalkcolors{
-  structure={HTML}{123456},
-  alert={HTML}{A00000},
-  example={HTML}{006000}
+  structure={model=HTML,value=123456},
+  alert={model=HTML,value=A00000},
+  example={model=HTML,value=006000}
 }
 \styleltxtalkblock{block}{rule-color=structure,rule-thickness=.4pt,padding=2pt}
 \styleltxtalkblock{alertblock}{before=\smallskip,after=\smallskip}

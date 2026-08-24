@@ -330,22 +330,23 @@ dieses Vorgehen.
 
 \ldeen{
 Die acht semantischen Theme-Farben lassen sich mit
-\cs*{setltxtalkcolors} neu belegen. Jeder Wert besteht wie bei
-\cs*{definecolor} aus Farbmodell und Farbangabe:
+\cs*{setltxtalkcolors} neu belegen. Jeder Wert nennt, wie bei
+\cs*{definecolor}, Farbmodell und Farbangabe, hier als
+\code{model=...,~value=...}-Paar:
 }{
 % TODO: English translation
 }
 
 \begin{sourcecode}
   \setltxtalkcolors{
-    primary   = {HTML}{005B50},
-    secondary = {HTML}{3C7A73},
-    accent    = {HTML}{D6A800},
-    text      = {HTML}{202020},
-    background= {HTML}{FFFFFF},
-    structure = {HTML}{005B50},
-    alert     = {HTML}{A00020},
-    example   = {HTML}{166534}
+    primary    = {model=HTML, value=005B50},
+    secondary  = {model=HTML, value=3C7A73},
+    accent     = {model=HTML, value=D6A800},
+    text       = {model=HTML, value=202020},
+    background = {model=HTML, value=FFFFFF},
+    structure  = {model=HTML, value=005B50},
+    alert      = {model=HTML, value=A00020},
+    example    = {model=HTML, value=166534}
   }
 \end{sourcecode}
 
@@ -991,8 +992,8 @@ Slots, Templates und den Seitenstil bereitstellt.
     Definiert die semantischen Farben \code{primary}, \code{secondary},
     \code{accent}, \code{text}, \code{background}, \code{structure},
     \code{alert} und \code{example}. Jeder Wert hat die Form
-    \code{\Marg{Modell}\Marg{Wert}}, beispielsweise
-    \code{primary=\Marg{HTML}\Marg{005B50}}. Die zugehörigen Farbnamen lauten
+    \code{model=...,~value=...}, beispielsweise
+    \code{primary={model=HTML,~value=005B50}}. Die zugehörigen Farbnamen lauten
     \code{ltxtalk-primary}, \code{ltxtalk-secondary}, \code{ltxtalk-accent},
     \code{ltxtalk-text}, \code{ltxtalk-bg}, \code{ltxtalk-structure},
     \code{ltxtalk-alert} und \code{ltxtalk-example}. Die letzten drei werden
@@ -1304,11 +1305,11 @@ Slots eines Teilthemes implementiert werden.
 % 
 % ```latex
 % \setltxtalkcolors{
-%   primary = {HTML}{2B3A67},
-%   secondary = {HTML}{496A81},
-%   accent = {HTML}{66999B},
-%   text = {HTML}{333333},
-%   background = {HTML}{FFFFFF},
+%   primary = {model=HTML, value=2B3A67},
+%   secondary = {model=HTML, value=496A81},
+%   accent = {model=HTML, value=66999B},
+%   text = {model=HTML, value=333333},
+%   background = {model=HTML, value=FFFFFF},
 % }
 % ```
 % 
@@ -1703,6 +1704,18 @@ Slots eines Teilthemes implementiert werden.
 % FARBSCHEMA
 % ==========================================
 
+\msg_new:nnnn { ltxtalk } { incomplete-color-resource }
+  { Color~'#1'~does~not~specify~both~model~and~value. }
+  { Use~model=...,~value=...~to~set~a~color. }
+
+\tl_new:N \l__ltxtalk_color_model_tl
+\tl_new:N \l__ltxtalk_color_value_tl
+\keys_define:nn { ltxtalk / color-resource }
+  {
+    model .tl_set:N = \l__ltxtalk_color_model_tl,
+    value .tl_set:N = \l__ltxtalk_color_value_tl,
+  }
+
 \keys_define:nn { ltxtalk / colors }
   {
     primary    .code:n = \__ltxtalk_set_color:nn { ltxtalk-primary } { #1 },
@@ -1715,17 +1728,29 @@ Slots eines Teilthemes implementiert werden.
     example    .code:n = \__ltxtalk_set_semantic_color:nn { example } { #1 },
   }
 
-\cs_new_protected:Npn \__ltxtalk_set_color:nn #1#2
-  { \__ltxtalk_set_color_aux:nnn { #1 } #2 }
+% #1 = name to report in the error message, #2 = the color to define,
+% #3 = the raw model=...,value=... text to parse.
+\cs_new_protected:Npn \__ltxtalk_color_resource_store:nnn #1#2#3
+  {
+    \tl_clear:N \l__ltxtalk_color_model_tl
+    \tl_clear:N \l__ltxtalk_color_value_tl
+    \keys_set:nn { ltxtalk / color-resource } {#3}
+    \bool_lazy_and:nnTF
+      { ! \tl_if_empty_p:N \l__ltxtalk_color_model_tl }
+      { ! \tl_if_empty_p:N \l__ltxtalk_color_value_tl }
+      {
+        \exp_args:Nnee \color_set:nnn {#2}
+          { \l__ltxtalk_color_model_tl } { \l__ltxtalk_color_value_tl }
+      }
+      { \msg_error:nne { ltxtalk } { incomplete-color-resource } {#1} }
+  }
 
-\cs_new_protected:Npn \__ltxtalk_set_color_aux:nnn #1#2#3
-  { \color_set:nnn { #1 } { #2 } { #3 } }
+\cs_new_protected:Npn \__ltxtalk_set_color:nn #1#2
+  { \__ltxtalk_color_resource_store:nnn {#1}{#1}{#2} }
 
 \cs_new_protected:Npn \__ltxtalk_set_semantic_color:nn #1#2
-  { \__ltxtalk_set_semantic_color_aux:nnn { #1 } #2 }
-\cs_new_protected:Npn \__ltxtalk_set_semantic_color_aux:nnn #1#2#3
   {
-    \color_set:nnn { ltxtalk-#1 } { #2 } { #3 }
+    \__ltxtalk_color_resource_store:nnn {#1}{ltxtalk-#1}{#2}
     \color_set_eq:nn { #1 } { ltxtalk-#1 }
   }
 
@@ -1740,9 +1765,9 @@ Slots eines Teilthemes implementiert werden.
 \color_set:nnn { ltxtalk-accent } { HTML } { 66999B }
 \color_set:nnn { ltxtalk-text } { HTML } { 333333 }
 \color_set:nnn { ltxtalk-bg } { HTML } { FFFFFF }
-\__ltxtalk_set_semantic_color:nn { structure } { {HTML}{2B3A67} }
-\__ltxtalk_set_semantic_color:nn { alert }     { {HTML}{B00020} }
-\__ltxtalk_set_semantic_color:nn { example }   { {HTML}{166534} }
+\__ltxtalk_set_semantic_color:nn { structure } { model=HTML, value=2B3A67 }
+\__ltxtalk_set_semantic_color:nn { alert }     { model=HTML, value=B00020 }
+\__ltxtalk_set_semantic_color:nn { example }   { model=HTML, value=166534 }
 
 % ==========================================
 % INNER THEME: BLOCKS AND LIST MARKERS
@@ -3616,11 +3641,11 @@ Slots eines Teilthemes implementiert werden.
     
     % === FARBEN ===
     \setltxtalkcolors{
-      primary   = {HTML}{333333},
-      secondary = {HTML}{666666},
-      accent    = {HTML}{999999},
-      text      = {HTML}{222222},
-      background = {HTML}{FFFFFF},
+      primary    = {model=HTML, value=333333},
+      secondary  = {model=HTML, value=666666},
+      accent     = {model=HTML, value=999999},
+      text       = {model=HTML, value=222222},
+      background = {model=HTML, value=FFFFFF},
     }
   }
 
@@ -3681,8 +3706,10 @@ Slots eines Teilthemes implementiert werden.
     \EditInstance {titlepage-element}{institute}
       {color=ltxtalk-text,font=\scriptsize,after-skip=0.7em}
     \EditInstance {titlepage-element}{date}{color=ltxtalk-text}
-    \setltxtalkcolors{primary={rgb}{0.2,0.2,0.7},secondary={rgb}{0.15,0.15,0.525},
-      accent={rgb}{0.2,0.2,0.7},text={HTML}{000000},background={HTML}{FFFFFF}}
+    \setltxtalkcolors{primary={model=rgb,value={0.2,0.2,0.7}},
+      secondary={model=rgb,value={0.15,0.15,0.525}},
+      accent={model=rgb,value={0.2,0.2,0.7}},
+      text={model=HTML,value=000000},background={model=HTML,value=FFFFFF}}
   }
 \RegisterLTXTalkTheme{magpie}{\__ltxtalk_magpie_theme_setup:}
 %</magpie>
@@ -3732,8 +3759,10 @@ Slots eines Teilthemes implementiert werden.
     \EditInstance {titlepage-element}{author}{color=ltxtalk-text,before-skip=0.8em}
     \EditInstance {titlepage-element}{institute}{color=ltxtalk-text,font=\scriptsize}
     \EditInstance {titlepage-element}{date}{color=ltxtalk-text}
-    \setltxtalkcolors{primary={rgb}{0.2,0.2,0.7},secondary={rgb}{0.15,0.15,0.525},
-      accent={rgb}{0.2,0.2,0.7},text={HTML}{000000},background={HTML}{FFFFFF}}
+    \setltxtalkcolors{primary={model=rgb,value={0.2,0.2,0.7}},
+      secondary={model=rgb,value={0.15,0.15,0.525}},
+      accent={model=rgb,value={0.2,0.2,0.7}},
+      text={model=HTML,value=000000},background={model=HTML,value=FFFFFF}}
   }
 \RegisterLTXTalkTheme{hawk}{\__ltxtalk_hawk_theme_setup:}
 %</hawk>
@@ -3790,8 +3819,10 @@ Slots eines Teilthemes implementiert werden.
     \EditInstance {titlepage-element}{author}{color=ltxtalk-text,before-skip=0.8em}
     \EditInstance {titlepage-element}{institute}{color=ltxtalk-text,font=\scriptsize}
     \EditInstance {titlepage-element}{date}{color=ltxtalk-text}
-    \setltxtalkcolors{primary={rgb}{0.2,0.2,0.7},secondary={rgb}{0.15,0.15,0.525},
-      accent={rgb}{0.2,0.2,0.7},text={HTML}{000000},background={HTML}{FFFFFF}}
+    \setltxtalkcolors{primary={model=rgb,value={0.2,0.2,0.7}},
+      secondary={model=rgb,value={0.15,0.15,0.525}},
+      accent={model=rgb,value={0.2,0.2,0.7}},
+      text={model=HTML,value=000000},background={model=HTML,value=FFFFFF}}
   }
 \RegisterLTXTalkTheme{sparrow}{\__ltxtalk_sparrow_theme_setup:}
 %</sparrow>
@@ -3804,8 +3835,10 @@ Slots eines Teilthemes implementiert werden.
 {Anchovy colour theme for ltx-talk, inspired by Beamer AnnArbor}
 \RequirePackage{ltxtalk-theme}
 \cs_new_protected:Npn \__ltxtalk_anchovy_theme_setup:
-  {\setltxtalkcolors{primary={rgb}{0,0,0.8},secondary={HTML}{65500A},
-    accent={HTML}{B45309},text={HTML}{111827},background={HTML}{FFF7D6}}}
+  {\setltxtalkcolors{primary={model=rgb,value={0,0,0.8}},
+    secondary={model=HTML,value=65500A},
+    accent={model=HTML,value=B45309},text={model=HTML,value=111827},
+    background={model=HTML,value=FFF7D6}}}
 \RegisterLTXTalkTheme{anchovy}{\__ltxtalk_anchovy_theme_setup:}
 %</anchovy>
 %<*carp>
@@ -3817,8 +3850,10 @@ Slots eines Teilthemes implementiert werden.
 {Carp colour theme for ltx-talk, inspired by Beamer CambridgeUS}
 \RequirePackage{ltxtalk-theme}
 \cs_new_protected:Npn \__ltxtalk_carp_theme_setup:
-  {\setltxtalkcolors{primary={rgb}{0.8,0,0},secondary={HTML}{7F1D1D},
-    accent={HTML}{991B1B},text={HTML}{111111},background={HTML}{FFFFFF}}}
+  {\setltxtalkcolors{primary={model=rgb,value={0.8,0,0}},
+    secondary={model=HTML,value=7F1D1D},
+    accent={model=HTML,value=991B1B},text={model=HTML,value=111111},
+    background={model=HTML,value=FFFFFF}}}
 \RegisterLTXTalkTheme{carp}{\__ltxtalk_carp_theme_setup:}
 %</carp>
 %<carp>\endinput

@@ -30,19 +30,21 @@ is intentionally only registered for a later `unicode-math` adapter and cannot
 be selected as a text family.
 
 Color palettes use the slots `primary`, `secondary`, `accent`, `text`,
-`background`, `structure`, `alert`, and `example`. Their value syntax and slot
-names deliberately match `lttheme`:
+`background`, `structure`, `alert`, and `example`; these slot names
+deliberately match `lttheme`'s color vocabulary (the declaration syntax
+itself is `osgstyler`'s own, key-value based like its font and metric
+palettes, not `lttheme`'s positional `{model}{spec}` form):
 
 ```latex
 \DeclareOsgColorPalette{modern}{
-  primary    = {RGB}{43,58,103},
-  secondary  = {RGB}{73,106,129},
-  accent     = {RGB}{102,153,155},
-  text       = {RGB}{51,51,51},
-  background = {RGB}{255,255,255},
-  structure  = {alias}{primary},
-  alert      = {RGB}{176,0,32},
-  example    = {RGB}{22,101,52}
+  primary    = {model=RGB, value={43,58,103}},
+  secondary  = {model=RGB, value={73,106,129}},
+  accent     = {model=RGB, value={102,153,155}},
+  text       = {model=RGB, value={51,51,51}},
+  background = {model=RGB, value={255,255,255}},
+  structure  = {alias=primary},
+  alert      = {model=RGB, value={176,0,32}},
+  example    = {model=RGB, value={22,101,52}}
 }
 
 \UseOsgColorPalette{modern}

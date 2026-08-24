@@ -3,18 +3,18 @@
 \usepackage{osgstyler}
 
 \DeclareOsgColorPalette{modern}{
-  primary    = {HTML}{2B3A67},
-  secondary  = {HTML}{496A81},
-  accent     = {HTML}{66999B},
-  text       = {HTML}{333333},
-  background = {HTML}{FFFFFF},
-  structure  = {alias}{primary},
-  alert      = {HTML}{B00020},
-  example    = {HTML}{166534}
+  primary    = {model=HTML, value=2B3A67},
+  secondary  = {model=HTML, value=496A81},
+  accent     = {model=HTML, value=66999B},
+  text       = {model=HTML, value=333333},
+  background = {model=HTML, value=FFFFFF},
+  structure  = {alias=primary},
+  alert      = {model=HTML, value=B00020},
+  example    = {model=HTML, value=166534}
 }
 
 \DeclareOsgColorPalette{minimal}{
-  primary = {rgb}{0.2,0.2,0.7}
+  primary = {model=rgb, value={0.2,0.2,0.7}}
 }
 
 \begin{document}
@@ -33,7 +33,7 @@
 \TYPE{active=\OsgActiveColorPalette}
 \TYPE{name=\OsgColorName{structure}}
 \TYPE{primary-model=\OsgColorPaletteValue{modern}{primary}{model}}
-\TYPE{primary-spec=\OsgColorPaletteValue{modern}{primary}{specification}}
+\TYPE{primary-spec=\OsgColorPaletteValue{modern}{primary}{value}}
 \extractcolorspec{osgstyler-structure}\TestColor
 \TYPE{structure-color=\TestColor}
 \extractcolorspec{osgstyler-alert}\TestColor

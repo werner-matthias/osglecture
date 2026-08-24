@@ -376,7 +376,7 @@ load babel
   { The~portable~slots~are~primary,~secondary,~accent,~text,~background,~structure,~alert,~and~example. }
 \msg_new:nnnn { osgstyler } { missing-primary-color }
   { Color~palette~'#1'~does~not~define~the~required~slot~'primary'. }
-  { Add~primary={model}{specification}~to~the~palette. }
+  { Add~primary={model=...,~value=...}~to~the~palette. }
 \msg_new:nnnn { osgstyler } { unknown-color-palette }
   { Unknown~color~palette~'#1'. }
   { Declare~it~with~\token_to_str:N\DeclareOsgColorPalette~before~using~it. }
@@ -386,31 +386,65 @@ load babel
 \msg_new:nnnn { osgstyler } { invalid-color-alias }
   { Color~slot~'#2'~in~palette~'#1'~aliases~unknown~slot~'#3'. }
   { Use~one~of~the~portable~color~slots~as~the~alias~target. }
+\msg_new:nnnn { osgstyler } { incomplete-color-resource }
+  { Color~slot~'#2'~in~palette~'#1'~does~not~specify~both~model~and~value,~or~an~alias. }
+  { Use~model=...,~value=...~for~a~resource~or~alias=...~for~an~alias. }
+\msg_new:nnnn { osgstyler } { conflicting-color-resource }
+  { Color~slot~'#2'~in~palette~'#1'~specifies~both~a~resource~and~an~alias. }
+  { A~slot~must~either~own~a~color~resource~or~alias~another~slot. }
 
-\cs_new_protected:Npn \__osgstyler_color_store:nnn #1#2#3
-  { \__osgstyler_color_store_aux:nnnn {#1}{#2} #3 }
-
-\cs_new_protected:Npn \__osgstyler_color_store_aux:nnnn #1#2#3#4
+\tl_new:N \l__osgstyler_color_model_tl
+\tl_new:N \l__osgstyler_color_value_tl
+\tl_new:N \l__osgstyler_color_alias_tl
+\keys_define:nn { osgstyler / color-resource }
   {
-    \str_if_eq:nnTF {#3}{alias}
+    model .tl_set:N = \l__osgstyler_color_model_tl,
+    value .tl_set:N = \l__osgstyler_color_value_tl,
+    alias .tl_set:N = \l__osgstyler_color_alias_tl,
+  }
+
+\cs_new_protected:Npn \__osgstyler_color_resource_store:nnn #1#2#3
+  {
+    \tl_clear:N \l__osgstyler_color_model_tl
+    \tl_clear:N \l__osgstyler_color_value_tl
+    \tl_clear:N \l__osgstyler_color_alias_tl
+    \keys_set:nn { osgstyler / color-resource } {#3}
+    \bool_lazy_and:nnTF
+      { ! \tl_if_empty_p:N \l__osgstyler_color_alias_tl }
       {
-        \clist_if_in:NnTF \c__osgstyler_color_slots_clist {#4}
-          {
-            \prop_gput:Nnn \g__osgstyler_color_palette_prop
-              { #1 / #2 / kind } { alias }
-            \prop_gput:Nnn \g__osgstyler_color_palette_prop
-              { #1 / #2 / alias } {#4}
-          }
-          { \msg_error:nnnnn { osgstyler } { invalid-color-alias }
-              {#1}{#2}{#4} }
+        \bool_lazy_or_p:nn
+          { ! \tl_if_empty_p:N \l__osgstyler_color_model_tl }
+          { ! \tl_if_empty_p:N \l__osgstyler_color_value_tl }
       }
+      { \msg_error:nnnn { osgstyler } { conflicting-color-resource } {#1} {#2} }
       {
-        \prop_gput:Nnn \g__osgstyler_color_palette_prop
-          { #1 / #2 / kind } { resource }
-        \prop_gput:Nnn \g__osgstyler_color_palette_prop
-          { #1 / #2 / model } {#3}
-        \prop_gput:Nnn \g__osgstyler_color_palette_prop
-          { #1 / #2 / specification } {#4}
+        \tl_if_empty:NTF \l__osgstyler_color_alias_tl
+          {
+            \bool_lazy_and:nnTF
+              { ! \tl_if_empty_p:N \l__osgstyler_color_model_tl }
+              { ! \tl_if_empty_p:N \l__osgstyler_color_value_tl }
+              {
+                \prop_gput:Nnn \g__osgstyler_color_palette_prop
+                  { #1 / #2 / kind } { resource }
+                \prop_gput:NnV \g__osgstyler_color_palette_prop
+                  { #1 / #2 / model } \l__osgstyler_color_model_tl
+                \prop_gput:NnV \g__osgstyler_color_palette_prop
+                  { #1 / #2 / value } \l__osgstyler_color_value_tl
+              }
+              { \msg_error:nnnn { osgstyler } { incomplete-color-resource } {#1} {#2} }
+          }
+          {
+            \clist_if_in:NVTF \c__osgstyler_color_slots_clist
+              \l__osgstyler_color_alias_tl
+              {
+                \prop_gput:Nnn \g__osgstyler_color_palette_prop
+                  { #1 / #2 / kind } { alias }
+                \prop_gput:NnV \g__osgstyler_color_palette_prop
+                  { #1 / #2 / alias } \l__osgstyler_color_alias_tl
+              }
+              { \msg_error:nneee { osgstyler } { invalid-color-alias }
+                  {#1}{#2} \l__osgstyler_color_alias_tl }
+          }
       }
   }
 
@@ -418,11 +452,11 @@ load babel
   {
     \clist_map_inline:Nn \c__osgstyler_color_slots_clist
       {
-        \clist_map_inline:nn { kind, model, specification, alias }
+        \clist_map_inline:nn { kind, model, value, alias }
           { \prop_gremove:Nn \g__osgstyler_color_palette_prop
               { #1 / ##1 / ####1 } }
         \keys_define:nn { osgstyler / color-palette / #1 }
-          { ##1 .code:n = \__osgstyler_color_store:nnn {#1}{##1}{####1} }
+          { ##1 .code:n = \__osgstyler_color_resource_store:nnn {#1}{##1}{####1} }
       }
     \prop_gremove:Nn \g__osgstyler_color_palette_prop { #1 / declared }
     \keys_set:nn { osgstyler / color-palette / #1 } {#2}
@@ -521,7 +555,7 @@ load babel
     \prop_get:NnN \g__osgstyler_color_palette_prop
       { #1 / #2 / model } \l__osgstyler_color_resolution_model_tl
     \prop_get:NnN \g__osgstyler_color_palette_prop
-      { #1 / #2 / specification } \l__osgstyler_color_resolution_target_tl
+      { #1 / #2 / value } \l__osgstyler_color_resolution_target_tl
     \tl_set:Nx \l__osgstyler_color_name_tl
       { \__osgstyler_color_name:n {#2} }
     \use:e
@@ -576,14 +610,14 @@ load babel
 
 \DeclareOsgColorPalette { osgstyler-default }
   {
-    primary    = { RGB } { 43,58,103 },
-    secondary  = { RGB } { 73,106,129 },
-    accent     = { RGB } { 102,153,155 },
-    text       = { RGB } { 51,51,51 },
-    background = { RGB } { 255,255,255 },
-    structure  = { alias } { primary },
-    alert      = { RGB } { 176,0,32 },
-    example    = { RGB } { 22,101,52 }
+    primary    = { model = RGB, value = {43,58,103} },
+    secondary  = { model = RGB, value = {73,106,129} },
+    accent     = { model = RGB, value = {102,153,155} },
+    text       = { model = RGB, value = {51,51,51} },
+    background = { model = RGB, value = {255,255,255} },
+    structure  = { alias = primary },
+    alert      = { model = RGB, value = {176,0,32} },
+    example    = { model = RGB, value = {22,101,52} }
   }
 \UseOsgColorPalette { osgstyler-default }
 
@@ -1344,7 +1378,7 @@ load babel
         \prop_gput:Nnn \g__osgstyler_color_palette_prop
           { lttheme / ##1 / model } { HTML }
         \prop_gput:Nne \g__osgstyler_color_palette_prop
-          { lttheme / ##1 / specification } { \l_tmpb_tl }
+          { lttheme / ##1 / value } { \l_tmpb_tl }
         \use:e
           {
             \exp_not:N \definecolor

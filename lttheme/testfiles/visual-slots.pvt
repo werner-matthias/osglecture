@@ -24,11 +24,11 @@
       }
     \setltxtalkcolors
       {
-        primary = {HTML}{174A5B},
-        secondary = {HTML}{376B73},
-        accent = {HTML}{D17A22},
-        text = {HTML}{202A2E},
-        background = {HTML}{F4F7F7}
+        primary = {model=HTML,value=174A5B},
+        secondary = {model=HTML,value=376B73},
+        accent = {model=HTML,value=D17A22},
+        text = {model=HTML,value=202A2E},
+        background = {model=HTML,value=F4F7F7}
       }
     \setltxtalktitleplacement
       { frametitle = header, section = header }

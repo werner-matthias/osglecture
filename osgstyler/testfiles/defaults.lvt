@@ -7,7 +7,7 @@
 \TYPE{font=\OsgActiveFontPalette}
 \TYPE{color=\OsgActiveColorPalette}
 \TYPE{metric=\OsgActiveMetricPalette}
-\TYPE{primary=\OsgColorPaletteValue{osgstyler-default}{primary}{specification}}
+\TYPE{primary=\OsgColorPaletteValue{osgstyler-default}{primary}{value}}
 \TYPE{rule=\OsgMetric{rule}{thin}}
 \highlight{zero-configuration highlight}
 \UseOsgStandardInlineCommands
