@@ -25,7 +25,7 @@ jobs:
       - name: Install TeX Live
         uses: zauguin/install-texlive@v4
         with:
-          cache_version: 1
+          cache_version: 2
           packages: >
             scheme-small
             l3build
