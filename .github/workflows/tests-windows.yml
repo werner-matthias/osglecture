@@ -98,5 +98,6 @@ jobs:
             build/test/*.diff
             build/test/*.log
             build/test/*.pdf
+            build/test/*.cls
           if-no-files-found: warn
           retention-days: 14

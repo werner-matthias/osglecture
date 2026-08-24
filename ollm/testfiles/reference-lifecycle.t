@@ -81,6 +81,16 @@ chdir $old_directory or die $!;
 if ($unpack_status != 0) {
   BAIL_OUT('cannot unpack osglecture for the lifecycle test');
 }
+# TEMPORARY: preserve the generated osglecture.cls as a build artifact
+# to compare it byte-for-byte against a local (working) generation.
+{
+  my $destination = File::Spec->catdir('..', 'build', 'test');
+  make_path($destination);
+  copy(
+    File::Spec->catfile($texinputs, 'osglecture.cls'),
+    File::Spec->catfile($destination, 'osglecture-generated.cls'),
+  ) or warn "cannot preserve generated osglecture.cls: $!\n";
+}
 
 my $unit = File::Spec->catdir($root, '020-processes');
 my $shared = File::Spec->catdir($root, 'Include');
