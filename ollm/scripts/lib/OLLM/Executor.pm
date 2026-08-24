@@ -186,15 +186,8 @@ sub _shell_escape_flag {
 sub command_for_spec {
   my ($class, $spec, $request, $latexmk_rc) = @_;
   my $shell = _shell_escape_flag($spec->{shell_escape});
-  # TEMPORARY: route through a wrapper that dumps the raw argv it actually
-  # receives (build/test/argv-dump.log), to see what survives latexmk's
-  # single-string system() call on this platform. Revert to a plain
-  # 'lualatex' engine once the investigation is done.
-  my $dumper = File::Spec->rel2abs(
-    File::Spec->catfile(dirname(__FILE__), '..', '..', 'debug-argv-dump.pl'),
-  );
   my $engine = join ' ',
-    "perl \"$dumper\"",
+    'lualatex',
     $shell,
     '--synctex=1',
     '--interaction=nonstopmode',
