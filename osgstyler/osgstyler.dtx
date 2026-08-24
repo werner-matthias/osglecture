@@ -1458,9 +1458,10 @@ load babel
 \sys_if_engine_luatex:F
   { \msg_fatal:nn { osgstyler-lua } { luatex-required } }
 
-\DeclareOsgMetricPalette { osgstyler-lua-default } { }
-\tl_if_empty:eT { \OsgActiveMetricPalette }
-  { \UseOsgMetricPalette { osgstyler-lua-default } }
+% \RequirePackage{osgstyler} above already activates the built-in
+% osgstyler-default metric palette unconditionally, so a metric
+% palette is always active by this point; no separate fallback
+% palette is needed here.
 
 \tl_new:N \l__osgstyler_lua_content_tl
 \tl_new:N \l__osgstyler_lua_before_tl

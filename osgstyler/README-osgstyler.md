@@ -51,7 +51,12 @@ palettes, not `lttheme`'s positional `{model}{spec}` form):
 ```
 
 Only `primary` is required. Missing relational slots fall back through the
-palette; `text` and `background` finally fall back to black and white. Active
+palette; `text` and `background` finally fall back to black and white. An
+`alias` is resolved once, when the palette is activated with
+`\UseOsgColorPalette`: it copies the resolved color, like `xcolor`'s
+`\colorlet` (no named-color mechanism in the underlying `xcolor`/`l3color`
+layer supports a live reference); reactivating the palette after changing
+a color re-copies it, but nothing updates automatically in between. Active
 colors have stable `xcolor` names such as `osgstyler-primary`; the expandable
 `\OsgColorName{<slot>}` returns the corresponding name.
 
