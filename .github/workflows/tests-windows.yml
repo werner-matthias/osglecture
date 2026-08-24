@@ -55,14 +55,17 @@ jobs:
       # Manual-dispatch-only interactive debug session: run this workflow
       # via workflow_dispatch (not push/pull_request) to get an SSH shell
       # on the actual Windows runner, in the same state as CI, right before
-      # the test step runs. Remove once the Windows-specific bug is
+      # the test step runs. Uses ngrok (not tmate.io, whose free relay
+      # servers are being shut down and fail intermittently with
+      # "Internal error"). Remove once the Windows-specific bug is
       # resolved; not meant to run on every push.
       - name: Debug session
         if: github.event_name == 'workflow_dispatch'
-        uses: mxschmitt/action-tmate@v3
+        uses: luchihoratiu/debug-via-ssh@main
         with:
-          limit-access-to-actor: true
-        timeout-minutes: 30
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+          SSH_PASS: ${{ secrets.SSH_PASS }}
+          NGROK_TIMEOUT: 1800
 
       - name: Test bundle
         run: l3build check
