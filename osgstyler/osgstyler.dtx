@@ -1162,6 +1162,16 @@ load babel
     \__osgstyler_make_mode_aware:Nn #1 { +m }
   }
 
+% The binding assumes a single, long (+m) argument; this covers the
+% common case (\emph, \textbf, and similar) but is not a general
+% command-signature adapter. A future `content=<n>` selector is
+% reserved for commands with more than one argument, styling argument
+% n and passing the rest through unchanged (e.g. \href{url}{text}).
+% `content=0` is reserved within that scheme for styling a command's
+% fully expanded result rather than one of its arguments (e.g.
+% \ref{label}), which needs box capture or expansion capture instead
+% of argument wrapping and so is a separate extension, not a variant
+% of the content=n case.
 \NewDocumentCommand \BindOsgInlineCommand { m m }
   { \__osgstyler_inline_command_bind:Nn #1 {#2} }
 
