@@ -1067,14 +1067,10 @@ Section~@1.%
   \PackageError{\packagename}{The~options~'load~babel'~and~'load~polyglossia'
     \MessageBreak are~mutual~exclusive,~you~can't~use~both}{Use~one~load~option,~only.}
 }
-% \ldeen{Wenn bereits (etwa handgeladen, oder von der Dokumentklasse) ein
-% Sprachpaket aktiv ist, laden wir @1/@2 nicht selbst nach -- ein zweiter
-% Ladeversuch mit ggf.\ abweichenden Optionen wäre ein harter Fehler. Die
-% Zielsprache wird trotzdem weiter unten aktiviert, siehe @3.}{If a language
-% package is already active (e.g.\ loaded by hand, or by the document class),
-% we don't load @1/@2 ourselves -- a second load attempt with possibly
-% differing options would be a hard error. The target language is still
-% activated further below, see @3.}{\pkg{babel}}{\pkg{polyglossia}}{\cs{selectlanguage}}
+% \ldeen*{Wenn bereits ein Sprachpaket aktiv ist, wird @1/@2 nicht selbst geladen.
+% Die Zielsprache wird später aktiviert.}{If a language package is already active, 
+% we don't load @1/@2 ourselves. The target language is activated 
+% later.}{\pkg{babel}}{\pkg{polyglossia}}
 \bool_if:nT{
   ( \cs_if_exist_p:c{ver@babel.sty} || \cs_if_exist_p:c{ver@polyglossia.sty} )
   &&
@@ -1116,7 +1112,7 @@ Section~@1.%
     \AddToDocumentProperties[document]{lang}{\olsTargetLanguage} 
   }
 }
-% \ldeen{Da der Name des Sprachmakros nicht bekannt ist, sind Patchen oder
+% \ldeen{Da der Name des Sprachmakros nicht bekannt ist, sind das Patchen oder
 % generische Hooks komplizierter. Wir stellen deshalb eigene Hooks zur
 % Verfügung.}{Since the name of the language macro is unknown, patching or
 % generic hooks are more complicated. We therefore provide our own hooks.} 
@@ -1370,32 +1366,43 @@ Section~@1.%
 \bool_if:NT\ols_load_polyglossia{
   \RequirePackage{polyglossia}
 }
-% \ldeen{Unabhängig davon, wann ein Sprachpaket geladen wurde, wird versucht,
-% die Zielsprache zu aktivieren.}{Regardless of when a language pack was loaded, 
-% an attempt will be made to activate the target language.} 
-\cs_if_exist:cT{ver@babel.sty}{
-  \AtBeginDocument{
-    \selectlanguage{\ols_mapped_target_lang}
-  }
-}
-\cs_if_exist:cT{ver@polyglossia.sty}{
-  \setdefaultlanguage{\ols_mapped_target_lang}
-}
+% \ldeen*{Für die Shorthand-Logik brauchen wir @1.}{For the shorthand logic, we need @1.}{\pkg{csquotes}}
 \bool_if:NT\ols_shorthands {
   \RequirePackage[autostyle=true]{csquotes}
-% \ldeen{Die Babel-Shorthand-Infrastruktur ist bei Babel bereits vorhanden,
-% bei Polyglossia muss sie explizit initialisiert und ohne Sprachpaket direkt
-% geladen werden.}{Babel's shorthand infrastructure is already available with
-% Babel; with Polyglossia it has to be initialized explicitly, and without a
-% language package it has to be loaded directly.}
-  \ExplSyntaxOff
-  \@ifpackageloaded{babel}{}{%
-    \@ifpackageloaded{polyglossia}
-      {\InitializeBabelShorthands}
-      {\input{babelsh.def}}%
+}
+% \ldeen*{Unabhängig davon, wann ein Sprachpaket geladen wurde, wird versucht,
+%   die Zielsprache zu aktivieren. Diese kann erst geschehen wenn
+%   feststeht, welches Sprachpaket (falls überhaupt eines) letztlich aktiv ist.
+%   Da auch die Shorthand-Initialisierung davon abhängt und andere Pakete oder 
+%   Klassen Sprachentscheidungen typischerweise nach hinten verschieben,  
+%   wird alles mit @1 verschoben.}{Regardless of when a language pack was loaded, an attempt is made to
+%   activate the target language. This can only happen once
+%   it is determined which language pack (if any) is ultimately active.
+%   Since the Shorthand initialization also depends on this, and other packages or
+%   classes typically defer language decisions,
+%   everything is deferred using @1.}{\cs*{AddToHook}[begindocument/before]}
+\AddToHook{begindocument/before}{%
+  \cs_if_exist:cT{ver@babel.sty}{
+    \selectlanguage{\ols_mapped_target_lang}
   }
-  \ExplSyntaxOn
-  \AtBeginDocument{
+  \cs_if_exist:cT{ver@polyglossia.sty}{
+    \setdefaultlanguage{\ols_mapped_target_lang}
+  }
+  \bool_if:NT\ols_shorthands {
+% \ldeen{Die Shorthand-Befehle benötigen ein aktives \code{@}.}{The shorthand macros
+%   need an active \code{@}.
+% }
+    \makeatletter
+% \ldeen{Die Babel-Shorthand-Infrastruktur ist bei Babel bereits vorhanden,
+%   bei Polyglossia muss sie explizit initialisiert und ohne Sprachpaket direkt
+%   geladen werden.}{Babel's shorthand infrastructure is already available with
+%   Babel; with Polyglossia it has to be initialized explicitly, and without a
+%   language package it has to be loaded directly.}
+    \@ifpackageloaded{babel}{}{%
+      \@ifpackageloaded{polyglossia}
+        {\InitializeBabelShorthands}
+        {\input{babelsh.def}}%
+    }
     \@ifpackageloaded{babel}
       {\useshorthands*{"}}
       {\useshorthands{"}}
@@ -1403,6 +1410,7 @@ Section~@1.%
     \defineshorthand{"'}{\closeautoquote}
     \defineshorthand{"/}{\textormath{\bbl@allowhyphens
         \discretionary{/}{}{/}\bbl@allowhyphens}{}}
+    \makeatother
   }
 }
 %</pkg>
