@@ -1,1 +1,9 @@
 *.pdf binary
+
+# Force LF everywhere, regardless of core.autocrlf on the checkout
+# machine. Windows CI runners default to autocrlf=true; without this,
+# .dtx (and other text) sources get checked out with CRLF, while
+# TeX Live's own kernel/class files (installed separately, not via
+# this repo) keep LF -- a source-dependent line-ending mismatch that
+# is easy to miss and hard to diagnose from the resulting TeX errors.
+* text=auto eol=lf

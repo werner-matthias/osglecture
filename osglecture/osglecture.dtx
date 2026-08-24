@@ -602,15 +602,7 @@ load-preamble+
 % package in a group").}
 % {\cs{ExplSyntaxOn}}{\code{scrbook}}{expl3}{\cs{LoadClass}}
 \char_set_catcode:nn {32}{10}
-% TEMPORARY diagnostic for the Windows \@pr@videpackage investigation;
-% remove once the root cause is confirmed. Pure tracing, no
-% redefinition, so it cannot itself introduce new failure modes.
-\tracingonline=1
-\tracingmacros=2
-\typeout{OSGDEBUG-TRACING-STARTS-HERE}
 \exp_args:NV \LoadClass \l__osglecture_base_class_tl
-\tracingmacros=0
-\typeout{OSGDEBUG-TRACING-ENDS-HERE}
 
 \bool_if:NF \l__osglecture_patch_overlays_bool
   { \PassOptionsToPackage{patch-overlays=false}{osglecture-modes} }
