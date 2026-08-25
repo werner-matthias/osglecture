@@ -573,6 +573,21 @@ Text\\<slides>[3ex]
     A base class must be loaded before \thepkg\ so that its capabilities can be
     detected.
   }
+  \item \ldeen{
+    Fehlt einer Basisklasse \cs{only}, \cs{uncover}, \cs{visible},
+    \cs{onslide}, \cs{invisible}, \cs{alt}, \cs{pause} oder \cs{temporal},
+    stellt \thepkg\ eine portable Fassung des \emph{Befehls} bereit. Die
+    entsprechenden Environments (\env{onlyenv}, \env{uncoverenv},
+    \env{visibleenv}, \env{invisibleenv}) bleiben dort undefiniert; gemeinsamer
+    Quelltext sollte in diesem Fall die Befehlsform verwenden.
+  }{
+    If a base class lacks \cs{only}, \cs{uncover}, \cs{visible}, \cs{onslide},
+    \cs{invisible}, \cs{alt}, \cs{pause}, or \cs{temporal}, \thepkg\ provides a
+    portable version of the \emph{command}. The corresponding environments
+    (\env{onlyenv}, \env{uncoverenv}, \env{visibleenv}, \env{invisibleenv})
+    remain undefined there; shared source should use the command form in
+    that case.
+  }
 \end{itemize}
 
 \section{Implementation}
@@ -1111,6 +1126,14 @@ Text\\<slides>[3ex]
       }
   }
 
+% Captured once, before any portable-only \cs{alt} fallback further below
+% could exist and be mistaken for a native judge: \cs{alt} doubles as this
+% function's own way of asking a real overlay backend whether an arbitrary
+% (non-portable) spec is active, which only a genuine backend can answer --
+% a portable-only \cs{alt} understands named modes, not arbitrary specs.
+\bool_new:N \g_osglecture_modes_native_alt_bool
+\bool_set:Nn \g_osglecture_modes_native_alt_bool { \cs_if_exist_p:N \alt }
+
 \cs_new_protected:Npn \osglecture_modes_overlay_apply:nn #1#2
   {
     \osglecture_modes_if_portable_spec:nTF {#2}
@@ -1120,7 +1143,7 @@ Text\\<slides>[3ex]
           { \osglecture_modes_overlay_gobble:n {#1} }
       }
       {
-        \cs_if_exist:NTF \alt
+        \bool_if:NTF \g_osglecture_modes_native_alt_bool
           {
             \alt<#2>
               { \osglecture_modes_overlay_original:n {#1} }
@@ -1328,15 +1351,100 @@ Text\\<slides>[3ex]
       }
   }
 
-% \cs{only} is implemented specially by both beamer and ltx-talk and no longer
-% passes through their common overlay decoders in every case. Bind it through
-% the signature-aware adapter so portable modes are handled directly while
-% native overlay specifications are still delegated unchanged.
-\bool_if:NT \g_osglecture_modes_patch_overlays_bool
+% \cs{only} is implemented specially by both beamer and ltx-talk and does not
+% pass through their common overlay decoders in every case, so it needs its
+% own adapter rather than sharing \cs{mode}'s. Mirrors \cs{mode}'s two-branch
+% shape above: where \cs{only} already exists (beamer, ltx-talk), bind it
+% through the signature-aware adapter so portable modes are handled directly
+% while native overlay specifications are delegated unchanged; where it does
+% not exist (article, scrbook, book, ...), define a portable-only \cs{only}
+% so shared source can still use it.
+\cs_if_exist:NTF \only
   {
-    \cs_if_exist:NT \only
+    \bool_if:NT \g_osglecture_modes_patch_overlays_bool
       { \MakeOverlayAwareCommand[arguments={+m}]{\only} }
   }
+  {
+    \NewDocumentCommand \only { d<> +m }
+      {
+        \IfNoValueTF {#1}
+          {#2}
+          { \osglecture_modes_if_active:nT {#1} {#2} }
+      }
+  }
+
+% Unlike \cs{only} and \cs{mode}, \cs{uncover}, \cs{visible}, \cs{onslide},
+% \cs{invisible}, and \cs{alt} route through beamer's and ltx-talk's common
+% overlay decoders (patched above), so a portable mode spec already reaches
+% them correctly there without adapting each command individually --
+% \cs{alt} additionally serves as the decoder fallback's own native-spec
+% judge just below, so wrapping it here would make that judge call back
+% into itself. Only a base class that lacks the command natively (article,
+% scrbook, book, ...) needs a portable-only definition.
+\cs_if_exist:NF \uncover
+  {
+    \NewDocumentCommand \uncover { d<> +m }
+      {
+        \IfNoValueTF {#1}
+          {#2}
+          { \osglecture_modes_if_active:nT {#1} {#2} }
+      }
+  }
+\cs_if_exist:NF \visible
+  {
+    \NewDocumentCommand \visible { d<> +m }
+      {
+        \IfNoValueTF {#1}
+          {#2}
+          { \osglecture_modes_if_active:nT {#1} {#2} }
+      }
+  }
+\cs_if_exist:NF \onslide
+  {
+    \NewDocumentCommand \onslide { d<> +m }
+      {
+        \IfNoValueTF {#1}
+          {#2}
+          { \osglecture_modes_if_active:nT {#1} {#2} }
+      }
+  }
+
+% \cs{invisible} inverts the polarity: content shows everywhere except in
+% the given mode.
+\cs_if_exist:NF \invisible
+  {
+    \NewDocumentCommand \invisible { d<> +m }
+      {
+        \IfNoValueTF {#1}
+          {#2}
+          { \osglecture_modes_if_active:nF {#1} {#2} }
+      }
+  }
+
+% \cs{alt} takes two content arguments (active branch, inactive branch)
+% instead of \cs{only}'s single one; the fallback mirrors that shape.
+\cs_if_exist:NF \alt
+  {
+    \NewDocumentCommand \alt { d<> +m +m }
+      {
+        \IfNoValueTF {#1}
+          {#2}
+          { \osglecture_modes_if_active:nTF {#1} {#2} {#3} }
+      }
+  }
+
+% \cs{pause} marks a live-reveal point with no content to select, and
+% \cs{temporal}'s before/during/after split assumes an ordered overlay
+% range, which named portable modes do not have -- neither maps onto
+% content selection by mode the way the commands above do. Base classes
+% without their own \cs{pause}/\cs{temporal} still get a definition so
+% shared source compiles: \cs{pause} does nothing, and \cs{temporal}
+% always shows its "`during"' argument, the state a static, non-overlay
+% rendering settles on.
+\cs_if_exist:NF \pause
+  { \NewDocumentCommand \pause { O{} } { } }
+\cs_if_exist:NF \temporal
+  { \NewDocumentCommand \temporal { d<> +m +m +m } {#3} }
 
 \AddToHook{begindocument/before}{\osglecture_modes_finalize_commands:}
 %</package>

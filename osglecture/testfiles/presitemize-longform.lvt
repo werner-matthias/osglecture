@@ -15,11 +15,15 @@
     \TYPE{de-finite=\tl_use:N\l__osglecture_pres_finite_tl}
     \ExplSyntaxOff
     den Text untersuchen
+  \commaitem weitere Daten \finite{folgen}
+  \colonitem ein Beispiel \finite{genügt}
 \end{presitemize}
 \begin{presitemize}[language=en]
-  \presitem[relation=sentence]
+  \presitem[relation=sentence,initial=keep]
     \TYPE{key-sentence-body=true}The translation \finite{works}
   \presitem[relation=and] The program \finite{delivers} the result
+  \presitem[relation=comma] more data \finite{follows}
+  \presitem[relation=colon] one example \finite{suffices}
   \presitem[relation=therefore] We \finite{must}
     \ExplSyntaxOn
     \TYPE{en-language=\tl_use:N\l__osglecture_pres_language_tl}
