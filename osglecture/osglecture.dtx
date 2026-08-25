@@ -3315,7 +3315,7 @@ load-preamble+
   { Language~'#1'~has~no~presitemize~profile. }
   { Falling~back~to~English.~Use~language=de,~en,~or~fr. }
 \msg_new:nnnn { osglecture-presitemize } { initial-not-letter }
-  { Cannot~lowercase~the~first~token~'#1'. }
+  { Cannot~change~the~case~of~the~first~token~'#1'. }
   {
     Use~initial=keep,~\token_to_str:N \preskeepcase,~or~
     \token_to_str:N \prescase.
@@ -3452,6 +3452,16 @@ load-preamble+
   { \bool_if:NTF \l__osglecture_pres_longform_bool {#2} {#1} }
 \NewDocumentCommand \preskeepcase {m} {#1}
 
+% \ldeen{Diese beiden Deklarationen machen Befehle für die automatische
+% Anpassung der Schreibung am Itemanfang transparent. Die erste Form
+% beschreibt einen Befehl mit einem Textargument, die zweite ein
+% Sprachwahlmakro mit zwei oder drei Textzweigen. Registrierte Hüllen werden
+% rekursiv durchlaufen; in der Präsentation bleiben sie unverändert.}{These
+% two declarations make commands transparent to automatic case adjustment at the
+% beginning of joined items. The first form describes a command with one text
+% argument, the second a language-selection command with two or three text
+% branches. Registered wrappers are traversed recursively and remain unchanged
+% in presentations.}
 \NewDocumentCommand \DeclarePresInitialTransparentCommand { m }
   {
     \prop_gput:Nee \g__osglecture_pres_initial_command_prop
@@ -3538,21 +3548,21 @@ load-preamble+
       }
   }
 
-\cs_new_protected:Npn \__osglecture_pres_lower_transparent:Nn #1#2
-  { #1 { \__osglecture_pres_lower_initial:n #2 } }
+\cs_new_protected:Npn \__osglecture_pres_case_transparent:Nn #1#2
+  { #1 { \__osglecture_pres_change_initial:n #2 } }
 
 \NewDocumentCommand \__osglecture_pres_lower_two_branches: { m s +m +m }
   {
     \IfBooleanTF{#2}
       {
         #1*
-          { \__osglecture_pres_lower_initial:n #3 }
-          { \__osglecture_pres_lower_initial:n #4 }
+          { \__osglecture_pres_change_initial:n #3 }
+          { \__osglecture_pres_change_initial:n #4 }
       }
       {
         #1
-          { \__osglecture_pres_lower_initial:n #3 }
-          { \__osglecture_pres_lower_initial:n #4 }
+          { \__osglecture_pres_change_initial:n #3 }
+          { \__osglecture_pres_change_initial:n #4 }
       }
   }
 
@@ -3561,19 +3571,19 @@ load-preamble+
     \IfBooleanTF{#2}
       {
         #1*
-          { \__osglecture_pres_lower_initial:n #3 }
-          { \__osglecture_pres_lower_initial:n #4 }
-          { \__osglecture_pres_lower_initial:n #5 }
+          { \__osglecture_pres_change_initial:n #3 }
+          { \__osglecture_pres_change_initial:n #4 }
+          { \__osglecture_pres_change_initial:n #5 }
       }
       {
         #1
-          { \__osglecture_pres_lower_initial:n #3 }
-          { \__osglecture_pres_lower_initial:n #4 }
-          { \__osglecture_pres_lower_initial:n #5 }
+          { \__osglecture_pres_change_initial:n #3 }
+          { \__osglecture_pres_change_initial:n #4 }
+          { \__osglecture_pres_change_initial:n #5 }
       }
   }
 
-\cs_new_protected:Npn \__osglecture_pres_lower_initial:n #1
+\cs_new_protected:Npn \__osglecture_pres_change_initial:n #1
   {
     \token_if_eq_meaning:NNTF #1 \preskeepcase
       { \preskeepcase }
@@ -3585,7 +3595,7 @@ load-preamble+
               { \cs_to_str:N #1 } \l_tmpa_tl
               {
                 \str_if_eq:VnTF \l_tmpa_tl { transparent }
-                  { \__osglecture_pres_lower_transparent:Nn #1 }
+                  { \__osglecture_pres_case_transparent:Nn #1 }
                   {
                     \str_if_eq:VnTF \l_tmpa_tl { branches/2 }
                       { \__osglecture_pres_lower_two_branches: #1 }
@@ -3594,7 +3604,7 @@ load-preamble+
               }
               {
                 \token_if_letter:NTF #1
-                  { \text_lowercase:n {#1} }
+                  { \text_uppercase:n {#1} }
                   {
                     \msg_warning:nnn {osglecture-presitemize}
                       {initial-not-letter}{#1}
@@ -3604,6 +3614,9 @@ load-preamble+
           }
       }
   }
+
+\cs_new_protected:Npn \__osglecture_pres_upper_initial:n #1
+  { \__osglecture_pres_change_initial:n #1 }
 
 \cs_new_protected:Npn \__osglecture_pres_set_relation:n #1
   {
@@ -3636,12 +3649,12 @@ load-preamble+
       { \tl_set:Nn \l__osglecture_pres_join_tl {\c_space_tl} }
     \__osglecture_pres_original_item:nn {#2}{#3}
     \bool_set_true:N \l__osglecture_pres_has_item_bool
-    \str_if_eq:VnTF \l__osglecture_pres_relation_tl {sentence}
+    \str_if_eq:VnTF \l__osglecture_pres_initial_tl {keep}
       {#4}
       {
-        \str_if_eq:VnTF \l__osglecture_pres_initial_tl {keep}
+        \str_if_eq:VnTF \l__osglecture_pres_relation_tl {sentence}
+          { \__osglecture_pres_upper_initial:n #4 }
           {#4}
-          { \__osglecture_pres_lower_initial:n #4 }
       }
   }
 
@@ -3701,19 +3714,23 @@ load-preamble+
   }
   {
     \bool_set_false:N \l__osglecture_pres_longform_bool
-    \cs_new_protected:Npn \__osglecture_pres_presentation_item:nn #1#2
+    \cs_new_protected:Npn \__osglecture_pres_presentation_item:nnn #1#2#3
       {
-        \IfNoValueTF{#1}
+        \keys_set:nn {osglecture/presitem}
+          {relation=sentence,initial=auto,#1}
+        \IfNoValueTF{#2}
           {
-            \IfNoValueTF{#2}
+            \IfNoValueTF{#3}
               {\__osglecture_pres_original_item:}
-              {\__osglecture_pres_original_item:[#2]}
+              {\__osglecture_pres_original_item:[#3]}
           }
           {
-            \IfNoValueTF{#2}
-              {\__osglecture_pres_original_item:<#1>}
-              {\__osglecture_pres_original_item:<#1>[#2]}
+            \IfNoValueTF{#3}
+              {\__osglecture_pres_original_item:<#2>}
+              {\__osglecture_pres_original_item:<#2>[#3]}
           }
+        \str_if_eq:VnF \l__osglecture_pres_initial_tl {keep}
+          { \__osglecture_pres_upper_initial:n }
       }
     \NewDocumentEnvironment{presitemize}{O{}}
       {
@@ -3724,14 +3741,16 @@ load-preamble+
         \__osglecture_pres_resolve_language:
         \begin{itemize}
         \cs_set_eq:NN \__osglecture_pres_original_item: \item
+        \RenewDocumentCommand \item {d<> o}
+          { \__osglecture_pres_presentation_item:nnn {} {##1}{##2} }
         \RenewDocumentCommand \presitem {O{} d<> o}
-          { \__osglecture_pres_presentation_item:nn {##2}{##3} }
+          { \__osglecture_pres_presentation_item:nnn {##1}{##2}{##3} }
         \RenewDocumentCommand \anditem {d<> o}
-          { \__osglecture_pres_presentation_item:nn {##1}{##2} }
+          { \__osglecture_pres_presentation_item:nnn {} {##1}{##2} }
         \RenewDocumentCommand \butitem {d<> o}
-          { \__osglecture_pres_presentation_item:nn {##1}{##2} }
+          { \__osglecture_pres_presentation_item:nnn {} {##1}{##2} }
         \RenewDocumentCommand \thereforeitem {d<> o}
-          { \__osglecture_pres_presentation_item:nn {##1}{##2} }
+          { \__osglecture_pres_presentation_item:nnn {} {##1}{##2} }
       }
       {
         \end{itemize}

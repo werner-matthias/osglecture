@@ -1142,6 +1142,9 @@ Section~@1.%
 % dienen zur Generierung der eigentlichen Sprachmakros.}{The commands
 % \cs{olsMakeBilangualMacro} and \cs{olsMakeTrilangualMacro}, resp., 
 % are used to generate the actual language commands.}\\
+% \ldeen{Wenn @1 existiert (also die @2-Umgebung definiert ist), werden das Sprachmakro
+%  dafür registriert.}{If @1 exists (i.e., the @2 environment is defined), the language macro
+%  is registered for it.}{\cs{DeclarePresInitialBranchingCommand}}{presitemize}
 % \#1: prefix, \#2,\#3: selectable languages, \#4: base name
 \cs_new_protected:Npn \ols_register_pres_initial_branching:cn #1#2
   {

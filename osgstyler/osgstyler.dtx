@@ -1333,6 +1333,9 @@ load babel
       }
     \AssignSocketPlug { \l__osgstyler_inline_command_socket_tl } { style/#2 }
     \__osgstyler_make_mode_aware:Nn #1 { +m }
+    % Bound inline commands have exactly one content argument and are therefore
+    % transparent to presitemize's initial-case transformation.  The package
+    % hook also covers the load order osgstyler -> presitemize.
     \cs_if_exist:NTF \DeclarePresInitialTransparentCommand
       { \DeclarePresInitialTransparentCommand #1 }
       {
