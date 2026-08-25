@@ -1,0 +1,23 @@
+\documentclass{article}
+\usepackage[a5paper,margin=18mm]{geometry}
+\usepackage{osgstyler-lua}
+
+\DeclareOsgColorPalette{screen}{
+  primary={model=RGB,value={36,74,115}},
+  secondary={model=RGB,value={79,109,122}},
+  accent={model=RGB,value={217,119,6}},
+  text={model=RGB,value={32,36,40}},
+  background={model=RGB,value={255,253,248}},
+  structure={alias=primary},
+  alert={model=RGB,value={166,27,27}},
+  example={model=RGB,value={40,122,80}}
+}
+\UseOsgColorPalette{screen}
+\UseOsgStandardInlineCommands
+\EditOsgInlineStyle{emphasis}{color=accent,shape=italic}
+\EditOsgInlineStyle{strong}{color=alert,weight=bold}
+
+\pagestyle{empty}
+\begin{document}
+\input{styler-source}
+\end{document}

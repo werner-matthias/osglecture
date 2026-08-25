@@ -167,28 +167,21 @@ documents shown below. \cs{lende} keeps the two language versions together.
 between statements rather than their appearance; \cs{finite} marks the finite
 verb needed by the long-form rendering.}
 
-\begin{example}[
-  code-only,
+\ldeen{Die zugehörigen kleinen Treiberdateien liegen ebenfalls in
+\texttt{manual-src}; \texttt{l3build doc} erzeugt daraus vor dem Handbuch die
+hier eingebetteten PDFs. Änderungen an den beiden gemeinsamen Quelldateien
+werden dadurch unmittelbar in allen Varianten sichtbar.}{The corresponding
+small driver files also live in \texttt{manual-src}; before typesetting the
+manual, \texttt{l3build doc} generates the embedded PDFs from them. Changes to
+the two shared source files therefore become visible in every variant
+immediately.}
+
+\inputsourcecode[
   gobble=0,
   add-local-frame={innerleftmargin=12pt,innerrightmargin=8pt},
   add-sourcecode-options={breaklines=true,breakatwhitespace=true,
     columns=fullflexible}
-]
-\begin{frame}
-  \frametitle{\lende{One source, two presentations}%
-    {Eine Quelle, zwei Darstellungen}}
-  \begin{presitemize}
-    \item \lende{A unit contains the subject-matter content}%
-      {Eine Unit enthält den fachlichen Inhalt}
-    \anditem \lende{target \emph{talk} produces a presentation}%
-      {das Target \emph{talk} erzeugt eine Präsentation}
-    \anditem \lende{target \emph{script} produces a long form}%
-      {das Target \emph{script} erzeugt eine Langform}
-    \thereforeitem \lende{We \finite{need} to maintain changes only once}%
-      {Wir \finite{müssen} Änderungen nur einmal pflegen}
-  \end{presitemize}
-\end{frame}
-\end{example}
+]{polymorphy-source.tex}
 
 \paragraph{\ldeen{Eine Quelle, zwei Sprachen}{One source, two languages}.}
 \ldeen{Zunächst bleibt der Dokumenttyp \texttt{slides} fest; nur die Sprache
@@ -202,11 +195,11 @@ same in both results.}
   \centering
   \begin{minipage}[t]{.48\linewidth}
     \centering\textbf{\texttt{slides}, \texttt{en}}\par\smallskip
-    \includegraphics[page=1,width=\linewidth]{polymorphy-slides-en-crop.pdf}
+    \includegraphics[page=1,width=\linewidth]{polymorphy-slides-en.pdf}
   \end{minipage}\hfill
   \begin{minipage}[t]{.48\linewidth}
     \centering\textbf{\texttt{slides}, \texttt{de}}\par\smallskip
-    \includegraphics[page=1,width=\linewidth]{polymorphy-slides-de-crop.pdf}
+    \includegraphics[page=1,width=\linewidth]{polymorphy-slides-de.pdf}
   \end{minipage}
   \caption{\ldeen{Gleicher Doctype, unterschiedliche Sprachwahl.}%
     {The same document type with different language selections.}}
@@ -228,14 +221,49 @@ is rendered appropriately by each profile.}
   \centering
   \begin{minipage}[t]{.48\linewidth}
     \centering\textbf{\texttt{slides}, \texttt{de}}\par\smallskip
-    \includegraphics[page=1,width=\linewidth]{polymorphy-slides-de-crop.pdf}
+    \includegraphics[page=1,width=\linewidth]{polymorphy-slides-de.pdf}
   \end{minipage}\hfill
   \begin{minipage}[t]{.48\linewidth}
     \centering\textbf{\texttt{script}, \texttt{de}}\par\smallskip
-    \includegraphics[page=1,width=\linewidth]{polymorphy-script-de-crop.pdf}
+    \includegraphics[page=1,width=\linewidth,
+      trim=25mm 225mm 25mm 18mm,clip]{polymorphy-script-de.pdf}
   \end{minipage}
   \caption{\ldeen{Gleiche Sprache, unterschiedliche Dokumentgestalt und
     Formulierung.}{The same language with different document form and phrasing.}}
+\end{figure}
+
+\paragraph{\ldeen{Eine Quelle, verschiedene Darstellungen mit \texttt{osgstyler}}%
+  {One source, different rendering with \texttt{osgstyler}}.}
+\ldeen{Auch gewöhnliche Autorenauszeichnungen können polymorph sein. Der
+folgende Text enthält nur die semantischen Befehle \cs{emph} und \cs{textbf}.
+Die Bildschirm- und Druckprofile binden sie an unterschiedliche
+\texttt{osgstyler}-Ressourcen, ohne den Inhalt zu duplizieren.}{Ordinary author
+markup can be polymorphic as well. The following text contains only the
+semantic commands \cs{emph} and \cs{textbf}. The screen and print profiles bind
+them to different \texttt{osgstyler} resources without duplicating the content.}
+
+\inputsourcecode[
+  gobble=0,
+  add-local-frame={innerleftmargin=12pt,innerrightmargin=8pt},
+  add-sourcecode-options={breaklines=true,breakatwhitespace=true,
+    columns=fullflexible}
+]{styler-source.tex}
+
+\begin{figure}[htbp]
+  \centering
+  \begin{minipage}[t]{.48\linewidth}
+    \centering\textbf{\ldeen{Bildschirmprofil}{Screen profile}}\par\smallskip
+    \includegraphics[page=1,width=\linewidth,
+      trim=15mm 150mm 15mm 15mm,clip]{styler-screen.pdf}
+  \end{minipage}\hfill
+  \begin{minipage}[t]{.48\linewidth}
+    \centering\textbf{\ldeen{Druckprofil}{Print profile}}\par\smallskip
+    \includegraphics[page=1,width=\linewidth,
+      trim=15mm 150mm 15mm 15mm,clip]{styler-print.pdf}
+  \end{minipage}
+  \caption{\ldeen{Gleiche semantische Auszeichnung, unterschiedliche
+    \texttt{osgstyler}-Ressourcen.}{The same semantic markup with different
+    \texttt{osgstyler} resources.}}
 \end{figure}
 
 \section{\ldeen{Kurztutorial}{Short Tutorial}}{}
