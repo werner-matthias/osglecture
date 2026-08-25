@@ -6,6 +6,9 @@ sourcefiles = {
   "osglecture-manual-en.tex",
   "osglecture-manual-de.tex",
   "osglecture-manual.tex",
+  "polymorphy-script-de-crop.pdf",
+  "polymorphy-slides-de-crop.pdf",
+  "polymorphy-slides-en-crop.pdf",
 }
 
 typesetfiles = {

@@ -146,126 +146,96 @@ In computer science or chemistry, this concept is also known as \emph{polymorphi
 
 \subsection{\ldeen{Polymorphie}{Polymorphism} in \osglecture}
 \ldeen{Es ist eine alte \hologo{TeX}-Idee, Texte je nach Kontext unterschiedlich darzustellen. Die \hologo{TeX}-Variante \hologo{ConTeXt} leitet beispielsweise ihren Namen auch davon ab. 
-Die folgenden Beispiele zeigen den Einsatz in \osglecture}{It is a long-standing \hologo{TeX} concept to render text differently depending on the context. The \hologo{TeX} variant \hologo{ConTeXt}, for example, derives its name from this concept. 
-The following examples demonstrate its use in \osglecture}.
+Die folgenden Beispiele sind keine nachgebauten Ausgaben, sondern Ausschnitte aus
+der mitgelieferten Beispielserie \texttt{examples/series-modern}.}{It is a
+long-standing \hologo{TeX} concept to render text differently depending on the
+context. The \hologo{TeX} variant \hologo{ConTeXt}, for example, derives its
+name from this concept. The following examples are not reconstructed output;
+they are excerpts from the included \texttt{examples/series-modern} example
+series.}
+
+\ldeen{Die folgende Aussagenfolge stammt unverändert aus der Unit
+\texttt{010-introduction/main.tex}. Sie ist die \emph{eine Quelle} für alle
+darunter gezeigten Dokumente. \cs{lende} hält die beiden Sprachfassungen
+beieinander. \cs{presitemize}, \cs{anditem} und \cs{thereforeitem} zeichnen
+nicht das Aussehen, sondern den Zusammenhang der Aussagen aus; \cs{finite}
+markiert das finite Verb für die Langform.}{The following sequence of
+statements is taken unchanged from the unit
+\texttt{010-introduction/main.tex}. It is the \emph{one source} for all
+documents shown below. \cs{lende} keeps the two language versions together.
+\cs{presitemize}, \cs{anditem}, and \cs{thereforeitem} mark the relations
+between statements rather than their appearance; \cs{finite} marks the finite
+verb needed by the long-form rendering.}
+
+\begin{example}[
+  code-only,
+  gobble=0,
+  add-local-frame={innerleftmargin=12pt,innerrightmargin=8pt},
+  add-sourcecode-options={breaklines=true,breakatwhitespace=true,
+    columns=fullflexible}
+]
+\begin{frame}
+  \frametitle{\lende{One source, two presentations}%
+    {Eine Quelle, zwei Darstellungen}}
+  \begin{presitemize}
+    \item \lende{A unit contains the subject-matter content}%
+      {Eine Unit enthält den fachlichen Inhalt}
+    \anditem \lende{target \emph{talk} produces a presentation}%
+      {das Target \emph{talk} erzeugt eine Präsentation}
+    \anditem \lende{target \emph{script} produces a long form}%
+      {das Target \emph{script} erzeugt eine Langform}
+    \thereforeitem \lende{We \finite{need} to maintain changes only once}%
+      {Wir \finite{müssen} Änderungen nur einmal pflegen}
+  \end{presitemize}
+\end{frame}
+\end{example}
 
 \paragraph{\ldeen{Eine Quelle, zwei Sprachen}{One source, two languages}.}
-\ldeen{In einer Lehreinheit stehen deutsche und englische Formulierungen unmittelbar
-nebeneinander. Beim Bauen wählen Sie lediglich die gewünschte Sprache. Gemeinsame
-Bestandteile wie Formeln, Namen oder Literaturverweise bleiben einmalig in der Quelle.}{
-In a course unit, the German and English wording is kept side by side. When building,
-you merely select the desired language. Shared elements such as formulae, names, or
-bibliographic references occur only once in the source.}
+\ldeen{Zunächst bleibt der Dokumenttyp \texttt{slides} fest; nur die Sprache
+wechselt. Gliederung, Aussagenfolge und Hervorhebung von \emph{talk} und
+\emph{script} sind in beiden Ergebnissen dieselben.}{First the document type
+\texttt{slides} remains fixed and only the language changes. Structure,
+statement sequence, and the emphasis of \emph{talk} and \emph{script} are the
+same in both results.}
 
 \begin{figure}[htbp]
   \centering
-  \begin{minipage}[t]{.43\linewidth}
-    \begin{tcolorbox}[title={\texttt{lang=de}},colback=blue!2,colframe=blue!55!black]
-      \textbf{Virtueller Speicher}\par\smallskip
-      Ein Prozess verwendet virtuelle Adressen. Die Seitentabelle bildet sie auf
-      physische Adressen ab: $v\mapsto p$.
-    \end{tcolorbox}
+  \begin{minipage}[t]{.48\linewidth}
+    \centering\textbf{\texttt{slides}, \texttt{en}}\par\smallskip
+    \includegraphics[page=1,width=\linewidth]{polymorphy-slides-en-crop.pdf}
   \end{minipage}\hfill
-  \begin{minipage}[t]{.43\linewidth}
-    \begin{tcolorbox}[title={\texttt{lang=en}},colback=blue!2,colframe=blue!55!black]
-      \textbf{Virtual Memory}\par\smallskip
-      A process uses virtual addresses. The page table maps them to physical
-      addresses: $v\mapsto p$.
-    \end{tcolorbox}
+  \begin{minipage}[t]{.48\linewidth}
+    \centering\textbf{\texttt{slides}, \texttt{de}}\par\smallskip
+    \includegraphics[page=1,width=\linewidth]{polymorphy-slides-de-crop.pdf}
   \end{minipage}
-  \caption{\ldeen{Die Sprachwahl verändert den Text, nicht dessen fachliche Struktur.}{The language selection changes the wording, not its conceptual structure.}}
+  \caption{\ldeen{Gleicher Doctype, unterschiedliche Sprachwahl.}%
+    {The same document type with different language selections.}}
 \end{figure}
 
-\paragraph{\ldeen{Eine Quelle, verschiedene Dokumentgestalten}{One source, different document forms}.}
-\ldeen{Der Dokumenttyp entscheidet, wie viel Raum zur Verfügung steht und wie der
-Inhalt organisiert wird. Dieselbe Lehreinheit kann als Folge von Folien, als
-kompaktes Handout oder als fortlaufendes Skript erscheinen. Sie pflegen dabei nicht
-drei Dokumente, sondern drei Ansichten auf denselben Inhalt.}{The document type
-determines how much space is available and how the content is organized. The same
-course unit may appear as a sequence of slides, as a compact handout, or as
-continuous lecture notes. You do not maintain three documents, but three views of
-the same content.}
-
-\begin{figure}[htbp]
-  \centering\small
-  \begin{minipage}[t]{.29\linewidth}
-    \begin{tcolorbox}[height=43mm,title={\ldeen{Folien}{Slides}},colback=white,colframe=blue!65!black]
-      \centering\bfseries Seitenersetzung\par\medskip
-      \raggedright$\bullet$ FIFO\par
-      $\bullet$ LRU\par
-      $\bullet$ Clock
-    \end{tcolorbox}
-  \end{minipage}\hfill
-  \begin{minipage}[t]{.29\linewidth}
-    \begin{tcolorbox}[height=43mm,title={\ldeen{Handout}{Handout}},colback=white,colframe=blue!45!black]
-      \centering\bfseries Seitenersetzung\par\smallskip
-      \raggedright\scriptsize FIFO, LRU und Clock im Überblick.\par\medskip
-      \hfill\fbox{\scriptsize 2 Folien/Seite}\hfill\strut
-    \end{tcolorbox}
-  \end{minipage}\hfill
-  \begin{minipage}[t]{.29\linewidth}
-    \begin{tcolorbox}[height=43mm,title={\ldeen{Skript}{Notes}},colback=white,colframe=black!55]
-      \textbf{3.2 Seitenersetzung}\par\smallskip
-      \scriptsize Ist kein freier Rahmen verfügbar, wählt das System eine zu
-      verdrängende Seite. FIFO, LRU und Clock unterscheiden sich dabei~\ldots
-    \end{tcolorbox}
-  \end{minipage}
-  \caption{\ldeen{Der Dokumenttyp bestimmt die Gestalt der Ausgabe.}{The document type determines the form of the output.}}
-\end{figure}
-
-\paragraph{\ldeen{Ein Stil, verschiedene Ausgabemedien}{One style, different media}.}
-\ldeen{Semantische Gestaltungselemente aus \texttt{osgstyler} behalten ihre
-Bedeutung, passen aber Farbe, Schrift, Abstände und Dekoration an das aktive Profil
-an. Eine Warnung bleibt also eine Warnung, unabhängig davon, ob sie projiziert,
-gedruckt oder am Bildschirm gelesen wird.}{Semantic styling elements provided by
-\texttt{osgstyler} retain their meaning while adapting colour, typeface, spacing,
-and decoration to the active profile. Thus, a warning remains a warning regardless
-of whether it is projected, printed, or read on screen.}
+\paragraph{\ldeen{Eine Quelle, zwei Dokumenttypen und Formulierungen}%
+  {One source, two document types and phrasings}.}
+\ldeen{Nun bleibt die Sprache Deutsch fest; nur der Dokumenttyp wechselt. Das
+Präsentationsprofil setzt die Aussagen als Liste. Der Langformadapter verwendet
+die ausgezeichneten Beziehungen und finiten Verben, um daraus einen Satz zu
+bilden. Auch die Textauszeichnung \cs{emph} bleibt semantisch dieselbe und wird
+vom jeweiligen Profil passend umgesetzt.}{Now the language remains German and
+only the document type changes. The presentation profile renders the statements
+as a list. The long-form adapter uses the marked relations and finite verbs to
+form a sentence. The semantic text markup \cs{emph} also remains the same and
+is rendered appropriately by each profile.}
 
 \begin{figure}[htbp]
   \centering
-  \begin{minipage}[t]{.43\linewidth}
-    \begin{tcolorbox}[title={\ldeen{Präsentationsstil}{Presentation style}},fonttitle=\bfseries,
-      colback=orange!10,colframe=orange!80!black,boxrule=1.2pt]
-      \ldeen{Achtung: Ein Seitenfehler ist kein Programmfehler.}{Caution: A page fault is not a program failure.}
-    \end{tcolorbox}
+  \begin{minipage}[t]{.48\linewidth}
+    \centering\textbf{\texttt{slides}, \texttt{de}}\par\smallskip
+    \includegraphics[page=1,width=\linewidth]{polymorphy-slides-de-crop.pdf}
   \end{minipage}\hfill
-  \begin{minipage}[t]{.43\linewidth}
-    \begin{tcolorbox}[title={\ldeen{Druckstil}{Print style}},fonttitle=\bfseries,
-      colback=black!3,colframe=black!65,boxrule=.45pt]
-      \ldeen{Achtung: Ein Seitenfehler ist kein Programmfehler.}{Caution: A page fault is not a program failure.}
-    \end{tcolorbox}
+  \begin{minipage}[t]{.48\linewidth}
+    \centering\textbf{\texttt{script}, \texttt{de}}\par\smallskip
+    \includegraphics[page=1,width=\linewidth]{polymorphy-script-de-crop.pdf}
   \end{minipage}
-  \caption{\ldeen{Gleiche Semantik, mediengerechte Ausprägung.}{The same semantics, adapted to the medium.}}
-\end{figure}
-
-\paragraph{\ldeen{Eine Aussage, passende Formulierung}{One statement, suitable wording}.}
-\ldeen{Modi können Inhalte ein- oder ausblenden. \texttt{presitemize} geht noch
-einen Schritt weiter: Auf der Folie entstehen schnell erfassbare Stichpunkte, im
-Skript ein lesbarer Satz. Die fachliche Aussage bleibt identisch.}{Modes can show
-or hide content. \texttt{presitemize} goes one step further: it produces quickly
-scannable bullet points on a slide and a readable sentence in the lecture notes.
-The subject matter remains identical.}
-
-\begin{figure}[htbp]
-  \centering
-  \begin{minipage}[t]{.43\linewidth}
-    \begin{tcolorbox}[title={\ldeen{Präsentation}{Presentation}},colback=blue!2,colframe=blue!55!black]
-      \begin{itemize}[nosep,leftmargin=*]
-        \item Die Seite liegt nicht im Speicher
-        \item das Betriebssystem lädt sie nach
-        \item daher wird der Prozess kurz blockiert
-      \end{itemize}
-    \end{tcolorbox}
-  \end{minipage}\hfill
-  \begin{minipage}[t]{.43\linewidth}
-    \begin{tcolorbox}[title={\ldeen{Langform}{Long form}},colback=black!2,colframe=black!55]
-      \ldeen{Die Seite liegt nicht im Speicher, aber das Betriebssystem lädt sie
-      nach, weshalb der Prozess kurz blockiert wird.}{The page is not resident,
-      but the operating system loads it, and therefore the process is briefly blocked.}
-    \end{tcolorbox}
-  \end{minipage}
-  \caption{\ldeen{Listen- und Fließtextfassung entstehen aus derselben Aussagenfolge.}{List and prose versions are produced from the same sequence of statements.}}
+  \caption{\ldeen{Gleiche Sprache, unterschiedliche Dokumentgestalt und
+    Formulierung.}{The same language with different document form and phrasing.}}
 \end{figure}
 
 \section{\ldeen{Kurztutorial}{Short Tutorial}}{}
