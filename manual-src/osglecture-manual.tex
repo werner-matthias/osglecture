@@ -42,6 +42,7 @@ load babel
 \endgroup
 
 \section{\ldeen{Einführung}{introduction}}
+\subsection{\ldeen{Idee}{Idea}}
 \ldeen{Lehrmaterialien treten in vielerlei Formen und Versionen auf, beispielsweise als 
   Vorlesungsskript, Folien oder Handouts, und das möglicherweise jeweils in verschiedenen Sprachen.
   Dabei sind die Inhalte oft gleich oder ähnlich, und die Stukturen~-- beispielsweise die 
@@ -147,9 +148,626 @@ In computer science or chemistry, this concept is also known as \emph{polymorphi
 \ldeen{Es ist eine alte \hologo{TeX}-Idee, Texte je nach Kontext unterschiedlich darzustellen. Die \hologo{TeX}-Variante \hologo{ConTeXt} leitet beispielsweise ihren Namen auch davon ab. 
 Die folgenden Beispiele zeigen den Einsatz in \osglecture}{It is a long-standing \hologo{TeX} concept to render text differently depending on the context. The \hologo{TeX} variant \hologo{ConTeXt}, for example, derives its name from this concept. 
 The following examples demonstrate its use in \osglecture}.
-%\part{\ldeen{Kurztutorial}{Short Tutorial}}{}
-%
-%TODO
+
+\paragraph{\ldeen{Eine Quelle, zwei Sprachen}{One source, two languages}.}
+\ldeen{In einer Lehreinheit stehen deutsche und englische Formulierungen unmittelbar
+nebeneinander. Beim Bauen wählen Sie lediglich die gewünschte Sprache. Gemeinsame
+Bestandteile wie Formeln, Namen oder Literaturverweise bleiben einmalig in der Quelle.}{
+In a course unit, the German and English wording is kept side by side. When building,
+you merely select the desired language. Shared elements such as formulae, names, or
+bibliographic references occur only once in the source.}
+
+\begin{figure}[htbp]
+  \centering
+  \begin{minipage}[t]{.43\linewidth}
+    \begin{tcolorbox}[title={\texttt{lang=de}},colback=blue!2,colframe=blue!55!black]
+      \textbf{Virtueller Speicher}\par\smallskip
+      Ein Prozess verwendet virtuelle Adressen. Die Seitentabelle bildet sie auf
+      physische Adressen ab: $v\mapsto p$.
+    \end{tcolorbox}
+  \end{minipage}\hfill
+  \begin{minipage}[t]{.43\linewidth}
+    \begin{tcolorbox}[title={\texttt{lang=en}},colback=blue!2,colframe=blue!55!black]
+      \textbf{Virtual Memory}\par\smallskip
+      A process uses virtual addresses. The page table maps them to physical
+      addresses: $v\mapsto p$.
+    \end{tcolorbox}
+  \end{minipage}
+  \caption{\ldeen{Die Sprachwahl verändert den Text, nicht dessen fachliche Struktur.}{The language selection changes the wording, not its conceptual structure.}}
+\end{figure}
+
+\paragraph{\ldeen{Eine Quelle, verschiedene Dokumentgestalten}{One source, different document forms}.}
+\ldeen{Der Dokumenttyp entscheidet, wie viel Raum zur Verfügung steht und wie der
+Inhalt organisiert wird. Dieselbe Lehreinheit kann als Folge von Folien, als
+kompaktes Handout oder als fortlaufendes Skript erscheinen. Sie pflegen dabei nicht
+drei Dokumente, sondern drei Ansichten auf denselben Inhalt.}{The document type
+determines how much space is available and how the content is organized. The same
+course unit may appear as a sequence of slides, as a compact handout, or as
+continuous lecture notes. You do not maintain three documents, but three views of
+the same content.}
+
+\begin{figure}[htbp]
+  \centering\small
+  \begin{minipage}[t]{.29\linewidth}
+    \begin{tcolorbox}[height=43mm,title={\ldeen{Folien}{Slides}},colback=white,colframe=blue!65!black]
+      \centering\bfseries Seitenersetzung\par\medskip
+      \raggedright$\bullet$ FIFO\par
+      $\bullet$ LRU\par
+      $\bullet$ Clock
+    \end{tcolorbox}
+  \end{minipage}\hfill
+  \begin{minipage}[t]{.29\linewidth}
+    \begin{tcolorbox}[height=43mm,title={\ldeen{Handout}{Handout}},colback=white,colframe=blue!45!black]
+      \centering\bfseries Seitenersetzung\par\smallskip
+      \raggedright\scriptsize FIFO, LRU und Clock im Überblick.\par\medskip
+      \hfill\fbox{\scriptsize 2 Folien/Seite}\hfill\strut
+    \end{tcolorbox}
+  \end{minipage}\hfill
+  \begin{minipage}[t]{.29\linewidth}
+    \begin{tcolorbox}[height=43mm,title={\ldeen{Skript}{Notes}},colback=white,colframe=black!55]
+      \textbf{3.2 Seitenersetzung}\par\smallskip
+      \scriptsize Ist kein freier Rahmen verfügbar, wählt das System eine zu
+      verdrängende Seite. FIFO, LRU und Clock unterscheiden sich dabei~\ldots
+    \end{tcolorbox}
+  \end{minipage}
+  \caption{\ldeen{Der Dokumenttyp bestimmt die Gestalt der Ausgabe.}{The document type determines the form of the output.}}
+\end{figure}
+
+\paragraph{\ldeen{Ein Stil, verschiedene Ausgabemedien}{One style, different media}.}
+\ldeen{Semantische Gestaltungselemente aus \texttt{osgstyler} behalten ihre
+Bedeutung, passen aber Farbe, Schrift, Abstände und Dekoration an das aktive Profil
+an. Eine Warnung bleibt also eine Warnung, unabhängig davon, ob sie projiziert,
+gedruckt oder am Bildschirm gelesen wird.}{Semantic styling elements provided by
+\texttt{osgstyler} retain their meaning while adapting colour, typeface, spacing,
+and decoration to the active profile. Thus, a warning remains a warning regardless
+of whether it is projected, printed, or read on screen.}
+
+\begin{figure}[htbp]
+  \centering
+  \begin{minipage}[t]{.43\linewidth}
+    \begin{tcolorbox}[title={\ldeen{Präsentationsstil}{Presentation style}},fonttitle=\bfseries,
+      colback=orange!10,colframe=orange!80!black,boxrule=1.2pt]
+      \ldeen{Achtung: Ein Seitenfehler ist kein Programmfehler.}{Caution: A page fault is not a program failure.}
+    \end{tcolorbox}
+  \end{minipage}\hfill
+  \begin{minipage}[t]{.43\linewidth}
+    \begin{tcolorbox}[title={\ldeen{Druckstil}{Print style}},fonttitle=\bfseries,
+      colback=black!3,colframe=black!65,boxrule=.45pt]
+      \ldeen{Achtung: Ein Seitenfehler ist kein Programmfehler.}{Caution: A page fault is not a program failure.}
+    \end{tcolorbox}
+  \end{minipage}
+  \caption{\ldeen{Gleiche Semantik, mediengerechte Ausprägung.}{The same semantics, adapted to the medium.}}
+\end{figure}
+
+\paragraph{\ldeen{Eine Aussage, passende Formulierung}{One statement, suitable wording}.}
+\ldeen{Modi können Inhalte ein- oder ausblenden. \texttt{presitemize} geht noch
+einen Schritt weiter: Auf der Folie entstehen schnell erfassbare Stichpunkte, im
+Skript ein lesbarer Satz. Die fachliche Aussage bleibt identisch.}{Modes can show
+or hide content. \texttt{presitemize} goes one step further: it produces quickly
+scannable bullet points on a slide and a readable sentence in the lecture notes.
+The subject matter remains identical.}
+
+\begin{figure}[htbp]
+  \centering
+  \begin{minipage}[t]{.43\linewidth}
+    \begin{tcolorbox}[title={\ldeen{Präsentation}{Presentation}},colback=blue!2,colframe=blue!55!black]
+      \begin{itemize}[nosep,leftmargin=*]
+        \item Die Seite liegt nicht im Speicher
+        \item das Betriebssystem lädt sie nach
+        \item daher wird der Prozess kurz blockiert
+      \end{itemize}
+    \end{tcolorbox}
+  \end{minipage}\hfill
+  \begin{minipage}[t]{.43\linewidth}
+    \begin{tcolorbox}[title={\ldeen{Langform}{Long form}},colback=black!2,colframe=black!55]
+      \ldeen{Die Seite liegt nicht im Speicher, aber das Betriebssystem lädt sie
+      nach, weshalb der Prozess kurz blockiert wird.}{The page is not resident,
+      but the operating system loads it, and therefore the process is briefly blocked.}
+    \end{tcolorbox}
+  \end{minipage}
+  \caption{\ldeen{Listen- und Fließtextfassung entstehen aus derselben Aussagenfolge.}{List and prose versions are produced from the same sequence of statements.}}
+\end{figure}
+
+\section{\ldeen{Kurztutorial}{Short Tutorial}}{}
+\ldeen{Dieses Tutorial begleitet Nora. Nora hält im kommenden Semester erstmals
+die Vorlesung »Betriebssysteme in 60 Minuten«. Der Name ist vielleicht etwas
+optimistisch, aber das soll uns hier nicht aufhalten. Für die erste Sitzung
+braucht sie deutsche und englische Folien. Außerdem hat sie versprochen, ein
+kurzes Skript bereitzustellen. Drei Ergebnisse für eine einzige Stunde Lehre:
+Nora ahnt bereits, dass drei getrennte Quelldateien keine besonders gute Idee
+wären.}{This tutorial follows Nora. Next semester, Nora will teach “Operating
+Systems in 60 Minutes” for the first time. The title may be a little optimistic,
+but that need not concern us here. For the first session she needs German and
+English slides. She has also promised to provide short lecture notes. Three
+outputs for a single hour of teaching: Nora already suspects that three separate
+source files would not be a particularly good idea.}
+
+\ldeen{Das Tutorial beschreibt nicht jede Option des Bundles. Es zeigt vielmehr
+die Dinge, die Nora für ihren ersten kleinen Kurs tatsächlich benötigt. Am Ende
+werden aus einer Lehreinheit drei sichtbar verschiedene PDFs entstehen.}{The
+tutorial does not describe every option in the bundle. Instead, it shows the
+things Nora actually needs for her first small course. At the end, one course
+unit will produce three visibly different PDFs.}
+
+\subsection{\ldeen{Noras Problem}{Nora's Problem}}
+
+\ldeen{Nora beginnt so, wie man vermutlich auch ohne \osglecture\ beginnen
+würde. Sie legt \texttt{slides-de.tex} an, kopiert die Datei nach
+\texttt{slides-en.tex} und beginnt mit der Übersetzung. Für das Skript könnte
+sie später noch \texttt{script-de.tex} hinzufügen. Das funktioniert sogar. Es
+funktioniert nur leider zu gut: Nach der ersten fachlichen Korrektur muss Nora
+schon überlegen, in welche der Dateien sie die Korrektur übernommen hat.}{Nora
+starts the way one might start without \osglecture. She creates
+\texttt{slides-de.tex}, copies it to \texttt{slides-en.tex}, and begins the
+translation. She could add \texttt{script-de.tex} later for the lecture notes.
+This even works. Unfortunately, it works rather too well: after the first
+technical correction, Nora already has to remember which files received the
+correction.}
+
+\begin{figure}[htbp]
+\centering
+\begin{minipage}[t]{.27\linewidth}
+  \begin{tcolorbox}[colback=red!3,colframe=red!55!black]
+  \centering\texttt{slides-de.tex}\par\smallskip
+  \scriptsize\ldeen{»64 Einträge«}{“64 entries”}
+  \end{tcolorbox}
+\end{minipage}\hfill
+\begin{minipage}[t]{.27\linewidth}
+  \begin{tcolorbox}[colback=red!3,colframe=red!55!black]
+  \centering\texttt{slides-en.tex}\par\smallskip
+  \scriptsize\ldeen{»64 Einträge«}{“64 entries”}
+  \end{tcolorbox}
+\end{minipage}\hfill
+\begin{minipage}[t]{.27\linewidth}
+  \begin{tcolorbox}[colback=red!3,colframe=red!55!black]
+  \centering\texttt{script-de.tex}\par\smallskip
+  \scriptsize\ldeen{»63 Einträge?«}{“63 entries?”}
+  \end{tcolorbox}
+\end{minipage}
+\caption{\ldeen{Kopien sind bequem anzulegen und unbequem zu pflegen.}{Copies are easy to create and awkward to maintain.}}
+\end{figure}
+
+\ldeen{Nora entscheidet deshalb, nur noch eine fachliche Quelle zu pflegen. Die
+Sprachen sollen darin nahe beieinanderstehen; Folien und Skript sollen ebenfalls
+aus dieser Quelle entstehen. Genau dies wird im Folgenden eingerichtet.}{Nora
+therefore decides to maintain only one source of subject matter. The language
+versions should be kept close together, and slides and lecture notes should also
+come from this source. This is what we shall set up in the following.}
+
+\subsection{\ldeen{Ein Zuhause für den Kurs}{A Home for the Course}}
+
+\ldeen{Zunächst braucht der Kurs ein Verzeichnis. Nora könnte alle Dateien dort
+ablegen. Sie entscheidet sich aber gleich für zwei Unterverzeichnisse: eines für
+gemeinsame Angaben und eines für die erste Lehreinheit. Dass die Einheit die
+Nummer \texttt{010} statt \texttt{001} erhält, erscheint ihr zunächst unnötig
+großzügig. Später kann sie dafür eine neue Einheit \texttt{005-Overview}
+dazwischenschieben, ohne alles umzubenennen.}{First, the course needs a
+directory. Nora could put every file directly into it. Instead, she immediately
+chooses two subdirectories: one for shared settings and one for the first course
+unit. Giving the unit the number \texttt{010} rather than \texttt{001} initially
+seems unnecessarily generous. Later, however, she can insert a new unit named
+\texttt{005-Overview} before it without renaming everything.}
+
+\begin{verbatim}
+mkdir -p os-in-60/Include os-in-60/010-Memory
+cd os-in-60
+\end{verbatim}
+
+\ldeen{Noch ist das Ergebnis nicht besonders eindrucksvoll}{The result is not
+particularly impressive yet}:
+\begin{dirtreex}[elbow radius=3pt,fontsize=\footnotesize,
+  box={true,corners=0pt,border color=blue!60,border width=.5pt,
+  background color=blue!2,margin=6pt}]
+  \dir{os-in-60}{\emph{\ldeen{Projektwurzel}{project root}}}{
+    \dir{Include}{\emph{\ldeen{gemeinsame Angaben}{shared settings}}}{}
+    \dir{010-Memory}{\emph{\ldeen{erste Lehreinheit}{first course unit}}}{}
+  }
+\end{dirtreex}
+
+\ldeen{Immerhin ist nun klar, was zum gesamten Kurs und was nur zur Einheit
+»Virtueller Speicher« gehört.}{At least it is now clear what belongs to the
+whole course and what belongs only to the “Virtual Memory” unit.}
+
+\subsection{\ldeen{Nora bestellt Ergebnisse}{Nora Orders Some Outputs}}
+
+\ldeen{Nora hat nun Verzeichnisse, aber noch kein Werkzeug, das aus ihrer einen
+Quelle die gewünschten Dokumente erzeugt. Diese Aufgabe übernimmt OLLM, der
+\emph{OSG LaTeX Lecture Maker}. OLLM ist das Buildwerkzeug des Bundles: Es wählt
+Dokumenttyp und Sprache, startet den passenden \LaTeX-Lauf und verwaltet die
+entstandenen Dateien. Nora wird OLLM deshalb nicht den Inhalt ihrer Vorlesung
+erklären, wohl aber, welche Ergebnisse sie erwartet.}{Nora now has directories,
+but no tool that turns her single source into the documents she wants. This is
+the job of OLLM, the \emph{OSG LaTeX Lecture Maker}. OLLM is the bundle's build
+tool: it selects the document type and language, starts the appropriate \LaTeX\
+run, and manages the resulting files. Nora will therefore not tell OLLM the
+subject matter of her lecture, but she will tell it which outputs she expects.}
+
+\ldeen{Eine konkrete Wahl aus Lehreinheit, Target und Sprache heißt im Folgenden
+\emph{Instanziierung}. Ihr Ergebnis ist eine \emph{Dokumentinstanz}. Die
+Kombination »Einheit \texttt{memory}, Target \texttt{slides}, Sprache
+\texttt{en}« erzeugt beispielsweise die englische Folieninstanz dieser Einheit.
+Damit ist präzise benannt, was OLLM später bauen soll.}{A concrete selection of
+course unit, target, and language is called an \emph{instantiation} in the
+following. Its result is a \emph{document instance}. The combination “unit
+\texttt{memory}, target \texttt{slides}, language \texttt{en}”, for example,
+produces the English slide instance of that unit. This states precisely what
+OLLM is later expected to build.}
+
+\ldeen{Nora möchte OLLM am liebsten sofort mit \texttt{ollm slides} starten.
+Das Werkzeug kann jedoch noch nicht wissen, welche Sprachen der Kurs anbietet
+oder ob Nora überhaupt ein Skript haben möchte. Diese Angaben kommen in ein
+Manifest namens \texttt{ollmconfig.toml} in der Projektwurzel. Man kann es als
+Bestellzettel lesen: Nora bestellt zwei Sprachfassungen der Folien und zwei des
+Skripts.}{Nora would prefer to start OLLM immediately by typing
+\texttt{ollm slides}. The tool cannot yet know which languages the course offers
+or whether Nora wants lecture notes at all. This information goes into a
+manifest named \texttt{ollmconfig.toml} in the project root. It can be read as
+an order form: Nora orders two language versions of the slides and two of the
+lecture notes.}
+
+\begin{verbatim}
+schema = 1
+bundle_preset = "OSG lecture/1"
+
+[project]
+id = "os-in-60"
+
+[languages]
+available = ["de", "en"]
+default = "de"
+
+[targets.slides]
+languages = ["de", "en"]
+document_metadata = "disabled"
+
+[targets.script]
+languages = ["de", "en"]
+\end{verbatim}
+
+\ldeen{Nora ist versucht, hier auch Titel, Autorin und Übersetzungen einzutragen.
+TOML kann schließlich Text speichern. Sie lässt es dennoch bleiben: Das Manifest
+beschreibt die Buildmatrix, nicht den Inhalt des Dokuments. Titel und
+Sprachabbildung sind \LaTeX-Angelegenheiten und folgen im nächsten Schritt.}{Nora
+is tempted to add the title, author, and translations here as well. After all,
+TOML can store text. She resists the temptation: the manifest describes the build
+matrix, not the document's content. The title and language mapping are \LaTeX\
+concerns and follow in the next step.}
+
+\ldeen{Bevor sie weiterschreibt, prüft Nora den Bestellzettel}{Before continuing,
+Nora checks the order form}:
+\begin{verbatim}
+ollm check
+\end{verbatim}
+
+\ldeen{Bei ihrem ersten Versuch hatte sie \texttt{language} statt
+\texttt{languages} geschrieben. OLLM weist den unbekannten Schlüssel zurück.
+Das ist Nora lieber als ein stillschweigend deutscher Kurs. Nachdem sie den
+Tippfehler korrigiert hat, ist das Manifest gültig. Falls bereits die Umgebung
+selbst Probleme meldet, liefert \texttt{ollm doctor} die passendere Diagnose.}{
+On her first attempt she wrote \texttt{language} rather than
+\texttt{languages}. OLLM rejects the unknown key. Nora prefers this to a course
+that silently becomes German-only. Once she fixes the typo, the manifest is
+valid. If the environment itself already causes problems, \texttt{ollm doctor}
+provides the more appropriate diagnosis.}
+
+\subsection{\ldeen{Was für alle Einheiten gilt}{What Applies to Every Unit}}
+
+\ldeen{Nora möchte ihren Namen und den Kurstitel nicht in jeder späteren Einheit
+wiederholen. Sie legt deshalb \texttt{Include/projectconfig.tex} an. Hier
+entscheidet sie außerdem, dass Präsentationen mit Beamer und Langformen mit
+KOMA-Scripts \texttt{scrbook} gesetzt werden. Das ist eine Projektentscheidung;
+die Fachtexte müssen von diesen Klassennamen nichts wissen.}{Nora does not want
+to repeat her name and the course title in every future unit. She therefore
+creates \texttt{Include/projectconfig.tex}. Here she also decides that
+presentations will use Beamer and long forms will use KOMA-Script's
+\texttt{scrbook}. This is a project decision; the subject matter need not know
+these class names.}
+
+\begin{verbatim}
+\title{\ldeen{Betriebssysteme in 60 Minuten}
+             {Operating Systems in 60 Minutes}}
+\author{Nora Example}
+
+\LectureProjectSetup{
+  presentation-profile=beamer,
+  longform-profile=scrbook
+}
+
+\usepackage[
+  languages={de,en},
+  targetlang={\OsgLectureLanguage},
+  map={de=ngerman,en=british},
+  load babel
+]{langselect}
+\end{verbatim}
+
+\ldeen{Die Sprachkonfiguration enthält zwei verschiedene Arten von Namen. OLLM
+arbeitet mit den kurzen, portablen Kennungen \texttt{de} und \texttt{en}.
+\texttt{babel} benötigt dagegen die konkreteren Namen \texttt{ngerman} und
+\texttt{british}. \texttt{langselect} vermittelt zwischen beiden. Nora muss
+sich diese Arbeitsteilung nicht bei jedem Absatz neu überlegen; die Konfiguration
+gilt für das ganze Projekt.}{The language configuration contains two different
+kinds of names. OLLM uses the short, portable identifiers \texttt{de} and
+\texttt{en}. \texttt{babel}, by contrast, needs the more specific names
+\texttt{ngerman} and \texttt{british}. \texttt{langselect} mediates between
+the two. Nora need not reconsider this division of labour for every paragraph;
+the configuration applies to the whole project.}
+
+\subsection{\ldeen{Endlich etwas Fachliches}{At Last, Some Subject Matter}}
+
+\ldeen{Nun schreibt Nora \texttt{010-Memory/main.tex}. Sie beginnt bewusst mit
+wenig Inhalt. Ein kleines, erfolgreich gebautes Dokument ist eine angenehmere
+Ausgangsbasis als zwanzig Seiten, bei denen eine schließende Klammer fehlt.}{Now
+Nora writes \texttt{010-Memory/main.tex}. She deliberately starts with little
+content. A small document that builds successfully is a more pleasant starting
+point than twenty pages with a missing closing brace.}
+
+\begin{verbatim}
+\documentclass{osglecture}
+
+\begin{document}
+\lecture[Memory]{\ldeen{Virtueller Speicher}{Virtual Memory}}{memory}
+
+\begin{frame}{\ldeen{Warum virtueller Speicher?}{Why virtual memory?}}
+  \ldeen{Jeder Prozess sieht einen eigenen Adressraum.}
+        {Each process sees a private address space.}
+\end{frame}
+\end{document}
+\end{verbatim}
+
+\ldeen{Das dritte Argument von \texttt{\string\lecture}, hier
+\texttt{memory}, ist die stabile Identität der Einheit. Nora darf den sichtbaren
+Titel später verbessern und sogar das Verzeichnis umbenennen. Die Identität
+sollte sie dabei nicht beiläufig ändern; Querverweise und Buildzustand verwenden
+gerade diesen Wert.}{The third argument of \texttt{\string\lecture}, here
+\texttt{memory}, is the stable identity of the unit. Nora may improve the
+visible title later and may even rename the directory. She should not casually
+change the identity while doing so; cross-references and build state use this
+very value.}
+
+\subsection{\ldeen{Der erste Build}{The First Build}}
+
+\ldeen{Nora wechselt in die Lehreinheit und versucht aus alter Gewohnheit zuerst
+\texttt{lualatex main.tex}. Das ist zwar ein verständlicher Versuch, umgeht aber
+den Bestellzettel: Target und Sprache fehlen. Für einen Serienkurs ist OLLM der
+richtige Eingang. Nora baut also zunächst genau das Ergebnis, das sie gerade
+sehen möchte}{Nora changes into the course unit and, out of habit, first tries
+\texttt{lualatex main.tex}. This is an understandable attempt, but it bypasses
+the order form: the target and language are missing. For a course series, OLLM
+is the right entry point. Nora therefore first builds exactly the output she
+wants to see}:
+
+\begin{verbatim}
+cd 010-Memory
+ollm build slides --language=de
+\end{verbatim}
+
+\ldeen{Das Ergebnis ist eine deutsche Folie. Sie liegt nicht neben
+\texttt{main.tex}; OLLM hält erzeugte Dateien unter
+\path{.osglecture/build} von den Quellen getrennt. Nora sucht kurz im falschen
+Verzeichnis, findet die Trennung dann aber überzeugend: Ein beschädigter
+Buildordner kann entfernt werden, ohne dass dabei Lehrmaterial verschwindet.}{
+The result is a German slide. It is not placed next to \texttt{main.tex}; OLLM
+keeps generated files below \path{.osglecture/build}, separate from the sources.
+Nora briefly looks in the wrong directory, but then finds the separation
+convincing: a damaged build directory can be removed without losing teaching
+material.}
+
+\ldeen{Die englische Folie ist jetzt fast enttäuschend einfach}{The English slide
+is now almost disappointingly easy}:
+\begin{verbatim}
+ollm build slides --language=en
+\end{verbatim}
+
+\ldeen{Nur die gewählte Formulierung ändert sich. Struktur, Formel und stabile
+Identität bleiben dieselben. Genau das wollte Nora erreichen.}{Only the selected
+wording changes. The structure, formula, and stable identity remain the same.
+That is precisely what Nora wanted to achieve.}
+
+\subsection{\ldeen{Von Stichpunkten zu einem Satz}{From Bullet Points to a Sentence}}
+
+\ldeen{Nora ergänzt zwei weitere Aussagen. Eine gewöhnliche \texttt{itemize}-Liste
+wäre auf der Folie passend. Im Skript möchte sie jedoch keinen Absatz, der nur
+aus drei Stichpunkten besteht. Sie könnte dafür zwei Fassungen schreiben, aber
+das würde ihr ursprüngliches Problem in kleinerem Maßstab wiederholen. Stattdessen
+verwendet sie \texttt{presitemize}}{Nora adds two more statements. An ordinary
+\texttt{itemize} list would suit the slide. In the lecture notes, however, she
+does not want a paragraph consisting only of three bullet points. She could write
+two versions, but that would repeat her original problem on a smaller scale.
+Instead, she uses \texttt{presitemize}}:
+
+\begin{verbatim}
+\begin{frame}{\ldeen{Warum virtueller Speicher?}{Why virtual memory?}}
+  \begin{presitemize}
+    \item \ldeen{Jeder Prozess sieht einen eigenen Adressraum}
+                {Each process sees a private address space}
+    \anditem \ldeen{die Hardware übersetzt virtuelle Adressen}
+                   {the hardware translates virtual addresses}
+    \thereforeitem \ldeen{Prozesse \finite{sind} voneinander isoliert}
+                         {processes \finite{are} isolated}
+  \end{presitemize}
+\end{frame}
+\end{verbatim}
+
+\ldeen{Auf der Folie bleiben dies drei Einträge. In der Langform werden daraus
+verbundene Aussagen. Das markierte finite Verb hilft dabei, im deutschen
+Nebensatz aus »Prozesse sind voneinander isoliert« die Formulierung »weshalb
+Prozesse voneinander isoliert sind« zu bilden. Nora findet die Markierung etwas
+ungewohnt, aber immer noch angenehmer als einen zweiten Absatz, der später
+vergessen werden kann.}{On the slide these remain three entries. In the long form
+they become connected statements. The marked finite verb helps turn “Prozesse
+sind voneinander isoliert” into the German subordinate clause “weshalb Prozesse
+voneinander isoliert sind”. Nora finds the marking slightly unfamiliar, but
+still preferable to a second paragraph that might later be forgotten.}
+
+\subsection{\ldeen{Etwas mehr Platz im Skript}{A Little More Room in the Notes}}
+
+\ldeen{Für die Folie genügt Nora die knappe Begründung. Im Skript möchte sie
+zusätzlich erklären, wo die Abbildung gespeichert wird. Diesmal unterscheidet
+sich nicht bloß die Formulierung, sondern der gewünschte Inhalt. Nora ergänzt
+deshalb nach dem Frame einen Modusabschnitt}{The concise explanation is enough
+for Nora's slide. In the lecture notes she also wants to explain where the
+mapping is stored. This time it is not merely the wording that differs, but the
+desired content. Nora therefore adds a mode section after the frame}:
+
+\begin{verbatim}
+\lecturemode<longform>{
+  \ldeen{Eine Seitentabelle speichert die Abbildung $v\mapsto p$.}
+        {A page table stores the mapping $v\mapsto p$.}
+}
+\end{verbatim}
+
+\ldeen{Sie hätte \texttt{<script>} schreiben können. \texttt{<longform>} sagt
+jedoch genauer, was sie meint: Der Absatz passt in jede ausführliche Langform,
+nicht nur in den heute konfigurierten Skripttyp. Falls sie später von
+\texttt{scrbook} zu einem anderen Langformprofil wechselt, muss sie diese Stelle
+nicht wiederfinden.}{She could have written \texttt{<script>}.
+\texttt{<longform>}, however, states her intention more accurately: the paragraph
+suits any detailed long form, not merely the script type configured today. If
+she later changes from \texttt{scrbook} to another long-form profile, she need
+not find this passage again.}
+
+\ldeen{Nun baut Nora das deutsche Skript}{Nora now builds the German lecture
+notes}:
+\begin{verbatim}
+ollm build script --language=de
+\end{verbatim}
+
+\ldeen{Beim Vergleich sieht sie erstmals die beiden Dimensionen unabhängig
+voneinander: \texttt{--language} wählt die Sprache, das Target
+\texttt{slides} oder \texttt{script} die Dokumentgestalt. Beides verändert die
+Ausgabe, aber keines verlangt eine Kopie der Lehreinheit.}{When comparing the
+results, she sees the two dimensions independently for the first time:
+\texttt{--language} selects the language, while the \texttt{slides} or
+\texttt{script} target selects the document form. Both change the output, but
+neither requires a copy of the course unit.}
+
+\subsection{\ldeen{Hat Nora wirklich an alles gedacht?}{Did Nora Really Think of Everything?}}
+
+\ldeen{Während des Schreibens erzeugt Nora gewöhnlich nur die Dokumentinstanz, an der sie
+gerade arbeitet. Das ist schnell, birgt aber eine kleine Gefahr: Eine fehlende
+Klammer kann ausschließlich im englischen Zweig stecken; ein nur in Langformen
+aktiver Befehl kann auf den Folien unbemerkt bleiben. Vor der Veröffentlichung
+lässt Nora daher alle für diese Einheit bestellten Kombinationen bauen}{While
+writing, Nora usually creates only the document instance she is currently working on.
+This is quick, but carries a small risk: a missing brace may occur only in the
+English branch; a command active only in long forms may go unnoticed on the
+slides. Before publishing, Nora therefore builds all combinations ordered for
+this unit}:
+
+\begin{verbatim}
+ollm build --all
+\end{verbatim}
+
+\subsection{\ldeen{Vom Build zur Veröffentlichung}{From Build to Publication}}
+
+\ldeen{Vier erfolgreiche Dokumentinstanzen im Buildverzeichnis sind erfreulich,
+aber Noras Studierende wissen davon noch nichts. Nora möchte die PDFs in ein
+Verzeichnis \texttt{release} kopieren, das später etwa von der Lernplattform
+oder einem Webserver übernommen werden kann. Sie könnte die Dateien von Hand
+kopieren und umbenennen. Nach dem dritten Termin würde sie dabei vermutlich
+mindestens einmal die englische Fassung unter dem deutschen Namen ablegen.}{Four
+successful document instances in the build directory are gratifying, but
+Nora's students still know nothing about them. Nora wants to copy the PDFs to a
+\texttt{release} directory that can later be picked up by a learning platform
+or web server. She could copy and rename the files by hand. By the third session,
+she would probably have placed the English version under the German name at
+least once.}
+
+\ldeen{OLLM trennt deshalb \emph{Bauen} und \emph{Deployment}. Ein Build erzeugt
+und prüft eine Dokumentinstanz im internen Buildbereich. Ein Deployment kopiert
+eine bereits erfolgreich gebaute Instanz unter einem vereinbarten Namen an
+einen Veröffentlichungsort. Es startet selbst keinen neuen \LaTeX-Lauf.}{OLLM
+therefore separates \emph{building} from \emph{deployment}. A build creates and
+checks a document instance in the internal build area. A deployment copies an
+already successfully built instance to a publication location under an agreed
+name. It does not start another \LaTeX\ run.}
+
+\ldeen{Nora ergänzt am Ende von \texttt{ollmconfig.toml} zwei Deploymentregeln}{
+Nora adds two deployment rules at the end of \texttt{ollmconfig.toml}}:
+
+\begin{verbatim}
+[deployment]
+series = "units"
+
+[deployment.types.slides]
+paths = ["release/slides"]
+filename = "{ordinal}-{unit}-{lang}.pdf"
+
+[deployment.types.script]
+paths = ["release/notes"]
+filename = "{ordinal}-{unit}-{lang}.pdf"
+\end{verbatim}
+
+\ldeen{Die Platzhalter werden für jede Dokumentinstanz gefüllt. Für die aktuelle
+Einheit entstehen so beispielsweise \texttt{010-memory-de.pdf} und
+\texttt{010-memory-en.pdf}. Nora nimmt die Sprache absichtlich in den Namen auf;
+ein scheinbar schönerer Name \texttt{010-memory.pdf} wäre für zwei Sprachfassungen
+nicht eindeutig.}{The placeholders are filled for each document instance. For
+the current unit this produces, for example, \texttt{010-memory-de.pdf} and
+\texttt{010-memory-en.pdf}. Nora deliberately includes the language in the file
+name; the seemingly prettier \texttt{010-memory.pdf} would be ambiguous for two
+language versions.}
+
+\ldeen{OLLM legt Deploymentverzeichnisse nicht selbst an. Das ist zunächst
+überraschend, verhindert aber, dass ein Tippfehler im Manifest unbemerkt einen
+zweiten Veröffentlichungsort erzeugt. Nora legt die vereinbarten Verzeichnisse
+daher einmalig an und deployt anschließend alle gebauten Instanzen der aktuellen
+Einheit}{OLLM does not create deployment directories itself. This is surprising
+at first, but prevents a typo in the manifest from silently creating a second
+publication location. Nora therefore creates the agreed directories once and
+then deploys all built instances of the current unit}:
+
+\begin{verbatim}
+mkdir -p ../release/slides ../release/notes
+ollm deploy --all
+\end{verbatim}
+
+\ldeen{Nora befindet sich noch in \texttt{010-Memory}; deshalb bezieht sich das
+Deployment standardmäßig auf diese Einheit. OLLM kopiert nur vorhandene,
+erfolgreich abgeschlossene Builds. Hat Nora nach einer Textänderung noch nicht
+neu gebaut, ist \texttt{deploy} also kein versteckter Ersatz für
+\texttt{build}. Diese Trennung gefällt ihr: Vor dem Kopieren kann sie die
+Dokumentinstanzen in Ruhe prüfen.}{Nora is still in \texttt{010-Memory}; the
+deployment therefore applies to this unit by default. OLLM copies only existing,
+successfully completed builds. If Nora has changed the text but has not rebuilt
+it, \texttt{deploy} is not a hidden substitute for \texttt{build}. She likes
+this separation: she can inspect the document instances before copying them.}
+
+\ldeen{Beim nächsten Deployment liegt möglicherweise bereits eine ältere Datei
+unter demselben Namen im Ziel. Ist sie identisch, bleibt sie unberührt. Ist sie
+verschieden, verlangt die voreingestellte Sicherheitsregel eine ausdrückliche
+Freigabe mit \texttt{--overwrite}. Nora sollte diese Option erst verwenden,
+nachdem sie sich vergewissert hat, dass sie tatsächlich die veröffentlichte
+Fassung ersetzen möchte.}{At the next deployment, an older file may already
+exist under the same name at the destination. If it is identical, it remains
+untouched. If it differs, the default safety policy requires explicit approval
+with \texttt{--overwrite}. Nora should use this option only after confirming
+that she really intends to replace the published version.}
+
+\ldeen{Damit ist der kleine Kurs natürlich noch nicht fertig. Nora fehlen etwa
+Querverweise, ein Gesamtskript und vermutlich mehr als eine Stunde Inhalt. Aber
+das Grundmuster steht: Das Manifest beschreibt die gewünschten Ergebnisse, die
+Projektkonfiguration enthält gemeinsame Entscheidungen, und jede Lehreinheit
+bewahrt den fachlichen Inhalt an einer Stelle. Neue Einheiten kann Nora nun nach
+demselben Muster hinzufügen, ohne neue Sprach- oder Dokumentkopien anzulegen.}{
+This does not, of course, finish the small course. Nora still lacks cross-references,
+a combined set of lecture notes, and probably more than one hour of content. But
+the basic pattern is in place: the manifest describes the desired outputs, the
+project configuration contains shared decisions, and each course unit keeps its
+subject matter in one place. Nora can now add new units following the same
+pattern without creating new language or document copies.}
+
+\begin{infobox}{}\sffamily
+\ldeen{Wenn Sie dem Tutorial mit eigenen Dateien folgen, beginnen Sie ebenfalls
+mit einer einzigen kleinen Einheit und einer Dokumentinstanz. Erst wenn diese gebaut
+wird, ergänzen Sie die zweite Sprache, die Langform und schließlich
+\texttt{--all}. Fehler bleiben so dem Schritt zugeordnet, der sie verursacht
+hat.}{If you follow the tutorial with your own files, likewise begin with one
+small unit and one document instance. Only once it builds should you add the second
+language, the long form, and finally \texttt{--all}. This keeps errors associated
+with the step that introduced them.}
+\end{infobox}
 
 \section{\ldeen{Konzepte}{Concepts}}
 \subsection{\ldeen{Projekt}{Project}}
@@ -167,12 +785,12 @@ The following examples demonstrate its use in \osglecture}.
   \ldeen*{Alles Kursmaterialien stehen in einem Verzeichnis, welches in der Regel ein spezielles Manifest enthält.
   Die Ausnahme zu dieser Regel sind sogenante \emph{standalone}-Projekte, ursprünglich für 
   einen der oben angesprochenen anderen Anwendungsfälle gedacht waren, nämlich Konferenzbeiträge.
-  Dieser Spezialfall wird im Abschnitt~@1 betrachtet.
+  Dieser Spezialfall wird später gesondert betrachtet.
   Im Folgendem gehen wir aber von Kursen aus.}{All course materials are located in a directory that typically contains a special manifest.
   The exception to this rule are so-called \emph{standalone} projects, which were originally intended for
   one of the other use cases mentioned above, namely conference papers.
-  This special case is discussed in Section~@1.
-  In what follows, however, we will focus on courses.}{\ref{??}}
+  This special case is discussed separately later.
+  In what follows, however, we will focus on courses.}
 
 
 \subsection{\ldeen{Lehreinheit}{Course Unit}}
@@ -290,7 +908,6 @@ a lot. At the OSG, there are a number of typical teaching scenarios
 
 \begin{description}
 \item [\texttt{target}] Beschreibt das Ziel dieser Einheit.
-  
   \ldeen{Manchmal gibt es Material, das nur für bestimmte Arten von Materialien sinnvoll ist.
   Beispielsweise werden häufig die organisatorischen Inhalte der Auftaktvorlesung nicht
   mit im Skript stehen. Dies kann mit dem Target(bereich) beschrieben werden. Es ist ein Code
@@ -332,5 +949,239 @@ a lot. At the OSG, there are a number of typical teaching scenarios
   \ldeen*{Bitte beachten sie, dass der Aufbau der Verzeichnisnamen nicht nur Konvention ist: Sowohl die Hauptklasse @1 als auch das Tool @2 werten die Namen aus.}{Please note that the structure of the directory names is not merely a convention: Both the main class @1 and the tool @2 evaluate the names.}{\texttt{osglecture.cls}}{\texttt{ollm}}
 \end{warnbox}
 
+\subsection{\ldeen{Dokumententypen}{Document Types}}
+\ldeen{Ein \emph{Dokumenttyp} (\emph{doctype}) bezeichnet die fachliche
+Ausgabeform, die Sie anfordern: beispielsweise \texttt{slides},
+\texttt{handout}, \texttt{script} oder \texttt{article}. Denken Sie dabei an
+die Frage »Was soll für wen entstehen?« und nicht an eine konkrete
+\LaTeX-Klasse.}{A \emph{document type} (\emph{doctype}) denotes the conceptual
+output form you request, for example \texttt{slides}, \texttt{handout},
+\texttt{script}, or \texttt{article}. Think of the question “What should be
+produced, and for whom?” rather than of a particular \LaTeX\ class.}
 
+\begin{figure}[htbp]
+\centering
+\begin{tcolorbox}[width=.92\linewidth,colback=blue!2,colframe=blue!55!black]
+\centering
+\texttt{ollm build slides --language=en}
+\par\medskip$\Downarrow$\par\smallskip
+\begin{tabular}{c@{\quad$\longrightarrow$\quad}c@{\quad$\longrightarrow$\quad}c}
+\ldeen{Target}{Target} & \ldeen{Profil und Klasse}{Profile and class} & \ldeen{aktive Modi}{active modes}\\
+\texttt{slides} & \texttt{beamer} & \texttt{slides, presentation, screen}
+\end{tabular}
+\end{tcolorbox}
+\caption{\ldeen{Von der Nutzerwahl zur konkreten Darstellung.}{From the user's choice to the concrete rendering.}}
+\end{figure}
+
+\ldeen{Im normalen Arbeitsablauf begegnet Ihnen der Dokumenttyp als Targetname
+im OLLM-Befehl. OLLM prüft im Manifest, ob dieses Target und die gewünschte
+Sprache für das Projekt vorgesehen sind. Anschließend übergibt es die
+normalisierte Auswahl an \texttt{osglecture}.}{In the normal workflow, the
+document type appears as the target name in the OLLM command. OLLM checks the
+manifest to determine whether this target and the requested language are
+configured for the project. It then passes the normalized selection to
+\texttt{osglecture}.}
+
+\ldeen{Der anschließende Build \emph{instanziiert} die gemeinsame Quelle für
+genau diese Auswahl. Das konkrete Ergebnis heißt \emph{Dokumentinstanz}. Zwei
+Instanzen können also denselben fachlichen Inhalt besitzen und sich dennoch in
+Sprache, Dokumenttyp oder beidem unterscheiden.}{The subsequent build
+\emph{instantiates} the shared source for precisely this selection. The concrete
+result is called a \emph{document instance}. Thus, two instances may contain the
+same subject matter while differing in language, document type, or both.}
+
+\ldeen{Die Klasse wählt zu jedem Target ein \emph{Profil}. Das Profil legt die
+konkrete Basisklasse und deren Adapter fest. So kann \texttt{slides} in einem
+Projekt mit \texttt{beamer}, in einem anderen mit \texttt{ltx-talk} gesetzt
+werden, ohne dass die Lehreinheiten umgeschrieben werden. Targetspezifische
+Ausnahmen sind ebenfalls möglich, etwa \texttt{beamer} für Folien und
+\texttt{ltx-talk} für Handouts.}{For each target, the class selects a
+\emph{profile}. The profile determines the concrete base class and its adapter.
+Thus, \texttt{slides} can use \texttt{beamer} in one project and
+\texttt{ltx-talk} in another without rewriting the course units. Target-specific
+exceptions are possible as well, for example \texttt{beamer} for slides and
+\texttt{ltx-talk} for handouts.}
+
+\ldeen{Dokumenttypen und Klassen sind daher absichtlich getrennt. Die Trennung
+hält Ihre Quellen stabil: Sie entscheiden im Projekt, \emph{wie} Folien gesetzt
+werden; in der Lehreinheit schreiben Sie nur, \emph{was} auf Folien und in
+Langformen erscheinen soll.}{Document types and classes are therefore
+deliberately separate. This separation keeps your sources stable: in the project
+you decide \emph{how} slides are typeset; in the course unit you only write
+\emph{what} should appear in slides and long forms.}
+
+\begin{description}
+  \item[\texttt{slides}] \ldeen{bildschirmorientierte Präsentation für die
+    Lehrveranstaltung}{screen-oriented presentation for teaching};
+  \item[\texttt{handout}] \ldeen{druckorientierte Präsentationsfassung für das
+    Publikum}{print-oriented presentation version for the audience};
+  \item[\texttt{script}] \ldeen{zusammenhängende Langform, typischerweise als
+    Kapitel oder Gesamtskript}{continuous long form, typically a chapter or
+    complete set of lecture notes};
+  \item[\texttt{article}] \ldeen{eigenständige Langform, beispielsweise für
+    einen Beitrag}{standalone long form, for example a paper}.
+\end{description}
+
+\ldeen{Diese Liste ist erweiterbar. Für den Einstieg sollten Sie jedoch die
+mitgelieferten Typen verwenden: Sie sind in OLLM registriert und besitzen bereits
+passende Profile, Modi und Anwendungsbereiche.}{This list is extensible. When
+starting out, however, use the supplied types: they are already registered with
+OLLM and have suitable profiles, modes, and scopes.}
+
+\section{\ldeen{Angepasste Inhalte}{Adapted Content}}
+\subsection{\ldeen{Mehrsprachige Dokumente}{Multilingual Documents}}
+\ldeen{In einem \osglecture-Projekt teilen sich OLLM und \texttt{langselect}
+die Arbeit: Das Manifest sagt, \emph{welche} Sprachfassungen gebaut werden
+dürfen; OLLM wählt eine davon; \texttt{langselect} setzt in der Quelle die
+passende Formulierung. Diese Aufgabenteilung verhindert, dass die Buildlogik in
+den Fachtext wandert.}{In an \osglecture\ project, OLLM and \texttt{langselect}
+share the work: the manifest states \emph{which} language versions may be built;
+OLLM selects one of them; \texttt{langselect} typesets the matching wording in
+the source. This division of responsibility keeps build logic out of the subject
+matter.}
+
+\ldeen{Tragen Sie jede Projektsprache zuerst im Manifest ein und ordnen Sie sie
+anschließend in \texttt{Include/projectconfig.tex} einem von \texttt{babel}
+verstandenen Namen zu. Für Deutsch und britisches Englisch sieht die praktische
+Konfiguration so aus}{First list every project language in the manifest, then map
+it in \texttt{Include/projectconfig.tex} to a name understood by \texttt{babel}.
+For German and British English, a practical configuration is}:
+\begin{verbatim}
+\usepackage[
+  languages={de,en},
+  targetlang={\OsgLectureLanguage},
+  map={de=ngerman,en=british},
+  load babel
+]{langselect}
+\end{verbatim}
+
+\ldeen{In den Lehreinheiten verwenden Sie danach die bereitgestellten
+Sprachmakros. Bei der Reihenfolge \texttt{languages=\{de,en\}} ist
+\texttt{\string\ldeen\{deutsch\}\{English\}} die naheliegende Form. Schreiben
+Sie kurze, vollständige Varianten; Satzzeichen gehören in die jeweilige
+Sprachfassung, wenn sie sich unterscheiden können.}{In the course units, use the
+provided language commands. With \texttt{languages=\{de,en\}},
+\texttt{\string\ldeen\{Deutsch\}\{English\}} is the natural form. Write short,
+complete variants; punctuation belongs inside each language version whenever it
+may differ.}
+
+\begin{verbatim}
+\section{\ldeen{Synchronisation}{Synchronization}}
+\ldeen{Ein Semaphor schützt den kritischen Abschnitt.}
+      {A semaphore protects the critical section.}
+\end{verbatim}
+
+\ldeen{Werte, Formeln, Makros oder Verweise, die in beiden Sprachen gleich sind,
+sollten Sie nicht kopieren. Nutzen Sie dafür die Sternform und Platzhalter. So
+steht ein später geänderter Wert weiterhin nur an einer Stelle}{Do not duplicate
+values, formulae, commands, or references that are identical in both languages.
+Use the starred form and placeholders instead. A value changed later then still
+occurs in only one place}:
+\begin{verbatim}
+\ldeen*{Der Scheduler wählt alle @1 eine Aufgabe aus.}
+       {The scheduler selects a task every @1.}
+       {$10\,\mathrm{ms}$}
+\end{verbatim}
+
+\ldeen{Die Platzhalter \texttt{@1}, \texttt{@2} usw. werden in jeder
+Sprachfassung durch dieselben nachfolgenden Argumente ersetzt. Das ist besonders
+nützlich für Fachbegriffe, Querverweise und Zahlen. Wenn eine Sprache eine andere
+Wortstellung benötigt, platzieren Sie denselben Platzhalter einfach an der
+passenden Stelle.}{The placeholders \texttt{@1}, \texttt{@2}, and so on are
+replaced in every language version by the same following arguments. This is
+particularly useful for technical terms, cross-references, and numbers. If a
+language requires a different word order, simply put the same placeholder in the
+appropriate position.}
+
+\begin{warnbox}{}
+\ldeen{Starten Sie Builds über OLLM und wählen Sie die Sprache mit
+\texttt{--language}. Setzen Sie die Zielsprache nicht zusätzlich von Hand im
+Quelldokument; sonst können Manifest, Artefaktname und tatsächlich gesetzte
+Sprache auseinanderlaufen.}{Start builds through OLLM and select the language
+with \texttt{--language}. Do not additionally hard-code the target language in
+the source; otherwise the manifest, artifact name, and actually typeset language
+can disagree.}
+\end{warnbox}
+
+\ldeen{Ob eine Übersetzung vollständig ist, prüfen Sie am zuverlässigsten mit
+der gesamten Buildmatrix der Einheit. Ein erfolgreicher deutscher Build sagt
+nichts darüber aus, ob im englischen Zweig ein Argument oder ein Befehl fehlt.}{
+The most reliable way to check whether a translation is complete is to build the
+entire matrix for the unit. A successful German build does not tell you whether
+an argument or command is missing in the English branch.}
+\begin{verbatim}
+ollm build --all
+\end{verbatim}
+
+\subsection{\ldeen{Unterschiedliche Dokumententypen}{Different Document Types}}
+\ldeen{Beginnen Sie bei angepassten Inhalten mit der allgemeinsten Absicht.
+Soll ein Absatz ausschließlich in einer Langform erscheinen, wählen Sie den
+Verhaltensmodus \texttt{longform}; soll er nur auf Folien stehen, wählen Sie
+\texttt{slides}. Eine Festlegung auf die konkrete Basisklasse ist selten nötig
+und erschwert einen späteren Profilwechsel.}{When adapting content, begin with
+the most general intention. If a paragraph should appear only in a long form,
+select the \texttt{longform} behavior mode; if it belongs only on slides, select
+\texttt{slides}. Selecting the concrete base class is rarely necessary and makes
+a later profile change harder.}
+
+\begin{verbatim}
+\lecturemode<longform>{
+  \ldeen{Ausführliche Herleitung der Laufzeit: $T(n)=\Theta(n\log n)$.}
+        {Detailed derivation of the running time: $T(n)=\Theta(n\log n)$.}
+}
+\lecturemode<slides>{
+  \centering $T(n)=\Theta(n\log n)$
+}
+\end{verbatim}
+
+\ldeen{Modi sind hier Eigenschaften der Ausgabe. Ein konkreter Dokumenttyp
+aktiviert zugleich allgemeinere Modi: Ein Handout ist beispielsweise eine
+Präsentationsform und eine Druckausgabe. Dadurch kann derselbe Inhalt mit
+\texttt{<presentation>} für Folien und Handouts oder mit \texttt{<print>} für
+alle druckorientierten Ergebnisse freigeschaltet werden. Mehrere Alternativen
+lassen sich mit \texttt{|} verbinden.}{Modes are properties of the output in
+this context. A concrete document type also activates more general modes: a
+handout, for example, is both a presentation form and a print output. Thus, the
+same content can be enabled with \texttt{<presentation>} for slides and handouts,
+or with \texttt{<print>} for all print-oriented results. Multiple alternatives
+can be joined with \texttt{|}.}
+
+\ldeen{Für Aufzählungen, die im Skript besser als Fließtext lesbar sind, ist
+\texttt{presitemize} die nutzerfreundlichere Wahl. Die Einträge beschreiben
+Aussagen; die Einleitungsbefehle geben deren logische Beziehung an.}{For lists
+that read better as prose in lecture notes, \texttt{presitemize} is the more
+convenient choice. Entries describe statements; their introductory commands
+specify the logical relationship between them.}
+
+\begin{verbatim}
+\begin{presitemize}
+  \item Die Übersetzung \finite{funktioniert}
+  \anditem das Programm \finite{liefert} ein Ergebnis
+  \butitem wir \finite{haben} vereinfacht
+  \thereforeitem wir \finite{müssen} das Ergebnis prüfen
+\end{presitemize}
+\end{verbatim}
+
+\ldeen{In Präsentationen bleibt daraus eine Liste. In der Langform verbindet
+\texttt{presitemize} die Aussagen sinngemäß zu: »Die Übersetzung funktioniert
+und das Programm liefert ein Ergebnis, aber wir haben vereinfacht, weshalb wir
+das Ergebnis prüfen müssen.« \texttt{\string\finite} markiert das finite Verb,
+damit es insbesondere im deutschen Nebensatz an die richtige Stelle rücken
+kann.}{In presentations this remains a list. In the long form,
+\texttt{presitemize} combines the statements approximately as follows: “The
+translation works and the program produces a result, but we simplified, and
+therefore we have to check the result.” \texttt{\string\finite} marks the finite
+verb so that it can be moved to the correct position, especially in a German
+subordinate clause.}
+
+\ldeen{Verwenden Sie \texttt{presitemize} für flache Folgen kurzer Aussagen.
+Für verschachtelte Listen, Tabellen oder deutlich verschiedene Erklärwege sind
+explizite Modusvarianten verständlicher. Als Faustregel gilt: Ändert sich nur
+die sprachliche Verbindung, genügt \texttt{presitemize}; ändert sich die
+didaktische Struktur, verwenden Sie \texttt{\string\lecturemode}.}{Use
+\texttt{presitemize} for flat sequences of short statements. For nested lists,
+tables, or substantially different explanations, explicit mode variants are
+clearer. As a rule of thumb: if only the linguistic connection changes,
+\texttt{presitemize} is sufficient; if the didactic structure changes, use
+\texttt{\string\lecturemode}.}
 \end{document}
