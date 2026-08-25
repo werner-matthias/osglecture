@@ -6,16 +6,18 @@
 \OsgLectureBuildLoadedTF
   { \edef\olsTargetLanguage{\OsgLectureBuildValue{language}} }
   { }
-% osglecture.cls defers any \usepackage/\RequirePackage written directly
-% in projectconfig.tex until after the target's base class (here
-% ltx-talk) has loaded -- packages that themselves probe "does the base
-% class already define X", as langselect's default 'unified shorthands'
-% does via csquotes, would otherwise see a false negative this early and
-% could collide with the base class's own later definition. \title below
-% is deferred the same way (osglecture's existing metadata-field queue),
-% replayed in the same order right after \LoadClass, so \lende is already
-% available by the time it runs -- no special handling needed here.
-\usepackage[languages={en,de}]{langselect}
+% \LectureProjectSetup{languages=...} hides that multilingual support is
+% technically implemented by langselect and benefits from the same
+% intercept-and-replay queue that a direct \usepackage{langselect} in
+% projectconfig.tex would get -- packages that themselves probe "does the
+% base class already define X", as langselect's default 'unified
+% shorthands' does via csquotes, would otherwise see a false negative
+% this early and could collide with the base class's (here ltx-talk's)
+% own later definition. \title below is deferred the same way
+% (osglecture's existing metadata-field queue), replayed in the same
+% order right after \LoadClass, so \lende is already available by the
+% time it runs -- no special handling needed here.
+\LectureProjectSetup{languages={selectable={en,de}}}
 \title{\lende{One source, multiple documents}{Eine Quelle, mehrere Dokumente}}
 \author<presentation>[M.~Mustermann]{Max Mustermann}
 \author<longform>[Mustermann]{Max Mustermann}

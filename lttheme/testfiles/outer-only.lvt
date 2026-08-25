@@ -1,0 +1,25 @@
+\DocumentMetadata{}
+\input regression-test.tex
+\documentclass{ltx-talk}
+\usepackage[outer-only]{ltxtalk-theme}
+\usepackage{ltxtalk-theme-minimal}
+\useltxtalktheme{minimal}
+\begin{document}
+\begin{frame}
+  \frametitle{Outer-only}
+  Test content.
+\end{frame}
+\START
+\ExplSyntaxOn
+\cs_if_exist:NTF \fontspec
+  { \TYPE{fontspec-loaded=true} }
+  { \TYPE{fontspec-loaded=false} }
+\OsgFontPaletteAvailableTF
+  { \TYPE{font-available=true} }
+  { \TYPE{font-available=false} }
+\color_export:nnN { ltxtalk-primary } { HTML } \l_tmpa_tl
+\TYPE{primary=\l_tmpa_tl}
+\ExplSyntaxOff
+\TYPE{outer-only:passed}
+\END
+\end{document}

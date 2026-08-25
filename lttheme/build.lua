@@ -10,6 +10,8 @@ textfiles = {
 -- PDF-based visual tests must therefore compare the settled output.
 checkruns = 2
 
+checkdeps = { "../osgstyler" }
+
 installfiles = {
     "ltxtalk-theme.sty",
     "ltxtalk-theme-minimal.sty",

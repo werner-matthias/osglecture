@@ -1051,6 +1051,67 @@ load-preamble+
       {\bool_if:NTF \g__osglecture_configuration_enforced_bool {true}{false}}
   }
 
+% \ldeen*{@1 sammelt die Optionen für @2 ein, ohne sie sofort auszulösen:
+% Die einzelnen Unterschlüssel von @3 (siehe unten) hängen jeweils nur ein
+% weiteres \meta{Schlüssel}=\marg{Wert}-Fragment an @1 an. Dadurch ist die
+% Reihenfolge, in der die Unterschlüssel innerhalb eines einzelnen
+% \cs{LectureProjectSetup}-Aufrufs angegeben werden, unerheblich, und es
+% entsteht -- anders als bei sofort auslösenden Einzelschlüsseln -- nur
+% ein einziger @2-Aufruf. Ein zweiter, späterer @2-Aufruf für dasselbe
+% Paket würde von \LaTeX{} für bereits verarbeitete Optionen stillschweigend
+% ignoriert, nicht mit einer Fehlermeldung quittiert; das Sammeln vor dem
+% Auslösen ist deshalb kein Komfort, sondern verhindert genau diesen
+% stillen Optionsverlust.}{@1 collects the options for @2 without
+% triggering them immediately: each sub-key of @3 (see below) only
+% appends one more \meta{key}=\marg{value} fragment to @1. This makes the
+% order in which the sub-keys are given within a single
+% \cs{LectureProjectSetup} call irrelevant, and -- unlike immediately
+% triggering individual keys -- results in exactly one @2 call. A second,
+% later @2 call for the same package would have its options for
+% already-processed keys silently ignored by \LaTeX{}, not flagged with an
+% error; collecting before triggering therefore is not a convenience but
+% prevents exactly that silent option loss.}{\cs{g\_\_osglecture\_language\_setup\_tl}}
+% {\cs{RequirePackage}}{\code{osglecture/project/languages}}
+\tl_new:N \g__osglecture_language_setup_tl
+\cs_new_protected:Npn \__osglecture_language_setup_append:nn #1#2
+  {
+    \tl_if_empty:NF \g__osglecture_language_setup_tl
+      { \tl_gput_right:Nn \g__osglecture_language_setup_tl {,} }
+    \tl_gput_right:Nn \g__osglecture_language_setup_tl {#1={#2}}
+  }
+% \ldeen*{Die Unterschlüssel spiegeln @1s eigene Paketoptionen, mit einer
+% bewussten Ausnahme: @2 heißt hier @3, um beim äußeren Projekt-Schlüssel
+% @4 nicht \keyis{languages}{languages=\ldots} schreiben zu müssen -- @3
+% trifft die Semantik ohnehin genauer (@1 selbst nennt die möglichen
+% Zielsprachen in seiner eigenen Dokumentation "`Auswahlsprachen"').}{The
+% sub-keys mirror @1's own package options, with one deliberate exception:
+% @2 is named @3 here so that the outer project key @4 does not require
+% writing \keyis{languages}{languages=\ldots} -- @3 matches the semantics
+% more precisely anyway (@1 itself calls the possible target languages
+% "`selectable languages"' in its own documentation).}{\pkg*{langselect}}
+% {\option{languages}}{\option{selectable}}{\option{languages}}
+\keys_define:nn { osglecture/project/languages }
+  {
+    selectable .code:n =
+      { \__osglecture_language_setup_append:nn {languages}{#1} },
+    targetlang .code:n =
+      { \__osglecture_language_setup_append:nn {targetlang}{#1} },
+    prefix .code:n =
+      { \__osglecture_language_setup_append:nn {prefix}{#1} },
+    auto .code:n =
+      { \__osglecture_language_setup_append:nn {auto}{#1} },
+    trim .code:n =
+      { \__osglecture_language_setup_append:nn {trim}{#1} },
+    map .code:n =
+      { \__osglecture_language_setup_append:nn {map}{#1} },
+    load~babel .code:n =
+      { \__osglecture_language_setup_append:nn {load~babel}{#1} },
+    load~polyglossia .code:n =
+      { \__osglecture_language_setup_append:nn {load~polyglossia}{#1} },
+    unified~shorthands .code:n =
+      { \__osglecture_language_setup_append:nn {unified~shorthands}{#1} },
+  }
+
 \keys_define:nn { osglecture/project }
   {
     class-options .tl_gset:N = \g__osglecture_project_class_options_tl,
@@ -1063,6 +1124,36 @@ load-preamble+
     theme .code:n = { \__osglecture_policy_set:nn {theme}{#1} },
     numbering .code:n = { \__osglecture_policy_set:nn {numbering}{#1} },
     references .code:n = { \__osglecture_policy_set:nn {references}{#1} },
+% \ldeen*{@1 verbirgt, dass die Mehrsprachumsetzung technisch von @2
+% geleistet wird -- Projektdateien nennen nur die Unterschlüssel von
+% @6 (@7, \code{map}, \code{load babel}, \ldots), ohne den Paketnamen zu
+% kennen. Der gesammelte @3-Aufruf profitiert von derselben
+% Abfangen-und-nachtragen-Warteschlange wie ein direkt in
+% \file{projectconfig.tex} geschriebenes @4, da @1 ausschließlich
+% innerhalb dieses Lesefensters (oder in einem verzögert abgespielten
+% Präambelfragment nach @5, wo dieselbe Sicherheit ohnehin gilt)
+% aufgerufen wird.}{@1 hides that multilingual support is technically
+% implemented by @2 -- project files only name the sub-keys of @6 (@7,
+% \code{map}, \code{load babel}, \ldots), without knowing the package
+% name. The collected @3 call benefits from the same intercept-and-replay
+% queue as a @4 written directly in \file{projectconfig.tex}, since @1 is
+% only ever called within that reading window (or in a deferred preamble
+% fragment after @5, where the same safety already applies
+% otherwise).}{\cs{LectureProjectSetup}}{\pkg*{langselect}}
+% {\cs{RequirePackage}}{\cs{usepackage}}{\cs{LoadClass}}
+% {\code{osglecture/project/languages}}{\option{selectable}}
+    languages .code:n =
+      {
+        \tl_gclear:N \g__osglecture_language_setup_tl
+        \keys_set:nn { osglecture/project/languages } {#1}
+        \__osglecture_policy_set:nn {languages}{#1}
+        \tl_set:Nx \l_tmpa_tl
+          {
+            \exp_not:N \RequirePackage
+              [ \g__osglecture_language_setup_tl ] {langselect}
+          }
+        \l_tmpa_tl
+      },
   }
 
 \NewDocumentCommand \LectureProjectSetup { m }

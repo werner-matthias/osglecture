@@ -1,0 +1,37 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osgstyler}
+\usepackage[mode=script]{osglecture-modes}
+
+\DeclareOsgColorPalette{palette-script}
+  {primary={model=RGB,value={10,20,30}}}
+\DeclareOsgColorPalette{palette-slides}
+  {primary={model=RGB,value={200,150,100}}}
+\DeclareOsgFontPalette{palette-script-font}
+  {main={font={Latin Modern Sans}}, mono={alias=main}}
+\DeclareOsgFontPalette{palette-slides-font}
+  {main={font={Latin Modern Mono}}, mono={alias=main}}
+\DeclareOsgMetricPalette{palette-script-metric}
+  {spacing={md=3pt}}
+\DeclareOsgMetricPalette{palette-slides-metric}
+  {spacing={md=9pt}}
+
+\begin{document}
+\START
+\UseOsgColorPalette<script>{palette-script}
+\UseOsgColorPalette<slides>{palette-slides}
+\TYPE{active-color=\OsgActiveColorPalette}
+\extractcolorspec{osgstyler-primary}\TestColor
+\TYPE{primary=\TestColor}
+
+\UseOsgFontPalette<script>{palette-script-font}
+\UseOsgFontPalette<slides>{palette-slides-font}
+\TYPE{active-font=\OsgActiveFontPalette}
+
+\UseOsgMetricPalette<script>{palette-script-metric}
+\UseOsgMetricPalette<slides>{palette-slides-metric}
+\TYPE{active-metric=\OsgActiveMetricPalette}
+\TYPE{spacing-md=\OsgMetric{spacing}{md}}
+\TYPE{modes=done}
+\END
+\end{document}

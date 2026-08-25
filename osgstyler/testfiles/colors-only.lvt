@@ -1,0 +1,24 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage[colors-only]{osgstyler}
+
+\begin{document}
+\START
+\ExplSyntaxOn
+\cs_if_exist:NTF \fontspec
+  { \TYPE{fontspec-loaded=true} }
+  { \TYPE{fontspec-loaded=false} }
+\ExplSyntaxOff
+\OsgFontPaletteAvailableTF
+  { \TYPE{font-available=true} }
+  { \TYPE{font-available=false} }
+\extractcolorspec{osgstyler-primary}\TestColor
+\TYPE{primary=\TestColor}
+\TYPE{active-metric-spacing-md=\OsgMetric{spacing}{md}}
+\DeclareOsgDecoration{colors-only-test}{line={color=accent}}
+\OsgDecorationIfHasComponentTF{colors-only-test}{line}
+  { \TYPE{decoration-component=true} }
+  { \TYPE{decoration-component=false} }
+\TYPE{modes=done}
+\END
+\end{document}

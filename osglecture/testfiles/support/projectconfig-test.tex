@@ -1,7 +1,11 @@
 \def\ProjectConfigLoaded{true}
+\OsgLectureBuildLoadedTF
+  { \edef\olsTargetLanguage{\OsgLectureBuildValue{language}} }
+  { }
 \LectureProjectSetup{
   longform-profile=scrbook,
-  numbering=section
+  numbering=section,
+  languages={selectable={en,de}, prefix=mv}
 }
 \OsgLectureSetup{
   class/scrbook = {oneside},

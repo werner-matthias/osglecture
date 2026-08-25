@@ -955,8 +955,15 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
     \SetLTXTalkAreaGridRows{header}{2}
     \__ltxtalk_tuc_measure_header_logo_width:
 
+    % lttheme's \setltxtalkcolors is a full redeclaration since it
+    % delegates to osgstyler (see __ltxtalk_colors_apply:n in
+    % lttheme.dtx); its mandatory 'primary' slot needs some resolvable
+    % value here even though this call's own primary is immediately
+    % superseded below by the faculty-dependent \color_set:nn -- the
+    % placeholder is never actually rendered.
     \setltxtalkcolors
       {
+        primary = {model=HTML,value=000000},
         secondary = {model=HTML,value=333333},
         accent = {model=HTML,value=F07D00},
         text = {model=RGB,value={0,0,0}},

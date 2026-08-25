@@ -85,13 +85,40 @@ load babel
 {v0.2.0}
 {Template-based, reusable document styles}
 \RequirePackage{xcolor}
-\RequirePackage{fontspec}
 
 \ExplSyntaxOn
+
+% \ldeen*{@1 hält osgstyler engine-neutral, wenn nur Farb-/Metrik-/
+% Dekorationsverwaltung gebraucht wird: @2 verlangt \LuaTeX{} oder
+% \XeTeX{} (über @3), was unter @4 kein tragbarer Zwang ist. Deklarieren
+% von Font-Paletten bleibt auch unter @1 erlaubt (reine Datenverwaltung,
+% siehe @5); nur das tatsächliche Laden/Auswählen eines Fonts über @6/@7
+% verlangt @2 und wird unter @1 stattdessen mit einer klaren
+% Fehlermeldung quittiert. @8 lässt Themepakete diesen Unterschied
+% zur Übersetzungszeit abfragen.}{@1 keeps osgstyler engine-neutral when
+% only color/metric/decoration management is needed: @2 requires
+% \LuaTeX{} or \XeTeX{} (via @3), which is not a portable requirement
+% under @4. Declaring font palettes remains available under @1 (pure
+% data management, see @5); only actually loading/selecting a font via
+% @6/@7 requires @2 and instead raises a clear error under @1. @8 lets
+% theme packages query this distinction at typesetting time.}
+% {\option{colors-only}}{\pkg*{fontspec}}{\pkg*{iftex}}
+% {\cls*{ltx-talk}}{\cs{DeclareOsgFontPalette}}{\cs{UseOsgFontPalette}}
+% {\cs{UseOsgFont}}{\cs{OsgFontPaletteAvailableTF}}
+\bool_new:N \g__osgstyler_colors_only_bool
+\DeclareKeys
+  {
+    colors-only .bool_gset:N = \g__osgstyler_colors_only_bool,
+    colors-only .initial:n = false,
+    colors-only .usage:n = load,
+  }
+\ProcessKeyOptions\relax
+\bool_if:NF \g__osgstyler_colors_only_bool { \RequirePackage{fontspec} }
 
 \NewExpandableDocumentCommand \OsgStylerAPIVersion { } { 0.2.0 }
 
 \cs_generate_variant:Nn \clist_map_inline:nn { V }
+\cs_generate_variant:Nn \color_set:nnn { VVV }
 
 % Font palettes contain a deliberately small, portable set of relational
 % slots.  A slot either owns a fontspec resource or aliases another slot.
@@ -139,6 +166,11 @@ load babel
 \msg_new:nnnn { osgstyler } { math-font-selection }
   { Font~slot~'math'~cannot~be~selected~as~a~text~font. }
   { Query~it~for~a~unicode-math~adapter;~use~another~slot~for~text. }
+\msg_new:nnnn { osgstyler } { font-management-unavailable }
+  { Font~management~is~not~available~(osgstyler~was~loaded~with~the~
+    'colors-only'~option). }
+  { Check~\token_to_str:N\OsgFontPaletteAvailableTF~before~calling~font~
+    commands,~or~load~osgstyler~without~'colors-only'. }
 
 \keys_define:nn { osgstyler / font-resource }
   {
@@ -214,7 +246,8 @@ load babel
 \NewDocumentCommand \DeclareOsgFontPalette { m m }
   { \__osgstyler_font_palette_declare:nn {#1}{#2} }
 
-% Default fallbacks deliberately express suitability, not morphology.
+% \ldeen{Die Standardrückfallebenen der Font gehen vom der konzeptionellen Eignung aus, 
+% nicht vom Aussehen}{Default fallbacks deliberately express suitability, not morphology}.
 \cs_new:Npn \__osgstyler_font_fallback:n #1
   {
     \str_case:nnF {#1}
@@ -283,40 +316,47 @@ load babel
 \NewExpandableDocumentCommand \OsgFontPaletteValue { m m m }
   { \prop_item:Nn \g__osgstyler_font_palette_prop { #1 / #2 / #3 } }
 
+\NewDocumentCommand \OsgFontPaletteAvailableTF { m m }
+  { \bool_if:NTF \g__osgstyler_colors_only_bool {#2}{#1} }
+
 \cs_new_protected:Npn \__osgstyler_font_palette_use:n #1
   {
-    \prop_if_in:NnTF \g__osgstyler_font_palette_prop { #1 / declared }
+    \bool_if:NTF \g__osgstyler_colors_only_bool
+      { \msg_error:nn { osgstyler } { font-management-unavailable } }
       {
-        \tl_gset:Nn \g__osgstyler_font_palette_tl {#1}
-        \clist_map_inline:Nn \c__osgstyler_font_slots_clist
+        \prop_if_in:NnTF \g__osgstyler_font_palette_prop { #1 / declared }
           {
-            \str_if_eq:nnF {##1}{math}
+            \tl_gset:Nn \g__osgstyler_font_palette_tl {#1}
+            \clist_map_inline:Nn \c__osgstyler_font_slots_clist
               {
-                \__osgstyler_font_slot_resolve:nnN {#1}{##1} \l_tmpa_tl
-                \tl_if_empty:NF \l_tmpa_tl
+                \str_if_eq:nnF {##1}{math}
                   {
-                    \prop_if_in:NeF \g__osgstyler_font_family_prop
-                      { #1 / \l_tmpa_tl }
+                    \__osgstyler_font_slot_resolve:nnN {#1}{##1} \l_tmpa_tl
+                    \tl_if_empty:NF \l_tmpa_tl
                       {
-                        \prop_get:NeN \g__osgstyler_font_palette_prop
-                          { #1 / \l_tmpa_tl / font }
-                          \l__osgstyler_font_load_name_tl
-                        \prop_get:NeN \g__osgstyler_font_palette_prop
-                          { #1 / \l_tmpa_tl / features }
-                          \l__osgstyler_font_load_features_tl
-                        \exp_args:NNVV \fontspec_gset_family:Nnn
-                          \l__osgstyler_font_load_family_tl
-                          \l__osgstyler_font_load_features_tl
-                          \l__osgstyler_font_load_name_tl
-                        \prop_gput:NeV \g__osgstyler_font_family_prop
+                        \prop_if_in:NeF \g__osgstyler_font_family_prop
                           { #1 / \l_tmpa_tl }
-                          \l__osgstyler_font_load_family_tl
+                          {
+                            \prop_get:NeN \g__osgstyler_font_palette_prop
+                              { #1 / \l_tmpa_tl / font }
+                              \l__osgstyler_font_load_name_tl
+                            \prop_get:NeN \g__osgstyler_font_palette_prop
+                              { #1 / \l_tmpa_tl / features }
+                              \l__osgstyler_font_load_features_tl
+                            \exp_args:NNVV \fontspec_gset_family:Nnn
+                              \l__osgstyler_font_load_family_tl
+                              \l__osgstyler_font_load_features_tl
+                              \l__osgstyler_font_load_name_tl
+                            \prop_gput:NeV \g__osgstyler_font_family_prop
+                              { #1 / \l_tmpa_tl }
+                              \l__osgstyler_font_load_family_tl
+                          }
                       }
                   }
               }
           }
+          { \msg_error:nnn { osgstyler } { unknown-font-palette } {#1} }
       }
-      { \msg_error:nnn { osgstyler } { unknown-font-palette } {#1} }
   }
 
 \NewDocumentCommand \UseOsgFontPalette { m }
@@ -327,17 +367,21 @@ load babel
 
 \cs_new_protected:Npn \__osgstyler_font_select:n #1
   {
-    \str_if_eq:nnTF {#1}{math}
-      { \msg_error:nn { osgstyler } { math-font-selection } }
+    \bool_if:NTF \g__osgstyler_colors_only_bool
+      { \msg_error:nn { osgstyler } { font-management-unavailable } }
       {
-        \tl_if_empty:NTF \g__osgstyler_font_palette_tl
-          { \msg_error:nnn { osgstyler } { unknown-font-palette } { } }
+        \str_if_eq:nnTF {#1}{math}
+          { \msg_error:nn { osgstyler } { math-font-selection } }
           {
-            \exp_args:NV \__osgstyler_font_slot_resolve:nnN
-              \g__osgstyler_font_palette_tl {#1} \l_tmpa_tl
-            \prop_get:NeN \g__osgstyler_font_family_prop
-              { \g__osgstyler_font_palette_tl / \l_tmpa_tl } \l_tmpb_tl
-            \fontfamily{\l_tmpb_tl}\selectfont
+            \tl_if_empty:NTF \g__osgstyler_font_palette_tl
+              { \msg_error:nnn { osgstyler } { unknown-font-palette } { } }
+              {
+                \exp_args:NV \__osgstyler_font_slot_resolve:nnN
+                  \g__osgstyler_font_palette_tl {#1} \l_tmpa_tl
+                \prop_get:NeN \g__osgstyler_font_family_prop
+                  { \g__osgstyler_font_palette_tl / \l_tmpa_tl } \l_tmpb_tl
+                \fontfamily{\l_tmpb_tl}\selectfont
+              }
           }
       }
   }
@@ -354,7 +398,8 @@ load babel
     mono      = { font = { Latin Modern Mono } },
     symbol    = { alias = main }
   }
-\UseOsgFontPalette { osgstyler-default }
+\bool_if:NF \g__osgstyler_colors_only_bool
+  { \UseOsgFontPalette { osgstyler-default } }
 
 % Color palettes deliberately mirror lttheme's public color vocabulary and
 % value syntax.  osgstyler owns neutral, stable color names; a presentation
@@ -550,14 +595,47 @@ load babel
 \NewExpandableDocumentCommand \OsgColorName { m }
   { \__osgstyler_color_name:n {#1} }
 
-\cs_new_protected:Npn \__osgstyler_color_define_from_resource:nn #1#2
+% \ldeen*{@1 schreibt die aufgelöste Farbe sowohl nativ über @2 als
+% auch klassisch über @3: \cls*{ltx-talk} und vergleichbare,
+% modernisierte Klassen ersetzen \cs{color} durch eine auf @2s eigenem
+% Modul aufbauende Fassung, die nur nativ registrierte Farben kennt;
+% Werkzeuge wie \cs{extractcolorspec} und unveränderte Klassen kennen
+% dagegen nur die klassische Registrierung -- nur die doppelte
+% Schreibweise bedient beide Seiten zuverlässig. Ein dritter Parameter
+% trennt bewusst "`welcher Slot liefert die Daten"' (#2, nach
+% Alias-Auflösung der eigentliche Ressourcen-Besitzer) von "`unter
+% welchem Namen wird geschrieben"' (#3, der ursprünglich angefragte
+% Slot): Ein Alias-Slot bekommt dadurch seine eigene Farbe direkt
+% zugewiesen, statt sie nachträglich unter @4 auf die Besitzer-Farbe zu
+% verweisen -- @4 selbst ist, anders als @2/@3, grundsätzlich nur lokal
+% gültig und würde eine Zuweisung aus der Deklarationszeit nicht
+% zuverlässig bis zum Dokumentkörper erhalten.}{@1 writes the resolved
+% color both natively via @2 and classically via @3: \cls*{ltx-talk} and
+% similarly modernized classes replace \cs{color} with a version built
+% on @2's own module, which only recognizes natively registered colors;
+% tools such as \cs{extractcolorspec} and unmodified classes, in turn,
+% only recognize the classical registration -- only writing both
+% reliably serves either side. A third parameter deliberately separates
+% "`which slot supplies the data"' (#2, the actual resource owner after
+% alias resolution) from "`under which name is it written"' (#3, the
+% originally requested slot): an alias slot thus gets its own color
+% assigned directly, instead of pointing it at the owner's color
+% afterward via @4 -- @4 itself, unlike @2/@3, is fundamentally
+% local-only and would not reliably carry an assignment made at
+% declaration time through to the document body.}
+% {\cs{color\_set:nnn}}{\pkg*{l3color}}{\cs{definecolor}}{\cs{color\_set\_eq:nn}}
+\cs_new_protected:Npn \__osgstyler_color_define_from_resource:nnn #1#2#3
   {
     \prop_get:NnN \g__osgstyler_color_palette_prop
       { #1 / #2 / model } \l__osgstyler_color_resolution_model_tl
     \prop_get:NnN \g__osgstyler_color_palette_prop
       { #1 / #2 / value } \l__osgstyler_color_resolution_target_tl
     \tl_set:Nx \l__osgstyler_color_name_tl
-      { \__osgstyler_color_name:n {#2} }
+      { \__osgstyler_color_name:n {#3} }
+    \color_set:VVV
+      \l__osgstyler_color_name_tl
+      \l__osgstyler_color_resolution_model_tl
+      \l__osgstyler_color_resolution_target_tl
     \use:e
       {
         \exp_not:N \definecolor
@@ -566,6 +644,7 @@ load babel
           { \l__osgstyler_color_resolution_target_tl }
       }
   }
+\cs_generate_variant:Nn \__osgstyler_color_define_from_resource:nnn { nVn }
 
 \cs_new_protected:Npn \__osgstyler_color_palette_use:n #1
   {
@@ -581,21 +660,26 @@ load babel
                   {
                     \prop_get:NnN \c__osgstyler_color_absolute_default_prop
                       {##1} \l_tmpb_tl
-                    \exp_args:Nee \colorlet
-                      { \__osgstyler_color_name:n {##1} } { \l_tmpb_tl }
+                    \tl_set:Nx \l_tmpc_tl { \__osgstyler_color_name:n {##1} }
+                    \str_case:VnF \l_tmpb_tl
+                      {
+                        { black }
+                          {
+                            \exp_args:NV \color_set:nnn \l_tmpc_tl { gray } { 0 }
+                            \exp_args:Nee \colorlet { \l_tmpc_tl } { black }
+                          }
+                        { white }
+                          {
+                            \exp_args:NV \color_set:nnn \l_tmpc_tl { gray } { 1 }
+                            \exp_args:Nee \colorlet { \l_tmpc_tl } { white }
+                          }
+                      }
+                      { }
                   }
               }
               {
-                \exp_args:NnV \__osgstyler_color_define_from_resource:nn
-                  {#1} \l_tmpa_tl
-                \tl_set:Nx \l_tmpb_tl { \__osgstyler_color_name:n {##1} }
-                \tl_set:Nx \l_tmpc_tl
-                  { \__osgstyler_color_name:n {\l_tmpa_tl} }
-                \use:e
-                  {
-                    \exp_not:N \colorlet
-                      { \l_tmpb_tl } { \l_tmpc_tl }
-                  }
+                \__osgstyler_color_define_from_resource:nVn
+                  {#1} \l_tmpa_tl {##1}
               }
           }
       }
@@ -1336,10 +1420,23 @@ load babel
 
 \BindOsgInlineCommand \highlight { highlight }
 
-% Optional osglecture-modes integration.  The direct style command and every
-% command managed by the binder accept a portable angle-bracket mode whenever
-% osglecture-modes is present.  Configuration commands deliberately remain
-% mode-independent.
+% \ldeen*{Optionale Integration von Modi, falls @1 geladen wurde.
+% Die Auswahlbefehle (\token_to_str:N\UseOsgInlineStyle und die gebundenen
+% Inline-Befehle sowie \token_to_str:N\UseOsgColorPalette,
+% \token_to_str:N\UseOsgFontPalette, \token_to_str:N\UseOsgMetricPalette)
+% werden modusabhängig (Parameter in spitzen Klammern), da ihr aktiver Modus
+% zum Zeitpunkt des Aufrufs bekannt ist. Die Deklarationsbefehle
+% (\token_to_str:N\DeclareOsgColorPalette und Geschwister) bleiben bewußt
+% moduunabhängig: Eine Palette wird einmalig definiert, unabhängig davon, in
+% welchen Moden sie später ausgewählt wird.}{Optional osglecture-modes
+% integration. The selection commands (\token_to_str:N\UseOsgInlineStyle and
+% the bound inline commands, as well as \token_to_str:N\UseOsgColorPalette,
+% \token_to_str:N\UseOsgFontPalette, \token_to_str:N\UseOsgMetricPalette)
+% accept a portable angle-bracket mode whenever @1 is present, since their
+% active mode is known at the call site. The declaration commands
+% (\token_to_str:N\DeclareOsgColorPalette and siblings) deliberately remain
+% mode-independent: a palette is defined once, regardless of which modes
+% later select it.}{\pkg{osglecture-modes}}
 \bool_new:N \g__osgstyler_modes_integrated_bool
 
 \cs_new_protected:Npn \__osgstyler_modes_integrate:
@@ -1352,6 +1449,9 @@ load babel
           {
             \exp_args:Nc \__osgstyler_make_mode_aware:Nn {##1} { +m }
           }
+        \__osgstyler_make_mode_aware:Nn \UseOsgColorPalette { m }
+        \__osgstyler_make_mode_aware:Nn \UseOsgFontPalette { m }
+        \__osgstyler_make_mode_aware:Nn \UseOsgMetricPalette { m }
       }
   }
 
@@ -1360,12 +1460,23 @@ load babel
 \IfPackageLoadedTF { osglecture-modes }
   { \__osgstyler_modes_integrate: } { }
 
-% Optional lttheme integration.  Exported colors preserve the public palette
-% vocabulary while keeping lttheme out of osgstyler's dependencies.
+% \ldeen*{Reaktive Rückfallintegration für Themepakete, die ihre
+% Themefarben nicht selbst über @1/@2 in osgstyler einspeisen. Speist ein
+% Themepaket seine Farben selbst ein und aktiviert dabei die
+% osgstyler-Palette @3 (vgl.\ @4), erkennt dieser Abschnitt sich anhand
+% der aktiven Palette selbst als überflüssig und tut nichts.}{Reactive
+% fallback integration for theme packages that do not feed their theme
+% colors into osgstyler themselves via @1/@2. A theme package that feeds
+% its own colors in and activates the osgstyler palette @3 while doing so
+% (cf.\ @4) makes this section recognize itself as redundant, via the
+% active palette, and do nothing.}{\cs{DeclareOsgColorPalette}}
+% {\cs{UseOsgColorPalette}}{\code{ltxtalk}}{\cs{setltxtalkcolors}}
 \bool_new:N \g__osgstyler_lttheme_integrated_bool
 
 \cs_new_protected:Npn \__osgstyler_lttheme_sync_colors:
   {
+    \str_if_eq:VnF \g__osgstyler_color_palette_tl { ltxtalk }
+      {
     \clist_map_inline:Nn \c__osgstyler_color_slots_clist
       {
         \str_if_eq:nnTF {##1} { background }
@@ -1388,6 +1499,7 @@ load babel
     \prop_gput:Nnn \g__osgstyler_color_palette_prop
       { lttheme / declared } { true }
     \tl_gset:Nn \g__osgstyler_color_palette_tl { lttheme }
+      }
   }
 
 \cs_new_protected:Npn \__osgstyler_lttheme_integrate:
@@ -1408,10 +1520,32 @@ load babel
       }
   }
 
-\AddToHook { package/ltxtalk-theme/after } [ osgstyler/lttheme ]
-  { \__osgstyler_lttheme_integrate: }
-\IfPackageLoadedTF { ltxtalk-theme }
-  { \__osgstyler_lttheme_integrate: } { }
+% \ldeen*{@1 ist ein Koordinationssignal: Ein Paket, das es vor dem
+% eigenen @2 definiert (lttheme tut dies, siehe dort), zeigt damit an,
+% dass es seine Themefarben selbst über @3/@4 einspeist und die reaktive
+% Integration hier überflüssig, ja sogar riskant wäre. Riskant, weil @2
+% aus Sicht von \LaTeX{} schon dann als geladen gilt, sobald das
+% aufrufende Paket seine eigene \cs{ProvidesExplPackage}-Zeile
+% durchlaufen hat -- lange bevor es seine eigenen Farben definiert; die
+% reaktive Integration würde in diesem Moment sonst auf noch nicht
+% existierende Farben zugreifen.}{@1 is a coordination signal: a package
+% that defines it before its own @2 (lttheme does, see there) thereby
+% indicates that it feeds its own theme colors into osgstyler via @3/@4
+% itself, making the reactive integration here redundant, in fact risky.
+% Risky, because @2 already counts as loaded from \LaTeX's perspective
+% as soon as the requiring package's own \cs{ProvidesExplPackage} line
+% has run -- long before it defines its own colors; the reactive
+% integration would otherwise access not-yet-existing colors at that
+% point.}
+% {\cs{LtxtalkUsesOsgstylerNatively}}{\cs{RequirePackage}\Marg{osgstyler}}
+% {\cs{DeclareOsgColorPalette}}{\cs{UseOsgColorPalette}}
+\cs_if_exist:NF \LtxtalkUsesOsgstylerNatively
+  {
+    \AddToHook { package/ltxtalk-theme/after } [ osgstyler/lttheme ]
+      { \__osgstyler_lttheme_integrate: }
+    \IfPackageLoadedTF { ltxtalk-theme }
+      { \__osgstyler_lttheme_integrate: } { }
+  }
 
 \ExplSyntaxOff
 

@@ -3,6 +3,7 @@
 \documentclass{ltx-talk}
 \usepackage{ltxtalk-theme}
 \setltxtalkcolors{
+  primary={model=HTML,value=2B3A67},
   structure={model=HTML,value=123456},
   alert={model=HTML,value=A00000},
   example={model=HTML,value=006000}
@@ -12,10 +13,16 @@
 \setltxtalkitemize{
   level-1={I},level-2={II},level-3={III},level-4={IV}
 }
-% incomplete-color-resource must not touch the color it fails to
-% define; ltxtalk-primary should keep its earlier value. Attempted
-% before \START so the resulting error message does not become part
-% of the diffed log.
+% \setltxtalkcolors is a full redeclaration (see __ltxtalk_colors_apply:n
+% in lttheme.dtx): slots not given fall back through osgstyler's own
+% chain (secondary etc. to primary) rather than keeping their previous
+% value. An incomplete resource for the mandatory primary slot is
+% therefore fatal to the whole redeclaration, not just to primary --
+% osgstyler's own missing-primary-color/incomplete-color-resource
+% messages report it. Attempted before \START so the resulting error
+% message does not become part of the diffed log; what the check below
+% verifies is that ltxtalk-primary keeps the value from the last
+% *successful* declaration above, since this failed one changes nothing.
 \setltxtalkcolors{primary={model=RGB}}
 \begin{document}
 \begin{frame}{Inner theme}

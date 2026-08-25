@@ -28,6 +28,8 @@
 \TYPE{unit-short-title=\OsgLectureShortTitle}
 \TYPE{project-numbering=\OsgLectureProjectValue{numbering}}
 \TYPE{project-theme=\OsgLectureProjectValue{theme}}
+\TYPE{project-languages=\OsgLectureProjectValue{languages}}
+\TYPE{mvende-check=\mvende{english}{german}}
 \TYPE{target-profile=\OsgLectureDocumentProfile}
 \TYPE{job-unit-scopes=\OsgLectureBuildValue{applicable-unit-scopes}}
 \OsgLectureSeriesAvailableTF

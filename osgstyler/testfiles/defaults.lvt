@@ -5,6 +5,9 @@
 \begin{document}
 \START
 \TYPE{font=\OsgActiveFontPalette}
+\OsgFontPaletteAvailableTF
+  { \TYPE{font-available=true} }
+  { \TYPE{font-available=false} }
 \TYPE{color=\OsgActiveColorPalette}
 \TYPE{metric=\OsgActiveMetricPalette}
 \TYPE{primary=\OsgColorPaletteValue{osgstyler-default}{primary}{value}}

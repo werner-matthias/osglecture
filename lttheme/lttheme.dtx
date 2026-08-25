@@ -365,6 +365,24 @@ die semantische Farbe oder einen eigenen Farbnamen verwendet.
 % TODO: English translation
 }
 
+\begin{warnbox}{\ldeen{Achtung}{Attention}!}
+\ldeen{
+\cs*{setltxtalkcolors} ist eine \emph{vollständige} Neudeklaration, kein
+inkrementelles Update: Nicht genannte Slots fallen nicht auf ihren
+vorherigen Wert zurück, sondern auf die übliche Vererbungskette
+(\code{secondary} etc.\ auf \code{primary}). Nur \code{primary} selbst ist
+zwingend anzugeben; fehlt es oder ist eine Angabe unvollständig, schlägt
+die gesamte Neudeklaration fehl und die zuvor gültigen Farben bleiben
+unverändert bestehen -- nicht weil einzelne Slots verschont würden, sondern
+weil die fehlgeschlagene Deklaration insgesamt nichts ändert. Wer nur
+einen einzelnen Slot anpassen möchte, ohne die anderen erneut aufzuzählen,
+sollte deshalb den vollständigen letzten Aufruf wiederholen und nur den
+gewünschten Wert ändern.
+}{
+% TODO: English translation
+}
+\end{warnbox}
+
 \subsection{\ldeen{Titel platzieren}{Positioning titles}}
 
 \ldeen{
@@ -1464,6 +1482,38 @@ Slots eines Teilthemes implementiert werden.
 \RequirePackage{xcoffins}
 \RequirePackage{xcolor}
 
+% \ldeen*{@1 hält den "`äußeren"' Teil des Themes (Layout, Slots,
+% Dekorationen) frei von @2s \LuaTeX{}/\XeTeX{}-Bindung: Farbverwaltung
+% wird über osgstyler bezogen (siehe unten bei @3), aber osgstylers
+% Font-Palette-Modul -- und damit @2 selbst -- wird nicht geladen.
+% Ohne @1 steht die volle osgstyler-Fontverwaltung zur Verfügung.}
+% {Option @1 keeps the "`outer"' part of the theme (layout, slots,
+% decorations) free of @2's \LuaTeX{}/\XeTeX{} binding: color management
+% is still sourced from osgstyler (see @3 below), but osgstyler's
+% font-palette module -- and thus @2 itself -- is not loaded. Without
+% @1, full osgstyler font management is available.}
+% {\option{outer-only}}{\pkg*{fontspec}}{\cs{setltxtalkcolors}}
+\bool_new:N \g__ltxtalk_outeronly_bool
+\DeclareKeys
+  {
+    outer-only .bool_gset:N = \g__ltxtalk_outeronly_bool,
+    outer-only .initial:n = false,
+    outer-only .usage:n = load,
+  }
+\ProcessKeyOptions\relax
+% \ldeen*{@1 signalisiert osgstyler, dass lttheme seine Themefarben
+% selbst über @2/@3 einspeist (siehe unten bei @4), sodass osgstylers
+% eigene reaktive lttheme-Integration entfällt.}{@1 signals to osgstyler
+% that lttheme feeds its theme colors into osgstyler itself via @2/@3
+% (see @4 below), so osgstyler's own reactive lttheme integration does
+% not apply.}{\cs{LtxtalkUsesOsgstylerNatively}}
+% {\cs{DeclareOsgColorPalette}}{\cs{UseOsgColorPalette}}
+% {\cs{__ltxtalk\_colors\_apply:n}}
+\cs_gset_protected:Npn \LtxtalkUsesOsgstylerNatively { }
+\bool_if:NTF \g__ltxtalk_outeronly_bool
+  { \RequirePackage[colors-only]{osgstyler} }
+  { \RequirePackage{osgstyler} }
+
 \msg_new:nnnn { ltxtalk } { missing-class }
   { Missing~document~class }
   { The~ltxtalk-theme~package~requires~ltx-talk. }
@@ -1737,70 +1787,85 @@ Slots eines Teilthemes implementiert werden.
 % FARBSCHEMA
 % ==========================================
 
-\msg_new:nnnn { ltxtalk } { incomplete-color-resource }
-  { Color~'#1'~does~not~specify~both~model~and~value. }
-  { Use~model=...,~value=...~to~set~a~color. }
-
-\tl_new:N \l__ltxtalk_color_model_tl
-\tl_new:N \l__ltxtalk_color_value_tl
-\keys_define:nn { ltxtalk / color-resource }
+% \ldeen*{@1 löst selbst keine Farben auf, sondern reicht sein Argument
+% unverändert an @2 weiter -- beide Schnittstellen teilen absichtlich
+% dasselbe Vokabular (dieselben acht Slotnamen, dieselbe
+% \code{model=...,~value=...}"=~bzw.\ \code{alias=...}"=Syntax), sodass
+% keine Übersetzung nötig ist. Nicht genannte Slots werden über @2s
+% eigene Fallback-Kette aufgelöst (\code{secondary} etc.\ fallen auf
+% \code{primary} zurück): @1 ist eine vollständige Neudeklaration, kein
+% inkrementelles Patch. Die resultierenden osgstyler-Farben werden
+% anschließend unter den etablierten \code{ltxtalk-*}"=Namen (und den
+% unpräfigierten \code{structure}/\code{alert}/\code{example}"=Namen)
+% gespiegelt, damit Themecode diese Namen unverändert nutzen
+% kann.}{@1 does not resolve colors itself; it forwards its argument
+% unchanged to @2 -- both interfaces deliberately share the same
+% vocabulary (the same eight slot names, the same
+% \code{model=...,~value=...} resp.\ \code{alias=...} syntax), so no
+% translation is needed. Slots not given resolve via @2's own fallback
+% chain (\code{secondary} etc.\ fall back to \code{primary}): @1 is a
+% full redeclaration, not an incremental patch. The resulting osgstyler
+% colors are then mirrored under the established \code{ltxtalk-*} names
+% (and the unprefixed \code{structure}/\code{alert}/\code{example}
+% names), so theme code can use those names unchanged.}
+% {\cs{setltxtalkcolors}}{\cs{DeclareOsgColorPalette}}
+% \ldeen*{@1 liest den aufgelösten Wert per @2 aus der bereits von
+% osgstyler gesetzten Farbe @3 und registriert ihn anschließend sowohl
+% nativ über @4 als auch klassisch über @5: \cls*{ltx-talk} ersetzt
+% \cs{color} durch eine auf dem \pkg*{l3color}"=Modul aufbauende
+% Fassung, die ausschließlich nativ registrierte Farben kennt -- eine
+% nur klassisch definierte Farbe wäre für \cs{color} "`unbekannt"',
+% obwohl \cs{extractcolorspec} sie korrekt läse.}{@1 reads the resolved
+% value via @2 from the color @3 that osgstyler has already set, then
+% registers it both natively via @4 and classically via @5:
+% \cls*{ltx-talk} replaces \cs{color} with a version built on the
+% \pkg*{l3color} module that only recognizes natively registered colors
+% -- a color defined only classically would be "`unknown"' to \cs{color},
+% even though \cs{extractcolorspec} would read it correctly.}
+% {\cs{\_\_ltxtalk\_colors\_mirror:nn}}{\cs{color\_export:nnN}}
+% {\code{osgstyler-*}}{\cs{color\_set:nnn}}{\cs{definecolor}}
+\cs_generate_variant:Nn \color_set:nnn { nnV }
+\cs_new_protected:Npn \__ltxtalk_colors_mirror:nn #1#2
   {
-    model .tl_set:N = \l__ltxtalk_color_model_tl,
-    value .tl_set:N = \l__ltxtalk_color_value_tl,
-  }
-
-\keys_define:nn { ltxtalk / colors }
-  {
-    primary    .code:n = \__ltxtalk_set_color:nn { ltxtalk-primary } { #1 },
-    secondary  .code:n = \__ltxtalk_set_color:nn { ltxtalk-secondary } { #1 },
-    accent     .code:n = \__ltxtalk_set_color:nn { ltxtalk-accent } { #1 },
-    text       .code:n = \__ltxtalk_set_color:nn { ltxtalk-text } { #1 },
-    background .code:n = \__ltxtalk_set_color:nn { ltxtalk-bg } { #1 },
-    structure  .code:n = \__ltxtalk_set_semantic_color:nn { structure } { #1 },
-    alert      .code:n = \__ltxtalk_set_semantic_color:nn { alert } { #1 },
-    example    .code:n = \__ltxtalk_set_semantic_color:nn { example } { #1 },
-  }
-
-% #1 = name to report in the error message, #2 = the color to define,
-% #3 = the raw model=...,value=... text to parse.
-\cs_new_protected:Npn \__ltxtalk_color_resource_store:nnn #1#2#3
-  {
-    \tl_clear:N \l__ltxtalk_color_model_tl
-    \tl_clear:N \l__ltxtalk_color_value_tl
-    \keys_set:nn { ltxtalk / color-resource } {#3}
-    \bool_lazy_and:nnTF
-      { ! \tl_if_empty_p:N \l__ltxtalk_color_model_tl }
-      { ! \tl_if_empty_p:N \l__ltxtalk_color_value_tl }
+    \color_export:nnN {#2} { HTML } \l_tmpb_tl
+    \color_set:nnV {#1} { HTML } \l_tmpb_tl
+    \use:e
       {
-        \exp_args:Nnee \color_set:nnn {#2}
-          { \l__ltxtalk_color_model_tl } { \l__ltxtalk_color_value_tl }
+        \exp_not:N \definecolor {#1} { HTML } { \l_tmpb_tl }
       }
-      { \msg_error:nne { ltxtalk } { incomplete-color-resource } {#1} }
   }
-
-\cs_new_protected:Npn \__ltxtalk_set_color:nn #1#2
-  { \__ltxtalk_color_resource_store:nnn {#1}{#1}{#2} }
-
-\cs_new_protected:Npn \__ltxtalk_set_semantic_color:nn #1#2
+\cs_new_protected:Npn \__ltxtalk_colors_apply:n #1
   {
-    \__ltxtalk_color_resource_store:nnn {#1}{ltxtalk-#1}{#2}
-    \color_set_eq:nn { #1 } { ltxtalk-#1 }
+    \DeclareOsgColorPalette { ltxtalk } {#1}
+    \UseOsgColorPalette { ltxtalk }
+    \__ltxtalk_colors_mirror:nn { ltxtalk-primary }   { osgstyler-primary }
+    \__ltxtalk_colors_mirror:nn { ltxtalk-secondary } { osgstyler-secondary }
+    \__ltxtalk_colors_mirror:nn { ltxtalk-accent }    { osgstyler-accent }
+    \__ltxtalk_colors_mirror:nn { ltxtalk-text }      { osgstyler-text }
+    \__ltxtalk_colors_mirror:nn { ltxtalk-bg }        { osgstyler-background }
+    \__ltxtalk_colors_mirror:nn { ltxtalk-structure } { osgstyler-structure }
+    \__ltxtalk_colors_mirror:nn { ltxtalk-alert }     { osgstyler-alert }
+    \__ltxtalk_colors_mirror:nn { ltxtalk-example }   { osgstyler-example }
+    \__ltxtalk_colors_mirror:nn { structure } { osgstyler-structure }
+    \__ltxtalk_colors_mirror:nn { alert }     { osgstyler-alert }
+    \__ltxtalk_colors_mirror:nn { example }   { osgstyler-example }
   }
 
 \NewDocumentCommand \setltxtalkcolors { m }
-  {
-    \keys_set:nn { ltxtalk / colors } { #1 }
-  }
+  { \__ltxtalk_colors_apply:n {#1} }
 
 % Standardfarben
-\color_set:nnn { ltxtalk-primary } { HTML } { 2B3A67 }
-\color_set:nnn { ltxtalk-secondary } { HTML } { 496A81 }
-\color_set:nnn { ltxtalk-accent } { HTML } { 66999B }
-\color_set:nnn { ltxtalk-text } { HTML } { 333333 }
-\color_set:nnn { ltxtalk-bg } { HTML } { FFFFFF }
-\__ltxtalk_set_semantic_color:nn { structure } { model=HTML, value=2B3A67 }
-\__ltxtalk_set_semantic_color:nn { alert }     { model=HTML, value=B00020 }
-\__ltxtalk_set_semantic_color:nn { example }   { model=HTML, value=166534 }
+\__ltxtalk_colors_apply:n
+  {
+    primary    = { model=HTML, value=2B3A67 },
+    secondary  = { model=HTML, value=496A81 },
+    accent     = { model=HTML, value=66999B },
+    text       = { model=HTML, value=333333 },
+    background = { model=HTML, value=FFFFFF },
+    structure  = { alias=primary },
+    alert      = { model=HTML, value=B00020 },
+    example    = { model=HTML, value=166534 },
+  }
 
 % ==========================================
 % INNER THEME: BLOCKS AND LIST MARKERS
@@ -3679,6 +3744,9 @@ Slots eines Teilthemes implementiert werden.
       accent     = {model=HTML, value=999999},
       text       = {model=HTML, value=222222},
       background = {model=HTML, value=FFFFFF},
+      structure  = {model=HTML, value=2B3A67},
+      alert      = {model=HTML, value=B00020},
+      example    = {model=HTML, value=166534},
     }
   }
 
@@ -3742,7 +3810,8 @@ Slots eines Teilthemes implementiert werden.
     \setltxtalkcolors{primary={model=rgb,value={0.2,0.2,0.7}},
       secondary={model=rgb,value={0.15,0.15,0.525}},
       accent={model=rgb,value={0.2,0.2,0.7}},
-      text={model=HTML,value=000000},background={model=HTML,value=FFFFFF}}
+      text={model=HTML,value=000000},background={model=HTML,value=FFFFFF},
+      structure={model=HTML,value=2B3A67},alert={model=HTML,value=B00020},example={model=HTML,value=166534}}
   }
 \RegisterLTXTalkTheme{magpie}{\__ltxtalk_magpie_theme_setup:}
 %</magpie>
@@ -3795,7 +3864,8 @@ Slots eines Teilthemes implementiert werden.
     \setltxtalkcolors{primary={model=rgb,value={0.2,0.2,0.7}},
       secondary={model=rgb,value={0.15,0.15,0.525}},
       accent={model=rgb,value={0.2,0.2,0.7}},
-      text={model=HTML,value=000000},background={model=HTML,value=FFFFFF}}
+      text={model=HTML,value=000000},background={model=HTML,value=FFFFFF},
+      structure={model=HTML,value=2B3A67},alert={model=HTML,value=B00020},example={model=HTML,value=166534}}
   }
 \RegisterLTXTalkTheme{hawk}{\__ltxtalk_hawk_theme_setup:}
 %</hawk>
@@ -3855,7 +3925,8 @@ Slots eines Teilthemes implementiert werden.
     \setltxtalkcolors{primary={model=rgb,value={0.2,0.2,0.7}},
       secondary={model=rgb,value={0.15,0.15,0.525}},
       accent={model=rgb,value={0.2,0.2,0.7}},
-      text={model=HTML,value=000000},background={model=HTML,value=FFFFFF}}
+      text={model=HTML,value=000000},background={model=HTML,value=FFFFFF},
+      structure={model=HTML,value=2B3A67},alert={model=HTML,value=B00020},example={model=HTML,value=166534}}
   }
 \RegisterLTXTalkTheme{sparrow}{\__ltxtalk_sparrow_theme_setup:}
 %</sparrow>
@@ -3871,7 +3942,9 @@ Slots eines Teilthemes implementiert werden.
   {\setltxtalkcolors{primary={model=rgb,value={0,0,0.8}},
     secondary={model=HTML,value=65500A},
     accent={model=HTML,value=B45309},text={model=HTML,value=111827},
-    background={model=HTML,value=FFF7D6}}}
+    background={model=HTML,value=FFF7D6},
+    structure={model=HTML,value=2B3A67},alert={model=HTML,value=B00020},
+    example={model=HTML,value=166534}}}
 \RegisterLTXTalkTheme{anchovy}{\__ltxtalk_anchovy_theme_setup:}
 %</anchovy>
 %<*carp>
@@ -3886,7 +3959,9 @@ Slots eines Teilthemes implementiert werden.
   {\setltxtalkcolors{primary={model=rgb,value={0.8,0,0}},
     secondary={model=HTML,value=7F1D1D},
     accent={model=HTML,value=991B1B},text={model=HTML,value=111111},
-    background={model=HTML,value=FFFFFF}}}
+    background={model=HTML,value=FFFFFF},
+    structure={model=HTML,value=2B3A67},alert={model=HTML,value=B00020},
+    example={model=HTML,value=166534}}}
 \RegisterLTXTalkTheme{carp}{\__ltxtalk_carp_theme_setup:}
 %</carp>
 %<carp>\endinput

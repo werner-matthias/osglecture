@@ -81,7 +81,7 @@ together in four lines:
 \OsgLectureBuildLoadedTF
   { \edef\olsTargetLanguage{\OsgLectureBuildValue{language}} }
   { }
-\usepackage[languages={en,de}]{langselect}
+\LectureProjectSetup{languages={selectable={en,de}}}
 \title{\lende{One source, multiple documents}{Eine Quelle, mehrere Dokumente}}
 ```
 
@@ -94,15 +94,32 @@ detection (job name, `\DocumentMetadata`, ...), so OLLM's per-language build
 directly determines which half of each `\lende{English}{German}` call ends
 up in the PDF, with no per-target duplication needed.
 
-Nothing here defers execution explicitly -- `\usepackage` reads as an
-ordinary preamble line. `osglecture.cls` itself defers any
-`\usepackage`/`\RequirePackage` written directly in `projectconfig.tex`
-until right after the target's base class (here `ltx-talk`) has loaded,
-the same way it already defers `\title` and the other metadata fields (see
-`README-cls.md`). This matters for a reason independent of `langselect`
-itself: `projectconfig.tex` is read *before* `osglecture.cls`'s own
-`\LoadClass` for the target's base class has run, and a package that probes
-"does the base class already define X" at that point can get a false
+`\LectureProjectSetup{languages={selectable={en,de}}}` is `osglecture`'s own
+project-setup vocabulary (the same one used elsewhere for `theme`,
+`numbering`, and the profile keys); it hides that multilingual support is
+technically implemented by `langselect` at all. `languages` takes its own
+small keyval, `selectable` being the one most projects need (it maps to
+`langselect`'s own `languages` option, just named after what it actually
+is -- `langselect` itself calls these "selectable languages" in its
+documentation); the rest of `langselect`'s options (`map`, `load babel`,
+`load polyglossia`, `prefix`, `targetlang`, `auto`, `trim`, `unified
+shorthands`) are reachable the same way, e.g. `languages={selectable={en,
+de}, map={de=ngerman,en=british}}` for old/new German spelling or British/
+American English. All given sub-keys are collected first and issued in a
+single `\usepackage[...]{langselect}` call once `languages` has been fully
+processed -- not one call per sub-key -- because `langselect`, once loaded,
+silently ignores extra options given on a later, separate load rather than
+erroring, so collecting before triggering avoids configuration that looks
+accepted but silently never applies. It is not just cosmetic sugar either
+way: `osglecture.cls` defers any `\usepackage`/`\RequirePackage` written
+directly in `projectconfig.tex` until right after the target's base class
+(here `ltx-talk`) has loaded, the same way it already defers `\title` and
+the other metadata fields (see `README-cls.md`), and `\LectureProjectSetup`'s
+`languages` key rides the very same queue since it is only ever evaluated
+from within that reading window. This matters for a reason independent of
+`langselect` itself: `projectconfig.tex` is read *before* `osglecture.cls`'s
+own `\LoadClass` for the target's base class has run, and a package that
+probes "does the base class already define X" at that point can get a false
 negative. `langselect`'s default `unified shorthands` option (babel/
 polyglossia quote-shorthand integration, harmless to leave on even though
 this example loads neither) pulls in `csquotes`, which defines a classic
@@ -111,11 +128,11 @@ class has loaded. `ltx-talk` then defines its own `quote` via
 `\NewDocumentEnvironment`, whose built-in check is unconditional -- it
 errors on *any* pre-existing `quote` -- so csquotes' fallback and
 `ltx-talk`'s own definition would collide (`Environment 'quote' already
-defined`) if both ran before `\LoadClass`. Since the `\usepackage` call is
-deferred to right after `\LoadClass` and replayed in the same queue and
-order as `\title`, `langselect`/`csquotes` see the base class's `quote`
-already in place, and `\lende` is already defined by the time `\title`
-runs.
+defined`) if both ran before `\LoadClass`. Since the `languages` key's
+`\usepackage` call is deferred to right after `\LoadClass` and replayed in
+the same queue and order as `\title`, `langselect`/`csquotes` see the base
+class's `quote` already in place, and `\lende` is already defined by the
+time `\title` runs.
 
 The unit sources then use `\lende{English text}{German text}` wherever the
 two versions differ -- titles, headings, list items, running prose -- and

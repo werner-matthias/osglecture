@@ -3,8 +3,10 @@ module = "lttheme-tuc-2019"
 maindir = ".."
 
 -- The external TUC theme is implemented on top of the core theme engine.
-checkdeps = { "../lttheme" }
-typesetdeps = { "../lttheme" }
+-- lttheme itself now requires osgstyler, so it must be listed here too
+-- (checkdeps/typesetdeps are not transitive).
+checkdeps = { "../lttheme", "../osgstyler" }
+typesetdeps = { "../lttheme", "../osgstyler" }
 
 -- Make the logos selected automatically by the theme available in l3build's
 -- isolated test directory.  A developer installation may provide these via a
