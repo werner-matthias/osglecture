@@ -9,6 +9,8 @@
     \item<1-> A normal item
     \anditem<2-> An item using compact syntax
     \presitem[relation=therefore]<3-> An item using key syntax
+    \commaitem<4-> a comma continuation
+    \colonitem<5-> a colon continuation
   \end{presitemize}
 \end{frame}
 \END

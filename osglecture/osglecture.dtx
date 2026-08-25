@@ -3349,6 +3349,10 @@ load-preamble+
   {\unskip,\c_space_tl aber\c_space_tl}{inplace}
 \__osglecture_pres_declare_relation:nnnn {de}{therefore}
   {\unskip,\c_space_tl weshalb\c_space_tl}{final}
+\__osglecture_pres_declare_relation:nnnn {de}{comma}
+  {\unskip,\c_space_tl}{inplace}
+\__osglecture_pres_declare_relation:nnnn {de}{colon}
+  {\unskip:\c_space_tl}{inplace}
 
 \__osglecture_pres_declare_relation:nnnn {en}{sentence}
   {\unskip.\c_space_tl}{inplace}
@@ -3358,6 +3362,10 @@ load-preamble+
   {\unskip,\c_space_tl but\c_space_tl}{inplace}
 \__osglecture_pres_declare_relation:nnnn {en}{therefore}
   {\unskip,\c_space_tl so\c_space_tl}{inplace}
+\__osglecture_pres_declare_relation:nnnn {en}{comma}
+  {\unskip,\c_space_tl}{inplace}
+\__osglecture_pres_declare_relation:nnnn {en}{colon}
+  {\unskip:\c_space_tl}{inplace}
 
 \__osglecture_pres_declare_relation:nnnn {fr}{sentence}
   {\unskip.\c_space_tl}{inplace}
@@ -3367,6 +3375,10 @@ load-preamble+
   {\unskip,\c_space_tl mais\c_space_tl}{inplace}
 \__osglecture_pres_declare_relation:nnnn {fr}{therefore}
   {\unskip,\c_space_tl donc\c_space_tl}{inplace}
+\__osglecture_pres_declare_relation:nnnn {fr}{comma}
+  {\unskip,\c_space_tl}{inplace}
+\__osglecture_pres_declare_relation:nnnn {fr}{colon}
+  {\unskip:\c_space_tl}{inplace}
 
 \keys_define:nn { osglecture/presitemize }
   {
@@ -3381,7 +3393,7 @@ load-preamble+
 
 \keys_define:nn { osglecture/presitem }
   {
-    relation .choices:nn = {sentence,and,but,therefore}
+    relation .choices:nn = {sentence,and,but,therefore,comma,colon}
       { \tl_set:NV \l__osglecture_pres_relation_tl \l_keys_choice_tl },
     relation .initial:n = sentence,
     initial .choices:nn = {auto,keep}
@@ -3520,6 +3532,16 @@ load-preamble+
   {
     \msg_error:nnn {osglecture-presitemize} {outside-environment}
       {\token_to_str:N \thereforeitem}
+  }
+\NewDocumentCommand \commaitem {d<> o}
+  {
+    \msg_error:nnn {osglecture-presitemize} {outside-environment}
+      {\token_to_str:N \commaitem}
+  }
+\NewDocumentCommand \colonitem {d<> o}
+  {
+    \msg_error:nnn {osglecture-presitemize} {outside-environment}
+      {\token_to_str:N \colonitem}
   }
 
 \NewDocumentCommand \finite {m}
@@ -3700,6 +3722,10 @@ load-preamble+
           { \__osglecture_pres_compact_item:nnnn {but}{##1}{##2} }
         \RenewDocumentCommand \thereforeitem {d<> o}
           { \__osglecture_pres_compact_item:nnnn {therefore}{##1}{##2} }
+        \RenewDocumentCommand \commaitem {d<> o}
+          { \__osglecture_pres_compact_item:nnnn {comma}{##1}{##2} }
+        \RenewDocumentCommand \colonitem {d<> o}
+          { \__osglecture_pres_compact_item:nnnn {colon}{##1}{##2} }
       }
       {
         \__osglecture_pres_flush_finite:
@@ -3750,6 +3776,10 @@ load-preamble+
         \RenewDocumentCommand \butitem {d<> o}
           { \__osglecture_pres_presentation_item:nnn {} {##1}{##2} }
         \RenewDocumentCommand \thereforeitem {d<> o}
+          { \__osglecture_pres_presentation_item:nnn {} {##1}{##2} }
+        \RenewDocumentCommand \commaitem {d<> o}
+          { \__osglecture_pres_presentation_item:nnn {} {##1}{##2} }
+        \RenewDocumentCommand \colonitem {d<> o}
           { \__osglecture_pres_presentation_item:nnn {} {##1}{##2} }
       }
       {

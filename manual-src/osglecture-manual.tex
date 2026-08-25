@@ -226,7 +226,7 @@ is rendered appropriately by each profile.}
   \begin{minipage}[t]{.48\linewidth}
     \centering\textbf{\texttt{script}, \texttt{de}}\par\smallskip
     \includegraphics[page=1,width=\linewidth,
-      trim=25mm 225mm 25mm 18mm,clip]{polymorphy-script-de.pdf}
+      trim=38mm 198mm 38mm 15mm,clip]{polymorphy-script-de.pdf}
   \end{minipage}
   \caption{\ldeen{Gleiche Sprache, unterschiedliche Dokumentgestalt und
     Formulierung.}{The same language with different document form and phrasing.}}
@@ -1171,6 +1171,19 @@ translation works and the program produces a result, but we simplified, and
 therefore we have to check the result.” \texttt{\string\finite} marks the finite
 verb so that it can be moved to the correct position, especially in a German
 subordinate clause.}
+
+\ldeen{Für reine Interpunktionsfortsetzungen stehen
+\texttt{\string\commaitem} und \texttt{\string\colonitem} zur Verfügung. Sie
+erzeugen in der Langform »\texttt{, }« beziehungsweise »\texttt{: }« ohne ein
+zusätzliches Verbindungswort; in Präsentationen erscheinen sie als gewöhnliche
+Items. Gleichwertig sind \texttt{\string\presitem[relation=comma]} und
+\texttt{\string\presitem[relation=colon]}.}{For punctuation-only
+continuations, \texttt{\string\commaitem} and
+\texttt{\string\colonitem} are available. In long-form output they produce
+``\texttt{, }'' and ``\texttt{: }'', respectively, without an additional
+conjunction; in presentations they appear as ordinary items. The equivalent
+key forms are \texttt{\string\presitem[relation=comma]} and
+\texttt{\string\presitem[relation=colon]}.}
 
 \ldeen{Verwenden Sie \texttt{presitemize} für flache Folgen kurzer Aussagen.
 Für verschachtelte Listen, Tabellen oder deutlich verschiedene Erklärwege sind
