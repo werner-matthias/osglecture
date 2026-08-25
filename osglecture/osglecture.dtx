@@ -3308,6 +3308,7 @@ load-preamble+
 \tl_new:N \l__osglecture_pres_initial_tl
 \prop_new:N \g__osglecture_pres_language_alias_prop
 \prop_new:N \g__osglecture_pres_relation_prop
+\prop_new:N \g__osglecture_pres_initial_command_prop
 \cs_generate_variant:Nn \prop_get:NnNTF {NVNTF}
 
 \msg_new:nnnn { osglecture-presitemize } { unsupported-language }
@@ -3451,6 +3452,40 @@ load-preamble+
   { \bool_if:NTF \l__osglecture_pres_longform_bool {#2} {#1} }
 \NewDocumentCommand \preskeepcase {m} {#1}
 
+\NewDocumentCommand \DeclarePresInitialTransparentCommand { m }
+  {
+    \prop_gput:Nee \g__osglecture_pres_initial_command_prop
+      { \cs_to_str:N #1 } { transparent }
+  }
+\NewDocumentCommand \DeclarePresInitialBranchingCommand { m m }
+  {
+    \int_case:nnF {#2}
+      {
+        {2}
+          {
+            \prop_gput:Nee \g__osglecture_pres_initial_command_prop
+              { \cs_to_str:N #1 } { branches/2 }
+          }
+        {3}
+          {
+            \prop_gput:Nee \g__osglecture_pres_initial_command_prop
+              { \cs_to_str:N #1 } { branches/3 }
+          }
+      }
+      {
+        \msg_error:nnn { osglecture-presitemize }
+          { invalid-initial-branch-count } {#2}
+      }
+  }
+
+\msg_new:nnnn { osglecture-presitemize } { invalid-initial-branch-count }
+  { An~initial-transparent~branching~command~needs~two~or~three~branches,~not~'#1'. }
+  { Use~2~for~a~bilingual~and~3~for~a~trilingual~selection~command. }
+
+\clist_map_inline:nn
+  { \emph,\textbf,\textit,\textsl,\textrm,\textsf,\texttt,\textnormal }
+  { \DeclarePresInitialTransparentCommand #1 }
+
 \msg_new:nnn {osglecture-presitemize} {outside-environment}
   {
     Command~'#1'~may~only~be~used~inside~a~presitemize~environment.
@@ -3503,6 +3538,41 @@ load-preamble+
       }
   }
 
+\cs_new_protected:Npn \__osglecture_pres_lower_transparent:Nn #1#2
+  { #1 { \__osglecture_pres_lower_initial:n #2 } }
+
+\NewDocumentCommand \__osglecture_pres_lower_two_branches: { m s +m +m }
+  {
+    \IfBooleanTF{#2}
+      {
+        #1*
+          { \__osglecture_pres_lower_initial:n #3 }
+          { \__osglecture_pres_lower_initial:n #4 }
+      }
+      {
+        #1
+          { \__osglecture_pres_lower_initial:n #3 }
+          { \__osglecture_pres_lower_initial:n #4 }
+      }
+  }
+
+\NewDocumentCommand \__osglecture_pres_lower_three_branches: { m s +m +m +m }
+  {
+    \IfBooleanTF{#2}
+      {
+        #1*
+          { \__osglecture_pres_lower_initial:n #3 }
+          { \__osglecture_pres_lower_initial:n #4 }
+          { \__osglecture_pres_lower_initial:n #5 }
+      }
+      {
+        #1
+          { \__osglecture_pres_lower_initial:n #3 }
+          { \__osglecture_pres_lower_initial:n #4 }
+          { \__osglecture_pres_lower_initial:n #5 }
+      }
+  }
+
 \cs_new_protected:Npn \__osglecture_pres_lower_initial:n #1
   {
     \token_if_eq_meaning:NNTF #1 \preskeepcase
@@ -3511,12 +3581,25 @@ load-preamble+
         \token_if_eq_meaning:NNTF #1 \prescase
           { \prescase }
           {
-            \token_if_letter:NTF #1
-              { \text_lowercase:n {#1} }
+            \prop_get:NeNTF \g__osglecture_pres_initial_command_prop
+              { \cs_to_str:N #1 } \l_tmpa_tl
               {
-                \msg_warning:nnn {osglecture-presitemize}
-                  {initial-not-letter}{#1}
-                #1
+                \str_if_eq:VnTF \l_tmpa_tl { transparent }
+                  { \__osglecture_pres_lower_transparent:Nn #1 }
+                  {
+                    \str_if_eq:VnTF \l_tmpa_tl { branches/2 }
+                      { \__osglecture_pres_lower_two_branches: #1 }
+                      { \__osglecture_pres_lower_three_branches: #1 }
+                  }
+              }
+              {
+                \token_if_letter:NTF #1
+                  { \text_lowercase:n {#1} }
+                  {
+                    \msg_warning:nnn {osglecture-presitemize}
+                      {initial-not-letter}{#1}
+                    #1
+                  }
               }
           }
       }

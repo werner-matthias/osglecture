@@ -1333,6 +1333,12 @@ load babel
       }
     \AssignSocketPlug { \l__osgstyler_inline_command_socket_tl } { style/#2 }
     \__osgstyler_make_mode_aware:Nn #1 { +m }
+    \cs_if_exist:NTF \DeclarePresInitialTransparentCommand
+      { \DeclarePresInitialTransparentCommand #1 }
+      {
+        \AddToHook { package/osglecture-presitemize/after }
+          { \DeclarePresInitialTransparentCommand #1 }
+      }
   }
 
 % The binding assumes a single, long (+m) argument; this covers the

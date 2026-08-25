@@ -1143,6 +1143,20 @@ Section~@1.%
 % \cs{olsMakeBilangualMacro} and \cs{olsMakeTrilangualMacro}, resp., 
 % are used to generate the actual language commands.}\\
 % \#1: prefix, \#2,\#3: selectable languages, \#4: base name
+\cs_new_protected:Npn \ols_register_pres_initial_branching:cn #1#2
+  {
+    \cs_if_exist:NTF \DeclarePresInitialBranchingCommand
+      {
+        \exp_args:Nc \DeclarePresInitialBranchingCommand {#1} {#2}
+      }
+      {
+        \AddToHook { package/osglecture-presitemize/after }
+          {
+            \exp_args:Nc \DeclarePresInitialBranchingCommand {#1} {#2}
+          }
+      }
+  }
+
 \NewDocumentCommand{\olsMakeBilangualMacro}{O{\ols_sprefix} m m o}{
   \str_if_eq:eeT{\olsTargetLanguage}{#2} {
     \IfValueTF{#4}{
@@ -1190,6 +1204,9 @@ Section~@1.%
       }
     }
   }
+  \IfValueTF{#4}
+    { \ols_register_pres_initial_branching:cn {#1#4} {2} }
+    { \ols_register_pres_initial_branching:cn {#1#2#3} {2} }
 }
 % \ldeen{Nun das Gleiche nochmal für \emph{drei} Sprachen.}{Now do the same
 % thing again for \emph{three} languages.}\\ 
@@ -1264,6 +1281,9 @@ Section~@1.%
       }
     }
   }
+  \IfValueTF{#5}
+    { \ols_register_pres_initial_branching:cn {#1#5} {3} }
+    { \ols_register_pres_initial_branching:cn {#1#2#3#4} {3} }
 }
 % \ldeen{Falls die automatische Erzeugung nicht deaktivert ist, werden die
 % konkreten Sprachmakros angelegt. Der Name sind
