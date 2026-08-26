@@ -1,0 +1,12 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{ansiterm}
+\begin{document}
+\START
+\begin{ansiterm}[title=Test]
+$ printf red
+red
+\end{ansiterm}
+\TYPE{display-environment-ok}
+\END
+\end{document}

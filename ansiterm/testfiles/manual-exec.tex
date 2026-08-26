@@ -1,0 +1,9 @@
+\documentclass{article}
+\usepackage{ansiterm}
+\begin{document}
+\begin{ansitermexec}[show-input=true,cache=refresh,lines={1-}]
+printf '\033[1;31mred bold\033[0m normal\n'
+printf '\033[7m inverse \033[0m \033[38;2;20;120;220mtrue colour\033[0m\n'
+printf 'sandbox: '; pwd
+\end{ansitermexec}
+\end{document}
