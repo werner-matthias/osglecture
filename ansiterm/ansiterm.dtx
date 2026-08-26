@@ -1,0 +1,154 @@
+%<*driver>
+\def\packagename{ansiterm}
+\input l3docstrip.tex
+\keepsilent
+\askforoverwritefalse
+\preamble
+Package ansiterm -- ANSI-aware terminal transcripts for LuaLaTeX.
+Copyright (C) 2026 Matthias Werner.
+Released under the LaTeX Project Public License v1.3c or later.
+\endpreamble
+\generate{\file{ansiterm.sty}{\from{ansiterm.dtx}{package}}}
+\endbatchfile
+%</driver>
+%<*package>
+\NeedsTeXFormat{LaTeX2e}[2022-06-01]
+\ProvidesExplPackage{ansiterm}{2026-08-26}{0.1.0}
+  {ANSI-aware terminal windows and executable shell transcripts}
+\RequirePackage{xcolor}
+\RequirePackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+\RequirePackage{fvextra}
+
+\definecolor{AnsiTermRed}{RGB}{255,95,86}
+\definecolor{AnsiTermYellow}{RGB}{255,189,46}
+\definecolor{AnsiTermGreen}{RGB}{39,201,63}
+\definecolor{AnsiTermFrame}{RGB}{216,214,217}
+
+\tl_new:N \l__ansiterm_title_tl
+\tl_new:N \l__ansiterm_fontsize_tl
+\tl_new:N \l__ansiterm_shell_tl
+\tl_new:N \l__ansiterm_cwd_tl
+\tl_new:N \l__ansiterm_cache_tl
+\tl_new:N \l__ansiterm_lines_tl
+\tl_new:N \l__ansiterm_prompt_tl
+\bool_new:N \l__ansiterm_sandbox_bool
+\bool_new:N \l__ansiterm_show_input_bool
+\bool_new:N \l__ansiterm_ellipsis_bool
+\bool_new:N \l__ansiterm_fail_bool
+\int_new:N \g__ansiterm_exec_int
+
+\keys_define:nn { ansiterm }
+  {
+    title .tl_set:N = \l__ansiterm_title_tl,
+    fontsize .tl_set:N = \l__ansiterm_fontsize_tl,
+    shell .tl_set:N = \l__ansiterm_shell_tl,
+    cwd .tl_set:N = \l__ansiterm_cwd_tl,
+    cache .choices:nn = { true, false, refresh }
+      { \tl_set:Nx \l__ansiterm_cache_tl { \l_keys_choice_tl } },
+    sandbox .bool_set:N = \l__ansiterm_sandbox_bool,
+    show-input .bool_set:N = \l__ansiterm_show_input_bool,
+    prompt .tl_set:N = \l__ansiterm_prompt_tl,
+    lines .tl_set:N = \l__ansiterm_lines_tl,
+    ellipsis .bool_set:N = \l__ansiterm_ellipsis_bool,
+    fail-on-error .bool_set:N = \l__ansiterm_fail_bool,
+  }
+\keys_set:nn { ansiterm }
+  {
+    title=Terminal, fontsize=\small, shell=/bin/sh, cwd=., cache=true,
+    sandbox=true, show-input=false, prompt={$~}, lines={1-}, ellipsis=true,
+    fail-on-error=true
+  }
+
+\cs_new_protected:Npn \__ansiterm_box_begin:
+  {
+    \begin{tcolorbox}[
+      enhanced,breakable,title={\l__ansiterm_title_tl},coltitle=black!65,
+      fonttitle=\sffamily\scriptsize,halign~title=center,
+      colback=black!5!white,colframe=AnsiTermFrame,boxrule=.5mm,
+      top=1pt,bottom=1pt,left=1em,right=1em,boxsep=.5ex,
+      fontupper=\ttfamily\l__ansiterm_fontsize_tl,
+      overlay~first={\node[anchor=north~west,inner~sep=0pt,xshift=10pt,yshift=-4pt]
+        at(frame.north~west){\textcolor{AnsiTermRed}{\textbullet}\,
+        \textcolor{AnsiTermYellow}{\textbullet}\,
+        \textcolor{AnsiTermGreen}{\textbullet}};},
+      overlay~unbroken={\node[anchor=north~west,inner~sep=0pt,xshift=10pt,yshift=-4pt]
+        at(frame.north~west){\textcolor{AnsiTermRed}{\textbullet}\,
+        \textcolor{AnsiTermYellow}{\textbullet}\,
+        \textcolor{AnsiTermGreen}{\textbullet}};}
+    ]
+  }
+\cs_new_protected:Npn \__ansiterm_box_end: { \end{tcolorbox} }
+
+\NewDocumentEnvironment { ansiterm } { O{} }
+  {
+    \VerbatimEnvironment
+    \group_begin:
+    \keys_set:nn { ansiterm } {#1}
+    \__ansiterm_box_begin:
+    \begin{Verbatim}[breaklines=true,breakanywhere=true]
+  }
+  { \end{Verbatim}\__ansiterm_box_end:\group_end: }
+
+\sys_if_engine_luatex:TF
+  { \directlua{ansiterm = require("ansiterm")} }
+  {
+    \msg_new:nnn { ansiterm } { luatex-required }
+      { The~ansitermexec~environment~requires~LuaLaTeX. }
+  }
+\msg_new:nnn { ansiterm } { shell-escape-required }
+  { ansitermexec~requires~compilation~with~--shell-escape. }
+\msg_new:nnn { ansiterm } { execution-failed }
+  { Shell~execution~failed~with~exit~status~#1. }
+
+\cs_new_protected:Npn \__ansiterm_exec:n #1
+  {
+    \sys_if_engine_luatex:TF
+      {
+        \sys_if_shell_unrestricted:TF { }
+          { \msg_fatal:nn { ansiterm } { shell-escape-required } }
+        \directlua{
+          ansiterm.run {
+            source = "\luaescapestring{#1}",
+            output = "\luaescapestring{#1.tex}",
+            shell = "\luaescapestring{\l__ansiterm_shell_tl}",
+            cwd = "\luaescapestring{\l__ansiterm_cwd_tl}",
+            cache = "\luaescapestring{\l__ansiterm_cache_tl}",
+            cache_dir = "\luaescapestring{\jobname.ansiterm-cache}",
+            sandbox = \bool_if:NTF \l__ansiterm_sandbox_bool {true}{false},
+            show_input = \bool_if:NTF \l__ansiterm_show_input_bool {true}{false},
+            prompt = "\luaescapestring{\l__ansiterm_prompt_tl}",
+            lines = "\luaescapestring{\l__ansiterm_lines_tl}",
+            ellipsis = \bool_if:NTF \l__ansiterm_ellipsis_bool {true}{false}
+          }
+        }
+      }
+      { \msg_fatal:nn { ansiterm } { luatex-required } }
+  }
+
+\NewDocumentEnvironment { ansitermexec } { O{} }
+  {
+    \VerbatimEnvironment
+    \group_begin:
+    \keys_set:nn { ansiterm } {#1}
+    \int_gincr:N \g__ansiterm_exec_int
+    \tl_set:Nx \l_tmpa_tl
+      { \c_sys_jobname_str.ansiterm-\int_use:N\g__ansiterm_exec_int.sh }
+    \begin{VerbatimOut}{\l_tmpa_tl}
+  }
+  {
+    \end{VerbatimOut}
+    \__ansiterm_exec:n { \l_tmpa_tl }
+    \__ansiterm_box_begin:
+    \input{\l_tmpa_tl.tex}
+    \__ansiterm_box_end:
+    \bool_if:NT \l__ansiterm_fail_bool
+      {
+        \int_compare:nNnF { \csname ansitermstatus\endcsname } = { 0 }
+          { \msg_error:nnx { ansiterm } { execution-failed }
+              { \csname ansitermstatus\endcsname } }
+      }
+    \group_end:
+  }
+\ExplSyntaxOff
+%</package>
