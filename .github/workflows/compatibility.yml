@@ -38,6 +38,12 @@ jobs:
       max-parallel: 6
       matrix:
         component:
+          - name: ansiterm
+            directory: ansiterm
+            config: build
+            expect_2024: pass
+            expect_2025: pass
+            expect_current: pass
           - name: ollm
             directory: ollm
             config: build

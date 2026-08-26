@@ -3,6 +3,7 @@ ctanpkg  = bundle
 maindir  = maindir or "."
 
 modules = {
+   "ansiterm",
    "ollm",
    "osgdoc",
    "langselect",

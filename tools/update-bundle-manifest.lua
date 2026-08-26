@@ -7,6 +7,7 @@
 -- Usage: texlua tools/update-bundle-manifest.lua   (run from the bundle root)
 
 local modules = {
+  { name = "ansiterm",         files = { "ansiterm/ansiterm.dtx" } },
   { name = "osglecture",       files = {
       "osglecture/osglecture.dtx",
       "osglecture/osglecture-adapters.dtx",
