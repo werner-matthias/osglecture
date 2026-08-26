@@ -16,6 +16,7 @@ Currently, the following packages are included:
 * **osgstyler**: Template-based formatting (`./osgstyler`)
 * **ltxtalk-theme**: theme engine to allow easy and flexible design of themes for ltx-talk (`./lttheme`)
 * **ltxtalk-theme-tuc-2019**: presentation theme of TU Chemnitz for ltx-talk (`./lttheme-tuc-2019`)
+* **ansiterm**: ANSI-aware executable terminal windows  (`./ansiterm`)
 * **osgdoc**: support for documentation (`./osgdoc`) 
 
 ## Modules' version and compatibility
@@ -56,6 +57,7 @@ The `TL ...` columns are read from the expectations in the workflow above;
 | osgstyler | v0.2.0 | 2026/08/24 | 2 | :red_circle: | :red_circle: | :green_circle: |
 | lttheme | v0.5.0 | 2026/08/24 | 7 | :red_circle: | :red_circle: | :green_circle: |
 | lttheme-tuc-2019 | v0.5.1 | 2026/08/24 | 1 | :red_circle: | :red_circle: | :green_circle: |
+| ansiterm | 0.1.0 | 2026-08-26 | 1 | :green_circle: | :green_circle: | :green_circle: |
 | osgdoc | v0.3.3 | 2026/08/14 | 2 | :green_circle: | :green_circle: | :green_circle: |
 <!-- END MODULE VERSIONS -->
 

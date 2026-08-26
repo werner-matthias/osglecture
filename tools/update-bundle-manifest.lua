@@ -7,7 +7,6 @@
 -- Usage: texlua tools/update-bundle-manifest.lua   (run from the bundle root)
 
 local modules = {
-  { name = "ansiterm",         files = { "ansiterm/ansiterm.dtx" } },
   { name = "osglecture",       files = {
       "osglecture/osglecture.dtx",
       "osglecture/osglecture-adapters.dtx",
@@ -29,6 +28,7 @@ local modules = {
   { name = "osgstyler",        files = { "osgstyler/osgstyler.dtx" } },
   { name = "lttheme",          files = { "lttheme/lttheme.dtx" } },
   { name = "lttheme-tuc-2019", files = { "lttheme-tuc-2019/lttheme-tuc-2019.dtx" } },
+  { name = "ansiterm",         files = { "ansiterm/ansiterm.dtx" } },
   { name = "osgdoc",           files = { "osgdoc/osgdoc.dtx" } },
 }
 
