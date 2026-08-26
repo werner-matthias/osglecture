@@ -1,0 +1,30 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{amsthm}
+\usepackage{osgstyler}
+
+\newtheorem{theorem}{Theorem}
+
+\DeclareOsgBlockInstance{theorem}{rule-thickness=.4pt, padding=.5em}
+\BindOsgBlockEnvironment{theorem}{theorem}
+
+\UseOsgStandardBlockEnvironments
+\StyleOsgBlockInstance{quote}{traits={osl-modern-rules}}
+\StyleOsgBlockInstance{theorem}{traits={osl-modern-rules}}
+
+\begin{document}
+\UseOsgColorPalette{osl-modern}
+\START
+\ExplSyntaxOn
+\__osgstyler_block_instance_resolve:n { traits={osl-modern-rules} }
+\TYPE{resolved-keys=\tl_use:N\l__osgstyler_block_instance_keys_tl}
+\ExplSyntaxOff
+\begin{quote}
+  \TYPE{quote-body=shown}
+\end{quote}
+\begin{theorem}
+  \TYPE{theorem-body=shown}
+\end{theorem}
+\TYPE{done}
+\END
+\end{document}

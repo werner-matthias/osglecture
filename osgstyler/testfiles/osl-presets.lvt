@@ -1,0 +1,24 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osgstyler}
+
+\begin{document}
+\START
+\UseOsgColorPalette{osl-standard}
+\UseOsgFontPalette{osl-standard}
+\ExplSyntaxOn
+\TYPE{standard-primary=\OsgColorName{primary}}
+\extractcolorspec{\OsgColorName{primary}}\l_tmpa_tl
+\TYPE{standard-primary-value=\l_tmpa_tl}
+\ExplSyntaxOff
+\UseOsgColorPalette{osl-modern}
+\UseOsgFontPalette{osl-modern}
+\ExplSyntaxOn
+\extractcolorspec{\OsgColorName{primary}}\l_tmpa_tl
+\TYPE{modern-primary-value=\l_tmpa_tl}
+\TYPE{osl-modern-itemize-1-stored=\prop_item:Nn \g__osgstyler_list_palette_prop { osl-modern/itemize/1 }}
+\ExplSyntaxOff
+\UseOsgListPalette{osl-modern}
+\TYPE{done}
+\END
+\end{document}

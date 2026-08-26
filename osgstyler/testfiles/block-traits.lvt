@@ -1,0 +1,38 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osgstyler}
+
+\DeclareOsgColorPalette{block-traits-test}{
+  primary = {model=HTML, value=223344},
+  text = {model=HTML, value=111111},
+  background = {model=HTML, value=FFFFFF},
+  accent = {model=HTML, value=FFD966}
+}
+
+\DeclareOsgBlockTrait{rounded}{corner-radius=6pt}
+\DeclareOsgBlockTrait{shadow}{shadow=true, shadow-offset=2pt}
+
+\DeclareOsgBlockInstance{mybox}{
+  traits={rounded, shadow}, rule-thickness=.4pt, background=accent
+}
+
+\NewOsgStyledEnvironment{mybox}{mybox}{none}[1]{#1}
+
+\begin{document}
+\UseOsgColorPalette{block-traits-test}
+\START
+\ExplSyntaxOn
+\__osgstyler_block_instance_resolve:n
+  { traits={rounded, shadow}, rule-thickness=.4pt, background=accent }
+\TYPE{resolved-keys=\tl_use:N\l__osgstyler_block_instance_keys_tl}
+\ExplSyntaxOff
+\begin{mybox}{Traits}
+  \TYPE{mybox-body=shown}
+\end{mybox}
+\StyleOsgBlockInstance{mybox}{traits={rounded}, rule-thickness=.8pt}
+\begin{mybox}{Restyled}
+  \TYPE{restyled-body=shown}
+\end{mybox}
+\TYPE{done}
+\END
+\end{document}

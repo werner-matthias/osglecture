@@ -1,0 +1,15 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osgstyler}
+
+\newenvironment{block}{\TYPE{native-block=used}}{}
+
+\UseOsgStandardBlockEnvironments
+
+\begin{document}
+\START
+\begin{block}
+\end{block}
+\TYPE{done}
+\END
+\end{document}

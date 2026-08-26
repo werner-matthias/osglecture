@@ -1,0 +1,30 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osgstyler}
+
+\DeclareOsgColorPalette{standard-block-env-test}{
+  primary = {model=HTML, value=223344},
+  text = {model=HTML, value=111111},
+  background = {model=HTML, value=FFFFFF},
+  accent = {model=HTML, value=FFD966},
+  alert = {model=HTML, value=B00020},
+  example = {model=HTML, value=166534}
+}
+
+\UseOsgStandardBlockEnvironments
+
+\begin{document}
+\UseOsgColorPalette{standard-block-env-test}
+\START
+\begin{block}{My Title}
+  \TYPE{block-body=shown}
+\end{block}
+\begin{alertblock}{Warning}
+  \TYPE{alertblock-body=shown}
+\end{alertblock}
+\begin{exampleblock}{Sample}
+  \TYPE{exampleblock-body=shown}
+\end{exampleblock}
+\TYPE{done}
+\END
+\end{document}

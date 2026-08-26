@@ -1,0 +1,20 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+standard-primary=osgstyler-primary
+standard-primary-value={rgb}{0.07843,0.11766,0.23529}
+Package fontspec Info: 
+(fontspec)             Font family 'TeXGyreHeros(0)' created for font 'TeXGyreHeros' with options [].
+(fontspec)              
+(fontspec)              This font family consists of the following NFSS series/shapes:
+(fontspec)              
+(fontspec)             - 'normal' (m/n) with NFSS spec.: <->"name:TeXGyreHeros:mode=node;script=latn;language=dflt;"
+(fontspec)             - 'small caps'  (m/sc) with NFSS spec.: <->"name:TeXGyreHeros:mode=node;script=latn;language=dflt;+smcp;"
+(fontspec)             - 'bold' (b/n) with NFSS spec.: <->"name:TeXGyreHeros/B:mode=node;script=latn;language=dflt;"
+(fontspec)             - 'bold small caps'  (b/sc) with NFSS spec.: <->"name:TeXGyreHeros/B:mode=node;script=latn;language=dflt;+smcp;"
+(fontspec)             - 'italic' (m/it) with NFSS spec.: <->"name:TeXGyreHeros/I:mode=node;script=latn;language=dflt;"
+(fontspec)             - 'italic small caps'  (m/scit) with NFSS spec.: <->"name:TeXGyreHeros/I:mode=node;script=latn;language=dflt;+smcp;"
+(fontspec)             - 'bold italic' (b/it) with NFSS spec.: <->"name:TeXGyreHeros/BI:mode=node;script=latn;language=dflt;"
+(fontspec)             - 'bold italic small caps'  (b/scit) with NFSS spec.: <->"name:TeXGyreHeros/BI:mode=node;script=latn;language=dflt;+smcp;"
+modern-primary-value={rgb}{0.26276,0.21962,0.79216}
+osl-modern-itemize-1-stored=label=\textcolor {\OsgColorName {accent}}{\rule [.15ex]{.9ex}{.9ex}}
+done

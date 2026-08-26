@@ -1,0 +1,28 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osgstyler}
+
+\UseOsgStandardBlockEnvironments
+
+\begin{document}
+\START
+\UseOsgPreset{osl-standard}
+\ExplSyntaxOn
+\TYPE{standard-color=\OsgActiveColorPalette}
+\TYPE{standard-font=\OsgActiveFontPalette}
+\ExplSyntaxOff
+\UseOsgPreset{osl-modern}
+\ExplSyntaxOn
+\TYPE{modern-color=\OsgActiveColorPalette}
+\TYPE{modern-font=\OsgActiveFontPalette}
+\ExplSyntaxOff
+\begin{quote}
+  \TYPE{quote-body=shown}
+\end{quote}
+\UseOsgPreset{unknown-preset-xyz}
+\ExplSyntaxOn
+\TYPE{after-unknown-preset-color=\OsgActiveColorPalette}
+\ExplSyntaxOff
+\TYPE{done}
+\END
+\end{document}

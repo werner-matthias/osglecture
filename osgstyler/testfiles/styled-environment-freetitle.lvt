@@ -1,0 +1,33 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage[mode=script]{osglecture-modes}
+\usepackage{osgstyler}
+
+\ExplSyntaxOn
+\DeclareInstance{osgstyler-block}{ftblock}{standard}{}
+\ExplSyntaxOff
+
+\NewOsgStyledEnvironment{block}{ftblock}{none}[1]{#1}
+\NewOsgStyledEnvironment{twoarg}{ftblock}{none}[2]{#1~--~#2}
+\NewOsgStyledEnvironment{threearg}{ftblock}{none}[3]{#1/#2/#3}
+
+\begin{document}
+\START
+\begin{block}{My Title}
+  \TYPE{block-body=shown}
+\end{block}
+\begin{twoarg}{Left}{Right}
+  \TYPE{twoarg-body=shown}
+\end{twoarg}
+\begin{threearg}{A}{B}{C}
+  \TYPE{threearg-body=shown}
+\end{threearg}
+\begin{block}<script>{Active}
+  \TYPE{active-shown}
+\end{block}
+\begin{block}<slides>{Inactive}
+  \TYPE{inactive-shown}
+\end{block}
+\TYPE{done}
+\END
+\end{document}

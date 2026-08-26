@@ -1,0 +1,39 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{amsthm}
+\usepackage{osgstyler}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+
+\DeclareOsgColorPalette{bind-amsthm-test}{
+  primary = {model=HTML, value=223344},
+  text = {model=HTML, value=111111},
+  background = {model=HTML, value=FFFFFF},
+  accent = {model=HTML, value=FFD966}
+}
+
+\DeclareOsgBlockInstance{theorem}{rule-thickness=.4pt, padding=.5em}
+\BindOsgBlockEnvironment{theorem}{theorem}
+
+\begin{document}
+\UseOsgColorPalette{bind-amsthm-test}
+\START
+\begin{theorem}
+  \TYPE{theorem-nameless=shown}
+\end{theorem}
+\ExplSyntaxOn
+\TYPE{theorem-counter-after-first=\int_use:N\value{theorem}}
+\ExplSyntaxOff
+\begin{theorem}[Fermat]
+  \TYPE{theorem-named=shown}
+\end{theorem}
+\ExplSyntaxOn
+\TYPE{theorem-counter-after-second=\int_use:N\value{theorem}}
+\ExplSyntaxOff
+\begin{lemma}
+  \TYPE{lemma-unbound=shown}
+\end{lemma}
+\TYPE{done}
+\END
+\end{document}
