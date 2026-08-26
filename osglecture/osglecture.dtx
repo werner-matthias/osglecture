@@ -3552,6 +3552,12 @@ load-preamble+
         && \l__osglecture_pres_subordinate_bool
       }
       {
+        % The call site keeps its surrounding source spaces on both sides,
+        % but this branch prints nothing of its own between them; without
+        % removing one, two interword glues would land back to back. Trimming
+        % the list rather than peeking ahead for a following space keeps this
+        % correct regardless of how the surrounding item text gets replayed.
+        \unskip
         \tl_if_empty:NF \l__osglecture_pres_finite_tl
           { \msg_warning:nn {osglecture-presitemize}{duplicate-finite} }
         \tl_set:Nn \l__osglecture_pres_finite_tl {#1}

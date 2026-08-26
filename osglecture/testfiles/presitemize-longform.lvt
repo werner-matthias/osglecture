@@ -9,6 +9,24 @@
   \anditem Das Programm \finite{liefert} das Ergebnis
   \butitem Wir \finite{haben} etwas geschummelt
   \thereforeitem Wir \finite{müssen}
+    % \finite prints nothing when it defers the verb, so the list must show
+    % exactly one glue (space) here, not two: one from before the call and
+    % one from after, landing back to back. Read from the actual node list
+    % rather than a typeset width, since box measurements taken mid-item
+    % (while the item body is still being replayed for case-adjustment)
+    % have proven unreliable for this.
+    \directlua{
+      local tail = nil
+      for x in node.traverse(tex.nest[tex.nest.ptr].head) do tail = x end
+      local kinds = {}
+      local cur = tail
+      for i = 1, 2 do
+        if cur == nil then break end
+        table.insert(kinds, 1, node.type(cur.id))
+        cur = node.prev(cur)
+      end
+      tex.sprint("\\TYPE{finite-tail-nodes=" .. table.concat(kinds, ",") .. "}")
+    }
     \ExplSyntaxOn
     \TYPE{de-language=\tl_use:N\l__osglecture_pres_language_tl}
     \TYPE{de-relation=\tl_use:N\l__osglecture_pres_relation_tl}
