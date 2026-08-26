@@ -18,6 +18,11 @@ local manual_example_files = {
   "styler-print.tex",
 }
 
+local manual_source_files = {
+  "polymorphy-source.tex",
+  "styler-source.tex",
+}
+
 typesetfiles = {
   "osglecture-manual-en.tex",
   "osglecture-manual-de.tex",
@@ -48,6 +53,10 @@ dofile("../build.lua")
 -- l3build demo hook runs after all sources have been copied to typesetdir and
 -- before the main documentation loop starts.
 function typeset_demo_tasks()
+  for _, file in ipairs(manual_source_files) do
+    cp(file, sourcefiledir, typesetdir)
+  end
+
   local command = typesetexe .. " " .. typesetopts
   for _, file in ipairs(manual_example_files) do
     local errorlevel = typeset(file, typesetdir, command)

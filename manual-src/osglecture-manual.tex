@@ -16,7 +16,7 @@ targetlang={job=3},
 load babel
 ]{langselect}
 \usepackage{hologo}
-
+\usepackage{subcaption}
 
 \colorlet{linkblue}{blue!50!black}
 \newcommand{\osglecture}{\textcolor{blue}{OSG Lecture}}
@@ -40,6 +40,7 @@ load babel
 \parskip=2pt
 \tableofcontents
 \endgroup
+\captionsetup{font=footnotesize,labelfont=bf,textfont=sf}
 
 \section{\ldeen{Einführung}{introduction}}
 \subsection{\ldeen{Idee}{Idea}}
@@ -146,125 +147,99 @@ In computer science or chemistry, this concept is also known as \emph{polymorphi
 
 \subsection{\ldeen{Polymorphie}{Polymorphism} in \osglecture}
 \ldeen{Es ist eine alte \hologo{TeX}-Idee, Texte je nach Kontext unterschiedlich darzustellen. Die \hologo{TeX}-Variante \hologo{ConTeXt} leitet beispielsweise ihren Namen auch davon ab. 
-Die folgenden Beispiele sind keine nachgebauten Ausgaben, sondern Ausschnitte aus
-der mitgelieferten Beispielserie \texttt{examples/series-modern}.}{It is a
+\osglecture\ versucht die Anwendung dieses Konzept noch ein Stück weit zu erweitern.}{It is a
 long-standing \hologo{TeX} concept to render text differently depending on the
 context. The \hologo{TeX} variant \hologo{ConTeXt}, for example, derives its
-name from this concept. The following examples are not reconstructed output;
-they are excerpts from the included \texttt{examples/series-modern} example
-series.}
+name from this concept. \osglecture\ attempts to expand the application of this concept a bit further.}
 
-\ldeen{Die folgende Aussagenfolge stammt unverändert aus der Unit
-\texttt{010-introduction/main.tex}. Sie ist die \emph{eine Quelle} für alle
-darunter gezeigten Dokumente. \cs{lende} hält die beiden Sprachfassungen
-beieinander. \cs{presitemize}, \cs{anditem} und \cs{thereforeitem} zeichnen
-nicht das Aussehen, sondern den Zusammenhang der Aussagen aus; \cs{finite}
-markiert das finite Verb für die Langform.}{The following sequence of
-statements is taken unchanged from the unit
-\texttt{010-introduction/main.tex}. It is the \emph{one source} for all
-documents shown below. \cs{lende} keeps the two language versions together.
-\cs{presitemize}, \cs{anditem}, and \cs{thereforeitem} mark the relations
-between statements rather than their appearance; \cs{finite} marks the finite
-verb needed by the long-form rendering.}
+\ldeen{Das Folgende ist ein Mini-Showcase der zeigen soll, wie aus einer Quelle verschiedene Instanzen
+erzeugt werden. Es dient lediglich dazu, dass der Nutzer einen kleinen Eindruck von den
+Möglichkeiten des kontextabhängigen Polymorphismus in \osglecture\ gewinnen kann~--die Diskussion
+über Funktionsweise und die verwendeten Mechanismen erfolgt später.}{
+The following is a mini-showcase designed to demonstrate how different instances are
+created from a single source. Its sole purpose is to give the user a brief glimpse of the
+possibilities of context-dependent polymorphism in \osglecture{}-—the discussion
+of how it works and the mechanisms used will follow later.}
 
-\ldeen{Die zugehörigen kleinen Treiberdateien liegen ebenfalls in
-\texttt{manual-src}; \texttt{l3build doc} erzeugt daraus vor dem Handbuch die
-hier eingebetteten PDFs. Änderungen an den beiden gemeinsamen Quelldateien
-werden dadurch unmittelbar in allen Varianten sichtbar.}{The corresponding
-small driver files also live in \texttt{manual-src}; before typesetting the
-manual, \texttt{l3build doc} generates the embedded PDFs from them. Changes to
-the two shared source files therefore become visible in every variant
-immediately.}
+%\begin{figure}[h]
+\begin{minipage}{\linewidth}
+  \inputsourcecode[
+    gobble=0,
+    add-local-frame={innerleftmargin=12pt,innerrightmargin=8pt},
+    add-sourcecode-options={breaklines=true,breakatwhitespace=true,
+    columns=fullflexible,basicstyle=\footnotesize}
+  ]{polymorphy-source.tex}
+  \captionof{figure}{\label{fig:common-src}\ldeen{Gemeinsamer Quellcode}{Common source code}}
+\end{minipage}
+%\end{figure}
+%\paragraph{\ldeen{Eine Quelle, zwei Sprachen}{One source, two languages}.}
+%\ldeen{Zunächst bleibt der Dokumenttyp \texttt{slides} fest; nur die Sprache
+%wechselt. Gliederung, Aussagenfolge und Hervorhebung von \emph{talk} und
+%\emph{script} sind in beiden Ergebnissen dieselben.}{First the document type
+%\texttt{slides} remains fixed and only the language changes. Structure,
+%statement sequence, and the emphasis of \emph{talk} and \emph{script} are the
+%same in both results.}
 
+\begin{minipage}{\linewidth}
+  \captionsetup{type=figure}
+  \centering
+  \begin{subcaptiongroup}
+    \begin{minipage}[t]{.48\linewidth}
+      \fbox{\includegraphics[page=1,width=\linewidth]{polymorphy-slides-en.pdf}}
+      \caption{\ldeen{Folien auf English}{Slides in English}}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{.48\linewidth}
+      \fbox{\includegraphics[page=1,width=\linewidth]{polymorphy-slides-de.pdf}}
+      \caption{\ldeen{Folien auf Deutsch}{Slides in German}}
+    \end{minipage}
+
+    \begin{minipage}[t]{.8\linewidth}
+      \fbox{\includegraphics[page=1,width=\linewidth,
+        trim=0mm 198mm 38mm 15mm,clip
+      ]{polymorphy-script-de.pdf}}
+    \caption{\ldeen*{Ausgabe für @1-Taget}{Version for @1-Taget}{\texttt{script}}}
+    \end{minipage}
+  \end{subcaptiongroup}
+  \captionof{figure}{\ldeen*{Alle Varianten sind aus der Quelle in Abb.~@4 erstellt:
+    Bei den Folien in unterschiedlichen Sprachen @1 und @2 bleibt
+    Gliederung, Aussagenfolge und Hervorhebung jeweils gleich, die Ausgabe für das Skript @3 ist inhaltlich äquivalent, jedoch  ausführlicher und in Satzform}%
+  {All variants were created from the source shown in Fig.~@4:
+    For the slides in different languages @1 and @2,
+    the structure, sequence of statements, and emphasis remain the same in each case; the output for the script @3 is equivalent in content but  more detailed and in sentence form.}
+  {(a)}{(b)}{(c)}
+  {\ref{fig:common-src}}}
+\end{minipage}
+\medskip
+
+\begin{minipage}{\linewidth}
 \inputsourcecode[
-  gobble=0,
-  add-local-frame={innerleftmargin=12pt,innerrightmargin=8pt},
-  add-sourcecode-options={breaklines=true,breakatwhitespace=true,
-    columns=fullflexible}
-]{polymorphy-source.tex}
+    gobble=0,
+    add-local-frame={innerleftmargin=12pt,innerrightmargin=8pt},
+    add-sourcecode-options={breaklines=true,breakatwhitespace=true,basicstyle=\footnotesize,
+      columns=fullflexible}
+  ]{styler-source.tex}
+  \captionof{figure}{\label{fig:common-src2}\ldeen{Auch gewöhnliche Autorenauszeichnungen können polymorph sein}{Ordinary author markup can be polymorphic as well}}
+\end{minipage}
 
-\paragraph{\ldeen{Eine Quelle, zwei Sprachen}{One source, two languages}.}
-\ldeen{Zunächst bleibt der Dokumenttyp \texttt{slides} fest; nur die Sprache
-wechselt. Gliederung, Aussagenfolge und Hervorhebung von \emph{talk} und
-\emph{script} sind in beiden Ergebnissen dieselben.}{First the document type
-\texttt{slides} remains fixed and only the language changes. Structure,
-statement sequence, and the emphasis of \emph{talk} and \emph{script} are the
-same in both results.}
-
-\begin{figure}[htbp]
+\begin{minipage}{\linewidth}
+  \captionsetup{type=figure}
   \centering
-  \begin{minipage}[t]{.48\linewidth}
-    \centering\textbf{\texttt{slides}, \texttt{en}}\par\smallskip
-    \fbox{\includegraphics[page=1,width=\linewidth]{polymorphy-slides-en.pdf}}
-  \end{minipage}\hfill
-  \begin{minipage}[t]{.48\linewidth}
-    \centering\textbf{\texttt{slides}, \texttt{de}}\par\smallskip
-   \fbox{\includegraphics[page=1,width=\linewidth]{polymorphy-slides-de.pdf}}
-  \end{minipage}
-  \caption{\ldeen{Gleicher Doctype, unterschiedliche Sprachwahl.}%
-    {The same document type with different language selections.}}
-\end{figure}
-
-\paragraph{\ldeen{Eine Quelle, zwei Dokumenttypen und Formulierungen}%
-  {One source, two document types and phrasings}.}
-\ldeen{Nun bleibt die Sprache Deutsch fest; nur der Dokumenttyp wechselt. Das
-Präsentationsprofil setzt die Aussagen als Liste. Der Langformadapter verwendet
-die ausgezeichneten Beziehungen und finiten Verben, um daraus einen Satz zu
-bilden. Auch die Textauszeichnung \cs{emph} bleibt semantisch dieselbe und wird
-vom jeweiligen Profil passend umgesetzt.}{Now the language remains German and
-only the document type changes. The presentation profile renders the statements
-as a list. The long-form adapter uses the marked relations and finite verbs to
-form a sentence. The semantic text markup \cs{emph} also remains the same and
-is rendered appropriately by each profile.}
-
-\begin{figure}[htbp]
-  \centering
-  \begin{minipage}[t]{.48\linewidth}
-    \centering\textbf{\texttt{slides}, \texttt{de}}\par\smallskip
-    \fbox{\includegraphics[page=1,width=\linewidth]{polymorphy-slides-de.pdf}}
-  \end{minipage}\hfill
-  \begin{minipage}[t]{.48\linewidth}
-    \centering\textbf{\texttt{script}, \texttt{de}}\par\smallskip
-    \fbox{\includegraphics[page=1,width=\linewidth,
-      trim=38mm 198mm 38mm 15mm,clip]{polymorphy-script-de.pdf}}
-  \end{minipage}
-  \caption{\ldeen{Gleiche Sprache, unterschiedliche Dokumentgestalt und
-    Formulierung.}{The same language with different document form and phrasing.}}
-\end{figure}
-
-\paragraph{\ldeen{Eine Quelle, verschiedene Darstellungen mit \texttt{osgstyler}}%
-  {One source, different rendering with \texttt{osgstyler}}.}
-\ldeen{Auch gewöhnliche Autorenauszeichnungen können polymorph sein. Der
-folgende Text enthält nur die semantischen Befehle \cs{emph} und \cs{textbf}.
-Die Bildschirm- und Druckprofile binden sie an unterschiedliche
-\texttt{osgstyler}-Ressourcen, ohne den Inhalt zu duplizieren.}{Ordinary author
-markup can be polymorphic as well. The following text contains only the
-semantic commands \cs{emph} and \cs{textbf}. The screen and print profiles bind
-them to different \texttt{osgstyler} resources without duplicating the content.}
-
-\inputsourcecode[
-  gobble=0,
-  add-local-frame={innerleftmargin=12pt,innerrightmargin=8pt},
-  add-sourcecode-options={breaklines=true,breakatwhitespace=true,
-    columns=fullflexible}
-]{styler-source.tex}
-
-\begin{figure}[htbp]
-  \centering
-  \begin{minipage}[t]{.48\linewidth}
-    \centering\textbf{\ldeen{Bildschirmprofil}{Screen profile}}\par\smallskip
-    \includegraphics[page=1,width=\linewidth,
-      trim=15mm 150mm 15mm 15mm,clip]{styler-screen.pdf}
-  \end{minipage}\hfill
-  \begin{minipage}[t]{.48\linewidth}
-    \centering\textbf{\ldeen{Druckprofil}{Print profile}}\par\smallskip
-    \includegraphics[page=1,width=\linewidth,
-      trim=15mm 150mm 15mm 15mm,clip]{styler-print.pdf}
-  \end{minipage}
-  \caption{\ldeen{Gleiche semantische Auszeichnung, unterschiedliche
-    \texttt{osgstyler}-Ressourcen.}{The same semantic markup with different
-    \texttt{osgstyler} resources.}}
-\end{figure}
+  \begin{subcaptiongroup}
+    \begin{minipage}[t]{.48\linewidth}
+      \fbox{\includegraphics[page=1,width=\linewidth,
+        trim=15mm 160mm 15mm 15mm,clip]{styler-screen.pdf}}
+        \caption{\ldeen{Bildschirmprofil}{Screen profile}}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{.48\linewidth}
+      \fbox{\includegraphics[page=1,width=\linewidth,
+        trim=15mm 160mm 15mm 15mm,clip]{styler-print.pdf}}
+        \caption{\ldeen{Druckprofil}{Print profile}}
+    \end{minipage}
+  \end{subcaptiongroup}  
+  \caption{\ldeen*{Umsetzung von des Codes aus Abbildung @1: Gleiche semantische Auszeichnung, unterschiedliche
+    Profile.}{Realization of the code from Figure @1: The same semantic markup with different
+    profiles.}{\ref{fig:common-src2}}}
+\end{minipage}
 
 \section{\ldeen{Kurztutorial}{Short Tutorial}}{}
 \ldeen{Dieses Tutorial begleitet Nora. Nora hält im kommenden Semester erstmals
