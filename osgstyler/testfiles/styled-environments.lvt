@@ -1,0 +1,54 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osgstyler}
+
+\DeclareOsgColorPalette{styled-env-test}{
+  primary = {model=HTML, value=223344},
+  text = {model=HTML, value=111111},
+  background = {model=HTML, value=FFFFFF},
+  accent = {model=HTML, value=FFD966}
+}
+\DeclareOsgMetricPalette{styled-env-test}{
+  rule = {thin = {.4pt}},
+  padding = {compact = {.2em}}
+}
+
+\ExplSyntaxOn
+\DeclareInstance{osgstyler-block}{block}{standard}{}
+\ExplSyntaxOff
+\StyleOsgBlockInstance{block}{
+  rule-thickness = .4pt, padding = .2em
+}
+
+\DeclareOsgNumbering{theorem-number}{
+  counter = teststyledtheorem, within = section,
+  format = \arabic{section}.\arabic{teststyledtheorem}
+}
+\DeclareOsgNumbering{note-number}{
+  counter = teststylednote
+}
+
+\NewOsgStyledEnvironment{stheorem}{block}{theorem-number}{Theorem}
+\NewOsgStyledEnvironment{snote}{block}{none}{Note}
+
+\begin{document}
+\UseOsgColorPalette{styled-env-test}
+\UseOsgMetricPalette{styled-env-test}
+\section{One}
+\START
+\TYPE{counter-exists=\ifcsname c@teststyledtheorem\endcsname yes\else no\fi}
+\begin{stheorem}
+  First theorem body.
+\end{stheorem}
+\begin{stheorem}[Named]
+  Second theorem body.
+\end{stheorem}
+\ExplSyntaxOn
+\TYPE{theorem-counter-value=\int_use:N \value{teststyledtheorem}}
+\ExplSyntaxOff
+\begin{snote}
+  Unnumbered note body.
+\end{snote}
+\TYPE{done}
+\END
+\end{document}

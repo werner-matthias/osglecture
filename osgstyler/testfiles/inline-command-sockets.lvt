@@ -1,6 +1,7 @@
 \input regression-test.tex
 \documentclass{article}
 \usepackage{osgstyler}
+\usepackage{osgstyler-lua}
 
 \NewDocumentCommand\ExistingCommand{m}{\TYPE{original=#1}}
 \BindOsgInlineCommand{\ExistingCommand}{emphasis}

@@ -61,6 +61,9 @@
 \UseOsgMetricPalette{backend-test}
 \START
 \TYPE{backend=\OsgStylerLuaBackendActive}
+\OsgDecorationProcessorAvailableTF
+  { \TYPE{processor-available=true} }
+  { \TYPE{processor-available=false} }
 \TYPE{lines=\OsgDecorationInstances{two-lines}{line}}
 \UseOsgInlineStyle{lined}{over and under}
 \UseOsgInlineStyle{marked}{highlighted}

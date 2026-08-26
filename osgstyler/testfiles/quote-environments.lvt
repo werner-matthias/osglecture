@@ -1,0 +1,36 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osgstyler}
+
+\DeclareOsgColorPalette{quote-env-test}{
+  primary = {model=HTML, value=223344},
+  text = {model=HTML, value=111111},
+  background = {model=HTML, value=FFFFFF},
+  accent = {model=HTML, value=FFD966}
+}
+
+\UseOsgStandardBlockEnvironments
+\StyleOsgBlockInstance{quotation}{
+  rule-thickness = .4pt, padding = .3em, background = accent
+}
+
+\NewOsgAttributedEnvironment{osgquote}{quote}
+
+\begin{document}
+\UseOsgColorPalette{quote-env-test}
+\START
+\begin{quote}
+  \TYPE{quote-body=shown}
+\end{quote}
+\begin{quotation}
+  \TYPE{quotation-body=shown}
+\end{quotation}
+\begin{osgquote}
+  \TYPE{osgquote-no-attribution=shown}
+\end{osgquote}
+\begin{osgquote}[Marie Curie]
+  \TYPE{osgquote-with-attribution=shown}
+\end{osgquote}
+\TYPE{done}
+\END
+\end{document}

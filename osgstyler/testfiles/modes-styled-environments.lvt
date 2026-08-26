@@ -1,0 +1,52 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage[mode=script]{osglecture-modes}
+\usepackage{osgstyler}
+
+\DeclareOsgColorPalette{modes-styled-env-test}{
+  primary = {model=HTML, value=223344},
+  text = {model=HTML, value=111111},
+  background = {model=HTML, value=FFFFFF},
+  accent = {model=HTML, value=FFD966}
+}
+
+\ExplSyntaxOn
+\DeclareInstance{osgstyler-block}{ma-block}{standard}{}
+\ExplSyntaxOff
+
+\DeclareOsgNumbering{ma-number}{counter=matestctr}
+
+\NewOsgStyledEnvironment{mastheorem}{ma-block}{ma-number}{Theorem}
+\NewOsgAttributedEnvironment{maquote}{ma-block}
+\UseOsgStandardBlockEnvironments
+
+\begin{document}
+\UseOsgColorPalette{modes-styled-env-test}
+\START
+\begin{mastheorem}<script>
+  \TYPE{mastheorem-active=shown}
+\end{mastheorem}
+\begin{mastheorem}<slides>
+  \TYPE{mastheorem-inactive=shown}
+\end{mastheorem}
+\ExplSyntaxOn
+\TYPE{counter-after-active-and-inactive=\int_use:N\value{matestctr}}
+\ExplSyntaxOff
+\begin{maquote}<script>
+  \TYPE{maquote-active=shown}
+\end{maquote}
+\begin{maquote}<slides>
+  \TYPE{maquote-inactive=shown}
+\end{maquote}
+\begin{quote}<script>
+  \TYPE{quote-active=shown}
+\end{quote}
+\begin{quote}<slides>
+  \TYPE{quote-inactive=shown}
+\end{quote}
+\begin{mastheorem}
+  \TYPE{mastheorem-nomode=shown}
+\end{mastheorem}
+\TYPE{done}
+\END
+\end{document}

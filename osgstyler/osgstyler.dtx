@@ -85,6 +85,9 @@ load babel
 {v0.2.0}
 {Template-based, reusable document styles}
 \RequirePackage{xcolor}
+% Engine-neutral, unlike fontspec/the Lua decoration backend, so it is
+% required unconditionally rather than gated behind 'colors-only'.
+\RequirePackage{enumitem}
 
 \ExplSyntaxOn
 
@@ -820,6 +823,117 @@ load babel
 \DeclareOsgMetricPalette { osgstyler-default } { }
 \UseOsgMetricPalette { osgstyler-default }
 
+% \ldeen*{Anders als Farb-/Font-/Metrikpaletten ist eine Listenpalette
+% keine reine Datenablage: @1 wendet die hinterlegten Optionen sofort
+% über @2 an, denn genau das ist auch @2s eigenes Anwendungsmodell
+% (gilt ab dem Aufruf, nicht rückwirkend). Werte pro Ebene sind
+% rohe @2-Optionen -- dieses Paket erfindet @2s Vokabular nicht neu,
+% es organisiert es nur unter einem Palettennamen und macht die
+% Anwendung modusabhängig (siehe unten). Nicht deklarierte
+% Ebenen/Listenarten bleiben unangetastet.}
+% {Unlike color/font/metric palettes, a list palette is not a pure data
+% store: @1 applies the stored options immediately via @2, since that
+% matches @2's own application model (takes effect from the call
+% onward, not retroactively). Values per level are raw @2 options --
+% this package does not reinvent @2's vocabulary, it only organizes it
+% under a palette name and makes applying it mode-aware (see below).
+% Levels/list types that were never declared stay untouched.}
+% {\cs{UseOsgListPalette}}{\pkg*{enumitem}}
+
+\prop_new:N \g__osgstyler_list_palette_prop
+\tl_new:N \l__osgstyler_list_palette_tl
+\tl_new:N \l__osgstyler_list_type_tl
+\tl_new:N \l__osgstyler_list_value_tl
+
+\msg_new:nnnn { osgstyler } { unknown-list-palette }
+  { Unknown~list~palette~'#1'. }
+  { Declare~it~with~\token_to_str:N\DeclareOsgListPalette~before~using~it. }
+
+\cs_new_protected:Npn \__osgstyler_list_put:nn #1#2
+  {
+    \prop_gput:Nee \g__osgstyler_list_palette_prop
+      {
+        \l__osgstyler_list_palette_tl /
+        \l__osgstyler_list_type_tl / #1
+      }
+      { \exp_not:n {#2} }
+  }
+
+\keys_define:nn { osgstyler / list-palette / type }
+  {
+    1 .code:n = \__osgstyler_list_put:nn { 1 }{#1},
+    2 .code:n = \__osgstyler_list_put:nn { 2 }{#1},
+    3 .code:n = \__osgstyler_list_put:nn { 3 }{#1},
+    4 .code:n = \__osgstyler_list_put:nn { 4 }{#1}
+  }
+
+\cs_new_protected:Npn \__osgstyler_list_type:nn #1#2
+  {
+    \tl_set:Nn \l__osgstyler_list_type_tl {#1}
+    \keys_set:nn { osgstyler / list-palette / type } {#2}
+  }
+\keys_define:nn { osgstyler / list-palette }
+  {
+    itemize     .code:n = \__osgstyler_list_type:nn { itemize }{#1},
+    enumerate   .code:n = \__osgstyler_list_type:nn { enumerate }{#1},
+    description .code:n = \__osgstyler_list_type:nn { description }{#1}
+  }
+
+\cs_new_protected:Npn \__osgstyler_list_palette_declare:nn #1#2
+  {
+    \tl_set:Nn \l__osgstyler_list_palette_tl {#1}
+    \keys_set:nn { osgstyler / list-palette } {#2}
+    \prop_gput:Nnn \g__osgstyler_list_palette_prop { #1 / declared } { true }
+  }
+
+\NewDocumentCommand \DeclareOsgListPalette { m m }
+  { \__osgstyler_list_palette_declare:nn {#1}{#2} }
+
+\cs_new_protected:Npn \__osgstyler_list_apply_level:nnn #1#2#3
+  {
+    \prop_if_in:NnT \g__osgstyler_list_palette_prop { #1 / #2 / #3 }
+      {
+        % enumitem's own key=value scanner reads its options argument
+        % before full expansion, so handing it a macro call there (even
+        % one that expands to the right text) misparses -- \arabic*
+        % style placeholders in particular. Building the whole \setlist
+        % call as already-expanded literal text first, then executing
+        % that, avoids the issue entirely.
+        \tl_set:Ne \l__osgstyler_list_value_tl
+          {
+            \exp_not:N \setlist [ #2 , #3 ]
+              {
+                \prop_item:Nn \g__osgstyler_list_palette_prop
+                  { #1 / #2 / #3 }
+              }
+          }
+        \tl_use:N \l__osgstyler_list_value_tl
+      }
+  }
+
+\cs_new_protected:Npn \__osgstyler_list_apply_type:nn #1#2
+  {
+    \clist_map_inline:nn { 1 , 2 , 3 , 4 }
+      { \__osgstyler_list_apply_level:nnn {#1}{#2}{##1} }
+  }
+
+\cs_new_protected:Npn \__osgstyler_list_palette_apply:n #1
+  {
+    \__osgstyler_list_apply_type:nn {#1} { itemize }
+    \__osgstyler_list_apply_type:nn {#1} { enumerate }
+    \__osgstyler_list_apply_type:nn {#1} { description }
+  }
+
+\NewDocumentCommand \UseOsgListPalette { m }
+  {
+    \prop_if_in:NnTF \g__osgstyler_list_palette_prop { #1 / declared }
+      { \__osgstyler_list_palette_apply:n {#1} }
+      { \msg_error:nnn { osgstyler } { unknown-list-palette } {#1} }
+  }
+
+\DeclareOsgListPalette { osgstyler-default } { }
+\UseOsgListPalette { osgstyler-default }
+
 % Decorations are backend-neutral visual recipes.  A decoration may combine
 % any number of components; rendering packages consume the stored values.
 \clist_const:Nn \c__osgstyler_decoration_families_clist
@@ -1111,7 +1225,189 @@ load babel
   { Command~'#1'~is~not~managed~by~osgstyler. }
   { Bind~it~with~\token_to_str:N\BindOsgInlineCommand~first. }
 
-\cs_new_protected:Npn \__osgstyler_decoration_processor_default:nn #1#2 {#2}
+% A theme author needs to know whether decorations actually render (so it
+% can offer or withhold a highlight-based visual variant); an end user
+% never sees a processor and shouldn't need to. That split is why this
+% conditional exists next to a plain error message rather than one
+% mechanism serving both audiences.
+\bool_new:N \g__osgstyler_decoration_backend_bool
+\NewDocumentCommand \OsgDecorationProcessorAvailableTF { m m }
+  { \bool_if:NTF \g__osgstyler_decoration_backend_bool {#1}{#2} }
+
+\msg_new:nnnn { osgstyler } { decoration-requires-lua }
+  { Feature~'#1'~requires~LuaLaTeX. }
+  { Compile~with~LuaLaTeX,~or~use~osgstyler~without~this~feature. }
+\msg_new:nnnn { osgstyler } { unresolved-symbol }
+  { Affix~symbol~'#1'~has~no~symbol~backend. }
+  { Use~literal~content~until~a~symbol~set~is~active. }
+\msg_new:nnnn { osgstyler } { unsupported-radius }
+  { Inline~enclosure~radius~'#1'~is~not~supported. }
+  { The~active~decoration~backend~uses~square~corners. }
+
+% Line and background decorations only render safely across a line break
+% via engine-level (LuaTeX) node processing; the default processor below
+% therefore renders enclosure and affix material -- which need no such
+% support -- and raises a plain, engine-focused error for the rest instead
+% of silently producing nothing. A real backend (loaded separately, e.g.
+% osgstyler-lua) replaces this default via \cs{SetOsgDecorationProcessor}
+% before either family is ever requested.
+\tl_new:N \l__osgstyler_decoration_content_tl
+\tl_new:N \l__osgstyler_decoration_before_tl
+\tl_new:N \l__osgstyler_decoration_after_tl
+\tl_new:N \l__osgstyler_decoration_value_tl
+\tl_new:N \l__osgstyler_decoration_gap_tl
+\tl_new:N \l__osgstyler_decoration_color_tl
+\tl_new:N \l__osgstyler_decoration_instances_tl
+\seq_new:N \l__osgstyler_decoration_metric_seq
+
+\cs_new_protected:Npn \__osgstyler_decoration_value:nnnnN #1#2#3#4#5
+  { \tl_set:Nx #5 { \OsgDecorationInstanceValue {#1}{#2}{#3}{#4} } }
+
+\cs_new_protected:Npn \__osgstyler_decoration_default:Nn #1#2
+  { \tl_if_empty:NT #1 { \tl_set:Nn #1 {#2} } }
+
+\cs_new_protected:Npn \__osgstyler_decoration_metric_resolve:nN #1#2
+  {
+    \seq_set_split:Nnn \l__osgstyler_decoration_metric_seq {/}{#1}
+    \int_compare:nNnTF { \seq_count:N \l__osgstyler_decoration_metric_seq } = { 2 }
+      {
+        \tl_set:Nx #2
+          {
+            \OsgMetric
+              { \seq_item:Nn \l__osgstyler_decoration_metric_seq {1} }
+              { \seq_item:Nn \l__osgstyler_decoration_metric_seq {2} }
+          }
+      }
+      { \tl_set:Nn #2 {#1} }
+  }
+
+\cs_new_protected:Npn \__osgstyler_decoration_affix_material:nnn #1#2#3
+  {
+    \__osgstyler_decoration_value:nnnnN {#1}{affix}{#2}{gap}
+      \l__osgstyler_decoration_gap_tl
+    \__osgstyler_decoration_default:Nn \l__osgstyler_decoration_gap_tl { 0pt }
+    \exp_args:NV \__osgstyler_decoration_metric_resolve:nN
+      \l__osgstyler_decoration_gap_tl \l__osgstyler_decoration_gap_tl
+    \str_if_eq:nnT {#3}{after} { \hspace{\l__osgstyler_decoration_gap_tl} }
+    \group_begin:
+      \__osgstyler_decoration_value:nnnnN {#1}{affix}{#2}{font}
+        \l__osgstyler_decoration_value_tl
+      \tl_if_empty:NF \l__osgstyler_decoration_value_tl
+        { \exp_args:NV \UseOsgFont \l__osgstyler_decoration_value_tl }
+      \__osgstyler_decoration_value:nnnnN {#1}{affix}{#2}{color}
+        \l__osgstyler_decoration_color_tl
+      \tl_if_empty:NF \l__osgstyler_decoration_color_tl
+        {
+          \tl_set:Nx \l__osgstyler_decoration_color_tl
+            { \OsgColorName { \l__osgstyler_decoration_color_tl } }
+          \color{\l__osgstyler_decoration_color_tl}
+        }
+      \__osgstyler_decoration_value:nnnnN {#1}{affix}{#2}{content}
+        \l__osgstyler_decoration_value_tl
+      \tl_if_empty:NTF \l__osgstyler_decoration_value_tl
+        {
+          \__osgstyler_decoration_value:nnnnN {#1}{affix}{#2}{symbol}
+            \l__osgstyler_decoration_value_tl
+          \tl_if_empty:NF \l__osgstyler_decoration_value_tl
+            { \msg_warning:nne { osgstyler } { unresolved-symbol }
+                \l__osgstyler_decoration_value_tl }
+        }
+        { \tl_use:N \l__osgstyler_decoration_value_tl }
+    \group_end:
+    \str_if_eq:nnT {#3}{before} { \hspace{\l__osgstyler_decoration_gap_tl} }
+  }
+
+\cs_new_protected:Npn \__osgstyler_decoration_affixes_apply:nn #1#2
+  {
+    \tl_clear:N \l__osgstyler_decoration_before_tl
+    \tl_clear:N \l__osgstyler_decoration_after_tl
+    \tl_set:Nx \l__osgstyler_decoration_instances_tl
+      { \OsgDecorationInstances {#1}{affix} }
+    \clist_map_inline:Vn \l__osgstyler_decoration_instances_tl
+      {
+        \__osgstyler_decoration_value:nnnnN {#1}{affix}{##1}{position}
+          \l__osgstyler_decoration_value_tl
+        \str_if_eq:VnTF \l__osgstyler_decoration_value_tl { after }
+          {
+            \tl_put_right:Nn \l__osgstyler_decoration_after_tl
+              { \__osgstyler_decoration_affix_material:nnn {#1}{##1}{after} }
+          }
+          {
+            \tl_put_right:Nn \l__osgstyler_decoration_before_tl
+              { \__osgstyler_decoration_affix_material:nnn {#1}{##1}{before} }
+          }
+      }
+    \tl_set:Nx \l__osgstyler_decoration_content_tl
+      {
+        \exp_not:V \l__osgstyler_decoration_before_tl
+        \exp_not:n {#2}
+        \exp_not:V \l__osgstyler_decoration_after_tl
+      }
+  }
+
+\cs_new_protected:Npn \__osgstyler_decoration_enclosure_apply:nnn #1#2#3
+  {
+    \group_begin:
+      \__osgstyler_decoration_value:nnnnN {#1}{enclosure}{#2}{border-color}
+        \l__osgstyler_decoration_color_tl
+      \__osgstyler_decoration_default:Nn \l__osgstyler_decoration_color_tl { primary }
+      \tl_set:Nx \l__osgstyler_decoration_color_tl
+        { \OsgColorName { \l__osgstyler_decoration_color_tl } }
+      \__osgstyler_decoration_value:nnnnN {#1}{enclosure}{#2}{fill-color}
+        \l__osgstyler_decoration_value_tl
+      \__osgstyler_decoration_default:Nn \l__osgstyler_decoration_value_tl { background }
+      \tl_set:Nx \l_tmpa_tl { \OsgColorName { \l__osgstyler_decoration_value_tl } }
+      \__osgstyler_decoration_value:nnnnN {#1}{enclosure}{#2}{thickness}
+        \l__osgstyler_decoration_value_tl
+      \__osgstyler_decoration_default:Nn \l__osgstyler_decoration_value_tl { rule/thin }
+      \exp_args:NV \__osgstyler_decoration_metric_resolve:nN
+        \l__osgstyler_decoration_value_tl \l__osgstyler_decoration_value_tl
+      \setlength\fboxrule{\l__osgstyler_decoration_value_tl}
+      \__osgstyler_decoration_value:nnnnN {#1}{enclosure}{#2}{padding}
+        \l__osgstyler_decoration_value_tl
+      \__osgstyler_decoration_default:Nn \l__osgstyler_decoration_value_tl { padding/normal }
+      \exp_args:NV \__osgstyler_decoration_metric_resolve:nN
+        \l__osgstyler_decoration_value_tl \l__osgstyler_decoration_value_tl
+      \setlength\fboxsep{\l__osgstyler_decoration_value_tl}
+      \__osgstyler_decoration_value:nnnnN {#1}{enclosure}{#2}{radius}
+        \l__osgstyler_decoration_value_tl
+      \tl_if_empty:NF \l__osgstyler_decoration_value_tl
+        {
+          \str_if_eq:VnF \l__osgstyler_decoration_value_tl { 0pt }
+            { \msg_warning:nne { osgstyler } { unsupported-radius }
+                \l__osgstyler_decoration_value_tl }
+        }
+      \fcolorbox{\l__osgstyler_decoration_color_tl}{\l_tmpa_tl}{#3}
+    \group_end:
+  }
+
+\cs_new_protected:Npn \__osgstyler_decoration_processor_default:nn #1#2
+  {
+    \group_begin:
+      \OsgDecorationIfHasComponentTF {#1}{background}
+        { \msg_error:nnn { osgstyler } { decoration-requires-lua } {#1} }
+        { }
+      \OsgDecorationIfHasComponentTF {#1}{line}
+        { \msg_error:nnn { osgstyler } { decoration-requires-lua } {#1} }
+        { }
+      \__osgstyler_decoration_affixes_apply:nn {#1}{#2}
+      \OsgDecorationIfHasComponentTF {#1}{enclosure}
+        {
+          \tl_set:Nx \l__osgstyler_decoration_instances_tl
+            { \OsgDecorationInstances {#1}{enclosure} }
+          \clist_map_inline:Vn \l__osgstyler_decoration_instances_tl
+            {
+              \tl_set:Nx \l__osgstyler_decoration_content_tl
+                {
+                  \__osgstyler_decoration_enclosure_apply:nnn {#1}{##1}
+                    { \exp_not:V \l__osgstyler_decoration_content_tl }
+                }
+            }
+        }
+        { }
+      \tl_use:N \l__osgstyler_decoration_content_tl
+    \group_end:
+  }
 \cs_new_protected:Npn \__osgstyler_semantic_processor_default:nn #1#2 {#2}
 
 % Decoration and semantic processors are each stored as a sequence,
@@ -1429,6 +1725,407 @@ load babel
 
 \BindOsgInlineCommand \highlight { highlight }
 
+% ==========================================
+% BOX TEMPLATE: STYLED BLOCKS
+% ==========================================
+%
+% \ldeen*{Ein gemeinsamer Template-Typ für kastenartige, umrandete oder
+% hinterlegte Inhalte -- Beamer-Blöcke ebenso wie theorem-artige Boxen
+% oder Zitate in der Langform. Paket- und Themenautoren binden entweder
+% eine bereits bekannte Umgebung an eine Instanz (die Render-Logik
+% umhüllt dann nur optisch, die Umgebung bringt z.\,B. ihre eigene
+% Nummerierung selbst mit) oder deklarieren über
+% \cs{NewOsgStyledEnvironment} eine neue -- die Render-Logik existiert
+% in beiden Fällen nur einmal. Farbwerte werden stets über
+% \cs{OsgColorName} aufgelöst statt als bloße Slot-Namen verwendet, da
+% nur die aufgelösten Namen unabhängig von einer ladenden Theme-Datei
+% wie \pkg*{lttheme} garantiert existieren.}
+% {A shared template type for boxed, framed or filled content -- beamer
+% blocks as well as theorem-like boxes or quotations in the long form.
+% Package and theme authors either bind an already-known environment to
+% an instance (the rendering then only wraps it visually; the
+% environment brings its own numbering, if any) or declare a new one via
+% \cs{NewOsgStyledEnvironment} -- the rendering logic exists only once
+% either way. Color values are always resolved via \cs{OsgColorName}
+% rather than used as bare slot names, since only the resolved names are
+% guaranteed to exist independently of a loading theme file such as
+% \pkg*{lttheme}.}
+
+\tl_new:N \l__osgstyler_block_background_tl
+\tl_new:N \l__osgstyler_block_rule_color_tl
+\tl_new:N \l__osgstyler_block_before_tl
+\tl_new:N \l__osgstyler_block_after_tl
+\dim_new:N \l__osgstyler_block_rule_dim
+\dim_new:N \l__osgstyler_block_padding_dim
+\dim_new:N \l__osgstyler_block_corner_radius_dim
+\dim_new:N \l__osgstyler_block_shadow_offset_dim
+\bool_new:N \l__osgstyler_block_shadow_bool
+
+\NewTemplateType { osgstyler-block } { 1 }
+\DeclareTemplateInterface { osgstyler-block } { standard } { 1 }
+  {
+    background    : tokenlist = none,
+    rule-color    : tokenlist = structure,
+    rule-thickness: length = 0pt,
+    padding       : length = 0pt,
+    corner-radius : length = 0pt,
+    shadow        : boolean = false,
+    shadow-offset : length = 2pt,
+    before        : tokenlist =,
+    after         : tokenlist =
+  }
+\DeclareTemplateCode { osgstyler-block } { standard } { 1 }
+  {
+    background = \l__osgstyler_block_background_tl,
+    rule-color = \l__osgstyler_block_rule_color_tl,
+    rule-thickness = \l__osgstyler_block_rule_dim,
+    padding = \l__osgstyler_block_padding_dim,
+    corner-radius = \l__osgstyler_block_corner_radius_dim,
+    shadow = \l__osgstyler_block_shadow_bool,
+    shadow-offset = \l__osgstyler_block_shadow_offset_dim,
+    before = \l__osgstyler_block_before_tl,
+    after = \l__osgstyler_block_after_tl
+  }
+  { \__osgstyler_block_typeset:n {#1} }
+
+\cs_new_protected:Npn \__osgstyler_block_typeset:n #1
+  {
+    \group_begin:
+      \l__osgstyler_block_before_tl
+      \dim_compare:nNnTF { \l__osgstyler_block_rule_dim } > { 0pt }
+        {
+          \setlength\fboxsep{\l__osgstyler_block_padding_dim}
+          \setlength\fboxrule{\l__osgstyler_block_rule_dim}
+          \noindent\fcolorbox
+            { \OsgColorName{\l__osgstyler_block_rule_color_tl} }
+            {\str_if_eq:VnTF \l__osgstyler_block_background_tl {none}
+               {\OsgColorName{background}}
+               {\OsgColorName{\l__osgstyler_block_background_tl}}}
+            {\begin{minipage}{\dim_eval:n
+                {\linewidth-2\fboxsep-2\fboxrule}}#1\end{minipage}}
+        }
+        { #1 }
+      \l__osgstyler_block_after_tl
+    \group_end:
+  }
+
+\NewDocumentCommand \StyleOsgBlockInstance { m m }
+  { \EditInstance { osgstyler-block } {#1} {#2} }
+
+% ==========================================
+% NUMBERING TEMPLATE
+% ==========================================
+%
+% \ldeen*{Liefert ausschließlich die formatierte Zahl (z.\,B. "`2.3"');
+% weder ein lokalisiertes Label wie "`Satz"' noch ein optionaler
+% Autoren-Titel gehören dazu -- beides bleibt Sache der Umgebung, die
+% eine Instanz dieses Templates verwendet, damit dieses Paket
+% sprachneutral bleibt. @1 registriert den zugrundeliegenden
+% \LaTeX-Zähler einmalig (\cs{DeclareOsgNumbering} löst dies sofort
+% aus, nicht erst bei der ersten Verwendung), da ein zweiter Aufruf von
+% \cs{newcounter} sonst fehlschlüge; Zählername und Format-Vorgabe
+% werden dabei zusätzlich unter dem Instanznamen gemerkt, weil weder
+% \cs{StepOsgNumbering} noch \cs{OsgNumberingValue} sonst einen Weg
+% hätten, sie wiederzufinden.}
+% {Produces only the formatted number (e.g. "`2.3"'); neither a
+% localized label such as "`Theorem"' nor an optional author-supplied
+% title belong here -- both remain the calling environment's concern,
+% keeping this package language-neutral. @1 registers the underlying
+% \LaTeX\ counter exactly once (\cs{DeclareOsgNumbering} triggers this
+% immediately, not on first use), since a second \cs{newcounter} call
+% would otherwise fail; the counter name and format are additionally
+% remembered under the instance name, since neither
+% \cs{StepOsgNumbering} nor \cs{OsgNumberingValue} would otherwise have
+% a way to recover them.}
+% {\cs{DeclareOsgNumbering}}
+
+\tl_new:N \l__osgstyler_numbering_counter_tl
+\tl_new:N \l__osgstyler_numbering_within_tl
+\tl_new:N \l__osgstyler_numbering_format_tl
+\prop_new:N \g__osgstyler_numbering_counter_prop
+\prop_new:N \g__osgstyler_numbering_format_prop
+
+\NewTemplateType { osgstyler-numbering } { 1 }
+\DeclareTemplateInterface { osgstyler-numbering } { standard } { 1 }
+  {
+    counter : tokenlist =,
+    within  : tokenlist = none,
+    format  : tokenlist =
+  }
+\DeclareTemplateCode { osgstyler-numbering } { standard } { 1 }
+  {
+    counter = \l__osgstyler_numbering_counter_tl,
+    within  = \l__osgstyler_numbering_within_tl,
+    format  = \l__osgstyler_numbering_format_tl
+  }
+  { \__osgstyler_numbering_register:n {#1} }
+
+\cs_new_protected:Npn \__osgstyler_numbering_register:n #1
+  {
+    \cs_if_exist:cF { c@ \l__osgstyler_numbering_counter_tl }
+      {
+        \str_if_eq:VnTF \l__osgstyler_numbering_within_tl { none }
+          { \newcounter { \l__osgstyler_numbering_counter_tl } }
+          {
+            \newcounter
+              { \l__osgstyler_numbering_counter_tl }
+              [ \l__osgstyler_numbering_within_tl ]
+          }
+      }
+    \prop_gput:NnV \g__osgstyler_numbering_counter_prop {#1}
+      \l__osgstyler_numbering_counter_tl
+    \prop_gput:NnV \g__osgstyler_numbering_format_prop {#1}
+      \l__osgstyler_numbering_format_tl
+  }
+
+\NewDocumentCommand \DeclareOsgNumbering { m m }
+  {
+    \DeclareInstance { osgstyler-numbering } {#1} { standard } {#2}
+    \UseInstance { osgstyler-numbering } {#1} {#1}
+  }
+
+\NewExpandableDocumentCommand \OsgNumberingCounter { m }
+  { \prop_item:Nn \g__osgstyler_numbering_counter_prop {#1} }
+
+\NewDocumentCommand \StepOsgNumbering { m }
+  { \refstepcounter { \OsgNumberingCounter {#1} } }
+
+\NewExpandableDocumentCommand \OsgNumberingValue { m }
+  { \prop_item:Nn \g__osgstyler_numbering_format_prop {#1} }
+
+% ==========================================
+% NEW ENVIRONMENTS FROM SCRATCH
+% ==========================================
+%
+% \ldeen*{@1 deckt den Fall ab, in dem \emph{keine} bereits bestehende
+% Umgebung umhüllt wird (der Gegenfall -- ein bekanntes Environment wie
+% \env{block} oder ein von \pkg*{amsthm} erzeugtes \env{theorem} nur
+% optisch einzurahmen -- bleibt eine dokumentierte, pro Environment
+% wiederholte Anwendung von \cs{UseInstance}\Marg{osgstyler-block}, da
+% sich die Argumentsignaturen bestehender Environments zu sehr
+% unterscheiden, um sie generisch zu erfassen). @2 selbst bleibt
+% sprachneutral: das Label (@3) liefert der Aufrufer als fertigen Text,
+% \pkg*{osgstyler} übersetzt nicht.}
+% {@1 covers the case where \emph{no} pre-existing environment is being
+% wrapped (the opposite case -- giving a known environment such as
+% \env{block} or an \pkg*{amsthm}-generated \env{theorem} only a visual
+% frame -- remains a documented, per-environment repetition of
+% \cs{UseInstance}\Marg{osgstyler-block}, since existing environments'
+% argument signatures differ too much to capture generically). @2 itself
+% stays language-neutral: the caller supplies the label (@3) as
+% ready-made text, \pkg*{osgstyler} does not translate.}
+% {\cs{NewOsgStyledEnvironment}}{\cs{DeclareOsgNumbering}}
+
+\tl_new:N \l__osgstyler_styled_env_title_tl
+
+\cs_new_protected:Npn \__osgstyler_styled_env_begin:nnnnn #1#2#3#4#5
+  {
+    \group_begin:
+      \tl_clear:N \l__osgstyler_styled_env_title_tl
+      \tl_put_right:Nn \l__osgstyler_styled_env_title_tl {#3}
+      \str_if_eq:nnF {#2} { none }
+        {
+          \StepOsgNumbering {#2}
+          \tl_put_right:Nn \l__osgstyler_styled_env_title_tl
+            { ~\OsgNumberingValue {#2} }
+        }
+      \IfNoValueF {#4}
+        { \tl_put_right:Nn \l__osgstyler_styled_env_title_tl { ~(#4)} }
+      \UseInstance { osgstyler-block } {#1}
+        { \tl_use:N \l__osgstyler_styled_env_title_tl \par #5 }
+    \group_end:
+  }
+
+% \ldeen*{Ist @1 (aus \pkg*{osglecture-modes}) beim Aufruf bereits
+% geladen, bekommt das erzeugte Environment zusätzlich eine führende
+% \cs{d<>}-Spezifikation: ein inaktiver Modus unterdrückt die Ausgabe
+% vollständig, \emph{einschließlich} des Nummerierungsschritts --
+% ausgeblendeter Inhalt soll keine Lücke in der Nummerierung
+% hinterlassen. Das ist hier gefahrlos möglich (anders als bei
+% nativen Overlay-Umgebungen ohne Fallback), weil der Textkörper
+% ohnehin als \cs{+b}-Argument vollständig eingelesen wird, bevor
+% irgendetwas davon ausgeführt wird -- ihn bedingt zu verwerfen ersetzt
+% keine bereits laufende Ausgabe.}
+% {If @1 (from \pkg*{osglecture-modes}) is already loaded when this
+% runs, the generated environment additionally gets a leading
+% \cs{d<>} specification: an inactive mode suppresses output entirely,
+% \emph{including} the numbering step -- hidden content should not
+% leave a gap in the numbering. This is safe here (unlike native
+% overlay environments without a fallback) because the body is fully
+% read as a \cs{+b} argument before any of it executes -- discarding it
+% conditionally does not interrupt output already under way.}
+% {\pkg*{osglecture-modes}}
+\cs_new_protected:Npn \__osgstyler_styled_env_mode_dispatch:nnnnnn #1#2#3#4#5#6
+  {
+    \IfNoValueTF {#4}
+      { \__osgstyler_styled_env_begin:nnnnn {#1}{#2}{#3}{#5}{#6} }
+      {
+        \IfLectureModeT {#4}
+          { \__osgstyler_styled_env_begin:nnnnn {#1}{#2}{#3}{#5}{#6} }
+      }
+  }
+
+\NewDocumentCommand \NewOsgStyledEnvironment { m m m m }
+  {
+    \cs_if_exist:NTF \IfLectureModeTF
+      {
+        \NewDocumentEnvironment {#1} { d<> o +b }
+          {
+            \__osgstyler_styled_env_mode_dispatch:nnnnnn
+              {#2}{#3}{#4}{##1}{##2}{##3}
+          }
+          { }
+      }
+      {
+        \NewDocumentEnvironment {#1} { o +b }
+          { \__osgstyler_styled_env_begin:nnnnn {#2}{#3}{#4}{##1}{##2} }
+          { }
+      }
+  }
+
+% ==========================================
+% STYLING KNOWN ENVIRONMENTS (CASE A, WITHOUT OVERLAYS)
+% ==========================================
+%
+% \ldeen*{@1 verallgemeinert das Muster, mit dem \pkg*{lttheme}
+% \env{block} umhüllt, für Environments \emph{ohne} Overlay-Syntax --
+% deren Argumentsignatur ist einheitlich genug (immer nur ein
+% Textkörper), um sie generisch zu erfassen, anders als bei
+% \env{block}/\env{alertblock}, die \cs{d<>} brauchen und daher
+% themenspezifisch bleiben.}
+% {@1 generalizes the pattern \pkg*{lttheme} uses to wrap \env{block}
+% for environments \emph{without} overlay syntax -- their argument
+% signature is uniform enough (always just a text body) to capture
+% generically, unlike \env{block}/\env{alertblock}, which need
+% \cs{d<>} and therefore stay theme-specific.}
+% {\cs{BindOsgBlockEnvironment}}
+
+\NewDocumentCommand \BindOsgBlockEnvironment { m m }
+  { \__osgstyler_block_bind_environment:nn {#1}{#2} }
+
+\cs_new_protected:Npn \__osgstyler_block_render_bound:nnn #1#2#3
+  {
+    \UseInstance { osgstyler-block } {#2}
+      {
+        \begin{osgstyler-original-#1}
+          #3
+        \end{osgstyler-original-#1}
+      }
+  }
+
+% See \cs{NewOsgStyledEnvironment} for why discarding the body
+% conditionally is safe here.
+\cs_new_protected:Npn \__osgstyler_block_bound_mode_dispatch:nnnn #1#2#3#4
+  {
+    \IfNoValueTF {#3}
+      { \__osgstyler_block_render_bound:nnn {#1}{#2}{#4} }
+      {
+        \IfLectureModeT {#3}
+          { \__osgstyler_block_render_bound:nnn {#1}{#2}{#4} }
+      }
+  }
+
+\cs_new_protected:Npn \__osgstyler_block_bind_environment:nn #1#2
+  {
+    \NewEnvironmentCopy { osgstyler-original-#1 } {#1}
+    \cs_if_exist:NTF \IfLectureModeTF
+      {
+        \RenewDocumentEnvironment {#1} { d<> +b }
+          { \__osgstyler_block_bound_mode_dispatch:nnnn {#1}{#2}{##1}{##2} }
+          { }
+      }
+      {
+        \RenewDocumentEnvironment {#1} { +b }
+          { \__osgstyler_block_render_bound:nnn {#1}{#2}{##1} }
+          { }
+      }
+  }
+
+% \ldeen*{Die \cls*{LaTeX}-Kernumgebungen @1/@2 sind auf jedem Ziel
+% verfügbar, weshalb ihre Instanzen -- unsichtbar, wie die
+% Schnittstellen-Vorgaben es ohnehin vorsehen -- immer deklariert sind.
+% Umgebunden werden sie aber erst durch einen bewussten Aufruf von
+% \cs{BindOsgBlockEnvironment} oder @3, nicht beim Laden dieses Pakets:
+% wer \pkg*{osgstyler} nur wegen Farben oder Inline-Befehlen lädt, soll
+% nicht überrascht feststellen, dass sich seine Zitate verändert
+% haben.}
+% {The \cls*{LaTeX} kernel environments @1/@2 are available on every
+% target, which is why their instances -- invisible, as the interface
+% defaults already provide anyway -- are always declared. They are only
+% actually rebound by a deliberate call to \cs{BindOsgBlockEnvironment}
+% or @3, not on loading this package: someone loading \pkg*{osgstyler}
+% only for colors or inline commands should not be surprised to find
+% their quotations changed.}
+% {\env{quote}}{\env{quotation}}{\cs{UseOsgStandardBlockEnvironments}}
+\DeclareInstance { osgstyler-block } { quote } { standard } { }
+\DeclareInstance { osgstyler-block } { quotation } { standard } { }
+
+\NewDocumentCommand \UseOsgStandardBlockEnvironments { }
+  {
+    \BindOsgBlockEnvironment { quote } { quote }
+    \BindOsgBlockEnvironment { quotation } { quotation }
+  }
+
+% ==========================================
+% ATTRIBUTED ENVIRONMENTS (CASE B, CONTENT-THEN-ATTRIBUTION)
+% ==========================================
+%
+% \ldeen*{Ein zweiter Fall-B-Baustein neben \cs{NewOsgStyledEnvironment}:
+% ein semantisches Zitat trägt keine Titelzeile mit Label und Zahl vor
+% dem Inhalt, sondern höchstens eine Quellenangabe danach -- die
+% Zusammensetzung ist genau umgekehrt, weshalb dies ein eigener,
+% schlanker Mechanismus ist statt einer weiteren Option von
+% \cs{NewOsgStyledEnvironment}.}
+% {A second case-B building block alongside \cs{NewOsgStyledEnvironment}:
+% a semantic quotation carries no label-and-number title before its
+% content, only an optional attribution after it -- the composition is
+% exactly reversed, which is why this is its own, lean mechanism rather
+% than another option of \cs{NewOsgStyledEnvironment}.}
+% {\cs{NewOsgAttributedEnvironment}}
+
+\tl_new:N \l__osgstyler_attributed_env_tl
+
+\cs_new_protected:Npn \__osgstyler_attributed_env_begin:nnn #1#2#3
+  {
+    \group_begin:
+      \tl_set:Nn \l__osgstyler_attributed_env_tl {#3}
+      \IfNoValueF {#2}
+        {
+          \tl_put_right:Nn \l__osgstyler_attributed_env_tl
+            { \par \hfill ---~#2 }
+        }
+      \UseInstance { osgstyler-block } {#1}
+        { \tl_use:N \l__osgstyler_attributed_env_tl }
+    \group_end:
+  }
+
+% See \cs{NewOsgStyledEnvironment} for why discarding the body
+% conditionally is safe here.
+\cs_new_protected:Npn \__osgstyler_attributed_env_mode_dispatch:nnnn #1#2#3#4
+  {
+    \IfNoValueTF {#2}
+      { \__osgstyler_attributed_env_begin:nnn {#1}{#3}{#4} }
+      {
+        \IfLectureModeT {#2}
+          { \__osgstyler_attributed_env_begin:nnn {#1}{#3}{#4} }
+      }
+  }
+
+\NewDocumentCommand \NewOsgAttributedEnvironment { m m }
+  {
+    \cs_if_exist:NTF \IfLectureModeTF
+      {
+        \NewDocumentEnvironment {#1} { d<> o +b }
+          { \__osgstyler_attributed_env_mode_dispatch:nnnn {#2}{##1}{##2}{##3} }
+          { }
+      }
+      {
+        \NewDocumentEnvironment {#1} { o +b }
+          { \__osgstyler_attributed_env_begin:nnn {#2}{##1}{##2} }
+          { }
+      }
+  }
+
 % \ldeen*{Optionale Integration von Modi, falls @1 geladen wurde.
 % Die Auswahlbefehle (\token_to_str:N\UseOsgInlineStyle und die gebundenen
 % Inline-Befehle sowie \token_to_str:N\UseOsgColorPalette,
@@ -1461,6 +2158,7 @@ load babel
         \__osgstyler_make_mode_aware:Nn \UseOsgColorPalette { m }
         \__osgstyler_make_mode_aware:Nn \UseOsgFontPalette { m }
         \__osgstyler_make_mode_aware:Nn \UseOsgMetricPalette { m }
+        \__osgstyler_make_mode_aware:Nn \UseOsgListPalette { m }
       }
   }
 
@@ -1588,15 +2286,9 @@ load babel
 \msg_new:nnnn { osgstyler-lua } { unsupported-shape }
   { Background~shape~'#1'~is~not~supported. }
   { The~reference~backend~uses~the~normal~text~shape. }
-\msg_new:nnnn { osgstyler-lua } { unsupported-radius }
-  { Inline~enclosure~radius~'#1'~is~not~supported. }
-  { The~reference~backend~uses~square~corners. }
 \msg_new:nnnn { osgstyler-lua } { unsupported-margin }
   { Margin~decoration~'#1'~cannot~be~rendered~inline. }
   { Use~a~block~backend~for~margin~decorations. }
-\msg_new:nnnn { osgstyler-lua } { unresolved-symbol }
-  { Affix~symbol~'#1'~has~no~symbol~backend. }
-  { Use~literal~content~until~a~symbol~set~is~active. }
 
 \sys_if_engine_luatex:F
   { \msg_fatal:nn { osgstyler-lua } { luatex-required } }
@@ -1606,76 +2298,54 @@ load babel
 % palette is always active by this point; no separate fallback
 % palette is needed here.
 
-\tl_new:N \l__osgstyler_lua_content_tl
-\tl_new:N \l__osgstyler_lua_before_tl
-\tl_new:N \l__osgstyler_lua_after_tl
-\tl_new:N \l__osgstyler_lua_value_tl
-\tl_new:N \l__osgstyler_lua_gap_tl
-\tl_new:N \l__osgstyler_lua_color_tl
 \tl_new:N \l__osgstyler_lua_pattern_tl
 \tl_new:N \l__osgstyler_lua_position_tl
-\tl_new:N \l__osgstyler_lua_instances_tl
-\seq_new:N \l__osgstyler_lua_metric_seq
 \dim_new:N \l__osgstyler_lua_thickness_dim
 \dim_new:N \l__osgstyler_lua_offset_dim
 \dim_new:N \l__osgstyler_lua_top_dim
 \dim_new:N \l__osgstyler_lua_bottom_dim
 \dim_new:N \l__osgstyler_lua_cap_height_dim
 
-\cs_new_protected:Npn \__osgstyler_lua_value:nnnnN #1#2#3#4#5
-  {
-    \tl_set:Nx #5 { \OsgDecorationInstanceValue {#1}{#2}{#3}{#4} }
-  }
-
-\cs_new_protected:Npn \__osgstyler_lua_default:Nn #1#2
-  { \tl_if_empty:NT #1 { \tl_set:Nn #1 {#2} } }
-
-\cs_new_protected:Npn \__osgstyler_lua_metric_resolve:nN #1#2
-  {
-    \seq_set_split:Nnn \l__osgstyler_lua_metric_seq {/}{#1}
-    \int_compare:nNnTF { \seq_count:N \l__osgstyler_lua_metric_seq } = { 2 }
-      {
-        \tl_set:Nx #2
-          {
-            \OsgMetric
-              { \seq_item:Nn \l__osgstyler_lua_metric_seq {1} }
-              { \seq_item:Nn \l__osgstyler_lua_metric_seq {2} }
-          }
-      }
-      { \tl_set:Nn #2 {#1} }
-  }
+% Enclosure rendering and the affix/value/metric helpers it and the
+% default decoration processor share now live in the core package (see
+% \cs{__osgstyler_decoration_enclosure_apply:nnn} there) -- they need no
+% engine support, so they are not specific to this backend. This alias
+% keeps \cs{__osgstyler_lua_family_wrap:nnN}'s naming convention working
+% unchanged for the 'enclosure' family.
+\cs_new_eq:cc { __osgstyler_lua_enclosure_apply:nnn }
+  { __osgstyler_decoration_enclosure_apply:nnn }
 
 \cs_new_protected:Npn \__osgstyler_lua_line_apply:nnn #1#2#3
   {
     \group_begin:
-      \__osgstyler_lua_value:nnnnN {#1}{line}{#2}{position}
+      \__osgstyler_decoration_value:nnnnN {#1}{line}{#2}{position}
         \l__osgstyler_lua_position_tl
-      \__osgstyler_lua_default:Nn \l__osgstyler_lua_position_tl { below }
-      \__osgstyler_lua_value:nnnnN {#1}{line}{#2}{pattern}
+      \__osgstyler_decoration_default:Nn \l__osgstyler_lua_position_tl { below }
+      \__osgstyler_decoration_value:nnnnN {#1}{line}{#2}{pattern}
         \l__osgstyler_lua_pattern_tl
-      \__osgstyler_lua_default:Nn \l__osgstyler_lua_pattern_tl { solid }
+      \__osgstyler_decoration_default:Nn \l__osgstyler_lua_pattern_tl { solid }
       \str_if_eq:VnF \l__osgstyler_lua_pattern_tl { solid }
         { \msg_warning:nnee { osgstyler-lua } { unsupported-pattern }
             \l__osgstyler_lua_pattern_tl \l__osgstyler_lua_position_tl }
-      \__osgstyler_lua_value:nnnnN {#1}{line}{#2}{color}
-        \l__osgstyler_lua_color_tl
-      \__osgstyler_lua_default:Nn \l__osgstyler_lua_color_tl { text }
-      \tl_set:Nx \l__osgstyler_lua_color_tl
-        { \OsgColorName { \l__osgstyler_lua_color_tl } }
-      \__osgstyler_lua_value:nnnnN {#1}{line}{#2}{thickness}
-        \l__osgstyler_lua_value_tl
-      \__osgstyler_lua_default:Nn \l__osgstyler_lua_value_tl { rule/thin }
-      \exp_args:NV \__osgstyler_lua_metric_resolve:nN
-        \l__osgstyler_lua_value_tl \l__osgstyler_lua_value_tl
+      \__osgstyler_decoration_value:nnnnN {#1}{line}{#2}{color}
+        \l__osgstyler_decoration_color_tl
+      \__osgstyler_decoration_default:Nn \l__osgstyler_decoration_color_tl { text }
+      \tl_set:Nx \l__osgstyler_decoration_color_tl
+        { \OsgColorName { \l__osgstyler_decoration_color_tl } }
+      \__osgstyler_decoration_value:nnnnN {#1}{line}{#2}{thickness}
+        \l__osgstyler_decoration_value_tl
+      \__osgstyler_decoration_default:Nn \l__osgstyler_decoration_value_tl { rule/thin }
+      \exp_args:NV \__osgstyler_decoration_metric_resolve:nN
+        \l__osgstyler_decoration_value_tl \l__osgstyler_decoration_value_tl
       \dim_set:Nn \l__osgstyler_lua_thickness_dim
-        { \l__osgstyler_lua_value_tl }
-      \__osgstyler_lua_value:nnnnN {#1}{line}{#2}{offset}
-        \l__osgstyler_lua_value_tl
-      \__osgstyler_lua_default:Nn \l__osgstyler_lua_value_tl { .1ex }
-      \exp_args:NV \__osgstyler_lua_metric_resolve:nN
-        \l__osgstyler_lua_value_tl \l__osgstyler_lua_value_tl
+        { \l__osgstyler_decoration_value_tl }
+      \__osgstyler_decoration_value:nnnnN {#1}{line}{#2}{offset}
+        \l__osgstyler_decoration_value_tl
+      \__osgstyler_decoration_default:Nn \l__osgstyler_decoration_value_tl { .1ex }
+      \exp_args:NV \__osgstyler_decoration_metric_resolve:nN
+        \l__osgstyler_decoration_value_tl \l__osgstyler_decoration_value_tl
       \dim_set:Nn \l__osgstyler_lua_offset_dim
-        { \l__osgstyler_lua_value_tl }
+        { \l__osgstyler_decoration_value_tl }
       \str_case:VnF \l__osgstyler_lua_position_tl
         {
           { below }
@@ -1718,7 +2388,7 @@ load babel
               -\l__osgstyler_lua_thickness_dim }
         }
       \underLine
-        [ color=\l__osgstyler_lua_color_tl,
+        [ color=\l__osgstyler_decoration_color_tl,
           top=\l__osgstyler_lua_top_dim,
           bottom=\l__osgstyler_lua_bottom_dim ]
         {#3}
@@ -1728,100 +2398,36 @@ load babel
 \cs_new_protected:Npn \__osgstyler_lua_background_apply:nnn #1#2#3
   {
     \group_begin:
-      \__osgstyler_lua_value:nnnnN {#1}{background}{#2}{color}
-        \l__osgstyler_lua_color_tl
-      \__osgstyler_lua_default:Nn \l__osgstyler_lua_color_tl { accent }
-      \tl_set:Nx \l__osgstyler_lua_color_tl
-        { \OsgColorName { \l__osgstyler_lua_color_tl } }
-      \__osgstyler_lua_value:nnnnN {#1}{background}{#2}{opacity}
-        \l__osgstyler_lua_value_tl
-      \tl_if_empty:NF \l__osgstyler_lua_value_tl
+      \__osgstyler_decoration_value:nnnnN {#1}{background}{#2}{color}
+        \l__osgstyler_decoration_color_tl
+      \__osgstyler_decoration_default:Nn \l__osgstyler_decoration_color_tl { accent }
+      \tl_set:Nx \l__osgstyler_decoration_color_tl
+        { \OsgColorName { \l__osgstyler_decoration_color_tl } }
+      \__osgstyler_decoration_value:nnnnN {#1}{background}{#2}{opacity}
+        \l__osgstyler_decoration_value_tl
+      \tl_if_empty:NF \l__osgstyler_decoration_value_tl
         {
-          \str_if_eq:VnF \l__osgstyler_lua_value_tl { 1 }
+          \str_if_eq:VnF \l__osgstyler_decoration_value_tl { 1 }
             { \msg_warning:nne { osgstyler-lua } { unsupported-opacity }
-                \l__osgstyler_lua_value_tl }
+                \l__osgstyler_decoration_value_tl }
         }
-      \__osgstyler_lua_value:nnnnN {#1}{background}{#2}{shape}
-        \l__osgstyler_lua_value_tl
-      \tl_if_empty:NF \l__osgstyler_lua_value_tl
+      \__osgstyler_decoration_value:nnnnN {#1}{background}{#2}{shape}
+        \l__osgstyler_decoration_value_tl
+      \tl_if_empty:NF \l__osgstyler_decoration_value_tl
         {
-          \str_if_eq:VnF \l__osgstyler_lua_value_tl { text }
+          \str_if_eq:VnF \l__osgstyler_decoration_value_tl { text }
             { \msg_warning:nne { osgstyler-lua } { unsupported-shape }
-                \l__osgstyler_lua_value_tl }
+                \l__osgstyler_decoration_value_tl }
         }
-      \highLight [\l__osgstyler_lua_color_tl] {#3}
+      \highLight [\l__osgstyler_decoration_color_tl] {#3}
     \group_end:
-  }
-
-\cs_new_protected:Npn \__osgstyler_lua_affix_material:nnn #1#2#3
-  {
-    \__osgstyler_lua_value:nnnnN {#1}{affix}{#2}{gap}
-      \l__osgstyler_lua_gap_tl
-    \__osgstyler_lua_default:Nn \l__osgstyler_lua_gap_tl { 0pt }
-    \exp_args:NV \__osgstyler_lua_metric_resolve:nN
-      \l__osgstyler_lua_gap_tl \l__osgstyler_lua_gap_tl
-    \str_if_eq:nnT {#3}{after} { \hspace{\l__osgstyler_lua_gap_tl} }
-    \group_begin:
-      \__osgstyler_lua_value:nnnnN {#1}{affix}{#2}{font}
-        \l__osgstyler_lua_value_tl
-      \tl_if_empty:NF \l__osgstyler_lua_value_tl
-        { \exp_args:NV \UseOsgFont \l__osgstyler_lua_value_tl }
-      \__osgstyler_lua_value:nnnnN {#1}{affix}{#2}{color}
-        \l__osgstyler_lua_color_tl
-      \tl_if_empty:NF \l__osgstyler_lua_color_tl
-        {
-          \tl_set:Nx \l__osgstyler_lua_color_tl
-            { \OsgColorName { \l__osgstyler_lua_color_tl } }
-          \color{\l__osgstyler_lua_color_tl}
-        }
-      \__osgstyler_lua_value:nnnnN {#1}{affix}{#2}{content}
-        \l__osgstyler_lua_value_tl
-      \tl_if_empty:NTF \l__osgstyler_lua_value_tl
-        {
-          \__osgstyler_lua_value:nnnnN {#1}{affix}{#2}{symbol}
-            \l__osgstyler_lua_value_tl
-          \tl_if_empty:NF \l__osgstyler_lua_value_tl
-            { \msg_warning:nne { osgstyler-lua } { unresolved-symbol }
-                \l__osgstyler_lua_value_tl }
-        }
-        { \tl_use:N \l__osgstyler_lua_value_tl }
-    \group_end:
-    \str_if_eq:nnT {#3}{before} { \hspace{\l__osgstyler_lua_gap_tl} }
-  }
-
-\cs_new_protected:Npn \__osgstyler_lua_affixes_apply:nn #1#2
-  {
-    \tl_clear:N \l__osgstyler_lua_before_tl
-    \tl_clear:N \l__osgstyler_lua_after_tl
-    \tl_set:Nx \l__osgstyler_lua_instances_tl
-      { \OsgDecorationInstances {#1}{affix} }
-    \clist_map_inline:Vn \l__osgstyler_lua_instances_tl
-      {
-        \__osgstyler_lua_value:nnnnN {#1}{affix}{##1}{position}
-          \l__osgstyler_lua_position_tl
-        \str_if_eq:VnTF \l__osgstyler_lua_position_tl { after }
-          {
-            \tl_put_right:Nn \l__osgstyler_lua_after_tl
-              { \__osgstyler_lua_affix_material:nnn {#1}{##1}{after} }
-          }
-          {
-            \tl_put_right:Nn \l__osgstyler_lua_before_tl
-              { \__osgstyler_lua_affix_material:nnn {#1}{##1}{before} }
-          }
-      }
-    \tl_set:Nx \l__osgstyler_lua_content_tl
-      {
-        \exp_not:V \l__osgstyler_lua_before_tl
-        \exp_not:n {#2}
-        \exp_not:V \l__osgstyler_lua_after_tl
-      }
   }
 
 \cs_new_protected:Npn \__osgstyler_lua_family_wrap:nnN #1#2#3
   {
-    \tl_set:Nx \l__osgstyler_lua_instances_tl
+    \tl_set:Nx \l__osgstyler_decoration_instances_tl
       { \OsgDecorationInstances {#1}{#2} }
-    \clist_map_inline:Vn \l__osgstyler_lua_instances_tl
+    \clist_map_inline:Vn \l__osgstyler_decoration_instances_tl
       {
         \tl_set:Nx #3
           {
@@ -1832,62 +2438,27 @@ load babel
       }
   }
 
-\cs_new_protected:Npn \__osgstyler_lua_enclosure_apply:nnn #1#2#3
-  {
-    \group_begin:
-      \__osgstyler_lua_value:nnnnN {#1}{enclosure}{#2}{border-color}
-        \l__osgstyler_lua_color_tl
-      \__osgstyler_lua_default:Nn \l__osgstyler_lua_color_tl { primary }
-      \tl_set:Nx \l__osgstyler_lua_color_tl
-        { \OsgColorName { \l__osgstyler_lua_color_tl } }
-      \__osgstyler_lua_value:nnnnN {#1}{enclosure}{#2}{fill-color}
-        \l__osgstyler_lua_value_tl
-      \__osgstyler_lua_default:Nn \l__osgstyler_lua_value_tl { background }
-      \tl_set:Nx \l_tmpa_tl { \OsgColorName { \l__osgstyler_lua_value_tl } }
-      \__osgstyler_lua_value:nnnnN {#1}{enclosure}{#2}{thickness}
-        \l__osgstyler_lua_value_tl
-      \__osgstyler_lua_default:Nn \l__osgstyler_lua_value_tl { rule/thin }
-      \exp_args:NV \__osgstyler_lua_metric_resolve:nN
-        \l__osgstyler_lua_value_tl \l__osgstyler_lua_value_tl
-      \setlength\fboxrule{\l__osgstyler_lua_value_tl}
-      \__osgstyler_lua_value:nnnnN {#1}{enclosure}{#2}{padding}
-        \l__osgstyler_lua_value_tl
-      \__osgstyler_lua_default:Nn \l__osgstyler_lua_value_tl { padding/normal }
-      \exp_args:NV \__osgstyler_lua_metric_resolve:nN
-        \l__osgstyler_lua_value_tl \l__osgstyler_lua_value_tl
-      \setlength\fboxsep{\l__osgstyler_lua_value_tl}
-      \__osgstyler_lua_value:nnnnN {#1}{enclosure}{#2}{radius}
-        \l__osgstyler_lua_value_tl
-      \tl_if_empty:NF \l__osgstyler_lua_value_tl
-        {
-          \str_if_eq:VnF \l__osgstyler_lua_value_tl { 0pt }
-            { \msg_warning:nne { osgstyler-lua } { unsupported-radius }
-                \l__osgstyler_lua_value_tl }
-        }
-      \fcolorbox{\l__osgstyler_lua_color_tl}{\l_tmpa_tl}{#3}
-    \group_end:
-  }
-
 \cs_new_protected:Npn \__osgstyler_lua_decoration_processor:nn #1#2
   {
     \group_begin:
-      \__osgstyler_lua_affixes_apply:nn {#1}{#2}
+      \__osgstyler_decoration_affixes_apply:nn {#1}{#2}
       \__osgstyler_lua_family_wrap:nnN {#1}{line}
-        \l__osgstyler_lua_content_tl
+        \l__osgstyler_decoration_content_tl
       \__osgstyler_lua_family_wrap:nnN {#1}{background}
-        \l__osgstyler_lua_content_tl
+        \l__osgstyler_decoration_content_tl
       \__osgstyler_lua_family_wrap:nnN {#1}{enclosure}
-        \l__osgstyler_lua_content_tl
+        \l__osgstyler_decoration_content_tl
       \OsgDecorationIfHasComponentTF {#1}{margin}
         { \msg_warning:nnn { osgstyler-lua } { unsupported-margin } {#1} }
         { }
-      \tl_use:N \l__osgstyler_lua_content_tl
+      \tl_use:N \l__osgstyler_decoration_content_tl
     \group_end:
   }
 
 \cs_new_eq:NN \OsgStylerLuaDecorationProcessor
   \__osgstyler_lua_decoration_processor:nn
 \SetOsgDecorationProcessor { \OsgStylerLuaDecorationProcessor }
+\bool_gset_true:N \g__osgstyler_decoration_backend_bool
 
 \NewExpandableDocumentCommand \OsgStylerLuaBackendActive { } { true }
 

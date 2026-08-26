@@ -1030,7 +1030,8 @@ Slots, Templates und den Seitenstil bereitstellt.
   \command{styleltxtalkblock}[\marg{Typ}\marg{Optionen}]
   \ldeen{
     Bearbeitet die Instanz \code{block}, \code{alertblock} oder
-    \code{exampleblock} des Template-Typs \code{lttheme-block}. Die
+    \code{exampleblock} des Template-Typs \code{osgstyler-block}
+    (bereitgestellt von \pkg*{osgstyler}). Die
     Standard-Schnittstelle umfasst \code{background}, \code{rule-color},
     \code{rule-thickness}, \code{padding}, \code{corner-radius},
     \code{shadow}, \code{shadow-offset}, \code{before} und \code{after}.
@@ -1871,67 +1872,19 @@ Slots eines Teilthemes implementiert werden.
 % INNER THEME: BLOCKS AND LIST MARKERS
 % ==========================================
 
-\tl_new:N \l__ltxtalk_block_background_tl
-\tl_new:N \l__ltxtalk_block_rule_color_tl
-\tl_new:N \l__ltxtalk_block_before_tl
-\tl_new:N \l__ltxtalk_block_after_tl
-\dim_new:N \l__ltxtalk_block_rule_dim
-\dim_new:N \l__ltxtalk_block_padding_dim
-\dim_new:N \l__ltxtalk_block_corner_radius_dim
-\dim_new:N \l__ltxtalk_block_shadow_offset_dim
-\bool_new:N \l__ltxtalk_block_shadow_bool
-
-\NewTemplateType { lttheme-block } { 1 }
-\DeclareTemplateInterface { lttheme-block } { standard } { 1 }
-  {
-    background    : tokenlist = none,
-    rule-color    : tokenlist = structure,
-    rule-thickness: length = 0pt,
-    padding       : length = 0pt,
-    corner-radius : length = 0pt,
-    shadow        : boolean = false,
-    shadow-offset : length = 2pt,
-    before        : tokenlist =,
-    after         : tokenlist =
-  }
-\DeclareTemplateCode { lttheme-block } { standard } { 1 }
-  {
-    background = \l__ltxtalk_block_background_tl,
-    rule-color = \l__ltxtalk_block_rule_color_tl,
-    rule-thickness = \l__ltxtalk_block_rule_dim,
-    padding = \l__ltxtalk_block_padding_dim,
-    corner-radius = \l__ltxtalk_block_corner_radius_dim,
-    shadow = \l__ltxtalk_block_shadow_bool,
-    shadow-offset = \l__ltxtalk_block_shadow_offset_dim,
-    before = \l__ltxtalk_block_before_tl,
-    after = \l__ltxtalk_block_after_tl
-  }
-  { \__ltxtalk_typeset_block:n {#1} }
-
-\cs_new_protected:Npn \__ltxtalk_typeset_block:n #1
-  {
-    \group_begin:
-      \l__ltxtalk_block_before_tl
-      \dim_compare:nNnTF { \l__ltxtalk_block_rule_dim } > { 0pt }
-        {
-          \setlength\fboxsep{\l__ltxtalk_block_padding_dim}
-          \setlength\fboxrule{\l__ltxtalk_block_rule_dim}
-          \noindent\fcolorbox{\l__ltxtalk_block_rule_color_tl}
-            {\str_if_eq:VnTF \l__ltxtalk_block_background_tl {none}
-               {ltxtalk-bg}{\l__ltxtalk_block_background_tl}}
-            {\begin{minipage}{\dim_eval:n
-                {\linewidth-2\fboxsep-2\fboxrule}}#1\end{minipage}}
-        }
-        { #1 }
-      \l__ltxtalk_block_after_tl
-    \group_end:
-  }
-
+% The box-styling engine itself (template type, interface, and typeset
+% code) now lives in osgstyler as osgstyler-block, since long-form
+% documents need the same boxed-content rendering without pulling in
+% this presentation-specific theme. This file only declares its own
+% instances against that shared type and wraps the beamer/ltx-talk
+% environments -- the "style a known environment" case, where the
+% original environment keeps its own semantics and this wrapper only
+% adds the visual frame.
 \clist_map_inline:nn { block, alertblock, exampleblock }
-  { \DeclareInstance { lttheme-block } {#1} { standard } { } }
+  { \DeclareInstance { osgstyler-block } {#1} { standard } { } }
 
 \NewDocumentCommand \styleltxtalkblock { m m }
-  { \EditInstance { lttheme-block } {#1} {#2} }
+  { \StyleOsgBlockInstance {#1} {#2} }
 
 \cs_new_protected:Npn \__ltxtalk_use_original_block:nnn #1#2#3
   {
@@ -1942,37 +1895,63 @@ Slots eines Teilthemes implementiert werden.
 
 \NewEnvironmentCopy { ltxtalk-original-block } { block }
 \RenewDocumentEnvironment { block } { d <> m +b }
-  { \UseInstance { lttheme-block } { block }
+  { \UseInstance { osgstyler-block } { block }
       {\__ltxtalk_use_original_block:nnn {#1}{#2}{#3}} }
   { }
 
+% alertblock/exampleblock keep the "structure" rule-color default and
+% locally alias it to alert/example instead of overriding rule-color
+% per instance, so a later \styleltxtalkblock customization of
+% rule-color is not silently undone here. The alias targets the
+% resolved osgstyler-structure/-alert/-example names (via \OsgColorName)
+% rather than the bare, lttheme-only mirrored ones, since
+% osgstyler-block resolves colors through \OsgColorName itself.
 % Only provide the two variants while the class does not provide its own.
 \cs_if_exist:cF { alertblock }
   {
     \NewDocumentEnvironment { alertblock } { d <> m +b }
-      { \UseInstance { lttheme-block } { alertblock }
-          {\group_begin:\color_set_eq:nn {structure}{alert}
+      { \UseInstance { osgstyler-block } { alertblock }
+          {\group_begin:
+           \exp_args:Nee \colorlet
+             { \OsgColorName{structure} } { \OsgColorName{alert} }
            \__ltxtalk_use_original_block:nnn {#1}{#2}{#3}\group_end:} }
       { }
   }
 \cs_if_exist:cF { exampleblock }
   {
     \NewDocumentEnvironment { exampleblock } { d <> m +b }
-      { \UseInstance { lttheme-block } { exampleblock }
-          {\group_begin:\color_set_eq:nn {structure}{example}
+      { \UseInstance { osgstyler-block } { exampleblock }
+          {\group_begin:
+           \exp_args:Nee \colorlet
+             { \OsgColorName{structure} } { \OsgColorName{example} }
            \__ltxtalk_use_original_block:nnn {#1}{#2}{#3}\group_end:} }
       { }
   }
 
+% Delegates to osgstyler's list palette (enumitem-backed) instead of
+% redefining \labelitemi directly, so itemize customization here gains
+% mode-awareness for free and goes through the same engine as every
+% other theme's list styling.
+\tl_new:N \l__ltxtalk_itemize_options_tl
 \keys_define:nn { ltxtalk / itemize }
   {
-    level-1 .code:n = \cs_set:Npn \labelitemi {#1},
-    level-2 .code:n = \cs_set:Npn \labelitemii {#1},
-    level-3 .code:n = \cs_set:Npn \labelitemiii {#1},
-    level-4 .code:n = \cs_set:Npn \labelitemiv {#1}
+    level-1 .code:n =
+      \tl_put_right:Nn \l__ltxtalk_itemize_options_tl { 1 = {label=#1}, },
+    level-2 .code:n =
+      \tl_put_right:Nn \l__ltxtalk_itemize_options_tl { 2 = {label=#1}, },
+    level-3 .code:n =
+      \tl_put_right:Nn \l__ltxtalk_itemize_options_tl { 3 = {label=#1}, },
+    level-4 .code:n =
+      \tl_put_right:Nn \l__ltxtalk_itemize_options_tl { 4 = {label=#1}, }
   }
 \NewDocumentCommand \setltxtalkitemize { m }
-  { \keys_set:nn { ltxtalk / itemize } {#1} }
+  {
+    \tl_clear:N \l__ltxtalk_itemize_options_tl
+    \keys_set:nn { ltxtalk / itemize } {#1}
+    \exp_args:Nnx \DeclareOsgListPalette { ltxtalk-itemize }
+      { itemize = { \l__ltxtalk_itemize_options_tl } }
+    \UseOsgListPalette { ltxtalk-itemize }
+  }
 
 % ==========================================
 % NAMED-SLOT-SYSTEM

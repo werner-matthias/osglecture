@@ -1,0 +1,35 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osgstyler}
+
+\DeclareOsgListPalette{fancy}{
+  itemize = {
+    1 = {label=\textbullet},
+    2 = {label=\textendash}
+  },
+  enumerate = {
+    1 = {label=\arabic*)}
+  }
+}
+
+\begin{document}
+\START
+\UseOsgListPalette{fancy}
+\ExplSyntaxOn
+\TYPE{itemize-1-stored=\prop_item:Nn \g__osgstyler_list_palette_prop { fancy/itemize/1 }}
+\TYPE{itemize-2-stored=\prop_item:Nn \g__osgstyler_list_palette_prop { fancy/itemize/2 }}
+\TYPE{enumerate-1-stored=\prop_item:Nn \g__osgstyler_list_palette_prop { fancy/enumerate/1 }}
+\ExplSyntaxOff
+\begin{itemize}
+  \item one
+  \begin{itemize}
+    \item nested
+  \end{itemize}
+\end{itemize}
+\begin{enumerate}
+  \item first
+  \item second
+\end{enumerate}
+\TYPE{done}
+\END
+\end{document}

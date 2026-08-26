@@ -44,8 +44,19 @@
 \ExplSyntaxOn
 \cs_if_exist:NT \alertblock {\TYPE{alertblock:passed}}
 \cs_if_exist:NT \exampleblock {\TYPE{exampleblock:passed}}
-\str_if_eq:eeT {\labelitemi}{I} {\TYPE{itemize-level-1:passed}}
-\str_if_eq:eeT {\labelitemiv}{IV} {\TYPE{itemize-level-4:passed}}
+% \setltxtalkitemize now delegates to osgstyler's enumitem-backed list
+% palette (\labelitemi is no longer touched at all, so checking it
+% directly would test a mechanism that is no longer in use); the
+% stored, per-level \setlist option is what osgstyler-block-style tests
+% elsewhere in this bundle already check for comparable internals.
+\str_if_eq:eeT
+  { \prop_item:Nn \g__osgstyler_list_palette_prop { ltxtalk-itemize/itemize/1 } }
+  { label=I }
+  {\TYPE{itemize-level-1:passed}}
+\str_if_eq:eeT
+  { \prop_item:Nn \g__osgstyler_list_palette_prop { ltxtalk-itemize/itemize/4 } }
+  { label=IV }
+  {\TYPE{itemize-level-4:passed}}
 \color_export:nnN { ltxtalk-primary } { HTML } \l_tmpa_tl
 \TYPE{primary-after-incomplete-attempt=\l_tmpa_tl}
 \ExplSyntaxOff

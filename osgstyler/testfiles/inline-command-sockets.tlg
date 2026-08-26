@@ -7,6 +7,7 @@ semantics=strong
 semantics=strong
 semantics=emphasis
 semantics=strong
+Lua-only attribute luaul1 = ...
 defaults-before
 defaults-after
 semantics=emphasis

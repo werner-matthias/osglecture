@@ -1,0 +1,38 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osgstyler}
+
+\DeclareOsgColorPalette{default-backend-test}{
+  primary = {model=HTML, value=223344},
+  text = {model=HTML, value=111111},
+  background = {model=HTML, value=FFFFFF},
+  accent = {model=HTML, value=FFD966}
+}
+\DeclareOsgMetricPalette{default-backend-test}{
+  rule = {thin = {.4pt}},
+  padding = {compact = {.2em}}
+}
+\DeclareOsgDecoration{default-backend-frame}{
+  enclosure = {
+    border-color = primary, fill-color = background,
+    pattern = solid, thickness = rule/thin,
+    radius = 0pt, padding = padding/compact
+  }
+}
+\DeclareOsgInlineStyle{default-backend-framed}{
+  font = none, color = none, decoration = default-backend-frame
+}
+
+\begin{document}
+\UseOsgColorPalette{default-backend-test}
+\UseOsgMetricPalette{default-backend-test}
+\START
+\OsgDecorationProcessorAvailableTF
+  { \TYPE{processor-available=true} }
+  { \TYPE{processor-available=false} }
+\UseOsgInlineStyle{default-backend-framed}{framed}
+\TYPE{enclosure-rendered=yes}
+\highlight{marked}
+\TYPE{done}
+\END
+\end{document}
