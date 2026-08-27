@@ -1,8 +1,12 @@
 name: Tests · Windows
 
+# Manual dispatch only: the Windows runner has a longstanding, unresolved
+# path-handling bug (see the "Debug session" step below) that fails on
+# essentially every push, which used to spam failure notifications without
+# giving new information. Trigger by hand from the Actions tab when actually
+# investigating that bug; the status badge still reflects the most recent
+# such run.
 on:
-  push:
-  pull_request:
   workflow_dispatch:
 
 permissions:
