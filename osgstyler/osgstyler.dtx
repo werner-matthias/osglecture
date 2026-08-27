@@ -351,7 +351,19 @@ load babel
     Section~\ref{sec:lttheme}.}
 \end{description}
 
-\section{\ldeen{Farbpaletten}{Color Palettes}}
+\section{\ldeen{Anwendung}{Using osgstyler}}
+\label{sec:using}
+\ldeen{Dieser Teil enthält alles, was zum Auswählen und Anwenden fertiger
+  Stile nötig ist. Wer nur ein Dokument gestalten möchte, kann ihn der Reihe
+  nach lesen und anschließend direkt zur Referenz springen. Die Deklaration
+  eigener Paletten, Styles und Umgebungen beginnt erst in
+  Abschnitt~\ref{sec:theme-development}.}{This part contains everything
+  needed to select and apply ready-made styles. Readers who only want to
+  style a document can read it in order and then skip directly to the
+  reference. Declaring custom palettes, styles, and environments starts only
+  in Section~\ref{sec:theme-development}.}
+
+\subsection{\ldeen{Farbpaletten}{Color Palettes}}
 \label{sec:colors}
 \ldeen{Eine Farbpalette bildet portable \emph{Slotnamen} auf konkrete
   \pkg*{xcolor}-Farben ab. Genau eine Farbpalette ist zu jedem Zeitpunkt
@@ -362,7 +374,6 @@ load babel
   at any time; every other part of \osgstyler{} (decorations, inline styles,
   blocks) refers only to slot names, never to concrete color values.}
 
-\subsection{\ldeen{Nutzen}{Using}}
 \label{sec:colors:use}
 \ldeen*{Beim Laden des Pakets ist bereits die eingebaute Palette
   \code{osgstyler-default} aktiv -- \osgstyler{} funktioniert also ohne
@@ -412,7 +423,436 @@ load babel
     palette.}{\cs{OsgColorName}}
 \end{warnbox}
 
-\subsection{\ldeen{Erstellen}{Creating}}
+\subsection{\ldeen{Schriftpaletten}{Font Palettes}}
+\label{sec:fonts}
+\ldeen*{Analog zu Farbpaletten bildet eine Schriftpalette portable
+  \emph{Slotnamen} auf @1-Ressourcen ab. @1 wird dafür bei Bedarf
+  automatisch geladen -- außer die Paketoption @2 ist gesetzt, siehe
+  Abschnitt~@3.}{Analogous to color palettes, a font palette maps portable
+  \emph{slot names} to @1 resources. @1 is loaded automatically for this
+  purpose -- unless the package option @2 is set, see Section~@3.}
+  {\needpackage{fontspec}}{\option{colors-only}}{\ref{sec:fonts:colors-only}}
+
+\label{sec:fonts:use}
+\ldeen*{Wie bei Farben ist beim Laden bereits eine eingebaute Palette
+  (\code{osgstyler-default}, reines Latin Modern) aktiv. Eine andere Palette
+  wird mit @1 aktiviert, ein einzelner Slot im Fließtext mit @2
+  ausgewählt:}{As with colors, a built-in palette (\code{osgstyler-default},
+  plain Latin Modern) is already active when the package is loaded. A
+  different palette is activated with @1, and a single slot is selected in
+  running text with @2:}{\cs{UseOsgFontPalette}}{\cs{UseOsgFont}}
+\begin{example}[code-only]
+    \UseOsgFontPalette{osl-modern}
+
+    Fließtext bleibt \code{main}. {\UseOsgFont{companion}Dieser
+    Textteil nutzt die Begleitschrift.}
+\end{example}
+\ldeen*{Der Slot @1 lässt sich nicht auswählen (@2 bricht mit Fehler ab) --
+  er ist für einen späteren @3-Adapter reserviert und liefert keine
+  eigenständige Textschriftfamilie.}{The slot @1 cannot be selected (@2
+  aborts with an error) -- it is reserved for a future @3 adapter and does
+  not provide a standalone text font family.}{\code{math}}
+  {\cs{UseOsgFont}\Marg{math}}{\needpackage{unicode-math}}
+
+\subsection{\ldeen{Metrikpaletten}{Metric Palettes}}
+\label{sec:metrics}
+\ldeen*{Eine Metrikpalette bildet portable Größen-Slots auf konkrete
+  Längen ab -- für Abstände, Innenabstände (Padding), Linienstärken und
+  Eckenradien. Anders als Farb-/Font-Slots sind Metrikwerte in vier
+  \emph{Kategorien} gruppiert, jede mit eigenen Slotnamen: @1.}{A metric
+  palette maps portable size slots to concrete lengths -- for spacing,
+  padding, rule thickness, and corner radii. Unlike color/font slots,
+  metric values are grouped into four \emph{categories}, each with its own
+  slot names: @1.}{\code{spacing}/\code{padding}/\code{rule}/\code{radius}}
+
+\label{sec:metrics:use}
+\ldeen*{Die eingebaute Palette @1 ist beim Laden bereits aktiv. Eine andere
+  Palette wird mit @2 aktiviert; der aktive Wert eines Slots wird mit dem
+  expandierbaren @3 abgefragt.}{The built-in palette @1 is already active
+  when the package is loaded. A different palette is activated with @2; the
+  active value of a slot is queried with the expandable @3.}
+  {\code{osgstyler-default}}{\cs{UseOsgMetricPalette}}{\cs{OsgMetric}}
+\begin{example}[code-only]
+    \UseOsgMetricPalette{my-metrics}
+    \setlength\fboxsep{\OsgMetric{padding}{normal}}
+\end{example}
+\ldeen{Eigene Dekorationen und Templates greifen typischerweise nicht
+  direkt auf \cs{OsgMetric} zu, sondern erlauben eine Metrikreferenz der
+  Form \meta{Kategorie}\code{/}\meta{Slot} an genau der Stelle, an der auch
+  eine literale Länge stehen darf (siehe \code{thickness}/\code{padding}
+  bei Dekorationen, Abschnitt~\ref{sec:decorations}).}{Custom decorations
+  and templates typically don't access \cs{OsgMetric} directly, but instead
+  accept a metric reference of the form
+  \meta{category}\code{/}\meta{slot} anywhere a literal length is also
+  allowed (see \code{thickness}/\code{padding} for decorations,
+  Section~\ref{sec:decorations}).}
+
+\subsection{\ldeen{Listenpaletten}{List Palettes}}
+\label{sec:lists}
+\ldeen*{Anders als die bisherigen Paletten ist eine Listenpalette keine
+  reine Datenablage: @1 wendet die hinterlegten Optionen \emph{sofort} über
+  @2 an, denn genau das ist auch @2s eigenes Anwendungsmodell -- eine
+  Aktivierung gilt ab dem Aufruf, nicht rückwirkend für bereits gesetzte
+  Listen. Werte je Ebene sind rohe @2-Optionen; \osgstyler{} erfindet @2s
+  Vokabular nicht neu, sondern organisiert es nur unter einem
+  Palettennamen.}{Unlike the palettes so far, a list palette is not a pure
+  data store: @1 applies the stored options \emph{immediately} via @2,
+  since that matches @2's own application model -- an activation takes
+  effect from the call onward, not retroactively for lists already
+  typeset. Values per level are raw @2 options; \osgstyler{} does not
+  reinvent @2's vocabulary, it only organizes it under a palette
+  name.}{\cs{UseOsgListPalette}}{\pkg*{enumitem}}
+
+\label{sec:lists:use}
+\ldeen*{Die eingebaute Palette @1 lässt @2s eigene Vorgaben unangetastet.
+  Eine andere Palette wird mit @3 aktiviert.}{The built-in palette @1
+  leaves @2's own defaults untouched. A different palette is activated
+  with @3.}{\code{osgstyler-default}}{\pkg*{enumitem}}
+  {\cs{UseOsgListPalette}}
+\begin{example}[code-only]
+    \UseOsgListPalette{osl-modern}
+    \begin{itemize}
+      \item Farbige quadratische Bullets statt Standard-Bullets.
+    \end{itemize}
+\end{example}
+\ldeen{Nicht deklarierte Ebenen oder Listenarten einer Palette bleiben
+  unangetastet -- \code{osl-modern} etwa ändert nur \env{itemize}-Ebene~1,
+  Ebenen~2--4 sowie \env{enumerate}/\env{description} bleiben bei
+  \pkg*{enumitem}s eigenen Vorgaben.}{Levels or list types not declared in
+  a palette stay untouched -- \code{osl-modern}, for instance, only changes
+  \env{itemize} level~1; levels~2--4 as well as
+  \env{enumerate}/\env{description} keep \pkg*{enumitem}'s own defaults.}
+
+\subsection{\ldeen{Dekorationen}{Decorations}}
+\label{sec:decorations}
+\ldeen{Eine Dekoration ist ein backend-neutrales visuelles Rezept: eine
+  benannte Kombination aus Linien, Hintergrund, Rahmen, Randmarkierung
+  und/oder Vor-/Nachzeichen (\emph{Affixe}), beschrieben rein über Werte
+  (Farb-Slots, Metrik-Slots, Muster) -- ohne festzulegen, \emph{wie} daraus
+  tatsächlich Tinte auf dem Papier wird. Das erledigt ein austauschbarer
+  \emph{Prozessor}, siehe Abschnitt~\ref{sec:decorations:processors}.}{A
+  decoration is a backend-neutral visual recipe: a named combination of
+  lines, background, border, margin marking, and/or leading/trailing marks
+  (\emph{affixes}), described purely through values (color slots, metric
+  slots, patterns) -- without fixing \emph{how} that actually becomes ink
+  on paper. That is handled by a replaceable \emph{processor}, see
+  Section~\ref{sec:decorations:processors}.}
+
+\label{sec:decorations:use}
+\ldeen*{Die meisten Dokumente berühren Dekorationen nie direkt: die
+  eingebauten @1/@2/@3 stecken hinter den gleichnamigen Inline-Styles
+  (Abschnitt~@4) und werden über \cs{UseOsgInlineStyle} bzw.\ gebundene
+  Befehle wie \cs{uline} genutzt.}{Most documents never touch decorations
+  directly: the built-in @1/@2/@3 sit behind the inline styles of the same
+  name (Section~@4) and are used via \cs{UseOsgInlineStyle} or bound
+  commands such as \cs{uline}.}
+  {\code{osgstyler-underline}}{\code{osgstyler-highlight}}
+  {\code{osgstyler-frame}}{\ref{sec:inline}}
+
+\begin{warnbox}{\ldeen{Wichtig}{Important}}
+  \ldeen*{Eine deklarierte Dekoration zeichnet nichts von selbst. Ob @1
+    (Linien, Hintergrund) tatsächlich sichtbar werden, hängt vom aktiven
+    \emph{Prozessor} ab: der eingebaute Standardprozessor zeichnet nur @2
+    und @3 (siehe Referenztabelle unten); @1 verlangt @4 (siehe
+    Abschnitt~@5) oder einen eigenen Prozessor.}{A declared decoration does
+    not draw anything by itself. Whether @1 (lines, background) actually
+    become visible depends on the active \emph{processor}: the built-in
+    default processor only draws @2 and @3 (see the reference table
+    below); @1 requires @4 (see Section~@5) or a custom processor.}
+    {\code{line}/\code{background}}{\code{enclosure}}{\code{affix}}
+    {\pkg{osgstyler-lua}}{\ref{sec:lua}}
+\end{warnbox}
+
+\ldeen{Für Theme-/Backend-Code lässt sich abfragen, ob überhaupt ein
+  rendernder Prozessor aktiv ist, sowie, welche Komponenten/Instanzen eine
+  Dekoration hat, ohne deren konkrete Werte zu kennen:}{Theme/backend code
+  can query whether a rendering processor is active at all, as well as
+  which components/instances a decoration has, without knowing its concrete
+  values:}
+\begin{example}[code-only]
+    \OsgDecorationProcessorAvailableTF
+      { }
+      { \PackageWarning{my-theme}{No~decoration~backend~active} }
+\end{example}
+
+\subsection{\ldeen{Inline-Styles}{Inline Styles}}
+\label{sec:inline}
+\ldeen*{Inline-Styles sind die erste Kompositionsebene: eine benannte
+  Instanz des Kernel-Template-Typs @1 bündelt Font-/Farbwahl, Schriftschnitt
+  und -stärke, eine Dekoration und eine semantische Rolle zu einem einzigen
+  wiederverwendbaren Stil.}{Inline styles are the first composition layer:
+  a named instance of the kernel template type @1 bundles font/color
+  choice, shape and weight, a decoration, and a semantic role into a
+  single, reusable style.}{\code{osgstyler-inline}}
+
+\label{sec:inline:use}
+\ldeen*{Fünf Styles sind vordefiniert: @1. Direkt aufgerufen wird ein Style
+  mit @2:}{Five styles are predefined: @1. A style is invoked directly
+  with @2:}
+  {\code{emphasis}/\code{strong}/\code{underline}/\code{highlight}/\code{frame}}
+  {\cs{UseOsgInlineStyle}}
+\begin{example}[code-only]
+    \UseOsgInlineStyle{emphasis}{hervorgehobener Text}
+\end{example}
+\ldeen*{In der Praxis werden Inline-Styles meist nicht direkt aufgerufen,
+  sondern über @1 an einen gewohnten Befehlsnamen \emph{gebunden}, sodass
+  weiterhin @2, @3 usw.\ geschrieben wird:}{In practice, inline styles are
+  usually not invoked directly, but \emph{bound} via @1 to a familiar
+  command name, so that @2, @3, etc.\ continue to be written:}
+  {\cs{BindOsgInlineCommand}}{\cs{emph}}{\cs{textbf}}
+\begin{example}[code-only]
+    \UseOsgStandardInlineCommands
+    % bindet \emph, \textbf, \uline, \highlight, \fbox
+\end{example}
+\ldeen*{@1 bindet einzeln nach Bedarf; @2 bindet alle fünf Standardbefehle
+  auf einmal. \cs{highlight} ist unabhängig davon bereits beim Laden des
+  Pakets gebunden, da es kein vorbestehendes \LaTeX-Kommando gibt, das
+  sonst überraschend ersetzt würde.}{@1 binds individually as needed; @2
+  binds all five standard commands at once. \cs{highlight} is already
+  bound when the package loads, independently of this, since there is no
+  pre-existing \LaTeX{} command that would otherwise be surprisingly
+  replaced.}{\cs{BindOsgInlineCommand}}{\cs{UseOsgStandardInlineCommands}}
+
+\ldeen*{Eine Bindung ändert die \emph{Implementierung} des Befehls, nie
+  seine Aufrufsyntax -- @1 nimmt weiterhin genau ein Argument. War der
+  Befehl vor dem Binden bereits definiert (wie @2/@3), bleibt seine
+  ursprüngliche Bedeutung als @4-Plug erhalten; @5 (pro Befehl) bzw.\ @6
+  (gesammelt) schaltet dorthin zurück. Für neu durch \osgstyler{}
+  eingeführte Befehle wie @7 ist der @4-Plug stattdessen die Identität
+  (gibt das Argument unverändert zurück).}{A binding changes the command's
+  \emph{implementation}, never its call syntax -- @1 continues to take
+  exactly one argument. If the command already existed before binding
+  (such as @2/@3), its original meaning is preserved as the @4 plug; @5
+  (per command) or @6 (collectively) switches back to it. For commands
+  newly introduced by \osgstyler{} such as @7, the @4 plug is the identity
+  instead (returns the argument unchanged).}
+  {\meta{\ldeen{Befehl}{command}}}{\cs{emph}}{\cs{textbf}}
+  {\code{default}}{\cs{RestoreOsgInlineCommand}}
+  {\cs{UseOsgDefaultInlineCommands}}{\cs{highlight}}
+
+\ldeen{Wie jede \TeX-Zuweisung ist eine Bindung gruppenlokal -- ein Style
+  lässt sich also auch nur für einen Abschnitt des Dokuments ändern.}{Like
+  any \TeX{} assignment, a binding is group-local -- a style can therefore
+  also be changed for only part of the document.}
+\begin{example}[code-only]
+    {\BindOsgInlineCommand\emph{strong}
+     \emph{fett statt kursiv, nur in dieser Gruppe}}
+    \emph{wieder wie gewohnt}
+\end{example}
+
+\begin{infobox}{\ldeen{Mit osglecture-modes}{With osglecture-modes}}
+  \ldeen*{Ist @1 geladen (in beliebiger Reihenfolge zu \osgstyler{}),
+    akzeptieren @2 sowie \emph{jeder} über @3 gebundene Befehl zusätzlich
+    ein portables Modusargument, siehe dessen Dokumentation.}{If @1 is
+    loaded (in either order relative to \osgstyler{}), @2 as well as
+    \emph{every} command bound via @3 additionally accepts a portable mode
+    expression, see that package's documentation.}
+    {\pkg{osglecture-modes}}{\cs{UseOsgInlineStyle}}
+    {\cs{BindOsgInlineCommand}}
+  \begin{example}[code-only]
+      \emph<presentation>{nur im Präsentationsmodus hervorgehoben}
+  \end{example}
+\end{infobox}
+
+\subsection{\ldeen{Bausteine: Blöcke}{Blocks}}
+\label{sec:blocks}
+\ldeen{Blöcke sind die zweite Kompositionsebene: kastenartige, umrandete
+  oder hinterlegte Inhalte -- Beamer-Blöcke ebenso wie theorem-artige Boxen
+  oder Zitate in der Langform. Dies ist der umfangreichste Teil von
+  \osgstyler{}, da er sich sowohl an gewöhnliche Dokumente (Zitate, fertige
+  Blöcke) als auch an Theme-/Paketautor*innen (eigene Umgebungen,
+  \pkg*{amsthm}-Integration) richtet.}{Blocks are the second composition
+  layer: boxed, framed, or filled content -- beamer blocks as well as
+  theorem-like boxes or quotations in the long form. This is the most
+  extensive part of \osgstyler{}, since it addresses both ordinary
+  documents (quotations, ready-made blocks) and theme/package authors
+  (custom environments, \pkg*{amsthm} integration).}
+
+\subsubsection{\ldeen{Konzept}{Concept}}
+\label{sec:blocks:concept}
+\ldeen*{Wie Inline-Styles ist ein Block eine Instanz eines
+  Kernel-Template-Typs, hier @1. Anders als bei Inline-Styles trennt
+  \osgstyler{} bei Blöcken jedoch bewusst zwei unabhängige Fragen:}{Like
+  inline styles, a block is an instance of a kernel template type, here
+  @1. Unlike inline styles, however, \osgstyler{} deliberately separates
+  two independent questions for blocks:}{\code{osgstyler-block}}
+\begin{enumerate}
+  \item \ldeen{\emph{Welche Optik} hat der Block?}{\emph{What visual
+    appearance} does the block have?}
+    \ldeen{-- festgelegt durch die Interface-Schlüssel einer Instanz
+    (Rahmenfarbe/-stärke, Innenabstand, Hintergrund, Text vor/nach dem
+    Inhalt).}{-- determined by an instance's interface keys (rule
+    color/thickness, padding, background, text before/after the
+    content).}
+  \item \ldeen{\emph{Wie kommt Inhalt} in diese Optik hinein?}{\emph{How
+    does content get} into that appearance?}
+    \ldeen{-- entweder, indem eine bereits bestehende Umgebung (\env{quote},
+    ein \pkg*{amsthm}-\env{theorem}, Beamers \env{block}) optisch
+    \emph{umhüllt} wird (Abschnitt~\ref{sec:blocks:create}, Fall~A), oder
+    indem \osgstyler{} eine \emph{neue} Umgebung von Grund auf erzeugt
+    (Fall~B).}{-- either by visually \emph{wrapping} an already-existing
+    environment (\env{quote}, an \pkg*{amsthm} \env{theorem}, beamer's
+    \env{block}) (Section~\ref{sec:blocks:create}, case~A), or by having
+    \osgstyler{} create a \emph{new} environment from scratch (case~B).}
+\end{enumerate}
+\ldeen*{Diese Trennung bedeutet: die Render-Logik einer Optik existiert
+  \emph{einmal}, unabhängig davon, wie viele Umgebungen sie am Ende
+  nutzen, und eine umhüllte Umgebung behält ihre eigene Nummerierung,
+  ihren eigenen \pkg*{amsthm}-Zähler usw.\ vollständig -- @1 fügt nur
+  Optik um deren fertige Ausgabe herum, ohne sie zu interpretieren.}{This
+  separation means: the rendering logic for an appearance exists
+  \emph{once}, no matter how many environments end up using it, and a
+  wrapped environment fully keeps its own numbering, its own
+  \pkg*{amsthm} counter, etc.\ -- @1 only adds appearance around its
+  finished output, without interpreting it.}
+  {\cs{BindOsgBlockEnvironment}}
+
+\begin{warnbox}{\ldeen{Aktueller Stand}{Current Status}}
+  \ldeen*{Der mitgelieferte Standard-Renderer zeichnet @1: eine
+    farbige Umrandung fester Stärke (\pkg*{fbox}-artig), einen Innenabstand
+    und wahlweise einen Hintergrund. Die Interface-Schlüssel @2 und @3
+    werden gespeichert (z.\,B. für die Traits-Verkettung, siehe
+    Abschnitt~@4), aber vom Standard-Renderer \emph{nicht} sichtbar
+    umgesetzt -- abgerundete Ecken und Schatten sind für einen späteren,
+    mächtigeren Renderer (z.\,B.\ auf Basis von \pkg{tcolorbox}, siehe
+    Abschnitt~\ref{sec:alternatives}) reserviert.}{The bundled default
+    renderer draws @1: a colored border of fixed thickness (\pkg*{fbox}-style),
+    a padding, and optionally a background. The interface keys @2 and @3
+    are stored (e.g.\ for trait concatenation, see Section~@4), but
+    \emph{not} visibly rendered by the default renderer -- rounded corners
+    and shadows are reserved for a future, more capable renderer (e.g.\
+    built on \pkg{tcolorbox}, see Section~\ref{sec:alternatives}).}
+    {\code{rule-color}/\code{rule-thickness}/\code{padding}/\code{background}}
+    {\code{corner-radius}}{\code{shadow}/\code{shadow-offset}}
+    {\ref{sec:blocks:traits}}
+\end{warnbox}
+
+\label{sec:blocks:use}
+\ldeen*{Fünf Instanzen sind immer schon deklariert (unsichtbar, wie es die
+  Interface-Vorgaben ohnehin vorsehen), aber \emph{nicht} automatisch mit
+  einer Umgebung verbunden: @1/@2 (ohne eigene Optik) sowie @3/@4/@5 (mit
+  Rahmen und Innenabstand; @4/@5 zusätzlich in Alarm-/Beispielfarbe). @6
+  aktiviert alle fünf auf einmal:}{Five instances are always already
+  declared (invisible, as the interface defaults provide anyway), but
+  \emph{not} automatically connected to an environment: @1/@2 (with no
+  appearance of their own) as well as @3/@4/@5 (with a border and
+  padding; @4/@5 additionally in alert/example color). @6 activates all
+  five at once:}
+  {\env{quote}}{\env{quotation}}{\env{block}}{\env{alertblock}}
+  {\env{exampleblock}}{\cs{UseOsgStandardBlockEnvironments}}
+\begin{example}[code-only]
+    \UseOsgStandardBlockEnvironments
+
+    \begin{document}
+    \begin{quote}
+      Ein Zitat, jetzt mit Rahmen aus der aktiven Farbpalette.
+    \end{quote}
+
+    \begin{block}{Titel}
+      Ein Beamer-artiger Block, auch in der Langform verfügbar.
+    \end{block}
+    \end{document}
+\end{example}
+\ldeen*{@1/@2/@3 werden dabei nur dann \emph{neu erzeugt}, wenn sie noch
+  nicht existieren (Langform ohne Beamer/\cls*{ltx-talk}): unter
+  \cls*{ltx-talk} existieren sie bereits nativ und behalten dort ihre
+  eigene Optik -- nur @4/@5 werden dort umgebunden.}{@1/@2/@3 are only
+  \emph{newly created} if they do not already exist (long form without
+  beamer/\cls*{ltx-talk}): under \cls*{ltx-talk}, they already exist
+  natively and keep their own appearance there -- only @4/@5 are rebound
+  there.}{\env{block}}{\env{alertblock}}{\env{exampleblock}}
+  {\env{quote}}{\env{quotation}}
+
+\begin{warnbox}{\ldeen{Wichtig}{Important}}
+  \ldeen*{Nichts davon geschieht beim bloßen Laden von \osgstyler{}. Wer
+    das Paket nur wegen Farben oder Inline-Befehlen lädt, soll nicht
+    überrascht feststellen, dass sich seine Zitate verändert haben -- @1
+    ist ein bewusster, expliziter Opt-in.}{None of this happens merely by
+    loading \osgstyler{}. Anyone loading the package only for colors or
+    inline commands should not be surprised to find their quotations
+    changed -- @1 is a deliberate, explicit opt-in.}
+    {\cs{UseOsgStandardBlockEnvironments}}
+\end{warnbox}
+
+\subsubsection{\ldeen{Presets}{Presets}}
+\label{sec:blocks:presets}
+\ldeen*{Ein \emph{Preset} bündelt Farb-, Font- und ggf.\ Listenpalette
+  sowie ggf.\ einen Block-Trait unter einem gemeinsamen Namen. @1
+  aktiviert alle vorhandenen Teile eines Presets auf einmal.}{A
+  \emph{preset} bundles a color, font, and possibly list palette, plus
+  possibly a block trait, under one shared name. @1 activates every part
+  of a preset that exists, all at once.}{\cs{UseOsgPreset}}
+\begin{example}[code-only]
+    \UseOsgPreset{osl-modern}
+\end{example}
+\ldeen{Zwei Presets liegen bei:}{Two presets are bundled:}
+\begin{description}
+  \item[\code{osl-standard}] \ldeen{Farb-/Font-Palette; zurückhaltend, dem
+    unkolorierten \cls*{amsthm}-Erscheinungsbild nahe. Kein Trait, keine
+    Listenpalette.}{Color/font palette; restrained, close to unadorned
+    \cls*{amsthm} appearance. No trait, no list palette.}
+  \item[\code{osl-modern}] \ldeen{Farb-/Font-Palette; Listenpalette mit
+    farbigen quadratischen Bullets (Abschnitt~\ref{sec:lists}); Trait
+    \code{osl-modern-rules} (siehe unten).}{Color/font palette; list
+    palette with colored square bullets (Section~\ref{sec:lists}); trait
+    \code{osl-modern-rules} (see below).}
+\end{description}
+\ldeen*{Der Trait @1 gibt @2/@3 sowie den drei @4-Instanzen (@5/@6/@7)
+  eine dünne, akzentfarbene Linie vor und nach dem Inhalt statt eines
+  Rahmens (\code{rule-thickness=0pt}) -- passend zum unkastenlosen
+  \pkg*{amsthm}-Vorbild, siehe Abschnitt~\ref{sec:blocks:traits}. @8
+  wendet ihn automatisch auf alle sieben Instanzen an, sofern sie
+  existieren (unabhängig davon, ob deren Umgebungen bereits gebunden
+  sind).}{The trait @1 gives @2/@3 as well as the three @4 instances
+  (@5/@6/@7) a thin, accent-colored line before and after the content
+  instead of a border (\code{rule-thickness=0pt}) -- matching the
+  boxless \pkg*{amsthm} model, see Section~\ref{sec:blocks:traits}. @8
+  applies it automatically to all seven instances, provided they exist
+  (regardless of whether their environments are already bound).}
+  {\code{osl-modern-rules}}{\env{quote}}{\env{quotation}}
+  {\env{\ldeen{block-artigen}{block-like}}}{\env{block}}{\env{alertblock}}
+  {\env{exampleblock}}{\cs{UseOsgPreset}}
+
+\subsection{\ldeen{Nummerierung}{Numbering}}
+\label{sec:numbering}
+\ldeen*{Eine Nummerierung liefert \emph{ausschließlich} die formatierte
+  Zahl (z.\,B. "`2.3"'); weder ein lokalisiertes Label wie "`Satz"' noch
+  ein optionaler Autoren-Titel gehören dazu -- beides bleibt Sache der
+  Umgebung, die eine Nummerierung nutzt (typischerweise über
+  \cs{NewOsgStyledEnvironment}, Abschnitt~\ref{sec:blocks:new}), damit
+  \osgstyler{} selbst sprachneutral bleibt.}{A numbering produces
+  \emph{only} the formatted number (e.g.\ "`2.3"'); neither a localized
+  label such as "`Theorem"' nor an optional author-supplied title belong
+  here -- both remain the concern of the environment that uses a
+  numbering (typically via \cs{NewOsgStyledEnvironment},
+  Section~\ref{sec:blocks:new}), so that \osgstyler{} itself stays
+  language-neutral.}
+
+\label{sec:numbering:use}
+\ldeen*{Wer eine bereits deklarierte Nummerierung in eigenem Umgebungscode
+  braucht (statt sie über \cs{NewOsgStyledEnvironment} automatisch nutzen
+  zu lassen): @1 erhöht den zugrundeliegenden Zähler
+  (\cs*{refstepcounter}), das expandierbare @2 liefert den formatierten
+  Wert.}{Anyone who needs an already-declared numbering in custom
+  environment code (rather than letting \cs{NewOsgStyledEnvironment} use
+  it automatically): @1 increments the underlying counter
+  (\cs*{refstepcounter}), the expandable @2 returns the formatted
+  value.}{\cs{StepOsgNumbering}}{\cs{OsgNumberingValue}}
+\begin{example}[code-only]
+    \StepOsgNumbering{mynote}
+    Notiz~\OsgNumberingValue{mynote}
+\end{example}
+
+\section{\ldeen{Themen entwickeln}{Developing Themes}}
+\label{sec:theme-development}
+\ldeen{Dieser Teil richtet sich an Autor*innen von Themen und Vorlagen. Er
+  setzt die Begriffe aus dem Anwendungsteil voraus und behandelt das
+  Deklarieren neuer Ressourcen sowie die Backend- und Paketintegration.}{This
+  part is intended for authors of themes and templates. It assumes the terms
+  introduced in the user part and covers declaring new resources as well as
+  backend and package integration.}
+
+\subsection{\ldeen{Farbpaletten}{Color Palettes}}
 \label{sec:colors:create}
 \ldeen*{Eine neue Farbpalette wird mit @1 deklariert. Genau ein Slot,
   \code{primary}, ist Pflicht; alle anderen Slots fallen andernfalls auf
@@ -467,90 +907,7 @@ load babel
   page-background color could cause insufficient contrast, which is
   unproblematic for accents but unacceptable for body text.}{\code{primary}}
 
-\subsection{\ldeen{Referenz}{Reference}}
-\label{sec:colors:ref}
-\begin{commands}
-  \command{DeclareOsgColorPalette}[\marg{name}\marg{keys}]
-    \ldeen{Deklariert eine Farbpalette, siehe Abschnitt~\ref{sec:colors:create}.
-    }{Declares a color palette, see Section~\ref{sec:colors:create}.}
-  \command{UseOsgColorPalette}[\marg{name}]
-    \ldeen{Aktiviert eine deklarierte Palette.}{Activates a declared
-    palette.}
-  \expandable\command{OsgColorName}[\marg{slot}]
-    \ldeen{Expandierbar; liefert den \pkg*{xcolor}-Namen der aktiven Palette
-    für \meta{slot} (\code{osgstyler-}\meta{slot}).}{Expandable; returns the
-    \pkg*{xcolor} name of the active palette for \meta{slot}
-    (\code{osgstyler-}\meta{slot}).}
-  \expandable\command{OsgActiveColorPalette}
-    \ldeen{Expandierbar; Name der aktiven Farbpalette.}{Expandable; name of
-    the active color palette.}
-  \expandable\command{OsgColorPaletteValue}[\marg{palette}\marg{slot}\marg{property}]
-    \ldeen{Expandierbar; liefert einen rohen, gespeicherten Wert einer --
-    auch inaktiven -- Palette, ohne Alias-Auflösung. \meta{property} ist
-    \code{kind} (\code{resource} oder \code{alias}), sowie je nach Art
-    \code{model}/\code{value} oder \code{alias}.}{Expandable; returns a raw
-    stored value of a -- possibly inactive -- palette, without alias
-    resolution. \meta{property} is \code{kind} (\code{resource} or
-    \code{alias}), plus, depending on the kind, \code{model}/\code{value} or
-    \code{alias}.}
-  \command{OsgColorPaletteResolvedSlotTo}[\marg{palette}\marg{slot}\marg{tl-var}]
-    \ldeen{Löst Alias-Ketten und Rückfälle für \meta{slot} in \meta{palette}
-    auf und speichert den resultierenden Ressourcen-Slotnamen (nicht die
-    Farbe selbst) in der \pkg*{expl3}-Tokenlistenvariable \meta{tl-var}.}
-    {Resolves alias chains and fallbacks for \meta{slot} in \meta{palette}
-    and stores the resulting resource slot name (not the color itself) in
-    the \pkg*{expl3} token-list variable \meta{tl-var}.}
-\end{commands}
-\begin{options}
-  \keyval{model}{\ldeen{Farbmodell}{color model}}
-    \ldeen{Jedes von \pkg*{xcolor} unterstützte Modell, z.\,B. \code{HTML},
-    \code{RGB}, \code{cmyk}, \code{gray}.}{Any model supported by
-    \pkg*{xcolor}, e.g.\ \code{HTML}, \code{RGB}, \code{cmyk}, \code{gray}.}
-  \keyval{value}{\ldeen{Modellwert}{model value}}
-    \ldeen{Der zum Modell passende Wert, z.\,B. \code{2E4172} für
-    \code{HTML}.}{The value matching the model, e.g.\ \code{2E4172} for
-    \code{HTML}.}
-  \keyval{alias}{\ldeen{anderer Slot}{other slot}}
-    \ldeen{Übernimmt die Farbe eines anderen Slots derselben Palette.}
-    {Adopts the color of another slot in the same palette.}
-\end{options}
-\ldeen{Die portablen Farbslots sind}{The portable color slots are}
-\code{primary}, \code{secondary}, \code{accent}, \code{text},
-\code{background}, \code{structure}, \code{alert}, \code{example}.
-
-\section{\ldeen{Schriftpaletten}{Font Palettes}}
-\label{sec:fonts}
-\ldeen*{Analog zu Farbpaletten bildet eine Schriftpalette portable
-  \emph{Slotnamen} auf @1-Ressourcen ab. @1 wird dafür bei Bedarf
-  automatisch geladen -- außer die Paketoption @2 ist gesetzt, siehe
-  Abschnitt~@3.}{Analogous to color palettes, a font palette maps portable
-  \emph{slot names} to @1 resources. @1 is loaded automatically for this
-  purpose -- unless the package option @2 is set, see Section~@3.}
-  {\needpackage{fontspec}}{\option{colors-only}}{\ref{sec:fonts:colors-only}}
-
-\subsection{\ldeen{Nutzen}{Using}}
-\label{sec:fonts:use}
-\ldeen*{Wie bei Farben ist beim Laden bereits eine eingebaute Palette
-  (\code{osgstyler-default}, reines Latin Modern) aktiv. Eine andere Palette
-  wird mit @1 aktiviert, ein einzelner Slot im Fließtext mit @2
-  ausgewählt:}{As with colors, a built-in palette (\code{osgstyler-default},
-  plain Latin Modern) is already active when the package is loaded. A
-  different palette is activated with @1, and a single slot is selected in
-  running text with @2:}{\cs{UseOsgFontPalette}}{\cs{UseOsgFont}}
-\begin{example}[code-only]
-    \UseOsgFontPalette{osl-modern}
-
-    Fließtext bleibt \code{main}. {\UseOsgFont{companion}Dieser
-    Textteil nutzt die Begleitschrift.}
-\end{example}
-\ldeen*{Der Slot @1 lässt sich nicht auswählen (@2 bricht mit Fehler ab) --
-  er ist für einen späteren @3-Adapter reserviert und liefert keine
-  eigenständige Textschriftfamilie.}{The slot @1 cannot be selected (@2
-  aborts with an error) -- it is reserved for a future @3 adapter and does
-  not provide a standalone text font family.}{\code{math}}
-  {\cs{UseOsgFont}\Marg{math}}{\needpackage{unicode-math}}
-
-\subsection{\ldeen{Erstellen}{Creating}}
+\subsection{\ldeen{Schriftpaletten}{Font Palettes}}
 \label{sec:fonts:create}
 \ldeen*{Eine neue Schriftpalette wird mit @1 deklariert. Der Slot @2 ist
   Pflicht (mit eigener Ressource, kein Alias); alle übrigen Slots sind
@@ -600,7 +957,7 @@ load babel
 \end{tabular}
 \end{center}
 
-\subsection{\ldeen{Engine-neutraler Betrieb}{Engine-Neutral Operation}}
+\subsubsection{\ldeen{Engine-neutraler Betrieb}{Engine-Neutral Operation}}
 \label{sec:fonts:colors-only}
 \ldeen*{@1 verlangt \LuaTeX{} oder \XeTeX{}, was unter @2 (beispielsweise
   @3) kein tragbarer Zwang ist. Die Paketoption @4 hält @5 deshalb
@@ -626,97 +983,7 @@ load babel
   styling under @2 instead of risking an error.}
   {\cs{OsgFontPaletteAvailableTF}}{\option{colors-only}}
 
-\subsection{\ldeen{Referenz}{Reference}}
-\label{sec:fonts:ref}
-\begin{commands}
-  \command{DeclareOsgFontPalette}[\marg{name}\marg{keys}]
-    \ldeen{Deklariert eine Schriftpalette, siehe Abschnitt~\ref{sec:fonts:create}.
-    }{Declares a font palette, see Section~\ref{sec:fonts:create}.}
-  \command{UseOsgFontPalette}[\marg{name}]
-    \ldeen{Aktiviert eine deklarierte Palette.}{Activates a declared
-    palette.}
-  \command{UseOsgFont}[\marg{slot}]
-    \ldeen{Wählt die Schrift von \meta{slot} in der aktiven Palette aus
-    (\cs*{fontfamily}\ldots\cs*{selectfont}); \meta{slot} darf nicht
-    \code{math} sein.}{Selects the font of \meta{slot} in the active
-    palette (\cs*{fontfamily}\ldots\cs*{selectfont}); \meta{slot} must not
-    be \code{math}.}
-  \expandable\command{OsgActiveFontPalette}
-    \ldeen{Expandierbar; Name der aktiven Schriftpalette.}{Expandable; name
-    of the active font palette.}
-  \expandable\command{OsgFontPaletteValue}[\marg{palette}\marg{slot}\marg{property}]
-    \ldeen{Expandierbar; roher, gespeicherter Wert (\code{kind},
-    \code{font}/\code{features} oder \code{alias}, \code{description}) --
-    ohne Alias-Auflösung.}{Expandable; raw stored value (\code{kind},
-    \code{font}/\code{features} or \code{alias}, \code{description}) --
-    without alias resolution.}
-  \command{OsgFontPaletteResolvedSlotTo}[\marg{palette}\marg{slot}\marg{tl-var}]
-    \ldeen{Löst Alias-Ketten und Rückfälle auf, speichert den
-    Ressourcen-Slotnamen in \meta{tl-var}.}{Resolves alias chains and
-    fallbacks, stores the resource slot name in \meta{tl-var}.}
-  \command{OsgFontPaletteAvailableTF}[\marg{true}\marg{false}]
-    \ldeen{Siehe Abschnitt~\ref{sec:fonts:colors-only}.}{See
-    Section~\ref{sec:fonts:colors-only}.}
-\end{commands}
-\begin{options}
-  \keyval{font}{\ldeen{Fontname}{font name}}
-    \ldeen{Ein \pkg*{fontspec}-Fontname.}{A \pkg*{fontspec} font name.}
-  \keyval{features}{\pkg*{fontspec} \ldeen{Optionen}{options}}
-    \ldeen{Werden unverändert an \pkg*{fontspec} weitergereicht.}{Passed
-    through to \pkg*{fontspec} unchanged.}
-  \keyval{alias}{\ldeen{anderer Slot}{other slot}}
-    \ldeen{Übernimmt die Schrift eines anderen Slots derselben Palette.}
-    {Adopts the font of another slot in the same palette.}
-  \keyval{description}{\ldeen{Text}{text}}
-    \ldeen{Rein informativ, für Werkzeuge/Themes; wird von \osgstyler{}
-    selbst nicht ausgewertet.}{Purely informational, for tools/themes; not
-    evaluated by \osgstyler{} itself.}
-\end{options}
-\ldeen{Die portablen Fontslots sind}{The portable font slots are}
-\code{main}, \code{companion}, \code{display}, \code{accent}, \code{mono},
-\code{math}, \code{symbol}.
-\begin{options}
-  \opt{colors-only}
-    \ldeen{Paketoption (kein Templateschlüssel); siehe
-    Abschnitt~\ref{sec:fonts:colors-only}.}{Package option (not a template
-    key); see Section~\ref{sec:fonts:colors-only}.}
-\end{options}
-
-\section{\ldeen{Metrikpaletten}{Metric Palettes}}
-\label{sec:metrics}
-\ldeen*{Eine Metrikpalette bildet portable Größen-Slots auf konkrete
-  Längen ab -- für Abstände, Innenabstände (Padding), Linienstärken und
-  Eckenradien. Anders als Farb-/Font-Slots sind Metrikwerte in vier
-  \emph{Kategorien} gruppiert, jede mit eigenen Slotnamen: @1.}{A metric
-  palette maps portable size slots to concrete lengths -- for spacing,
-  padding, rule thickness, and corner radii. Unlike color/font slots,
-  metric values are grouped into four \emph{categories}, each with its own
-  slot names: @1.}{\code{spacing}/\code{padding}/\code{rule}/\code{radius}}
-
-\subsection{\ldeen{Nutzen}{Using}}
-\label{sec:metrics:use}
-\ldeen*{Die eingebaute Palette @1 ist beim Laden bereits aktiv. Eine andere
-  Palette wird mit @2 aktiviert; der aktive Wert eines Slots wird mit dem
-  expandierbaren @3 abgefragt.}{The built-in palette @1 is already active
-  when the package is loaded. A different palette is activated with @2; the
-  active value of a slot is queried with the expandable @3.}
-  {\code{osgstyler-default}}{\cs{UseOsgMetricPalette}}{\cs{OsgMetric}}
-\begin{example}[code-only]
-    \UseOsgMetricPalette{my-metrics}
-    \setlength\fboxsep{\OsgMetric{padding}{normal}}
-\end{example}
-\ldeen{Eigene Dekorationen und Templates greifen typischerweise nicht
-  direkt auf \cs{OsgMetric} zu, sondern erlauben eine Metrikreferenz der
-  Form \meta{Kategorie}\code{/}\meta{Slot} an genau der Stelle, an der auch
-  eine literale Länge stehen darf (siehe \code{thickness}/\code{padding}
-  bei Dekorationen, Abschnitt~\ref{sec:decorations}).}{Custom decorations
-  and templates typically don't access \cs{OsgMetric} directly, but instead
-  accept a metric reference of the form
-  \meta{category}\code{/}\meta{slot} anywhere a literal length is also
-  allowed (see \code{thickness}/\code{padding} for decorations,
-  Section~\ref{sec:decorations}).}
-
-\subsection{\ldeen{Erstellen}{Creating}}
+\subsection{\ldeen{Metrikpaletten}{Metric Palettes}}
 \label{sec:metrics:create}
 \ldeen*{Jede Deklaration startet mit einem \emph{vollständigen} eingebauten
   Wertesatz (siehe Referenztabelle unten); @1 muss deshalb nur die
@@ -736,88 +1003,7 @@ load babel
   hinzufügen.}{Only the four named categories with their respective slots
   exist; custom categories or slot names cannot be added.}
 
-\subsection{\ldeen{Referenz}{Reference}}
-\label{sec:metrics:ref}
-\begin{commands}
-  \command{DeclareOsgMetricPalette}[\marg{name}\marg{keys}]
-    \ldeen{Deklariert eine Metrikpalette, siehe
-    Abschnitt~\ref{sec:metrics:create}.}{Declares a metric palette, see
-    Section~\ref{sec:metrics:create}.}
-  \command{UseOsgMetricPalette}[\marg{name}]
-    \ldeen{Aktiviert eine deklarierte Palette.}{Activates a declared
-    palette.}
-  \expandable\command{OsgMetric}[\marg{category}\marg{slot}]
-    \ldeen{Expandierbar; aktueller Wert von \meta{slot} in
-    \meta{category} der aktiven Palette.}{Expandable; current value of
-    \meta{slot} in \meta{category} of the active palette.}
-  \expandable\command{OsgMetricPaletteValue}[\marg{palette}\marg{category}\marg{slot}]
-    \ldeen{Expandierbar; Wert einer -- auch inaktiven -- Palette.}
-    {Expandable; value of a -- possibly inactive -- palette.}
-  \expandable\command{OsgActiveMetricPalette}
-    \ldeen{Expandierbar; Name der aktiven Metrikpalette.}{Expandable; name
-    of the active metric palette.}
-\end{commands}
-\begin{center}
-\begin{tabular}{lll}
-  \textbf{\ldeen{Kategorie}{Category}} & \textbf{\ldeen{Slots}{Slots}} &
-    \textbf{\ldeen{Vorgabe}{Default}}\\\hline
-  \code{spacing} & \code{none}\ldots\code{xl} &
-    $0$, $.25$, $.5$, $1$, $1.5$, $2\times$\code{\textbackslash baselineskip}\\
-  \code{padding} & \code{none}\ldots\code{roomy} &
-    $0$, $.35$\code{em}, $.65$\code{em}, $1$\code{em}\\
-  \code{rule} & \code{hairline}\ldots\code{thick} &
-    $.2$\code{pt}, $.4$\code{pt}, $.7$\code{pt}, $1.2$\code{pt}\\
-  \code{radius} & \code{square}\ldots\code{round} &
-    $0$, $2$\code{pt}, $4$\code{pt}, $6$\code{pt}\\\hline
-\end{tabular}
-\end{center}
-\ldeen*{Die Slots je Kategorie sind im Detail: @1 (\code{spacing}); @2
-  (\code{padding}); @3 (\code{rule}); @4 (\code{radius}).}{The slots per
-  category, in detail: @1 (\code{spacing}); @2 (\code{padding}); @3
-  (\code{rule}); @4 (\code{radius}).}
-  {\code{none}/\code{xs}/\code{sm}/\code{md}/\code{lg}/\code{xl}}
-  {\code{none}/\code{compact}/\code{normal}/\code{roomy}}
-  {\code{hairline}/\code{thin}/\code{normal}/\code{thick}}
-  {\code{square}/\code{small}/\code{medium}/\code{round}}
-
-\section{\ldeen{Listenpaletten}{List Palettes}}
-\label{sec:lists}
-\ldeen*{Anders als die bisherigen Paletten ist eine Listenpalette keine
-  reine Datenablage: @1 wendet die hinterlegten Optionen \emph{sofort} über
-  @2 an, denn genau das ist auch @2s eigenes Anwendungsmodell -- eine
-  Aktivierung gilt ab dem Aufruf, nicht rückwirkend für bereits gesetzte
-  Listen. Werte je Ebene sind rohe @2-Optionen; \osgstyler{} erfindet @2s
-  Vokabular nicht neu, sondern organisiert es nur unter einem
-  Palettennamen.}{Unlike the palettes so far, a list palette is not a pure
-  data store: @1 applies the stored options \emph{immediately} via @2,
-  since that matches @2's own application model -- an activation takes
-  effect from the call onward, not retroactively for lists already
-  typeset. Values per level are raw @2 options; \osgstyler{} does not
-  reinvent @2's vocabulary, it only organizes it under a palette
-  name.}{\cs{UseOsgListPalette}}{\pkg*{enumitem}}
-
-\subsection{\ldeen{Nutzen}{Using}}
-\label{sec:lists:use}
-\ldeen*{Die eingebaute Palette @1 lässt @2s eigene Vorgaben unangetastet.
-  Eine andere Palette wird mit @3 aktiviert.}{The built-in palette @1
-  leaves @2's own defaults untouched. A different palette is activated
-  with @3.}{\code{osgstyler-default}}{\pkg*{enumitem}}
-  {\cs{UseOsgListPalette}}
-\begin{example}[code-only]
-    \UseOsgListPalette{osl-modern}
-    \begin{itemize}
-      \item Farbige quadratische Bullets statt Standard-Bullets.
-    \end{itemize}
-\end{example}
-\ldeen{Nicht deklarierte Ebenen oder Listenarten einer Palette bleiben
-  unangetastet -- \code{osl-modern} etwa ändert nur \env{itemize}-Ebene~1,
-  Ebenen~2--4 sowie \env{enumerate}/\env{description} bleiben bei
-  \pkg*{enumitem}s eigenen Vorgaben.}{Levels or list types not declared in
-  a palette stay untouched -- \code{osl-modern}, for instance, only changes
-  \env{itemize} level~1; levels~2--4 as well as
-  \env{enumerate}/\env{description} keep \pkg*{enumitem}'s own defaults.}
-
-\subsection{\ldeen{Erstellen}{Creating}}
+\subsection{\ldeen{Listenpaletten}{List Palettes}}
 \label{sec:lists:create}
 \ldeen*{Eine neue Listenpalette wird mit @1 deklariert -- pro Listenart
   (@2) ein Satz von Ebenen (\code{1}--\code{4}), deren Wert jeweils rohe
@@ -846,89 +1032,7 @@ load babel
   color/font/metric palettes -- may contain commands such as
   \cs{OsgColorName} directly (unexpanded), as in the example above.}
 
-\subsection{\ldeen{Referenz}{Reference}}
-\label{sec:lists:ref}
-\begin{commands}
-  \command{DeclareOsgListPalette}[\marg{name}\marg{keys}]
-    \ldeen{Deklariert eine Listenpalette, siehe
-    Abschnitt~\ref{sec:lists:create}.}{Declares a list palette, see
-    Section~\ref{sec:lists:create}.}
-  \command{UseOsgListPalette}[\marg{name}]
-    \ldeen{Aktiviert eine deklarierte Palette \emph{sofort} (siehe
-    oben).}{Activates a declared palette \emph{immediately} (see
-    above).}
-\end{commands}
-\begin{options}
-  \keyval{itemize}{\marg{\meta{level}=\marg{\ldeen{enumitem-Optionen}
-    {enumitem options}},\ldots}}
-    \ldeen{Optionen je Ebene für \env{itemize}.}{Options per level for
-    \env{itemize}.}
-  \keyval{enumerate}{\marg{\meta{level}=\marg{\ldeen{enumitem-Optionen}
-    {enumitem options}},\ldots}}
-    \ldeen{Optionen je Ebene für \env{enumerate}.}{Options per level for
-    \env{enumerate}.}
-  \keyval{description}{\marg{\meta{level}=\marg{\ldeen{enumitem-Optionen}
-    {enumitem options}},\ldots}}
-    \ldeen{Optionen je Ebene für \env{description}.}{Options per level for
-    \env{description}.}
-\end{options}
-\ldeen{Gültige Ebenen sind \code{1} bis \code{4}.}{Valid levels are
-  \code{1} through \code{4}.}
-
-\section{\ldeen{Dekorationen}{Decorations}}
-\label{sec:decorations}
-\ldeen{Eine Dekoration ist ein backend-neutrales visuelles Rezept: eine
-  benannte Kombination aus Linien, Hintergrund, Rahmen, Randmarkierung
-  und/oder Vor-/Nachzeichen (\emph{Affixe}), beschrieben rein über Werte
-  (Farb-Slots, Metrik-Slots, Muster) -- ohne festzulegen, \emph{wie} daraus
-  tatsächlich Tinte auf dem Papier wird. Das erledigt ein austauschbarer
-  \emph{Prozessor}, siehe Abschnitt~\ref{sec:decorations:processors}.}{A
-  decoration is a backend-neutral visual recipe: a named combination of
-  lines, background, border, margin marking, and/or leading/trailing marks
-  (\emph{affixes}), described purely through values (color slots, metric
-  slots, patterns) -- without fixing \emph{how} that actually becomes ink
-  on paper. That is handled by a replaceable \emph{processor}, see
-  Section~\ref{sec:decorations:processors}.}
-
-\subsection{\ldeen{Nutzen}{Using}}
-\label{sec:decorations:use}
-\ldeen*{Die meisten Dokumente berühren Dekorationen nie direkt: die
-  eingebauten @1/@2/@3 stecken hinter den gleichnamigen Inline-Styles
-  (Abschnitt~@4) und werden über \cs{UseOsgInlineStyle} bzw.\ gebundene
-  Befehle wie \cs{uline} genutzt.}{Most documents never touch decorations
-  directly: the built-in @1/@2/@3 sit behind the inline styles of the same
-  name (Section~@4) and are used via \cs{UseOsgInlineStyle} or bound
-  commands such as \cs{uline}.}
-  {\code{osgstyler-underline}}{\code{osgstyler-highlight}}
-  {\code{osgstyler-frame}}{\ref{sec:inline}}
-
-\begin{warnbox}{\ldeen{Wichtig}{Important}}
-  \ldeen*{Eine deklarierte Dekoration zeichnet nichts von selbst. Ob @1
-    (Linien, Hintergrund) tatsächlich sichtbar werden, hängt vom aktiven
-    \emph{Prozessor} ab: der eingebaute Standardprozessor zeichnet nur @2
-    und @3 (siehe Referenztabelle unten); @1 verlangt @4 (siehe
-    Abschnitt~@5) oder einen eigenen Prozessor.}{A declared decoration does
-    not draw anything by itself. Whether @1 (lines, background) actually
-    become visible depends on the active \emph{processor}: the built-in
-    default processor only draws @2 and @3 (see the reference table
-    below); @1 requires @4 (see Section~@5) or a custom processor.}
-    {\code{line}/\code{background}}{\code{enclosure}}{\code{affix}}
-    {\pkg{osgstyler-lua}}{\ref{sec:lua}}
-\end{warnbox}
-
-\ldeen{Für Theme-/Backend-Code lässt sich abfragen, ob überhaupt ein
-  rendernder Prozessor aktiv ist, sowie, welche Komponenten/Instanzen eine
-  Dekoration hat, ohne deren konkrete Werte zu kennen:}{Theme/backend code
-  can query whether a rendering processor is active at all, as well as
-  which components/instances a decoration has, without knowing its concrete
-  values:}
-\begin{example}[code-only]
-    \OsgDecorationProcessorAvailableTF
-      { }
-      { \PackageWarning{my-theme}{No~decoration~backend~active} }
-\end{example}
-
-\subsection{\ldeen{Erstellen}{Creating}}
+\subsection{\ldeen{Dekorationen}{Decorations}}
 \label{sec:decorations:create}
 \ldeen*{Eine Dekoration wird mit @1 deklariert. Jede der fünf Familien
   (@2) kommt entweder in \emph{Kurzform} (eine einzelne, implizit
@@ -1025,7 +1129,7 @@ load babel
   {\code{border-color}/\code{fill-color}/\code{thickness}/\code{padding}}
   {\code{pattern}}{\code{radius}}
 
-\subsection{\ldeen{Prozessoren (Backend-Ebene)}{Processors (Backend Level)}}
+\subsubsection{\ldeen{Prozessoren (Backend-Ebene)}{Processors (Backend Level)}}
 \label{sec:decorations:processors}
 \ldeen*{Eine dritte Ebene neben Nutzen/Erstellen: \emph{wie} eine
   Dekoration gezeichnet wird, legt ein \emph{Prozessor} fest -- eine
@@ -1055,179 +1159,7 @@ load babel
   \cs{SetOsgDecorationProcessor} and can thus be replaced by a custom
   one.}
 
-\subsection{\ldeen{Referenz}{Reference}}
-\label{sec:decorations:ref}
-\begin{commands}
-  \command{DeclareOsgDecoration}[\marg{name}\marg{keys}]
-    \ldeen{Deklariert eine Dekoration, siehe
-    Abschnitt~\ref{sec:decorations:create}.}{Declares a decoration, see
-    Section~\ref{sec:decorations:create}.}
-  \expandable\command{OsgDecorationValue}[\marg{name}\marg{family}\marg{property}]
-    \ldeen{Expandierbar; Eigenschaft der \code{default}-Instanz.}
-    {Expandable; property of the \code{default} instance.}
-  \expandable\command{OsgDecorationInstanceValue}[\marg{name}\marg{family}\marg{instance}\marg{property}]
-    \ldeen{Expandierbar; Eigenschaft einer benannten Instanz.}{Expandable;
-    property of a named instance.}
-  \expandable\command{OsgDecorationInstances}[\marg{name}\marg{family}]
-    \ldeen{Expandierbar; Kommaliste aller Instanznamen einer Familie.}
-    {Expandable; comma list of all instance names of a family.}
-  \expandable\command{OsgDecorationFamilies}
-    \ldeen{Expandierbar; Kommaliste aller fünf Familiennamen.}{Expandable;
-    comma list of all five family names.}
-  \command{OsgDecorationIfHasComponentTF}[\marg{name}\marg{family}\marg{true}\marg{false}]
-    \ldeen{Ob \meta{name} die Familie \meta{family} überhaupt nutzt.}
-    {Whether \meta{name} uses family \meta{family} at all.}
-  \command{OsgDecorationIfHasInstanceTF}[\marg{name}\marg{family}\marg{instance}\marg{true}\marg{false}]
-    \ldeen{Ob eine bestimmte Instanz existiert.}{Whether a specific
-    instance exists.}
-  \command{OsgDecorationProcessorAvailableTF}[\marg{true}\marg{false}]
-    \ldeen{Ob ein rendernder (nicht der transparente Standard-)Prozessor
-    aktiv ist.}{Whether a rendering (not the transparent default)
-    processor is active.}
-  \command{SetOsgDecorationProcessor}[\marg{\ldeen{Funktion}{function}}]
-    \ldeen{Siehe Abschnitt~\ref{sec:decorations:processors}.}{See
-    Section~\ref{sec:decorations:processors}.}
-  \command{SetOsgSemanticProcessor}[\marg{\ldeen{Funktion}{function}}]
-    \ldeen{Siehe Abschnitt~\ref{sec:decorations:processors} und
-    \ref{sec:inline}.}{See Section~\ref{sec:decorations:processors} and
-    \ref{sec:inline}.}
-\end{commands}
-\begin{options}
-  \keyval{position}{\ldeen{siehe Text}{see text}}
-    \ldeen{\code{line}/\code{margin}: \code{above}/\code{below} (\code{line}
-    zusätzlich \code{through}); \code{affix}: \code{before}/\code{after}.}
-    {\code{line}/\code{margin}: \code{above}/\code{below} (\code{line}
-    additionally \code{through}); \code{affix}: \code{before}/\code{after}.}
-  \keyval{pattern}{\code{solid}, \ldots}
-    \ldeen{Aktuell rendert jeder Prozessor nur \code{solid}; andere Werte
-    werden gespeichert, siehe Abschnitt~\ref{sec:decorations:status}.}
-    {Currently every processor only renders \code{solid}; other values are
-    stored, see Section~\ref{sec:decorations:status}.}
-  \keyval{color}{\ldeen{Farb-Slot}{color slot}}
-    \ldeen{Siehe Abschnitt~\ref{sec:colors}.}{See Section~\ref{sec:colors}.}
-  \keyval{thickness}{\ldeen{Länge oder Metrikreferenz}{length or metric
-    reference}} \ldeen{Siehe Abschnitt~\ref{sec:metrics}.}{See
-    Section~\ref{sec:metrics}.}
-  \keyval{offset}{\ldeen{Länge oder Metrikreferenz}{length or metric
-    reference}}
-    \ldeen{Siehe Abschnitt~\ref{sec:metrics}.}{See Section~\ref{sec:metrics}.}
-  \keyval{opacity}{\meta{\ldeen{Zahl}{number}}}
-    \ldeen{Nur \code{1} wird aktuell gerendert.}{Only \code{1} is currently
-    rendered.}
-  \keyval{shape}{\code{text}, \ldots}
-    \ldeen{Nur \code{text} wird aktuell gerendert.}{Only \code{text} is
-    currently rendered.}
-  \keyval{border-color}{\ldeen{Farb-Slot}{color slot}}
-    \ldeen{Siehe Abschnitt~\ref{sec:colors}.}{See Section~\ref{sec:colors}.}
-  \keyval{fill-color}{\ldeen{Farb-Slot}{color slot}}
-    \ldeen{Siehe Abschnitt~\ref{sec:colors}.}{See Section~\ref{sec:colors}.}
-  \keyval{radius}{\ldeen{Länge}{length}}
-    \ldeen{Gespeichert, aktuell nicht gerendert (siehe Abschnitt
-    \ref{sec:decorations:status}).}{Stored, currently not rendered (see
-    Section~\ref{sec:decorations:status}).}
-  \keyval{padding}{\ldeen{Länge oder Metrikreferenz}{length or metric
-    reference}}
-    \ldeen{Siehe Abschnitt~\ref{sec:metrics}.}{See Section~\ref{sec:metrics}.}
-  \keyval{side}{\ldeen{siehe \pkg*{enumitem}-Dokumentation}
-    {see \pkg*{enumitem} documentation}}
-    \ldeen{Von keinem mitgelieferten Prozessor ausgewertet, siehe
-    Abschnitt~\ref{sec:decorations:status}.}{Not evaluated by any bundled
-    processor, see Section~\ref{sec:decorations:status}.}
-  \keyval{content}{\ldeen{literaler Inhalt}{literal content}}
-    \ldeen{Schließt \code{symbol} aus.}{Mutually exclusive with
-    \code{symbol}.}
-  \keyval{symbol}{\ldeen{Symbolreferenz}{symbol reference}}
-    \ldeen{Schließt \code{content} aus; aktuell löst kein mitgeliefertes
-    Backend Symbolreferenzen auf.}{Mutually exclusive with \code{content};
-    no bundled backend currently resolves symbol references.}
-  \keyval{font}{\ldeen{Font-Slot}{font slot}}
-    \ldeen{Siehe Abschnitt~\ref{sec:fonts}.}{See Section~\ref{sec:fonts}.}
-  \keyval{gap}{\ldeen{Länge oder Metrikreferenz}{length or metric
-    reference}}
-    \ldeen{Siehe Abschnitt~\ref{sec:metrics}.}{See Section~\ref{sec:metrics}.}
-\end{options}
-
-\section{\ldeen{Inline-Styles}{Inline Styles}}
-\label{sec:inline}
-\ldeen*{Inline-Styles sind die erste Kompositionsebene: eine benannte
-  Instanz des Kernel-Template-Typs @1 bündelt Font-/Farbwahl, Schriftschnitt
-  und -stärke, eine Dekoration und eine semantische Rolle zu einem einzigen
-  wiederverwendbaren Stil.}{Inline styles are the first composition layer:
-  a named instance of the kernel template type @1 bundles font/color
-  choice, shape and weight, a decoration, and a semantic role into a
-  single, reusable style.}{\code{osgstyler-inline}}
-
-\subsection{\ldeen{Nutzen}{Using}}
-\label{sec:inline:use}
-\ldeen*{Fünf Styles sind vordefiniert: @1. Direkt aufgerufen wird ein Style
-  mit @2:}{Five styles are predefined: @1. A style is invoked directly
-  with @2:}
-  {\code{emphasis}/\code{strong}/\code{underline}/\code{highlight}/\code{frame}}
-  {\cs{UseOsgInlineStyle}}
-\begin{example}[code-only]
-    \UseOsgInlineStyle{emphasis}{hervorgehobener Text}
-\end{example}
-\ldeen*{In der Praxis werden Inline-Styles meist nicht direkt aufgerufen,
-  sondern über @1 an einen gewohnten Befehlsnamen \emph{gebunden}, sodass
-  weiterhin @2, @3 usw.\ geschrieben wird:}{In practice, inline styles are
-  usually not invoked directly, but \emph{bound} via @1 to a familiar
-  command name, so that @2, @3, etc.\ continue to be written:}
-  {\cs{BindOsgInlineCommand}}{\cs{emph}}{\cs{textbf}}
-\begin{example}[code-only]
-    \UseOsgStandardInlineCommands
-    % bindet \emph, \textbf, \uline, \highlight, \fbox
-\end{example}
-\ldeen*{@1 bindet einzeln nach Bedarf; @2 bindet alle fünf Standardbefehle
-  auf einmal. \cs{highlight} ist unabhängig davon bereits beim Laden des
-  Pakets gebunden, da es kein vorbestehendes \LaTeX-Kommando gibt, das
-  sonst überraschend ersetzt würde.}{@1 binds individually as needed; @2
-  binds all five standard commands at once. \cs{highlight} is already
-  bound when the package loads, independently of this, since there is no
-  pre-existing \LaTeX{} command that would otherwise be surprisingly
-  replaced.}{\cs{BindOsgInlineCommand}}{\cs{UseOsgStandardInlineCommands}}
-
-\ldeen*{Eine Bindung ändert die \emph{Implementierung} des Befehls, nie
-  seine Aufrufsyntax -- @1 nimmt weiterhin genau ein Argument. War der
-  Befehl vor dem Binden bereits definiert (wie @2/@3), bleibt seine
-  ursprüngliche Bedeutung als @4-Plug erhalten; @5 (pro Befehl) bzw.\ @6
-  (gesammelt) schaltet dorthin zurück. Für neu durch \osgstyler{}
-  eingeführte Befehle wie @7 ist der @4-Plug stattdessen die Identität
-  (gibt das Argument unverändert zurück).}{A binding changes the command's
-  \emph{implementation}, never its call syntax -- @1 continues to take
-  exactly one argument. If the command already existed before binding
-  (such as @2/@3), its original meaning is preserved as the @4 plug; @5
-  (per command) or @6 (collectively) switches back to it. For commands
-  newly introduced by \osgstyler{} such as @7, the @4 plug is the identity
-  instead (returns the argument unchanged).}
-  {\meta{\ldeen{Befehl}{command}}}{\cs{emph}}{\cs{textbf}}
-  {\code{default}}{\cs{RestoreOsgInlineCommand}}
-  {\cs{UseOsgDefaultInlineCommands}}{\cs{highlight}}
-
-\ldeen{Wie jede \TeX-Zuweisung ist eine Bindung gruppenlokal -- ein Style
-  lässt sich also auch nur für einen Abschnitt des Dokuments ändern.}{Like
-  any \TeX{} assignment, a binding is group-local -- a style can therefore
-  also be changed for only part of the document.}
-\begin{example}[code-only]
-    {\BindOsgInlineCommand\emph{strong}
-     \emph{fett statt kursiv, nur in dieser Gruppe}}
-    \emph{wieder wie gewohnt}
-\end{example}
-
-\begin{infobox}{\ldeen{Mit osglecture-modes}{With osglecture-modes}}
-  \ldeen*{Ist @1 geladen (in beliebiger Reihenfolge zu \osgstyler{}),
-    akzeptieren @2 sowie \emph{jeder} über @3 gebundene Befehl zusätzlich
-    ein portables Modusargument, siehe dessen Dokumentation.}{If @1 is
-    loaded (in either order relative to \osgstyler{}), @2 as well as
-    \emph{every} command bound via @3 additionally accepts a portable mode
-    expression, see that package's documentation.}
-    {\pkg{osglecture-modes}}{\cs{UseOsgInlineStyle}}
-    {\cs{BindOsgInlineCommand}}
-  \begin{example}[code-only]
-      \emph<presentation>{nur im Präsentationsmodus hervorgehoben}
-  \end{example}
-\end{infobox}
-
-\subsection{\ldeen{Erstellen}{Creating}}
+\subsection{\ldeen{Inline-Styles}{Inline Styles}}
 \label{sec:inline:create}
 \ldeen*{Ein neuer Stil wird mit @1 deklariert. Alle sechs Schlüssel sind
   optional; fehlt einer, gilt die in der Tabelle genannte Vorgabe.}{A new
@@ -1288,218 +1220,7 @@ load babel
   {\cs{EditOsgInlineStyle}}{\ref{sec:blocks:create}}{osgstyler-inline}
   {\cs*{DeclareInstance}}{\cs*{UseInstance}}
 
-\subsection{\ldeen{Referenz}{Reference}}
-\label{sec:inline:ref}
-\begin{commands}
-  \command{DeclareOsgInlineStyle}[\marg{name}\marg{keys}]
-    \ldeen{Deklariert einen Inline-Style, siehe
-    Abschnitt~\ref{sec:inline:create}.}{Declares an inline style, see
-    Section~\ref{sec:inline:create}.}
-  \command{EditOsgInlineStyle}[\marg{name}\marg{keys}]
-    \ldeen{Ändert einen bereits deklarierten Style.}{Changes an
-    already-declared style.}
-  \command{UseOsgInlineStyle}[\marg{name}\marg{\ldeen{Text}{text}}]
-    \ldeen{Setzt \meta{Text} im Stil \meta{name}.}{Typesets \meta{text} in
-    style \meta{name}.}
-  \command{BindOsgInlineCommand}[\marg{\ldeen{Befehl}{command}}\marg{name}]
-    \ldeen{Bindet \meta{Befehl} (ein Argument) an den Stil \meta{name},
-    siehe Abschnitt~\ref{sec:inline:use}.}{Binds \meta{command} (one
-    argument) to the style \meta{name}, see Section~\ref{sec:inline:use}.}
-  \command{RestoreOsgInlineCommand}[\marg{\ldeen{Befehl}{command}}]
-    \ldeen{Schaltet \meta{Befehl} auf seinen \code{default}-Plug zurück.}
-    {Switches \meta{command} back to its \code{default} plug.}
-  \command{UseOsgStandardInlineCommands}
-    \ldeen{Bindet \cs{emph}, \cs{textbf}, \cs{uline}, \cs{highlight},
-    \cs{fbox} an die gleichnamigen Styles.}{Binds \cs{emph}, \cs{textbf},
-    \cs{uline}, \cs{highlight}, \cs{fbox} to the styles of the same name.}
-  \command{UseOsgDefaultInlineCommands}
-    \ldeen{Schaltet alle bisher gebundenen Befehle gesammelt auf ihren
-    \code{default}-Plug zurück.}{Switches all commands bound so far back
-    to their \code{default} plug, collectively.}
-\end{commands}
-\begin{options}
-  \keyval{font}{\ldeen{Font-Slot}{font slot}\code{|none}}\Default{main}
-    \ldeen{Siehe Abschnitt~\ref{sec:fonts}.}{See Section~\ref{sec:fonts}.}
-  \keychoice{weight}{inherit,regular,bold}\Default{inherit}
-  \keychoice{shape}{inherit,upright,italic,slanted,small-caps}\Default{inherit}
-  \keyval{color}{\ldeen{Farb-Slot}{color slot}\code{|none}}\Default{text}
-    \ldeen{Siehe Abschnitt~\ref{sec:colors}.}{See Section~\ref{sec:colors}.}
-  \keyval{decoration}{\ldeen{Dekorationsname}{decoration name}\code{|none}}
-    \Default{none}
-    \ldeen{Siehe Abschnitt~\ref{sec:decorations}.}{See
-    Section~\ref{sec:decorations}.}
-  \keyval{semantics}{\ldeen{Rolle}{role}\code{|none}}\Default{none}
-\end{options}
-\ldeen{Vordefinierte Styles: \code{emphasis}, \code{strong},
-  \code{underline}, \code{highlight}, \code{frame}. Vordefinierte
-  Dekorationen: \code{osgstyler-underline}, \code{osgstyler-highlight},
-  \code{osgstyler-frame} (Abschnitt~\ref{sec:decorations}).}{Predefined
-  styles: \code{emphasis}, \code{strong}, \code{underline},
-  \code{highlight}, \code{frame}. Predefined decorations:
-  \code{osgstyler-underline}, \code{osgstyler-highlight},
-  \code{osgstyler-frame} (Section~\ref{sec:decorations}).}
-
-\section{\ldeen{Bausteine: Blöcke}{Blocks}}
-\label{sec:blocks}
-\ldeen{Blöcke sind die zweite Kompositionsebene: kastenartige, umrandete
-  oder hinterlegte Inhalte -- Beamer-Blöcke ebenso wie theorem-artige Boxen
-  oder Zitate in der Langform. Dies ist der umfangreichste Teil von
-  \osgstyler{}, da er sich sowohl an gewöhnliche Dokumente (Zitate, fertige
-  Blöcke) als auch an Theme-/Paketautor*innen (eigene Umgebungen,
-  \pkg*{amsthm}-Integration) richtet.}{Blocks are the second composition
-  layer: boxed, framed, or filled content -- beamer blocks as well as
-  theorem-like boxes or quotations in the long form. This is the most
-  extensive part of \osgstyler{}, since it addresses both ordinary
-  documents (quotations, ready-made blocks) and theme/package authors
-  (custom environments, \pkg*{amsthm} integration).}
-
-\subsection{\ldeen{Konzept}{Concept}}
-\label{sec:blocks:concept}
-\ldeen*{Wie Inline-Styles ist ein Block eine Instanz eines
-  Kernel-Template-Typs, hier @1. Anders als bei Inline-Styles trennt
-  \osgstyler{} bei Blöcken jedoch bewusst zwei unabhängige Fragen:}{Like
-  inline styles, a block is an instance of a kernel template type, here
-  @1. Unlike inline styles, however, \osgstyler{} deliberately separates
-  two independent questions for blocks:}{\code{osgstyler-block}}
-\begin{enumerate}
-  \item \ldeen{\emph{Welche Optik} hat der Block?}{\emph{What visual
-    appearance} does the block have?}
-    \ldeen{-- festgelegt durch die Interface-Schlüssel einer Instanz
-    (Rahmenfarbe/-stärke, Innenabstand, Hintergrund, Text vor/nach dem
-    Inhalt).}{-- determined by an instance's interface keys (rule
-    color/thickness, padding, background, text before/after the
-    content).}
-  \item \ldeen{\emph{Wie kommt Inhalt} in diese Optik hinein?}{\emph{How
-    does content get} into that appearance?}
-    \ldeen{-- entweder, indem eine bereits bestehende Umgebung (\env{quote},
-    ein \pkg*{amsthm}-\env{theorem}, Beamers \env{block}) optisch
-    \emph{umhüllt} wird (Abschnitt~\ref{sec:blocks:create}, Fall~A), oder
-    indem \osgstyler{} eine \emph{neue} Umgebung von Grund auf erzeugt
-    (Fall~B).}{-- either by visually \emph{wrapping} an already-existing
-    environment (\env{quote}, an \pkg*{amsthm} \env{theorem}, beamer's
-    \env{block}) (Section~\ref{sec:blocks:create}, case~A), or by having
-    \osgstyler{} create a \emph{new} environment from scratch (case~B).}
-\end{enumerate}
-\ldeen*{Diese Trennung bedeutet: die Render-Logik einer Optik existiert
-  \emph{einmal}, unabhängig davon, wie viele Umgebungen sie am Ende
-  nutzen, und eine umhüllte Umgebung behält ihre eigene Nummerierung,
-  ihren eigenen \pkg*{amsthm}-Zähler usw.\ vollständig -- @1 fügt nur
-  Optik um deren fertige Ausgabe herum, ohne sie zu interpretieren.}{This
-  separation means: the rendering logic for an appearance exists
-  \emph{once}, no matter how many environments end up using it, and a
-  wrapped environment fully keeps its own numbering, its own
-  \pkg*{amsthm} counter, etc.\ -- @1 only adds appearance around its
-  finished output, without interpreting it.}
-  {\cs{BindOsgBlockEnvironment}}
-
-\begin{warnbox}{\ldeen{Aktueller Stand}{Current Status}}
-  \ldeen*{Der mitgelieferte Standard-Renderer zeichnet @1: eine
-    farbige Umrandung fester Stärke (\pkg*{fbox}-artig), einen Innenabstand
-    und wahlweise einen Hintergrund. Die Interface-Schlüssel @2 und @3
-    werden gespeichert (z.\,B. für die Traits-Verkettung, siehe
-    Abschnitt~@4), aber vom Standard-Renderer \emph{nicht} sichtbar
-    umgesetzt -- abgerundete Ecken und Schatten sind für einen späteren,
-    mächtigeren Renderer (z.\,B.\ auf Basis von \pkg{tcolorbox}, siehe
-    Abschnitt~\ref{sec:alternatives}) reserviert.}{The bundled default
-    renderer draws @1: a colored border of fixed thickness (\pkg*{fbox}-style),
-    a padding, and optionally a background. The interface keys @2 and @3
-    are stored (e.g.\ for trait concatenation, see Section~@4), but
-    \emph{not} visibly rendered by the default renderer -- rounded corners
-    and shadows are reserved for a future, more capable renderer (e.g.\
-    built on \pkg{tcolorbox}, see Section~\ref{sec:alternatives}).}
-    {\code{rule-color}/\code{rule-thickness}/\code{padding}/\code{background}}
-    {\code{corner-radius}}{\code{shadow}/\code{shadow-offset}}
-    {\ref{sec:blocks:traits}}
-\end{warnbox}
-
-\subsection{\ldeen{Nutzen}{Using}}
-\label{sec:blocks:use}
-\ldeen*{Fünf Instanzen sind immer schon deklariert (unsichtbar, wie es die
-  Interface-Vorgaben ohnehin vorsehen), aber \emph{nicht} automatisch mit
-  einer Umgebung verbunden: @1/@2 (ohne eigene Optik) sowie @3/@4/@5 (mit
-  Rahmen und Innenabstand; @4/@5 zusätzlich in Alarm-/Beispielfarbe). @6
-  aktiviert alle fünf auf einmal:}{Five instances are always already
-  declared (invisible, as the interface defaults provide anyway), but
-  \emph{not} automatically connected to an environment: @1/@2 (with no
-  appearance of their own) as well as @3/@4/@5 (with a border and
-  padding; @4/@5 additionally in alert/example color). @6 activates all
-  five at once:}
-  {\env{quote}}{\env{quotation}}{\env{block}}{\env{alertblock}}
-  {\env{exampleblock}}{\cs{UseOsgStandardBlockEnvironments}}
-\begin{example}[code-only]
-    \UseOsgStandardBlockEnvironments
-
-    \begin{document}
-    \begin{quote}
-      Ein Zitat, jetzt mit Rahmen aus der aktiven Farbpalette.
-    \end{quote}
-
-    \begin{block}{Titel}
-      Ein Beamer-artiger Block, auch in der Langform verfügbar.
-    \end{block}
-    \end{document}
-\end{example}
-\ldeen*{@1/@2/@3 werden dabei nur dann \emph{neu erzeugt}, wenn sie noch
-  nicht existieren (Langform ohne Beamer/\cls*{ltx-talk}): unter
-  \cls*{ltx-talk} existieren sie bereits nativ und behalten dort ihre
-  eigene Optik -- nur @4/@5 werden dort umgebunden.}{@1/@2/@3 are only
-  \emph{newly created} if they do not already exist (long form without
-  beamer/\cls*{ltx-talk}): under \cls*{ltx-talk}, they already exist
-  natively and keep their own appearance there -- only @4/@5 are rebound
-  there.}{\env{block}}{\env{alertblock}}{\env{exampleblock}}
-  {\env{quote}}{\env{quotation}}
-
-\begin{warnbox}{\ldeen{Wichtig}{Important}}
-  \ldeen*{Nichts davon geschieht beim bloßen Laden von \osgstyler{}. Wer
-    das Paket nur wegen Farben oder Inline-Befehlen lädt, soll nicht
-    überrascht feststellen, dass sich seine Zitate verändert haben -- @1
-    ist ein bewusster, expliziter Opt-in.}{None of this happens merely by
-    loading \osgstyler{}. Anyone loading the package only for colors or
-    inline commands should not be surprised to find their quotations
-    changed -- @1 is a deliberate, explicit opt-in.}
-    {\cs{UseOsgStandardBlockEnvironments}}
-\end{warnbox}
-
-\subsection{\ldeen{Presets}{Presets}}
-\label{sec:blocks:presets}
-\ldeen*{Ein \emph{Preset} bündelt Farb-, Font- und ggf.\ Listenpalette
-  sowie ggf.\ einen Block-Trait unter einem gemeinsamen Namen. @1
-  aktiviert alle vorhandenen Teile eines Presets auf einmal.}{A
-  \emph{preset} bundles a color, font, and possibly list palette, plus
-  possibly a block trait, under one shared name. @1 activates every part
-  of a preset that exists, all at once.}{\cs{UseOsgPreset}}
-\begin{example}[code-only]
-    \UseOsgPreset{osl-modern}
-\end{example}
-\ldeen{Zwei Presets liegen bei:}{Two presets are bundled:}
-\begin{description}
-  \item[\code{osl-standard}] \ldeen{Farb-/Font-Palette; zurückhaltend, dem
-    unkolorierten \cls*{amsthm}-Erscheinungsbild nahe. Kein Trait, keine
-    Listenpalette.}{Color/font palette; restrained, close to unadorned
-    \cls*{amsthm} appearance. No trait, no list palette.}
-  \item[\code{osl-modern}] \ldeen{Farb-/Font-Palette; Listenpalette mit
-    farbigen quadratischen Bullets (Abschnitt~\ref{sec:lists}); Trait
-    \code{osl-modern-rules} (siehe unten).}{Color/font palette; list
-    palette with colored square bullets (Section~\ref{sec:lists}); trait
-    \code{osl-modern-rules} (see below).}
-\end{description}
-\ldeen*{Der Trait @1 gibt @2/@3 sowie den drei @4-Instanzen (@5/@6/@7)
-  eine dünne, akzentfarbene Linie vor und nach dem Inhalt statt eines
-  Rahmens (\code{rule-thickness=0pt}) -- passend zum unkastenlosen
-  \pkg*{amsthm}-Vorbild, siehe Abschnitt~\ref{sec:blocks:traits}. @8
-  wendet ihn automatisch auf alle sieben Instanzen an, sofern sie
-  existieren (unabhängig davon, ob deren Umgebungen bereits gebunden
-  sind).}{The trait @1 gives @2/@3 as well as the three @4 instances
-  (@5/@6/@7) a thin, accent-colored line before and after the content
-  instead of a border (\code{rule-thickness=0pt}) -- matching the
-  boxless \pkg*{amsthm} model, see Section~\ref{sec:blocks:traits}. @8
-  applies it automatically to all seven instances, provided they exist
-  (regardless of whether their environments are already bound).}
-  {\code{osl-modern-rules}}{\env{quote}}{\env{quotation}}
-  {\env{\ldeen{block-artigen}{block-like}}}{\env{block}}{\env{alertblock}}
-  {\env{exampleblock}}{\cs{UseOsgPreset}}
-
-\subsection{\ldeen{Erstellen}{Creating}}
+\subsection{\ldeen{Bausteine: Blöcke}{Blocks}}
 \label{sec:blocks:create}
 \ldeen*{Für "`Erstellen"' gibt es bei Blöcken drei unabhängige Bausteine,
   die sich beliebig kombinieren lassen: neue \emph{Instanzen} (Optik),
@@ -1692,7 +1413,477 @@ load babel
     \end{document}
 \end{example}
 
-\subsection{\ldeen{Referenz}{Reference}}
+\subsection{\ldeen{Nummerierung}{Numbering}}
+\label{sec:numbering:create}
+\ldeen*{@1 registriert einen neuen \LaTeX-Zähler und legt dessen
+  Formatierung fest -- in einem Aufruf, sofort bei der Deklaration (nicht
+  erst bei erster Nutzung), da ein zweiter \cs*{newcounter}-Aufruf für
+  denselben Namen sonst fehlschlüge.}{@1 registers a new \LaTeX{} counter
+  and fixes its formatting -- in one call, immediately upon declaration
+  (not only on first use), since a second \cs*{newcounter} call for the
+  same name would otherwise fail.}{\cs{DeclareOsgNumbering}}
+\begin{example}[code-only]
+    \DeclareOsgNumbering{mynote}{
+      counter = mynote, format = \arabic{mynote}
+    }
+\end{example}
+\ldeen{Mit \code{within}\meta{=Zähler} wird der neue Zähler bei jedem
+  Schritt von \meta{Zähler} zurückgesetzt (wie \cs*{newcounter}s eigenes
+  \oarg{within}-Argument) -- z.\,B.\ für kapitelweise Nummerierung.}
+  {Using \code{within}\meta{=counter}, the new counter is reset every time
+  \meta{counter} steps (like \cs*{newcounter}'s own \oarg{within}
+  argument) -- e.\,g.\ for per-chapter numbering.}
+\begin{example}[code-only]
+    \DeclareOsgNumbering{mynote}{
+      counter = mynote, within = chapter,
+      format = \thechapter.\arabic{mynote}
+    }
+\end{example}
+
+\subsection{\ldeen{Integration mit anderen Paketen}{Integration with Other Packages}}
+\label{sec:integration}
+\ldeen{Diese Integrationen laufen weitgehend automatisch ab -- sie
+  betreffen nicht die "`Nutzen/Erstellen"'-Unterscheidung selbst, sondern
+  beschreiben, wie \osgstyler{} sich in eine größere Werkzeugkette
+  einfügt.}{These integrations run largely automatically -- they do not
+  concern the using/creating distinction itself, but describe how
+  \osgstyler{} fits into a larger toolchain.}
+
+\subsubsection{osglecture-modes}
+\label{sec:integration:modes}
+\ldeen*{Ist @1 geladen -- in beliebiger Reihenfolge zu \osgstyler{} --,
+  akzeptieren @2 sowie \emph{jeder} über @3 gebundene Befehl zusätzlich
+  ein portables Modusargument; über \cs{NewOsgStyledEnvironment} oder @4
+  erzeugte Umgebungen erhalten zusätzlich eine führende \cs*{d<>}-Spezifikation.
+  Ein inaktiver Modus unterdrückt die Ausgabe vollständig, \emph{einschließlich}
+  eines etwaigen Nummerierungsschritts -- ausgeblendeter Inhalt soll keine
+  Lücke in der Nummerierung hinterlassen.}{If @1 is loaded -- in either
+  order relative to \osgstyler{} --, @2 as well as \emph{every} command
+  bound via @3 additionally accepts a portable mode expression;
+  environments created via \cs{NewOsgStyledEnvironment} or @4 additionally
+  get a leading \cs*{d<>} specification. An inactive mode suppresses
+  output entirely, \emph{including} any numbering step -- hidden content
+  should not leave a gap in the numbering.}
+  {\pkg{osglecture-modes}}
+  {\cs{UseOsgInlineStyle}/\allowbreak\cs{UseOsgColorPalette}/\allowbreak%
+  \cs{UseOsgFontPalette}/\allowbreak\cs{UseOsgMetricPalette}/\allowbreak%
+  \cs{UseOsgListPalette}/\allowbreak\cs{UseOsgPreset}}
+  {\cs{BindOsgInlineCommand}}{\cs{BindOsgBlockEnvironment}}
+\begin{example}[code-only]
+    \emph<presentation>{nur im Präsentationsmodus}
+    \UseOsgColorPalette<print>{osl-standard}
+
+    \begin{theorem}<longform|print>[Fermat]
+      nur in Langform/Druckmodus
+    \end{theorem}
+\end{example}
+\ldeen{Die Deklarationsbefehle (\cs{DeclareOsgColorPalette} und
+  Geschwister) bleiben bewusst modusunabhängig -- eine Palette wird
+  einmalig definiert, unabhängig davon, in welchen Moden sie später
+  ausgewählt wird.}{The declaration commands (\cs{DeclareOsgColorPalette}
+  and siblings) deliberately remain mode-independent -- a palette is
+  defined once, regardless of which modes later select it.}
+
+\subsubsection{\pkg*{lttheme}}
+\label{sec:lttheme}
+\ldeen*{\osgstyler{} hängt bewusst nicht von @1 ab (Abschnitt~@2). Wird
+  jedoch @3 geladen, synchronisiert sich \osgstyler{} reaktiv: eine
+  Farbpalette namens \code{lttheme} wird aus den gerade aktiven
+  @1-Farben erzeugt und aktiviert, sooft @1s eigene
+  Theme-/Farbbefehle aufgerufen werden. Dies geschieht vollständig
+  automatisch -- ein Dokument, das @3 und \osgstyler{} gemeinsam nutzt,
+  muss dafür nichts weiter tun.}{\osgstyler{} deliberately does not
+  depend on @1 (Section~@2). However, if @3 is loaded, \osgstyler{}
+  synchronizes reactively: a color palette named \code{lttheme} is
+  created from the currently active @1 colors and activated whenever @1's
+  own theme/color commands are called. This happens fully automatically
+  -- a document using @3 together with \osgstyler{} does not need to do
+  anything for this.}{\pkg*{lttheme}}{\ref{sec:alternatives}}
+  {\pkg{ltxtalk-theme}}
+\ldeen*{Für @1-interne Zwecke: ein Paket, das @2 vor dem eigenen @3
+  definiert (@1 selbst tut dies), zeigt damit an, dass es seine
+  Themefarben bereits selbst über \cs{DeclareOsgColorPalette}/\cs{UseOsgColorPalette}
+  einspeist -- die reaktive Integration hier erkennt sich dann als
+  überflüssig und tut nichts.}{For @1-internal purposes: a package that
+  defines @2 before its own @3 (@1 itself does this) thereby indicates
+  that it already feeds its theme colors in itself via
+  \cs{DeclareOsgColorPalette}/\cs{UseOsgColorPalette} -- the reactive
+  integration here then recognizes itself as redundant and does
+  nothing.}{\pkg*{lttheme}}{\cs{LtxtalkUsesOsgstylerNatively}}
+  {\cs*{RequirePackage}\Marg{osgstyler}}
+
+\subsubsection{\ldeen{Lua-Referenzbackend}{Lua Reference Backend}}
+\label{sec:lua}
+\ldeen*{@1 lädt \osgstyler{} zusammen mit @2 und @3, installiert sich
+  selbst als Dekorationsprozessor (Abschnitt~\ref{sec:decorations:processors})
+  und schließt damit die Renderpipeline für Dekorationen praktisch,
+  jenseits der von \osgstyler{} selbst schon gerenderten @4/@5 (siehe
+  Abschnitt~\ref{sec:decorations:status}).}{@1 loads \osgstyler{} together
+  with @2 and @3, installs itself as the decoration processor
+  (Section~\ref{sec:decorations:processors}), and thereby closes the
+  rendering pipeline for decorations for practical purposes, beyond the
+  @4/@5 that \osgstyler{} itself already renders (see
+  Section~\ref{sec:decorations:status}).}
+  {\pkg{osgstyler-lua}}{\pkg{luacolor}}{\pkg{lua-ul}}{\code{enclosure}}
+  {\code{affix}}
+\begin{example}[code-only]
+    \usepackage{osgstyler-lua}
+\end{example}
+\ldeen*{Verlangt @1 (bricht sonst mit einer klaren Fehlermeldung ab).
+  Rendert zusätzlich @2 (nur \code{solid}, an \code{below}/\code{above}/\code{through})
+  über @3s @4 sowie @5 über dessen @6.}{Requires @1 (otherwise aborts with
+  a clear error message). Additionally renders @2 (only \code{solid}, at
+  \code{below}/\code{above}/\code{through}) via @3's @4, and @5 via its
+  @6.}{\LuaTeX{}}{\code{line}}{\pkg*{lua-ul}}{\cs*{underLine}}
+  {\code{background}}{\cs*{highLight}}
+\ldeen{Das expandierbare \cs{OsgStylerLuaBackendActive} liefert stets den
+  Text \code{true} und dient vor allem als Existenztest
+  (\cs*{cs\_if\_exist:NTF}), um im Theme-Code gezielt das Lua-Backend --
+  nicht nur irgendeinen Prozessor -- zu erkennen.}{The expandable
+  \cs{OsgStylerLuaBackendActive} always returns the text \code{true} and
+  serves primarily as an existence test (\cs*{cs\_if\_exist:NTF}) for
+  theme code to detect the Lua backend specifically -- not just any
+  processor.}
+
+\paragraph{\ldeen{Referenz}{Reference}}
+\begin{commands}
+  \expandable\command{OsgStylerLuaBackendActive}
+    \ldeen{Siehe oben.}{See above.}
+\end{commands}
+
+\section{\ldeen{Zusammenfassende Referenz}{Summary Reference}}
+\label{sec:reference}
+\ldeen{Die folgenden, thematisch gegliederten Tabellen fassen die
+  öffentliche Schnittstelle zusammen. Ausführliche Erläuterungen und
+  Beispiele stehen in den jeweils verlinkten Anwender- und
+  Entwicklerabschnitten.}{The following tables summarize the public
+  interface, grouped by topic. Detailed explanations and examples are in the
+  linked user and developer sections.}
+
+\subsection{\ldeen{Farbpaletten}{Color Palettes}}
+\label{sec:colors:ref}
+\begin{commands}
+  \command{DeclareOsgColorPalette}[\marg{name}\marg{keys}]
+    \ldeen{Deklariert eine Farbpalette, siehe Abschnitt~\ref{sec:colors:create}.
+    }{Declares a color palette, see Section~\ref{sec:colors:create}.}
+  \command{UseOsgColorPalette}[\marg{name}]
+    \ldeen{Aktiviert eine deklarierte Palette.}{Activates a declared
+    palette.}
+  \expandable\command{OsgColorName}[\marg{slot}]
+    \ldeen{Expandierbar; liefert den \pkg*{xcolor}-Namen der aktiven Palette
+    für \meta{slot} (\code{osgstyler-}\meta{slot}).}{Expandable; returns the
+    \pkg*{xcolor} name of the active palette for \meta{slot}
+    (\code{osgstyler-}\meta{slot}).}
+  \expandable\command{OsgActiveColorPalette}
+    \ldeen{Expandierbar; Name der aktiven Farbpalette.}{Expandable; name of
+    the active color palette.}
+  \expandable\command{OsgColorPaletteValue}[\marg{palette}\marg{slot}\marg{property}]
+    \ldeen{Expandierbar; liefert einen rohen, gespeicherten Wert einer --
+    auch inaktiven -- Palette, ohne Alias-Auflösung. \meta{property} ist
+    \code{kind} (\code{resource} oder \code{alias}), sowie je nach Art
+    \code{model}/\code{value} oder \code{alias}.}{Expandable; returns a raw
+    stored value of a -- possibly inactive -- palette, without alias
+    resolution. \meta{property} is \code{kind} (\code{resource} or
+    \code{alias}), plus, depending on the kind, \code{model}/\code{value} or
+    \code{alias}.}
+  \command{OsgColorPaletteResolvedSlotTo}[\marg{palette}\marg{slot}\marg{tl-var}]
+    \ldeen{Löst Alias-Ketten und Rückfälle für \meta{slot} in \meta{palette}
+    auf und speichert den resultierenden Ressourcen-Slotnamen (nicht die
+    Farbe selbst) in der \pkg*{expl3}-Tokenlistenvariable \meta{tl-var}.}
+    {Resolves alias chains and fallbacks for \meta{slot} in \meta{palette}
+    and stores the resulting resource slot name (not the color itself) in
+    the \pkg*{expl3} token-list variable \meta{tl-var}.}
+\end{commands}
+\begin{options}
+  \keyval{model}{\ldeen{Farbmodell}{color model}}
+    \ldeen{Jedes von \pkg*{xcolor} unterstützte Modell, z.\,B. \code{HTML},
+    \code{RGB}, \code{cmyk}, \code{gray}.}{Any model supported by
+    \pkg*{xcolor}, e.g.\ \code{HTML}, \code{RGB}, \code{cmyk}, \code{gray}.}
+  \keyval{value}{\ldeen{Modellwert}{model value}}
+    \ldeen{Der zum Modell passende Wert, z.\,B. \code{2E4172} für
+    \code{HTML}.}{The value matching the model, e.g.\ \code{2E4172} for
+    \code{HTML}.}
+  \keyval{alias}{\ldeen{anderer Slot}{other slot}}
+    \ldeen{Übernimmt die Farbe eines anderen Slots derselben Palette.}
+    {Adopts the color of another slot in the same palette.}
+\end{options}
+\ldeen{Die portablen Farbslots sind}{The portable color slots are}
+\code{primary}, \code{secondary}, \code{accent}, \code{text},
+\code{background}, \code{structure}, \code{alert}, \code{example}.
+
+\subsection{\ldeen{Schriftpaletten}{Font Palettes}}
+\label{sec:fonts:ref}
+\begin{commands}
+  \command{DeclareOsgFontPalette}[\marg{name}\marg{keys}]
+    \ldeen{Deklariert eine Schriftpalette, siehe Abschnitt~\ref{sec:fonts:create}.
+    }{Declares a font palette, see Section~\ref{sec:fonts:create}.}
+  \command{UseOsgFontPalette}[\marg{name}]
+    \ldeen{Aktiviert eine deklarierte Palette.}{Activates a declared
+    palette.}
+  \command{UseOsgFont}[\marg{slot}]
+    \ldeen{Wählt die Schrift von \meta{slot} in der aktiven Palette aus
+    (\cs*{fontfamily}\ldots\cs*{selectfont}); \meta{slot} darf nicht
+    \code{math} sein.}{Selects the font of \meta{slot} in the active
+    palette (\cs*{fontfamily}\ldots\cs*{selectfont}); \meta{slot} must not
+    be \code{math}.}
+  \expandable\command{OsgActiveFontPalette}
+    \ldeen{Expandierbar; Name der aktiven Schriftpalette.}{Expandable; name
+    of the active font palette.}
+  \expandable\command{OsgFontPaletteValue}[\marg{palette}\marg{slot}\marg{property}]
+    \ldeen{Expandierbar; roher, gespeicherter Wert (\code{kind},
+    \code{font}/\code{features} oder \code{alias}, \code{description}) --
+    ohne Alias-Auflösung.}{Expandable; raw stored value (\code{kind},
+    \code{font}/\code{features} or \code{alias}, \code{description}) --
+    without alias resolution.}
+  \command{OsgFontPaletteResolvedSlotTo}[\marg{palette}\marg{slot}\marg{tl-var}]
+    \ldeen{Löst Alias-Ketten und Rückfälle auf, speichert den
+    Ressourcen-Slotnamen in \meta{tl-var}.}{Resolves alias chains and
+    fallbacks, stores the resource slot name in \meta{tl-var}.}
+  \command{OsgFontPaletteAvailableTF}[\marg{true}\marg{false}]
+    \ldeen{Siehe Abschnitt~\ref{sec:fonts:colors-only}.}{See
+    Section~\ref{sec:fonts:colors-only}.}
+\end{commands}
+\begin{options}
+  \keyval{font}{\ldeen{Fontname}{font name}}
+    \ldeen{Ein \pkg*{fontspec}-Fontname.}{A \pkg*{fontspec} font name.}
+  \keyval{features}{\pkg*{fontspec} \ldeen{Optionen}{options}}
+    \ldeen{Werden unverändert an \pkg*{fontspec} weitergereicht.}{Passed
+    through to \pkg*{fontspec} unchanged.}
+  \keyval{alias}{\ldeen{anderer Slot}{other slot}}
+    \ldeen{Übernimmt die Schrift eines anderen Slots derselben Palette.}
+    {Adopts the font of another slot in the same palette.}
+  \keyval{description}{\ldeen{Text}{text}}
+    \ldeen{Rein informativ, für Werkzeuge/Themes; wird von \osgstyler{}
+    selbst nicht ausgewertet.}{Purely informational, for tools/themes; not
+    evaluated by \osgstyler{} itself.}
+\end{options}
+\ldeen{Die portablen Fontslots sind}{The portable font slots are}
+\code{main}, \code{companion}, \code{display}, \code{accent}, \code{mono},
+\code{math}, \code{symbol}.
+\begin{options}
+  \opt{colors-only}
+    \ldeen{Paketoption (kein Templateschlüssel); siehe
+    Abschnitt~\ref{sec:fonts:colors-only}.}{Package option (not a template
+    key); see Section~\ref{sec:fonts:colors-only}.}
+\end{options}
+
+\subsection{\ldeen{Metrikpaletten}{Metric Palettes}}
+\label{sec:metrics:ref}
+\begin{commands}
+  \command{DeclareOsgMetricPalette}[\marg{name}\marg{keys}]
+    \ldeen{Deklariert eine Metrikpalette, siehe
+    Abschnitt~\ref{sec:metrics:create}.}{Declares a metric palette, see
+    Section~\ref{sec:metrics:create}.}
+  \command{UseOsgMetricPalette}[\marg{name}]
+    \ldeen{Aktiviert eine deklarierte Palette.}{Activates a declared
+    palette.}
+  \expandable\command{OsgMetric}[\marg{category}\marg{slot}]
+    \ldeen{Expandierbar; aktueller Wert von \meta{slot} in
+    \meta{category} der aktiven Palette.}{Expandable; current value of
+    \meta{slot} in \meta{category} of the active palette.}
+  \expandable\command{OsgMetricPaletteValue}[\marg{palette}\marg{category}\marg{slot}]
+    \ldeen{Expandierbar; Wert einer -- auch inaktiven -- Palette.}
+    {Expandable; value of a -- possibly inactive -- palette.}
+  \expandable\command{OsgActiveMetricPalette}
+    \ldeen{Expandierbar; Name der aktiven Metrikpalette.}{Expandable; name
+    of the active metric palette.}
+\end{commands}
+\begin{center}
+\begin{tabular}{lll}
+  \textbf{\ldeen{Kategorie}{Category}} & \textbf{\ldeen{Slots}{Slots}} &
+    \textbf{\ldeen{Vorgabe}{Default}}\\\hline
+  \code{spacing} & \code{none}\ldots\code{xl} &
+    $0$, $.25$, $.5$, $1$, $1.5$, $2\times$\code{\textbackslash baselineskip}\\
+  \code{padding} & \code{none}\ldots\code{roomy} &
+    $0$, $.35$\code{em}, $.65$\code{em}, $1$\code{em}\\
+  \code{rule} & \code{hairline}\ldots\code{thick} &
+    $.2$\code{pt}, $.4$\code{pt}, $.7$\code{pt}, $1.2$\code{pt}\\
+  \code{radius} & \code{square}\ldots\code{round} &
+    $0$, $2$\code{pt}, $4$\code{pt}, $6$\code{pt}\\\hline
+\end{tabular}
+\end{center}
+\ldeen*{Die Slots je Kategorie sind im Detail: @1 (\code{spacing}); @2
+  (\code{padding}); @3 (\code{rule}); @4 (\code{radius}).}{The slots per
+  category, in detail: @1 (\code{spacing}); @2 (\code{padding}); @3
+  (\code{rule}); @4 (\code{radius}).}
+  {\code{none}/\code{xs}/\code{sm}/\code{md}/\code{lg}/\code{xl}}
+  {\code{none}/\code{compact}/\code{normal}/\code{roomy}}
+  {\code{hairline}/\code{thin}/\code{normal}/\code{thick}}
+  {\code{square}/\code{small}/\code{medium}/\code{round}}
+
+\subsection{\ldeen{Listenpaletten}{List Palettes}}
+\label{sec:lists:ref}
+\begin{commands}
+  \command{DeclareOsgListPalette}[\marg{name}\marg{keys}]
+    \ldeen{Deklariert eine Listenpalette, siehe
+    Abschnitt~\ref{sec:lists:create}.}{Declares a list palette, see
+    Section~\ref{sec:lists:create}.}
+  \command{UseOsgListPalette}[\marg{name}]
+    \ldeen{Aktiviert eine deklarierte Palette \emph{sofort} (siehe
+    oben).}{Activates a declared palette \emph{immediately} (see
+    above).}
+\end{commands}
+\begin{options}
+  \keyval{itemize}{\marg{\meta{level}=\marg{\ldeen{enumitem-Optionen}
+    {enumitem options}},\ldots}}
+    \ldeen{Optionen je Ebene für \env{itemize}.}{Options per level for
+    \env{itemize}.}
+  \keyval{enumerate}{\marg{\meta{level}=\marg{\ldeen{enumitem-Optionen}
+    {enumitem options}},\ldots}}
+    \ldeen{Optionen je Ebene für \env{enumerate}.}{Options per level for
+    \env{enumerate}.}
+  \keyval{description}{\marg{\meta{level}=\marg{\ldeen{enumitem-Optionen}
+    {enumitem options}},\ldots}}
+    \ldeen{Optionen je Ebene für \env{description}.}{Options per level for
+    \env{description}.}
+\end{options}
+\ldeen{Gültige Ebenen sind \code{1} bis \code{4}.}{Valid levels are
+  \code{1} through \code{4}.}
+
+\subsection{\ldeen{Dekorationen}{Decorations}}
+\label{sec:decorations:ref}
+\begin{commands}
+  \command{DeclareOsgDecoration}[\marg{name}\marg{keys}]
+    \ldeen{Deklariert eine Dekoration, siehe
+    Abschnitt~\ref{sec:decorations:create}.}{Declares a decoration, see
+    Section~\ref{sec:decorations:create}.}
+  \expandable\command{OsgDecorationValue}[\marg{name}\marg{family}\marg{property}]
+    \ldeen{Expandierbar; Eigenschaft der \code{default}-Instanz.}
+    {Expandable; property of the \code{default} instance.}
+  \expandable\command{OsgDecorationInstanceValue}[\marg{name}\marg{family}\marg{instance}\marg{property}]
+    \ldeen{Expandierbar; Eigenschaft einer benannten Instanz.}{Expandable;
+    property of a named instance.}
+  \expandable\command{OsgDecorationInstances}[\marg{name}\marg{family}]
+    \ldeen{Expandierbar; Kommaliste aller Instanznamen einer Familie.}
+    {Expandable; comma list of all instance names of a family.}
+  \expandable\command{OsgDecorationFamilies}
+    \ldeen{Expandierbar; Kommaliste aller fünf Familiennamen.}{Expandable;
+    comma list of all five family names.}
+  \command{OsgDecorationIfHasComponentTF}[\marg{name}\marg{family}\marg{true}\marg{false}]
+    \ldeen{Ob \meta{name} die Familie \meta{family} überhaupt nutzt.}
+    {Whether \meta{name} uses family \meta{family} at all.}
+  \command{OsgDecorationIfHasInstanceTF}[\marg{name}\marg{family}\marg{instance}\marg{true}\marg{false}]
+    \ldeen{Ob eine bestimmte Instanz existiert.}{Whether a specific
+    instance exists.}
+  \command{OsgDecorationProcessorAvailableTF}[\marg{true}\marg{false}]
+    \ldeen{Ob ein rendernder (nicht der transparente Standard-)Prozessor
+    aktiv ist.}{Whether a rendering (not the transparent default)
+    processor is active.}
+  \command{SetOsgDecorationProcessor}[\marg{\ldeen{Funktion}{function}}]
+    \ldeen{Siehe Abschnitt~\ref{sec:decorations:processors}.}{See
+    Section~\ref{sec:decorations:processors}.}
+  \command{SetOsgSemanticProcessor}[\marg{\ldeen{Funktion}{function}}]
+    \ldeen{Siehe Abschnitt~\ref{sec:decorations:processors} und
+    \ref{sec:inline}.}{See Section~\ref{sec:decorations:processors} and
+    \ref{sec:inline}.}
+\end{commands}
+\begin{options}
+  \keyval{position}{\ldeen{siehe Text}{see text}}
+    \ldeen{\code{line}/\code{margin}: \code{above}/\code{below} (\code{line}
+    zusätzlich \code{through}); \code{affix}: \code{before}/\code{after}.}
+    {\code{line}/\code{margin}: \code{above}/\code{below} (\code{line}
+    additionally \code{through}); \code{affix}: \code{before}/\code{after}.}
+  \keyval{pattern}{\code{solid}, \ldots}
+    \ldeen{Aktuell rendert jeder Prozessor nur \code{solid}; andere Werte
+    werden gespeichert, siehe Abschnitt~\ref{sec:decorations:status}.}
+    {Currently every processor only renders \code{solid}; other values are
+    stored, see Section~\ref{sec:decorations:status}.}
+  \keyval{color}{\ldeen{Farb-Slot}{color slot}}
+    \ldeen{Siehe Abschnitt~\ref{sec:colors}.}{See Section~\ref{sec:colors}.}
+  \keyval{thickness}{\ldeen{Länge oder Metrikreferenz}{length or metric
+    reference}} \ldeen{Siehe Abschnitt~\ref{sec:metrics}.}{See
+    Section~\ref{sec:metrics}.}
+  \keyval{offset}{\ldeen{Länge oder Metrikreferenz}{length or metric
+    reference}}
+    \ldeen{Siehe Abschnitt~\ref{sec:metrics}.}{See Section~\ref{sec:metrics}.}
+  \keyval{opacity}{\meta{\ldeen{Zahl}{number}}}
+    \ldeen{Nur \code{1} wird aktuell gerendert.}{Only \code{1} is currently
+    rendered.}
+  \keyval{shape}{\code{text}, \ldots}
+    \ldeen{Nur \code{text} wird aktuell gerendert.}{Only \code{text} is
+    currently rendered.}
+  \keyval{border-color}{\ldeen{Farb-Slot}{color slot}}
+    \ldeen{Siehe Abschnitt~\ref{sec:colors}.}{See Section~\ref{sec:colors}.}
+  \keyval{fill-color}{\ldeen{Farb-Slot}{color slot}}
+    \ldeen{Siehe Abschnitt~\ref{sec:colors}.}{See Section~\ref{sec:colors}.}
+  \keyval{radius}{\ldeen{Länge}{length}}
+    \ldeen{Gespeichert, aktuell nicht gerendert (siehe Abschnitt
+    \ref{sec:decorations:status}).}{Stored, currently not rendered (see
+    Section~\ref{sec:decorations:status}).}
+  \keyval{padding}{\ldeen{Länge oder Metrikreferenz}{length or metric
+    reference}}
+    \ldeen{Siehe Abschnitt~\ref{sec:metrics}.}{See Section~\ref{sec:metrics}.}
+  \keyval{side}{\ldeen{siehe \pkg*{enumitem}-Dokumentation}
+    {see \pkg*{enumitem} documentation}}
+    \ldeen{Von keinem mitgelieferten Prozessor ausgewertet, siehe
+    Abschnitt~\ref{sec:decorations:status}.}{Not evaluated by any bundled
+    processor, see Section~\ref{sec:decorations:status}.}
+  \keyval{content}{\ldeen{literaler Inhalt}{literal content}}
+    \ldeen{Schließt \code{symbol} aus.}{Mutually exclusive with
+    \code{symbol}.}
+  \keyval{symbol}{\ldeen{Symbolreferenz}{symbol reference}}
+    \ldeen{Schließt \code{content} aus; aktuell löst kein mitgeliefertes
+    Backend Symbolreferenzen auf.}{Mutually exclusive with \code{content};
+    no bundled backend currently resolves symbol references.}
+  \keyval{font}{\ldeen{Font-Slot}{font slot}}
+    \ldeen{Siehe Abschnitt~\ref{sec:fonts}.}{See Section~\ref{sec:fonts}.}
+  \keyval{gap}{\ldeen{Länge oder Metrikreferenz}{length or metric
+    reference}}
+    \ldeen{Siehe Abschnitt~\ref{sec:metrics}.}{See Section~\ref{sec:metrics}.}
+\end{options}
+
+\subsection{\ldeen{Inline-Styles}{Inline Styles}}
+\label{sec:inline:ref}
+\begin{commands}
+  \command{DeclareOsgInlineStyle}[\marg{name}\marg{keys}]
+    \ldeen{Deklariert einen Inline-Style, siehe
+    Abschnitt~\ref{sec:inline:create}.}{Declares an inline style, see
+    Section~\ref{sec:inline:create}.}
+  \command{EditOsgInlineStyle}[\marg{name}\marg{keys}]
+    \ldeen{Ändert einen bereits deklarierten Style.}{Changes an
+    already-declared style.}
+  \command{UseOsgInlineStyle}[\marg{name}\marg{\ldeen{Text}{text}}]
+    \ldeen{Setzt \meta{Text} im Stil \meta{name}.}{Typesets \meta{text} in
+    style \meta{name}.}
+  \command{BindOsgInlineCommand}[\marg{\ldeen{Befehl}{command}}\marg{name}]
+    \ldeen{Bindet \meta{Befehl} (ein Argument) an den Stil \meta{name},
+    siehe Abschnitt~\ref{sec:inline:use}.}{Binds \meta{command} (one
+    argument) to the style \meta{name}, see Section~\ref{sec:inline:use}.}
+  \command{RestoreOsgInlineCommand}[\marg{\ldeen{Befehl}{command}}]
+    \ldeen{Schaltet \meta{Befehl} auf seinen \code{default}-Plug zurück.}
+    {Switches \meta{command} back to its \code{default} plug.}
+  \command{UseOsgStandardInlineCommands}
+    \ldeen{Bindet \cs{emph}, \cs{textbf}, \cs{uline}, \cs{highlight},
+    \cs{fbox} an die gleichnamigen Styles.}{Binds \cs{emph}, \cs{textbf},
+    \cs{uline}, \cs{highlight}, \cs{fbox} to the styles of the same name.}
+  \command{UseOsgDefaultInlineCommands}
+    \ldeen{Schaltet alle bisher gebundenen Befehle gesammelt auf ihren
+    \code{default}-Plug zurück.}{Switches all commands bound so far back
+    to their \code{default} plug, collectively.}
+\end{commands}
+\begin{options}
+  \keyval{font}{\ldeen{Font-Slot}{font slot}\code{|none}}\Default{main}
+    \ldeen{Siehe Abschnitt~\ref{sec:fonts}.}{See Section~\ref{sec:fonts}.}
+  \keychoice{weight}{inherit,regular,bold}\Default{inherit}
+  \keychoice{shape}{inherit,upright,italic,slanted,small-caps}\Default{inherit}
+  \keyval{color}{\ldeen{Farb-Slot}{color slot}\code{|none}}\Default{text}
+    \ldeen{Siehe Abschnitt~\ref{sec:colors}.}{See Section~\ref{sec:colors}.}
+  \keyval{decoration}{\ldeen{Dekorationsname}{decoration name}\code{|none}}
+    \Default{none}
+    \ldeen{Siehe Abschnitt~\ref{sec:decorations}.}{See
+    Section~\ref{sec:decorations}.}
+  \keyval{semantics}{\ldeen{Rolle}{role}\code{|none}}\Default{none}
+\end{options}
+\ldeen{Vordefinierte Styles: \code{emphasis}, \code{strong},
+  \code{underline}, \code{highlight}, \code{frame}. Vordefinierte
+  Dekorationen: \code{osgstyler-underline}, \code{osgstyler-highlight},
+  \code{osgstyler-frame} (Abschnitt~\ref{sec:decorations}).}{Predefined
+  styles: \code{emphasis}, \code{strong}, \code{underline},
+  \code{highlight}, \code{frame}. Predefined decorations:
+  \code{osgstyler-underline}, \code{osgstyler-highlight},
+  \code{osgstyler-frame} (Section~\ref{sec:decorations}).}
+
+\subsection{\ldeen{Bausteine: Blöcke}{Blocks}}
 \label{sec:blocks:ref}
 \begin{commands}
   \command{DeclareOsgBlockInstance}[\marg{name}\marg{keys}]
@@ -1764,65 +1955,7 @@ load babel
   \env{alertblock}, \env{exampleblock}. Presets: \code{osl-standard},
   \code{osl-modern}. Trait: \code{osl-modern-rules}.}
 
-\section{\ldeen{Nummerierung}{Numbering}}
-\label{sec:numbering}
-\ldeen*{Eine Nummerierung liefert \emph{ausschließlich} die formatierte
-  Zahl (z.\,B. "`2.3"'); weder ein lokalisiertes Label wie "`Satz"' noch
-  ein optionaler Autoren-Titel gehören dazu -- beides bleibt Sache der
-  Umgebung, die eine Nummerierung nutzt (typischerweise über
-  \cs{NewOsgStyledEnvironment}, Abschnitt~\ref{sec:blocks:new}), damit
-  \osgstyler{} selbst sprachneutral bleibt.}{A numbering produces
-  \emph{only} the formatted number (e.g.\ "`2.3"'); neither a localized
-  label such as "`Theorem"' nor an optional author-supplied title belong
-  here -- both remain the concern of the environment that uses a
-  numbering (typically via \cs{NewOsgStyledEnvironment},
-  Section~\ref{sec:blocks:new}), so that \osgstyler{} itself stays
-  language-neutral.}
-
-\subsection{\ldeen{Nutzen}{Using}}
-\label{sec:numbering:use}
-\ldeen*{Wer eine bereits deklarierte Nummerierung in eigenem Umgebungscode
-  braucht (statt sie über \cs{NewOsgStyledEnvironment} automatisch nutzen
-  zu lassen): @1 erhöht den zugrundeliegenden Zähler
-  (\cs*{refstepcounter}), das expandierbare @2 liefert den formatierten
-  Wert.}{Anyone who needs an already-declared numbering in custom
-  environment code (rather than letting \cs{NewOsgStyledEnvironment} use
-  it automatically): @1 increments the underlying counter
-  (\cs*{refstepcounter}), the expandable @2 returns the formatted
-  value.}{\cs{StepOsgNumbering}}{\cs{OsgNumberingValue}}
-\begin{example}[code-only]
-    \StepOsgNumbering{mynote}
-    Notiz~\OsgNumberingValue{mynote}
-\end{example}
-
-\subsection{\ldeen{Erstellen}{Creating}}
-\label{sec:numbering:create}
-\ldeen*{@1 registriert einen neuen \LaTeX-Zähler und legt dessen
-  Formatierung fest -- in einem Aufruf, sofort bei der Deklaration (nicht
-  erst bei erster Nutzung), da ein zweiter \cs*{newcounter}-Aufruf für
-  denselben Namen sonst fehlschlüge.}{@1 registers a new \LaTeX{} counter
-  and fixes its formatting -- in one call, immediately upon declaration
-  (not only on first use), since a second \cs*{newcounter} call for the
-  same name would otherwise fail.}{\cs{DeclareOsgNumbering}}
-\begin{example}[code-only]
-    \DeclareOsgNumbering{mynote}{
-      counter = mynote, format = \arabic{mynote}
-    }
-\end{example}
-\ldeen{Mit \code{within}\meta{=Zähler} wird der neue Zähler bei jedem
-  Schritt von \meta{Zähler} zurückgesetzt (wie \cs*{newcounter}s eigenes
-  \oarg{within}-Argument) -- z.\,B.\ für kapitelweise Nummerierung.}
-  {Using \code{within}\meta{=counter}, the new counter is reset every time
-  \meta{counter} steps (like \cs*{newcounter}'s own \oarg{within}
-  argument) -- e.\,g.\ for per-chapter numbering.}
-\begin{example}[code-only]
-    \DeclareOsgNumbering{mynote}{
-      counter = mynote, within = chapter,
-      format = \thechapter.\arabic{mynote}
-    }
-\end{example}
-
-\subsection{\ldeen{Referenz}{Reference}}
+\subsection{\ldeen{Nummerierung}{Numbering}}
 \label{sec:numbering:ref}
 \begin{commands}
   \command{DeclareOsgNumbering}[\marg{name}\marg{keys}]
@@ -1852,117 +1985,6 @@ load babel
     {Typically \cs*{arabic}\marg{counter} or similar; any content that
     \cs{OsgNumberingValue} should return unchanged.}
 \end{options}
-
-\section{\ldeen{Integration mit anderen Paketen}{Integration with Other Packages}}
-\label{sec:integration}
-\ldeen{Diese Integrationen laufen weitgehend automatisch ab -- sie
-  betreffen nicht die "`Nutzen/Erstellen"'-Unterscheidung selbst, sondern
-  beschreiben, wie \osgstyler{} sich in eine größere Werkzeugkette
-  einfügt.}{These integrations run largely automatically -- they do not
-  concern the using/creating distinction itself, but describe how
-  \osgstyler{} fits into a larger toolchain.}
-
-\subsection{osglecture-modes}
-\label{sec:integration:modes}
-\ldeen*{Ist @1 geladen -- in beliebiger Reihenfolge zu \osgstyler{} --,
-  akzeptieren @2 sowie \emph{jeder} über @3 gebundene Befehl zusätzlich
-  ein portables Modusargument; über \cs{NewOsgStyledEnvironment} oder @4
-  erzeugte Umgebungen erhalten zusätzlich eine führende \cs*{d<>}-Spezifikation.
-  Ein inaktiver Modus unterdrückt die Ausgabe vollständig, \emph{einschließlich}
-  eines etwaigen Nummerierungsschritts -- ausgeblendeter Inhalt soll keine
-  Lücke in der Nummerierung hinterlassen.}{If @1 is loaded -- in either
-  order relative to \osgstyler{} --, @2 as well as \emph{every} command
-  bound via @3 additionally accepts a portable mode expression;
-  environments created via \cs{NewOsgStyledEnvironment} or @4 additionally
-  get a leading \cs*{d<>} specification. An inactive mode suppresses
-  output entirely, \emph{including} any numbering step -- hidden content
-  should not leave a gap in the numbering.}
-  {\pkg{osglecture-modes}}
-  {\cs{UseOsgInlineStyle}/\allowbreak\cs{UseOsgColorPalette}/\allowbreak%
-  \cs{UseOsgFontPalette}/\allowbreak\cs{UseOsgMetricPalette}/\allowbreak%
-  \cs{UseOsgListPalette}/\allowbreak\cs{UseOsgPreset}}
-  {\cs{BindOsgInlineCommand}}{\cs{BindOsgBlockEnvironment}}
-\begin{example}[code-only]
-    \emph<presentation>{nur im Präsentationsmodus}
-    \UseOsgColorPalette<print>{osl-standard}
-
-    \begin{theorem}<longform|print>[Fermat]
-      nur in Langform/Druckmodus
-    \end{theorem}
-\end{example}
-\ldeen{Die Deklarationsbefehle (\cs{DeclareOsgColorPalette} und
-  Geschwister) bleiben bewusst modusunabhängig -- eine Palette wird
-  einmalig definiert, unabhängig davon, in welchen Moden sie später
-  ausgewählt wird.}{The declaration commands (\cs{DeclareOsgColorPalette}
-  and siblings) deliberately remain mode-independent -- a palette is
-  defined once, regardless of which modes later select it.}
-
-\subsection{\pkg*{lttheme}}
-\label{sec:lttheme}
-\ldeen*{\osgstyler{} hängt bewusst nicht von @1 ab (Abschnitt~@2). Wird
-  jedoch @3 geladen, synchronisiert sich \osgstyler{} reaktiv: eine
-  Farbpalette namens \code{lttheme} wird aus den gerade aktiven
-  @1-Farben erzeugt und aktiviert, sooft @1s eigene
-  Theme-/Farbbefehle aufgerufen werden. Dies geschieht vollständig
-  automatisch -- ein Dokument, das @3 und \osgstyler{} gemeinsam nutzt,
-  muss dafür nichts weiter tun.}{\osgstyler{} deliberately does not
-  depend on @1 (Section~@2). However, if @3 is loaded, \osgstyler{}
-  synchronizes reactively: a color palette named \code{lttheme} is
-  created from the currently active @1 colors and activated whenever @1's
-  own theme/color commands are called. This happens fully automatically
-  -- a document using @3 together with \osgstyler{} does not need to do
-  anything for this.}{\pkg*{lttheme}}{\ref{sec:alternatives}}
-  {\pkg{ltxtalk-theme}}
-\ldeen*{Für @1-interne Zwecke: ein Paket, das @2 vor dem eigenen @3
-  definiert (@1 selbst tut dies), zeigt damit an, dass es seine
-  Themefarben bereits selbst über \cs{DeclareOsgColorPalette}/\cs{UseOsgColorPalette}
-  einspeist -- die reaktive Integration hier erkennt sich dann als
-  überflüssig und tut nichts.}{For @1-internal purposes: a package that
-  defines @2 before its own @3 (@1 itself does this) thereby indicates
-  that it already feeds its theme colors in itself via
-  \cs{DeclareOsgColorPalette}/\cs{UseOsgColorPalette} -- the reactive
-  integration here then recognizes itself as redundant and does
-  nothing.}{\pkg*{lttheme}}{\cs{LtxtalkUsesOsgstylerNatively}}
-  {\cs*{RequirePackage}\Marg{osgstyler}}
-
-\subsection{\ldeen{Lua-Referenzbackend}{Lua Reference Backend}}
-\label{sec:lua}
-\ldeen*{@1 lädt \osgstyler{} zusammen mit @2 und @3, installiert sich
-  selbst als Dekorationsprozessor (Abschnitt~\ref{sec:decorations:processors})
-  und schließt damit die Renderpipeline für Dekorationen praktisch,
-  jenseits der von \osgstyler{} selbst schon gerenderten @4/@5 (siehe
-  Abschnitt~\ref{sec:decorations:status}).}{@1 loads \osgstyler{} together
-  with @2 and @3, installs itself as the decoration processor
-  (Section~\ref{sec:decorations:processors}), and thereby closes the
-  rendering pipeline for decorations for practical purposes, beyond the
-  @4/@5 that \osgstyler{} itself already renders (see
-  Section~\ref{sec:decorations:status}).}
-  {\pkg{osgstyler-lua}}{\pkg{luacolor}}{\pkg{lua-ul}}{\code{enclosure}}
-  {\code{affix}}
-\begin{example}[code-only]
-    \usepackage{osgstyler-lua}
-\end{example}
-\ldeen*{Verlangt @1 (bricht sonst mit einer klaren Fehlermeldung ab).
-  Rendert zusätzlich @2 (nur \code{solid}, an \code{below}/\code{above}/\code{through})
-  über @3s @4 sowie @5 über dessen @6.}{Requires @1 (otherwise aborts with
-  a clear error message). Additionally renders @2 (only \code{solid}, at
-  \code{below}/\code{above}/\code{through}) via @3's @4, and @5 via its
-  @6.}{\LuaTeX{}}{\code{line}}{\pkg*{lua-ul}}{\cs*{underLine}}
-  {\code{background}}{\cs*{highLight}}
-\ldeen{Das expandierbare \cs{OsgStylerLuaBackendActive} liefert stets den
-  Text \code{true} und dient vor allem als Existenztest
-  (\cs*{cs\_if\_exist:NTF}), um im Theme-Code gezielt das Lua-Backend --
-  nicht nur irgendeinen Prozessor -- zu erkennen.}{The expandable
-  \cs{OsgStylerLuaBackendActive} always returns the text \code{true} and
-  serves primarily as an existence test (\cs*{cs\_if\_exist:NTF}) for
-  theme code to detect the Lua backend specifically -- not just any
-  processor.}
-
-\subsubsection{\ldeen{Referenz}{Reference}}
-\begin{commands}
-  \expandable\command{OsgStylerLuaBackendActive}
-    \ldeen{Siehe oben.}{See above.}
-\end{commands}
 
 \section{FAQ}
 \label{sec:faq}

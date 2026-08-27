@@ -1,11 +1,17 @@
 \input regression-test.tex
+\DocumentMetadata{tagging=on,lang=en-US}
 \documentclass{article}
 \usepackage{ansiterm}
 \begin{document}
-\START
+
+Plain paragraph before.
+
 \begin{ansiterm}[title=Test]
-§[1;31mred§[0m normal; §§ literal
+$ printf red
+red
 \end{ansiterm}
-\TYPE{display-environment-ok}
-\END
+
+Plain paragraph after.
+\clearpage
+\SHOWPDFTAGS
 \end{document}

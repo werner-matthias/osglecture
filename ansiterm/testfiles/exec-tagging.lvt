@@ -1,0 +1,38 @@
+\input regression-test.tex
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}
+\usepackage{ansiterm}
+\begin{document}
+
+Plain paragraph before.
+
+% Guarded on top of excludetests (see build.lua): even run by explicit
+% name, this only actually executes a shell command once a human has
+% deliberately opted in here, rather than the moment someone tries it.
+%
+% Two things had to be worked around to get this guard right:
+%  - fancyvrb's raw file-scanning for \begin{ansitermexec}...\end{...}
+%    cannot survive being nested inside a brace-delimited macro argument,
+%    so the environment call below sits behind a plain \if, not an expl3
+%    TF conditional -- comparing the flag itself can still use expl3, as
+%    long as its own true/false branches stay free of that scanning.
+\newif\ifansitermrunexec
+\ExplSyntaxOn
+\tl_set:Ne \l_tmpa_tl
+  { \directlua{ tex.print(os.getenv("ANSITERM_RUN_EXEC_TESTS") or "") } }
+\str_if_eq:VnTF \l_tmpa_tl { 1 }
+  { \ansitermrunexectrue }
+  { \ansitermrunexecfalse }
+\ExplSyntaxOff
+\ifansitermrunexec
+\begin{ansitermexec}[show-input=true,cache=refresh,lines={1-}]
+printf 'red\n'
+printf 'green\n'
+\end{ansitermexec}
+\else
+\TYPE{skipped~(set~ANSITERM_RUN_EXEC_TESTS=1~to~run)}
+\fi
+
+\clearpage
+\SHOWPDFTAGS
+\end{document}

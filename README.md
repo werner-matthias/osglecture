@@ -9,21 +9,23 @@ LaTeX bundle for generating lecture materials at the Operating Systems Group at 
 Currently, the following packages are included:
 
 * The **osglecture** class to generate different materials (slides, script) from a common source (`./osglecture`)
-* **OSG LaTeX Lecture Maker**: a latexmk-based build script to support creation and deploying of lecture materials (`./ollm`)
-* **osglecture-modes**: generalized portable document modes (`./osglecture-modes`)
-* **langselect**: support the generation of different language versions from a common source (`./langselect`)
-* **tagpax**:  semantic import of tagged PDFs (`./tagpax`)
-* **osgstyler**: Template-based formatting (`./osgstyler`)
-* **ltxtalk-theme**: theme engine to allow easy and flexible design of themes for ltx-talk (`./lttheme`)
-* **ltxtalk-theme-tuc-2019**: presentation theme of TU Chemnitz for ltx-talk (`./lttheme-tuc-2019`)
+* **OSG LaTeX Lecture Maker** is a latexmk-based build script to support creation and deploying of lecture materials (`./ollm`)
+* **osglecture-modes** provides a generalization of portable document modes in the style of beamer/ltx-talk (`./osglecture-modes`)
+* **langselect**: supports the generation of different language versions from a common source (`./langselect`)
+* **tagpax**:  enables the semantic import of tagged PDFs (`./tagpax`)
+* **osgstyler** provides a template-based formatting (`./osgstyler`)
+* **ltxtalk-theme**: is a theme engine to allow easy and flexible design of themes for ltx-talk (`./lttheme`)
+* **ltxtalk-theme-tuc-2019** is (an unofficial version of) the presentation theme of TU Chemnitz for ltx-talk (`./lttheme-tuc-2019`)
 * **ansiterm**: ANSI-aware executable terminal windows  (`./ansiterm`)
-* **osgdoc**: support for documentation (`./osgdoc`) 
+* **osgdoc** is a small wrapper for cnltx and provides some further support for documentation (`./osgdoc`) 
 
 ## Modules' version and compatibility
 Each module keeps its own version and may has its own compatibility dependency.
 Whilst in general an up-to-date TeX installation is required, few modules are
 working with older distributions.
 
+In addition, OSG Lecture is a LuaLaTeX bundle. That said, there are few package that can work without Lua in a
+degrated mode (:first_quarter_moon:) or don't require Lua at all (:new_moon:).
 <!--  
  - files generated from the same docstrip source (one `.dtx`) are expected to share one version and date. 
  - `ollm` is Perl rather than a docstripped LaTeX package, so it keeps its version as the single `$VERSION` in `OLLM::Version` instead.

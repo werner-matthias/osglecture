@@ -1,29 +1,151 @@
 %<*driver>
-\def\packagename{ansiterm}
+\def\nameofplainTeX{plain}
+\ifx\fmtname\nameofplainTeX
 \input l3docstrip.tex
 \keepsilent
 \askforoverwritefalse
 \preamble
-Package ansiterm -- ANSI-aware terminal transcripts for LuaLaTeX.
-Copyright (C) 2026 Matthias Werner.
-Released under the LaTeX Project Public License v1.3c or later.
+
+========================================================================
+ ansiterm - ANSI-aware terminal transcripts for LuaLaTeX.
+
+ (C) 2026 Matthias Werner
+ E-mail: matthias.werner@informatik.tu-chemnitz.de
+
+ Released under the LaTeX Project Public License v1.3c or later
+ See http://www.latex-project.org/lppl.txt
+======================================================================== 
+
 \endpreamble
+\postamble
+
+ This work is "maintained" (as per LPPL maintenance status) by
+ Matthias Werner.
+\endpostamble
 \generate{\file{ansiterm.sty}{\from{ansiterm.dtx}{package}}}
-\endbatchfile
+\expandafter\endbatchfile
+\fi
 %</driver>
 %<*package>
 \NeedsTeXFormat{LaTeX2e}[2022-06-01]
-\ProvidesExplPackage{ansiterm}{2026-08-26}{0.1.0}
+\ProvidesExplPackage{ansiterm}{2026-08-26}{0.2.1}
   {ANSI-aware terminal windows and executable shell transcripts}
+\ExplSyntaxOff
+%</package>
+%<*driver>
+
+\documentclass[
+load-preamble+
+]{osgdoc}
+
+\OnlyDescription
+
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage[
+languages={de,en},
+map={de=german,en=english},
+targetlang={job=2},
+load babel
+]{langselect}
+\newpackagename{\ansiterm}{ansiterm}
+\makeindex
+\setcnltx{
+  package  =  ansiterm,
+  version  = \UseVersionOf{ansiterm.sty},
+  date     = \UseDateOf{ansiterm.sty},
+  title    = {\ldeen{Das \ansiterm\ Paket}{The \ansiterm\ Package}},
+  info     = {\ldeen{Terminalfenster mit Aufzeichnung von Shellausführungen und ANSI-Interpretation}{
+      ANSI-aware terminal windows and executable  shell transcripts}},
+  authors  = {Matthias Werner[matthias.werner@informatik.tu-chemnitz.de]},
+  abstract={
+    \ldeen*{   
+      Das Paket ermöglicht (bei aktiviertem @1) die Ausführung und Protokollierung von Shellbefehlen und deren Ergebnissen, wobei ANSI-Steuerzeichen korrekt umgesetzt werden.
+      Wenn @2 gesetzt ist, wird die Ausgabe getaggt.
+
+      Das Paket ist Teil des \pkg*{osglecture}-Bundles, aber von den anderen Paketen weitgehend 
+      unabhängig.
+    }{
+      This package allows (when @1 is enabled) the execution and logging of shell commands and their results, with ANSI control characters being correctly interpreted.
+      If @2 is set, the output is tagged.
+
+      This package is part of the \pkg*{osglecture} bundle, but is largely
+      independent of the other packages.
+    }{\texttt{--shell-escape}}{\cs{DocumentMetadata}\Marg{tagging=on}}
+  },
+  url      =https://github.com/werner-matthias/osglecture,
+  build-title
+}
+\begin{document}
+% --------------------------------------------------------------------------
+% Documentation
+% --------------------------------------------------------------------------
+\section{\ldeen{Nutzung}{Usage}}
+
+\begin{warnbox}{\ldeen{Achtung, Sicherheitsrisiko!}{Attention, Security Risk!}}
+\ldee*{Die Umgebung @1 benötigt zur Ausführung die Übersetzung mit @2.
+  Dies stellt ein Sicherheitrisiko dar, da damit @3 beliebigen Code auf ihrem System
+  ausführen kann. Stellen Sie sicher, dass Sie nur unkritischen Code in den
+  Body der Umgebung schreiben.
+  }{
+  Environment @1 requires the translation with @2 to run.
+  This poses a security risk, as it allows @3 to execute arbitrary code on your system.
+  Make sure to write only non-critical code in the
+  body of the environment.
+  }{\code{ansitermexec}}{\texttt{--shell-escape}}{\LuaLaTeX}
+\end{warnbox}
+
+\subsection{\ldeen{Beispiele}{Examples}}
+\begin{example}%[compile,program=lualatex,exe-with=--shell-escape,
+  [side-by-side=true,code-left=true]
+    \begin{ansiterm}[escape-char=§]
+      §[1;31mred bold text§[0m
+    \end{ansiterm}
+\end{example}
+
+\begin{example}[compile,program=lualatex,exe-with=--shell-escape]
+  \documentclass{article}
+  \usepackage{ansiterm}
+  \begin{document}
+    \begin{ansitermexec}[
+      shell=/bin/sh,
+      cache=true,
+      sandbox=true,
+      show-input=true,
+      %lines={1-8,12-}
+    ]
+      printf '\033[1;32mHello\033[0m\n'
+      grep --color=always bar <<< 'foo bar baz'
+    \end{ansitermexec}
+  \end{document}
+\end{example}
+
+\subsection{}
+
+%\begin{options}
+  
+%\end{options}
+\section{Implementation}
+\MaybeStop{\ldeen*{Um die Implementationsbeschreibung zu erhalten, kommentieren Sie bitte \cs{OnlyDescription} in @1 aus.}{To view the implementation description, please uncomment @1 in \code{osgdoc.dtx}.}{\file{ansiterm.dtx}}}
+
+\subsection{\emph{ansiterm.sty}}
+\AutoDocInput{ansiterm.dtx}{package}
+\subsection{ansiterm.lua}
+\AutoDocInput[lua]{ansiterm.lua}{lua}
+\end{document} 
+
+%</driver> 
+
+%<*package>  
 \RequirePackage{xcolor}
 \RequirePackage{tcolorbox}
 \tcbuselibrary{skins,breakable}
 \RequirePackage{fvextra}
-
 \definecolor{AnsiTermRed}{RGB}{255,95,86}
 \definecolor{AnsiTermYellow}{RGB}{255,189,46}
 \definecolor{AnsiTermGreen}{RGB}{39,201,63}
 \definecolor{AnsiTermFrame}{RGB}{216,214,217}
+\ExplSyntaxOn
 
 \tl_new:N \l__ansiterm_title_tl
 \tl_new:N \l__ansiterm_fontsize_tl
@@ -32,6 +154,7 @@ Released under the LaTeX Project Public License v1.3c or later.
 \tl_new:N \l__ansiterm_cache_tl
 \tl_new:N \l__ansiterm_lines_tl
 \tl_new:N \l__ansiterm_prompt_tl
+\tl_new:N \l__ansiterm_escape_char_tl
 \bool_new:N \l__ansiterm_sandbox_bool
 \bool_new:N \l__ansiterm_show_input_bool
 \bool_new:N \l__ansiterm_ellipsis_bool
@@ -49,6 +172,7 @@ Released under the LaTeX Project Public License v1.3c or later.
     sandbox .bool_set:N = \l__ansiterm_sandbox_bool,
     show-input .bool_set:N = \l__ansiterm_show_input_bool,
     prompt .tl_set:N = \l__ansiterm_prompt_tl,
+    escape-char .tl_set:N = \l__ansiterm_escape_char_tl,
     lines .tl_set:N = \l__ansiterm_lines_tl,
     ellipsis .bool_set:N = \l__ansiterm_ellipsis_bool,
     fail-on-error .bool_set:N = \l__ansiterm_fail_bool,
@@ -56,9 +180,42 @@ Released under the LaTeX Project Public License v1.3c or later.
 \keys_set:nn { ansiterm }
   {
     title=Terminal, fontsize=\small, shell=/bin/sh, cwd=., cache=true,
-    sandbox=true, show-input=false, prompt={$~}, lines={1-}, ellipsis=true,
+    sandbox=true, show-input=false, prompt={$~}, escape-char={§},
+    lines={1-}, ellipsis=true,
     fail-on-error=true
   }
+
+%\ldeen{Tagging darf nicht erfolgen, wenn das Dokument nicht mit @1
+%  geladen wurde}{Tagging must not happen when the document was not loaded with
+% @1}{\cs{DocumentMetadata}\Marg{tagging=on}}
+\cs_new_protected:Npn \__ansiterm_tag_struct_begin:n #1
+  { \cs_if_exist:NT \tagstructbegin { \tagstructbegin{ tag=#1 } } }
+\cs_new_protected:Npn \__ansiterm_tag_struct_end:
+  { \cs_if_exist:NT \tagstructend { \tagstructend } }
+
+% \ldeen{Durch die Registrierung von Strukturbezeichnungen (anstatt \code{tag=Div} an der
+% Aufrufstelle fest zu codieren) kann nutzerseitig festgelegt werden, was
+% \code{input}/\code{output} zugeordnet wird.}{Registering structure names 
+% (rather than hard-coding \code{tag=Div} at the call site) lets the user decide
+% what \code{input}/\code{output} map to}
+\cs_if_exist:NT \NewStructureName
+  {
+    \NewStructureName{ ansiterm/input }
+    \AssignStructureRole{ ansiterm/input }{ Div }
+    \NewStructureName{ ansiterm/output }
+    \AssignStructureRole{ ansiterm/output }{ Div }
+  }
+
+\cs_new_protected:Npn \__ansiterm_tagged_run:nn #1#2
+  {
+    \__ansiterm_tag_struct_begin:n {#1}
+    #2
+    \__ansiterm_tag_struct_end:
+  }
+\cs_new_protected:Npn \ansitermtaginput #1
+  { \__ansiterm_tagged_run:nn { \UseStructureName{ ansiterm/input } } {#1} }
+\cs_new_protected:Npn \ansitermtagoutput #1
+  { \__ansiterm_tagged_run:nn { \UseStructureName{ ansiterm/output } } {#1} }
 
 \cs_new_protected:Npn \__ansiterm_box_begin:
   {
@@ -80,15 +237,43 @@ Released under the LaTeX Project Public License v1.3c or later.
   }
 \cs_new_protected:Npn \__ansiterm_box_end: { \end{tcolorbox} }
 
+\msg_new:nnn { ansiterm } { luatex-rendering-required }
+  { ANSI~rendering~in~the~ansiterm~environment~requires~LuaLaTeX. }
+\cs_new_protected:Npn \__ansiterm_render:n #1
+  {
+    \sys_if_engine_luatex:TF
+      {
+        \directlua{
+          ansiterm.render {
+            source = "\luaescapestring{#1}",
+            output = "\luaescapestring{#1.tex}",
+            escape_char = "\luaescapestring{\l__ansiterm_escape_char_tl}"
+          }
+        }
+      }
+      { \msg_fatal:nn { ansiterm } { luatex-rendering-required } }
+  }
+
 \NewDocumentEnvironment { ansiterm } { O{} }
   {
     \VerbatimEnvironment
     \group_begin:
     \keys_set:nn { ansiterm } {#1}
-    \__ansiterm_box_begin:
-    \begin{Verbatim}[breaklines=true,breakanywhere=true]
+    \int_gincr:N \g__ansiterm_exec_int
+    \tl_set:Nx \l_tmpa_tl
+      { \c_sys_jobname_str.ansiterm-\int_use:N\g__ansiterm_exec_int.txt }
+    \begin{VerbatimOut}{\l_tmpa_tl}
   }
-  { \end{Verbatim}\__ansiterm_box_end:\group_end: }
+  {
+    \end{VerbatimOut}
+    \__ansiterm_render:n { \l_tmpa_tl }
+    \__ansiterm_box_begin:
+    \__ansiterm_tag_struct_begin:n { Code }
+    \input{\l_tmpa_tl.tex}
+    \__ansiterm_tag_struct_end:
+    \__ansiterm_box_end:
+    \group_end:
+  }
 
 \sys_if_engine_luatex:TF
   { \directlua{ansiterm = require("ansiterm")} }
@@ -140,7 +325,14 @@ Released under the LaTeX Project Public License v1.3c or later.
     \end{VerbatimOut}
     \__ansiterm_exec:n { \l_tmpa_tl }
     \__ansiterm_box_begin:
+    % \ldeen{@1 versieht die selbst geschriebenen Ein- und Ausgabezeilen mit Tags. 
+    % @2 erzeugt nur die umgebende @3-Struktur.}{@1 tags the 
+    % input/output lines it writes itself.
+    % @2 supplies the surrounding @3 structure they nest in.}
+    % {\file{ansiterm.lua}}{\cs{ansitermtaginput}/\cs{ansitermtagoutput}}{\code{Code}}
+    \__ansiterm_tag_struct_begin:n { Code }
     \input{\l_tmpa_tl.tex}
+    \__ansiterm_tag_struct_end:
     \__ansiterm_box_end:
     \bool_if:NT \l__ansiterm_fail_bool
       {
