@@ -1,0 +1,218 @@
+\section{OLLM}
+\label{sec:ollm}
+
+\ldeen{OLLM ist die ausführbare Buildschnittstelle des Bundles. Es liest das
+Manifest, entdeckt Units, normalisiert Target und Sprache, erzeugt einen
+isolierten Buildauftrag und lässt ihn von \texttt{latexmk} mit Lua\LaTeX\
+ausführen. Dadurch müssen Quelldateien weder Jobnamen zerlegen noch den
+Projektzustand erraten. Die allgemeine Befehlsform lautet}{OLLM is the
+executable build interface of the bundle. It reads the manifest, discovers
+units, normalizes the target and language, creates an isolated build request,
+and runs it through \texttt{latexmk} with Lua\LaTeX. Source files therefore do
+not need to parse job names or infer project state. The general command form is}:
+
+\begin{verbatim}
+ollm [globale Optionen] [Aktion] [Target] [Aktionsoptionen]
+\end{verbatim}
+
+\ldeen{Ohne Aktion wird \texttt{build} angenommen. Die mitgelieferten Targets
+\texttt{slides}, \texttt{handout} und \texttt{script} dürfen als nacktes Wort
+stehen; projektdefinierte Targets werden eindeutig mit
+\texttt{--target=NAME} gewählt}{If no action is given, \texttt{build} is
+assumed. The supplied targets \texttt{slides}, \texttt{handout}, and
+\texttt{script} may be written as bare words; project-defined targets are
+selected unambiguously with \texttt{--target=NAME}}:
+
+\begin{verbatim}
+ollm slides --language=de
+ollm build --target=script --language=en
+\end{verbatim}
+
+\subsection{\ldeen{Bauen: von einer Instanz bis zur Serie}{Building: From One Instance to a Series}}
+
+\ldeen{Für die tägliche Arbeit in einer Unit genügt meist ein einzelner
+Build. Ohne \texttt{--language} verwendet OLLM die Projektsprache, sofern das
+Target sie unterstützt, sonst dessen erste konfigurierte Sprache.
+\texttt{--source} ist standardmäßig \texttt{main.tex}}{For day-to-day work in
+a unit, a single build is usually sufficient. Without \texttt{--language},
+OLLM uses the project default language if supported by the target, otherwise
+the target's first configured language. \texttt{--source} defaults to
+\texttt{main.tex}}:
+
+\begin{verbatim}
+ollm build script --language=en
+ollm build --target=slides --source=main.tex
+\end{verbatim}
+
+\ldeen{Der Scope bestimmt, wie weit die Auswahl reicht. \texttt{current} baut
+eine Projektion der aktuellen Unit. \texttt{unit} baut deren zulässige
+Target-/Sprachmatrix. \texttt{series} baut eine Projektion aller passenden
+normalen Units, während \texttt{collection} die eindeutig passende
+Integrationsunit des Dokumenttyps baut. Die letzten beiden Scopes funktionieren
+auch aus der Projektwurzel}{The scope determines how far the selection reaches.
+\texttt{current} builds one projection of the current unit. \texttt{unit}
+builds its permitted target/language matrix. \texttt{series} builds one
+projection of every applicable regular unit, whereas \texttt{collection}
+builds the uniquely matching integration unit for the document type. The last
+two scopes also work from the project root}:
+
+\begin{verbatim}
+ollm build --all --scope=unit
+ollm handout --language=de --scope=series
+ollm script --language=de --scope=collection
+\end{verbatim}
+
+\ldeen{\texttt{--all} erweitert die Matrix nur innerhalb des gewählten
+Scopes; es bedeutet nicht automatisch "`das ganze Projekt"'.
+\texttt{--rebuild} erzwingt einen vollständigen \texttt{latexmk}-Neubau.
+\texttt{--dry-run} zeigt die normalisierte Auswahl, ohne \LaTeX\ zu starten,
+und eignet sich zusammen mit \texttt{--format=json} für Werkzeuge und CI.}{
+\texttt{--all} expands the matrix only within the selected scope; it does not
+automatically mean "`the entire project"'. \texttt{--rebuild} forces a full
+\texttt{latexmk} rebuild. \texttt{--dry-run} displays the normalized selection
+without starting \LaTeX\ and, together with \texttt{--format=json}, is useful
+for tools and CI.}
+
+\ldeen{Serieninterne Referenzen und Integrationen bilden Abhängigkeiten.
+\texttt{--resolve} baut veraltete Produzenten und Konsumenten in mehreren
+Runden bis zu einem Fixpunkt. Eine logische Unit, die noch nie direkt gebaut
+wurde, muss zunächst einmal in der benötigten Projektion gebaut werden, damit
+OLLM ihre ID dem Verzeichnis zuordnen kann.}{Cross-unit references and
+integrations form dependencies. \texttt{--resolve} rebuilds stale producers
+and consumers in several rounds until a fixed point is reached. A logical unit
+that has never been built directly must first be built once in the required
+projection so that OLLM can associate its ID with its directory.}
+
+\begin{verbatim}
+ollm build script --language=de --resolve
+\end{verbatim}
+
+\subsection{\ldeen{Prüfen und Diagnostizieren}{Inspecting and Diagnosing}}
+
+\ldeen{\texttt{report}, \texttt{check} und \texttt{doctor} beantworten drei
+verschiedene Fragen. \texttt{report} beschreibt den bekannten Zustand:
+Units, Projektionen, Generationen, Artefakte und Abhängigkeiten. Befunde ändern
+seinen Exitstatus nicht, solange der Zustand lesbar ist. \texttt{check} liest
+dieselben Daten, bewertet Inkonsistenzen aber als Fehler und eignet sich daher
+als Freigabegate. Beide Befehle bauen nichts.}{\texttt{report},
+\texttt{check}, and \texttt{doctor} answer three different questions.
+\texttt{report} describes the known state: units, projections, generations,
+artifacts, and dependencies. Findings do not change its exit status as long as
+the state is readable. \texttt{check} reads the same data but treats
+inconsistencies as errors and is therefore suitable as a release gate. Neither
+command builds anything.}
+
+\begin{verbatim}
+ollm report --scope=series
+ollm check --scope=current --target=script --language=de
+ollm check --format=json
+\end{verbatim}
+
+\ldeen{\texttt{doctor} prüft dagegen die Werkzeugkette: Perl,
+\texttt{latexmk}, Lua\LaTeX, \texttt{kpsewhich}, den TOML-Parser und die
+benötigten TeX-Pakete. In einem Projekt kommen Manifest, Definitionen,
+Schreibbarkeit, Zustand und Shell-Escape-Policy hinzu. Verwenden Sie
+\texttt{doctor}, wenn bereits die Umgebung fraglich ist, und \texttt{check},
+wenn ein vorhandener Projektzustand widersprüchlich erscheint.}{
+\texttt{doctor}, by contrast, checks the toolchain: Perl, \texttt{latexmk},
+Lua\LaTeX, \texttt{kpsewhich}, the TOML parser, and required TeX packages.
+Inside a project it also checks the manifest, definitions, writability, state,
+and shell-escape policy. Use \texttt{doctor} when the environment itself is in
+doubt, and \texttt{check} when an existing project state appears inconsistent.}
+
+\begin{verbatim}
+ollm doctor
+ollm doctor --project-root=/path/to/project --format=json
+\end{verbatim}
+
+\subsection{\ldeen{Aufräumen und Zustände pflegen}{Cleaning and Maintaining State}}
+
+\ldeen{OLLM trennt Buildverzeichnisse von promoviertem Serienzustand.
+\texttt{clean --level=aux} entfernt Hilfsdateien, behält aber das lokale PDF;
+\texttt{build} entfernt das isolierte Buildverzeichnis; \texttt{state}
+entfernt promovierte Projektionen; \texttt{all} kombiniert die letzten beiden.
+Mit \texttt{--dry-run} sehen Sie zuerst den Löschplan. Scopes sind hier
+\texttt{current}, \texttt{unit} und \texttt{series}.}{OLLM separates build
+directories from promoted series state. \texttt{clean --level=aux} removes
+auxiliary files but retains the local PDF; \texttt{build} removes the isolated
+build directory; \texttt{state} removes promoted projections; and
+\texttt{all} combines the last two. Use \texttt{--dry-run} to inspect the
+deletion plan first. The available scopes here are \texttt{current},
+\texttt{unit}, and \texttt{series}.}
+
+\begin{verbatim}
+ollm clean --level=aux
+ollm clean --level=build --scope=unit --dry-run
+ollm clean --level=state --scope=series
+\end{verbatim}
+
+\ldeen{\texttt{prune} beseitigt aufgegebene temporäre Zustände und ersetzte
+Generationen. Zustände physisch entfernter Units werden nur mit
+\texttt{--stale-units} einbezogen. Das ist absichtlich vorsichtiger als ein
+pauschales Löschen von \texttt{.osglecture}, bei dem auch die bekannten
+Zuordnungen logischer Unit-IDs verloren gehen.}{\texttt{prune} removes
+abandoned temporary states and superseded generations. State belonging to
+physically removed units is included only with \texttt{--stale-units}. This is
+deliberately more cautious than deleting \texttt{.osglecture} wholesale,
+which also loses known mappings of logical unit IDs.}
+
+\begin{verbatim}
+ollm prune --dry-run
+ollm prune --stale-units
+\end{verbatim}
+
+\subsection{\ldeen{Bereitstellen}{Deployment}}
+
+\ldeen{\texttt{deploy} kopiert bereits erfolgreich promovierte PDFs an die im
+Manifest konfigurierten Zielorte. Es startet keinen Build und legt keine
+Zielverzeichnisse an. Verwenden Sie daher zuerst \texttt{build} oder
+\texttt{build --resolve} und danach \texttt{deploy}. In der Projektwurzel gilt
+standardmäßig Scope \texttt{series}, in einer Unit \texttt{current}.}{
+\texttt{deploy} copies already successfully promoted PDFs to destinations
+configured in the manifest. It neither starts a build nor creates destination
+directories. Therefore run \texttt{build} or \texttt{build --resolve} first,
+then \texttt{deploy}. The default scope is \texttt{series} at the project root
+and \texttt{current} inside a unit.}
+
+\begin{verbatim}
+ollm deploy handout --language=de --scope=series
+ollm deploy --target=script --scope=collection
+ollm deploy --all --overwrite
+\end{verbatim}
+
+\ldeen{Dateinamenschablonen können unter anderem Serien-ID, Unit-ID,
+Ordnungskennung, Kapitel, Dokumenttyp, Sprache und Rolle verwenden. Eine
+vorhandene identische Datei bleibt unverändert. Ob eine abweichende Datei
+\texttt{--overwrite} verlangt, bestimmt
+\texttt{security.deployment.overwrite}.}{File-name templates can use, among
+other values, the series ID, unit ID, ordinal, chapter, document type,
+language, and role. An existing identical file remains untouched. Whether a
+different existing file requires \texttt{--overwrite} is controlled by
+\texttt{security.deployment.overwrite}.}
+
+\subsection{\ldeen{Projekt anlegen und allgemeine Optionen}{Creating a Project and General Options}}
+
+\ldeen{\texttt{ollm newtoml} erzeugt ein neues
+\texttt{ollmconfig.toml}, überschreibt aber kein bestehendes Manifest. Für die
+genaue Syntax einer installierten Version sind \texttt{ollm --help} und
+\texttt{ollm --version} maßgeblich. Häufige globale Optionen sind
+\texttt{--config=DATEI}, \texttt{--project-root=VERZEICHNIS},
+\texttt{--format=text|json}, \texttt{--color=auto|always|never} und
+\texttt{--non-interactive}.}{\texttt{ollm newtoml} creates a new
+\texttt{ollmconfig.toml} but never overwrites an existing manifest. For the
+exact syntax of an installed version, \texttt{ollm --help} and
+\texttt{ollm --version} are authoritative. Common global options are
+\texttt{--config=FILE}, \texttt{--project-root=DIRECTORY},
+\texttt{--format=text|json}, \texttt{--color=auto|always|never}, and
+\texttt{--non-interactive}.}
+
+\ldeen{Für Builddiagnosen wählen \texttt{--debug=tex}, \texttt{ollm} oder
+\texttt{tex+ollm} die Ausgabeschicht; \texttt{--warnings=all},
+\texttt{important} oder \texttt{none} steuert die Warnungsmenge. Unbekannte
+kompatible Minusoptionen werden beim Build an \texttt{latexmk} weitergereicht;
+Optionen, die den kontrollierten Buildvertrag umgehen würden, weist OLLM
+zurück.}{For build diagnostics, \texttt{--debug=tex}, \texttt{ollm}, or
+\texttt{tex+ollm} selects the output layer; \texttt{--warnings=all},
+\texttt{important}, or \texttt{none} controls warning verbosity. Compatible
+unknown dash options are forwarded to \texttt{latexmk} during a build; OLLM
+rejects options that would bypass the controlled build contract.}

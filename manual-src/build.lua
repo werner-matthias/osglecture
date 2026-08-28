@@ -6,6 +6,9 @@ sourcefiles = {
   "osglecture-manual-en.tex",
   "osglecture-manual-de.tex",
   "osglecture-manual.tex",
+  "osglecture-manual-project-configuration.tex",
+  "osglecture-manual-ollm.tex",
+  "osglecture-manual-series-standalone.tex",
   "polymorphy-*.tex",
   "styler-*.tex",
 }
