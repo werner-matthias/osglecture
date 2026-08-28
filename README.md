@@ -24,8 +24,8 @@ Each module keeps its own version and may has its own compatibility dependency.
 Whilst in general an up-to-date TeX installation is required, few modules are
 working with older distributions.
 
-In addition, OSG Lecture is a LuaLaTeX bundle. That said, there are few package that can work without Lua in a
-degrated mode (:first_quarter_moon:) or don't require Lua at all (:new_moon:).
+In addition, OSG Lecture is a LuaLaTeX bundle ( :full_moon: ). That said, there are few package that can work without Lua in a
+degrated mode ( :first_quarter_moon: ) or don't require Lua at all ( :new_moon: ).
 <!--  
  - files generated from the same docstrip source (one `.dtx`) are expected to share one version and date. 
  - `ollm` is Perl rather than a docstripped LaTeX package, so it keeps its version as the single `$VERSION` in `OLLM::Version` instead.
@@ -52,15 +52,15 @@ The `TL ...` columns are read from the expectations in the workflow above;
 |---|---|---|---|:---:|:---:|:---:|:---:|
 | osglecture | v0.13.0 | 2026/08/21 | 22 | :full_moon: | :red_circle: | :green_circle: | :green_circle: |
 | osglecture-modes | v0.4.0 | 2026/08/02 | 2 | :full_moon: | :green_circle: | :green_circle: | :green_circle: |
-| ltx-talk support (osglecture + osglecture-modes) | n/a | n/a | n/a | n/a | :red_circle: | :red_circle: | :green_circle: |
+| ltx-talk support (osglecture + osglecture-modes) | n/a | n/a | n/a | :full_moon: | :red_circle: | :red_circle: | :green_circle: |
 | ollm | v0.13.0-dev | n/a | 1 | :white_circle: | :white_circle: | :green_circle: | :green_circle: |
 | tagpax | v0.8.5-dev | 2026/07/23 | 2 | :full_moon: | :green_circle: | :green_circle: | :green_circle: |
 | langselect | v1.0.2 | 2026/08/05 | 1 | :full_moon: | :green_circle: | :green_circle: | :green_circle: |
-| osgstyler | v0.2.0 | 2026/08/24 | 2 | :full_moon: | :red_circle: | :red_circle: | :green_circle: |
+| osgstyler | v0.2.0 | 2026/08/24 | 2 | :first_quarter_moon: | :red_circle: | :red_circle: | :green_circle: |
 | lttheme | v0.5.0 | 2026/08/24 | 7 | :new_moon: | :red_circle: | :red_circle: | :green_circle: |
 | lttheme-tuc-2019 | v0.5.1 | 2026/08/24 | 1 | :new_moon: | :red_circle: | :red_circle: | :green_circle: |
 | ansiterm | 0.2.1 | 2026-08-26 | 1 | :full_moon: | :green_circle: | :green_circle: | :green_circle: |
-| osgdoc | v0.3.3 | 2026/08/14 | 2 | :full_moon: | :green_circle: | :green_circle: | :green_circle: |
+| osgdoc | v0.3.4 | 2026/08/14 | 2 | :first_quarter_moon: | :green_circle: | :green_circle: | :green_circle: |
 <!-- END MODULE VERSIONS -->
 
 ## Installation

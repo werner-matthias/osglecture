@@ -58,6 +58,7 @@ local EXPECTATION_MARK = {
 local capabilities_after = {
   ["osglecture-modes"] = {
     "ltx-talk support (osglecture + osglecture-modes)",
+    lua = ":full_moon:"
   },
 }
 
@@ -264,7 +265,7 @@ for _, r in ipairs(report) do
   for _, name in ipairs(capabilities_after[r.name] or {}) do
     local capability_compat = assert(workflow_compat[name],
       "no workflow compatibility expectations for " .. name)
-    local capability_cells = { name, "n/a", "n/a", "n/a", "n/a" }
+    local capability_cells = { name, "n/a", "n/a", "n/a", ":full_moon:" }
     for _, c in ipairs(capability_compat) do
       table.insert(capability_cells, c)
     end
