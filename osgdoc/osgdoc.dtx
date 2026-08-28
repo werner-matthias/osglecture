@@ -35,7 +35,7 @@
 \ProvidesExplClass
 {osgdoc}
 {2026/08/14}
-{v0.3.3}
+{v0.3.4}
 {A thin wrapper around cnltx-doc}
 \ExplSyntaxOff
 %</cls>
@@ -389,21 +389,65 @@ load babel
 \ProvidesExplPackage
 {osgdoc}
 {2026/08/14}
-{v0.3.3}
+{v0.3.4}
 {small tools for documentation}
-\sys_if_engine_luatex:TF{
-  \def\error{}
-  \RequirePackage{luacode}
-}{
-  \def\error{\errmessage{LuaLaTeX~is~required~to~use~this~package.}\endinput}
+% \ldeen{Wir beginnen mit den Funktionalitäten, die nicht Lua braucht.}{
+% We'll start with the features that doesn't require Lua.}
+% \subsection*{\ldeen{Farbboxen}{Color Boxes}}
+\RequirePackage{tcolorbox}
+\newtcolorbox{warnbox}[1]{
+  colback=red!5!white,
+  colframe=red!75!black,fonttitle=\bfseries,
+  title={#1}
 }
-\error
-
+\newtcolorbox{infobox}[1]{
+  colback=cnltxformalblue!5!white,
+  colframe=cnltxformalblue,fonttitle=\bfseries,
+  title={#1}
+}
+% \subsection*{\ldeen{Farbboxen}{Color Boxes}}
+\newbool{osgdocimpl}
+\booltrue{osgdocimpl}
+\NewDocumentCommand{\OnlyDescription}{}{
+  \boolfalse{osgdocimpl}
+}
+\NewDocumentCommand{\MaybeStop}{+m}{
+  \ifbool{osgdocimpl}{
+    \def\osgterminate{\relax}
+  }{
+    #1
+    \def\osgterminate{\end{document}\endinput}
+  }
+\osgterminate
+}
 % \ldeen{Ohne die \cls{osgdoc}- und damit auch \cls{cnltx-doc}-Klasse sollte \pkg{cnltx} geladen werden.}{
-% If there is no \cls{cnltx-doc} class--and thus no \cls{cnltx-doc} class--the package \pkg{cnltx} should be loaded.}
+% If there is no \cls{cnltx-doc} class, and thus no \cls{cnltx-doc} class, the package \pkg{cnltx} should be loaded.}
 \@ifclassloaded{osgdoc}{}{
   \RequirePackage[example]{cnltx}
 }
+% \ldeen{Die restlichen Funktionen brauchen Lua. Um keine harten Fehler zu generieren, werden Stubs 
+% zur Verfügung gestellt.}{The remaining features require Lua. To avoid generating critical errors, 
+% stubs are provided.}
+\ExplSyntaxOn
+\let \ifLuaTF=\sys_if_engine_luatex:TF
+\ExplSyntaxOff
+\ifLuaTF{
+  \RequirePackage{luacode}
+  \def\odnext\relax
+}{
+  \NewDocumentCommand{\AutoDocInput}{O{tex} m m}{
+    \textcolor{red}{For use \string\AutoDocInput, you have to translate this document with Lua\LaTeX.}
+  }
+  \NewDocumentCommand{\UseVersionOf}{m}{
+    \textcolor{red}{For use \string\UseVersionOf, you have to translate this document with Lua\LaTeX.}
+  }
+  \NewDocumentCommand{\UseDateOf}{m}{
+    \textcolor{red}{For use \string\UseDateOf, you have to translate this document with Lua\LaTeX.}
+  }
+  \def\odnext\endinput
+}
+\odnext
+
 % \subsection*{AutoDocInput}
 % \ldeen{Für \cs{AutoDocInput} brauchen wir \pkg{luacode} für das Parsing und \pkg{fancyverb}/\pkg{fvextra} für die 
 % Darstellung}{For \cs{AutoDocInput}, we need \pkg{luacode} for parsing and \pkg{fancyverb}/\pkg{fvextra} for rendering}.
@@ -995,20 +1039,6 @@ luatexbase.add_to_callback(
 )
 \end{luacode*}
 
-\newbool{osgdocimpl}
-\booltrue{osgdocimpl}
-\NewDocumentCommand{\OnlyDescription}{}{
-  \boolfalse{osgdocimpl}
-}
-\NewDocumentCommand{\MaybeStop}{+m}{
-  \ifbool{osgdocimpl}{
-    \def\osgterminate{\relax}
-  }{
-    #1
-    \def\osgterminate{\end{document}\endinput}
-  }
-\osgterminate
-}
 
 % \subsection*{\ldeen{Dateiinformationen}{File Information}}
 % \ldeen*{
@@ -1110,16 +1140,5 @@ function fileinfo.usedate(filename)
    end
 end
 \end{luacode*}
-% \subsection*{\ldeen{Farbboxen}{Color Boxes}}
-\RequirePackage{tcolorbox}
-\newtcolorbox{warnbox}[1]{
-  colback=red!5!white,
-  colframe=red!75!black,fonttitle=\bfseries,
-  title={#1}
-}
-\newtcolorbox{infobox}[1]{
-  colback=cnltxformalblue!5!white,
-  colframe=cnltxformalblue,fonttitle=\bfseries,
-  title={#1}
-}
+
 %</pkg>
