@@ -1,0 +1,27 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osglistings}
+\begin{document}
+\START
+
+\begin{osglisting}[style=plain]{python}
+def foo(x):
+    return x
+\end{osglisting}
+\TYPE{plain-style-ok}
+
+\begin{osglisting}[style=paper]{c}
+int main(void) { return 0; }
+\end{osglisting}
+\TYPE{paper-style-ok}
+
+\begin{osglisting}[style=editor, title={main.rs}]{rust}
+fn main() {}
+\end{osglisting}
+\TYPE{editor-style-ok}
+
+\osglistinginput[style=plain]{python}{sample.py}
+\TYPE{osglistinginput-ok}
+
+\END
+\end{document}

@@ -40,7 +40,7 @@ load babel
 \parskip=2pt
 \tableofcontents
 \endgroup
-\captionsetup{font=footnotesize,labelfont=bf,textfont=sf}
+\captionsetup{font=footnotesize,labelfont=bf,textfont=sf,skip=2pt}
 
 \section{\ldeen{Einführung}{introduction}}
 \subsection{\ldeen{Idee}{Idea}}
@@ -154,7 +154,7 @@ name from this concept. \osglecture\ attempts to expand the application of this 
 
 \ldeen{Das Folgende ist ein Mini-Showcase der zeigen soll, wie aus einer Quelle verschiedene Instanzen
 erzeugt werden. Es dient lediglich dazu, dass der Nutzer einen kleinen Eindruck von den
-Möglichkeiten des kontextabhängigen Polymorphismus in \osglecture\ gewinnen kann~--die Diskussion
+Möglichkeiten des kontextabhängigen Polymorphismus in \osglecture\ gewinnen kann~-- die Diskussion
 über Funktionsweise und die verwendeten Mechanismen erfolgt später.}{
 The following is a mini-showcase designed to demonstrate how different instances are
 created from a single source. Its sole purpose is to give the user a brief glimpse of the
@@ -200,7 +200,7 @@ of how it works and the mechanisms used will follow later.}
     \caption{\ldeen*{Ausgabe für @1-Taget}{Version for @1-Taget}{\texttt{script}}}
     \end{minipage}
   \end{subcaptiongroup}
-  \captionof{figure}{\ldeen*{Alle Varianten sind aus der Quelle in Abb.~@4 erstellt:
+  \caption{\ldeen*{Alle Varianten sind aus der Quelle in Abb.~@4 erstellt:
     Bei den Folien in unterschiedlichen Sprachen @1 und @2 bleibt
     Gliederung, Aussagenfolge und Hervorhebung jeweils gleich, die Ausgabe für das Skript @3 ist inhaltlich äquivalent, jedoch  ausführlicher und in Satzform}%
   {All variants were created from the source shown in Fig.~@4:
@@ -210,6 +210,8 @@ of how it works and the mechanisms used will follow later.}
   {\ref{fig:common-src}}}
 \end{minipage}
 \medskip
+
+\ldeen{Das auch gewöhnlich Autorenauszeichnungen unterschiedlich gestaltet und damit polymorph sein können, ist in \LaTeX\ ein alter Hut. \osglecture\ unterstützt dies aber kompfortable durch spezifische Profile.}{It is well known in \LaTeX\ that text markup can vary and thus be polymorphic. However, \osglecture\ provides convenient support for this through specific profiles.}
 
 \begin{minipage}{\linewidth}
 \inputsourcecode[
@@ -243,17 +245,32 @@ of how it works and the mechanisms used will follow later.}
 
 \section{\ldeen{Kurztutorial}{Short Tutorial}}{}
 \ldeen{Dieses Tutorial begleitet Nora. Nora hält im kommenden Semester erstmals
-die Vorlesung »Betriebssysteme in 60 Minuten«. Der Name ist vielleicht etwas
-optimistisch, aber das soll uns hier nicht aufhalten. Für die erste Sitzung
-braucht sie deutsche und englische Folien. Außerdem hat sie versprochen, ein
-kurzes Skript bereitzustellen. Drei Ergebnisse für eine einzige Stunde Lehre:
+die Vorlesung "`Betriebssysteme"'.
+%Der Name ist vielleicht etwas optimistisch, aber das soll uns hier nicht aufhalten.
+Die erste Unterrichtseinheit soll über Speicher gehen. Nora will sofort Speichervirualisierung behandeln. 
+Die ist vielleicht etwas optimistisch, aber das soll uns hier nicht aufhalten.
+
+Der Studiengang, in dem der Kurs stattfindet, ist zwar deutschsprachig, aber Nora weiß, 
+dass viele Gaststudenten teilnehmen werden, die besser in Englisch als in Deutsch sind.
+Daher will sie die Folien jeweils in beiden Sprachen haben.
+Außerdem hat sie versprochen, ein kurzes Skript bereitzustellen. 
+
+Drei Dokumente für zunächst eine einzige Stunde Lehre:
 Nora ahnt bereits, dass drei getrennte Quelldateien keine besonders gute Idee
-wären.}{This tutorial follows Nora. Next semester, Nora will teach “Operating
-Systems in 60 Minutes” for the first time. The title may be a little optimistic,
-but that need not concern us here. For the first session she needs German and
-English slides. She has also promised to provide short lecture notes. Three
-outputs for a single hour of teaching: Nora already suspects that three separate
-source files would not be a particularly good idea.}
+wären.}{This tutorial follows Nora. 
+Next semester, Nora will be teaching
+the lecture "`Operating Systems"' for the first time. 
+The first lesson will cover storage. Nora wants to dive right into storage virtualization.
+That might be a bit optimistic, but let's not let that stop us here.
+
+Although the degree program in which the course is offered is German-language, Nora knows
+that many visiting students will be attending who are more comfortable with English than with German.
+That’s why she wants the slides to be in both languages.
+She has also promised to provide a short set of lecture notes.
+
+Three documents for what is initially just a single hour of instruction:
+Nora already suspects that having three separate source files wouldn’t be
+a particularly good idea.}
 
 \ldeen{Das Tutorial beschreibt nicht jede Option des Bundles. Es zeigt vielmehr
 die Dinge, die Nora für ihren ersten kleinen Kurs tatsächlich benötigt. Am Ende
@@ -262,53 +279,56 @@ tutorial does not describe every option in the bundle. Instead, it shows the
 things Nora actually needs for her first small course. At the end, one course
 unit will produce three visibly different PDFs.}
 
-\subsection{\ldeen{Noras Problem}{Nora's Problem}}
-
-\ldeen{Nora beginnt so, wie man vermutlich auch ohne \osglecture\ beginnen
+\paragraph{\ldeen{Noras Problem}{Nora's Problem}.}
+\ldeen{Nora beginnt so, wie man vermutlich intuitiv ohne \osglecture\ beginnen
 würde. Sie legt \texttt{slides-de.tex} an, kopiert die Datei nach
-\texttt{slides-en.tex} und beginnt mit der Übersetzung. Für das Skript könnte
-sie später noch \texttt{script-de.tex} hinzufügen. Das funktioniert sogar. Es
-funktioniert nur leider zu gut: Nach der ersten fachlichen Korrektur muss Nora
-schon überlegen, in welche der Dateien sie die Korrektur übernommen hat.}{Nora
-starts the way one might start without \osglecture. She creates
-\texttt{slides-de.tex}, copies it to \texttt{slides-en.tex}, and begins the
-translation. She could add \texttt{script-de.tex} later for the lecture notes.
-This even works. Unfortunately, it works rather too well: after the first
-technical correction, Nora already has to remember which files received the
-correction.}
+\texttt{slides-en.tex} und beginnt mit der Übersetzung. Für das Skript fügt sie
+später noch \texttt{script-de.tex} hinzu. Das funktioniert. 
+Allerdings fällt kurze Zeit später ein, dass sie bei der Beschreibung des Unterschieds 
+zwischen \emph{Paging} und \emph{Sementierung} etwas Wichtiges vergessen hat.
+Jedoch klingelt bei der Bearbeitung ihr Telefon, und nach dem Anruf muss Nora überlegen,
+in welche der Dateien sie die Korrektur übernommen hat.}{Nora starts off the way one would probably intuitively begin without \osglecture.
+She creates \texttt{slides-de.tex}, copies the file to
+\texttt{slides-en.tex}, and begins the translation. For the script, she
+later adds \texttt{script-de.tex}. That works.
+However, shortly afterward, she realizes that she forgot something important in the 
+description of the difference between \emph{paging} and \emph{segmentation}.
+But while she’s editing, her phone rings, and after the call, Nora has to figure out
+which of the files she made the correction in.
+}
 
 \begin{figure}[htbp]
 \centering
 \begin{minipage}[t]{.27\linewidth}
   \begin{tcolorbox}[colback=red!3,colframe=red!55!black]
   \centering\texttt{slides-de.tex}\par\smallskip
-  \scriptsize\ldeen{»64 Einträge«}{“64 entries”}
+  \scriptsize\ldeen{64 Einträge}{64 entries}
   \end{tcolorbox}
 \end{minipage}\hfill
 \begin{minipage}[t]{.27\linewidth}
   \begin{tcolorbox}[colback=red!3,colframe=red!55!black]
   \centering\texttt{slides-en.tex}\par\smallskip
-  \scriptsize\ldeen{»64 Einträge«}{“64 entries”}
+  \scriptsize\ldeen{64 Einträge}{64 entries}
   \end{tcolorbox}
 \end{minipage}\hfill
 \begin{minipage}[t]{.27\linewidth}
   \begin{tcolorbox}[colback=red!3,colframe=red!55!black]
   \centering\texttt{script-de.tex}\par\smallskip
-  \scriptsize\ldeen{»63 Einträge?«}{“63 entries?”}
+  \scriptsize\ldeen{63 Einträge?}{63 entries?}
   \end{tcolorbox}
 \end{minipage}
 \caption{\ldeen{Kopien sind bequem anzulegen und unbequem zu pflegen.}{Copies are easy to create and awkward to maintain.}}
 \end{figure}
 
-\ldeen{Nora entscheidet deshalb, nur noch eine fachliche Quelle zu pflegen. Die
+\ldeen{Nora entscheidet deshalb, \osglecture\ zu nutzen und nur noch eine fachliche 
+Quelle zu pflegen. Die
 Sprachen sollen darin nahe beieinanderstehen; Folien und Skript sollen ebenfalls
-aus dieser Quelle entstehen. Genau dies wird im Folgenden eingerichtet.}{Nora
-therefore decides to maintain only one source of subject matter. The language
-versions should be kept close together, and slides and lecture notes should also
-come from this source. This is what we shall set up in the following.}
+aus dieser Quelle entstehen. Genau dies wird im Folgenden eingerichtet.}{Nora therefore
+decides to use \osglecture\ and to maintain only one subject-specific
+source. The languages should be closely aligned within it; slides and lecture notes should 
+also be derived from this source. This is exactly what will be set up below.}
 
-\subsection{\ldeen{Ein Zuhause für den Kurs}{A Home for the Course}}
-
+\paragraph{\ldeen{Ein Zuhause für den Kurs}{A Home for the Course}.}
 \ldeen{Zunächst braucht der Kurs ein Verzeichnis. Nora könnte alle Dateien dort
 ablegen. Sie entscheidet sich aber gleich für zwei Unterverzeichnisse: eines für
 gemeinsame Angaben und eines für die erste Lehreinheit. Dass die Einheit die
@@ -322,8 +342,8 @@ seems unnecessarily generous. Later, however, she can insert a new unit named
 \texttt{005-Overview} before it without renaming everything.}
 
 \begin{verbatim}
-mkdir -p os-in-60/Include os-in-60/010-Memory
-cd os-in-60
+mkdir -p Noras-os/Include Noras-os/010-Memory
+cd Noras-os
 \end{verbatim}
 
 \ldeen{Noch ist das Ergebnis nicht besonders eindrucksvoll}{The result is not
@@ -331,34 +351,36 @@ particularly impressive yet}:
 \begin{dirtreex}[elbow radius=3pt,fontsize=\footnotesize,
   box={true,corners=0pt,border color=blue!60,border width=.5pt,
   background color=blue!2,margin=6pt}]
-  \dir{os-in-60}{\emph{\ldeen{Projektwurzel}{project root}}}{
+  \dir{Noras-os}{\emph{\ldeen{Projektwurzel}{project root}}}{
     \dir{Include}{\emph{\ldeen{gemeinsame Angaben}{shared settings}}}{}
     \dir{010-Memory}{\emph{\ldeen{erste Lehreinheit}{first course unit}}}{}
   }
 \end{dirtreex}
 
 \ldeen{Immerhin ist nun klar, was zum gesamten Kurs und was nur zur Einheit
-»Virtueller Speicher« gehört.}{At least it is now clear what belongs to the
-whole course and what belongs only to the “Virtual Memory” unit.}
+"`Virtueller Speicher"' gehört.}{At least it is now clear what belongs to the
+whole course and what belongs only to the "`Virtual Memory"' unit.}
 
-\subsection{\ldeen{Nora bestellt Ergebnisse}{Nora Orders Some Outputs}}
-
-\ldeen{Nora hat nun Verzeichnisse, aber noch kein Werkzeug, das aus ihrer einen
+\paragraph{\ldeen{Nora bestellt Ergebnisse}{Nora Orders Some Outputs}}
+\ldeen{Nora hat nun Verzeichnisse, aber noch kein Weg, das aus ihrer einen
 Quelle die gewünschten Dokumente erzeugt. Diese Aufgabe übernimmt OLLM, der
 \emph{OSG LaTeX Lecture Maker}. OLLM ist das Buildwerkzeug des Bundles: Es wählt
 Dokumenttyp und Sprache, startet den passenden \LaTeX-Lauf und verwaltet die
 entstandenen Dateien. Nora wird OLLM deshalb nicht den Inhalt ihrer Vorlesung
 erklären, wohl aber, welche Ergebnisse sie erwartet.}{Nora now has directories,
-but no tool that turns her single source into the documents she wants. This is
+but no way to turn her single source into the documents she wants. This is
 the job of OLLM, the \emph{OSG LaTeX Lecture Maker}. OLLM is the bundle's build
 tool: it selects the document type and language, starts the appropriate \LaTeX\
 run, and manages the resulting files. Nora will therefore not tell OLLM the
 subject matter of her lecture, but she will tell it which outputs she expects.}
 
 \ldeen{Eine konkrete Wahl aus Lehreinheit, Target und Sprache heißt im Folgenden
-\emph{Instanziierung}. Ihr Ergebnis ist eine \emph{Dokumentinstanz}. Die
-Kombination »Einheit \texttt{memory}, Target \texttt{slides}, Sprache
-\texttt{en}« erzeugt beispielsweise die englische Folieninstanz dieser Einheit.
+\emph{Instanziierung}. 
+Diesen Begriff kennt Nora schon aus der Objektorientierten Programmierung.
+Aber anders als dort ist das Ergebnis einer Instanziierung kein Objekt sondern eine 
+\emph{Dokumentinstanz}.
+Die Kombination "`Unterrichtseinheit \texttt{memory}, Target \texttt{slides}, Sprache
+\texttt{en}"' erzeugt beispielsweise die englische Folieninstanz dieser Einheit.
 Damit ist präzise benannt, was OLLM später bauen soll.}{A concrete selection of
 course unit, target, and language is called an \emph{instantiation} in the
 following. Its result is a \emph{document instance}. The combination “unit

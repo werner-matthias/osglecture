@@ -1,0 +1,23 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osglistings}
+\begin{document}
+\START
+
+\begin{osglisting}[style=editor, title={main.rs}, link=https://example.org]{rust}
+fn main() {}
+\end{osglisting}
+\TYPE{titlebar-link-ok}
+
+\begin{osglisting}[style=plain, link-display=label, link=https://example.org]{python}
+pass
+\end{osglisting}
+\TYPE{label-link-ok}
+
+\begin{osglisting}[style=plain, link-display=none, link=https://example.org]{python}
+pass
+\end{osglisting}
+\TYPE{no-link-display-ok}
+
+\END
+\end{document}

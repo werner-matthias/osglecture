@@ -1,0 +1,14 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+\pydata@fh@0=\write...
+runsystem(latexminted config  --timestamp 20160520090000Z 5CA5A8D02077B7F6A0DA48BDA450F755)...executed.
+(_5CA5A8D02077B7F6A0DA48BDA450F755.config.minted)
+runsystem(latexminted cleanconfig  --timestamp 20160520090000Z 5CA5A8D02077B7F6A0DA48BDA450F755)...executed.
+(_minted/default.style.minted)
+runsystem(latexminted highlight  --timestamp 20160520090000Z 5CA5A8D02077B7F6A0DA48BDA450F755)...executed.
+(_minted/72FBD68F58A9B05C1679D7CD9EFB1A70.highlight.minted)
+default-palette-ok
+(_minted/72FBD68F58A9B05C1679D7CD9EFB1A70.highlight.minted)
+custom-palette-ok
+(_minted/72FBD68F58A9B05C1679D7CD9EFB1A70.highlight.minted)
+global-palette-switch-ok

@@ -1,0 +1,751 @@
+%<*driver>
+\def\nameofplainTeX{plain}
+\ifx\fmtname\nameofplainTeX
+\input l3docstrip.tex
+\keepsilent
+\askforoverwritefalse
+\preamble
+
+========================================================================
+ osglistings - Code-listing front end for osglecture, built on minted.
+
+ (C) 2026 Matthias Werner
+ E-mail: matthias.werner@informatik.tu-chemnitz.de
+
+ Released under the LaTeX Project Public License v1.3c or later
+ See http://www.latex-project.org/lppl.txt
+========================================================================
+
+\endpreamble
+\postamble
+
+ This work is "maintained" (as per LPPL maintenance status) by
+ Matthias Werner.
+\endpostamble
+\generate{\file{osglistings.sty}{\from{osglistings.dtx}{package}}}
+\expandafter\endbatchfile
+\fi
+%</driver>
+%<*package>
+\NeedsTeXFormat{LaTeX2e}[2022-06-01]
+\ProvidesExplPackage{osglistings}{2026-08-28}{0.1.0}
+  {Code-listing front end for osglecture, built on minted}
+\ExplSyntaxOff
+%</package>
+%<*driver>
+
+\documentclass[
+load-preamble+
+]{osgdoc}
+
+\OnlyDescription
+
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage[
+languages={de,en},
+map={de=german,en=english},
+targetlang={job=2},
+load babel
+]{langselect}
+\newpackagename{\osglistings}{osglistings}
+\makeindex
+\setcnltx{
+  package  =  osglistings,
+  version  = \UseVersionOf{osglistings.sty},
+  date     = \UseDateOf{osglistings.sty},
+  title    = {\ldeen{Das \osglistings\ Paket}{The \osglistings\ Package}},
+  info     = {\ldeen{Ein auf \pkg*{minted} aufbauendes Frontend für Code-Listings}{
+      A \pkg*{minted}-based front end for code listings}},
+  authors  = {Matthias Werner[matthias.werner@informatik.tu-chemnitz.de]},
+  abstract={
+    \ldeen*{
+      Das Paket stellt die Umgebung @1 und den Befehl @2 für Inline- bzw.\
+      externe Quelltexte bereit, mit drei wählbaren Rahmenstilen (@3), einer
+      eigenständigen, austauschbaren Farbpalette für die Syntaxhervorhebung
+      und optionalen Links in externe Online-Editoren. Wenn @4 gesetzt ist,
+      wird der Quelltext als @5 getaggt.
+
+      Das Paket ist Teil des \pkg*{osglecture}-Bundles, aber von den anderen
+      Paketen weitgehend unabhängig.
+    }{
+      The package provides the @1 environment and the @2 command for
+      inline and external source, respectively, with three selectable box
+      styles (@3), an independent, swappable color palette for syntax
+      highlighting, and optional links into external online editors. If @4
+      is set, the source is tagged as @5.
+
+      This package is part of the \pkg*{osglecture} bundle, but is largely
+      independent of the other packages.
+    }{\code{osglisting}}{\cs{osglistinginput}}{\code{plain}/\code{paper}/\code{editor}}
+    {\cs{DocumentMetadata}\Marg{tagging=on}}{\code{Code}}
+  },
+  url      =https://github.com/werner-matthias/osglecture,
+  build-title
+}
+\begin{document}
+% --------------------------------------------------------------------------
+% Documentation
+% --------------------------------------------------------------------------
+\section{\ldeen{Nutzung}{Usage}}
+
+\ldeen*{Ein Quelltext, der direkt im Dokument steht, wird mit der Umgebung
+  @1 gesetzt; ein Quelltext aus einer externen Datei mit @2. Beide
+  akzeptieren dieselben Schlüssel, dazu jede von \pkg*{minted} selbst
+  verstandene Option (@3, @4, \ldots), die unverändert durchgereicht
+  wird.}{Source that lives directly in the document is typeset with the
+  @1 environment; source from an external file with @2. Both accept the
+  same keys, plus any option \pkg*{minted} itself understands (@3, @4,
+  \ldots), forwarded unchanged.}
+  {\code{osglisting}}{\cs{osglistinginput}}{\code{firstline}}{\code{breaklines}}
+
+\begin{example}[compile,program=lualatex,exe-with=--shell-escape]
+  \documentclass{article}
+  \usepackage{osglistings}
+  \begin{document}
+    \begin{osglisting}[style=editor, title=main.rs]{rust}
+fn main() {
+    println!("hi");
+}
+    \end{osglisting}
+  \end{document}
+\end{example}
+
+\subsection{\ldeen{Rahmenstile}{Box Styles}}
+\ldeen*{Der Schlüssel @1 wählt zwischen drei Darstellungen: @2 (ein
+  schlichter Rahmen), @3 (\glqq Druckerpapier\grqq{} mit gerissener Kante,
+  ohne Kopfzeile) und @4 (ein \glqq Editorfenster\grqq{} mit Titelzeile,
+  Sprachsymbol und, falls @5 gesetzt ist, einem Bearbeiten-Symbol). Der
+  Stil @3 unterstützt keinen Seitenumbruch innerhalb der Box.}{The @1 key
+  chooses between three looks: @2 (a plain frame), @3 (\glqq printer
+  paper\grqq{} with a torn edge, no title bar), and @4 (an \glqq editor
+  window\grqq{} with a title bar, a language badge, and, when @5 is set,
+  an edit-link icon). The @3 style does not support breaking across a page.}
+  {\code{style}}{\code{plain}}{\code{paper}}{\code{editor}}{\code{link}}
+
+\subsection{\ldeen{Farbpalette}{Color Palette}}
+\ldeen*{Die Syntaxfarben kommen aus einer benannten Palette, aktiviert mit
+  @1 bzw.\ für einen einzelnen Aufruf mit dem Schlüssel @2. Eine eigene
+  Palette wird mit @3 deklariert; nicht angegebene Slots übernehmen den Wert
+  der eingebauten Standardpalette @4.}{Syntax colors come from a named
+  palette, activated with @1, or for a single call via the @2 key. A custom
+  palette is declared with @3; slots left unspecified inherit their value
+  from the built-in default palette @4.}
+  {\cs{UseOsgListingsPalette}}{\code{palette}}{\cs{DeclareOsgListingsPalette}}
+  {\code{osglistings-default}}
+
+\begin{example}[code-only]
+\DeclareOsgListingsPalette{my-theme}{
+  keyword = {model=HTML, value=8A2BE2},
+  string  = {alias=keyword},
+}
+\UseOsgListingsPalette{my-theme}
+\end{example}
+
+\ldeen*{Jeder Slot ist entweder eine \emph{Ressource} (@1+@2, in jedem von
+  \pkg*{xcolor} unterstützten Modell) oder ein \emph{Alias} (@3, höchstens
+  zwei Ebenen tief aufgelöst).}{Each slot is either a \emph{resource} (@1+@2,
+  in any model \pkg*{xcolor} supports) or an \emph{alias} (@3, resolved at
+  most two levels deep).}
+  {\code{model}}{\code{value}}{\code{alias=}\meta{other slot}}
+
+\subsection{\ldeen{Links in Online-Editoren}{Links to Online Editors}}
+\ldeen*{Der Schlüssel @1 hinterlegt eine URL; @2 legt fest, wo sie
+  erscheint: @3 (ein Symbol in der Titelzeile, nur für @4), @5 (ein
+  klickbarer Text unterhalb der Box) oder @6 (kein sichtbarer Hinweis).}
+  {The @1 key attaches a URL; @2 controls where it shows up: @3 (an icon in
+  the title bar, @4 style only), @5 (clickable text below the box), or @6
+  (no visible indicator).}
+  {\code{link}}{\code{link-display}}{\code{titlebar}}{\code{editor}}
+  {\code{label}}{\code{none}}
+
+\subsection{\ldeen{Tagging}{Tagging}}
+\ldeen*{Ist \LaTeX{} mit @1 gestartet, wird der Quelltext als
+  Struktur @2 getaggt (Slotname @3, umsetzbar mit @4/@5). Tagging wird pro
+  Aufruf mit @6 abgeschaltet.}{When \LaTeX{} is started with @1, the source
+  is tagged as structure @2 (structure name @3, remappable with @4/@5).
+  Tagging is switched off per call with @6.}
+  {\cs{DocumentMetadata}\Marg{tagging=on}}{\code{Code}}
+  {\code{osglistings/code}}{\cs{NewStructureName}}{\cs{AssignStructureRole}}
+  {\code{tag=false}}
+
+\section{Implementation}
+\MaybeStop{\ldeen*{Um die Implementationsbeschreibung zu erhalten, kommentieren Sie bitte \cs{OnlyDescription} in @1 aus.}{To view the implementation description, please uncomment @1 in \code{osgdoc.dtx}.}{\file{osglistings.dtx}}}
+
+\subsection{\emph{osglistings.sty}}
+\AutoDocInput{osglistings.dtx}{package}
+\end{document}
+
+%</driver>
+
+%<*package>
+\RequirePackage{xcolor}
+\RequirePackage{tikz}
+\usetikzlibrary{positioning,calc,shapes.geometric,decorations.pathreplacing,decorations.pathmorphing}
+\RequirePackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+\RequirePackage{fontawesome5}
+\RequirePackage{hyperref}
+\RequirePackage[newfloat,highlightmode=immediate]{minted}
+\setminted{style=default}
+% \ldeen{Latin Modern Mono (die Standardschrift von \pkg*{minted}/\pkg*{fvextra})
+%   deckt weder Kyrillisch noch die meisten Symbolblöcke ab -- fehlende
+%   Zeichen werden von \LuaTeX{} stillschweigend ausgelassen, nicht durch
+%   Kästchen ersetzt. @1 hat spürbar breitere Abdeckung und ist Teil jeder
+%   vollständigen \TeX~Live-Installation; ohne sie fällt die Schrift auf
+%   \cs{ttfamily} zurück.}{Latin Modern Mono (the default font of
+%   \pkg*{minted}/\pkg*{fvextra}) covers neither Cyrillic nor most symbol
+%   blocks -- missing glyphs are silently dropped by \LuaTeX, not replaced
+%   with a box. @1 has noticeably wider coverage and ships with any full
+%   \TeX~Live install; without it, the font falls back to \cs{ttfamily}.}
+%   {DejaVu~Sans~Mono}
+\RequirePackage{fontspec}
+\IfFontExistsTF{DejaVu Sans Mono}
+  { \newfontfamily\osglistingsmonofont{DejaVu Sans Mono} }
+  {
+    \PackageWarning{osglistings}
+      {Font~"DejaVu~Sans~Mono"~not~found;~falling~back~to~ttfamily.\MessageBreak
+       Multi-byte~UTF-8~source~(Cyrillic,~symbols,~...)~may~lose~glyphs}
+    \let\osglistingsmonofont\ttfamily
+  }
+% \ldeen{\pkg*{fvextra} wählt seine Verbatim-Schrift beim Öffnen jeder
+%   Umgebung selbst neu (Default @1); ein umgebendes \cs{fontupper} wird
+%   dabei überschrieben. @2 ist der von \pkg*{fvextra} vorgesehene Haken,
+%   um stattdessen ein beliebiges Font-Makro zu benutzen.}{\pkg*{fvextra}
+%   reselects its own verbatim font every time an environment opens
+%   (default @1); a surrounding \cs{fontupper} gets overwritten in the
+%   process. @2 is \pkg*{fvextra}'s own hook for using an arbitrary font
+%   macro instead.}{\cs{ttfamily}}{\code{fontfamily=myFont}}
+\let\myFont\osglistingsmonofont
+\setminted{fontfamily=myFont}
+\makeatletter
+\ExplSyntaxOn
+
+% --------------------------------------------------------------------------
+% \ldeen{Farbpalette}{Color palette}
+% --------------------------------------------------------------------------
+% \ldeen*{Eine Palette bildet portable Slotnamen auf konkrete
+%   \pkg*{xcolor}-Farben ab; die Rohangaben (Ressource oder Alias) landen in
+%   dieser Prop unter dem Schlüssel "\meta{Palette}/\meta{Slot}". Erst
+%   @1 löst sie zu tatsächlichen \cs{definecolor}-Aufrufen auf.}{A palette
+%   maps portable slot names onto concrete \pkg*{xcolor} colors; the raw
+%   specification (resource or alias) lands in this prop keyed by
+%   "\meta{palette}/\meta{slot}". Only @1 resolves it to actual
+%   \cs{definecolor} calls.}{\cs{UseOsgListingsPalette}}
+\prop_new:N \g__osglistings_palette_data_prop
+\clist_const:Nn \c__osglistings_palette_slots_clist
+  {
+    background, frame, titlebar-bg, titlebar-fg,
+    keyword, string, comment, number, operator, directive, emph,
+    linenumber, fail-icon
+  }
+\tl_new:N \g_osglistings_active_palette_tl
+\tl_new:N \l__osglistings_slot_model_tl
+\tl_new:N \l__osglistings_slot_value_tl
+\tl_new:N \l__osglistings_slot_alias_tl
+\tl_new:N \l__osglistings_tmp_tl
+\tl_new:N \l__osglistings_tmp_two_tl
+\tl_new:N \l__osglistings_active_lookup_tl
+
+\keys_define:nn { osglistings/paletteslot }
+  {
+    model .tl_set:N = \l__osglistings_slot_model_tl,
+    model .initial:n = { },
+    value .tl_set:N = \l__osglistings_slot_value_tl,
+    value .initial:n = { },
+    alias .tl_set:N = \l__osglistings_slot_alias_tl,
+    alias .initial:n = { },
+  }
+\tl_new:N \l__osglistings_palette_name_tl
+
+% \ldeen{Ein Key pro erlaubtem Slotnamen speichert die Rohangabe unter
+%   "\meta{Palette}/\meta{Slot}", ohne sie schon aufzulösen -- Aliase
+%   dürfen auf Slots verweisen, die erst später in derselben Deklaration
+%   folgen.}{One key per allowed slot name stores the raw spec under
+%   "\meta{palette}/\meta{slot}", without resolving it yet -- aliases may
+%   point at slots that only follow later in the same declaration.}
+% \ldeen{Schlüssel und Wert werden mit \code{.tl\_set:Nx} eingefroren, bevor
+%   sie in die Prop wandern -- sonst landete dort nur ein Verweis auf die
+%   (wiederverwendeten) Slot-Variablen, und jeder Eintrag zeigte am Ende
+%   den zuletzt verarbeiteten Slot.}{Key and value are frozen with
+%   \code{.tl\_set:Nx} before going into the prop -- otherwise it would only
+%   store a reference to the (reused) slot variables, and every entry
+%   would end up showing whichever slot was processed last.}
+\cs_new_protected:Npn \__osglistings_palette_slot:nn #1 #2
+  {
+    \__osglistings_slot_spec_set:n {#2}
+    \tl_set:Nx \l__osglistings_tmp_tl
+      { \l__osglistings_palette_name_tl / #1 }
+    \tl_set:Nx \l__osglistings_tmp_two_tl
+      {
+        model = \l__osglistings_slot_model_tl,
+        value = \l__osglistings_slot_value_tl,
+        alias = \l__osglistings_slot_alias_tl,
+      }
+    \exp_args:NNVV \prop_gput:Nnn \g__osglistings_palette_data_prop
+      \l__osglistings_tmp_tl \l__osglistings_tmp_two_tl
+  }
+\clist_map_inline:Nn \c__osglistings_palette_slots_clist
+  {
+    \keys_define:nn { osglistings/palette }
+      { #1 .code:n = \__osglistings_palette_slot:nn {#1} {##1} }
+  }
+
+\msg_new:nnn { osglistings } { unknown-palette }
+  { Palette~"#1"~is~not~declared.~Use~\token_to_str:N\DeclareOsgListingsPalette~before~using~it. }
+\msg_new:nnn { osglistings } { alias-too-deep }
+  { Slot~"#2"~of~palette~"#1"~is~an~alias~chain~longer~than~two~levels;~falling~back~to~black. }
+
+% \ldeen{Neue Paletten übernehmen zunächst jeden Slot der eingebauten
+%   Standardpalette; die übergebenen Keys überschreiben danach nur die
+%   ausdrücklich genannten Slots.}{New palettes start by inheriting every
+%   slot from the built-in default palette; the keys passed in then
+%   override only the slots named explicitly.}
+\cs_new_protected:Npn \DeclareOsgListingsPalette #1 #2
+  {
+    \tl_set:Nn \l__osglistings_palette_name_tl {#1}
+    \str_if_eq:eeF {#1} { osglistings-default }
+      {
+        \clist_map_inline:Nn \c__osglistings_palette_slots_clist
+          {
+            \prop_get:NnNTF \g__osglistings_palette_data_prop
+              { osglistings-default / ##1 } \l__osglistings_tmp_tl
+              {
+                \prop_gput:NnV \g__osglistings_palette_data_prop
+                  { #1 / ##1 } \l__osglistings_tmp_tl
+              }
+              { }
+          }
+      }
+    \keys_set:nn { osglistings/palette } {#2}
+  }
+
+% \ldeen{Setzt die drei Slot-Spec-Variablen aus einem gespeicherten
+%   Eintrag; sie werden vorher geleert, weil @1 nicht erwähnte Keys nicht
+%   auf ihren @2 zurücksetzt.}{Sets the three slot-spec variables from a
+%   stored entry; they are cleared first because @1 does not reset keys
+%   it isn't given back to their @2.}{\cs{keys_set:nn}}{\code{.initial:n}}
+\cs_new_protected:Npn \__osglistings_slot_spec_set:n #1
+  {
+    \tl_clear:N \l__osglistings_slot_model_tl
+    \tl_clear:N \l__osglistings_slot_value_tl
+    \tl_clear:N \l__osglistings_slot_alias_tl
+    \exp_args:Nnx \keys_set:nn { osglistings/paletteslot } {#1}
+  }
+% \ldeen{Löst einen Slot höchstens zweistufig zu einer Ressource auf und
+%   definiert die zugehörige Farbe \code{osglistings@color@}\meta{Slot}.}
+%   {Resolves a slot at most two levels deep to a resource and defines the
+%   corresponding color \code{osglistings@color@}\meta{slot}.}
+\cs_new_protected:Npn \__osglistings_palette_resolve:nn #1 #2
+  {
+    \tl_set:Nx \l__osglistings_tmp_two_tl { #1 / #2 }
+    \exp_args:NNV \prop_get:NnNTF \g__osglistings_palette_data_prop
+      \l__osglistings_tmp_two_tl
+      \l__osglistings_tmp_tl
+      {
+        \__osglistings_slot_spec_set:n { \l__osglistings_tmp_tl }
+        \tl_if_empty:NTF \l__osglistings_slot_alias_tl
+          {
+            \definecolor { osglistings@color@#2 }
+              { \l__osglistings_slot_model_tl } { \l__osglistings_slot_value_tl }
+          }
+          {
+            \tl_set:Nx \l__osglistings_tmp_two_tl
+              { #1 / \l__osglistings_slot_alias_tl }
+            \exp_args:NNV \prop_get:NnNTF \g__osglistings_palette_data_prop
+              \l__osglistings_tmp_two_tl
+              \l__osglistings_tmp_tl
+              {
+                \__osglistings_slot_spec_set:n { \l__osglistings_tmp_tl }
+                \tl_if_empty:NTF \l__osglistings_slot_alias_tl
+                  {
+                    \definecolor { osglistings@color@#2 }
+                      { \l__osglistings_slot_model_tl } { \l__osglistings_slot_value_tl }
+                  }
+                  { \msg_warning:nnnn { osglistings } { alias-too-deep } {#1} {#2}
+                    \definecolor { osglistings@color@#2 } { rgb } { 0,0,0 } }
+              }
+              { \definecolor { osglistings@color@#2 } { rgb } { 0,0,0 } }
+          }
+      }
+      { \definecolor { osglistings@color@#2 } { rgb } { 0,0,0 } }
+  }
+
+% \ldeen{@1 kann eine wörtliche Palette oder eine Variable sein, die einen
+%   Palettennamen enthält (z.\,B.\ der @2-Schlüssel); deshalb wird zuerst
+%   einmal expandiert und das Ergebnis danach überall wiederverwendet.}
+%   {@1 may be a literal palette name or a variable holding one (e.g.\ the
+%   @2 key); it is therefore expanded once up front and the result reused
+%   throughout.}{\cs{UseOsgListingsPalette}}{\code{palette=}}
+\cs_new_protected:Npn \UseOsgListingsPalette #1
+  {
+    \tl_set:Nx \l__osglistings_active_lookup_tl {#1}
+    \tl_set:Nx \l__osglistings_tmp_tl
+      { \l__osglistings_active_lookup_tl / background }
+    \exp_args:NNV \prop_get:NnNTF \g__osglistings_palette_data_prop
+      \l__osglistings_tmp_tl
+      \l__osglistings_tmp_two_tl
+      {
+        \clist_map_inline:Nn \c__osglistings_palette_slots_clist
+          {
+            \exp_args:NV \__osglistings_palette_resolve:nn
+              \l__osglistings_active_lookup_tl {##1}
+          }
+        \tl_gset:Nx \g_osglistings_active_palette_tl { \l__osglistings_active_lookup_tl }
+      }
+      { \msg_error:nnx { osglistings } { unknown-palette } { \l__osglistings_active_lookup_tl } }
+  }
+
+% \ldeen{Rein expandierbar: liefert den Farbnamen eines Slots der
+%   aktuell aufgelösten Palette, verwendbar überall dort, wo \pkg*{xcolor}
+%   einen Farbnamen erwartet.}{Purely expandable: returns the color name
+%   of a slot in the currently resolved palette, usable anywhere
+%   \pkg*{xcolor} expects a color name.}
+\cs_new:Npn \OsgListingsColor #1 { osglistings@color@#1 }
+
+% \ldeen{Hausfarben, portiert aus den historischen \cs{clst...}-Makros.}
+%   {House colors, ported from the historical \cs{clst...} macros.}
+\DeclareOsgListingsPalette { osglistings-default }
+  {
+    background  = { model=gray,  value=1 },
+    frame       = { model=gray,  value=0.6 },
+    titlebar-bg = { model=gray,  value=0.9 },
+    titlebar-fg = { model=gray,  value=0 },
+    keyword     = { model=HTML,  value=1B5E20 },
+    string      = { model=HTML,  value=0000CD },
+    comment     = { model=HTML,  value=00CDCD },
+    number      = { model=gray,  value=0.5 },
+    operator    = { model=gray,  value=0.3 },
+    directive   = { model=HTML,  value=8B008B },
+    emph        = { model=HTML,  value=CC6600 },
+    linenumber  = { model=gray,  value=0.5 },
+    fail-icon   = { model=HTML,  value=CC0000 },
+  }
+\UseOsgListingsPalette { osglistings-default }
+
+% --------------------------------------------------------------------------
+% \ldeen{Pygments-Farbkopplung}{Pygments color hook}
+% --------------------------------------------------------------------------
+% \ldeen*{\pkg*{minted} legt seine Token-Farben als
+%   \cs{PYG@tok@}\meta{Kürzel}-Makros neu an, jedes Mal wenn ein Stil
+%   (wieder-)geladen wird -- lokal zum jeweiligen Aufruf, siehe
+%   \cs{minted@patch@PygmentsStyledef} in \file{minted.sty}. Das ist der
+%   einzige Punkt, an dem sich diese Makros zuverlässig umbiegen lassen,
+%   bevor \pkg*{minted} sie zum Setzen des Quelltexts benutzt.}{@1
+%   redefines its token colors as \cs{PYG@tok@}\meta{code} macros every
+%   time a style is (re)loaded -- locally to that call, see
+%   \cs{minted@patch@PygmentsStyledef} in \file{minted.sty}. That is the
+%   only place these macros can reliably be redirected before @1 uses them
+%   to typeset the source.}{\pkg*{minted}}
+% \ldeen{\cs{cs\_gset:cn}/\cs{cs\_gset:Nn} lehnen Zielnamen ohne \code{:} als
+%   Kodierfehler ab; die Pygments-Tokenmakros folgen aber \pkg*{minted}s
+%   \LaTeXe-Namensschema, nicht dem von \pkg*{expl3}, deshalb der Umweg
+%   über die nackten Primitive.}{\cs{cs\_gset:cn}/\cs{cs\_gset:Nn} reject
+%   target names without a \code{:} as a coding error; the Pygments token
+%   macros follow \pkg*{minted}'s \LaTeXe{} naming scheme, not \pkg*{expl3}'s,
+%   hence the detour through the bare primitives.}
+% \ldeen{Die eigentliche Parametermarke \code{#1} steckt allein in @1s
+%   eigener, einstufiger Definition; \cs{PYG@tok@}\meta{Kürzel}s Rumpf
+%   enthält dadurch selbst kein \code{\#}~mehr und muss nicht durch
+%   mehrere ineinander verschachtelte \cs{tex\_def:D}-Aufrufe hindurch mit
+%   der richtigen Anzahl Doppelraute überleben.}{The real parameter marker
+%   \code{#1} lives entirely inside @1's own, single-level definition;
+%   \cs{PYG@tok@}\meta{code}'s body therefore contains no \code{\#} of its
+%   own and doesn't have to survive the right number of doubled hashes
+%   through several nested \cs{tex\_def:D} calls.}
+%   {\cs{\_\_osglistings\_pyg\_settc:n}}
+\cs_new_protected:Npn \__osglistings_pyg_settc:n #1
+  { \tex_def:D \PYG@tc ##1 { \textcolor { \OsgListingsColor{#1} } {##1} } }
+\cs_new_protected:Npn \__osglistings_pygments_tok:nn #1 #2
+  {
+    \tex_global:D \exp_args:Nc \tex_def:D { PYG@tok@#1 }
+      { \__osglistings_pyg_settc:n {#2} }
+  }
+\cs_new_protected:Npn \__osglistings_pyg_seterr:
+  {
+    \tex_def:D \PYG@bc ##1
+      { { \fboxsep=-\fboxrule
+          \fcolorbox { \OsgListingsColor{fail-icon} } { osglistings@color@background }
+            { \strut ##1 } } }
+  }
+\cs_new_protected:Npn \__osglistings_patch_pygments_colors:
+  {
+    \clist_map_inline:nn { k,kd,kn,kt,kp,kc,kr,bp }
+      { \__osglistings_pygments_tok:nn {##1} { keyword } }
+    \clist_map_inline:nn { s,sd,sh,s1,s2,sx,ss,si,se,sr }
+      { \__osglistings_pygments_tok:nn {##1} { string } }
+    \clist_map_inline:nn { c,c1,cm,cs,cp }
+      { \__osglistings_pygments_tok:nn {##1} { comment } }
+    \clist_map_inline:nn { m,mi,mf,mh,mo,il }
+      { \__osglistings_pygments_tok:nn {##1} { number } }
+    \clist_map_inline:nn { o,ow }
+      { \__osglistings_pygments_tok:nn {##1} { operator } }
+    \clist_map_inline:nn { nd,na }
+      { \__osglistings_pygments_tok:nn {##1} { directive } }
+    \tex_global:D \tex_def:D \PYG@tok@err { \__osglistings_pyg_seterr: }
+  }
+\cs_if_exist:NT \minted@patch@PygmentsStyledef
+  { \g@addto@macro \minted@patch@PygmentsStyledef \__osglistings_patch_pygments_colors: }
+
+% --------------------------------------------------------------------------
+% \ldeen{Sprachregister}{Language registry}
+% --------------------------------------------------------------------------
+\prop_new:N \g__osglistings_lang_icon_prop
+\prop_new:N \g__osglistings_lang_url_prop
+\keys_define:nn { osglistings/language }
+  {
+    icon .code:n = \prop_gput:Nnn \g__osglistings_lang_icon_prop { \l__osglistings_lang_name_tl } {#1},
+    editor-url .code:n = \prop_gput:Nnn \g__osglistings_lang_url_prop { \l__osglistings_lang_name_tl } {#1},
+  }
+\tl_new:N \l__osglistings_lang_name_tl
+\cs_new_protected:Npn \DeclareOsgListingsLanguage #1 #2
+  {
+    \tl_set:Nn \l__osglistings_lang_name_tl {#1}
+    \keys_set:nn { osglistings/language } {#2}
+  }
+\NewDocumentCommand \osglistingshextile { m }
+  {
+    \tikz[baseline=-0.5ex]{
+      \node[regular~polygon, draw, regular~polygon~sides=6,
+        shape~border~rotate=30, inner~sep=.5pt, fill=black,
+        text=white, font=\tiny\bfseries\sffamily] {#1};
+    }
+  }
+% \ldeen{@1 in den URL-Vorlagen ist ein Platzhalter für den (in Phase~2
+%   hinzukommenden) codierten Quelltext -- in Phase~1 unbenutzt, aber schon
+%   hinterlegt, damit sich das Sprachregister später nicht ändert.}{@1 in
+%   the URL templates is a placeholder for the (Phase~2) encoded source --
+%   unused in Phase~1, but already stored so the language registry doesn't
+%   need to change later.}{\{CODE\}}
+\DeclareOsgListingsLanguage { rust }   { icon = \faRust,   editor-url = { https://play.rust-lang.org/?version=stable\&mode=debug\&edition=2021\&code={CODE} } }
+\DeclareOsgListingsLanguage { python } { icon = \faPython, editor-url = { https://trinket.io/python3?code={CODE} } }
+\DeclareOsgListingsLanguage { c }      { icon = \osglistingshextile{C}, editor-url = { https://code.livegap.com/?l=c\&code={CODE} } }
+\DeclareOsgListingsLanguage { cpp }    { icon = \osglistingshextile{\smash{\raisebox{1pt}{\scalebox{.7}{C++}}}}, editor-url = { https://code.livegap.com/?l=cpp\&code={CODE} } }
+
+\cs_new:Npn \__osglistings_lang_icon:n #1
+  {
+    \prop_item:Nn \g__osglistings_lang_icon_prop {#1}
+  }
+
+% --------------------------------------------------------------------------
+% \ldeen{Tagging}{Tagging}
+% --------------------------------------------------------------------------
+% \ldeen{Tagging darf nicht erfolgen, wenn das Dokument nicht mit @1
+%   geladen wurde.}{Tagging must not happen when the document was not
+%   loaded with @1.}{\cs{DocumentMetadata}\Marg{tagging=on}}
+\cs_new_protected:Npn \__osglistings_tag_struct_begin:n #1
+  { \cs_if_exist:NT \tagstructbegin { \tagstructbegin{ tag=#1 } } }
+\cs_new_protected:Npn \__osglistings_tag_struct_end:
+  { \cs_if_exist:NT \tagstructend { \tagstructend } }
+\cs_if_exist:NT \NewStructureName
+  {
+    \NewStructureName{ osglistings/code }
+    \AssignStructureRole{ osglistings/code }{ Code }
+  }
+
+% --------------------------------------------------------------------------
+% \ldeen{Schlüssel}{Keys}
+% --------------------------------------------------------------------------
+\tl_new:N \l__osglistings_style_tl
+\tl_new:N \l__osglistings_title_tl
+\tl_new:N \l__osglistings_langicon_tl
+\tl_new:N \l__osglistings_link_tl
+\tl_new:N \l__osglistings_linkdisplay_tl
+\tl_new:N \l__osglistings_palette_tl
+\bool_new:N \l__osglistings_tag_bool
+\tl_new:N \l__osglistings_tagname_tl
+\tl_new:N \l__osglistings_extra_tl
+
+\keys_define:nn { osglistings }
+  {
+    style .choices:nn = { plain, paper, editor }
+      { \tl_set:Nx \l__osglistings_style_tl { \l_keys_choice_tl } },
+    title .tl_set:N = \l__osglistings_title_tl,
+    lang-icon .tl_set:N = \l__osglistings_langicon_tl,
+    link .tl_set:N = \l__osglistings_link_tl,
+    link-display .choices:nn = { titlebar, label, none }
+      { \tl_set:Nx \l__osglistings_linkdisplay_tl { \l_keys_choice_tl } },
+    palette .tl_set:N = \l__osglistings_palette_tl,
+    tag .bool_set:N = \l__osglistings_tag_bool,
+    tag .default:n = true,
+    tag-name .tl_set:N = \l__osglistings_tagname_tl,
+    unknown .code:n =
+      {
+        \tl_if_empty:NTF \l__osglistings_extra_tl
+          { \tl_set:Nn \l__osglistings_extra_tl { \l_keys_key_str = {#1} } }
+          { \tl_put_right:Nn \l__osglistings_extra_tl { , \l_keys_key_str = {#1} } }
+      },
+  }
+\keys_set:nn { osglistings }
+  {
+    style = plain, title = {}, lang-icon = auto, link = {},
+    link-display = titlebar, palette = {}, tag = true,
+    tag-name = osglistings/code,
+  }
+
+% --------------------------------------------------------------------------
+% \ldeen{Rahmenstile}{Box styles}
+% --------------------------------------------------------------------------
+% \ldeen{Sprachsymbol oben links, in allen drei Stilen gleich
+%   positioniert.}{Language badge top-left, positioned the same way in
+%   all three styles.}
+\cs_new_protected:Npn \__osglistings_overlay_langicon:n #1
+  {
+    \tl_if_eq:NnF \l__osglistings_langicon_tl { none }
+      {
+        \node [anchor=north~west, inner~sep=2pt, font=\scriptsize]
+          at (frame.north~west)
+          {
+            \tl_if_eq:NnTF \l__osglistings_langicon_tl { auto }
+              { \__osglistings_lang_icon:n {#1} }
+              { \l__osglistings_langicon_tl }
+          };
+      }
+  }
+% \ldeen{Bearbeiten-Symbol oben rechts, nur wenn ein Link gesetzt und
+%   @1 gewählt ist.}{Edit-link icon top-right, only when a link is set
+%   and @1 is selected.}{\code{link-display=titlebar}}
+\cs_new_protected:Npn \__osglistings_overlay_link:
+  {
+    \tl_if_empty:NF \l__osglistings_link_tl
+      {
+        \tl_if_eq:NnT \l__osglistings_linkdisplay_tl { titlebar }
+          {
+            \node [anchor=north~east, inner~sep=2pt, font=\scriptsize]
+              at (frame.north~east)
+              { \href { \l__osglistings_link_tl } { \faEdit[regular] } };
+          }
+      }
+  }
+\cs_new_protected:Npn \__osglistings_below_link:
+  {
+    \tl_if_empty:NF \l__osglistings_link_tl
+      {
+        \tl_if_eq:NnT \l__osglistings_linkdisplay_tl { label }
+          {
+            \par\noindent\hfill
+            {\scriptsize\href{\l__osglistings_link_tl}{\faLink~\ttfamily\l__osglistings_link_tl}}\par
+          }
+      }
+  }
+
+\tcbset
+  {
+    osglistings/plain/.style =
+      {
+        enhanced, breakable,
+        colframe = osglistings@color@frame, colback = osglistings@color@background,
+        boxrule = 0.4pt, arc = 0pt, left=2mm, right=2mm, top=1mm, bottom=1mm,
+        boxsep = .5ex, fontupper = \osglistingsmonofont,
+      },
+    osglistings/paper/.style =
+      {
+        enhanced, breakable = false,
+        colframe = osglistings@color@background, colback = osglistings@color@background,
+        boxrule = 0pt, left=4mm, right=3mm, top=3mm, bottom=3mm,
+        boxsep = .5ex, fontupper = \osglistingsmonofont,
+        frame~code =
+          {
+            \pgfmathsetseed{13}
+            \fill[very~thin, osglistings@color@background, draw=black!30!white,
+              decoration={random~steps,segment~length=3pt,amplitude=1pt,raise=2pt,
+                pre=lineto,post=lineto,pre~length=2pt,post~length=2pt},decorate]
+              (interior.north~west) -- ++(0,2pt) -| (interior.north~east);
+            \fill[very~thin, osglistings@color@background, draw=black!30!white,
+              decoration={random~steps,segment~length=3pt,amplitude=1pt,raise=-2pt,
+                pre=lineto,post=lineto,pre~length=2pt,post~length=2pt},decorate]
+              (interior.south~west) -- ++(0,-2pt) -| (interior.south~east);
+          },
+      },
+    osglistings/editor/.style =
+      {
+        enhanced, breakable,
+        colframe = osglistings@color@frame, colback = osglistings@color@background,
+        coltitle = osglistings@color@titlebar-fg, colbacktitle = osglistings@color@titlebar-bg,
+        title = \l__osglistings_title_tl, center~title, fonttitle = \scriptsize\ttfamily,
+        boxrule = 0.4pt, left=2mm, right=2mm, top=1mm, bottom=1mm,
+        boxsep = .5ex, fontupper = \osglistingsmonofont,
+      },
+  }
+
+\cs_new_protected:Npn \__osglistings_box_begin:n #1
+  {
+    \tl_if_eq:NnTF \l__osglistings_style_tl { paper }
+      {
+        \begin{tcolorbox}[ osglistings/paper,
+          overlay = { \__osglistings_overlay_langicon:n {#1} \__osglistings_overlay_link: } ]
+      }
+      {
+        \tl_if_eq:NnTF \l__osglistings_style_tl { editor }
+          {
+            \begin{tcolorbox}[ osglistings/editor,
+              overlay~first = { \__osglistings_overlay_langicon:n {#1} \__osglistings_overlay_link: },
+              overlay~unbroken = { \__osglistings_overlay_langicon:n {#1} \__osglistings_overlay_link: } ]
+          }
+          {
+            \begin{tcolorbox}[ osglistings/plain,
+              overlay~first = { \__osglistings_overlay_langicon:n {#1} \__osglistings_overlay_link: },
+              overlay~unbroken = { \__osglistings_overlay_langicon:n {#1} \__osglistings_overlay_link: } ]
+          }
+      }
+  }
+\cs_new_protected:Npn \__osglistings_box_end:
+  { \end{tcolorbox} \__osglistings_below_link: }
+
+% --------------------------------------------------------------------------
+% \ldeen{Öffentliche Schnittstelle}{Public interface}
+% --------------------------------------------------------------------------
+\cs_new_protected:Npn \__osglistings_setup:n #1
+  {
+    \tl_clear:N \l__osglistings_extra_tl
+    \keys_set:nn { osglistings } {#1}
+    \tl_if_empty:NF \l__osglistings_palette_tl
+      { \UseOsgListingsPalette { \l__osglistings_palette_tl } }
+  }
+
+% \ldeen{@1 muss ausgeführt werden, \emph{bevor} die umschließende
+%   @2-Box geöffnet wird -- @1 merkt sich die gerade aktive Umgebung
+%   (\code{osglisting}) als Endemarke für die spätere Verbatim-Suche;
+%   würde @2 zuerst geöffnet, würde stattdessen \emph{diese} zur (im
+%   Quelltext nie erscheinenden) Endemarke.}{@1 has to run \emph{before}
+%   the enclosing @2 box opens -- @1 records the currently active
+%   environment (\code{osglisting}) as the end marker for the later
+%   verbatim search; opening @2 first would make \emph{that} the end
+%   marker instead, which never appears in the source.}
+%   {\cs{VerbatimEnvironment}}{\pkg*{tcolorbox}}
+\NewDocumentEnvironment { osglisting } { O{} m }
+  {
+    \group_begin:
+    \VerbatimEnvironment
+    \__osglistings_setup:n {#1}
+    \__osglistings_box_begin:n {#2}
+    \bool_if:NT \l__osglistings_tag_bool
+      { \__osglistings_tag_struct_begin:n { \UseStructureName{ \l__osglistings_tagname_tl } } }
+    \setminted { \l__osglistings_extra_tl }
+    \begin{minted}{#2}
+  }
+  {
+    \end{minted}
+    \bool_if:NT \l__osglistings_tag_bool { \__osglistings_tag_struct_end: }
+    \__osglistings_box_end:
+    \group_end:
+  }
+
+\NewDocumentCommand \osglistinginput { O{} m m }
+  {
+    \group_begin:
+    \__osglistings_setup:n {#1}
+    \__osglistings_box_begin:n {#2}
+    \bool_if:NT \l__osglistings_tag_bool
+      { \__osglistings_tag_struct_begin:n { \UseStructureName{ \l__osglistings_tagname_tl } } }
+    \inputminted [ \l__osglistings_extra_tl ] {#2} {#3}
+    \bool_if:NT \l__osglistings_tag_bool { \__osglistings_tag_struct_end: }
+    \__osglistings_box_end:
+    \group_end:
+  }
+
+\NewDocumentCommand \OsgListingsSetup { m } { \keys_set:nn { osglistings } {#1} }
+
+\ExplSyntaxOff
+\makeatother
+%</package>

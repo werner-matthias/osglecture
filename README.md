@@ -17,6 +17,7 @@ Currently, the following packages are included:
 * **ltxtalk-theme**: is a theme engine to allow easy and flexible design of themes for ltx-talk (`./lttheme`)
 * **ltxtalk-theme-tuc-2019** is (an unofficial version of) the presentation theme of TU Chemnitz for ltx-talk (`./lttheme-tuc-2019`)
 * **ansiterm**: ANSI-aware executable terminal windows  (`./ansiterm`)
+* **osglistings**: a `minted`-based code-listing front end with selectable box styles, a swappable color palette, and links into online editors (`./osglistings`)
 * **osgdoc** is a small wrapper for cnltx and provides some further support for documentation (`./osgdoc`) 
 
 ## Modules' version and compatibility
@@ -60,6 +61,7 @@ The `TL ...` columns are read from the expectations in the workflow above;
 | lttheme | v0.5.0 | 2026/08/24 | 7 | :new_moon: | :red_circle: | :red_circle: | :green_circle: |
 | lttheme-tuc-2019 | v0.5.1 | 2026/08/24 | 1 | :new_moon: | :red_circle: | :red_circle: | :green_circle: |
 | ansiterm | 0.2.1 | 2026-08-26 | 1 | :full_moon: | :green_circle: | :green_circle: | :green_circle: |
+| osglistings | 0.1.0 | 2026-08-28 | 1 | :full_moon: | :green_circle: | :green_circle: | :green_circle: |
 | osgdoc | v0.3.4 | 2026/08/14 | 2 | :first_quarter_moon: | :green_circle: | :green_circle: | :green_circle: |
 <!-- END MODULE VERSIONS -->
 

@@ -38,6 +38,8 @@ local modules = {
     lua = ':new_moon:' },
   { name = "ansiterm",         files = { "ansiterm/ansiterm.dtx" },
     lua = ':full_moon:' },
+  { name = "osglistings",      files = { "osglistings/osglistings.dtx" },
+    lua = ':full_moon:' },
   { name = "osgdoc",           files = { "osgdoc/osgdoc.dtx" },
     lua = ':first_quarter_moon:' },
 }

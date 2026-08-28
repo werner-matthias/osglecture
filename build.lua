@@ -4,6 +4,7 @@ maindir  = maindir or "."
 
 modules = {
    "ansiterm",
+   "osglistings",
    "ollm",
    "osgdoc",
    "langselect",

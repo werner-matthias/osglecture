@@ -1,0 +1,20 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+\pydata@fh@0=\write...
+runsystem(latexminted config  --timestamp 20160520090000Z F17AAABC20BFE045075927934FED52D2)...executed.
+(_F17AAABC20BFE045075927934FED52D2.config.minted)
+runsystem(latexminted cleanconfig  --timestamp 20160520090000Z F17AAABC20BFE045075927934FED52D2)...executed.
+runsystem(latexminted styledef  --timestamp 20160520090000Z F17AAABC20BFE045075927934FED52D2)...executed.
+(_minted/default.style.minted)
+runsystem(latexminted highlight  --timestamp 20160520090000Z F17AAABC20BFE045075927934FED52D2)...executed.
+(_minted/93FAC792BE8DA40FC307DFA537AF4DD3.highlight.minted)
+plain-style-ok
+runsystem(latexminted highlight  --timestamp 20160520090000Z F17AAABC20BFE045075927934FED52D2)...executed.
+(_minted/059FF7C0E547B63B18503B57575A84F2.highlight.minted)
+paper-style-ok
+runsystem(latexminted highlight  --timestamp 20160520090000Z F17AAABC20BFE045075927934FED52D2)...executed.
+(_minted/8D30418812F0E16DD4A0F01F0E9754C7.highlight.minted)
+editor-style-ok
+runsystem(latexminted highlight  --timestamp 20160520090000Z F17AAABC20BFE045075927934FED52D2)...executed.
+(_minted/DC9BC1017BCD5D33C5B1B04F78026437.highlight.minted)
+osglistinginput-ok

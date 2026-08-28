@@ -1,0 +1,16 @@
+\input regression-test.tex
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}
+\usepackage{osglistings}
+\begin{document}
+
+Plain paragraph before.
+
+\begin{osglisting}[style=editor, title={main.rs}]{rust}
+fn main() {}
+\end{osglisting}
+
+Plain paragraph after.
+\clearpage
+\SHOWPDFTAGS
+\end{document}

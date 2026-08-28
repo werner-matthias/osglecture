@@ -1,0 +1,23 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osglistings}
+\begin{document}
+\START
+
+% Multi-byte UTF-8 (Cyrillic comments/strings, chess-piece symbols) must
+% survive inline source unchanged: no dropped or reordered glyphs. The
+% default Latin Modern Mono font covers neither, so this exercises the
+% \myFont/fvextra font hook, not just Pygments/lexing.
+\begin{osglisting}[style=plain]{python}
+# Привет, мир! Это комментарий.
+def move():
+    piece = "♞"  # knight
+    print(piece + " до e5")
+\end{osglisting}
+\TYPE{inline-utf8-ok}
+
+\osglistinginput[style=plain]{c}{sample-utf8.c}
+\TYPE{external-utf8-ok}
+
+\END
+\end{document}

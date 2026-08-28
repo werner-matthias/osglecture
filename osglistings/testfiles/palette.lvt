@@ -1,0 +1,30 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osglistings}
+\DeclareOsgListingsPalette{my-theme}{
+  keyword = {model=HTML, value=8A2BE2},
+  string  = {alias=keyword},
+}
+\begin{document}
+\START
+
+\begin{osglisting}[style=plain]{python}
+def foo(): pass
+\end{osglisting}
+\TYPE{default-palette-ok}
+
+\begin{osglisting}[style=plain, palette=my-theme]{python}
+def foo(): pass
+\end{osglisting}
+\TYPE{custom-palette-ok}
+
+\UseOsgListingsPalette{my-theme}
+\begin{osglisting}[style=plain]{python}
+def foo(): pass
+\end{osglisting}
+\TYPE{global-palette-switch-ok}
+
+\UseOsgListingsPalette{osglistings-default}
+
+\END
+\end{document}

@@ -44,6 +44,12 @@ jobs:
             expect_2024: pass
             expect_2025: pass
             expect_current: pass
+          - name: osglistings
+            directory: osglistings
+            config: build
+            expect_2024: pass
+            expect_2025: pass
+            expect_current: pass
           - name: ollm
             directory: ollm
             config: build
