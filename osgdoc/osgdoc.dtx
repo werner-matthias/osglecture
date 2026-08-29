@@ -240,12 +240,12 @@ load babel
 \declare@file@substitution{libertinehologopatch.sty}{}
 % \ldeen*{
 %   @1 lädt, sobald @2 (oder eine der @3-Varianten) aktiv ist, unbedingt und sofort
-%   @4 -- mit fest einprogrammierten Optionen. Das kollidiert unausweichlich, sobald
+%   @4 und mit fest einprogrammierten Optionen. Das kollidiert unausweichlich, sobald
 %   das Dokument selbst (etwa über @5) @4 mit anderen Optionen laden will, denn
 %   ein zweiter @6-Aufruf mit abweichenden Optionen ist ein harter Fehler, auch
 %   wenn der erste Aufruf mit leeren Optionen erfolgte.
 %   Wir unterbinden daher @4s sofortigen Ladeversuch temporär per Dateisubstitution
-%   und holen ihn -- mit denselben von @1 konfigurierten Optionen -- erst am Ende
+%   und holen ihn mit denselben von @1 konfigurierten Optionen erst am Ende
 %   der Präambel nach, und zwar nur dann, wenn bis dahin noch niemand @4 (oder
 %   @7) geladen hat. So bleibt @1s Verhalten für alle erhalten, die \emph{kein}
 %   eigenes Spracheladen betreiben, während Pakete wie @5 (oder ein manuelles
@@ -333,7 +333,8 @@ load babel
 \renewcommand{\packageformat}{\color{cnltxformalblue}\sffamily}
 % \ldeen{
 %   Manchmal ist ein Paket in einem Bundle, so dass das Verzeichnis einen anderen Namen hat.
-%   Für diese Fälle wird für die \cs*{needXXX}-Macros zusätzlich eine Sternvariante zur Verfügung gestellt, die bei der URL
+%   Für diese Fälle wird für die \cs*{needXXX}-Macros zusätzlich eine Sternvariante zur 
+%   Verfügung gestellt, die bei der URL
 %   nur das optionale Argument (Pfad) ausgibt.
 %   Außerdem sollte nur noch https genutzt werden.
 % }{
@@ -423,17 +424,17 @@ load babel
 % \ldeen{Ohne die \cls{osgdoc}- und damit auch \cls{cnltx-doc}-Klasse sollte \pkg{cnltx} geladen werden.}{
 % If there is no \cls{cnltx-doc} class, and thus no \cls{cnltx-doc} class, the package \pkg{cnltx} should be loaded.}
 \@ifclassloaded{osgdoc}{}{
-  \RequirePackage[example]{cnltx}
+  \RequirePackage[example,tools]{cnltx}
 }
-% \ldeen{Die restlichen Funktionen brauchen Lua. Um keine harten Fehler zu generieren, werden Stubs 
+  % \ldeen{Die restlichen Funktionen brauchen Lua. Um keine harten Fehler zu generieren, werden Stubs 
 % zur Verfügung gestellt.}{The remaining features require Lua. To avoid generating critical errors, 
 % stubs are provided.}
 \ExplSyntaxOn
 \let \ifLuaTF=\sys_if_engine_luatex:TF
 \ExplSyntaxOff
+\def\odnext{\relax}
 \ifLuaTF{
   \RequirePackage{luacode}
-  \def\odnext\relax
 }{
   \NewDocumentCommand{\AutoDocInput}{O{tex} m m}{
     \textcolor{red}{For use \string\AutoDocInput, you have to translate this document with Lua\LaTeX.}
@@ -444,7 +445,7 @@ load babel
   \NewDocumentCommand{\UseDateOf}{m}{
     \textcolor{red}{For use \string\UseDateOf, you have to translate this document with Lua\LaTeX.}
   }
-  \def\odnext\endinput
+  \let\odnext\endinput
 }
 \odnext
 
