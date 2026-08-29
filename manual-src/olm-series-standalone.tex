@@ -1,9 +1,14 @@
 \section{\ldeen{Serien und Standalone}{Series and Standalone}}
 \label{sec:series-standalone}
 
-\ldeen{Dieselbe Klasse unterstützt zwei Arbeitsformen. In einer Serie liefert
-OLLM den Buildauftrag, kennt die Nachbar-Units und verwaltet Referenz- und
-Integrationszustände. Im Standalone-Betrieb beschreibt das Dokument seine
+\ldeen{Die Klasse \texttt{osglecture.cls} unterstützt zwei Arbeitsformen: 
+Serie und Standalone. 
+Die Form die wir bisher betrachtet haben, war die Serie. 
+In einer Serie liefert OLLM den Buildauftrag, kennt die 
+Nachbarlehreinheiten und verwaltet Referenz- und
+Integrationszustände. 
+
+Im Standalone-Betrieb beschreibt das Dokument seine
 Ausgabe selbst und wird ohne Projektmanifest gesetzt. Die fachlichen Befehle
 bleiben weitgehend gleich; unterschiedlich ist vor allem, woher Kontext und
 Defaults stammen.}{The same class supports two workflows. In a series, OLLM
@@ -13,18 +18,25 @@ output and is typeset without a project manifest. The subject-facing commands
 remain largely the same; the main difference is where context and defaults
 come from.}
 
-\subsection{\ldeen{Serien}{Series}}
-
-\ldeen{Eine Serie besteht aus einer Projektwurzel mit Manifest, gemeinsamem
-TeX-Verzeichnis und geordneten Unit-Verzeichnissen. Jede normale Unit besitzt
-eine eigene \texttt{main.tex} und deklariert mit
-\texttt{\string\lecture} eine stabile logische ID. Diese ID ist die Adresse
-für Referenzen und Integration; der numerische Verzeichnispräfix bestimmt nur
-die physische Reihenfolge.}{A series consists of a project root with a
-manifest, a shared TeX directory, and ordered unit directories. Each regular
-unit has its own \texttt{main.tex} and declares a stable logical ID with
-\texttt{\string\lecture}. This ID is the address used for references and
-integration; the numeric directory prefix determines only physical order.}
+\subsection{Integration}
+\ldeen{Die Dokumente der Lehreinheiten einer Serie können einzeln verwendet werden.
+Dies ist in der Regel bei Präsentationen sinnvoll.
+Sie können jedoch auch zu einem gesamten Dokument integriert werden.
+So könnte jede Lehreinheit ein Kapitel eines Skripts bilden, die dann zu einem Gesamtskript
+integriert werden. Es kann aber z.\,B. auch eine Handoutsammlung angelegt
+werden.
+}{}
+\ldeen{Ein Gesamtskript entsteht in \osglecture\ in der Regel nicht durch 
+\texttt{\string\include} der TeX-Quellen, sondern durch Zusammenfügen bereits
+übersetzter Dokumente.}{}
+\ldeen{Dafür muss es eine eigene Integrationseinheit
+mit einem Rahmendokument geben. 
+Diese Einheit ist durch den Buchstaben "`i"' beim Rollenelement gekennzeichnet.
+DIe laufende Nummer des Verzeichnisses ist egal, weil es bei der Zählung
+nicht berüksichtig wird. Es empfiehlt sich aber, hierfür entweder die kleinste
+oder die größte Nummer zu wählen, so dass die zu integrierenden Einheiten 
+aufeinander folgen können.
+}{}
 
 \begin{verbatim}
 course/
@@ -37,14 +49,15 @@ course/
   900-i-collection/main.tex
 \end{verbatim}
 
-\ldeen{Der normale Workflow ist inkrementell: Zunächst bauen Sie beim Schreiben
-die aktuelle Unit, dann die benötigte Serienprojektion und zuletzt das
-Rahmendokument. \texttt{--resolve} aktualisiert dabei erkannte Abhängigkeiten.
-Vor einem Deployment prüft \texttt{check} den promovierten Zustand.}{The
-normal workflow is incremental: while writing, first build the current unit,
-then the required series projection, and finally the wrapper document.
-\texttt{--resolve} updates discovered dependencies along the way. Before
-deployment, \texttt{check} validates the promoted state.}
+\ldeen{Der normale Workflow der Integration ist inkrementell: 
+Zunächst bauen Sie beim Schreiben die zu integrierenden Dokumente und erst zuletzt 
+das Rahmendokument.
+Es empfiehlt sich, vor dem des des Rahmendokuments mit \texttt{ollm check} zu überprüfen
+ob alle zu integrierenden Dokumente erstellt und alle Referenzen aufgelöst sind.
+Falls nicht, müssen Sie ggf.\ weitere Übersetzungsläufe anstossen.
+Auch hier kann Sie \texttt{ollm} unterstützen: 
+Mit Hilfe der Option \texttt{--resolve} werden Abhängigkeiten bis zu einer
+vorgegeben Tiefe erkannt und ausgelöst.}{}
 
 \begin{verbatim}
 cd 020-processes
@@ -54,11 +67,8 @@ ollm script --language=de --scope=collection --resolve
 ollm check --scope=series
 \end{verbatim}
 
-\subsubsection{\ldeen{Rahmendokument und Integrationsunit}{Wrapper Document and Integration Unit}}
-
-\ldeen{Ein Gesamtskript entsteht nicht durch \texttt{\string\include} der
-TeX-Quellen. Stattdessen ist das Rahmendokument eine eigene Unit mit der Rolle
-\texttt{i}. Die Klasse erkennt diese Rolle am Verzeichnisnamen und lädt den
+\subsubsection{\ldeen{Rahmendokumentunit}{Wrapper Document}}
+\ldeen{ Die Klasse erkennt diese Rolle am Verzeichnisnamen und lädt den
 Integrationsdienst automatisch. Das Dokument nennt die einzubindenden
 logischen Units in der gewünschten Reihenfolge}{A complete script is not
 created by applying \texttt{\string\include} to the TeX sources. Instead, the

@@ -1,0 +1,205 @@
+\section{\ldeen{Einführung}{introduction}}
+\subsection{\ldeen{Idee}{Idea}}
+\ldeen{Lehrmaterialien treten in vielerlei Formen und Versionen auf, beispielsweise als 
+  Vorlesungsskript, Folien oder Handouts, und das möglicherweise jeweils in verschiedenen Sprachen.
+  Dabei sind die Inhalte oft gleich oder ähnlich, und die Stukturen~-- beispielsweise die 
+  Reihenfolge der Lehr- und Lerneinheiten sollten konsistent sein.}{
+  Teaching materials come in many forms and versions, such as 
+  lecture notes, slides, or handouts, and may be available in different languages.
+  Yet the content is often the same or similar, and the structures—for example, the 
+  order of the teaching and learning units—should be consistent.
+}
+\ldeen*{Mit anderen Worten: Die gleiche Sache (hier: semantische Information) soll in unterschiedlicher Gestalt auftreten. In der Informatik oder in der Chemie nennt man dieses Konzept auch \emph{Polymorphie}@1.}{
+  In other words: The same thing (here semantic information) should appear in different forms.
+In computer science or chemistry, this concept is also known as \emph{polymorphism}@1
+}{\footnote{\ldeen{
+  Vielleicht wären \emph{Polyrepräsentation} oder sogar \emph{Multimodalität} noch passendere Begriffe,
+  aber ersteres ist nicht sehr etabliert und beim zweiteren müsste ich vermutlich mit Kulturwissenschaftlern und Semiotikern darüber diskutieren, ob unterschiedliche Sprachen als \emph{Modi} aufzufassen sind.
+  Außerdem bin ich Informatiker, da liegt die Polymorphie nahe.
+  }{
+    Perhaps \emph{poly-representation} or even \emph{multimodality} would be even more appropriate terms,
+  but the former isn’t very well established, and with the latter, I’d probably have to discuss with cultural studies scholars and semioticians whether different languages should be understood as \emph{modes}.
+  Besides, I’m a computer scientist, so polymorphism seems like a natural choice.}
+}}
+
+\ldeen{
+  Gleichzeitig werden Lehrmaterialien in der Regel permanent überarbeitet. Einzelne Lehreinheiten
+  werden modernisiert, reorganisiert oder gleich ganz entfernt, neue werden ergänzt.
+}{
+  At the same time, teaching materials are generally revised on an ongoing basis. 
+  Individual teaching units are updated, reorganized, or removed entirely, while new ones 
+  are added.
+}
+\ldeen*{
+  Dabei stets die gewünschte Konsistenz aufrechtzuerhalten, ist schwierig. Das @1 Bundle 
+  versucht, Lehrende dabei zu unterstützen. Es folgt dabei einer zentralen Idee:
+}{
+  Maintaining the desired consistency throughout this process is difficult. The @1 Bundle 
+  aims to support instructors in this effort. It is based on a central idea:
+}{\osglecture}
+ 
+\begin{infobox}{}\sffamily
+\ldeen{Es sollten so \textbf{wenig} wie möglich \textbf{Redundanzen} auftreten.
+  }{
+    \textbf{Redundancies} should be kept to a \textbf{minimum}.
+  }\medskip
+
+  \ldeen{Wo Redundanzen notwendig sind (beispielsweise bei verschiedenen Textversionen), 
+  ist die Aufrechterhaltung von Konsistenz einfacher, wenn aufeinander 
+  bezogenes Quellmaterial \textbf{möglichst nahe} beieinander ist.
+  }{
+    Where redundancies are necessary (for example, with different versions of a text), 
+    it is easier to maintain consistency if related 
+    source material is located as \textbf{close together} as possible.}
+\end{infobox}
+
+
+\ldeen*{Daher soll @1 u.\,a.\ ermöglichen
+}{
+  Therefore, @1 is intended, amongst other things, to enable}{\osglecture}:
+\begin{itemize}
+  \item \ldeen{Generierung verschiedener Dokumentarten aus der gleichen Quelle
+  }{
+    Generating different types of documents from the same source
+  };
+  \item \ldeen{einfache Reorganisation von Lehreinheiten}{easy reorganization of teaching units};
+  \item \ldeen{verschiedene Sprachvarianten aus der gleichen Quelle,
+        wobei gemeinsame Daten nicht redundant dargestellt werden brauchen}{
+        different language versions from the same source,
+        wherein shared data does not need to be presented redundantly};
+  \item \ldeen{Unterstützung bei individuellen Erstellen und Überarbeiten von 
+        Lehreinheiten mit einfacher Integration (z.\,B.\ Skriptkapitel zu einem
+        Gesamtskript)}{
+        support for creating and revising individual 
+        instructional units that can be easily integrated (e.g., lecture notes chapters into a
+        comprehensive set of lecture notes)
+        };
+  \item \ldeen{schnelle Bereitstellung der verschiedenen Dokumentarten
+  }{
+    rapid deployment of the various types of document}.
+\end{itemize}
+
+\ldeen*{Dabei wurde von Modalitäten und Arbeitsabläufen ausgegangen, die 
+  an der Professur für Betriebssysteme (\emph{Operating Systems Group, OSG}) 
+  der TU Chemnitz derzeit üblich sind.
+  Wenn Sie nicht dort tätig sind und z.\,B.\ andere Abläufe haben, könnte 
+  @1 trotzdem für Sie nützlich sein: einzelne Pakete des Bundles lassen sich 
+  auch unabhängig von den anderen nutzen.
+  }{
+    This was based on the procedures and workflows that 
+    are currently standard practice at the Operating Systems Group at Chemnitz University of Technology.
+    If you do not work there and, for example, have different procedures, 
+    @1 might still be useful to you: individual packages within the bundle can 
+    also be used independently of the others.
+  }{\osglecture}
+
+\ldeen*{@1 ist das Nachfolgeprojekt von @2, das sich aus einem
+  Thema und einer handvoll Ergänzungsmacros für die überaus verbreitete Beamer-Klasse@3
+  entwickelt hat.}{@1 is the successor project to @2, which has evolved from a
+  theme and a handful of supplementary macros for the widely used Beamer class@3}
+  {\osglecture}
+{\textcolor{blue}{OSGBeamer}\footnote{\url{https://github.com/tuc-osg/osgbeamer}}}
+{\footnote{\url{https://ctan.org/pkg/beamer}}}
+
+\subsection{\ldeen{Polymorphie}{Polymorphism} in \osglecture}
+\ldeen{Es ist eine alte \hologo{TeX}-Idee, Texte je nach Kontext unterschiedlich darzustellen. Die \hologo{TeX}-Variante \hologo{ConTeXt} leitet beispielsweise ihren Namen auch davon ab. 
+\osglecture\ versucht die Anwendung dieses Konzept noch ein Stück weit zu erweitern.}{It is a
+long-standing \hologo{TeX} concept to render text differently depending on the
+context. The \hologo{TeX} variant \hologo{ConTeXt}, for example, derives its
+name from this concept. \osglecture\ attempts to expand the application of this concept a bit further.}
+
+\ldeen{Das Folgende ist ein Mini-Showcase der zeigen soll, wie aus einer Quelle verschiedene Instanzen
+erzeugt werden. Es dient lediglich dazu, dass der Nutzer einen kleinen Eindruck von den
+Möglichkeiten des kontextabhängigen Polymorphismus in \osglecture\ gewinnen kann~-- die Diskussion
+über Funktionsweise und die verwendeten Mechanismen erfolgt später.}{
+The following is a mini-showcase designed to demonstrate how different instances are
+created from a single source. Its sole purpose is to give the user a brief glimpse of the
+possibilities of context-dependent polymorphism in \osglecture{}-—the discussion
+of how it works and the mechanisms used will follow later.}
+
+%\begin{figure}[h]
+\begin{minipage}{\linewidth}
+  \inputsourcecode[
+    gobble=0,
+    add-local-frame={innerleftmargin=12pt,innerrightmargin=8pt},
+    add-sourcecode-options={breaklines=true,breakatwhitespace=true,
+    columns=fullflexible,basicstyle=\footnotesize}
+  ]{polymorphy-source.tex}
+  \captionof{figure}{\label{fig:common-src}\ldeen{Gemeinsamer Quellcode}{Common source code}}
+\end{minipage}
+%\end{figure}
+%\paragraph{\ldeen{Eine Quelle, zwei Sprachen}{One source, two languages}.}
+%\ldeen{Zunächst bleibt der Dokumenttyp \texttt{slides} fest; nur die Sprache
+%wechselt. Gliederung, Aussagenfolge und Hervorhebung von \emph{talk} und
+%\emph{script} sind in beiden Ergebnissen dieselben.}{First the document type
+%\texttt{slides} remains fixed and only the language changes. Structure,
+%statement sequence, and the emphasis of \emph{talk} and \emph{script} are the
+%same in both results.}
+
+\begin{minipage}{\linewidth}
+  \captionsetup{type=figure}
+  \centering
+  \begin{subcaptiongroup}
+    \begin{minipage}[t]{.48\linewidth}
+      \fbox{\includegraphics[page=1,width=\linewidth]{polymorphy-slides-en.pdf}}
+      \caption{\ldeen{Folien auf English}{Slides in English}}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{.48\linewidth}
+      \fbox{\includegraphics[page=1,width=\linewidth]{polymorphy-slides-de.pdf}}
+      \caption{\ldeen{Folien auf Deutsch}{Slides in German}}
+    \end{minipage}
+
+    \begin{minipage}[t]{.8\linewidth}
+      \fbox{\includegraphics[page=1,width=\linewidth,
+        trim=0mm 198mm 38mm 15mm,clip
+      ]{polymorphy-script-de.pdf}}
+    \caption{\ldeen*{Ausgabe für @1-Taget}{Version for @1-Taget}{\texttt{script}}}
+    \end{minipage}
+  \end{subcaptiongroup}
+  \caption{\ldeen*{Alle Varianten sind aus der Quelle in Abb.~@4 erstellt:
+    Bei den Folien in unterschiedlichen Sprachen @1 und @2 bleibt
+    Gliederung, Aussagenfolge und Hervorhebung jeweils gleich, die Ausgabe für das Skript @3 ist inhaltlich äquivalent, jedoch  ausführlicher und in Satzform}%
+  {All variants were created from the source shown in Fig.~@4:
+    For the slides in different languages @1 and @2,
+    the structure, sequence of statements, and emphasis remain the same in each case; the output for the script @3 is equivalent in content but  more detailed and in sentence form.}
+  {(a)}{(b)}{(c)}
+  {\ref{fig:common-src}}}
+\end{minipage}
+\medskip
+
+\ldeen{Dass auch gewöhnlich Textauszeichnungen unterschiedlich gestaltet und damit polymorph sein können, ist in \LaTeX\ ein alter Hut. \osglecture\ unterstützt dies aber kompfortable durch spezifische Profile.}{It is well known in \LaTeX\ that text markup can vary and thus be polymorphic. However, \osglecture\ provides convenient support for this through specific profiles.}
+
+\begin{minipage}{\linewidth}
+\inputsourcecode[
+    gobble=0,
+    add-local-frame={innerleftmargin=12pt,innerrightmargin=8pt},
+    add-sourcecode-options={breaklines=true,breakatwhitespace=true,basicstyle=\footnotesize,
+      columns=fullflexible}
+  ]{styler-source.tex}
+  \captionof{figure}{\label{fig:common-src2}\ldeen{Auch gewöhnliche Autorenauszeichnungen können polymorph sein}{Ordinary author markup can be polymorphic as well}}
+\end{minipage}
+
+\begin{minipage}{\linewidth}
+  \captionsetup{type=figure}
+  \centering
+  \begin{subcaptiongroup}
+    \begin{minipage}[t]{.48\linewidth}
+      \fbox{\includegraphics[page=1,width=\linewidth,
+        trim=15mm 160mm 15mm 15mm,clip]{styler-screen.pdf}}
+        \caption{\ldeen{Bildschirmprofil}{Screen profile}}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{.48\linewidth}
+      \fbox{\includegraphics[page=1,width=\linewidth,
+        trim=15mm 160mm 15mm 15mm,clip]{styler-print.pdf}}
+        \caption{\ldeen{Druckprofil}{Print profile}}
+    \end{minipage}
+  \end{subcaptiongroup}  
+  \caption{\ldeen*{Umsetzung von des Codes aus Abbildung @1: Gleiche semantische Auszeichnung, unterschiedliche
+    Profile.}{Realization of the code from Figure @1: The same semantic markup with different
+    profiles.}{\ref{fig:common-src2}}}
+\end{minipage}
+
+\ldeen{Warum man solche Polymorphie überhaupt \emph{braucht}, wird im folgendem Kurztutorial demonstriert.
+}{The following short tutorial demonstrates why this kind of polymorphism \emph{is needed at all }in the first place.
+}\footnote{\ldeen{Die Idee, ein Tutorial als Story zu schreiben, ist durch \name{Till Tantau} und sein 
+Ti\emph{k}Z-Tutorials inspiriert.}{}}
