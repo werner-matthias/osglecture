@@ -1,26 +1,43 @@
 \input regression-test.tex
 \documentclass{article}
 \usepackage{osglistings}
+\makeatletter
+\newcommand\CheckLatexMinted{%
+  \ifx\minted@executable@version\relax
+    \TYPE{latexminted-unavailable}%
+  \else
+    \TYPE{latexminted-ok}%
+  \fi}
+\makeatother
 \begin{document}
 \START
 
+\OMIT
 \begin{osglisting}[style=plain]{python}
 def foo(x):
     return x
 \end{osglisting}
+\TIMO
+\CheckLatexMinted
 \TYPE{plain-style-ok}
 
+\OMIT
 \begin{osglisting}[style=paper]{c}
 int main(void) { return 0; }
 \end{osglisting}
+\TIMO
 \TYPE{paper-style-ok}
 
+\OMIT
 \begin{osglisting}[style=editor, title={main.rs}]{rust}
 fn main() {}
 \end{osglisting}
+\TIMO
 \TYPE{editor-style-ok}
 
+\OMIT
 \osglistinginput[style=plain]{python}{sample.py}
+\TIMO
 \TYPE{osglistinginput-ok}
 
 \END

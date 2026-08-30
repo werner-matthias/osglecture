@@ -5,23 +5,38 @@
   keyword = {model=HTML, value=8A2BE2},
   string  = {alias=keyword},
 }
+\makeatletter
+\newcommand\CheckLatexMinted{%
+  \ifx\minted@executable@version\relax
+    \TYPE{latexminted-unavailable}%
+  \else
+    \TYPE{latexminted-ok}%
+  \fi}
+\makeatother
 \begin{document}
 \START
 
+\OMIT
 \begin{osglisting}[style=plain]{python}
 def foo(): pass
 \end{osglisting}
+\TIMO
+\CheckLatexMinted
 \TYPE{default-palette-ok}
 
+\OMIT
 \begin{osglisting}[style=plain, palette=my-theme]{python}
 def foo(): pass
 \end{osglisting}
+\TIMO
 \TYPE{custom-palette-ok}
 
 \UseOsgListingsPalette{my-theme}
+\OMIT
 \begin{osglisting}[style=plain]{python}
 def foo(): pass
 \end{osglisting}
+\TIMO
 \TYPE{global-palette-switch-ok}
 
 \UseOsgListingsPalette{osglistings-default}

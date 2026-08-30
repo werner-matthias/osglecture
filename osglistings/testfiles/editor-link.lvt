@@ -1,22 +1,37 @@
 \input regression-test.tex
 \documentclass{article}
 \usepackage{osglistings}
+\makeatletter
+\newcommand\CheckLatexMinted{%
+  \ifx\minted@executable@version\relax
+    \TYPE{latexminted-unavailable}%
+  \else
+    \TYPE{latexminted-ok}%
+  \fi}
+\makeatother
 \begin{document}
 \START
 
+\OMIT
 \begin{osglisting}[style=editor, title={main.rs}, link=https://example.org]{rust}
 fn main() {}
 \end{osglisting}
+\TIMO
+\CheckLatexMinted
 \TYPE{titlebar-link-ok}
 
+\OMIT
 \begin{osglisting}[style=plain, link-display=label, link=https://example.org]{python}
 pass
 \end{osglisting}
+\TIMO
 \TYPE{label-link-ok}
 
+\OMIT
 \begin{osglisting}[style=plain, link-display=none, link=https://example.org]{python}
 pass
 \end{osglisting}
+\TIMO
 \TYPE{no-link-display-ok}
 
 \END

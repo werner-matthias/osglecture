@@ -1,6 +1,14 @@
 \input regression-test.tex
 \documentclass{article}
 \usepackage{osglistings}
+\makeatletter
+\newcommand\CheckLatexMinted{%
+  \ifx\minted@executable@version\relax
+    \TYPE{latexminted-unavailable}%
+  \else
+    \TYPE{latexminted-ok}%
+  \fi}
+\makeatother
 \begin{document}
 \START
 
@@ -8,15 +16,20 @@
 % survive inline source unchanged: no dropped or reordered glyphs. The
 % default Latin Modern Mono font covers neither, so this exercises the
 % \myFont/fvextra font hook, not just Pygments/lexing.
+\OMIT
 \begin{osglisting}[style=plain]{python}
 # Привет, мир! Это комментарий.
 def move():
     piece = "♞"  # knight
     print(piece + " до e5")
 \end{osglisting}
+\TIMO
+\CheckLatexMinted
 \TYPE{inline-utf8-ok}
 
+\OMIT
 \osglistinginput[style=plain]{c}{sample-utf8.c}
+\TIMO
 \TYPE{external-utf8-ok}
 
 \END

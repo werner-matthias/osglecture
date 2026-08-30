@@ -1,13 +1,6 @@
 This is a generated file for the l3build validation system.
 Don't change this file in any respect.
-\pydata@fh@0=\write...
-runsystem(latexminted config  --timestamp 20160520090000Z 04945317DD38E53657C263D334FAEDF4)...executed.
-(_04945317DD38E53657C263D334FAEDF4.config.minted)
-runsystem(latexminted cleanconfig  --timestamp 20160520090000Z 04945317DD38E53657C263D334FAEDF4)...executed.
-(_minted/default.style.minted) (_minted/8D30418812F0E16DD4A0F01F0E9754C7.highlight.minted)
+latexminted-ok
 titlebar-link-ok
-runsystem(latexminted highlight  --timestamp 20160520090000Z 04945317DD38E53657C263D334FAEDF4)...executed.
-(_minted/5FC480C258CA33804704A2C09927E3C7.highlight.minted)
 label-link-ok
-(_minted/5FC480C258CA33804704A2C09927E3C7.highlight.minted)
 no-link-display-ok
