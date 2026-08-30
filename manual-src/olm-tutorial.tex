@@ -7,7 +7,7 @@ Die ist vielleicht etwas optimistisch, aber das soll uns hier nicht aufhalten.
 
 Der Studiengang, in dem der Kurs stattfindet, ist zwar deutschsprachig, aber Nora weiß, 
 dass viele Gaststudenten teilnehmen werden, die besser Englisch als Deutsch beherrschen.
-Daher will sie die Folien jeweils in beiden Sprachen haben.
+Daher will sie Folien jeweils in beiden Sprachen vorbereiten.
 Außerdem hat sie versprochen, ein kurzes Skript bereitzustellen. 
 
 Drei Dokumente für zunächst eine einzige Stunde Lehre:
@@ -31,7 +31,8 @@ a particularly good idea.}
 die Dinge, die Nora für ihren ersten kleinen Kurs tatsächlich benötigt.\footnote{%
   Wer lieber sofort in die Details gehen will, kann auch direkt im Abschnitt~@1 weiterlesen.
 }%
- Am Ende werden aus einer Lehreinheit drei sichtbar verschiedene PDFs entstehen.}{The
+ Am Ende werden aus einem einzelnen Quelldokument einer Lehreinheit drei sichtbar
+verschiedene PDFs entstehen.}{The
 tutorial does not describe every option in the bundle. Instead, it shows the
 things Nora actually needs for her first small course.\footnote{%
   If you'd rather get right into the details, you can continue reading directly in section~@1.
@@ -40,7 +41,7 @@ unit will produce three visibly different PDFs.}{\ref{sec:concepts}}
 
 \paragraph{\ldeen{Noras Problem}{Nora's Problem}.}
 \ldeen{Nora beginnt so, wie man vermutlich intuitiv ohne \osglecture\ beginnen
-würde. Sie legt \texttt{slides-de.tex} an, kopiert die Datei nach
+würde. Sie legt \texttt{slides-de.tex} an, füllt es mit Inhalt, kopiert die Datei nach
 \texttt{slides-en.tex} und beginnt mit der Übersetzung. Für das Skript fügt sie
 später noch \texttt{script-de.tex} hinzu. Das funktioniert. 
 Allerdings fällt kurze Zeit später ein, dass sie bei der Beschreibung des Unterschieds 
@@ -93,8 +94,13 @@ ablegen. Sie entscheidet sich aber gleich für zwei Unterverzeichnisse: eines f�
 gemeinsame Angaben und eines für die erste Lehreinheit. Dass die Einheit die
 Nummer \texttt{010} statt \texttt{001} erhält, erscheint ihr zunächst unnötig
 großzügig. Später kann sie dafür eine neue Einheit \texttt{005-Overview}
-dazwischenschieben, ohne alles umzubenennen.}{First, the course needs a
-directory. Nora could put every file directly into it. Instead, she immediately
+dazwischenschieben, ohne alles umzubenennen.
+In das Verzeichnis für die erste Lehreinheit kommt die Quelldatei.
+Nora legt erst mal eine leere Datei mit dem Namen \texttt{main.tex} an,
+da dies bei \osglecture\ der Standardname für die \LaTeX-Hauptdatei einer
+Lehreinheit ist.
+}{First, the course needs a directory. Nora could put every file directly into it. 
+Instead, she immediately
 chooses two subdirectories: one for shared settings and one for the first course
 unit. Giving the unit the number \texttt{010} rather than \texttt{001} initially
 seems unnecessarily generous. Later, however, she can insert a new unit named
@@ -103,6 +109,7 @@ seems unnecessarily generous. Later, however, she can insert a new unit named
 \begin{verbatim}
 mkdir -p Noras-os/Include Noras-os/010-Memory
 cd Noras-os
+touch main.tex
 \end{verbatim}
 
 \ldeen{Noch ist das Ergebnis nicht besonders eindrucksvoll}{The result is not
@@ -112,7 +119,9 @@ particularly impressive yet}:
   background color=blue!2,margin=6pt}]
   \dir{Noras-os}{\emph{\ldeen{Projektwurzel}{project root}}}{
     \dir{Include}{\emph{\ldeen{gemeinsame Angaben}{shared settings}}}{}
-    \dir{010-Memory}{\emph{\ldeen{erste Lehreinheit}{first course unit}}}{}
+    \dir{010-Memory}{\emph{\ldeen{erste Lehreinheit}{first course unit}}}{
+        \file{main.tex}{}
+    }
   }
 \end{dirtreex}
 
@@ -197,10 +206,11 @@ ollm check
 
 \ldeen{Bei ihrem ersten Versuch hatte sie \texttt{language} statt
 \texttt{languages} geschrieben. OLLM weist den unbekannten Schlüssel zurück.
-Das ist Nora lieber als ein stillschweigend deutscher Kurs. Nachdem sie den
-Tippfehler korrigiert hat, ist das Manifest gültig. 
-Auch falls ihre Buildumgebung selbst Probleme bereitet, 
-liefert \texttt{ollm doctor} die passendere Diagnose.}{
+Das ist Nora lieber als stillschweigend Kursmatierial in der falschen Sprache zu erhalten.
+Nachdem sie den Tippfehler korrigiert hat, ist das Manifest gültig. 
+Auch falls ihre Buildumgebung selbst Probleme bereitet, schließlich erwartet
+\osglecture\ eine relativ moderne \LaTeX-Installation, kann OLLM helfen: 
+\texttt{ollm doctor} liefert die passendere Diagnose.}{
 On her first attempt, she had written \texttt{language} instead of
 \texttt{languages}. OLLM rejects the unknown key.
 Nora prefers that to a course that’s silently in German. After she

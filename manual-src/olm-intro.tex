@@ -82,7 +82,7 @@ In computer science or chemistry, this concept is also known as \emph{polymorphi
 \ldeen*{Dabei wurde von Modalitäten und Arbeitsabläufen ausgegangen, die 
   an der Professur für Betriebssysteme (\emph{Operating Systems Group, OSG}) 
   der TU Chemnitz derzeit üblich sind.
-  Wenn Sie nicht dort tätig sind und z.\,B.\ andere Abläufe haben, könnte 
+  Wenn Sie nicht dort tätig sind und völlig andere Abläufe haben, könnte 
   @1 trotzdem für Sie nützlich sein: einzelne Pakete des Bundles lassen sich 
   auch unabhängig von den anderen nutzen.
   }{
@@ -95,15 +95,26 @@ In computer science or chemistry, this concept is also known as \emph{polymorphi
 
 \ldeen*{@1 ist das Nachfolgeprojekt von @2, das sich aus einem
   Thema und einer handvoll Ergänzungsmacros für die überaus verbreitete Beamer-Klasse@3
-  entwickelt hat.}{@1 is the successor project to @2, which has evolved from a
-  theme and a handful of supplementary macros for the widely used Beamer class@3}
+  entwickelt hat.
+  Gegenüber seinem Vorgänger zeichnet sich @1 durch einen größeren Funktionsumfang,
+  ein überarbeitetes und damit hoffentlich besseres Interface, eine umfangreichere
+  Dokumentation und nicht zuletzt dadurch aus, dass es ermöglicht, barrierefreie getaggte
+  Lehrdokumente zu erstellen, indem es Klassen wie \cls{ltx-talk} unterstützt. 
+  }{@1 is the successor project to @2, which has evolved from a
+  theme and a handful of supplementary macros for the widely used Beamer class@3.
+  }
   {\osglecture}
-{\textcolor{blue}{OSGBeamer}\footnote{\url{https://github.com/tuc-osg/osgbeamer}}}
+{\textcolor{blue}{OSG Beamer}\footnote{\url{https://github.com/tuc-osg/osgbeamer}}}
 {\footnote{\url{https://ctan.org/pkg/beamer}}}
 
 \subsection{\ldeen{Polymorphie}{Polymorphism} in \osglecture}
 \ldeen{Es ist eine alte \hologo{TeX}-Idee, Texte je nach Kontext unterschiedlich darzustellen. Die \hologo{TeX}-Variante \hologo{ConTeXt} leitet beispielsweise ihren Namen auch davon ab. 
-\osglecture\ versucht die Anwendung dieses Konzept noch ein Stück weit zu erweitern.}{It is a
+\osglecture\ versucht die Anwendung dieses Konzept noch ein Stück weit zu erweitern.
+Dazu ist \cls{osglecture.cls} eine \emph{Metaklasse}: Sie sagt (anderes als die mindestens
+\LaTeX-Klassen) nicht, wie die fertig gesetzten Dokumente aussehen sollen,\footnote{Es gibt aber
+Pakete im \osglecture-Bundle, die so etwas machen} sondern stellt ein gemeinsames Interfache zur
+Verfügung und verteilt dann die Arbeit an Klassen wie \cls{article}, \cls{scrarticle}, \cls{beamer}
+oder \cls{ltx-talk.}}{It is a
 long-standing \hologo{TeX} concept to render text differently depending on the
 context. The \hologo{TeX} variant \hologo{ConTeXt}, for example, derives its
 name from this concept. \osglecture\ attempts to expand the application of this concept a bit further.}
@@ -116,7 +127,7 @@ The following is a mini-showcase designed to demonstrate how different instances
 created from a single source. Its sole purpose is to give the user a brief glimpse of the
 possibilities of context-dependent polymorphism in \osglecture{}-—the discussion
 of how it works and the mechanisms used will follow later.}
-
+ 
 %\begin{figure}[h]
 \begin{minipage}{\linewidth}
   \inputsourcecode[
@@ -127,14 +138,6 @@ of how it works and the mechanisms used will follow later.}
   ]{polymorphy-source.tex}
   \captionof{figure}{\label{fig:common-src}\ldeen{Gemeinsamer Quellcode}{Common source code}}
 \end{minipage}
-%\end{figure}
-%\paragraph{\ldeen{Eine Quelle, zwei Sprachen}{One source, two languages}.}
-%\ldeen{Zunächst bleibt der Dokumenttyp \texttt{slides} fest; nur die Sprache
-%wechselt. Gliederung, Aussagenfolge und Hervorhebung von \emph{talk} und
-%\emph{script} sind in beiden Ergebnissen dieselben.}{First the document type
-%\texttt{slides} remains fixed and only the language changes. Structure,
-%statement sequence, and the emphasis of \emph{talk} and \emph{script} are the
-%same in both results.}
 
 \begin{minipage}{\linewidth}
   \captionsetup{type=figure}
@@ -151,7 +154,7 @@ of how it works and the mechanisms used will follow later.}
 
     \begin{minipage}[t]{.8\linewidth}
       \fbox{\includegraphics[page=1,width=\linewidth,
-        trim=0mm 198mm 38mm 15mm,clip
+        trim=0mm 210mm 45mm 30mm,clip
       ]{polymorphy-script-de.pdf}}
     \caption{\ldeen*{Ausgabe für @1-Taget}{Version for @1-Taget}{\texttt{script}}}
     \end{minipage}
@@ -167,7 +170,7 @@ of how it works and the mechanisms used will follow later.}
 \end{minipage}
 \medskip
 
-\ldeen{Dass auch gewöhnlich Textauszeichnungen unterschiedlich gestaltet und damit polymorph sein können, ist in \LaTeX\ ein alter Hut. \osglecture\ unterstützt dies aber kompfortable durch spezifische Profile.}{It is well known in \LaTeX\ that text markup can vary and thus be polymorphic. However, \osglecture\ provides convenient support for this through specific profiles.}
+\ldeen{Dass auch gewöhnlich Textauszeichnungen unterschiedlich gestaltet und damit polymorph sein können, ist in \LaTeX\ ein alter Hut. \osglecture\ unterstützt dies aber komfortabel durch spezifische Profile.}{It is well known in \LaTeX\ that text markup can vary and thus be polymorphic. However, \osglecture\ provides convenient support for this through specific profiles.}
 
 \begin{minipage}{\linewidth}
 \inputsourcecode[
