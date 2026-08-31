@@ -1,0 +1,31 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osgstyler}
+\usepackage{semcat}
+
+\DeclareOsgDecoration{semcat-test-margin}{
+  margin = { color = accent, thickness = 3pt }
+}
+\DeclareOsgDecoration{semcat-test-enclosure}{
+  enclosure = { border-color = primary, fill-color = secondary, thickness = 1pt, radius = 6pt }
+}
+\SemCatDefine{G}[label={Via margin decoration}, decoration=semcat-test-margin]
+\SemCatDefine{H}[label={Via enclosure decoration}, decoration=semcat-test-enclosure]
+
+\begin{document}
+\START
+
+\begin{SemCatMark}[category=G]
+uses an osgstyler decoration with a margin component, repeated text
+repeated text repeated text repeated text repeated text.
+\end{SemCatMark}
+\TYPE{after-margin-decoration=reached}
+
+\begin{SemCatMark}[category=H]
+uses an osgstyler decoration with an enclosure component.
+\end{SemCatMark}
+\TYPE{after-enclosure-decoration=reached}
+
+\TYPE{done=yes}
+\END
+\end{document}

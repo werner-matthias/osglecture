@@ -41,6 +41,8 @@ local modules = {
     note = "The incompatibility for TL 2025 refers to tagging only; the basis features are okay." },
   { name = "osglistings",      files = { "osglistings/osglistings.dtx" },
     lua = ':full_moon:' },
+  { name = "semcat",           files = { "semcat/semcat.dtx" },
+    lua = ':full_moon:' },
   { name = "osgdoc",           files = { "osgdoc/osgdoc.dtx" },
     lua = ':first_quarter_moon:' },
 }

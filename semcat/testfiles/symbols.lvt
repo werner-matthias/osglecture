@@ -1,0 +1,73 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osglecture-modes}
+\usepackage{osgstyler}
+\usepackage{semcat}
+\FinalizeLectureModes
+
+\extractcolorspec{semcat-palettecolor-primary}\TestPalettePrimary
+\extractcolorspec{semcat-palettecolor-secondary}\TestPaletteSecondary
+\extractcolorspec{semcat-palettecolor-accent}\TestPaletteAccent
+
+\SemCatDeclareSymbol{plain}{PLAINMARK}
+\SemCatDefine{E}[label={Plain symbol}, symbol=plain]
+\SemCatDefine{F}[label={No symbol}]
+
+\DeclareOsgDecoration{semcat-test-affix}{
+  margin = { color = accent },
+  affix  = { symbol = plain, color = alert }
+}
+\SemCatDefine{G}[label={Decoration affix}, decoration=semcat-test-affix]
+
+\DeclareOsgDecoration{semcat-test-affix-content}{
+  enclosure = { border-color = primary },
+  affix     = { content = DIRECTMARK }
+}
+\SemCatDefine{H}[label={Decoration affix content}, decoration=semcat-test-affix-content]
+
+\SemCatDeclareSymbol{plain-slides}{SLIDESMARK}
+\SemCatDefine{I}[
+  label={Mode-varied symbol}, symbol=plain,
+  variants={ slides = {symbol=plain-slides} }
+]
+
+\begin{document}
+\START
+
+\TYPE{palette-primary=\TestPalettePrimary}
+\TYPE{palette-secondary=\TestPaletteSecondary}
+\TYPE{palette-accent=\TestPaletteAccent}
+
+\TYPE{symbol-plain=\SemCatSymbol{plain}}
+
+\begin{SemCatMark}[category=E]
+category with a plain symbol key and no decoration.
+\end{SemCatMark}
+\TYPE{after-plain-symbol=reached}
+
+\begin{SemCatMark}[category=F]
+category without any symbol.
+\end{SemCatMark}
+\TYPE{after-no-symbol=reached}
+
+\begin{SemCatMark}[category=G]
+category whose decoration provides an affix symbol and its own color,
+repeated text repeated text repeated text repeated text.
+\end{SemCatMark}
+\TYPE{after-decoration-affix-symbol=reached}
+
+\begin{SemCatMark}[category=H]
+category whose decoration provides literal affix content instead of
+a named symbol.
+\end{SemCatMark}
+\TYPE{after-decoration-affix-content=reached}
+
+\begin{SemCatMark}[category=I]
+active mode is article, so this keeps the default plain symbol; the
+slides variant, overriding it to plain-slides, is not active.
+\end{SemCatMark}
+\TYPE{after-variant-symbol=reached}
+
+\TYPE{done=yes}
+\END
+\end{document}

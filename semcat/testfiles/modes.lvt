@@ -1,0 +1,47 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osglecture-modes}
+\usepackage{semcat}
+\FinalizeLectureModes
+
+\begin{document}
+\START
+\IfLectureModeTF{article}{\TYPE{article-active=yes}}{\TYPE{article-active=no}}
+\IfLectureModeTF{slides}{\TYPE{slides-active=yes}}{\TYPE{slides-active=no}}
+
+\begin{SemCatMark}[mode=slides,category=B]
+should not appear
+\end{SemCatMark}
+\TYPE{after-hidden-box=reached}
+
+\begin{SemCatMark}[mode=article,category=B]
+should appear
+\end{SemCatMark}
+\TYPE{after-shown-box=reached}
+
+\begin{SemCatMark}[category=C]
+unconditional
+\end{SemCatMark}
+\TYPE{after-unconditional-box=reached}
+
+\SemCatDefine{E}[label={Bar style}, style=bar]
+\begin{SemCatMark}[category=E]
+first paragraph of a bar-styled block, spanning several lines of
+repeated text repeated text repeated text repeated text repeated text.
+
+second paragraph, still inside the same barred block.
+\end{SemCatMark}
+\TYPE{after-bar-box=reached}
+
+\SemCatDefine{F}[
+  label={Mode-varied}, style=box,
+  variants={ slides = {style=bar} }
+]
+\begin{SemCatMark}[category=F]
+active mode is article, so this stays a box, not the slides bar variant.
+\end{SemCatMark}
+\TYPE{after-variant-box=reached}
+
+\TYPE{done=yes}
+\END
+\end{document}

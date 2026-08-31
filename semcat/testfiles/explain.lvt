@@ -1,0 +1,24 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{semcat}
+
+\begin{document}
+\START
+
+\begin{SemCatExplain}[category=B]{An example explanation}
+Supplementary background that a reader could skip.
+\end{SemCatExplain}
+\TYPE{after-explain=reached}
+
+\begin{SemCatExplain}[category=B,mode=slides]{Hidden without modes}
+This should still typeset unconditionally, since osglecture-modes is
+not loaded here and an unresolved mode key is simply ignored.
+\end{SemCatExplain}
+\TYPE{after-explain-with-mode-key=reached}
+
+\clearpage
+\listof{semcatexplain}{List of Explanations}
+
+\TYPE{done=yes}
+\END
+\end{document}

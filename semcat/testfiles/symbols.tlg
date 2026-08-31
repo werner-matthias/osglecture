@@ -1,0 +1,14 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+palette-primary={rgb}{0.10588,0.61961,0.46667}
+palette-secondary={rgb}{0.85098,0.37256,0.00784}
+palette-accent={rgb}{0.45882,0.43922,0.70197}
+symbol-plain=PLAINMARK
+after-plain-symbol=reached
+after-no-symbol=reached
+Package marginnote Info: right page because not two side mode on input line ....
+Package marginnote Info: xpos seems to be \@mn@currxpos  on input line ....
+after-decoration-affix-symbol=reached
+after-decoration-affix-content=reached
+after-variant-symbol=reached
+done=yes

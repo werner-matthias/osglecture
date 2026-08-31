@@ -1,0 +1,1416 @@
+%<*driver>
+\def\nameofplainTeX{plain}
+\ifx\fmtname\nameofplainTeX
+\input l3docstrip.tex
+\keepsilent
+\askforoverwritefalse
+\preamble
+
+========================================================================
+ semcat - generalized semantic-category markup with optional QR codes.
+
+ (C) 2026 Matthias Werner
+ E-mail: matthias.werner@informatik.tu-chemnitz.de
+
+ Released under the LaTeX Project Public License v1.3c or later
+ See http://www.latex-project.org/lppl.txt
+========================================================================
+
+\endpreamble
+\postamble
+
+ This work is "maintained" (as per LPPL maintenance status) by
+ Matthias Werner.
+\endpostamble
+\generate{\file{semcat.sty}{\from{semcat.dtx}{package}}}
+\expandafter\endbatchfile
+\fi
+%</driver>
+%<*package>
+\NeedsTeXFormat{LaTeX2e}[2022-06-01]
+\ProvidesExplPackage{semcat}{2026-08-31}{0.3.0}
+  {Generalized semantic-category markup with optional QR annotations}
+\ExplSyntaxOff
+%</package>
+%<*driver>
+
+\documentclass[
+load-preamble+
+]{osgdoc}
+
+\OnlyDescription
+
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage[
+languages={de,en},
+map={de=german,en=english},
+targetlang={job=2},
+load babel
+]{langselect}
+\newpackagename{\semcat}{semcat}
+\makeindex
+\setcnltx{
+  package  =  semcat,
+  version  = \UseVersionOf{semcat.sty},
+  date     = \UseDateOf{semcat.sty},
+  title    = {\ldeen{Das \semcat\ Paket}{The \semcat\ Package}},
+  info     = {\ldeen{Semantische Kategorienmarkierung mit optionalen QR-Codes}{
+      Semantic category markup with optional QR codes}},
+  authors  = {Matthias Werner[matthias.werner@informatik.tu-chemnitz.de]},
+  abstract={
+    \ldeen*{
+      Das Paket ordnet Textabschnitte benannten, farblich unterschiedenen
+      Kategorien zu -- etwa "`Pflichtstoff"', "`Vertiefung"' oder
+      "`Hintergrund"' -- und stellt dafür Inline-Markierung, eine über
+      mehrere Absätze und Seitenumbrüche hinweg tragfähige Block-Markierung
+      (Box oder durchgehender Randbalken), eine schwebende Erklärbox sowie
+      QR-Code-Annotationen bereit. Kategorien sind frei definierbar; ist
+      @1 geladen, können Farbe und Darstellung aus dessen Paletten und
+      Dekorationen stammen. Sind @2 aktiv, folgen Sichtbarkeit und
+      Darstellung den Modi; bei aktivem @3 erzeugen die Markierungen
+      eigene PDF-Tag-Strukturen.
+
+      Das Paket ist Teil des \pkg*{osglecture}-Bundles, hängt aber -- bis
+      auf diese beiden optionalen Integrationen -- von keinem anderen
+      Paket des Bundles ab und ist eigenständig nutzbar.
+    }{
+      This package assigns passages of text to named, color-distinguished
+      categories -- for instance "required", "supplementary", or
+      "background" -- and provides inline marking, a block-level marking
+      that survives multiple paragraphs and page breaks (a box or a
+      continuous margin bar), a floating explanation box, and QR-code
+      annotations for them. Categories are freely definable; when @1 is
+      loaded, color and rendering may come from its palettes and
+      decorations. When @2 is active, visibility and rendering follow
+      the active modes; when @3 is active, the markup produces its own
+      PDF tag structures.
+
+      This package is part of the \pkg*{osglecture} bundle, but -- apart
+      from those two optional integrations -- depends on none of the
+      bundle's other packages and can be used on its own.
+    }{\pkg{osgstyler}}{\pkg{osglecture-modes}}{\cs{DocumentMetadata}\Marg{tagging=on}}
+  },
+  url      =https://github.com/werner-matthias/osglecture,
+  build-title
+}
+\begin{document}
+% --------------------------------------------------------------------------
+% Documentation
+% --------------------------------------------------------------------------
+\section{\ldeen{Nutzung}{Usage}}
+
+\subsection{\ldeen{Kategorien}{Categories}}
+
+\ldeen{
+  Vier Kategorien -- \code{A} (Standardkategorie), \code{B}, \code{C} und
+  \code{D} -- sind vordefiniert. Eigene Kategorien legt \cs{SemCatDefine}
+  an:
+}{
+  Four categories -- \code{A} (the default), \code{B}, \code{C} and
+  \code{D} -- are predefined. \cs{SemCatDefine} declares further
+  categories:
+}
+
+\begin{verbatim}
+\SemCatDefine{E}[label={Historical background}, color=teal]
+\SemCatDefine*{F}[label={Core material}, slot=primary]
+\end{verbatim}
+
+\ldeen*{
+  Die Sternform macht die Kategorie zur neuen Standardkategorie. Ohne
+  @1-Schlüssel wird die Farbe reihum aus der eigens dafür vorgesehenen
+  Palette \code{semcat-categories} vergeben, sofern \pkg{osgstyler}
+  geladen ist, sonst aus einer eingebauten Farbfolge. Diese Palette ist
+  bewusst von den generischen Theme-Slots getrennt: Ein Themenwechsel
+  im Dokument soll die Kategoriefarben nicht mitverändern. Ihre
+  Vorgabewerte stammen aus ColorBrewer~"`Dark2"'; wer andere
+  Kategoriefarben möchte, deklariert \code{semcat-categories} nach dem
+  Laden von semcat einfach erneut mit \cs{DeclareOsgColorPalette}. Der
+  @2-Schlüssel wählt gezielt einen Slot dieser Palette -- wirkt aber
+  nur, solange \pkg{osgstyler} geladen ist; ohne das Paket greift
+  wieder die eingebaute Rotation.
+}{
+  The star form makes the category the new default. Without a @1 key,
+  the color is assigned round-robin from the dedicated
+  \code{semcat-categories} palette while \pkg{osgstyler} is loaded,
+  otherwise from a built-in color sequence. This palette is
+  deliberately kept separate from the generic theme slots: switching
+  the document's theme should not also change category colors. Its
+  defaults come from ColorBrewer "Dark2"; anyone wanting different
+  category colors simply declares \code{semcat-categories} again
+  after loading semcat, via \cs{DeclareOsgColorPalette}. The @2 key
+  picks a slot of this palette explicitly -- but only while
+  \pkg{osgstyler} is loaded; without it, the built-in rotation applies
+  instead.
+}{\code{color}}{\code{slot}}
+
+\ldeen*{
+  Zusätzlich zu Farbe/Slot kann eine Kategorie festlegen, \emph{wie}
+  ihre Blockmarkierung (siehe unten) dargestellt wird: als Box
+  (Vorgabe) oder als durchgehender Randbalken. Ist \pkg{osgstyler}
+  geladen, kann stattdessen eine dort deklarierte Dekoration
+  referenziert werden -- deren \code{margin}-Komponente liefert dann
+  den Randbalken, ihre \code{enclosure}-Komponente die Box, jeweils mit
+  eigenen Farben/Maßen:
+}{
+  In addition to color/slot, a category can specify \emph{how} its
+  block-level marking (see below) renders: as a box (the
+  default) or as a continuous margin bar. While \pkg{osgstyler} is
+  loaded, a decoration declared there can be referenced instead -- its
+  \code{margin} component then supplies the bar, its \code{enclosure}
+  component the box, each with its own colors/measurements:
+}
+
+\begin{verbatim}
+\SemCatDefine{G}[label={Aside}, style=bar]
+\DeclareOsgDecoration{marked-caution}{
+  enclosure = { border-color=accent, fill-color=secondary }
+}
+\SemCatDefine{H}[label={Caution}, decoration=marked-caution]
+\end{verbatim}
+
+\ldeen*{
+  Ein @1-Schlüssel überschreibt Stil oder Dekoration abhängig vom
+  aktiven osglecture-Modus -- zusätzlich zum unqualifizierten
+  Standardwert, der als Rückfallebene dient, wenn kein aktiver Modus
+  (oder gar kein @2) einen Eintrag hat:
+}{
+  A @1 key overrides style or decoration depending on the active
+  osglecture mode -- on top of the unqualified default, which serves
+  as the fallback when no active mode (or no @2 at all) has an entry:
+}{\code{variants}}{\pkg{osglecture-modes}}
+
+\begin{verbatim}
+\SemCatDefine{I}[
+  label={Aside}, style=box,
+  variants={ slides = {style=bar} }
+]
+\end{verbatim}
+
+\ldeen*{
+  Das Konzept ist bisher stark auf Farben ausgerichtet -- beim Druck
+  eines Lehrbuchs stehen aber oft keine oder wenige Farben zur
+  Verfügung. Für diesen Fall kann ein Symbol an die Stelle der
+  Kategoriefarbe treten, am Anfang des Randbalkens bzw.\ im Kopf der
+  Box: Der @1-Schlüssel benennt ein registriertes Symbol,
+  \cs{SemCatDeclareSymbol} registriert weitere (die eingebauten
+  stammen aus \pkg{pifont}, das -- anders als Unicode-Symbole -- in
+  praktisch jeder Installation verfügbar ist). Ist eine
+  osgstyler-Dekoration mit einer \code{affix}-Komponente aufgelöst,
+  hat deren \code{content}- bzw.\ \code{symbol}-Schlüssel Vorrang vor
+  dem einfachen @1-Schlüssel der Kategorie; \code{position},
+  \code{font} und \code{gap} der \code{affix}-Komponente werden derzeit
+  nicht ausgewertet.
+}{
+  So far the concept is strongly color-oriented -- but printing a
+  textbook often leaves few or no colors available. For that case, a
+  symbol can take the category color's place, at the start of the
+  margin bar or in the box header: the @1 key names a registered
+  symbol, and \cs{SemCatDeclareSymbol} registers further ones (the
+  built-in ones come from \pkg{pifont}, which -- unlike Unicode
+  symbols -- is available in virtually every installation). When a
+  resolved osgstyler decoration has an \code{affix} component, its
+  \code{content}/\code{symbol} key takes precedence over the
+  category's plain @1 key; the \code{affix} component's
+  \code{position}, \code{font} and \code{gap} are not evaluated yet.
+}{\code{symbol}}
+
+\begin{verbatim}
+\SemCatDeclareSymbol{pin}{\ding{43}}
+\SemCatDefine{J}[label={Caution}, symbol=warning]
+\end{verbatim}
+
+\subsection{\ldeen{Markierung}{Marking}}
+
+\ldeen{
+  \cs{SemCat} markiert Text inline mit der Kategoriefarbe -- unabhängig
+  vom für die Kategorie gewählten \code{style}, da Inline-Text nicht
+  sinnvoll als Box oder Balken erscheinen kann:
+}{
+  \cs{SemCat} marks text inline with the category color -- independent
+  of the category's chosen \code{style}, since inline text cannot
+  sensibly appear as a box or a bar:
+}
+
+\begin{verbatim}
+Ordinary text with a \SemCat{B}{marked phrase} in the middle.
+\end{verbatim}
+
+\ldeen{
+  Für ganze Abschnitte -- auch über mehrere Absätze und Seitenumbrüche
+  hinweg -- markiert die Umgebung \code{SemCatMark} den Inhalt gemäß
+  dem für die Kategorie (und den aktiven Modus) aufgelösten Stil.
+  Ein Randbalken wird dabei nicht wie beim früheren, changebar-basierten
+  Vorgänger über die Output-Routine gezeichnet, sondern zeilenweise über
+  einen \LuaLaTeX-Callback -- dadurch übersteht er Seitenumbrüche ohne
+  Sonderbehandlung:
+}{
+  For whole passages -- even across multiple paragraphs and page
+  breaks -- the \code{SemCatMark} environment marks the content
+  according to the style resolved for the category (and the active
+  mode). A margin bar is not drawn via the output routine the way the
+  former, changebar-based predecessor did, but line by line via a
+  \LuaLaTeX{} callback -- so it survives page breaks without special
+  handling:
+}
+
+\begin{verbatim}
+\begin{SemCatMark}[category=B]
+  Supplementary material, with a footnote\footnote{like this one},
+  spanning as many paragraphs as needed.
+\end{SemCatMark}
+\end{verbatim}
+
+\subsection{\ldeen{Erklärbox}{Explanation box}}
+
+\ldeen{
+  \code{SemCatExplain} ist -- anders als \cs{SemCat} und
+  \code{SemCatMark}, die immer \emph{im} Lesefluss bleiben -- eine
+  echte, nummerierte und beschriftete Gleitumgebung für Inhalt
+  \emph{außerhalb} des Leseflusses: überspringbare Zusatzerklärungen.
+  Sie ist strukturell stets eine Box, unabhängig vom sonst für die
+  Kategorie gewählten Stil, und nutzt die Kategoriefarbe nur für ihre
+  optische Wiedererkennbarkeit:
+}{
+  Unlike \cs{SemCat} and \code{SemCatMark}, which always stay
+  \emph{within} the reading flow, \code{SemCatExplain} is a genuine,
+  numbered and captioned floating environment for content \emph{outside}
+  the reading flow: skippable supplementary explanations. It is
+  structurally always a box, regardless of the style otherwise chosen
+  for the category, and uses the category color only for visual
+  identity:
+}
+
+\begin{verbatim}
+\begin{SemCatExplain}[category=B]{Why this matters}
+  Supplementary background that a reader could skip.
+\end{SemCatExplain}
+\end{verbatim}
+
+\ldeen{
+  Die Umgebung basiert auf \pkg{float} und registriert den Gleittyp
+  \code{semcatexplain} (Vorgabeplatzierung \code{tbp}, Verzeichnisendung
+  \code{loe}); \cs{listof}\Marg{semcatexplain}\Marg{...} erzeugt ein
+  Verzeichnis aller Erklärboxen.
+}{
+  The environment is built on \pkg{float} and registers the
+  \code{semcatexplain} float type (default placement \code{tbp}, list
+  extension \code{loe}); \cs{listof}\Marg{semcatexplain}\Marg{...}
+  produces a list of all explanation boxes.
+}
+
+\subsection{\ldeen{QR-Code-Annotationen}{QR-code annotations}}
+
+\ldeen{
+  \cs{SemCatQR} setzt einen QR-Code mit Beschriftung, standardmäßig als
+  Randnotiz, mit dem Stern inline:
+}{
+  \cs{SemCatQR} places a QR code with a caption, by default as a margin
+  note, inline with the star form:
+}
+
+\begin{verbatim}
+\SemCatQR[B]{https://example.org}{Further reading}
+\SemCatQR*[B]{https://example.org}{Further reading}
+\end{verbatim}
+
+\ldeen{
+  \cs{SemCatQRRedirect} baut die Ziel-URL stattdessen aus einer zuvor
+  mit \cs{SemCatSetRedirectBase} gesetzten Basis-URL und einer
+  Dokument-/Eintrags-ID zusammen; unter \LuaLaTeX{} werden beide Teile
+  robust URL-kodiert:
+}{
+  \cs{SemCatQRRedirect} instead builds the target URL from a base URL set
+  via \cs{SemCatSetRedirectBase} and a document/entry id; under
+  \LuaLaTeX{} both parts are robustly URL-encoded:
+}
+
+\begin{verbatim}
+\SemCatSetRedirectBase{https://example.org/redirect.php}
+\SemCatQRRedirect[B]{42}{Further reading}
+\end{verbatim}
+
+\subsection{\ldeen{Modus- und Tagging-Integration}{Mode and tagging integration}}
+
+\ldeen*{
+  Alle Markierungsbefehle akzeptieren eine führende
+  Winkelklammer-Spezifikation, die -- ist @1 geladen -- an
+  \cs{IfLectureModeTF} weitergereicht wird; ohne @1 wird sie ignoriert
+  und die Markierung erscheint unbedingt:
+}{
+  Every marking command accepts a leading angle-bracket specification
+  that -- while @1 is loaded -- is forwarded to \cs{IfLectureModeTF};
+  without @1 it is ignored and the markup always appears:
+}{\pkg{osglecture-modes}}
+
+\begin{verbatim}
+\SemCat<article>{B}{printed-only remark}
+\end{verbatim}
+
+\ldeen*{
+  \code{SemCatMark} und \code{SemCatExplain} erhalten den Modus
+  stattdessen über den @1-Schlüssel, da sie als \pkg*{environ}-Umgebungen
+  keine Winkelklammer-Syntax entgegennehmen können; ohne @1-Schlüssel
+  erscheint die Markierung unbedingt, unabhängig von aktiven Modi:
+}{
+  \code{SemCatMark} and \code{SemCatExplain} instead take the mode via
+  the @1 key, since as \pkg*{environ} environments they cannot accept
+  angle-bracket syntax; without a @1 key, the markup always appears,
+  regardless of active modes:
+}{\code{mode}}
+
+\begin{verbatim}
+\begin{SemCatMark}[mode=slides,category=B]
+  Slides-only supplementary passage.
+\end{SemCatMark}
+\end{verbatim}
+
+\ldeen{
+  Ist ein Dokument mit \cs{DocumentMetadata}\Marg{tagging=on} getaggt,
+  registriert jede Kategorie eigene Strukturnamen (\code{semcat/<Key>}
+  als \code{Span}, \code{semcat/<Key>/note} als \code{Note}), und
+  Inline-Markierung sowie \code{SemCatMark} werden entsprechend getaggt
+  -- beide bleiben \emph{im} Lesefluss. \code{SemCatExplain} nutzt
+  dagegen die einzige, kategorieunabhängige Struktur
+  \code{semcat/explain} mit der Rolle \code{Aside}, da sie bewusst
+  \emph{außerhalb} des Leseflusses steht. QR-Codes selbst bleiben
+  ungetaggt, da \pkg{qrcode} sie über eine eigene \pkg*{tikz}-Grafik
+  zeichnet, die sich nicht sauber in eine manuell geöffnete
+  Tag-Struktur einfügt; die Beschriftung daneben wird normal als
+  Fließtext getaggt.
+}{
+  When a document is tagged via \cs{DocumentMetadata}\Marg{tagging=on},
+  every category registers its own structure names (\code{semcat/<key>}
+  as \code{Span}, \code{semcat/<key>/note} as \code{Note}), and inline
+  marking and \code{SemCatMark} are tagged accordingly -- both stay
+  \emph{within} the reading flow. \code{SemCatExplain} instead uses the
+  single, category-independent structure \code{semcat/explain} with
+  role \code{Aside}, since it deliberately sits \emph{outside} the
+  reading flow. QR codes themselves stay untagged, since \pkg{qrcode}
+  draws them via its own \pkg*{tikz} graphic, which does not nest
+  cleanly inside a manually opened tag structure; the caption next to
+  it is tagged normally as ordinary flow text.
+}
+
+\section{Implementation}
+\MaybeStop{\ldeen*{Um die Implementationsbeschreibung zu erhalten, kommentieren Sie bitte \cs{OnlyDescription} in @1 aus.}{To view the implementation description, please uncomment @1 in \code{osgdoc.dtx}.}{\file{semcat.dtx}}}
+
+\subsection{\emph{semcat.sty}}
+\AutoDocInput{semcat.dtx}{package}
+\subsection{semcat.lua}
+\AutoDocInput[lua]{semcat.lua}{lua}
+\end{document}
+
+%</driver>
+
+%<*package>
+\RequirePackage[dvipsnames]{xcolor}
+\RequirePackage{luacolor}
+\RequirePackage{qrcode}
+\RequirePackage{marginnote}
+\RequirePackage{footnotehyper}
+\RequirePackage{environ}
+\RequirePackage{pifont}
+\RequirePackage{float}
+\RequirePackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+\newfloat{semcatexplain}{tbp}{loe}
+\floatname{semcatexplain}{Explanation}
+\ExplSyntaxOn
+
+% ---------------------------------------------------------------------
+% Category registry
+% ---------------------------------------------------------------------
+\seq_new:N \g__semcat_categories_seq
+\prop_new:N \g__semcat_category_label_prop
+\tl_new:N \g__semcat_default_category_tl
+\tl_new:N \l__semcat_tmp_tl
+\tl_new:N \l__semcat_tmp_color_tl
+
+\int_new:N \g__semcat_fallback_slot_int
+\clist_new:N \c__semcat_fallback_colors_clist
+\clist_set:Nn \c__semcat_fallback_colors_clist
+  { NavyBlue, BurntOrange, OliveGreen, RedViolet, Turquoise, Plum }
+
+% \ldeen{Statt die reihum vergebenen Kategoriefarben aus dem
+% Aktiv-Theme zu ziehen (\cs{OsgColorName}, an das jeweils
+% \emph{aktive} \cs{UseOsgColorPalette} gebunden), deklariert semcat
+% eine eigene, feste Palette \code{semcat-categories}: Ein
+% Themenwechsel im Dokument soll die Kategoriefarben nicht
+% mitverändern, und die Slots eines gewöhnlichen Themes (\code{primary}
+% etc.) sind auf Harmonie \emph{innerhalb} eines Themes ausgelegt, nicht
+% auf gegenseitige Unterscheidbarkeit als Kategoriensatz. Die
+% Vorgabewerte stammen aus ColorBrewer~"`Dark2"' (eine verbreitete,
+% für gute Unterscheidbarkeit ausgelegte qualitative Palette). Wer
+% andere Kategoriefarben möchte, deklariert \code{semcat-categories}
+% nach dem Laden von semcat einfach erneut mit
+% \cs{DeclareOsgColorPalette} -- eine erneute Deklaration desselben
+% Namens ist in osgstyler ausdrücklich vorgesehen. \code{text} und
+% \code{background} bleiben absichtlich unbelegt: sie sind für
+% Fließtext-/Seitenfarbe reserviert und ungeeignet als
+% Kategorieakzent, und diese Palette ist ohnehin nicht dazu gedacht,
+% selbst per \cs{UseOsgColorPalette} aktiviert zu werden.}{Rather than
+% drawing the round-robin category colors from the active theme
+% (\cs{OsgColorName}, tied to whichever \cs{UseOsgColorPalette} is
+% \emph{active}), semcat declares its own, fixed palette
+% \code{semcat-categories}: switching the document's theme should not
+% also change category colors, and an ordinary theme's slots
+% (\code{primary} etc.) are tuned for harmony \emph{within} one theme,
+% not for mutual distinguishability as a category set. The defaults
+% come from ColorBrewer "Dark2" (a widely used qualitative palette
+% chosen for distinguishability). Anyone wanting different category
+% colors simply declares \code{semcat-categories} again after loading
+% semcat, via \cs{DeclareOsgColorPalette} -- redeclaring the same name
+% is explicitly supported by osgstyler. \code{text} and
+% \code{background} are deliberately left unset: they are reserved for
+% body-text/page color and unsuited as a category accent, and this
+% palette is not meant to ever be activated itself via
+% \cs{UseOsgColorPalette} anyway.}
+\clist_new:N \c__semcat_palette_slots_clist
+\clist_set:Nn \c__semcat_palette_slots_clist
+  { primary, secondary, accent, structure, alert, example }
+\tl_const:Nn \c__semcat_palette_name_tl { semcat-categories }
+
+\cs_new_protected:Npn \__semcat_declare_default_palette:
+  {
+    \exp_args:No \DeclareOsgColorPalette { \c__semcat_palette_name_tl }
+      {
+        primary   = { model = HTML, value = 1B9E77 },
+        secondary = { model = HTML, value = D95F02 },
+        accent    = { model = HTML, value = 7570B3 },
+        structure = { model = HTML, value = E7298A },
+        alert     = { model = HTML, value = 66A61E },
+        example   = { model = HTML, value = E6AB02 }
+      }
+  }
+\IfPackageLoadedTF { osgstyler }
+  { \__semcat_declare_default_palette: }
+  {
+    \AddToHook { package/osgstyler/after } [ semcat/palette ]
+      { \__semcat_declare_default_palette: }
+  }
+
+% \ldeen{Definiert (bzw. redefiniert, falls schon vorhanden) unter
+% einem fest aus #1/#2 gebildeten Namen eine xcolor-Farbe mit dem
+% aktuellen Wert des Slots #2 der Palette #1 -- absichtlich bei jedem
+% Aufruf frisch aus \cs{OsgColorPaletteValue} gelesen, statt einmalig
+% zwischengespeichert, damit eine spätere Neudeklaration von #1
+% (z.\,B. durch den Nutzer) auch rückwirkend wirkt, solange sie vor
+% dem jeweiligen \cs{SemCatDefine}-Aufruf erfolgt.}{Defines (or
+% redefines, if already existing) an xcolor color, under a name built
+% deterministically from #1/#2, holding the current value of palette
+% #1's slot #2 -- deliberately read fresh from \cs{OsgColorPaletteValue}
+% on every call rather than cached once, so that a later redeclaration
+% of #1 (e.g. by the user) still takes effect, as long as it happens
+% before the relevant \cs{SemCatDefine} call.}
+\cs_new_protected:Npn \__semcat_palette_color:nnN #1#2#3
+  {
+    \tl_set:Nx \l__semcat_tmp_tl { \OsgColorPaletteValue {#1} {#2} {model} }
+    \tl_set:Nx \l__semcat_tmp_color_tl { \OsgColorPaletteValue {#1} {#2} {value} }
+    \tl_set:Nx #3 { semcat-palettecolor-#2 }
+    \exp_args:Nooo \definecolor #3 { \l__semcat_tmp_tl } { \l__semcat_tmp_color_tl }
+  }
+
+\msg_new:nnn { semcat } { unknown-category }
+  { Unknown~semantic~category~'#1'. }
+\msg_new:nnn { semcat } { category-redefined }
+  { Semantic~category~'#1'~is~already~defined;~redefining~it. }
+\msg_new:nnn { semcat } { redirect-base-missing }
+  { No~QR~redirect~base~URL~is~configured;~call~SemCatSetRedirectBase~first. }
+\msg_new:nnn { semcat } { luatex-required-for-redirect }
+  { SemCatQRRedirect~needs~LuaLaTeX~to~encode~the~redirect~target~robustly;~falling~back~to~the~unencoded~value~'#1'. }
+\msg_new:nnn { semcat } { unknown-symbol }
+  { Unknown~semantic~symbol~'#1'. }
+
+% \ldeen{Ein kleines, eigenständiges Symbolregister: Wenn keine Farbe
+% verfügbar ist (typischerweise beim Druck eines Lehrbuchs), kann ein
+% Symbol an die Stelle der Kategoriefarbe treten -- am Anfang des
+% Randbalkens bzw.\ im Kopf der Box. osgstylers Dekorationsmodell sieht
+% dafür bereits die \code{affix}-Komponente vor
+% (\code{content}/\code{symbol}), liefert aber selbst keinen
+% "`Symbol-Backend"'-Mechanismus, der \code{symbol}-Referenzen in
+% tatsächliche Glyphen übersetzt (osgstylers eigene Dokumentation weist
+% ausdrücklich darauf hin, dass aktuell kein Backend dafür existiert).
+% semcat übernimmt diese Rolle selbst, mit \pkg{pifont} als Backend --
+% universell verfügbar, ohne Font-Abdeckungsrisiko, im Gegensatz zu
+% Unicode-Symbolen, die in Fließtextschriften oft fehlen.}{A small,
+% self-contained symbol registry: when no color is available
+% (typically when printing a textbook), a symbol can take the
+% category color's place -- at the start of the margin bar, or in the
+% box header. osgstyler's decoration model already provides for this
+% via the \code{affix} component (\code{content}/\code{symbol}), but
+% does not itself ship a "symbol backend" mechanism that resolves
+% \code{symbol} references into actual glyphs (osgstyler's own
+% documentation explicitly notes that no such backend currently
+% exists). semcat takes on that role itself, using \pkg{pifont} as the
+% backend -- universally available, with no font-coverage risk, unlike
+% Unicode symbols, which are often missing from body-text fonts.}
+\prop_new:N \g__semcat_symbol_prop
+\NewDocumentCommand \SemCatDeclareSymbol { m m }
+  { \prop_gput:Nnn \g__semcat_symbol_prop {#1} {#2} }
+\NewExpandableDocumentCommand \SemCatSymbol { m }
+  { \prop_item:Nn \g__semcat_symbol_prop {#1} }
+\cs_new_protected:Npn \__semcat_symbol_lookup:nN #1#2
+  {
+    \prop_if_in:NnTF \g__semcat_symbol_prop {#1}
+      { \tl_set:No #2 { \prop_item:Nn \g__semcat_symbol_prop {#1} } }
+      {
+        \msg_warning:nnn { semcat } { unknown-symbol } {#1}
+        \tl_clear:N #2
+      }
+  }
+\SemCatDeclareSymbol{check}{\ding{51}}
+\SemCatDeclareSymbol{cross}{\ding{55}}
+\SemCatDeclareSymbol{warning}{\ding{55}}
+\SemCatDeclareSymbol{caution}{\ding{55}}
+\SemCatDeclareSymbol{star}{\ding{72}}
+\SemCatDeclareSymbol{important}{\ding{72}}
+\SemCatDeclareSymbol{pencil}{\ding{46}}
+\SemCatDeclareSymbol{note}{\ding{46}}
+\SemCatDeclareSymbol{hand}{\ding{37}}
+\SemCatDeclareSymbol{attention}{\ding{37}}
+\SemCatDeclareSymbol{square}{\ding{110}}
+\SemCatDeclareSymbol{arrow}{\ding{242}}
+\SemCatDeclareSymbol{reference}{\ding{242}}
+
+% \ldeen{Prüft einen bereits aufgelösten Kategorieschlüssel in \#1 und
+% ersetzt ihn -- nach Meldung -- durch die Standardkategorie, falls er
+% nie registriert wurde. So erzeugt ein falscher Schlüssel genau eine
+% diagnostizierbare Fehlermeldung statt einer Kaskade von
+% Folgefehlern ("`undefined color"', "`unknown tag"') aus jeder
+% nachfolgenden Abfrage, die einen gültigen Schlüssel voraussetzt.}
+% {Validates an already-resolved category key held in \#1 and, after
+% reporting it, substitutes the default category if it was never
+% registered. This way one bad key produces a single diagnosable error
+% rather than a cascade of "undefined color"/"unknown tag" errors from
+% every later lookup that assumed a valid key.}
+\cs_new_protected:Npn \__semcat_validate_category:N #1
+  {
+    \exp_args:NNo \seq_if_in:NnF \g__semcat_categories_seq #1
+      {
+        \msg_error:nnx { semcat } { unknown-category } {#1}
+        \tl_set_eq:NN #1 \g__semcat_default_category_tl
+      }
+  }
+
+\cs_new:Npn \__semcat_color_name:n #1 { semcat-#1 }
+\NewExpandableDocumentCommand \SemCatColor { m } { \__semcat_color_name:n {#1} }
+\NewExpandableDocumentCommand \SemCatLabel { m }
+  { \prop_item:Nn \g__semcat_category_label_prop {#1} }
+\NewExpandableDocumentCommand \SemCatDefaultCategory { }
+  { \g__semcat_default_category_tl }
+
+% \ldeen{Löst ein optionales Kategorieargument (leer oder ein Makro)
+% gegen die registrierte Standardkategorie zu einem einfachen, voll
+% expandierten Schlüssel auf, damit jede folgende Abfrage mit einer
+% konkreten Zeichenkette arbeitet statt mit Tokens, die noch expandiert
+% werden müssten.}{Resolves an optional category argument (possibly
+% empty, possibly a macro) against the registered default into a plain,
+% fully expanded key, so every later lookup works against a concrete
+% string rather than tokens that would still need expanding.}
+\cs_new_protected:Npn \__semcat_resolve_category:nN #1#2
+  {
+    \tl_set:Nx #2 {#1}
+    \tl_if_empty:NT #2 { \tl_set_eq:NN #2 \g__semcat_default_category_tl }
+  }
+
+% \ldeen{Alles Folgende nimmt einen bereits aufgelösten, einfachen
+% Kategorieschlüssel (eine Kontrollsequenz wie \cs{l_tmpa_tl} mit
+% Inhalt "`A"') entgegen und erzeugt daraus über einen expliziten
+% \cs{tl_set:Nx}-Schritt ein weiteres, voll expandiertes Ergebnis:
+% keiner dieser Helfer verlässt sich darauf, dass ein Verbraucher
+% (xcolor, tcolorbox, die Tagging-Schlüssel des Kerns) eine
+% Variablenreferenz selbst expandiert.}{Everything below takes an
+% already-resolved plain category key (a control sequence such as
+% \cs{l_tmpa_tl} holding e.g. "A") and produces a further fully
+% expanded result via one explicit \cs{tl_set:Nx} step, so these
+% helpers never rely on a downstream consumer (xcolor, tcolorbox, the
+% kernel's tagging keys) to expand a variable reference itself.}
+\cs_new_protected:Npn \__semcat_resolve_color:nN #1#2
+  { \tl_set:Nx #2 { \__semcat_color_name:n {#1} } }
+
+\cs_new:Npn \__semcat_structure_name:n #1 { semcat/#1 }
+\cs_new:Npn \__semcat_note_structure_name:n #1 { semcat/#1/note }
+
+\cs_new_protected:Npn \__semcat_tag_begin:n #1
+  { \cs_if_exist:NT \tagstructbegin { \tagstructbegin{ tag=#1 } } }
+\cs_new_protected:Npn \__semcat_tag_end:
+  { \cs_if_exist:NT \tagstructend { \tagstructend } }
+% \ldeen{Eine einzelne, kategorieunabhängige Struktur für die
+% Erklärbox: Anders als Inline-Markierung und Randmarkierung, die immer
+% \emph{im} Lesefluss bleiben (Rolle \code{Span}/\code{Note}), steht
+% die Erklärbox bewusst \emph{außerhalb} davon -- als eigenständiges,
+% überspringbares Float. Die PDF-Rolle \code{Aside} bildet genau das
+% ab.}{A single, category-independent structure for the explanation
+% box: unlike inline marking and the margin marker, which always stay
+% \emph{within} the reading flow (role \code{Span}/\code{Note}), the
+% explanation box deliberately sits \emph{outside} it -- a standalone,
+% skippable float. The PDF role \code{Aside} captures exactly that.}
+\cs_if_exist:NT \NewStructureName
+  {
+    \NewStructureName{ semcat/explain }
+    \AssignStructureRole{ semcat/explain } { Aside }
+  }
+% \ldeen*{Baut einen voll aufgelösten Aufruf
+% \cs{UseStructureName}\Marg{semcat/<Schlüssel>} (einen konkreten,
+% bereits expandierten Strukturnamen, nie eine Variablenreferenz) und
+% übergibt ihn unausgewertet an \cs{__semcat_tag_begin:n}, analog dazu,
+% wie \file{ansiterm.dtx} \cs{UseStructureName}-Aufrufe an den
+% @1-Schlüssel von \cs{tagstructbegin} übergibt.}{Builds a
+% fully-resolved \cs{UseStructureName}\Marg{semcat/<key>} call (a
+% concrete, already-expanded structure name, never a variable
+% reference) and hands it unevaluated to \cs{__semcat_tag_begin:n},
+% mirroring how \file{ansiterm.dtx} feeds \cs{UseStructureName} calls to
+% \cs{tagstructbegin}'s @1 key.}{\code{tag=}}
+\cs_new_protected:Npn \__semcat_tag_begin_named:n #1
+  { \__semcat_tag_begin:n { \UseStructureName{#1} } }
+\cs_new_protected:Npn \__semcat_tag_begin_span:n #1
+  {
+    \tl_set:Nx \l__semcat_tmp_tl { \__semcat_structure_name:n {#1} }
+    \exp_args:No \__semcat_tag_begin_named:n \l__semcat_tmp_tl
+  }
+\cs_new_protected:Npn \__semcat_tag_begin_note:n #1
+  {
+    \tl_set:Nx \l__semcat_tmp_tl { \__semcat_note_structure_name:n {#1} }
+    \exp_args:No \__semcat_tag_begin_named:n \l__semcat_tmp_tl
+  }
+
+% \ldeen*{Ohne @1/@2 wird die Farbe reihum aus der Palette
+% \code{semcat-categories} vergeben, wenn osgstyler geladen ist, sonst
+% aus @3. Ein Slotname wird nur verwendet, wenn osgstyler tatsächlich
+% geladen ist; andernfalls fällt die Zuordnung auf die eingebaute
+% Rotation zurück.}{Without @1/@2, the color is assigned round-robin
+% from the \code{semcat-categories} palette when osgstyler is loaded,
+% otherwise from @3. A slot name is only honored while osgstyler is
+% actually loaded; otherwise assignment falls back to the built-in
+% rotation.}{color}{slot}{\cs{clist}\Arg{NavyBlue,...}}
+\cs_new_protected:Npn \__semcat_next_color:N #1
+  {
+    \int_gincr:N \g__semcat_fallback_slot_int
+    \IfPackageLoadedTF { osgstyler }
+      {
+        \exp_args:Nxx \__semcat_palette_color:nnN { \c__semcat_palette_name_tl }
+          {
+            \clist_item:Nn \c__semcat_palette_slots_clist
+              {
+                \int_mod:nn { \g__semcat_fallback_slot_int - 1 }
+                  { \clist_count:N \c__semcat_palette_slots_clist } + 1
+              }
+          }
+          #1
+      }
+      {
+        \tl_set:Nx #1
+          {
+            \clist_item:Nn \c__semcat_fallback_colors_clist
+              {
+                \int_mod:nn { \g__semcat_fallback_slot_int - 1 }
+                  { \clist_count:N \c__semcat_fallback_colors_clist } + 1
+              }
+          }
+      }
+  }
+
+\cs_if_exist:NT \NewStructureName
+  {
+    \cs_new_protected:Npn \__semcat_register_tags:n #1
+      {
+        \NewStructureName{ semcat/#1 }
+        \AssignStructureRole{ semcat/#1 } { Span }
+        \NewStructureName{ semcat/#1/note }
+        \AssignStructureRole{ semcat/#1/note } { Note }
+      }
+  }
+\cs_if_exist:NF \NewStructureName
+  { \cs_new_protected:Npn \__semcat_register_tags:n #1 { } }
+
+\keys_define:nn { semcat / category }
+  {
+    color      .tl_set:N  = \l__semcat_category_color_tl,
+    color      .initial:n = { },
+    slot       .tl_set:N  = \l__semcat_category_slot_tl,
+    slot       .initial:n = { },
+    label      .tl_set:N  = \l__semcat_category_label_tl,
+    label      .initial:n = { },
+    style      .tl_set:N  = \l__semcat_category_style_tl,
+    style      .initial:n = { },
+    decoration .tl_set:N  = \l__semcat_category_decoration_tl,
+    decoration .initial:n = { },
+    symbol     .tl_set:N  = \l__semcat_category_symbol_tl,
+    symbol     .initial:n = { },
+    variants   .code:n    = { \keys_set:nn { semcat / category / variants } {#1} },
+  }
+
+\NewDocumentCommand \SemCatDefine { s m O{} }
+  {
+    \seq_if_in:NnTF \g__semcat_categories_seq {#2}
+      { \msg_warning:nnn { semcat } { category-redefined } {#2} }
+      {
+        \seq_gput_right:Nn \g__semcat_categories_seq {#2}
+        \__semcat_register_tags:n {#2}
+      }
+    \tl_set:Nn \l__semcat_category_being_defined_tl {#2}
+    \tl_clear:N \l__semcat_category_color_tl
+    \tl_clear:N \l__semcat_category_slot_tl
+    \tl_clear:N \l__semcat_category_label_tl
+    \tl_clear:N \l__semcat_category_style_tl
+    \tl_clear:N \l__semcat_category_decoration_tl
+    \tl_clear:N \l__semcat_category_symbol_tl
+    \keys_set:nn { semcat / category } {#3}
+    \tl_if_empty:NF \l__semcat_category_style_tl
+      { \prop_gput:Nee \g__semcat_style_variant_prop { #2 / default } \l__semcat_category_style_tl }
+    \tl_if_empty:NF \l__semcat_category_decoration_tl
+      { \prop_gput:Nee \g__semcat_decoration_variant_prop { #2 / default } \l__semcat_category_decoration_tl }
+    \tl_if_empty:NF \l__semcat_category_symbol_tl
+      { \prop_gput:Nee \g__semcat_symbol_variant_prop { #2 / default } \l__semcat_category_symbol_tl }
+    \tl_if_empty:NTF \l__semcat_category_label_tl
+      { \prop_gput:Nnn \g__semcat_category_label_prop {#2} {#2} }
+      { \prop_gput:NnV \g__semcat_category_label_prop {#2} \l__semcat_category_label_tl }
+    \tl_if_empty:NT \l__semcat_category_color_tl
+      {
+        \tl_if_empty:NTF \l__semcat_category_slot_tl
+          { \__semcat_next_color:N \l__semcat_category_color_tl }
+          {
+            \IfPackageLoadedTF { osgstyler }
+              { \tl_set:Nx \l__semcat_category_color_tl
+                  { \OsgColorName { \l__semcat_category_slot_tl } } }
+              { \__semcat_next_color:N \l__semcat_category_color_tl }
+          }
+      }
+    \colorlet { \__semcat_color_name:n {#2} } { \l__semcat_category_color_tl }
+    \IfBooleanT {#1} { \tl_gset:Nn \g__semcat_default_category_tl {#2} }
+  }
+
+% \ldeen{Berücksichtigt eine Modusspezifikation nur, solange
+% osglecture-modes (oder ein kompatibles Backend) tatsächlich
+% \cs{IfLectureModeTF} bereitstellt; sonst ist die Einschränkung
+% wirkungslos, sodass semcat nie hart davon abhängt.}{Honors a
+% mode-spec only while osglecture-modes (or a compatible backend)
+% actually provides \cs{IfLectureModeTF}; otherwise the restriction is
+% a no-op, so semcat never hard-depends on it.}
+\cs_new_protected:Npn \__semcat_if_mode:nn #1#2
+  {
+    \tl_if_empty:nTF {#1}
+      {#2}
+      {
+        \cs_if_exist:NTF \IfLectureModeTF
+          { \IfLectureModeT {#1} {#2} }
+          {#2}
+      }
+  }
+
+% ---------------------------------------------------------------------
+% Inline marking
+% ---------------------------------------------------------------------
+\NewDocumentCommand \SemCat { D<>{} m +m }
+  {
+    \__semcat_if_mode:nn {#1}
+      {
+        \group_begin:
+        \__semcat_resolve_category:nN {#2} \l_tmpa_tl
+        \__semcat_validate_category:N \l_tmpa_tl
+        \exp_args:No \__semcat_tag_begin_span:n \l_tmpa_tl
+        \exp_args:No \__semcat_resolve_color:nN \l_tmpa_tl \l__semcat_tmp_color_tl
+        \color{\l__semcat_tmp_color_tl}#3%
+        \__semcat_tag_end:
+        \group_end:
+      }
+  }
+\cs_if_exist:NT \MakeOverlayAwareCommand
+  {
+    \AddToHook { package/osglecture-modes/after } [ semcat/modes ]
+      { \MakeOverlayAwareCommand [ arguments = { m +m } ] { \SemCat } }
+  }
+
+% ---------------------------------------------------------------------
+% Presentation resolution: which style (box/bar) -- and, while osgstyler
+% is loaded, which of its decorations -- renders a category's
+% block-level marking. Resolved from the category AND the active
+% lecture mode(s) together, since the same category may need a boxed
+% callout on slides but a plain margin bar in the printed script.
+% ---------------------------------------------------------------------
+\prop_new:N \g__semcat_style_variant_prop
+\prop_new:N \g__semcat_decoration_variant_prop
+\prop_new:N \g__semcat_symbol_variant_prop
+\tl_new:N \l__semcat_variant_key_tl
+\tl_new:N \l__semcat_category_being_defined_tl
+\tl_new:N \l__semcat_resolved_style_tl
+\tl_new:N \l__semcat_resolved_decoration_tl
+\tl_new:N \l__semcat_resolved_symbol_tl
+\clist_new:N \l__semcat_mode_clist
+
+\cs_new_protected:Npn \__semcat_variant_lookup:NnN #1#2#3
+  {
+    \tl_set:Nx \l__semcat_variant_key_tl {#2}
+    \exp_args:NNo \prop_if_in:NnTF #1 \l__semcat_variant_key_tl
+      { \tl_set:Nx #3 { \exp_args:NNo \prop_item:Nn #1 \l__semcat_variant_key_tl } }
+      { \tl_clear:N #3 }
+  }
+
+% \ldeen{Ein \code{variants}-Schlüssel bei \cs{SemCatDefine} nimmt eine
+% verschachtelte Schlüsselliste entgegen, deren Schlüssel Modusnamen
+% sind und deren Werte wiederum @1/@2 setzen können -- diese
+% Modusüberschreibungen landen in denselben Eigenschaftslisten wie der
+% unqualifizierte Standardwert, nur unter dem jeweiligen Modusnamen
+% statt "`default"'.}{A \code{variants} key on \cs{SemCatDefine} takes
+% a nested key list whose keys are mode names and whose values may in
+% turn set @1/@2 -- these mode overrides land in the same property
+% lists as the unqualified default value, just under that mode's name
+% instead of "default".}{\code{style}}{\code{decoration}}
+\keys_define:nn { semcat / variant }
+  {
+    style      .tl_set:N  = \l__semcat_variant_style_tl,
+    style      .initial:n = { },
+    decoration .tl_set:N  = \l__semcat_variant_decoration_tl,
+    decoration .initial:n = { },
+    symbol     .tl_set:N  = \l__semcat_variant_symbol_tl,
+    symbol     .initial:n = { },
+  }
+\cs_new_protected:Npn \__semcat_variant_declare:nn #1#2
+  { % #1 = mode name, #2 = keyval content for that mode
+    \tl_clear:N \l__semcat_variant_style_tl
+    \tl_clear:N \l__semcat_variant_decoration_tl
+    \tl_clear:N \l__semcat_variant_symbol_tl
+    \keys_set:nn { semcat / variant } {#2}
+    \tl_if_empty:NF \l__semcat_variant_style_tl
+      { \prop_gput:Nee \g__semcat_style_variant_prop
+          { \l__semcat_category_being_defined_tl / #1 } \l__semcat_variant_style_tl }
+    \tl_if_empty:NF \l__semcat_variant_decoration_tl
+      { \prop_gput:Nee \g__semcat_decoration_variant_prop
+          { \l__semcat_category_being_defined_tl / #1 } \l__semcat_variant_decoration_tl }
+    \tl_if_empty:NF \l__semcat_variant_symbol_tl
+      { \prop_gput:Nee \g__semcat_symbol_variant_prop
+          { \l__semcat_category_being_defined_tl / #1 } \l__semcat_variant_symbol_tl }
+  }
+\keys_define:nn { semcat / category / variants }
+  { unknown .code:n = { \__semcat_variant_declare:nn { \l_keys_key_str } {#1} } }
+
+% \ldeen*{Versucht für die Kategorie #1 der Reihe nach jeden aktiven
+% Modus (bei geladenem osglecture-modes) und zuletzt "`default"', bis
+% Stil, Dekoration und Symbol gefunden sind; ohne osglecture-modes
+% bleibt nur "`default"' übrig, also genau der beim
+% \cs{SemCatDefine}-Aufruf hinterlegte Wert.}{Tries, for category #1,
+% each active mode in turn (while osglecture-modes is loaded) and
+% finally "default", until style, decoration and symbol are found;
+% without osglecture-modes only "default" remains, i.e. exactly the
+% value recorded at \cs{SemCatDefine} time.}
+\cs_new_protected:Npn \__semcat_resolve_presentation:nNNN #1#2#3#4
+  {
+    \clist_clear:N \l__semcat_mode_clist
+    \cs_if_exist:NT \ActiveLectureModes
+      { \clist_set:Nx \l__semcat_mode_clist { \ActiveLectureModes } }
+    \clist_put_right:Nn \l__semcat_mode_clist { default }
+    \tl_clear:N #2
+    \tl_clear:N #3
+    \tl_clear:N #4
+    \clist_map_inline:Nn \l__semcat_mode_clist
+      {
+        \tl_if_empty:NT #3
+          { \__semcat_variant_lookup:NnN \g__semcat_decoration_variant_prop { #1 / ##1 } #3 }
+        \tl_if_empty:NT #2
+          { \__semcat_variant_lookup:NnN \g__semcat_style_variant_prop { #1 / ##1 } #2 }
+        \tl_if_empty:NT #4
+          { \__semcat_variant_lookup:NnN \g__semcat_symbol_variant_prop { #1 / ##1 } #4 }
+      }
+  }
+
+\seq_new:N \l__semcat_metric_seq
+% \ldeen{Übersetzt einen Dekorationswert wie \code{rule/thin} über
+% \cs{OsgMetric} in ein konkretes Maß; ein Wert ohne Schrägstrich gilt
+% bereits als fertiges Maß.}{Translates a decoration value such as
+% \code{rule/thin} via \cs{OsgMetric} into a concrete measurement; a
+% value without a slash already counts as a finished measurement.}
+\cs_new_protected:Npn \__semcat_metric_resolve:nN #1#2
+  {
+    \seq_set_split:Nnn \l__semcat_metric_seq { / } {#1}
+    \int_compare:nNnTF { \seq_count:N \l__semcat_metric_seq } = { 2 }
+      {
+        \tl_set:Nx #2
+          {
+            \OsgMetric
+              { \seq_item:Nn \l__semcat_metric_seq {1} }
+              { \seq_item:Nn \l__semcat_metric_seq {2} }
+          }
+      }
+      { \tl_set:Nn #2 {#1} }
+  }
+
+% ---------------------------------------------------------------------
+% Margin bar rendering: a continuous, page-break-safe rule in the left
+% margin, drawn per output line by a LuaTeX post_linebreak_filter
+% callback (semcat.lua) rather than by hooking the output routine the
+% way changebar does. \g__semcat_bar_box holds a plain \vrule, freshly
+% colored per use; the callback clones it per line and only needs to
+% know which box register to read, so no color/dimension state has to
+% cross the Lua boundary beyond that one integer.
+% ---------------------------------------------------------------------
+\newbox\g__semcat_bar_box
+\dim_new:N \l__semcat_bar_thickness_dim
+
+% \ldeen{\pkg{luacolor} (oben angefordert) macht \cs{color} über
+% Zeilen- und Seitenumbrüche hinweg sicher; ohne dieses Paket würde die
+% hier gesetzte Farbe in Folgetext ausbluten, sobald die Box, aus der
+% \g__semcat_bar_box geklont wird, mehrfach über das Dokument verteilt
+% verwendet wird.}{\pkg{luacolor} (required above) makes \cs{color}
+% safe across line and page breaks; without it, the color set here
+% would bleed into later text once the box \g__semcat_bar_box is
+% cloned from is reused repeatedly throughout the document.}
+\cs_new_protected:Npn \__semcat_bar_setup:n #1
+  { % #1 = resolved, plain xcolor color name
+    \global\setbox\g__semcat_bar_box=\hbox{\color{#1}\vrule width \l__semcat_bar_thickness_dim}
+    \directlua{ semcat.bar_begin(\the\g__semcat_bar_box) }
+  }
+\cs_new_protected:Npn \__semcat_bar_teardown:
+  { \directlua{ semcat.bar_end() } }
+
+\tl_new:N \l__semcat_enclosure_frame_tl
+\tl_new:N \l__semcat_enclosure_back_tl
+\tl_new:N \l__semcat_enclosure_rule_tl
+\tl_new:N \l__semcat_enclosure_radius_tl
+
+% ---------------------------------------------------------------------
+% Affix (icon) resolution: an osgstyler decoration's \code{affix}
+% component takes precedence when present; otherwise a category's
+% plain \code{symbol} key (also mode-varied via \code{variants}, same
+% as style/decoration) supplies the marker. Either way, the resolved
+% marker is placed at the start of the margin bar or in the box
+% header, so it can carry the category's identity when color alone is
+% not distinguishable enough (or not available at all, as in a
+% monochrome print run).
+% ---------------------------------------------------------------------
+\tl_new:N \l__semcat_affix_content_tl
+\tl_new:N \l__semcat_affix_color_tl
+
+% \ldeen{Liest Inhalt (\code{content} vor \code{symbol}, wie bei
+% osgstylers eigener Affix-Verarbeitung) und Farbe aus der
+% \code{affix}-Komponente der benannten Dekoration #1; ohne eigene
+% Farbe gilt die Kategoriefarbe.}{Reads content (\code{content} before
+% \code{symbol}, matching osgstyler's own affix handling) and color
+% from the named decoration #1's \code{affix} component; without an
+% explicit color, the category color applies.}
+\cs_new_protected:Npn \__semcat_affix_from_decoration:n #1
+  {
+    \tl_set:Nx \l__semcat_tmp_tl { \OsgDecorationValue {#1} { affix } { content } }
+    \tl_if_empty:NTF \l__semcat_tmp_tl
+      {
+        \tl_set:Nx \l__semcat_tmp_tl { \OsgDecorationValue {#1} { affix } { symbol } }
+        \tl_if_empty:NF \l__semcat_tmp_tl
+          { \exp_args:No \__semcat_symbol_lookup:nN \l__semcat_tmp_tl \l__semcat_affix_content_tl }
+      }
+      { \tl_set_eq:NN \l__semcat_affix_content_tl \l__semcat_tmp_tl }
+    \tl_set:Nx \l__semcat_tmp_tl { \OsgDecorationValue {#1} { affix } { color } }
+    \tl_if_empty:NF \l__semcat_tmp_tl
+      { \tl_set:Nx \l__semcat_affix_color_tl { \OsgColorName { \l__semcat_tmp_tl } } }
+  }
+
+% \ldeen{Löst den Affix für die aktuelle Markierung auf: zuerst die
+% \code{affix}-Komponente der aufgelösten Dekoration (falls vorhanden),
+% sonst das aufgelöste, einfache \code{symbol} der Kategorie/Variante.
+% Ohne beides bleibt der Affix leer, und weder Balken noch Box zeigen
+% einen Marker.}{Resolves the affix for the current marking: first the
+% resolved decoration's \code{affix} component (if present), else the
+% category/variant's resolved plain \code{symbol}. Without either, the
+% affix stays empty and neither the bar nor the box shows a marker.}
+\cs_new_protected:Npn \__semcat_resolve_affix:
+  {
+    \tl_clear:N \l__semcat_affix_content_tl
+    \tl_set_eq:NN \l__semcat_affix_color_tl \l__semcat_box_color_tl
+    \tl_if_empty:NF \l__semcat_resolved_decoration_tl
+      {
+        \IfPackageLoadedTF { osgstyler }
+          {
+            \exp_args:No \OsgDecorationIfHasComponentTF \l__semcat_resolved_decoration_tl { affix }
+              { \exp_args:No \__semcat_affix_from_decoration:n \l__semcat_resolved_decoration_tl }
+              { }
+          }
+          { }
+      }
+    \tl_if_empty:NT \l__semcat_affix_content_tl
+      {
+        \tl_if_empty:NF \l__semcat_resolved_symbol_tl
+          { \exp_args:No \__semcat_symbol_lookup:nN \l__semcat_resolved_symbol_tl \l__semcat_affix_content_tl }
+      }
+  }
+
+\cs_new_protected:Npn \__semcat_maybe_affix_marginnote:
+  {
+    \tl_if_empty:NF \l__semcat_affix_content_tl
+      { \marginnote{\textcolor{\l__semcat_affix_color_tl}{\l__semcat_affix_content_tl}}[0pt] }
+  }
+
+\tl_new:N \l__semcat_box_title_tl
+\cs_new_protected:Npn \__semcat_compose_title:
+  {
+    \tl_if_empty:NTF \l__semcat_affix_content_tl
+      { \tl_set:Nx \l__semcat_box_title_tl { \exp_args:No \SemCatLabel \l__semcat_box_category_tl } }
+      {
+        \tl_set:Nn \l__semcat_box_title_tl
+          {
+            \textcolor { \l__semcat_affix_color_tl } { \l__semcat_affix_content_tl } ~
+            \exp_args:No \SemCatLabel \l__semcat_box_category_tl
+          }
+      }
+  }
+
+% \ldeen{Ein \cs{directlua}-Aufruf ist ein Whatsit-Knoten, der ausgeführt
+% wird, sobald ihn der Eingabestrom erreicht -- nicht erst, wenn der
+% umgebende Absatz tatsächlich in Zeilen umbrochen wird. Endet @1 nicht
+% mit einer Leerzeile, bliebe der letzte Absatz beim Erreichen dieses
+% Aufrufs noch offen und würde erst durch das abschließende \cs{end}
+% umgebrochen -- zu diesem Zeitpunkt wäre die Balkenfarbe längst
+% zurückgesetzt. Das erzwungene \cs{par} schließt den Absatz sofort,
+% während der Balken noch aktiv ist.}{A \cs{directlua} call is a whatsit
+% node that executes as soon as the input stream reaches it -- not
+% when the surrounding paragraph actually gets broken into lines. If
+% @1 does not end with a blank line, the last paragraph would still be
+% open when this call is reached and would only be broken later by the
+% closing \cs{end} -- by which time the bar color would already have
+% been reset. The forced \cs{par} closes the paragraph immediately,
+% while the bar is still active.}{\cs{BODY}}
+\cs_new_protected:Npn \__semcat_render_bar_default:
+  {
+    \dim_set:Nn \l__semcat_bar_thickness_dim { 2pt }
+    \exp_args:No \__semcat_bar_setup:n \l__semcat_box_color_tl
+    \__semcat_maybe_affix_marginnote:
+    \BODY
+    \par
+    \__semcat_bar_teardown:
+  }
+
+% \ldeen{Liest Farbe und Dicke aus der \code{margin}-Komponente der
+% benannten osgstyler-Dekoration #1; \code{side}, \code{pattern} und
+% \code{offset} werden derzeit nicht ausgewertet, der Balken erscheint
+% immer links mit durchgezogener Linie.}{Reads color and thickness from
+% the named osgstyler decoration #1's \code{margin} component;
+% \code{side}, \code{pattern}, and \code{offset} are not evaluated yet,
+% the bar always appears on the left with a solid line.}
+\cs_new_protected:Npn \__semcat_render_bar_from_decoration:n #1
+  {
+    \tl_set:Nx \l__semcat_tmp_tl { \OsgDecorationValue {#1} { margin } { color } }
+    \tl_if_empty:NTF \l__semcat_tmp_tl
+      { \tl_set_eq:NN \l__semcat_tmp_color_tl \l__semcat_box_color_tl }
+      { \tl_set:Nx \l__semcat_tmp_color_tl { \OsgColorName { \l__semcat_tmp_tl } } }
+    \tl_set:Nx \l__semcat_tmp_tl { \OsgDecorationValue {#1} { margin } { thickness } }
+    \tl_if_empty:NTF \l__semcat_tmp_tl
+      { \dim_set:Nn \l__semcat_bar_thickness_dim { 2pt } }
+      {
+        \exp_args:No \__semcat_metric_resolve:nN \l__semcat_tmp_tl \l__semcat_tmp_tl
+        \exp_args:No \dim_set:Nn \l__semcat_bar_thickness_dim { \l__semcat_tmp_tl }
+      }
+    \exp_args:No \__semcat_bar_setup:n \l__semcat_tmp_color_tl
+    \__semcat_maybe_affix_marginnote:
+    \BODY
+    \par
+    \__semcat_bar_teardown:
+  }
+
+\cs_new_protected:Npn \__semcat_render_box_default:
+  {
+    \__semcat_compose_title:
+    \begin{tcolorbox}[
+        enhanced, breakable,
+        colback = \l__semcat_box_color_tl!12,
+        colframe = \l__semcat_box_color_tl!70!black,
+        fonttitle = \sffamily,
+        title = {\l__semcat_box_title_tl},
+        arc = 3pt, boxrule = .4pt,
+        \l__semcat_box_options_tl
+      ]
+      \BODY
+    \end{tcolorbox}
+  }
+
+% \ldeen{Liest Rahmen-/Füllfarbe, Dicke und Eckenradius aus der
+% \code{enclosure}-Komponente der benannten osgstyler-Dekoration #1;
+% \code{pattern} und \code{padding} werden derzeit nicht
+% ausgewertet.}{Reads frame/fill color, thickness, and corner radius
+% from the named osgstyler decoration #1's \code{enclosure} component;
+% \code{pattern} and \code{padding} are not evaluated yet.}
+\cs_new_protected:Npn \__semcat_render_box_from_decoration:n #1
+  {
+    \tl_set:Nx \l__semcat_tmp_tl { \OsgDecorationValue {#1} { enclosure } { border-color } }
+    \tl_if_empty:NTF \l__semcat_tmp_tl
+      { \tl_set_eq:NN \l__semcat_enclosure_frame_tl \l__semcat_box_color_tl }
+      { \tl_set:Nx \l__semcat_enclosure_frame_tl { \OsgColorName { \l__semcat_tmp_tl } } }
+    \tl_set:Nx \l__semcat_tmp_tl { \OsgDecorationValue {#1} { enclosure } { fill-color } }
+    \tl_if_empty:NTF \l__semcat_tmp_tl
+      { \tl_set:Nx \l__semcat_enclosure_back_tl { \l__semcat_box_color_tl!12 } }
+      { \tl_set:Nx \l__semcat_enclosure_back_tl { \OsgColorName { \l__semcat_tmp_tl } } }
+    \tl_set:Nx \l__semcat_tmp_tl { \OsgDecorationValue {#1} { enclosure } { thickness } }
+    \tl_if_empty:NTF \l__semcat_tmp_tl
+      { \tl_set:Nn \l__semcat_enclosure_rule_tl { .4pt } }
+      { \exp_args:No \__semcat_metric_resolve:nN \l__semcat_tmp_tl \l__semcat_enclosure_rule_tl }
+    \tl_set:Nx \l__semcat_tmp_tl { \OsgDecorationValue {#1} { enclosure } { radius } }
+    \tl_if_empty:NTF \l__semcat_tmp_tl
+      { \tl_set:Nn \l__semcat_enclosure_radius_tl { 3pt } }
+      { \exp_args:No \__semcat_metric_resolve:nN \l__semcat_tmp_tl \l__semcat_enclosure_radius_tl }
+    \__semcat_compose_title:
+    \begin{tcolorbox}[
+        enhanced, breakable,
+        colback = \l__semcat_enclosure_back_tl,
+        colframe = \l__semcat_enclosure_frame_tl,
+        fonttitle = \sffamily,
+        title = {\l__semcat_box_title_tl},
+        arc = \l__semcat_enclosure_radius_tl, boxrule = \l__semcat_enclosure_rule_tl,
+        \l__semcat_box_options_tl
+      ]
+      \BODY
+    \end{tcolorbox}
+  }
+
+% \ldeen{Entscheidet die tatsächliche Darstellung: Ist eine
+% osgstyler-Dekoration aufgelöst, bestimmt deren \code{margin}- bzw.
+% \code{enclosure}-Komponente Balken oder Box; ohne Dekoration
+% entscheidet der einfache @1-Schlüssel zwischen den eingebauten
+% Balken- und Box-Darstellungen.}{Decides the actual rendering: if an
+% osgstyler decoration was resolved, its \code{margin} or
+% \code{enclosure} component determines a bar or a box; without a
+% decoration, the plain @1 key chooses between the built-in bar and box
+% renderings.}{\code{style}}
+\cs_new_protected:Npn \__semcat_render_mark:
+  {
+    \tl_if_empty:NTF \l__semcat_resolved_decoration_tl
+      {
+        \str_if_eq:VnTF \l__semcat_resolved_style_tl { bar }
+          { \__semcat_render_bar_default: }
+          { \__semcat_render_box_default: }
+      }
+      {
+        \IfPackageLoadedTF { osgstyler }
+          {
+            \exp_args:No \OsgDecorationIfHasComponentTF \l__semcat_resolved_decoration_tl { margin }
+              { \exp_args:No \__semcat_render_bar_from_decoration:n \l__semcat_resolved_decoration_tl }
+              {
+                \exp_args:No \OsgDecorationIfHasComponentTF \l__semcat_resolved_decoration_tl { enclosure }
+                  { \exp_args:No \__semcat_render_box_from_decoration:n \l__semcat_resolved_decoration_tl }
+                  { \__semcat_render_box_default: }
+              }
+          }
+          { \__semcat_render_box_default: }
+      }
+  }
+
+% \ldeen*{Baut auf \cs{NewEnviron} statt auf \cs{NewDocumentEnvironment}
+% auf: Der Begin-/End-Code von xparse läuft um den Inhalt zwischen
+% \cs{begin}/\cs{end} herum, kann diesen Inhalt aber nicht
+% unterdrücken -- eine Moduseinschränkung, die die Markierung
+% ausblendet, würde ihren Inhalt trotzdem als nackten Absatz setzen.
+% \cs{NewEnviron} fängt den Inhalt zunächst in @1 ab, sodass ein
+% inaktiver Modus ihn einfach nie aufruft. Die Umgebung ersetzt sowohl
+% das frühere, nur einen Absatz erfassende \cs{SemCatMark} als auch die
+% reine Box-Umgebung: welche Darstellung tatsächlich erscheint, legt
+% \cs{__semcat_render_mark:} anhand der aufgelösten Kategorie und des
+% aktiven Modus fest.}{Built on \cs{NewEnviron} rather than
+% \cs{NewDocumentEnvironment}: xparse's begin/end code runs around
+% whatever is between \cs{begin}/\cs{end}, but never gets to *suppress*
+% that material -- a mode restriction that hides the markup would still
+% typeset its body as a bare paragraph. \cs{NewEnviron} captures the
+% body into @1 first, so an inactive mode can simply never invoke it.
+% The environment replaces both the former, single-paragraph-only
+% \cs{SemCatMark} command and the plain box environment: which
+% rendering actually appears is decided by \cs{__semcat_render_mark:}
+% from the resolved category and the active mode.}{\cs{BODY}}
+\bool_new:N \l__semcat_box_shown_bool
+\tl_new:N \l__semcat_box_mode_tl
+\tl_new:N \l__semcat_box_category_key_tl
+\tl_new:N \l__semcat_box_options_tl
+\tl_new:N \l__semcat_box_category_tl
+\tl_new:N \l__semcat_box_color_tl
+
+\keys_define:nn { semcat / box }
+  {
+    mode      .tl_set:N  = \l__semcat_box_mode_tl,
+    mode      .initial:n = { },
+    category  .tl_set:N  = \l__semcat_box_category_key_tl,
+    category  .initial:n = { },
+    options   .tl_set:N  = \l__semcat_box_options_tl,
+    options   .initial:n = { },
+  }
+
+\NewEnviron{ SemCatMark }[1][]
+  {
+    \tl_clear:N \l__semcat_box_mode_tl
+    \tl_clear:N \l__semcat_box_category_key_tl
+    \tl_clear:N \l__semcat_box_options_tl
+    \keys_set:nn { semcat / box } {#1}
+    \__semcat_resolve_category:nN \l__semcat_box_category_key_tl \l__semcat_box_category_tl
+    \__semcat_validate_category:N \l__semcat_box_category_tl
+    \exp_args:No \__semcat_resolve_color:nN \l__semcat_box_category_tl \l__semcat_box_color_tl
+    \bool_set_true:N \l__semcat_box_shown_bool
+    \tl_if_empty:NF \l__semcat_box_mode_tl
+      {
+        \cs_if_exist:NT \IfLectureModeTF
+          {
+            \exp_args:No \IfLectureModeF \l__semcat_box_mode_tl
+              { \bool_set_false:N \l__semcat_box_shown_bool }
+          }
+      }
+    \bool_if:NT \l__semcat_box_shown_bool
+      {
+        \exp_args:No \__semcat_resolve_presentation:nNNN \l__semcat_box_category_tl
+          \l__semcat_resolved_style_tl \l__semcat_resolved_decoration_tl
+          \l__semcat_resolved_symbol_tl
+        \__semcat_resolve_affix:
+        \exp_args:No \__semcat_tag_begin_note:n \l__semcat_box_category_tl
+        \savenotes
+        \__semcat_render_mark:
+        \spewnotes
+        \__semcat_tag_end:
+      }
+  }
+
+% ---------------------------------------------------------------------
+% QR annotations
+% ---------------------------------------------------------------------
+\tl_new:N \l__semcat_redirect_base_tl
+\tl_new:N \l__semcat_redirect_docid_tl
+\tl_set:Nx \l__semcat_redirect_docid_tl { \c_sys_jobname_str }
+
+\NewDocumentCommand \SemCatSetRedirectBase { m O{\c_sys_jobname_str} }
+  {
+    \tl_set:Nn \l__semcat_redirect_base_tl {#1}
+    \tl_set:Nn \l__semcat_redirect_docid_tl {#2}
+  }
+
+\cs_new_protected:Npn \__semcat_qr_box:nnn #1#2#3
+  { % #1 = url  #2 = caption  #3 = resolved color name
+    {
+      \qrset{height=1.2cm}
+      \cs_if_exist:NT \hypersetup { \hypersetup{urlcolor=#3} }
+      \parbox{1.5cm}{%
+        \qrcode{#1}\\%
+        \tiny\sffamily #2%
+      }%
+    }%
+  }
+
+\cs_new_protected:Npn \__semcat_qr:nnnnnn #1#2#3#4#5#6
+  { % #1 mode #2 star("true"/"false") #3 category #4 url #5 caption #6 shift
+    \__semcat_if_mode:nn {#1}
+      {
+        \group_begin:
+        \__semcat_resolve_category:nN {#3} \l_tmpa_tl
+        \__semcat_validate_category:N \l_tmpa_tl
+        \exp_args:No \__semcat_resolve_color:nN \l_tmpa_tl \l__semcat_tmp_color_tl
+        % \ldeen{Hier findet keine Struktureinbettung statt: qrcode
+        % zeichnet den Code über eine eigene pgf-/tikz-Grafik, und das
+        % manuelle Öffnen einer Tag-Struktur um fremdes tikz-Ergebnis
+        % erzeugt ungültige Eltern-Kind-Beziehungen im Tag-Baum. Die
+        % Beschriftung trägt den eigentlichen semantischen Gehalt und
+        % wird als Teil des umgebenden Fließtexts ganz normal
+        % getaggt.}{No structure wrapping happens here: qrcode draws
+        % the code via its own pgf/tikz picture, and manually opening a
+        % tag structure around third-party tikz output produces invalid
+        % Parent-Child relations in the tag tree. The caption carries
+        % the actual semantic content and is tagged normally as part of
+        % the surrounding flow.}
+        \str_if_eq:nnTF {#2} { true }
+          { \__semcat_qr_box:nnn {#4} {#5} { \l__semcat_tmp_color_tl } }
+          {
+            \marginnote[{\__semcat_qr_box:nnn {#4} {#5} { \l__semcat_tmp_color_tl }}]
+              {\raggedleft\__semcat_qr_box:nnn {#4} {#5} { \l__semcat_tmp_color_tl }}[#6]
+          }
+        \group_end:
+      }
+  }
+
+\NewDocumentCommand \SemCatQR { D<>{} s O{} m m O{0pt} }
+  {
+    \IfBooleanTF {#2}
+      { \__semcat_qr:nnnnnn {#1} { true } {#3} {#4} {#5} {#6} }
+      { \__semcat_qr:nnnnnn {#1} { false } {#3} {#4} {#5} {#6} }
+  }
+
+\cs_new:Npn \__semcat_urlencode:n #1
+  {
+    \sys_if_engine_luatex:TF
+      { \directlua{ tex.print(semcat.urlencode("\luaescapestring{#1}")) } }
+      { \msg_warning:nnn { semcat } { luatex-required-for-redirect } {#1} #1 }
+  }
+
+\NewDocumentCommand \SemCatQRRedirect { D<>{} s O{} m m O{0pt} }
+  {
+    \tl_if_empty:NTF \l__semcat_redirect_base_tl
+      { \msg_error:nn { semcat } { redirect-base-missing } }
+      {
+        \IfBooleanTF {#2}
+          { \__semcat_qr:nnnnnn {#1} { true } {#3}
+              { \l__semcat_redirect_base_tl
+                ?doc=\__semcat_urlencode:n{\l__semcat_redirect_docid_tl}
+                &id=\__semcat_urlencode:n{#4} }
+              {#5} {#6} }
+          { \__semcat_qr:nnnnnn {#1} { false } {#3}
+              { \l__semcat_redirect_base_tl
+                ?doc=\__semcat_urlencode:n{\l__semcat_redirect_docid_tl}
+                &id=\__semcat_urlencode:n{#4} }
+              {#5} {#6} }
+      }
+  }
+
+% ---------------------------------------------------------------------
+% Floating explanation box: always a box (never a bar), and always a
+% genuine LaTeX float (numbered, captioned, page-placement-flexible,
+% collectible into a "List of Explanations") via the \pkg{float}
+% package's \code{semcatexplain} type -- kept independent from
+% \cs{SemCatMark}'s style/decoration resolution, since being a float is
+% the defining trait here, not a look that a category or mode could
+% swap out.
+% ---------------------------------------------------------------------
+\NewEnviron{ SemCatExplain }[2][]
+  {
+    \tl_clear:N \l__semcat_box_mode_tl
+    \tl_clear:N \l__semcat_box_category_key_tl
+    \tl_clear:N \l__semcat_box_options_tl
+    \keys_set:nn { semcat / box } {#1}
+    \__semcat_resolve_category:nN \l__semcat_box_category_key_tl \l__semcat_box_category_tl
+    \__semcat_validate_category:N \l__semcat_box_category_tl
+    \exp_args:No \__semcat_resolve_color:nN \l__semcat_box_category_tl \l__semcat_box_color_tl
+    \bool_set_true:N \l__semcat_box_shown_bool
+    \tl_if_empty:NF \l__semcat_box_mode_tl
+      {
+        \cs_if_exist:NT \IfLectureModeTF
+          {
+            \exp_args:No \IfLectureModeF \l__semcat_box_mode_tl
+              { \bool_set_false:N \l__semcat_box_shown_bool }
+          }
+      }
+    \bool_if:NT \l__semcat_box_shown_bool
+      {
+        \exp_args:No \__semcat_resolve_presentation:nNNN \l__semcat_box_category_tl
+          \l__semcat_resolved_style_tl \l__semcat_resolved_decoration_tl
+          \l__semcat_resolved_symbol_tl
+        \__semcat_resolve_affix:
+        \__semcat_tag_begin:n { \UseStructureName{ semcat/explain } }
+        \begin{semcatexplain}[tbp]
+          \centering
+          \begin{tcolorbox}[
+              enhanced, breakable,
+              colback = \l__semcat_box_color_tl!8,
+              colframe = \l__semcat_box_color_tl!70!black,
+              fonttitle = \sffamily,
+              arc = 3pt, boxrule = .4pt,
+              \l__semcat_box_options_tl
+            ]
+            \BODY
+          \end{tcolorbox}
+          \tl_if_empty:NTF \l__semcat_affix_content_tl
+            { \caption{#2} }
+            { \caption{ \textcolor{\l__semcat_affix_color_tl}{\l__semcat_affix_content_tl} ~ #2 } }
+        \end{semcatexplain}
+        \__semcat_tag_end:
+      }
+  }
+
+\sys_if_engine_luatex:T { \directlua{ semcat = require("semcat") } }
+
+\ExplSyntaxOff
+
+% ---------------------------------------------------------------------
+% Built-in default categories (mirrors the legacy A/B/C/D scheme)
+% ---------------------------------------------------------------------
+\SemCatDefine*{A}[label={Required}]
+\SemCatDefine{B}[label={Supplementary}]
+\SemCatDefine{C}[label={Background}]
+\SemCatDefine{D}[label={Comparison}]
+%</package>

@@ -1,0 +1,10 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+article-active=yes
+slides-active=no
+after-hidden-box=reached
+after-shown-box=reached
+after-unconditional-box=reached
+after-bar-box=reached
+after-variant-box=reached
+done=yes

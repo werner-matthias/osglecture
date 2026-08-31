@@ -1,0 +1,31 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{semcat}
+
+\begin{document}
+\START
+\TYPE{default=\SemCatDefaultCategory}
+\TYPE{color-name-A=\SemCatColor{A}}
+\TYPE{label-B=\SemCatLabel{B}}
+\extractcolorspec{semcat-A}\TestColorA
+\TYPE{color-A=\TestColorA}
+\extractcolorspec{semcat-D}\TestColorD
+\TYPE{color-D=\TestColorD}
+\SemCatDefine{E}[label={Extra}]
+\TYPE{label-E=\SemCatLabel{E}}
+\extractcolorspec{semcat-E}\TestColorE
+\TYPE{color-E=\TestColorE}
+\SemCatDefine{F}[label={Explicit}, color=teal]
+\extractcolorspec{semcat-F}\TestColorF
+\TYPE{color-F=\TestColorF}
+\ExplSyntaxOn
+\cs_if_exist:NTF \IfLectureModeTF
+  { \TYPE{modes-loaded=true} }
+  { \TYPE{modes-loaded=false} }
+\IfPackageLoadedTF { osgstyler }
+  { \TYPE{osgstyler-loaded=true} }
+  { \TYPE{osgstyler-loaded=false} }
+\ExplSyntaxOff
+\TYPE{done=yes}
+\END
+\end{document}
