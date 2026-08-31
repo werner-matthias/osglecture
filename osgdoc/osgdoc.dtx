@@ -34,8 +34,8 @@
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
 \ProvidesExplClass
 {osgdoc}
-{2026/08/14}
-{v0.3.4}
+{2026/08/30}
+{v0.3.5}
 {A thin wrapper around cnltx-doc}
 \ExplSyntaxOff
 %</cls>
@@ -71,7 +71,7 @@ load babel
       kompatibel ist. Zum anderen werden ein paar Makros zur Unterstützung von
       Dokumentationen definiert.
     }{
-      The \osgdoc\ tools are part of the \pkg*{osglecture} bundle, but can also
+      The \osgdoc\ tools are part of the \bnd{osglecture} bundle, but can also
         be used independently of the other packages in the bundle.
         They include, on the one hand, a patch wrapper for \name*{Clemens
         Niederberger}’s excellent  \cnltx\ class, which unfortunately
@@ -88,13 +88,13 @@ load babel
 \begin{document}
 \section{\ldeen{Nutzung}{Usage}}
 \ldeen{
-  Das \osgdoc-Paket  besteht aus der Klassendatei \code{osgdoc.cls} und der
-  Paketdatei \code{osgdoc.sty}. Letztere wird durch die Klasse geladen, man kann
+  Das \osgdoc-Paket  besteht aus der Klassendatei \File{osgdoc.cls} und der
+  Paketdatei \File{osgdoc.sty}. Letztere wird durch die Klasse geladen, man kann
   sie aber auch unabhängig verwenden, wenn nur die dort definierten Befehle
   gebraucht werden.
 }{
-  The \osgdoc package consists of the class file \code{osgdoc.cls} and the
-  style file \code{osgdoc.sty}. The latter is loaded by the class, but it can
+  The \osgdoc package consists of the class file \File{osgdoc.cls} and the
+  style file \File{osgdoc.sty}. The latter is loaded by the class, but it can
   also be used independently if only the commands defined there
   are needed.
 }
@@ -195,7 +195,7 @@ load babel
   }{\needpackage*[tex-archive/macros/latex/contrib/fileinfo]{readprov}}
 \end{itemize}
 \section{Implementation}
-\MaybeStop{\ldeen*{Um die Implementationsbeschreibung zu erhalten, kommentieren Sie bitte \cs{OnlyDescription} in \code{osgdoc.dtx} aus.}{To view the implementation description, please uncomment \cs{OnlyDescription} in \code{osgdoc.dtx}.}}
+\MaybeStop{\ldeen*{Um die Implementationsbeschreibung zu erhalten, kommentieren Sie bitte \cs{OnlyDescription} in \code{osgdoc.dtx} aus.}{To view the implementation description, please uncomment \cs{OnlyDescription} in \File{osgdoc.dtx}.}}
 
 \subsection{Class \osgdoc.cls}
 \AutoDocInput{osgdoc.dtx}{cls}
@@ -330,9 +330,9 @@ load babel
 \RequirePackage[hidelinks]{hyperref}
 \RequirePackage{osgdoc}
 \RequirePackage{imakeidx}
-\renewcommand{\packageformat}{\color{cnltxformalblue}\sffamily}
+
 % \ldeen{
-%   Manchmal ist ein Paket in einem Bundle, so dass das Verzeichnis einen anderen Namen hat.
+%   Manchmal ist ein Paket Teil eines Bundles, so dass das Verzeichnis einen anderen Namen hat.
 %   Für diese Fälle wird für die \cs*{needXXX}-Macros zusätzlich eine Sternvariante zur 
 %   Verfügung gestellt, die bei der URL
 %   nur das optionale Argument (Pfad) ausgibt.
@@ -389,8 +389,8 @@ load babel
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
 \ProvidesExplPackage
 {osgdoc}
-{2026/08/14}
-{v0.3.4}
+{2026/08/30}
+{v0.3.5}
 {small tools for documentation}
 % \ldeen{Wir beginnen mit den Funktionalitäten, die nicht Lua braucht.}{
 % We'll start with the features that doesn't require Lua.}
@@ -421,12 +421,29 @@ load babel
   }
 \osgterminate
 }
-% \ldeen{Ohne die \cls{osgdoc}- und damit auch \cls{cnltx-doc}-Klasse sollte \pkg{cnltx} geladen werden.}{
-% If there is no \cls{cnltx-doc} class, and thus no \cls{cnltx-doc} class, the package \pkg{cnltx} should be loaded.}
+% \ldeen*{Wenn die @1-Klasse (und damit auch die @2-Klasse) nicht geladen ist, sollte das @3-Paket geladen werden.}{
+%  If there is no @1 class, and thus no @2 class, the package @3 should be loaded.}
+% {\cls{osgdoc}}
+% {\cls{cnltx-doc}}
+% {\pkg{cnltx}}
 \@ifclassloaded{osgdoc}{}{
   \RequirePackage[example,names]{cnltx}
 }
-  % \ldeen{Die restlichen Funktionen brauchen Lua. Um keine harten Fehler zu generieren, werden Stubs 
+% \ldeen{Noch ein paar Einstellungen, die ich bevorzuge.}{A few more settings that I prefer.}
+\setcnltx{
+  color-scheme=blue
+}
+\renewcommand{\packageformat}{\color{cnltxformalblue}\sffamily}
+\renewcommand{\classformat}{\color{cnltxformalblue}\sffamily}
+\renewcommand{\bundleformat}{\color{cnltxformalblue}\sffamily}
+% \ldeen{Zusätzlich zu den Befehlen wie \cs{cls} oder \cs{pkg} wird \cs{File} definiert. Das Macro wird entgegen der 
+% Konvention groß geschrieben, um einen Clash mit dem \pkg*{dirtree}-Paket zu vermeiden.}{
+% In addition to commands such as \cs{cls} or \cs{pkg}, \cs{File} is also defined. It is capitalized, contrary 
+% to convention, to avoid a conflict with the \pkg*{dirtree} package.}
+
+\newcommand*{\filefomat}{\color{cnltxformalblue}\ttfamily}
+\newcommand{\File}[1]{{\filefomat#1}}
+% \ldeen{Die restlichen Funktionen brauchen Lua. Um keine harten Fehler zu generieren, werden Stubs 
 % zur Verfügung gestellt.}{The remaining features require Lua. To avoid generating critical errors, 
 % stubs are provided.}
 \ExplSyntaxOn
