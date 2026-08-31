@@ -1,23 +1,7 @@
 \section{\ldeen{Serien und Standalone}{Series and Standalone}}
-\label{sec:series-standalone}
-
-\ldeen{Die Klasse \cls{osglecture} unterstützt zwei Arbeitsformen:
-Serie und Standalone.
-Die Form, die wir bisher betrachtet haben, war die Serie.
-In einer Serie liefert OLLM den Buildauftrag, kennt die
-Nachbarlehreinheiten und verwaltet Referenz- und
-Integrationszustände.
-
-Im Standalone-Betrieb beschreibt das Dokument seine
-Ausgabe selbst und wird ohne Projektmanifest gesetzt. Die fachlichen Befehle
-bleiben weitgehend gleich; unterschiedlich ist vor allem, woher Kontext und
-Defaults stammen.}{The \cls{osglecture} class supports two workflows: series
-and standalone. The workflow considered so far is the series. In a series, OLLM
-provides the build request, knows neighbouring units, and manages reference and
-integration state. In standalone operation, the document describes its own
-output and is typeset without a project manifest. The subject-facing commands
-remain largely the same; the main difference is where context and defaults
-come from.}
+\label{sec:series}
+% TODO: Contuniations
+% Außerdem ist evtl der Referenceabschnitt hier besser untergebracht.
 
 \subsection{Integration}
 \ldeen{Die Dokumente der Lehreinheiten einer Serie können einzeln verwendet werden.
@@ -84,7 +68,7 @@ ollm script --language=de --scope=collection --resolve
 ollm check --scope=series
 \end{verbatim}
 
-\subsubsection{\ldeen{Rahmendokumentunit}{Wrapper Document}}
+\subsection{\ldeen{Rahmendokumentunit}{Wrapper Document}}
 \ldeen{ Die Klasse erkennt diese Rolle am Verzeichnisnamen und lädt den
 Integrationsdienst automatisch. Das Dokument nennt die einzubindenden
 logischen Units in der gewünschten Reihenfolge}{A complete script is not
@@ -128,7 +112,7 @@ actually used as a dependency. After changes, another run with
 \cs{includeunit} commands is the order in the result; it is not
 inferred from directory numbers.}
 
-\subsubsection{\ldeen{Tags, Links und Fallback}{Tags, Links, and Fallback}}
+\subsection{\ldeen{Tags, Links und Fallback}{Tags, Links, and Fallback}}
 
 \ldeen{Sind Rahmendokument und importierte Units als Tagged PDF gebaut,
 übernimmt \pkg{tagpax} Seiten, Strukturbaum, Ziele, Links,
@@ -163,96 +147,6 @@ artifact and have no accessible reading order or heading structure. Mixing
 tagged and untagged units forces the untagged path for the affected document
 type and produces a prominent warning. A consistently tagged series is
 therefore both higher quality and more predictable.}
-
-\subsection{\ldeen{Standalone}{Standalone}}
-
-\ldeen{Ein Standalone-Dokument besitzt weder Buildauftrag noch
-Serienmanifest. Es muss dies mit der Klassenoption \option{standalone}
-ausdrücklich erklären. Dokumenttyp und Sprache, die in einer Serie von OLLM
-kommen, werden nun mit \option{doctype} und \option{lang} gewählt. Mit
-\option{profile} kann das Dokumentprofil überschrieben werden}{A standalone
-document has neither a build request nor a series manifest. It must declare
-this explicitly with the \option{standalone} class option. The document type
-and language that OLLM supplies in a series are now selected with
-\option{doctype} and \option{lang}. The document profile can be overridden
-with \option{profile}}:
-
-\begin{verbatim}
-\documentclass[
-  standalone,
-  doctype=script,
-  profile=scrbook,
-  lang=de,
-  class-options={11pt,oneside}
-]{osglecture}
-\end{verbatim}
-
-\ldeen{\option{doctype} ist ohne Angabe \code{slides}; für die eingebauten
-Dokumenttypen existieren Defaultprofile. Explizite Werte machen ein
-Standalone-Dokument dennoch verständlicher und reproduzierbarer.
-\option{class-options} reicht Optionen direkt an die vom Profil gewählte
-Basisklasse weiter. Eine gleichzeitig vorhandene OLLM-Auftragsdatei und die
-Option \option{standalone} sind ein Fehler, weil sonst zwei Quellen denselben
-Buildkontext bestimmen würden.}{\option{doctype} defaults to \code{slides},
-and built-in document types have default profiles. Explicit values nevertheless
-make a standalone document clearer and more reproducible.
-\option{class-options} passes options directly to the base class selected by
-the profile. Having both an OLLM build request and the \option{standalone}
-option is an error because two sources would otherwise determine the same build
-context.}
-
-\ldeen{Ohne Manifest wird \File{Include/projectconfig.tex} nicht automatisch
-gefunden. Gemeinsam genutzte Pakete, Sprachkonfiguration, Titel und eigene
-Makros müssen daher im Dokument geladen oder ausdrücklich aus einer Datei
-eingelesen werden. Ein eigenständiges mehrsprachiges Skript kann beispielsweise
-so beginnen}{Without a manifest,
-\File{Include/projectconfig.tex} is not discovered automatically. Shared
-packages, language configuration, title, and custom commands must therefore be
-loaded in the document or explicitly read from a file. A standalone
-multilingual script might begin as follows}:
-
-\begin{verbatim}
-\documentclass[standalone,doctype=script,profile=scrbook,lang=de]
-  {osglecture}
-\usepackage[
-  languages={de,en},
-  targetlang=de,
-  map={de=ngerman,en=british},
-  load babel
-]{langselect}
-\title{\ldeen{Betriebssysteme}{Operating Systems}}
-\end{verbatim}
-
-\ldeen{Profile wie \cls{ltx-talk} verlangen
-\cs{DocumentMetadata} bereits vor
-\cs{documentclass}. In einem Standalone-Dokument gibt es keine
-von OLLM vorgeschaltete \File{documentmetadata.tex}; der Aufruf muss daher
-wirklich am Dateianfang stehen}{Profiles such as \cls{ltx-talk} require
-\cs{DocumentMetadata} before
-\cs{documentclass}. A standalone document has no
-\File{documentmetadata.tex} inserted by OLLM, so the call must genuinely be
-placed at the start of the file}:
-
-\begin{verbatim}
-\DocumentMetadata{lang=en,tagging=on}
-\documentclass[
-  standalone,doctype=slides,profile=ltx-talk,lang=en
-]{osglecture}
-\end{verbatim}
-
-\ldeen{Sie können ein solches Dokument direkt mit Lua\LaTeX\ beziehungsweise
-\code{latexmk} bauen. Der kompatible Komfortaufruf
-\code{ollm standalone main.tex} verwendet ebenfalls die Klassenoptionen;
-Target-, Sprach- und Matrixoptionen von OLLM sind dabei nicht zulässig. Ohne
-Serienzustand gibt es keine externen Unit-Referenzen, Counter-Continuation oder
-\cs{includeunit}-Auflösung. Lokale Referenzen und alle
-modusabhängigen Darstellungsbefehle funktionieren unverändert.}{Such a
-document can be built directly with Lua\LaTeX\ or \code{latexmk}. The
-compatible convenience command \code{ollm standalone main.tex} also uses the
-class options; OLLM target, language, and matrix options are not permitted in
-this mode. Without series state there are no external unit references, counter
-continuation, or \cs{includeunit} resolution. Local references and
-all mode-aware rendering commands continue to work unchanged.}
 
 \subsection{\ldeen{Referenzübersicht}{Reference Summary}}
 \begin{description}

@@ -8,16 +8,10 @@
 \ldeen{Ab diesem Abschnitt ist das Manual zugleich Nachschlagewerk. Die
 Grundbegriffe werden hier eingeführt; vollständige Schnittstellenübersichten
 finden Sie bei den jeweiligen Themen: Inhalte und Modi in
-Abschnitt~\ref{sec:content-command-reference}, Serien und Standalone in
-Abschnitt~\ref{sec:series-standalone}, Konfiguration und Profile in
+Abschnitt~\ref{sec:content-command-reference}, Serien in
+Abschnitt~\ref{sec:series}, Standalone-Betrieb im Abschnitt~\ref{sec:standalone} Konfiguration und Profile in
 Abschnitt~\ref{sec:configuration-reference} sowie OLLM in
-Abschnitt~\ref{sec:ollm-reference}.}{From this section onward, the manual also
-serves as a reference. This section introduces the fundamental concepts;
-complete interface summaries are located with their respective topics:
-content and modes in Section~\ref{sec:content-command-reference}, series and
-standalone operation in Section~\ref{sec:series-standalone}, configuration and
-profiles in Section~\ref{sec:configuration-reference}, and OLLM in
-Section~\ref{sec:ollm-reference}.}
+Abschnitt~\ref{sec:ollm-reference}.}{}
 \end{infobox}
 
 \subsection{\ldeen{Projekt}{Project}}
@@ -276,12 +270,11 @@ einzelnes Target abweichen, verwenden Sie
 profile for just one target, use
 :}
 
-
 \centerline{\cs{LectureTargetSetup}\marg{target}\Marg{profile=\meta{profile}}}
 
-\ldeen{Im Standalone-Betrieb steht dafür die Klassenoption \option{profile} zur
-Verfügung.}{In standalone mode, use the \option{profile} class option instead.}
-
+\ldeen*{Im Standalone-Betrieb (siehe Abschnitt~@1) steht dafür die Klassenoption \option{profile} zur
+Verfügung.}{In standalone mode (see Section~@1), use the \option{profile} class option instead.}
+{\ref{sec:standalone}}
 \ldeen{Die Profilwahl betrifft mehr als das Erscheinungsbild. \cls{beamer}
 bietet beispielsweise ein großes Ökosystem vorhandener Themes;
 \cls{ltx-talk} ist dagegen von Grund auf auf Tagged PDF und damit auf
@@ -315,6 +308,7 @@ you decide \emph{how} slides are typeset; in the course unit you only write
   \item[\code{article}] \ldeen{eigenständige Langform, beispielsweise für
     einen Beitrag}{standalone long form, for example a paper}.
 \end{description}
+% TODO: Spätestens hier müsste documentmetadata.tex angesprochen werden
 
 \ldeen{Diese Liste ist erweiterbar. Für den Einstieg sollten Sie jedoch die
 mitgelieferten Typen verwenden: Sie sind in \OLLM\ registriert und besitzen bereits
@@ -339,3 +333,5 @@ starting out, however, use the supplied types: they are already registered with
   \caption{\ldeen{Mitgelieferte Dokumentprofile.}{Document profiles supplied with the bundle.}}
   \label{tab:profiles}
 \end{table}
+
+% TODO: Erweiterbarkeit: wie? + warum?, ggf. mit Beispiel (oder kommt das im Konfig-Kapitel)

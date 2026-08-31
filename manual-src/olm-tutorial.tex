@@ -564,14 +564,156 @@ untouched. If it differs, the default safety policy requires explicit approval
 with \option{--overwrite}. Nora should use this option only after confirming
 that she really intends to replace the published version.}
 
+\paragraph{\ldeen{Aus einer Einheit wird eine Serie}{One Unit Becomes a Series}.}
+\ldeen{Für die zweite Unterrichtsstunde legt Nora neben \code{010-Memory} das
+Verzeichnis \code{020-Processes} an. Dessen \File{main.tex} folgt dem bereits
+bekannten Muster. Entscheidend ist nicht die Nummer im Verzeichnisnamen,
+sondern die neue logische Unit-ID \code{processes}}{For the second lesson,
+Nora creates the directory \code{020-Processes} next to \code{010-Memory}.
+Its \File{main.tex} follows the familiar pattern. What matters is not the
+number in the directory name, but the new logical unit ID \code{processes}}:
+
+\begin{verbatim}
+\documentclass{osglecture}
+
+\begin{document}
+\lecture[Processes]{\ldeen{Prozesse}{Processes}}{processes}
+\section{\ldeen{Prozessplanung}{Scheduling}}\label{sec:scheduling}
+
+\begin{frame}
+  \frametitle{\ldeen{Wer läuft als Nächstes?}{Who Runs Next?}}
+  \ldeen{Der Scheduler wählt einen ausführbaren Prozess aus.}
+        {The scheduler selects a runnable process.}
+\end{frame}
+\end{document}
+\end{verbatim}
+
+\ldeen{Die beiden Verzeichnisse sind nun nicht bloß zufällige Nachbarn. Das
+Manifest und ihre Unit-IDs machen sie zu Einheiten derselben \emph{Serie}.
+Damit kann \OLLM\ ihre Dokumentinstanzen gemeinsam auswählen, ihren Zustand
+verwalten und Abhängigkeiten zwischen ihnen auflösen. Nora baut beispielsweise
+die deutschen Skriptinstanzen der ganzen Serie aus der Projektwurzel}{The two
+directories are now more than accidental neighbours. The manifest and their
+unit IDs make them units of the same \emph{series}. This allows \OLLM\ to select
+their document instances together, manage their state, and resolve dependencies
+between them. For example, from the project root Nora builds the German script
+instances of the whole series}:
+
+\begin{verbatim}
+ollm build script --language=de --scope=series
+\end{verbatim}
+
+\ldeen{Der Scope \code{series} bedeutet dabei nicht, dass bereits ein einziges
+großes PDF entsteht. Zunächst werden zwei selbstständige Skriptinstanzen gebaut.
+Das ist nützlich, weil Nora einzelne Kapitel weiterhin getrennt bereitstellen
+kann.}{The \code{series} scope does not mean that a single large PDF is already
+created. Initially, two independent script instances are built. This is useful
+because Nora can still distribute individual chapters separately.}
+
+\paragraph{\ldeen{Ein Verweis über die Unit-Grenze}{A Reference Across the Unit Boundary}.}
+\ldeen{Im Kapitel über Speicher möchte Nora nun auf die spätere Erläuterung der
+Prozessplanung verweisen. Ein gewöhnliches \cs{ref} kennt nur Ziele der aktuellen
+Dokumentinstanz. Für den serieninternen Verweis nennt Nora deshalb zusätzlich
+die logische Ziel-Unit}{In the chapter on memory, Nora now wants to refer to the
+later explanation of scheduling. An ordinary \cs{ref} only knows targets in the
+current document instance. For the cross-unit reference, Nora therefore also
+names the logical target unit}:
+
+\begin{verbatim}
+\ldeen*{Mehr dazu in @1.}
+        {More on this in @1.}
+        {\olautoref[processes]{sec:scheduling}}
+\end{verbatim}
+
+\ldeen{Ohne weitere Angaben wählt \cs{olautoref} im Ziel dieselbe Sprache und
+denselben Dokumenttyp wie im Ausgangsdokument. Der deutsche Skriptverweis führt
+also zum deutschen Skript, der englische Folienverweis zu den englischen Folien.
+Soll ein Verweis bewusst etwa von einer Folie in das deutsche Skript führen,
+kann Nora die Adresse als
+\code{[processes,type=script,lang=de]} schreiben. Seitenverweise über
+Dokumentgrenzen vermeidet sie: Die Seitenzahl des anderen PDFs kann sich
+unabhängig ändern.}{Without further settings, \cs{olautoref} selects the same
+language and document type in the target as in the source document. Thus, the
+German script reference leads to the German script, while the English slide
+reference leads to the English slides. If a reference is deliberately meant to
+lead, for example, from a slide to the German script, Nora can write the address
+as \code{[processes,type=script,lang=de]}. She avoids page references across
+document boundaries: the page number of the other PDF can change independently.}
+
+\ldeen{Das Ziel muss mindestens einmal erfolgreich gebaut worden sein, damit
+\OLLM\ seine Unit-ID und Referenzziele kennt. Nach späteren Änderungen lässt
+Nora mit \option{--resolve} die davon abhängigen Instanzen bis zu einem
+konsistenten Stand neu bauen}{The target must have been built successfully at
+least once so that \OLLM\ knows its unit ID and reference targets. After later
+changes, Nora uses \option{--resolve} to rebuild dependent instances until
+they reach a consistent state}:
+
+\begin{verbatim}
+ollm build script --language=de --scope=series --resolve
+\end{verbatim}
+
+\paragraph{\ldeen{Die Kapitel zu einem Gesamtskript verbinden}{Combining the Chapters into Complete Notes}.}
+\ldeen{Für das Gesamtskript legt Nora eine dritte Unit an. Sie trägt die Rolle
+\code{i} für \emph{Integration} im Verzeichnisnamen und enthält keinen weiteren
+Fachtext, sondern nur das Rahmendokument. Die Reihenfolge der
+\cs{includeunit}-Befehle bestimmt die Reihenfolge im Ergebnis}{For the complete
+lecture notes, Nora creates a third unit. Its directory name carries the role
+\code{i} for \emph{integration}, and it contains no further subject matter,
+only the wrapper document. The order of the \cs{includeunit} commands determines
+the order in the result}:
+
+\begin{verbatim}
+mkdir -p 900-i-collection
+\end{verbatim}
+
+\ldeen*{In @1 schreibt sie}{She writes in @1}{\File{900-i-collection/main.tex}}:
+
+\begin{verbatim}
+\documentclass{osglecture}
+
+\begin{document}
+\includeunit{memory}
+\includeunit{processes}
+\end{document}
+\end{verbatim}
+
+\ldeen{\cs{includeunit} fügt nicht die TeX-Quellen ein, sondern die bereits
+gebauten Dokumentinstanzen derselben Sprache und desselben Dokumenttyps. So
+bleiben die Kapitel einzeln nutzbar, während das Rahmendokument sie zu einem
+Gesamtskript verbindet. Nora baut zuerst die Kapitel und anschließend die
+eindeutig passende Integrationsunit}{\cs{includeunit} does not include the TeX
+sources, but the already built document instances of the same language and
+document type. The chapters therefore remain independently usable while the
+wrapper combines them into complete lecture notes. Nora first builds the
+chapters and then the uniquely matching integration unit}:
+
+\begin{verbatim}
+ollm build script --language=de --scope=series --resolve
+ollm build script --language=de --scope=collection --resolve
+ollm check --scope=series
+\end{verbatim}
+
+\ldeen{Der abschließende Check baut nichts neu, sondern meldet unter anderem
+fehlende oder veraltete Referenz- und Integrationszustände. Für ein echtes
+Projekt würde Nora dieselben Schritte natürlich auch für die englische
+Skriptinstanz ausführen. Alle Varianten der Referenzbefehle beschreibt
+Abschnitt~\ref{sec:content-command-reference}; die Regeln für Integration  stehen in Abschnitt~\ref{sec:series}, und die
+vollständigen Buildoptionen in Abschnitt~\ref{sec:ollm-reference}.}{The final
+check does not build anything; among other things, it reports missing or stale
+reference and integration state. In a real project, Nora would of course run
+the same steps for the English script instance. Section~\ref{sec:content-command-reference}
+describes all variants of the reference commands; the rules for integration
+and standalone operation are in Section~\ref{sec:series-standalone}, and the
+complete build options are in Section~\ref{sec:ollm-reference}.}
+
 \ldeen{Damit ist der kleine Kurs natürlich noch nicht fertig. Nora fehlen etwa
-Querverweise, ein Gesamtskript und vermutlich mehr als eine Stunde Inhalt. Aber
+weitere Lehreinheiten und vermutlich mehr als zwei Stunden Inhalt. Aber
 das Grundmuster steht: Das Manifest beschreibt die gewünschten Ergebnisse, die
 Projektkonfiguration enthält gemeinsame Entscheidungen, und jede Lehreinheit
 bewahrt den fachlichen Inhalt an einer Stelle. Neue Einheiten kann Nora nun nach
 demselben Muster hinzufügen, ohne neue Sprach- oder Dokumentkopien anzulegen.}{
-This does not, of course, finish the small course. Nora still lacks cross-references,
-a combined set of lecture notes, and probably more than one hour of content. But
+This does not, of course, finish the small course. Nora still lacks further
+course units and probably more than two hours of content. But
 the basic pattern is in place: the manifest describes the desired outputs, the
 project configuration contains shared decisions, and each course unit keeps its
 subject matter in one place. Nora can now add new units following the same

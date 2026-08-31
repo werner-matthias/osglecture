@@ -1,13 +1,11 @@
  \documentclass[
- ]{scrarticle}
-% Für die Markierung LaTeX-typischer Dinge wie Befehle, Pakete etc. verwende bitte die Möglichkeiten
-% von cnltx-doc (die größtenteils über osgdoc importiert werden.) Für Dateien bitte immer \File verwenden.
-\usepackage{hyperref}
+ ]{osgdoc}
+
+ % TODO: Imganzen Dokument,
+ % mode-Parameter mit \aarg (für Metawerte) bzw. \Aarg (für konkrete Werte)
 \usepackage{enumitem}
 \usepackage{fontspec}
-\usepackage{microtype}
 \usepackage{dirtreex}
-\usepackage{tcolorbox}
 \usepackage[
 languages={de,en},
 map={de=german,en=english},
@@ -16,7 +14,10 @@ load babel
 ]{langselect}
 \usepackage{hologo}
 \usepackage{subcaption}
-\usepackage{osgdoc}
+%\usepackage{osgdoc}
+
+\newarg{\aarg}{<}{>}
+\newarg[\code]{\Aarg}{<}{>}
 \colorlet{linkblue}{blue!50!black}
 \newcommand{\osglecture}{\textcolor{teal!50!black}{OSG Lecture}}
 \newcommand{\OLLM}{\textcolor{teal!50!black}{\sffamily OLLM}}
@@ -46,7 +47,8 @@ load babel
 \include{olm-tutorial}
 \include{olm-concepts}
 \include{olm-content}
-\include{olm-series-standalone}
+\include{olm-series}
+\include{olm-standalone}
 \include{olm-config}
 \include{olm-ollm}
 \end{document}
