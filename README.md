@@ -61,7 +61,7 @@ The `TL ...` columns are read from the expectations in the workflow above;
 | lttheme | v0.5.0 | 2026/08/24 | 7 | :new_moon: | :red_circle: | :red_circle: | :green_circle: |
 | lttheme-tuc-2019 | v0.5.1 | 2026/08/24 | 1 | :new_moon: | :red_circle: | :red_circle: | :green_circle: |
 | ansiterm[^1] | 0.2.1 | 2026-08-26 | 1 | :full_moon: | :red_circle: | :red_circle: | :green_circle: |
-| osglistings | 0.1.0 | 2026-08-28 | 1 | :full_moon: | :red_circle: | :green_circle: | :green_circle: |
+| osglistings | 0.1.0 | 2026-08-28 | 1 | :full_moon: | :green_circle: | :green_circle: | :green_circle: |
 | osgdoc | v0.3.4 | 2026/08/14 | 2 | :first_quarter_moon: | :green_circle: | :green_circle: | :green_circle: |
 <!-- END MODULE VERSIONS -->
 
