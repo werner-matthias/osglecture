@@ -50,6 +50,12 @@ jobs:
             expect_2024: pass
             expect_2025: pass
             expect_current: pass
+          - name: semcat
+            directory: semcat
+            config: build
+            expect_2024: fail
+            expect_2025: fail
+            expect_current: pass
           - name: ollm
             directory: ollm
             config: build

@@ -67,6 +67,7 @@ jobs:
           - osglecture-modes
           - osglecture
           - tagpax
+          - semcat
 
     container:
       image: texlive/texlive:latest
