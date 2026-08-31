@@ -280,7 +280,7 @@ an \pkg{langselect} weiter und lädt das Paket; Nora muss
 sich diese Arbeitsteilung nicht bei jedem Absatz neu überlegen; die Konfiguration
 gilt für das ganze Projekt.}{The language configuration contains two different
 kinds of names. \OLLM\ uses the short, portable identifiers \code{de} and
-\code{en}. The pupular language package \pkg{babel}, by contrast, needs the more specific names
+\code{en}. The popular language package \pkg{babel}, by contrast, needs the more specific names
 \code{ngerman} and \code{british}. The \option{languages} key passes this
 configuration to \pkg{langselect} and loads the package. Nora need not
 reconsider this division of labour for every paragraph;
@@ -308,24 +308,33 @@ point than twenty pages with a missing closing brace.}
 \end{document}
 \end{verbatim}
 
-\ldeen{Der Befehl \cs{lecture} dient Laura, um eine Unterrichtseinheit zu beginnen.
-Das erste Pflichargument ist der Titel, das optionale Argument seine Kurzform.}{}
+\ldeen{Der Befehl \cs{lecture} dient Nora dazu, eine Unterrichtseinheit zu beginnen.
+Das erste Pflichtargument ist der Titel, das optionale Argument seine Kurzform.}{The
+\cs{lecture} command begins a course unit. Its first mandatory argument is the
+title, and the optional argument is the short title.}
 \ldeen{Das zweite Pflichtargument von \cs{lecture}, hier
 \code{memory}, ist das Label der Unterrichtseinheit
 Dieses etabliert die Identität der Einheit. Nora darf den sichtbaren
 Titel später verbessern und sogar das Verzeichnis umbenennen. Die Identität
 sollte sie aber dabei nicht beiläufig ändern; Querverweise und Buildzustand verwenden
  diesen Wert, um die richtige Lehreinheit zu finden.}{The third argument of \cs{lecture}, here
-\code{memory}, is the lable of the unit. It constitutes the unit's stable identity.
+\code{memory}, is the label of the unit. It constitutes the unit's stable identity.
 Nora may improve the visible title later and may even rename the directory.
 She should not casually change the identity while doing so; cross-references and build state use this
 very value.}
 
-\ldeen{Die \env{frame}-Umgebung kenn Nora schon aus ihrer früheren Arbeit mit \pkg{beamer}. 
-  Sie hat dort zwar häufig den Titel in ein Umgebungsargument geschrieben, aber das darf sei bei \osglecture\ nicht,
-  dafür gibt es den Befehl \cs{frametitle}.}{}
-\ldeen{Den Befehl \cs{ldeen} kennt Nora noch nicht. Sie findet auch bei einem kurzem \File{grep} in ihrem \LaTeX-Verzeichnis kein Paket, das ihn definiert. Jedoch ist Nora iniuitiv klar, was er macht: Er stellt die
-beiden Sprachvarianten, die Nora bestellt hat, nebeneinander da.}{}
+\ldeen{Die \env{frame}-Umgebung kennt Nora schon aus ihrer früheren Arbeit mit \pkg{beamer}.
+  Sie hat dort zwar häufig den Titel in ein Umgebungsargument geschrieben, aber das darf sie bei \osglecture\ nicht;
+  dafür gibt es den Befehl \cs{frametitle}.}{Nora already knows the
+\env{frame} environment from her earlier work with \pkg{beamer}. She often
+put the title in an environment argument there, but \osglecture\ does not
+permit that; the \cs{frametitle} command must be used instead.}
+\ldeen{Den Befehl \cs{ldeen} kennt Nora noch nicht. Sie findet auch bei einer kurzen Suche mit \code{grep} in ihrem \LaTeX-Verzeichnis kein Paket, das ihn definiert. Dennoch ist Nora intuitiv klar, was er macht: Er stellt die
+beiden Sprachvarianten, die Nora bestellt hat, nebeneinander dar.}{Nora has not
+seen the \cs{ldeen} command before. Even a quick \code{grep} search of her
+\LaTeX\ directory finds no package defining it. Nevertheless, its purpose is
+intuitively clear to her: it places the two requested language variants side
+by side.}
 
 \paragraph{\ldeen{Der erste Build}{The First Build}.}
 \ldeen{Nora wechselt in die Lehreinheit und versucht aus alter Gewohnheit zuerst
@@ -360,9 +369,9 @@ is now almost disappointingly easy}:
 ollm build slides --language=en
 \end{verbatim}
 
-\ldeen{Nur die gewählte Formulierung ändert sich. Struktur, Formel und stabile
-Identität bleiben dieselben. Genau das wollte Nora erreichen.}{Only the selected
-wording changes. The structure, formula, and stable identity remain the same.
+\ldeen{Nur die gewählte Formulierung ändert sich. Struktur und Formel bleiben dieselben.
+Genau das wollte Nora erreichen.}{Only the selected
+wording changes. The structure and formula remain the same.
 That is precisely what Nora wanted to achieve.}
 
 \paragraph{\ldeen{Von Stichpunkten zu einem Satz}{From Bullet Points to a Sentence}}
@@ -377,7 +386,8 @@ two versions, but that would repeat her original problem on a smaller scale.
 Instead, she uses \pkg{presitemize}}:
 
 \begin{verbatim}
-\begin{frame}{\ldeen{Warum virtueller Speicher?}{Why virtual memory?}}
+\begin{frame}
+  \frametitle{\ldeen{Warum virtueller Speicher?}{Why virtual memory?}}
   \begin{presitemize}
     \item \ldeen{Jeder Prozess sieht einen eigenen Adressraum}
                 {Each process sees a private address space}
@@ -433,7 +443,10 @@ she later changes from \cls{scrbook} to another long-form profile, she need
 not find this passage again.}
 
 \ldeen{Noch längere Erläuterungstexte kann Nora außerhalb der \env{frame}-Umgebung schreiben.
-Dann braucht sie für die Langform auch keinen extra Modus: die dortigen Texte werden bei den Präsentationen ignoriert.}{}
+Dann braucht sie für die Langform auch keinen extra Modus: Die dortigen Texte werden bei den Präsentationen ignoriert.}{Nora
+can write still longer explanatory passages outside the \env{frame}
+environment. She then needs no additional mode for the long form: text there
+is ignored in presentations.}
 
 \ldeen{Nun baut Nora das deutsche Skript}{Nora now builds the German lecture
 notes}:

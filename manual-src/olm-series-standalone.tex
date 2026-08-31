@@ -253,3 +253,33 @@ class options; OLLM target, language, and matrix options are not permitted in
 this mode. Without series state there are no external unit references, counter
 continuation, or \cs{includeunit} resolution. Local references and
 all mode-aware rendering commands continue to work unchanged.}
+
+\subsection{\ldeen{Referenzübersicht}{Reference Summary}}
+\begin{description}
+  \item[\cs{includeunit}\marg{unit ID}] \ldeen{bindet in einer
+    Integrationseinheit die bereits gebaute Instanz derselben Sprache und
+    desselben Dokumenttyps ein; die Aufrufreihenfolge bestimmt die
+    Dokumentreihenfolge}{includes, in an integration unit, the already built
+    instance with the same language and document type; call order determines
+    document order}.
+  \item[\option{standalone}] \ldeen{aktiviert den manifestfreien Klassenmodus}{enables
+    the manifest-free class mode}.
+  \item[\option{doctype}, \option{profile}, \option{lang},
+    \option{class-options}, \option{patch-overlays}]
+    \ldeen{sind die im Standalone-Betrieb relevanten Klassenoptionen; ihre
+    Werte und Defaults stehen vollständig in
+    Abschnitt~\ref{sec:configuration-reference}}{are the class options relevant
+    to standalone operation; their values and defaults are listed completely
+    in Section~\ref{sec:configuration-reference}}.
+\end{description}
+
+\ldeen{Integration ist nur in einer Serie mit genau einer passenden Unit der
+Rolle \code{i} pro Dokumenttyp verfügbar. Sie setzt promovierte
+Quelldokumente voraus. Serienübergreifende Referenzen, Counter-Fortsetzung und
+Integration werden über OLLMs Zustands- und Abhängigkeitsmodell aufgelöst;
+lokale LaTeX-Läufe ohne diesen Zustand können sie nicht rekonstruieren.}{
+Integration is available only in a series with exactly one matching unit of
+role \code{i} per document type. It requires promoted source documents.
+Cross-unit references, counter continuation, and integration are resolved
+through OLLM's state and dependency model; local LaTeX runs without that state
+cannot reconstruct them.}

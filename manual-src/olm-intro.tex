@@ -110,14 +110,19 @@ In computer science or chemistry, this concept is also known as \emph{polymorphi
 \subsection{\ldeen{Polymorphie}{Polymorphism} in \osglecture}
 \ldeen{Es ist eine alte \hologo{TeX}-Idee, Texte je nach Kontext unterschiedlich darzustellen. Die \hologo{TeX}-Variante \hologo{ConTeXt} leitet beispielsweise ihren Namen auch davon ab.
 \osglecture\ versucht die Anwendung dieses Konzept noch ein Stück weit zu erweitern.
-Dazu ist \cls{osglecture} eine \emph{Metaklasse}: Sie sagt (anders als die mindestens
+Dazu ist \cls{osglecture} eine \emph{Metaklasse}: Sie sagt (anders als die meisten
 \LaTeX-Klassen) nicht, wie die fertig gesetzten Dokumente aussehen sollen,\footnote{Es gibt aber
 Pakete im \osglecture-Bundle, die so etwas machen} sondern stellt ein gemeinsames Interfache zur
 Verfügung und verteilt dann die Arbeit an Klassen wie \cls{article}, \cls{scrarticle}, \cls{beamer}
 oder \cls{ltx-talk}.}{It is a
 long-standing \hologo{TeX} concept to render text differently depending on the
 context. The \hologo{TeX} variant \hologo{ConTeXt}, for example, derives its
-name from this concept. \osglecture\ attempts to expand the application of this concept a bit further.}
+name from this concept. \osglecture\ attempts to expand the application of this concept a bit further.
+In this regard, \cls{osglecture} is a \emph{metaclass}: Unlike most
+\LaTeX\ classes, it does not specify how the final typeset documents should look,\footnote{However, there are
+packages in the \osglecture bundle that do just that} but rather provides a common interface
+and then delegates the work to classes such as \cls{article}, \cls{scrarticle}, \cls{beamer},
+or \cls{ltx-talk}.}
 
 \ldeen{Das Folgende ist ein Mini-Showcase der zeigen soll, wie aus einer Quelle verschiedene Instanzen
 erzeugt werden. Es dient lediglich dazu, dass der Nutzer einen kleinen Eindruck von den

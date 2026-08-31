@@ -1,8 +1,24 @@
 \section{\ldeen{Konzepte}{Concepts}}
 \label{sec:concepts}
-\ldeen{Nach dem kurzen Tutorial sollen nun die Begriffe und Konzepte von \osglecture\ etwas systematischer und ausführlicher besprochen werden.}{}
+\ldeen{Nach dem kurzen Tutorial sollen nun die Begriffe und Konzepte von \osglecture\ etwas systematischer und ausführlicher besprochen werden.}{After the short tutorial, the terminology and concepts of \osglecture\ are now discussed more systematically and in greater detail.}
 
 \ldeen*{Dabei ist zu beachten, dass der Name @1 in diesem Bundle zwei Bedeutungen hat: Zum einen bezeichnet er das gesamte Bundle, zum anderen dessen Hauptklasse. Zur besseren Unterscheidung wird in diesem Manual für den ersten Fall die Schreibweise @2 verwendet, für den zweiten dagegen @3.}{The name @1 has two meanings in this bundle: it denotes both the bundle as a whole and its main class. To distinguish the two, @2 is used below for the bundle and @3 for the class.}{"`Osglecture"'}{\osglecture}{\cls{osglecture}}
+
+\begin{infobox}{}\sffamily
+\ldeen{Ab diesem Abschnitt ist das Manual zugleich Nachschlagewerk. Die
+Grundbegriffe werden hier eingeführt; vollständige Schnittstellenübersichten
+finden Sie bei den jeweiligen Themen: Inhalte und Modi in
+Abschnitt~\ref{sec:content-command-reference}, Serien und Standalone in
+Abschnitt~\ref{sec:series-standalone}, Konfiguration und Profile in
+Abschnitt~\ref{sec:configuration-reference} sowie OLLM in
+Abschnitt~\ref{sec:ollm-reference}.}{From this section onward, the manual also
+serves as a reference. This section introduces the fundamental concepts;
+complete interface summaries are located with their respective topics:
+content and modes in Section~\ref{sec:content-command-reference}, series and
+standalone operation in Section~\ref{sec:series-standalone}, configuration and
+profiles in Section~\ref{sec:configuration-reference}, and OLLM in
+Section~\ref{sec:ollm-reference}.}
+\end{infobox}
 
 \subsection{\ldeen{Projekt}{Project}}
 \ldeen{
@@ -183,7 +199,7 @@ a lot. At the OSG, there are a number of typical teaching scenarios
 \end{warnbox}
 \ldeen*{In jedem Lehreinheitenverzeichnis befindet sich eine \LaTeX-Datei. Sie verwendet die Dokumentklasse @1 und trägt in der Standardkonfiguration den Namen @2. Neben dieser Datei kann sich beliebiges weiteres Material in dem Verzeichnis befinden, etwa Bilder, einzubindende Dateien oder private \File{.sty}-Dateien, die nur in dieser Einheit benötigt werden.}{Each course-unit directory contains a \LaTeX\ file. It uses the document class @1 and, in the default configuration, is named @2. The directory may also contain any other material, such as images, files to be included, or private \File{.sty} files needed only by that unit.}{\cls{osglecture}}{\File{main.tex}}
 
-\ldeen{Dagegen sollten private \File{.sty}-Dateien oder andere Materialien, die in \emph{allen} Lehreinheiten benötigt werden, im \path{Include}-Verzeichnis stehen.}{}
+\ldeen{Dagegen sollten private \File{.sty}-Dateien oder andere Materialien, die in \emph{allen} Lehreinheiten benötigt werden, im \path{Include}-Verzeichnis stehen.}{By contrast, private \File{.sty} files or other material needed by \emph{all} course units should be placed in the \path{Include} directory.}
 
 \subsection{\ldeen{Dokumententypen und Profile}{Document Types and Profiles}}
 \label{sec:types-profiles}
@@ -254,15 +270,17 @@ therefore remain independent of the selected base class.}
 \option{presentation-profile}, für Langformen mit
 \option{longform-profile} in \File{Include/projectconfig.tex}. Soll nur ein
 einzelnes Target abweichen, verwenden Sie
-@1. Im
-Standalone-Betrieb steht dafür die Klassenoption \option{profile} zur
-Verfügung.}{Select the project-wide presentation profile with
+:} {Select the project-wide presentation profile with
 \option{presentation-profile} and the long-form profile with
 \option{longform-profile} in \File{Include/projectconfig.tex}. To override the
 profile for just one target, use
-@1. In standalone
-mode, use the \option{profile} class option instead.}
-{\cs{LectureTargetSetup}\marg{target}\Marg{profile=\meta{profile}}}
+:}
+
+
+\centerline{\cs{LectureTargetSetup}\marg{target}\Marg{profile=\meta{profile}}}
+
+\ldeen{Im Standalone-Betrieb steht dafür die Klassenoption \option{profile} zur
+Verfügung.}{In standalone mode, use the \option{profile} class option instead.}
 
 \ldeen{Die Profilwahl betrifft mehr als das Erscheinungsbild. \cls{beamer}
 bietet beispielsweise ein großes Ökosystem vorhandener Themes;

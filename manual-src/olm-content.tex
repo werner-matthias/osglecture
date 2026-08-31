@@ -1,11 +1,69 @@
-\section{\ldeen{Inhalte anpassen}{Adapted Content}}
+\section{\ldeen{Inhalte gestalten}{To Shape Content}}
+
+\subsection{\ldeen{Titelei und Metadaten}{Titles and Metadata}}
+\ldeen{Auch wenn jede Lehreinheit \emph{physisch} in einem eigenen Verzeichnis ist, gibt es einen Befehl für die \emph{logische} Gliederung}{Even though each teaching unit is \emph{physically} located in its own directory, there is a command for the \emph{logical} structure}:
+
+\begin{description}
+  \item[\cs{lecture}\oarg{\ldeen{Kurzname}{short name}}\marg{\ldeen{Name}{name}}\marg{Label}]
+    \ldeen{Beginnt eine logisch benannte Lehreinheit und erzeugt in
+    Präsentationsformen deren Titelfolie.}{Starts a logically named teaching
+    unit and creates its title slide in presentation forms.}
+\end{description}
+\ldeen{\cs{lecture} legt in der Kurzform eine Titelfolie an, in der typischerweise neben dem Namen der Vorlesungseinheit auch die Metadaten noch einmal wiedergegeben werden. Die genaue Gestaltung hängt vom Präsentationsthema ab, falls
+Sie ein solches verwenden.
+}{In presentation forms, \cs{lecture} creates a title slide that normally
+repeats the course-unit title and relevant metadata. Its exact appearance
+depends on the presentation theme, if one is used.}
+
+\ldeen{Alle Lehreinheiten eines Projekts gehören zum gleichen Kurs und haben daher den gleichen Kursnamen, den oder die gleichen Autoren und ggf.\ weitere gemeinsame Metadaten.
+Damit diese nicht für jede Lehreinheit wiederholt werden müssen, werden diese Metadaten in der Datei
+\File{Include/projectconfig.tex} hinterlegt.
+Dafür stehen Ihnen die folgenden Befehle zur Verfügung:}{All course units in a
+project belong to the same course and therefore share the course name, the
+author or authors, and possibly further metadata. To avoid repeating these for
+every unit, store them in \File{Include/projectconfig.tex}. The following
+commands are available:}
+\begin{description}
+  \item[\cs{course}\oarg*{\ldeen{Modus}{mode}}\oarg{\ldeen{Kurzname}{short name}}\marg{\ldeen{Name}{name}}]
+    \ldeen{Setzt den Kursnamen für alle oder für den angegebenen Modus.}{Sets
+    the course name for all modes or for the specified mode.}
+  \item[\cs{event}\oarg*{\ldeen{Modus}{mode}}\oarg{\ldeen{Kurzname}{short name}}\marg{\ldeen{Name}{name}}]
+    \ldeen{Setzt den Veranstaltungsnamen für alle oder für den angegebenen
+    Modus.}{Sets the event name for all modes or for the specified mode.}
+\end{description}
+
+\ldeen{Dieselben Signaturen besitzen \cs{title}, \cs{subtitle}, \cs{author},
+\cs{institute} und \cs{date}. Das Profil entscheidet über
+\option{course-target} und \option{event-target}, ob Kurs und Veranstaltung in
+Titel, Untertitel oder gar nicht übernommen werden. Die vollständigen Setter
+und Abfragebefehle sind in Abschnitt~\ref{sec:configuration-reference}
+aufgeführt.}{The commands \cs{title}, \cs{subtitle}, \cs{author},
+\cs{institute}, and \cs{date} have the same signatures. Through
+\option{course-target} and \option{event-target}, the profile decides whether
+course and event metadata are mapped to the title, subtitle, or neither. The
+complete setters and query commands are listed in
+Section~\ref{sec:configuration-reference}.}
+
+\subsection{\ldeen{Präsentationen}{Presentations}}
+\ldeen{Wenn Sie Präsentationen entwickeln, stellt \osglecture\ unabhängig vom
+gewählten Profil die gemeinsame Struktur aus \env{frame}, \cs{frametitle} und
+\cs{lecture} bereit. Overlays und themenspezifische Befehle stammen dagegen
+von der gewählten Basisklasse. Ein auf \cls{beamer} zugeschnittenes Theme ist
+daher nicht automatisch mit \cls{ltx-talk} verwendbar. Portable
+Inhaltsauswahl sollte über die im folgenden Abschnitt beschriebenen Modi
+erfolgen.}{When developing presentations, \osglecture\ provides the common
+structure formed by \env{frame}, \cs{frametitle}, and \cs{lecture}, regardless
+of the selected profile. Overlays and theme-specific commands, however, come
+from the selected base class. A theme designed for \cls{beamer} is therefore
+not automatically usable with \cls{ltx-talk}. Use the modes described in the
+following section for portable content selection.}
 \subsection{\ldeen{Mehrsprachige Dokumente}{Multilingual Documents}}
-\ldeen{In einem \osglecture-Projekt können mehere Sprachfassungen eines
+\ldeen{In einem \osglecture-Projekt können mehrere Sprachfassungen eines
 Inhalts erstellt werden. Dabei teilen sich OLLM und das Paket \pkg{langselect}
 die Arbeit: Das Manifest sagt, \emph{welche} Sprachfassungen gebaut werden
 dürfen; OLLM wählt eine davon; \pkg{langselect} setzt in der Quelle die
 passende Formulierung. Diese Aufgabenteilung verhindert, dass die Buildlogik in
-den Fachtext wandert.}{In an \osglecture\ project, OLLM and the packet \pkg{langselect}
+den Fachtext wandert.}{In an \osglecture\ project, OLLM and the package \pkg{langselect}
 share the work: the manifest states \emph{which} language versions may be built;
 OLLM selects one of them; \pkg{langselect} typesets the matching wording in
 the source. This division of responsibility keeps build logic out of the subject
@@ -245,7 +303,9 @@ denselben Dokumenttyp und dieselbe Sprache wie das aktuelle Dokument. Der
 folgende Verweis aus der Unit \code{memory} führt daher in einem deutschen
 Skript zum deutschen Skript der Unit \code{processes}, in englischen Folien
 dagegen zu deren englischen Folien}{The optional address before the label names
-another logical unit in the same series. By default, the reference uses the
+another logical unit in the same series. As explained above, this logical
+identity is set by the third argument of the \cs{lecture} command. By default,
+the reference uses the
 same document type and language as the current document. Thus, from the
 \code{memory} unit, the following reference leads from a German script to the
 German script of \code{processes}, but from English slides to its English
@@ -292,3 +352,96 @@ PDF open, and its pagination can change independently. Prefer
 Distance-sensitive commands such as \cs{vpageref} are meaningful
 only within the current document.}
 \end{warnbox}
+
+\subsection{\ldeen{Befehlsreferenz}{Command Reference}}
+\label{sec:content-command-reference}
+
+\ldeen{Die folgenden Übersichten nennen die vollständige öffentliche
+Schnittstelle für die in diesem Kapitel behandelten Aufgaben. Befehle zur
+Definition neuer Profile oder Adapter stehen dagegen in
+Abschnitt~\ref{sec:configuration-reference}; sie werden beim gewöhnlichen
+Schreiben von Lehreinheiten nicht benötigt.}{The following summaries list the
+complete public interface for the tasks covered in this chapter. Commands for
+defining new profiles or adapters are instead listed in
+Section~\ref{sec:configuration-reference}; they are not needed when writing
+ordinary course units.}
+
+\paragraph{\ldeen{Modi und bedingte Inhalte}{Modes and conditional content}.}
+\begin{description}
+  \item[\cs{lecturemode}\oarg*{mode expression}\marg{content}]
+    \ldeen{gibt den Inhalt aus, wenn mindestens einer der mit Komma oder
+    \code{|} getrennten Modi aktiv ist; ohne Modusausdruck wird der Inhalt
+    immer ausgegeben}{emits the content if at least one mode separated by a
+    comma or \code{|} is active; without a mode expression it always emits the
+    content}.
+  \item[\cs{IfLectureModeTF}\marg{expression}\marg{true}\marg{false}]
+    \ldeen{vollständige Verzweigung}{full conditional}.
+  \item[\cs{IfLectureModeT}\marg{expression}\marg{true}]
+    \ldeen{nur der Wahr-Zweig}{true branch only}.
+  \item[\cs{IfLectureModeF}\marg{expression}\marg{false}]
+    \ldeen{nur der Falsch-Zweig}{false branch only}.
+  \item[\cs{LectureModes}, \cs{ActiveLectureModes}]
+    \ldeen{expandierbare kommaseparierte Listen der gewählten Blattmodi
+    beziehungsweise ihrer vollständigen Elternhülle}{expandable comma-separated
+    lists of the selected leaf modes and their complete parent closure,
+    respectively}.
+\end{description}
+
+\ldeen{Für Erweiterungen des Modusgraphen stehen zusätzlich
+\cs{DeclareLectureMode}, \cs{DeclareLectureModeParents},
+\cs{DeclareLectureModeAlias}, \cs{SetLectureModes}, \cs{AddLectureModes} und
+\cs{FinalizeLectureModes} zur Verfügung. Die Deklarationsphase endet mit der
+Finalisierung; spätere Änderungen sind Fehler.}{Extensions of the mode graph
+can additionally use \cs{DeclareLectureMode},
+\cs{DeclareLectureModeParents}, \cs{DeclareLectureModeAlias},
+\cs{SetLectureModes}, \cs{AddLectureModes}, and \cs{FinalizeLectureModes}.
+Finalization ends the declaration phase; later changes are errors.}
+
+\paragraph{\ldeen{Präsentationslisten}{Presentation lists}.}
+\begin{description}
+  \item[\env{presitemize}\oarg{language, punctuation}]
+    \ldeen{erzeugt in Präsentationen eine Liste und in Langformen einen
+    grammatisch verbundenen Absatz. \option{language} überschreibt die
+    erkannte Sprache; \option{punctuation} akzeptiert \code{auto} oder
+    \code{manual}}{produces a list in presentations and a grammatically joined
+    paragraph in long forms. \option{language} overrides the detected language;
+    \option{punctuation} accepts \code{auto} or \code{manual}}.
+  \item[\cs{presitem}\oarg{relation, initial}\oarg*{overlay}\oarg{label}]
+    \option{relation}: \code{sentence}, \code{and}, \code{but},
+    \code{therefore}, \code{comma}, \code{colon}; \option{initial}:
+    \code{auto}, \code{keep}.
+  \item[\cs{anditem}, \cs{butitem}, \cs{thereforeitem}, \cs{commaitem},
+    \cs{colonitem}]
+    \ldeen{Kurzformen für die entsprechenden Relationen; jede Form akzeptiert
+    eine Overlayangabe und ein optionales Label wie \cs{item}}{short forms for
+    the corresponding relations; each accepts an overlay specification and an
+    optional label like \cs{item}}.
+  \item[\cs{finite}\marg{text}]
+    \ldeen{markiert den finiten Teil einer untergeordnet angeschlossenen
+    Formulierung}{marks the finite part of a subordinately joined clause}.
+  \item[\cs{longform}, \cs{slides}, \cs{longslides}, \cs{prescase},
+    \cs{preskeepcase}]
+    \ldeen{niedrigstufige Auswahl- und Großschreibungshelfer für eigene
+    Listenmakros}{low-level selection and capitalization helpers for custom
+    list macros}.
+\end{description}
+
+\paragraph{\ldeen{Verweise}{References}.}
+\begin{description}
+  \item[\cs{olref}\sarg\oarg{address}\marg{label}]
+    \ldeen{Nummer wie \cs{ref}}{number like \cs{ref}}.
+  \item[\cs{olpageref}\sarg\oarg{address}\marg{label}]
+    \ldeen{Seite wie \cs{pageref}}{page like \cs{pageref}}.
+  \item[\cs{olnameref}\sarg\oarg{address}\marg{label}]
+    \ldeen{Name wie \cs{nameref}}{name like \cs{nameref}}.
+  \item[\cs{olautoref}\sarg\oarg{address}\marg{label}]
+    \ldeen{automatischer Verweis wie \cs{autoref}}{automatic reference like
+    \cs{autoref}}.
+\end{description}
+\ldeen{Die Adresse besteht aus einer schlüssellosen Unit-ID und optional
+\keyis{type}{doctype} sowie \keyis{lang}{language}. Ohne Adresse bleiben alle
+vier Befehle lokal. Die Sternform unterdrückt wie bei den entsprechenden
+Standardbefehlen den Hyperlink.}{The address consists of a keyless unit ID and
+optional \keyis{type}{doctype} and \keyis{lang}{language}. Without an address,
+all four commands remain local. As with the corresponding standard commands,
+the starred form suppresses the hyperlink.}

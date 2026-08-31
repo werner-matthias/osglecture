@@ -317,3 +317,124 @@ wird.}{After installation or adding the shared directory to the TeX search
 path, \keyis{longform-profile}{mybook} is sufficient. \osglecture\ loads the
 file automatically when first selected and checks whether the requested
 document type is supported.}
+
+\subsection{\ldeen{Konfigurationsreferenz}{Configuration Reference}}
+\label{sec:configuration-reference}
+
+\paragraph{\ldeen{Klassenoptionen}{Class options}.}
+\begin{description}
+  \item[\option{standalone}] \ldeen{manifestfreien Betrieb aktivieren}{enable
+    manifest-free operation}.
+  \item[\keyis{doctype}{name}] \ldeen{Dokumenttyp wählen; im Standalone-Betrieb
+    standardmäßig \code{slides}}{select the document type; defaults to
+    \code{slides} in standalone mode}.
+  \item[\keyis{profile}{name}] \ldeen{Dokumentprofil ausdrücklich wählen}{select
+    a document profile explicitly}.
+  \item[\keyis{lang}{tag}] \ldeen{Dokumentsprache wählen}{select the document
+    language}.
+  \item[\keyis{class-options}{list}] \ldeen{Optionen an die Basisklasse
+    weiterreichen}{pass options to the base class}.
+  \item[\keyis{patch-overlays}{true|false}] \ldeen{portable Modi in native
+    Overlaybefehle integrieren}{integrate portable modes into native overlay
+    commands}.
+  \item[\option{osgbeamer}] \ldeen{wirkungsloser Kompatibilitätsschalter für
+    alte Quellen}{no-op compatibility switch for legacy sources}.
+\end{description}
+
+\paragraph{\cs{LectureProjectSetup}\marg{key-value list}.}
+\begin{description}
+  \item[\option{class-options}] \ldeen{gemeinsame Basisklassenoptionen}{shared
+    base-class options}.
+  \item[\option{presentation-profile}, \option{longform-profile},
+    \option{identity-profile}] \ldeen{Profile für Präsentationen, Langformen
+    und identitätsorientierte Dokumente}{profiles for presentations, long
+    forms, and identity-oriented documents}.
+  \item[\option{theme}, \option{numbering}, \option{references}]
+    \ldeen{projektweite semantische Policies}{project-wide semantic policies}.
+  \item[\option{languages}] \ldeen{eingebettete Konfiguration von
+    \pkg{langselect}}{embedded \pkg{langselect} configuration}.
+\end{description}
+\ldeen{Unter \option{languages} sind vollständig die Schlüssel
+\option{selectable}, \option{targetlang}, \option{prefix}, \option{auto},
+\option{trim}, \option{map}, \option{load babel},
+\option{load polyglossia} und \option{unified shorthands} zulässig.}{Under
+\option{languages}, the complete set of permitted keys is
+\option{selectable}, \option{targetlang}, \option{prefix}, \option{auto},
+\option{trim}, \option{map}, \option{load babel},
+\option{load polyglossia}, and \option{unified shorthands}.}
+
+\paragraph{\ldeen{Weitere Projektbefehle}{Other project commands}.}
+\begin{description}
+  \item[\cs{OsgLectureSetup}\marg{areas}] \ldeen{weist mit
+    \code{class/NAME} Basisklassenoptionen und mit \code{mode/NAME}
+    modusabhängige Einstellungen zu}{assigns base-class options with
+    \code{class/NAME} and mode-dependent settings with \code{mode/NAME}}.
+  \item[\cs{LectureTargetSetup}\marg{target}\marg{settings}]
+    \ldeen{akzeptiert \option{profile} und \option{filecolor}}{accepts
+    \option{profile} and \option{filecolor}}.
+  \item[\cs{IncludeOsgLecturePreamble}\sarg\oarg*{modes}\oarg{class=list}
+    \marg{name}] \ldeen{registriert ein bedingtes Präambelfragment; die
+    Sternform lädt sofort und erlaubt deshalb keine Bedingungen}{registers a
+    conditional preamble fragment; the starred form loads immediately and
+    therefore permits no conditions}.
+  \item[\cs{LectureProjectEnforce}\marg{settings}]
+    \ldeen{setzt Projekt-Policies mit erzwungener Priorität}{sets project
+    policies with enforced priority}.
+  \item[\cs{EnforceLectureProjectConfiguration}\marg{code}]
+    \ldeen{führt beliebigen Konfigurationscode mit erzwungener Priorität aus}{runs
+    arbitrary configuration code with enforced priority}.
+  \item[\cs{DeclareOsgLectureMetadataField}\marg{name}]
+    \ldeen{deklariert ein Metadatenfeld samt Setter und Abfragebefehlen}{declares
+    a metadata field together with its setter and query commands}.
+\end{description}
+
+\ldeen{Vordefinierte Metadatenfelder sind \code{title}, \code{subtitle},
+\code{author}, \code{institute}, \code{date}, \code{course} und
+\code{event}. Zu jedem Feld existieren ein Setter
+\cs{OsgLectureSet}\meta{Field}, ein Langwert
+\cs{OsgLecture}\meta{Field} und ein Kurzwert
+\cs{OsgLectureShort}\meta{Field}. Die Setter akzeptieren
+\oarg*{mode}\oarg{short value}\marg{long value}.}{The predefined metadata
+fields are \code{title}, \code{subtitle}, \code{author}, \code{institute},
+\code{date}, \code{course}, and \code{event}. Each field has a setter
+\cs{OsgLectureSet}\meta{Field}, a long-value command
+\cs{OsgLecture}\meta{Field}, and a short-value command
+\cs{OsgLectureShort}\meta{Field}. Setters accept
+\oarg*{mode}\oarg{short value}\marg{long value}.}
+
+\paragraph{\ldeen{Profile definieren}{Defining profiles}.}
+\ldeen{\cs{DeclareOsgLectureProfile}\marg{name}\marg{settings} akzeptiert
+vollständig \option{engine}, \option{capabilities}, \option{backend},
+\option{adapter}, \option{class}, \option{doctypes},
+\option{class-options}, \option{setup-file}, \option{modes},
+\option{mode-setup-file}, \option{course-target}, \option{event-target} und
+\option{document-metadata}. Die letzten drei Wahlwerte sind
+\code{title|subtitle|none}, \code{title|subtitle|none} beziehungsweise
+\code{supported|required|forbidden}. Pflichtfelder sind \option{backend},
+\option{class} und \option{doctypes}; \option{engine} ist derzeit
+\code{lualatex}. Typspezifische Klassenoptionen werden mit
+\cs{DeclareOsgLectureProfileClassOptions}\marg{profile}\marg{doctype}
+\marg{options} ergänzt.}{\cs{DeclareOsgLectureProfile}\marg{name}
+\marg{settings} accepts the complete set \option{engine},
+\option{capabilities}, \option{backend}, \option{adapter}, \option{class},
+\option{doctypes}, \option{class-options}, \option{setup-file},
+\option{modes}, \option{mode-setup-file}, \option{course-target},
+\option{event-target}, and \option{document-metadata}. The last three choices
+are \code{title|subtitle|none}, \code{title|subtitle|none}, and
+\code{supported|required|forbidden}, respectively. Required fields are
+\option{backend}, \option{class}, and \option{doctypes}; \option{engine} is
+currently \code{lualatex}. Add type-specific class options with
+\cs{DeclareOsgLectureProfileClassOptions}\marg{profile}\marg{doctype}
+\marg{options}.}
+
+\paragraph{\ldeen{Referenzdienst konfigurieren}{Configuring references}.}
+\ldeen{\cs{OsgLectureReferencesSetup}\marg{settings} akzeptiert
+\keyis{legacy}{true|false} und \option{replace}. \option{replace} kann eine
+Liste aus \code{ref}, \code{pageref}, \code{nameref}, \code{autoref} oder den
+Sammelwert \code{all} enthalten und ersetzt die entsprechenden
+Standardbefehle durch die serienfähigen Varianten.}{
+\cs{OsgLectureReferencesSetup}\marg{settings} accepts
+\keyis{legacy}{true|false} and \option{replace}. \option{replace} may contain
+a list of \code{ref}, \code{pageref}, \code{nameref}, \code{autoref}, or the
+aggregate value \code{all}, replacing the corresponding standard commands
+with their series-aware variants.}

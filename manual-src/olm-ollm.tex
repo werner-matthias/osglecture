@@ -216,3 +216,111 @@ zurück.}{For build diagnostics, \keyis*{--debug}{tex}, \code{ollm}, or
 \code{important}, or \code{none} controls warning verbosity. Compatible
 unknown dash options are forwarded to \code{latexmk} during a build; OLLM
 rejects options that would bypass the controlled build contract.}
+
+\subsection{\ldeen{Vollständige Kommandoübersicht}{Complete Command Summary}}
+\label{sec:ollm-reference}
+
+\begin{description}
+  \item[\code{build}] \ldeen{baut eine oder mehrere Instanzen einer Serie;
+    dies ist die Standardaktion}{builds one or more instances of a series; this
+    is the default action}.
+  \item[\code{standalone}] \ldeen{baut eine manifestfreie Quelldatei anhand
+    ihrer Klassenoptionen}{builds a manifest-free source file from its class
+    options}.
+  \item[\code{report}] \ldeen{beschreibt Units, Instanzen, Generationen,
+    Artefakte und Abhängigkeiten, ohne sie zu bewerten}{describes units,
+    instances, generations, artifacts, and dependencies without validating
+    them}.
+  \item[\code{check}] \ldeen{prüft denselben Zustand und liefert bei
+    Inkonsistenzen einen Fehlerstatus}{validates the same state and returns a
+    failing status for inconsistencies}.
+  \item[\code{clean}] \ldeen{entfernt Daten gemäß \option{--level} und
+    \option{--scope}}{removes data selected by \option{--level} and
+    \option{--scope}}.
+  \item[\code{prune}] \ldeen{entfernt ersetzte Generationen und optional den
+    Zustand fehlender Units}{removes superseded generations and optionally the
+    state of missing units}.
+  \item[\code{doctor}] \ldeen{prüft Werkzeugkette und, innerhalb eines
+    Projekts, dessen grundlegende Konfiguration}{checks the toolchain and,
+    inside a project, its basic configuration}.
+  \item[\code{deploy}] \ldeen{kopiert bereits promovierte PDFs nach den
+    Deploymentregeln}{copies already promoted PDFs according to the deployment
+    rules}.
+  \item[\code{convertconfig}] \ldeen{konvertiert ein altes
+    \File{ollmconfig.pl} soweit möglich nach TOML}{converts a legacy
+    \File{ollmconfig.pl} to TOML where possible}.
+  \item[\code{newtoml}] \ldeen{legt ein Manifest an und verwendet dabei eine
+    vorhandene Legacy-Konfiguration als Konvertierungsquelle}{creates a
+    manifest, using an existing legacy configuration as a conversion source}.
+\end{description}
+
+\paragraph{\ldeen{Targets und Aliase}{Targets and aliases}.}
+\ldeen{Die eingebauten nackten Targetnamen sind \code{slides} mit den Aliasen
+\code{beamer} und \code{presentation}, \code{handout} sowie \code{script} mit
+dem Alias \code{article}. Andere registrierte Targets werden mit
+\keyis*{--target}{TARGET} gewählt.}{The built-in bare target names are
+\code{slides}, with aliases \code{beamer} and \code{presentation},
+\code{handout}, and \code{script}, with alias \code{article}. Select other
+registered targets with \keyis*{--target}{TARGET}.}
+
+\paragraph{\ldeen{Alle OLLM-Optionen}{All OLLM options}.}
+\begin{description}
+  \item[\option{--help}, \option{-h}] \ldeen{Hilfe ausgeben}{show help}.
+  \item[\option{--version}] \ldeen{Version ausgeben}{show the version}.
+  \item[\keyis*{--format}{text|json}] \ldeen{menschen- oder
+    maschinenlesbare Ausgabe}{human- or machine-readable output}.
+  \item[\keyis*{--color}{auto|always|never}] \ldeen{Farbausgabe steuern}{control
+    colored output}.
+  \item[\option{--non-interactive}] \ldeen{interaktive Aktionen verbieten}{forbid
+    interactive actions}.
+  \item[\option{+enforce+}, \option{--enforce+}] \ldeen{das Präfix \code{+}
+    für Aktions- und Targetwörter verlangen}{require the \code{+} prefix on
+    action and target words}.
+  \item[\option{--legacy}] \ldeen{ausdrücklich die alte
+    \File{ollmconfig.pl} verwenden}{explicitly use the legacy
+    \File{ollmconfig.pl}}.
+  \item[\option{--overwrite}] \ldeen{Ersetzen erlauben, sofern die
+    Projektpolicy dies zulässt}{allow replacement when permitted by project
+    policy}.
+  \item[\keyis*{--target}{TARGET}] \ldeen{Target wählen}{select a target}.
+  \item[\keyis*{--language}{LANG}] \ldeen{Sprache wählen; kompatibel sind auch
+    \code{lang=LANG} und \code{+lang=LANG}}{select a language; compatible forms
+    are \code{lang=LANG} and \code{+lang=LANG}}.
+  \item[\keyis*{--source}{FILE}] \ldeen{Hauptquelle wählen}{select the main
+    source}.
+  \item[\option{--all}] \ldeen{alle zulässigen Target-/Sprachkombinationen im
+    Scope wählen}{select all permitted target/language combinations in the
+    scope}.
+  \item[\option{--resolve}] \ldeen{Abhängigkeiten bis zum Fixpunkt neu bauen}{rebuild
+    dependencies to a fixed point}.
+  \item[\option{--rebuild}] \ldeen{vollständigen \code{latexmk}-Neubau
+    erzwingen}{force a complete \code{latexmk} rebuild}.
+  \item[\option{--dry-run}] \ldeen{normalisierten Plan anzeigen, ohne ihn
+    auszuführen}{show the normalized plan without executing it}.
+  \item[\keyis*{--level}{aux|build|state|all}] \ldeen{Ebene für
+    \code{clean} wählen}{select the level for \code{clean}}.
+  \item[\keyis*{--scope}{current|unit|series|collection}] \ldeen{Reichweite für
+    Build, Inspektion, Pflege oder Deployment wählen; nicht jede Aktion erlaubt
+    jeden Wert}{select the range for building, inspection, maintenance, or
+    deployment; not every action permits every value}.
+  \item[\option{--stale-units}] \ldeen{bei \code{prune} auch physisch fehlende
+    Units berücksichtigen}{include physically missing units in \code{prune}}.
+  \item[\keyis*{--debug}{tex|ollm|tex+ollm}] \ldeen{Diagnoseebene wählen}{select
+    the diagnostic layer}.
+  \item[\keyis*{--warnings}{all|important|none}] \ldeen{Warnungsmenge wählen}{select
+    warning verbosity}.
+  \item[\keyis*{--config}{FILE}] \ldeen{Manifest ausdrücklich wählen}{select a
+    manifest explicitly}.
+  \item[\keyis*{--project-root}{DIR}] \ldeen{Projektwurzel ausdrücklich
+    wählen}{select a project root explicitly}.
+\end{description}
+
+\ldeen{Unbekannte kompatible Minusoptionen werden nur bei Builds an
+\code{latexmk} weitergegeben. Optionen, die Engine, Ausgabeformat oder
+kontrollierte Sicherheitsparameter umgehen würden, werden abgewiesen. Für
+\code{standalone} sind außer \option{--config} und \option{--project-root}
+keine projektbezogenen Auswahloptionen zulässig.}{Compatible unknown dash
+options are forwarded to \code{latexmk} only for builds. Options that would
+bypass the engine, output format, or controlled security parameters are
+rejected. For \code{standalone}, no project-related selection options other
+than \option{--config} and \option{--project-root} are permitted.}
