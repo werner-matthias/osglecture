@@ -144,6 +144,47 @@ supplied target definitions register \code{slides}, \code{handout}, and
 \File{.ollmconfig.local.toml}; they do not silently replace built-in
 definitions with the same name.}
 
+\ldeen{Ein eigenes Target ist beispielsweise sinnvoll, wenn Studierende neben
+dem normalen Skript einen didaktisch anders aufgebauten Studienleitfaden
+erhalten sollen. Dazu registriert Nora zunächst den Suchpfad in
+\File{.ollmconfig.local.toml}}{A custom target is useful, for example, when
+students should receive a study guide with a didactically different structure
+in addition to the normal lecture notes. Nora first registers the search path
+in \File{.ollmconfig.local.toml}}:
+
+\begin{verbatim}
+schema = 1
+
+[definitions]
+paths = ["Definitions"]
+\end{verbatim}
+
+\ldeen*{Dann legt sie @1 an}{She then creates @1}{\File{Definitions/targets/studyguide.toml}}:
+
+\begin{verbatim}
+schema = 1
+kind = "target"
+name = "studyguide"
+version = "1.0"
+doctype = "studyguide"
+profile_class = "longform"
+document_metadata = "required"
+unit_scopes = ["a", "as"]
+\end{verbatim}
+
+\ldeen{Erst diese Definition gibt dem Namen \code{studyguide} eine Bedeutung:
+Er ist eine Langform, benötigt frühe PDF-Metadaten und gilt für die angegebenen
+Unit-Scopes. Danach kann das Manifest \code{[targets.studyguide]} mit den
+gewünschten Sprachen aufnehmen. Zusätzlich benötigt \LaTeX\ ein Profil, das den
+neuen Dokumenttyp unterstützt. Ein neuer Name allein genügt also absichtlich
+nicht; Buildauswahl und Satz müssen denselben Vertrag verstehen.}{Only this
+definition gives the name \code{studyguide} a meaning: it is a long form,
+requires early PDF metadata, and applies to the listed unit scopes. The
+manifest may then add \code{[targets.studyguide]} with the desired languages.
+\LaTeX\ also needs a profile supporting the new document type. A new name alone
+is deliberately insufficient; build selection and typesetting must understand
+the same contract.}
+
 \subsection{\ldeen{Standardeinstellungen für Nutzer}{User Defaults}}
 
 \ldeen{Wer mehrere Projekte mit demselben Bundle bearbeitet, kann sein
@@ -318,6 +359,93 @@ path, \keyis{longform-profile}{mybook} is sufficient. \osglecture\ loads the
 file automatically when first selected and checks whether the requested
 document type is supported.}
 
+\subsection{\ldeen{Den Modusgraphen erweitern}{Extending the Mode Graph}}
+\label{sec:configuration-mode-extensions}
+
+\ldeen{Ein eigener Modus ist angebracht, wenn eine neue Ausgabeeigenschaft
+inhaltlich abgefragt werden soll. Ein neues Farbschema ist kein Modus; es
+ändert nur die Darstellung. Ein Studienleitfaden, der zusätzliche
+Selbstkontrollfragen enthält und zugleich eine druckbare Langform ist, benötigt
+dagegen sinnvollerweise den Blattmodus \code{studyguide} mit den Eltern
+\code{longform} und \code{print}.}{A custom mode is appropriate when a new
+output property needs to be queried in the content. A new colour scheme is not
+a mode; it only changes presentation. A study guide containing additional
+self-assessment questions while also being a printable long form, by contrast,
+reasonably needs the \code{studyguide} leaf mode with the parents
+\code{longform} and \code{print}.}
+
+\ldeen{Die Deklaration gehört in eine Modus-Setup-Datei, die ein Profil vor der
+Finalisierung des Graphen lädt}{The declaration belongs in a mode setup file
+loaded by a profile before the graph is finalized}:
+
+\begin{verbatim}
+% osglecture-mode-studyguide.tex
+\DeclareLectureMode[parents={longform,print}]{studyguide}
+\AssignLectureModeBehavior{studyguide}{longform}
+\end{verbatim}
+
+\ldeen{Die Eltern beschreiben fachliche Zugehörigkeit: Eine Abfrage nach
+\code{studyguide}, \code{longform} oder \code{print} ist für diese Instanz
+wahr. Die Verhaltensklasse beantwortet eine andere Frage: Welche konkrete
+Implementierung sollen polymorphe Befehle für diesen Blattmodus verwenden?
+Durch die Zuordnung zu \code{longform} kann der neue Typ die vorhandenen
+Langformimplementierungen wiederverwenden. Nur wenn tatsächlich neues Verhalten
+benötigt wird, sollte mit \cs{DeclareModeBehaviorClass} eine neue
+Verhaltensklasse eingeführt werden; dann müssen alle dafür geltenden
+Befehlsverträge vollständig implementiert sein.}{The parents describe semantic
+membership: a query for \code{studyguide}, \code{longform}, or \code{print}
+is true for this instance. The behaviour class answers a different question:
+which concrete implementation should polymorphic commands use for this leaf
+mode? Assigning \code{longform} lets the new type reuse existing long-form
+implementations. Only genuinely new behaviour should introduce a new behaviour
+class with \cs{DeclareModeBehaviorClass}; every command contract applying to
+that class must then be implemented completely.}
+
+\ldeen{Das zugehörige Profil verbindet den fachlichen Modus mit einer
+Satzumgebung. Gegenüber dem vorigen Profilbeispiel kommen der neue Dokumenttyp
+und die Setup-Datei hinzu}{The corresponding profile connects the semantic
+mode to a typesetting environment. Compared with the previous profile example,
+the new document type and setup file are added}:
+
+\begin{verbatim}
+\DeclareOsgLectureProfile{studyguide-scrbook}{
+  backend=scrbook,
+  adapter=scrbook,
+  class=scrbook,
+  doctypes={studyguide},
+  mode-setup-file=osglecture-mode-studyguide.tex,
+  document-metadata=supported
+}
+\end{verbatim}
+
+\ldeen{Der Lebenszyklus ist absichtlich streng: Zuerst werden Modi,
+Elternkanten und Aliase deklariert; danach aktiviert \osglecture\ die aus dem
+Dokumenttyp und dem Profil stammenden Blattmodi; schließlich finalisiert es den
+Graphen. Erst dann werden modusabhängige Konfiguration und Inhalte ausgewertet.
+Nach der Finalisierung sind Deklarationen und Änderungen Fehler. Dadurch sehen
+alle späteren Abfragen denselben geprüften, zyklenfreien Graphen.}{The lifecycle
+is deliberately strict: modes, parent edges, and aliases are declared first;
+then \osglecture\ activates the leaf modes supplied by the document type and
+profile; finally it finalizes the graph. Only then are mode-dependent
+configuration and content evaluated. Declarations and changes after
+finalization are errors. This ensures that every subsequent query sees the
+same validated, acyclic graph.}
+
+\ldeen{\cs{DeclareLectureModeParents}\marg{mode}\marg{parents} ergänzt oder
+ersetzt die Elternangabe getrennt von der Deklaration;
+\cs{DeclareLectureModeAlias}\marg{alias}\marg{mode} stellt einen alternativen
+Namen bereit. \cs{SetLectureModes} und \cs{AddLectureModes} wählen Blattmodi,
+\cs{FinalizeLectureModes} schließt den Graphen. In gewöhnlichen
+\cls{osglecture}-Projekten werden die letzten drei Schritte von Klasse und
+Profil ausgeführt; Projektquellen sollten sie nicht vorwegnehmen.}{
+\cs{DeclareLectureModeParents}\marg{mode}\marg{parents} supplies or replaces
+parents separately from declaration;
+\cs{DeclareLectureModeAlias}\marg{alias}\marg{mode} provides an alternative
+name. \cs{SetLectureModes} and \cs{AddLectureModes} select leaf modes, while
+\cs{FinalizeLectureModes} closes the graph. In ordinary \cls{osglecture}
+projects, the class and profile perform the last three steps; project sources
+should not pre-empt them.}
+
 \subsection{\ldeen{Konfigurationsreferenz}{Configuration Reference}}
 \label{sec:configuration-reference}
 
@@ -372,7 +500,7 @@ document type is supported.}
   \item[\cs{LectureTargetSetup}\marg{target}\marg{settings}]
     \ldeen{akzeptiert \option{profile} und \option{filecolor}}{accepts
     \option{profile} and \option{filecolor}}.
-  \item[\cs{IncludeOsgLecturePreamble}\sarg\oarg*{modes}\oarg{class=list}
+  \item[\cs{IncludeOsgLecturePreamble}\sarg\aarg{modes}\oarg{class=list}
     \marg{name}] \ldeen{registriert ein bedingtes Präambelfragment; die
     Sternform lädt sofort und erlaubt deshalb keine Bedingungen}{registers a
     conditional preamble fragment; the starred form loads immediately and
@@ -394,13 +522,13 @@ document type is supported.}
 \cs{OsgLectureSet}\meta{Field}, ein Langwert
 \cs{OsgLecture}\meta{Field} und ein Kurzwert
 \cs{OsgLectureShort}\meta{Field}. Die Setter akzeptieren
-\oarg*{mode}\oarg{short value}\marg{long value}.}{The predefined metadata
+\aarg{mode}\oarg{short value}\marg{long value}.}{The predefined metadata
 fields are \code{title}, \code{subtitle}, \code{author}, \code{institute},
 \code{date}, \code{course}, and \code{event}. Each field has a setter
 \cs{OsgLectureSet}\meta{Field}, a long-value command
 \cs{OsgLecture}\meta{Field}, and a short-value command
 \cs{OsgLectureShort}\meta{Field}. Setters accept
-\oarg*{mode}\oarg{short value}\marg{long value}.}
+\aarg{mode}\oarg{short value}\marg{long value}.}
 
 \paragraph{\ldeen{Profile definieren}{Defining profiles}.}
 \ldeen{\cs{DeclareOsgLectureProfile}\marg{name}\marg{settings} akzeptiert

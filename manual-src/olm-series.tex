@@ -1,7 +1,73 @@
-\section{\ldeen{Serien und Standalone}{Series and Standalone}}
+\section{\ldeen{Serien}{Series}}
 \label{sec:series}
-% TODO: Contuniations
-% Außerdem ist evtl der Referenceabschnitt hier besser untergebracht.
+
+\ldeen{Eine Serie ist mehr als eine Menge von Verzeichnissen. Ihre Einheiten
+können voneinander abhängen: Kapitelnummern sollen fortlaufen, ein Querverweis
+benötigt ein Ziel aus einer anderen Unit, und ein Gesamtdokument benötigt die
+gebauten Einzelkapitel. \OLLM\ hält dafür promovierte Zustände vor und kann
+veraltete Produzenten mit \option{--resolve} neu bauen. Ohne diesen
+Serienzustand könnte ein lokaler \LaTeX-Lauf nur die aktuelle Quelldatei sehen.}{A
+series is more than a set of directories. Its units may depend on one another:
+chapter numbers should continue, a cross-reference needs a target from another
+unit, and a combined document needs the built individual chapters. \OLLM\ keeps
+promoted state for these purposes and can rebuild stale producers with
+\option{--resolve}. Without this series state, a local \LaTeX\ run could only
+see the current source file.}
+
+\subsection{\ldeen{Zähler fortsetzen}{Continuing Counters}}
+
+\ldeen{Jede Unit wird als eigenständiges Dokument gebaut. Das löst das Problem
+getrennter Ausgabe und inkrementeller Builds, führt aber zunächst zu einem
+neuen Problem: \LaTeX\ würde Kapitel, Abschnitte und Seiten in jeder Unit wieder
+bei eins beginnen lassen. Für ein später integriertes Skript wären dann etwa
+mehrere Kapitel~1 vorhanden. Die Fortsetzungsfunktion importiert deshalb
+ausgewählte Endstände der vorherigen, für den Dokumenttyp passenden Unit.}{Each
+unit is built as an independent document. This enables separate distribution
+and incremental builds, but initially creates another problem: \LaTeX\ would
+restart chapters, sections, and pages at one in every unit. A subsequently
+integrated set of notes would then contain several Chapter~1s. Counter
+continuation therefore imports selected final values from the preceding unit
+applicable to the document type.}
+
+\ldeen{Welche Zähler fortlaufen, ist eine Darstellungsentscheidung. Folien
+benötigen meist keine durchgehenden Seitenzahlen; ein Skript dagegen häufig
+schon. Die Einstellung gehört deshalb zum Modus \code{longform} in
+\File{Include/projectconfig.tex}}{Which counters should continue is a rendering
+decision. Slides usually do not need page numbers that run across units,
+whereas lecture notes often do. The setting therefore belongs to the
+\code{longform} mode in \File{Include/projectconfig.tex}}:
+
+\begin{verbatim}
+\OsgLectureSetup{
+  mode/longform={
+    continuation={counters={page,chapter,section}}
+  }
+}
+\end{verbatim}
+
+\ldeen{Angenommen, \code{010-introduction} endet mit Abschnitt~2. Dann beginnt
+der erste \cs{section}-Aufruf in \code{020-processes} mit Abschnitt~3. Ein
+nicht genannter Zähler wie \code{figure} beginnt weiterhin neu. Diese explizite
+Auswahl ist wichtig: Lokale Zähler sollen nicht versehentlich eine Bedeutung
+über Unit-Grenzen erhalten. Soll eine Langform überhaupt nichts fortsetzen,
+kann \code{continuation={none}} verwendet werden.}{Suppose
+\code{010-introduction} ends with Section~2. The first \cs{section} call in
+\code{020-processes} then produces Section~3. A counter not listed, such as
+\code{figure}, still restarts. This explicit selection matters: local counters
+should not accidentally acquire meaning across unit boundaries. To disable
+continuation entirely for a long form, use \code{continuation={none}}.}
+
+\ldeen{Die vorherige Instanz muss mindestens einmal erfolgreich gebaut worden
+sein, damit ihr Zählerstand vorliegt. Nach dem Einfügen eines neuen Abschnitts
+in eine frühe Unit aktualisiert folgender Lauf die abhängigen deutschen
+Skriptinstanzen}{The preceding instance must have been built successfully at
+least once so that its counter state is available. After inserting a new
+section in an early unit, the following command updates the dependent German
+script instances}:
+
+\begin{verbatim}
+ollm build script --language=de --scope=series --resolve
+\end{verbatim}
 
 \subsection{Integration}
 \ldeen{Die Dokumente der Lehreinheiten einer Serie können einzeln verwendet werden.
@@ -49,7 +115,7 @@ Zunächst bauen Sie beim Schreiben die zu integrierenden Dokumente und erst zule
 das Rahmendokument.
 Es empfiehlt sich, vor dem Bau des Rahmendokuments mit \code{ollm check} zu überprüfen,
 ob alle zu integrierenden Dokumente erstellt und alle Referenzen aufgelöst sind.
-Falls nicht, müssen Sie ggf.\ weitere Übersetzungsläufe anstossen.
+Falls nicht, müssen Sie ggf.\ weitere Übersetzungsläufe anstoßen.
 Auch hier kann Sie \code{ollm} unterstützen:
 Mit Hilfe der Option \option{--resolve} werden Abhängigkeiten bis zu einer
 vorgegebenen Tiefe erkannt und ausgelöst.}{The normal integration workflow is
@@ -156,15 +222,6 @@ therefore both higher quality and more predictable.}
     Dokumentreihenfolge}{includes, in an integration unit, the already built
     instance with the same language and document type; call order determines
     document order}.
-  \item[\option{standalone}] \ldeen{aktiviert den manifestfreien Klassenmodus}{enables
-    the manifest-free class mode}.
-  \item[\option{doctype}, \option{profile}, \option{lang},
-    \option{class-options}, \option{patch-overlays}]
-    \ldeen{sind die im Standalone-Betrieb relevanten Klassenoptionen; ihre
-    Werte und Defaults stehen vollständig in
-    Abschnitt~\ref{sec:configuration-reference}}{are the class options relevant
-    to standalone operation; their values and defaults are listed completely
-    in Section~\ref{sec:configuration-reference}}.
 \end{description}
 
 \ldeen{Integration ist nur in einer Serie mit genau einer passenden Unit der

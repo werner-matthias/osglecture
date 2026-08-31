@@ -24,10 +24,10 @@ author or authors, and possibly further metadata. To avoid repeating these for
 every unit, store them in \File{Include/projectconfig.tex}. The following
 commands are available:}
 \begin{description}
-  \item[\cs{course}\oarg*{\ldeen{Modus}{mode}}\oarg{\ldeen{Kurzname}{short name}}\marg{\ldeen{Name}{name}}]
+  \item[\cs{course}\aarg{\ldeen{Modus}{mode}}\oarg{\ldeen{Kurzname}{short name}}\marg{\ldeen{Name}{name}}]
     \ldeen{Setzt den Kursnamen für alle oder für den angegebenen Modus.}{Sets
     the course name for all modes or for the specified mode.}
-  \item[\cs{event}\oarg*{\ldeen{Modus}{mode}}\oarg{\ldeen{Kurzname}{short name}}\marg{\ldeen{Name}{name}}]
+  \item[\cs{event}\aarg{\ldeen{Modus}{mode}}\oarg{\ldeen{Kurzname}{short name}}\marg{\ldeen{Name}{name}}]
     \ldeen{Setzt den Veranstaltungsnamen für alle oder für den angegebenen
     Modus.}{Sets the event name for all modes or for the specified mode.}
 \end{description}
@@ -44,6 +44,25 @@ course and event metadata are mapped to the title, subtitle, or neither. The
 complete setters and query commands are listed in
 Section~\ref{sec:configuration-reference}.}
 
+\ldeen{Die drei Argumentarten dürfen nicht vertauscht werden. Die spitzen
+Klammern wählen einen Modus, die eckigen Klammern enthalten den Kurztext, und
+die geschweiften Klammern den verpflichtenden Langtext. Beispielsweise setzt}{The
+three argument forms are not interchangeable. Angle brackets select a mode,
+square brackets contain the short text, and braces contain the required long
+text. For example}:
+
+\begin{verbatim}
+\course<presentation>[OS]{Betriebssysteme}
+\course<longform>[Betriebssysteme]{Betriebssysteme und Systemsoftware}
+\end{verbatim}
+
+\ldeen{damit je nach Dokumentinstanz unterschiedliche Kurz- und Langwerte.
+Ohne Modusangabe gilt der Wert für alle Instanzen; ohne Kurzform wird der
+Langwert zugleich als Kurzwert verwendet.}{sets different short and long values
+depending on the document instance. Without a mode, the value applies to all
+instances; without a short form, the long value is also used as the short
+value.}
+
 \subsection{\ldeen{Präsentationen}{Presentations}}
 \ldeen{Wenn Sie Präsentationen entwickeln, stellt \osglecture\ unabhängig vom
 gewählten Profil die gemeinsame Struktur aus \env{frame}, \cs{frametitle} und
@@ -57,6 +76,22 @@ of the selected profile. Overlays and theme-specific commands, however, come
 from the selected base class. A theme designed for \cls{beamer} is therefore
 not automatically usable with \cls{ltx-talk}. Use the modes described in the
 following section for portable content selection.}
+
+\ldeen{Standardmäßig bindet \option{patch-overlays=true} reine Ausdrücke aus
+registrierten Modi in die nativen Modus- und Overlaybefehle von \cls{beamer}
+und \cls{ltx-talk} ein. Eine Spezifikation wie \code{<longform>} wird dann als
+portable Modusabfrage erkannt; eine numerische Spezifikation wie \code{<2->}
+bleibt ein natives Overlay. Unbekannte oder gemischte Ausdrücke werden ebenfalls
+an die Basisklasse weitergereicht. Wer diese Integration nicht möchte, setzt
+\option{patch-overlays=false}; \cs{lecturemode} und
+\cs{IfLectureModeTF} funktionieren weiterhin.}{By default,
+\option{patch-overlays=true} integrates pure expressions made up of registered
+modes into the native mode and overlay commands of \cls{beamer} and
+\cls{ltx-talk}. A specification such as \code{<longform>} is then recognized
+as a portable mode query, while a numeric specification such as \code{<2->}
+remains a native overlay. Unknown or mixed expressions are also delegated to
+the base class. Set \option{patch-overlays=false} to disable this integration;
+\cs{lecturemode} and \cs{IfLectureModeTF} continue to work.}
 \subsection{\ldeen{Mehrsprachige Dokumente}{Multilingual Documents}}
 \ldeen{In einem \osglecture-Projekt können mehrere Sprachfassungen eines
 Inhalts erstellt werden. Dabei teilen sich OLLM und das Paket \pkg{langselect}
@@ -144,16 +179,26 @@ an argument or command is missing in the English branch.}
 ollm build --all
 \end{verbatim}
 
-\subsection{\ldeen{Unterschiedliche Dokumententypen}{Different Document Types}}
+\subsection{\ldeen{Inhalte mit \osglecture-Modi auswählen}{Selecting Content with \osglecture\ Modes}}
+\label{sec:content-osglecture-modes}
+\ldeen{Die begriffliche Trennung von Modi und Overlays sowie das Zusammenspiel
+mit Targets und Profilen wurde in Abschnitt~\ref{sec:concept-modes-overlays}
+eingeführt. Hier geht es um die konkrete Autorenschnittstelle: Modi wählen
+Inhalte und Metadaten einer Dokumentinstanz aus; sie steuern nicht die
+Klickfolge innerhalb einer Präsentation.}{Section~\ref{sec:concept-modes-overlays}
+introduced the conceptual distinction between modes and overlays and their
+interaction with targets and profiles. This section covers the concrete author
+interface: modes select content and metadata for a document instance; they do
+not control the click sequence within a presentation.}
 \ldeen{Ein \emph{Modus} ist eine benannte Eigenschaft der gerade erzeugten
 Dokumentinstanz. Er beantwortet eine einfache Frage wie "`Ist dies eine
-Präsentation?"', "`Ist dies eine Langform?"' oder "`Wird für den Bildschirm
-gesetzt?"'. Der Befehl \cs{lecturemode}\meta{modus}\marg{Inhalt} gibt
+Präsentation?"', "`Ist dies eine Langform?"' oder "`Ist dies eine Druckausgabe?"'.
+Der Befehl \cs{lecturemode}\aarg{Modus}\marg{Inhalt} gibt
 seinen Inhalt nur aus, wenn die aktuelle Instanz diese Eigenschaft besitzt.}{A
 \emph{mode} is a named property of the document instance currently being
 created. It answers a simple question such as "`Is this a presentation?"',
-"`Is this a long form?"', or "`Is this being typeset for a screen?"'. The
-command \cs{lecturemode}\meta{mode}\marg{content} emits its content only
+"`Is this a long form?"', or "`Is this a print output?"'. The
+command \cs{lecturemode}\aarg{mode}\marg{content} emits its content only
 when the current instance has that property.}
 
 \ldeen{Wer \cls{beamer} oder \cls{ltx-talk} kennt, kennt bereits ähnlich
@@ -179,6 +224,23 @@ select the \code{longform} behavior mode; if it belongs only on slides, select
 \code{slides}. Selecting the concrete base class is rarely necessary and makes
 a later profile change harder.}
 
+\ldeen{\osglecture\ unterscheidet ausgewählte Blattmodi und deren aktive
+Elternhülle. \cs{LectureModes} nennt die konkret gesetzten Modi;
+\cs{ActiveLectureModes} enthält zusätzlich alle über den Modusgraphen
+erreichbaren allgemeineren Modi. Bei Beamer-Folien kann die erste Liste
+beispielsweise \code{projector,beamer} enthalten, während in der zweiten außerdem
+\code{presentation} aktiv ist. \code{slides} ist dabei der benutzerfreundliche
+Alias für \code{projector}. Für die Inhaltsauswahl ist
+fast immer die Elternhülle gemeint; genau diese prüft \cs{lecturemode}.}{
+\osglecture\ distinguishes selected leaf modes from their active parent
+closure. \cs{LectureModes} lists the modes selected directly;
+\cs{ActiveLectureModes} additionally contains every more general mode reachable
+through the mode graph. For Beamer slides, for example, the first list may
+contain \code{projector,beamer}, while the second also activates
+\code{presentation}. Here, \code{slides} is the user-facing alias for
+\code{projector}. Content selection almost always means the parent
+closure, which is precisely what \cs{lecturemode} tests.}
+
 \begin{verbatim}
 \lecturemode<longform>{
   \ldeen{Ausführliche Herleitung der Laufzeit: $T(n)=\Theta(n\log n)$.}
@@ -200,6 +262,21 @@ handout, for example, is both a presentation form and a print output. Thus, the
 same content can be enabled with \code{<presentation>} for slides and handouts,
 or with \code{<print>} for all print-oriented results. Multiple alternatives
 can be joined with \code{|}.}
+
+\ldeen{Dasselbe Modusargument steht auch an Metadatenbefehlen wie
+\cs{course}\aarg{longform} und an bedingt geladenen Präambelfragmenten zur
+Verfügung. Dadurch bleibt die Auswahlregel auf allen Ebenen gleich: Erst wird
+der Modusgraph aus Dokumenttyp und Profil fertiggestellt, danach werden
+modusabhängige Werte und Inhalte ausgewertet. Eigene Modi müssen deshalb vor
+dieser Finalisierung deklariert werden; die Projektkonfiguration dafür steht in
+Abschnitt~\ref{sec:configuration-mode-extensions}.}{The same mode argument is
+available on metadata commands such as \cs{course}\aarg{longform} and on
+conditionally loaded preamble fragments. The selection rule therefore remains
+the same at every level: the mode graph is first completed from document type
+and profile, after which mode-dependent values and content are evaluated.
+Custom modes must consequently be declared before this finalization; the
+project configuration is described in
+Section~\ref{sec:configuration-mode-extensions}.}
 
 \subsection{\ldeen{Aufzählungen als Fließtext}{Lists as Continuous Text}}
 \ldeen{Für Aufzählungen, die im Skript besser als Fließtext lesbar sind, ist
@@ -366,9 +443,29 @@ defining new profiles or adapters are instead listed in
 Section~\ref{sec:configuration-reference}; they are not needed when writing
 ordinary course units.}
 
+\paragraph{\ldeen{Lehreinheit und Metadaten}{Course unit and metadata}.}
+\begin{description}
+  \item[\cs{lecture}\oarg{short title}\marg{title}\marg{unit ID}]
+    \ldeen{beginnt die logisch identifizierte Lehreinheit}{starts the logically
+    identified course unit}.
+  \item[\cs{course}, \cs{event}, \cs{title}, \cs{subtitle}, \cs{author},
+    \cs{institute}, \cs{date}]
+    \aarg{mode}\oarg{short value}\marg{long value}\quad
+    \ldeen{setzen ein Metadatenfeld; Modus und Kurzform sind optional}{set a
+    metadata field; mode and short form are optional}.
+  \item[\cs{OsgLectureSet}\meta{Field}\aarg{mode}\oarg{short value}
+    \marg{long value}]
+    \ldeen{einheitlicher Settername für jedes vordefinierte oder deklarierte
+    Metadatenfeld}{uniform setter name for every predefined or declared
+    metadata field}.
+  \item[\cs{OsgLecture}\meta{Field}, \cs{OsgLectureShort}\meta{Field}]
+    \ldeen{expandierbare Abfrage des Lang- beziehungsweise Kurzwerts}{expandable
+    query of the long or short value, respectively}.
+\end{description}
+
 \paragraph{\ldeen{Modi und bedingte Inhalte}{Modes and conditional content}.}
 \begin{description}
-  \item[\cs{lecturemode}\oarg*{mode expression}\marg{content}]
+  \item[\cs{lecturemode}\aarg{mode expression}\marg{content}]
     \ldeen{gibt den Inhalt aus, wenn mindestens einer der mit Komma oder
     \code{|} getrennten Modi aktiv ist; ohne Modusausdruck wird der Inhalt
     immer ausgegeben}{emits the content if at least one mode separated by a
@@ -387,15 +484,12 @@ ordinary course units.}
     respectively}.
 \end{description}
 
-\ldeen{Für Erweiterungen des Modusgraphen stehen zusätzlich
-\cs{DeclareLectureMode}, \cs{DeclareLectureModeParents},
-\cs{DeclareLectureModeAlias}, \cs{SetLectureModes}, \cs{AddLectureModes} und
-\cs{FinalizeLectureModes} zur Verfügung. Die Deklarationsphase endet mit der
-Finalisierung; spätere Änderungen sind Fehler.}{Extensions of the mode graph
-can additionally use \cs{DeclareLectureMode},
-\cs{DeclareLectureModeParents}, \cs{DeclareLectureModeAlias},
-\cs{SetLectureModes}, \cs{AddLectureModes}, and \cs{FinalizeLectureModes}.
-Finalization ends the declaration phase; later changes are errors.}
+\ldeen{Die Befehle zur Erweiterung des Modusgraphen sind in
+Abschnitt~\ref{sec:configuration-mode-extensions} zusammengefasst; sie gehören
+zur Projekt- und Profilkonfiguration, nicht zum gewöhnlichen Schreiben einer
+Unit.}{The commands for extending the mode graph are summarized in
+Section~\ref{sec:configuration-mode-extensions}; they belong to project and
+profile configuration rather than ordinary unit authoring.}
 
 \paragraph{\ldeen{Präsentationslisten}{Presentation lists}.}
 \begin{description}
@@ -406,12 +500,12 @@ Finalization ends the declaration phase; later changes are errors.}
     \code{manual}}{produces a list in presentations and a grammatically joined
     paragraph in long forms. \option{language} overrides the detected language;
     \option{punctuation} accepts \code{auto} or \code{manual}}.
-  \item[\cs{presitem}\oarg{relation, initial}\oarg*{overlay}\oarg{label}]
+  \item[\cs{presitem}\oarg{relation, initial}\aarg{overlay}\oarg{label}]
     \option{relation}: \code{sentence}, \code{and}, \code{but},
     \code{therefore}, \code{comma}, \code{colon}; \option{initial}:
     \code{auto}, \code{keep}.
   \item[\cs{anditem}, \cs{butitem}, \cs{thereforeitem}, \cs{commaitem},
-    \cs{colonitem}]
+    \cs{colonitem}\aarg{overlay}\oarg{label}]
     \ldeen{Kurzformen für die entsprechenden Relationen; jede Form akzeptiert
     eine Overlayangabe und ein optionales Label wie \cs{item}}{short forms for
     the corresponding relations; each accepts an overlay specification and an

@@ -1,13 +1,17 @@
 \section{\ldeen{Standalone}{Standalone}}
 \label{sec:standalone}
 
-\ldeen{Neben den Serienbetrieb, den wir bisher betrachtet haben, besitzt 
-\osglecture\ noch eine zweite Betirebart, den Standalone-Betrieb.
-Er soll dazu dienen, Dokumente in der durch ein \osglecture-Profil bestimmten
-Weise zu übersetzen, ohne dass dafür der Overhead einer Serie aufgesetzt
-werden muss. Ein typischer Anwendungsfall ist der Foliensatz für einen Vortrag 
-auf einer wissenschaftlichen Konferenz.
-}{}
+\ldeen{Neben dem Serienbetrieb, den wir bisher betrachtet haben, besitzt
+\osglecture\ noch eine zweite Betriebsart, den Standalone-Betrieb.
+Er dient dazu, ein einzelnes Dokument in der durch ein \osglecture-Profil
+bestimmten Weise zu übersetzen, ohne dafür ein Kursmanifest und eine
+Verzeichnisserie anzulegen. Ein typischer Anwendungsfall ist der Foliensatz
+für einen Vortrag auf einer wissenschaftlichen Konferenz.}{In addition to the
+series workflow considered so far, \osglecture\ provides a second mode of
+operation: standalone mode. It typesets a single document using an
+\osglecture\ profile without requiring a course manifest and a series of unit
+directories. A typical use case is a slide deck for a talk at a scientific
+conference.}
 
 \ldeen{Im Standalone-Betrieb beschreibt das Dokument seine
 Ausgabe selbst und besitzt weder Buildauftrag noch
@@ -18,15 +22,28 @@ output and is typeset without a project manifest. The subject-facing commands
 remain largely the same; the main difference is where context and defaults
 come from.}
 
-\ldeen{Um \cls{osglecture} im Standalone-Betrieb zu bringen, muss dies
-entweder mit der Klassenoption \option{standalone}
-ausdrücklich erklären, oder \OLLM\ mit dem Befehl \option{standalone} aufgerufen 
-werden. Tatsächlich ist aber der erste Fall in der Regel sinnvoller:
-\OLLM\ kann nicht viel beim Standalone-Betrieb beitragen, so dass man sich
-den Overhead sparen kann und direkt \File{latexmk} oder \File{lualatex} 
-aufrufen kann}{A standalone
-document has neither a build request nor a series manifest. It must declare
-this explicitly with the \option{standalone} class option. }
+\ldeen{Ein Standalone-Dokument hat weder Buildauftrag noch Serienmanifest und
+muss dies mit der Klassenoption \option{standalone} ausdrücklich erklären.
+Alternativ versteht \OLLM\ den Komfortaufruf \code{ollm standalone main.tex}.
+Der direkte Klassenmodus ist meist einfacher: Ohne Buildmatrix,
+Serienabhängigkeiten oder Deployment gibt es für \OLLM\ wenig zu koordinieren,
+und \code{latexmk main.tex} genügt.}{A standalone document has neither a build
+request nor a series manifest and must declare this explicitly with the
+\option{standalone} class option. Alternatively, \OLLM\ supports the convenience
+command \code{ollm standalone main.tex}. Using the class mode directly is
+usually simpler: without a build matrix, series dependencies, or deployment,
+there is little for \OLLM\ to coordinate, and \code{latexmk main.tex} is
+sufficient.}
+
+\begin{infobox}{}\sffamily
+\ldeen{Die Wahl ist eine Frage des Problems, nicht der Dokumentlänge: Ein
+vierseitiges Handout, das in drei Sprachen zusammen mit zwölf Lehreinheiten
+gebaut wird, gehört in eine Serie. Ein hundertseitiger einmaliger Tagungsband
+ohne Nachbardokumente kann dagegen Standalone sein.}{The choice depends on the
+problem, not on document length: a four-page handout built in three languages
+alongside twelve course units belongs in a series. A one-off hundred-page
+conference volume without neighbouring documents may still be standalone.}
+\end{infobox}
 
 \ldeen{Dokumenttyp und Sprache, die in einer Serie von \OLLM\
 kommen, werden nun mit \option{doctype} und \option{lang} gewählt. Mit
@@ -44,6 +61,16 @@ with \option{profile}}:
   class-options={11pt,oneside}
 ]{osglecture}
 \end{verbatim}
+
+\ldeen{In diesem Beispiel ist \code{script} die semantische Ausgabeform,
+\cls{scrbook} die technische Satzklasse und \code{de} die unmittelbar im
+Dokument gewählte Sprache. In einer Serie kämen diese drei Entscheidungen aus
+Manifest und Projektkonfiguration; Standalone macht sie absichtlich am
+Dokument sichtbar.}{In this example, \code{script} is the semantic output form,
+\cls{scrbook} is the technical typesetting class, and \code{de} is the language
+selected directly by the document. In a series these three decisions would
+come from the manifest and project configuration; standalone mode deliberately
+makes them visible in the document.}
 
 \ldeen{\option{doctype} ist ohne Angabe \code{slides}; für die eingebauten
 Dokumenttypen existieren Defaultprofile. Explizite Werte machen ein
@@ -111,4 +138,3 @@ class options; OLLM target, language, and matrix options are not permitted in
 this mode. Without series state there are no external unit references, counter
 continuation, or \cs{includeunit} resolution. Local references and
 all mode-aware rendering commands continue to work unchanged.}
-

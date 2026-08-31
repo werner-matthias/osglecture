@@ -102,6 +102,21 @@ the state is readable. \code{check} reads the same data but treats
 inconsistencies as errors and is therefore suitable as a release gate. Neither
 command builds anything.}
 
+\ldeen{Ein typischer Fehler macht den Unterschied greifbar: Fehlt auf einem
+neuen Rechner das Paket \pkg{tagpax}, hilft \code{doctor}, weil die
+Werkzeugkette unvollständig ist. Wurde dagegen \code{020-processes} nach einem
+erfolgreichen Build verändert und das Gesamtskript verwendet noch dessen alte
+Generation, meldet \code{check} den veralteten Projektzustand. \code{report}
+eignet sich zuvor zur Ursachenforschung, weil es die beteiligten Generationen
+und Abhängigkeiten zeigt, ohne den Befund als Freigabefehler zu werten.}{A
+typical failure makes the distinction concrete: if the \pkg{tagpax} package is
+missing on a new machine, \code{doctor} helps because the toolchain is
+incomplete. If, on the other hand, \code{020-processes} was changed after a
+successful build and the combined notes still use its old generation,
+\code{check} reports stale project state. \code{report} is useful for
+investigating the cause first because it shows the generations and dependencies
+involved without treating the finding as a release failure.}
+
 \begin{verbatim}
 ollm report --scope=series
 ollm check --scope=current --target=script --language=de

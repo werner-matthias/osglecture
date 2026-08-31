@@ -9,9 +9,16 @@
 Grundbegriffe werden hier eingeführt; vollständige Schnittstellenübersichten
 finden Sie bei den jeweiligen Themen: Inhalte und Modi in
 Abschnitt~\ref{sec:content-command-reference}, Serien in
-Abschnitt~\ref{sec:series}, Standalone-Betrieb im Abschnitt~\ref{sec:standalone} Konfiguration und Profile in
+Abschnitt~\ref{sec:series}, Standalone-Betrieb in
+Abschnitt~\ref{sec:standalone}, Konfiguration und Profile in
 Abschnitt~\ref{sec:configuration-reference} sowie OLLM in
-Abschnitt~\ref{sec:ollm-reference}.}{}
+Abschnitt~\ref{sec:ollm-reference}.}{From this section onward, the manual also
+serves as a reference. The basic concepts are introduced here; complete
+interface summaries are located with their respective topics: content and
+modes in Section~\ref{sec:content-command-reference}, series in
+Section~\ref{sec:series}, standalone operation in Section~\ref{sec:standalone},
+configuration and profiles in Section~\ref{sec:configuration-reference}, and
+OLLM in Section~\ref{sec:ollm-reference}.}
 \end{infobox}
 
 \subsection{\ldeen{Projekt}{Project}}
@@ -56,7 +63,6 @@ unterschiedlich sein. In der OSG gibt es einige typische Lehrszenarien}{
   The set of teaching materials required for a course can vary quite
 a lot. At the OSG, there are a number of typical teaching scenarios
 }:
-\
 \begin{enumerate}
   \item \label{it:ts:lec}\ldeen{Es gibt Präsentationen, die die Lehrenden benutzen,
         während die Studierenden dazu passende Handouts erhalten.
@@ -154,7 +160,7 @@ a lot. At the OSG, there are a number of typical teaching scenarios
 \item [\meta{target}] Beschreibt das Ziel dieser Einheit.
   \ldeen{Manchmal gibt es Material, das nur für bestimmte Arten von Materialien sinnvoll ist.
   Beispielsweise werden häufig die organisatorischen Inhalte der Auftaktvorlesung nicht
-  mit im Skript stehen. Dies kann mit dem Target(bereich) beschrieben werden. Es ist ein Code
+  mit im Skript stehen. Dies kann mit dem Targetbereich beschrieben werden. Es ist ein Code
   aus ein oder zwei Buchstaben
   }{
     Sometimes there is material that is only relevant for certain types of materials.
@@ -170,7 +176,7 @@ a lot. At the OSG, there are a number of typical teaching scenarios
     \item [\code{b}] \ldeen{Das Verzeichnis enthält Material für eine Präsentation}{The directory contains materials for a presentation}.
   \end{itemize}
 
-  \ldeen{Ein zusätzlicher zweiter Buchstabe kann es noch weiter einschränken. Beispielsweise steht "`\code{bh}"' für ausschließlich
+  \ldeen{Ein zusätzlicher zweiter Buchstabe kann den Bereich weiter einschränken. Beispielsweise steht "`\code{bh}"' für ausschließlich
   Handouts, es werden also keine Slides erstellt.}{An additional second letter can narrow it down even further. For example, "`\code{bh}"' stands for handouts only, so no slides are created.}
 
   \ldeen{Ohne eine Target-Spezifikation enthält das Verzeichnis Material für \emph{alle} konfigurierten
@@ -183,8 +189,8 @@ a lot. At the OSG, there are a number of typical teaching scenarios
   \begin{itemize}
     \item [\code{a}] \ldeen{Die Einheit ist ein Anhang}{Unit is an appendix}.
     \item [\code{c}] \ldeen{Dies ist synonym zu einer ausgelassenen Rollenangabe und steht für eine normale Einheit}{This is synonymous with an omitted role specification and represents a normal unit}.
-    \item [\code{e}] \ldeen{Die Einheit ist ein Ergänzung. Damit ist gemeint, dass sie zur vorhergehenden Einheit zugehörig ist, aber eine gewisse Eigenständigkeit besitzt. Beispielsweise könnte es ein Übungsblatt oder Ergänzungsmaterial sein.}{The unit is a supplement. This means that it is related to the preceding unit but has a certain degree of independence. For example, it could be a worksheet or supplementary material.}
-    \item [\code{i}] \ldeen{Diese Einheit integriert andere Einheiten. Beispielsweise würde die Integrationseinheit eines Vorlesungsskrits alle Skriptkapitel (die anderen Einheiten) zusammenfügen und ein Titelblatt, gemeinsames Inhaltsverzeichnis etc.\ hinzufügen. Jede Dokumentenart darf nur eine Integrationseinheit haben.}{This unit integrates other units. For example, the integration unit for a lecture transcript would combine all the transcript chapters (the other units) and add a title page, a common table of contents, etc. Each document type may have only one integration unit.}
+    \item [\code{e}] \ldeen{Die Einheit ist eine Ergänzung. Damit ist gemeint, dass sie zur vorhergehenden Einheit gehört, aber eine gewisse Eigenständigkeit besitzt. Beispielsweise könnte es ein Übungsblatt oder Ergänzungsmaterial sein.}{The unit is a supplement. This means that it is related to the preceding unit but has a certain degree of independence. For example, it could be a worksheet or supplementary material.}
+    \item [\code{i}] \ldeen{Diese Einheit integriert andere Einheiten. Beispielsweise würde die Integrationseinheit eines Vorlesungsskripts alle Skriptkapitel (die anderen Einheiten) zusammenfügen und ein Titelblatt, gemeinsames Inhaltsverzeichnis etc.\ hinzufügen. Jede Dokumentenart darf nur eine Integrationseinheit haben.}{This unit integrates other units. For example, the integration unit for a lecture transcript would combine all the transcript chapters (the other units) and add a title page, a common table of contents, etc. Each document type may have only one integration unit.}
   \end{itemize}
 \end{description}
 
@@ -214,7 +220,7 @@ produced, and for whom?"' rather than of a particular \LaTeX\ class.}
 \par\medskip$\Downarrow$\par\smallskip
 \begin{tabular}{c@{\quad$\longrightarrow$\quad}c@{\quad$\longrightarrow$\quad}c}
 \ldeen{Target}{Target} & \ldeen{Profil und Klasse}{Profile and class} & \ldeen{aktive Modi}{active modes}\\
-\code{slides} & \cls{beamer} & \code{slides, presentation, screen}
+\code{slides} & \cls{beamer} & \code{projector, presentation, beamer}
 \end{tabular}
 \end{tcolorbox}
 \caption{\ldeen{Von der Nutzerwahl zur konkreten Darstellung.}{From the user's choice to the concrete rendering.}}
@@ -308,7 +314,33 @@ you decide \emph{how} slides are typeset; in the course unit you only write
   \item[\code{article}] \ldeen{eigenständige Langform, beispielsweise für
     einen Beitrag}{standalone long form, for example a paper}.
 \end{description}
-% TODO: Spätestens hier müsste documentmetadata.tex angesprochen werden
+\ldeen{Einige Profile unterscheiden sich außerdem darin, ob sie die neue
+PDF-Verwaltung von \LaTeX\ benötigen. Insbesondere \cls{ltx-talk} verlangt
+einen \cs{DocumentMetadata}-Aufruf, der technisch vor \cs{documentclass}
+stehen muss. In einer Serie kann die Unit ihn nicht selbst passend voranstellen,
+weil Sprache und Target erst durch den Buildauftrag feststehen. Deshalb gehört
+der frühe Aufruf in \File{Include/documentmetadata.tex}}{Some profiles also
+differ in whether they require \LaTeX's new PDF management. In particular,
+\cls{ltx-talk} requires a \cs{DocumentMetadata} call that technically has to
+precede \cs{documentclass}. In a series, the unit cannot place the appropriate
+call first itself because language and target are only known from the build
+request. The early call therefore belongs in
+\File{Include/documentmetadata.tex}}:
+
+\begin{verbatim}
+\DocumentMetadata{
+  lang=\OsgLectureRequestedLanguage,
+  tagging=on
+}
+\end{verbatim}
+
+\ldeen{Das ist bewusst von sichtbaren Angaben wie \cs{title} und \cs{author}
+getrennt: \File{documentmetadata.tex} aktiviert PDF-Infrastruktur, während
+\File{projectconfig.tex} den fachlichen und gestalterischen Projektkontext
+beschreibt.}{This is deliberately separate from visible information such as
+\cs{title} and \cs{author}: \File{documentmetadata.tex} activates PDF
+infrastructure, whereas \File{projectconfig.tex} describes the project's
+subject-matter and design context.}
 
 \ldeen{Diese Liste ist erweiterbar. Für den Einstieg sollten Sie jedoch die
 mitgelieferten Typen verwenden: Sie sind in \OLLM\ registriert und besitzen bereits
@@ -334,4 +366,120 @@ starting out, however, use the supplied types: they are already registered with
   \label{tab:profiles}
 \end{table}
 
-% TODO: Erweiterbarkeit: wie? + warum?, ggf. mit Beispiel (oder kommt das im Konfig-Kapitel)
+\subsection{\ldeen{Modi und Overlays}{Modes and Overlays}}
+\label{sec:concept-modes-overlays}
+
+\ldeen{Wer nicht mit Präsentationsklassen wie \cls{beamer} gearbeitet hat,
+trifft hier leicht zwei ähnlich aussehende, aber grundverschiedene Konzepte.
+Ein \emph{Modus} entscheidet beim Build, ob Inhalt zu einer Dokumentinstanz
+gehört. Ein \emph{Overlay} erzeugt innerhalb derselben Präsentationsinstanz
+mehrere aufeinanderfolgende Ansichten eines Frames.}{Readers who have not
+worked with presentation classes such as \cls{beamer} can easily confuse two
+concepts that look similar but serve fundamentally different purposes. A
+\emph{mode} decides at build time whether content belongs to a document
+instance. An \emph{overlay} creates several successive views of a frame within
+the same presentation instance.}
+
+\ldeen{Angenommen, eine Folie zeigt zunächst nur eine Frage und nach dem
+nächsten Klick auch die Antwort. Das ist ein Overlay: Beide Ansichten gehören
+zum selben PDF, Target und Sprachbuild. Soll die ausführliche Begründung dagegen
+nur im Skript stehen und auf Folien ganz fehlen, ist das eine Modusentscheidung.
+Sie führt zu unterschiedlichem Inhalt verschiedener Dokumentinstanzen.}{Suppose
+a slide initially shows only a question and reveals the answer after the next
+click. That is an overlay: both views belong to the same PDF, target, and
+language build. If the detailed reasoning should instead appear only in the
+lecture notes and be absent from slides altogether, that is a mode decision.
+It produces different content in different document instances.}
+
+\begin{center}
+\begin{tabular}{lll}
+\textbf{\ldeen{Frage}{Question}} & \textbf{\ldeen{Mechanismus}{Mechanism}} &
+\textbf{\ldeen{Beispiel}{Example}}\\
+\ldeen{Gehört der Inhalt in dieses Ergebnis?}{Does the content belong in this output?} &
+\ldeen{Modus}{mode} & \code{longform}, \code{presentation}\\
+\ldeen{Wann erscheint er innerhalb der Präsentation?}{When does it appear within the presentation?} &
+Overlay & \code{<2->}
+\end{tabular}
+\end{center}
+
+\ldeen{Die Verwechslung liegt auch an der Syntax: Präsentationsklassen
+schreiben Overlays häufig in spitzen Klammern; \osglecture\ verwendet spitze
+Klammern außerdem für Modusargumente. Welches Konzept gemeint ist, bestimmt der
+Befehl. Bei \cs{lecturemode}\code{<longform>} ist es ein Modus. Bei einem von
+der Basisklasse bereitgestellten \cs{item}\code{<2->} ist es ein Overlay. Ein
+Overlayausdruck ist keine portable Modusbedingung.}{The confusion is reinforced
+by syntax: presentation classes often write overlay specifications in angle
+brackets, and \osglecture\ also uses angle brackets for mode arguments. The
+command determines which concept is meant. With
+\cs{lecturemode}\code{<longform>} it is a mode. With an
+\cs{item}\code{<2->} supplied by the base class it is an overlay. An overlay
+specification is not a portable mode condition.}
+
+\ldeen{Modi bilden in \osglecture\ keinen flachen Schaltervorrat, sondern einen
+gerichteten Graphen vom Speziellen zum Allgemeinen. Der konkrete Modus
+\code{handout} hat beispielsweise die Eltern \code{presentation} und
+\code{print}; \code{script} führt über \code{article} zu \code{longform} und
+\code{print}. Eine Abfrage nach einem Elternmodus trifft damit alle passenden
+Spezialisierungen. Das ist der Grund, warum Autoren meist ihre Absicht als
+\code{presentation}, \code{longform}, \code{slides} oder \code{print}
+formulieren sollten, statt eine Basisklasse abzufragen.}{Modes in
+\osglecture\ are not a flat collection of switches but a directed graph from
+specific to general. For example, the concrete \code{handout} mode has the
+parents \code{presentation} and \code{print}; \code{script} leads through
+\code{article} to \code{longform} and \code{print}. Querying a parent mode
+therefore matches all appropriate specializations. This is why authors should
+normally express their intent as \code{presentation}, \code{longform},
+\code{slides}, or \code{print} instead of testing for a base class.}
+
+\ldeen{Target, Dokumenttyp und Profil wirken dabei nacheinander. Das Target
+wählt die gewünschte Ausgabe, der Dokumenttyp aktiviert deren fachlichen
+Blattmodus, und das Profil ergänzt technische Modi der Satzumgebung. Das
+\cls{beamer}-Profil ergänzt beispielsweise \code{beamer}; ein anderes
+Präsentationsprofil muss diesen technischen Modus nicht besitzen. Der
+Elterngraph sorgt dennoch dafür, dass beide Profile dieselbe portable Abfrage
+\code{presentation} erfüllen. Profile dürfen außerdem zusätzliche Modi und
+eine Modus-Setup-Datei mitbringen. Sie erweitern damit die Fähigkeiten einer
+Satzumgebung, ohne die Bedeutung des Dokumenttyps zu ersetzen.}{Target,
+document type, and profile act in sequence. The target selects the requested
+output, the document type activates its semantic leaf mode, and the profile
+adds technical modes belonging to the typesetting environment. For example,
+the \cls{beamer} profile adds \code{beamer}; another presentation profile need
+not have that technical mode. The parent graph nevertheless ensures that both
+profiles satisfy the same portable \code{presentation} query. Profiles may
+also supply additional modes and a mode setup file. They can thus extend the
+capabilities of a typesetting environment without replacing the meaning of the
+document type.}
+
+\ldeen{Overlays bleiben dagegen Aufgabe der gewählten Präsentationsklasse und
+ihres Adapters. \osglecture\ kann gebräuchliche Overlaybefehle anbinden, aber
+es verspricht nicht, dass jede klassen- oder themespezifische Animation einen
+Profilwechsel überlebt. Wer Portabilität zwischen \cls{beamer} und
+\cls{ltx-talk} benötigt, sollte den gemeinsamen Strukturwortschatz verwenden
+und Overlays auf die von beiden Profilen unterstützte Teilmenge begrenzen. Die
+konkrete Inhaltsauswahl wird in Abschnitt~\ref{sec:content-osglecture-modes}
+fortgesetzt.}{Overlays, by contrast, remain the responsibility of the selected
+presentation class and its adapter. \osglecture\ can integrate common overlay
+commands, but it does not promise that every class- or theme-specific animation
+survives a profile switch. Authors requiring portability between \cls{beamer}
+and \cls{ltx-talk} should use the common structural vocabulary and restrict
+overlays to the subset supported by both profiles. Concrete content selection
+continues in Section~\ref{sec:content-osglecture-modes}.}
+
+\ldeen{Erweiterbarkeit ist dann sinnvoll, wenn ein Projekt eine semantisch neue
+Ausgabe benötigt, nicht bloß ein anderes Layout. Ein betreutes Selbststudium
+könnte beispielsweise den Typ \code{studyguide} mit eigenen aktiven Modi und
+einem Langformprofil einführen. Ein bloßer Wechsel von \cls{book} zu
+\cls{scrbook} benötigt dagegen nur ein anderes Profil für den vorhandenen Typ
+\code{script}. Diese Unterscheidung verhindert, dass technische
+Satzentscheidungen die Buildmatrix unnötig vergrößern. Das vollständige
+Profilbeispiel steht in Abschnitt~\ref{sec:project-configuration}; neue
+OLLM-Targets werden über die dort beschriebenen Targetdefinitionen
+registriert.}{Extensibility is useful when a project needs a semantically new
+output, not merely a different layout. For example, supervised self-study
+might introduce a \code{studyguide} type with its own active modes and a
+long-form profile. Merely switching from \cls{book} to \cls{scrbook}, by
+contrast, only requires another profile for the existing \code{script} type.
+This distinction prevents technical typesetting decisions from needlessly
+expanding the build matrix. The complete profile example is in
+Section~\ref{sec:project-configuration}; new OLLM targets are registered using
+the target definitions described there.}
