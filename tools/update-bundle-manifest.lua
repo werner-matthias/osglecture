@@ -37,7 +37,8 @@ local modules = {
   { name = "lttheme-tuc-2019", files = { "lttheme-tuc-2019/lttheme-tuc-2019.dtx" },
     lua = ':new_moon:' },
   { name = "ansiterm",         files = { "ansiterm/ansiterm.dtx" },
-    lua = ':full_moon:' },
+    lua = ':full_moon:',
+    note = "The incompatibility for TL 2025 refers to tagging only; the basis features are okay." },
   { name = "osglistings",      files = { "osglistings/osglistings.dtx" },
     lua = ':full_moon:' },
   { name = "osgdoc",           files = { "osgdoc/osgdoc.dtx" },
@@ -212,6 +213,7 @@ for _, mod in ipairs(modules) do
     version_list = version_list,
     date_list = date_list,
     lua = mod.lua,
+    note = mod.note,
   })
 end
 
@@ -248,6 +250,10 @@ local lines = {
   "| " .. table.concat(header_cells, " | ") .. " |",
   hformat,
 }
+-- Notes are numbered in table order and rendered as footnotes right below
+-- the table, inside the generated block, so the marker in the name cell
+-- and its definition can never drift apart or survive a module's removal.
+local footnotes = {}
 for _, r in ipairs(report) do
   local version_cell, date_cell, lua_cell
   if #r.entries == 0 then
@@ -261,7 +267,12 @@ for _, r in ipairs(report) do
   lua_cell = r.lua
   local compat = assert(workflow_compat[r.name],
     "no workflow compatibility expectations for " .. r.name)
-  local row_cells = { r.name, version_cell, date_cell, tostring(#r.entries), lua_cell }
+  local name_cell = r.name
+  if r.note then
+    table.insert(footnotes, r.note)
+    name_cell = name_cell .. "[^" .. #footnotes .. "]"
+  end
+  local row_cells = { name_cell, version_cell, date_cell, tostring(#r.entries), lua_cell }
   for _, c in ipairs(compat) do table.insert(row_cells, c) end
   table.insert(lines, "| " .. table.concat(row_cells, " | ") .. " |")
   for _, name in ipairs(capabilities_after[r.name] or {}) do
@@ -274,6 +285,9 @@ for _, r in ipairs(report) do
     table.insert(lines,
       "| " .. table.concat(capability_cells, " | ") .. " |")
   end
+end
+for i, note in ipairs(footnotes) do
+  table.insert(lines, "[^" .. i .. "]: " .. note)
 end
 table.insert(lines, "<!-- END MODULE VERSIONS -->")
 local table_block = table.concat(lines, "\n")
