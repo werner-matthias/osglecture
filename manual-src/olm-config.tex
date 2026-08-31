@@ -2,12 +2,12 @@
 \label{sec:project-configuration}
 
 \ldeen{Die Konfiguration von \osglecture\ liegt absichtlich nicht in einer
-einzigen Datei. Verschiedene Ebenen beantworten verschiedene Fragen: OLLM
+einzigen Datei. Verschiedene Ebenen beantworten verschiedene Fragen: \OLLM\ 
 entscheidet, \emph{was} gebaut werden darf und wo Ergebnisse liegen;
 \LaTeX\ entscheidet, \emph{wie} eine ausgewählte Dokumentinstanz gesetzt wird.
 Eine Einstellung gehört auf die niedrigste Ebene, auf der sie für alle
 betroffenen Dokumente gilt.}{The configuration of \osglecture\ is deliberately
-not kept in one file. Different layers answer different questions: OLLM
+not kept in one file. Different layers answer different questions: \OLLM\ 
 decides \emph{what} may be built and where results live; \LaTeX\ decides
 \emph{how} a selected document instance is typeset. Put a setting at the
 lowest layer at which it applies to all affected documents.}
@@ -17,7 +17,7 @@ lowest layer at which it applies to all affected documents.}
     \ldeen{wählt persönliche Defaults, derzeit insbesondere das bevorzugte
     Bundle-Preset}{selects personal defaults, currently in particular the
     preferred bundle preset}.
-  \item[\texttt{ollmconfig.toml}]
+  \item[\File{ollmconfig.toml}]
     \ldeen{definiert Identität, Buildmatrix, Sicherheit, Auflösung und
     Deployment des Projekts}{defines the project's identity, build matrix,
     security, resolution, and deployment}.
@@ -26,15 +26,15 @@ lowest layer at which it applies to all affected documents.}
     Profilklasse, Metadatenvertrag und zulässige Unit-Scopes}{give a target
     name its meaning: document type, profile class, metadata contract, and
     permitted unit scopes}.
-  \item[\texttt{Include/projectconfig.tex}]
+  \item[\File{Include/projectconfig.tex}]
     \ldeen{enthält die gemeinsame semantische \LaTeX-Konfiguration, etwa
     Profile, Sprachen, Metadaten und Klassenoptionen}{contains the shared
     semantic \LaTeX\ configuration, such as profiles, languages, metadata,
     and class options}.
-  \item[\texttt{Include/documentmetadata.tex}]
-    \ldeen{enthält den frühen \texttt{\string\DocumentMetadata}-Aufruf für
+  \item[\File{Include/documentmetadata.tex}]
+    \ldeen{enthält den frühen \cs{DocumentMetadata}-Aufruf für
     Targets, die Tagged PDF oder andere frühe PDF-Eigenschaften verlangen}
-    {contains the early \texttt{\string\DocumentMetadata} call for targets
+    {contains the early \cs{DocumentMetadata} call for targets
     requiring Tagged PDF or other early PDF properties}.
   \item[\ldeen{Lehreinheit}{Course unit}]
     \ldeen{kann projektweite Metadaten für ihren eigenen Inhalt
@@ -45,11 +45,11 @@ lowest layer at which it applies to all affected documents.}
 
 \subsection{\ldeen{Das Projektmanifest}{The Project Manifest}}
 
-\ldeen{Die Datei \texttt{ollmconfig.toml} markiert die Projektwurzel. OLLM
+\ldeen{Die Datei \File{ollmconfig.toml} markiert die Projektwurzel. \OLLM\ 
 sucht sie vom Arbeitsverzeichnis aus nach oben. Das Manifest beschreibt eine
 Buildmatrix und enthält keinen Lehrtext. Ein kompaktes Projekt mit zwei
 Sprachen und drei Targets beginnt beispielsweise so}{The file
-\texttt{ollmconfig.toml} marks the project root. OLLM searches upwards for it
+\File{ollmconfig.toml} marks the project root. \OLLM\  searches upwards for it
 from the working directory. The manifest describes a build matrix and contains
 no teaching content. A compact project with two languages and three targets
 might begin as follows}:
@@ -76,27 +76,27 @@ languages = ["de", "en"]
 languages = ["de", "en"]
 \end{verbatim}
 
-\ldeen{\texttt{schema} bezeichnet das Dateischema, nicht die Version des
-Bundles. \texttt{project.id} ist die dauerhafte technische Serien-ID und geht
+\ldeen{\option{schema} bezeichnet das Dateischema, nicht die Version des
+Bundles. \option{project.id} ist die dauerhafte technische Serien-ID und geht
 in Jobnamen und Dokumentidentitäten ein. Ändern Sie sie nach dem ersten Build
-nur bewusst. \texttt{languages.available} enthält alle Projektsprachen;
+nur bewusst. \option{languages.available} enthält alle Projektsprachen;
 jedes Target wählt daraus eine nichtleere Teilmenge. Die Zuordnung von
-\texttt{de} zu \texttt{ngerman} oder von \texttt{en} zu \texttt{british}
+\code{de} zu \code{ngerman} oder von \code{en} zu \code{british}
 ist dagegen eine \LaTeX-Angelegenheit und gehört in
-\texttt{projectconfig.tex}.}{\texttt{schema} identifies the file schema, not
-the bundle version. \texttt{project.id} is the persistent technical series ID
+\File{projectconfig.tex}.}{\option{schema} identifies the file schema, not
+the bundle version. \option{project.id} is the persistent technical series ID
 and contributes to job names and document identities. Change it after the
-first build only deliberately. \texttt{languages.available} contains all
+first build only deliberately. \option{languages.available} contains all
 project languages; each target selects a non-empty subset. Mapping
-\texttt{de} to \texttt{ngerman} or \texttt{en} to \texttt{british}, however,
-is a \LaTeX\ concern and belongs in \texttt{projectconfig.tex}.}
+\code{de} to \code{ngerman} or \code{en} to \code{british}, however,
+is a \LaTeX\ concern and belongs in \File{projectconfig.tex}.}
 
-\ldeen{Unter \texttt{[project.tex]} können das gemeinsame Verzeichnis und die
+\ldeen{Unter \code{[project.tex]} können das gemeinsame Verzeichnis und die
 Konfigurationsdatei geändert werden. Relative Verzeichnisse müssen innerhalb
-der Projektwurzel bleiben; \texttt{config} ist nur ein Dateiname}{The shared
+der Projektwurzel bleiben; \option{config} ist nur ein Dateiname}{The shared
 directory and configuration file can be changed under
-\texttt{[project.tex]}. Relative directories must remain inside the project
-root; \texttt{config} is a file name only}:
+\code{[project.tex]}. Relative directories must remain inside the project
+root; \option{config} is a file name only}:
 
 \begin{verbatim}
 [project.tex]
@@ -104,58 +104,58 @@ directory = "Include"
 config = "projectconfig.tex"
 \end{verbatim}
 
-\ldeen{Weitere Manifestbereiche steuern \texttt{security.shell\_escape}, die
-maximale Rundenzahl von \texttt{build --resolve} sowie das Deployment.
-\texttt{document\_metadata=\string"required\string"} oder
-\texttt{\string"disabled\string"} an einem
+\ldeen{Weitere Manifestbereiche steuern \option{security.shell\_escape}, die
+maximale Rundenzahl von \code{build --resolve} sowie das Deployment.
+\keyis{document\_metadata}{required} oder
+\keyis{document\_metadata}{disabled} an einem
 Target überschreibt dessen Definitionsdefault. Ein widersprüchlicher Vertrag
 zwischen Target und gewähltem Dokumentprofil wird als Fehler abgewiesen.}{Other
-manifest areas control \texttt{security.shell\_escape}, the maximum number of
-\texttt{build --resolve} rounds, and deployment. Setting
-\texttt{document\_metadata=\string"required\string"} or
-\texttt{\string"disabled\string"} on a target
+manifest areas control \option{security.shell\_escape}, the maximum number of
+\code{build --resolve} rounds, and deployment. Setting
+\keyis{document\_metadata}{required} or
+\keyis{document\_metadata}{disabled} on a target
 overrides its definition default. A contradictory contract between target and
 selected document profile is rejected as an error.}
 
 \subsection{Bundle\ldeen{-}{ }Preset}
 
 \ldeen{Das Bundle-Preset ist ein versionierter Vertrag zwischen dem Projekt
-und den mit OLLM installierten Definitionen.
-\texttt{\string"OSG lecture/1\string"} wählt
+und den mit \OLLM\  installierten Definitionen.
+\code{OSG lecture/1} wählt
 das Vokabular und die Regeln dieser Bundle-Generation. Es ist nicht mit einem
-Dokumentprofil zu verwechseln: Das Preset erklärt OLLM die Buildwelt, während
+Dokumentprofil zu verwechseln: Das Preset erklärt \OLLM\  die Buildwelt, während
 ein Profil später die konkrete \LaTeX-Klasse und Darstellung festlegt.}{The
 bundle preset is a versioned contract between the project and the definitions
-installed with OLLM. \texttt{\string"OSG lecture/1\string"} selects the vocabulary and
+installed with \OLLM. \code{OSG lecture/1} selects the vocabulary and
 rules of this bundle generation. Do not confuse it with a document profile:
 the preset explains the build world to OLLM, whereas a profile later selects
 the concrete \LaTeX\ class and rendering.}
 
 \ldeen{Die mitgelieferten Targetdefinitionen registrieren
-\texttt{slides}, \texttt{handout} und \texttt{script}. Eine Definition legt
-unter anderem \texttt{doctype}, \texttt{profile\_class},
-\texttt{document\_metadata} und \texttt{unit\_scopes} fest. Projektlokale
-Definitionen können über \texttt{.ollmconfig.local.toml} ergänzt werden; sie
+\code{slides}, \code{handout} und \code{script}. Eine Definition legt
+unter anderem \option{doctype}, \option{profile\_class},
+\option{document\_metadata} und \option{unit\_scopes} fest. Projektlokale
+Definitionen können über \File{.ollmconfig.local.toml} ergänzt werden; sie
 ersetzen gleichnamige eingebaute Definitionen nicht stillschweigend.}{The
-supplied target definitions register \texttt{slides}, \texttt{handout}, and
-\texttt{script}. Among other things, a definition specifies
-\texttt{doctype}, \texttt{profile\_class}, \texttt{document\_metadata}, and
-\texttt{unit\_scopes}. Project-local definitions can be added through
-\texttt{.ollmconfig.local.toml}; they do not silently replace built-in
+supplied target definitions register \code{slides}, \code{handout}, and
+\code{script}. Among other things, a definition specifies
+\option{doctype}, \option{profile\_class}, \option{document\_metadata}, and
+\option{unit\_scopes}. Project-local definitions can be added through
+\File{.ollmconfig.local.toml}; they do not silently replace built-in
 definitions with the same name.}
 
 \subsection{\ldeen{Standardeinstellungen für Nutzer}{User Defaults}}
 
 \ldeen{Wer mehrere Projekte mit demselben Bundle bearbeitet, kann sein
 bevorzugtes Preset persönlich vorbelegen. Unter Unix liegt die Datei gewöhnlich
-in \texttt{\$XDG\_CONFIG\_HOME/ollm/config.toml} oder
-\texttt{\$HOME/.config/ollm/config.toml}, unter Windows in
-\texttt{\%APPDATA\%/ollm/config.toml}. \texttt{OLLM\_USER\_CONFIG} kann einen
+in \File{\$XDG\_CONFIG\_HOME/ollm/config.toml} oder
+\File{\$HOME/.config/ollm/config.toml}, unter Windows in
+\File{\%APPDATA\%/ollm/config.toml}. \code{OLLM\_USER\_CONFIG} kann einen
 anderen Pfad wählen}{Users working on several projects with the same bundle can
 set a personal preferred preset. On Unix the file is normally found in
-\texttt{\$XDG\_CONFIG\_HOME/ollm/config.toml} or
-\texttt{\$HOME/.config/ollm/config.toml}, and on Windows in
-\texttt{\%APPDATA\%/ollm/config.toml}. \texttt{OLLM\_USER\_CONFIG} can select a
+\File{\$XDG\_CONFIG\_HOME/ollm/config.toml} or
+\File{\$HOME/.config/ollm/config.toml}, and on Windows in
+\File{\%APPDATA\%/ollm/config.toml}. \code{OLLM\_USER\_CONFIG} can select a
 different path}:
 
 \begin{verbatim}
@@ -163,19 +163,19 @@ schema = 1
 bundle_preset = "OSG lecture/1"
 \end{verbatim}
 
-\ldeen{Ein explizites \texttt{bundle\_preset} im Projektmanifest hat Vorrang.
+\ldeen{Ein explizites \option{bundle\_preset} im Projektmanifest hat Vorrang.
 Die Nutzerdatei ist deshalb ein Komfortdefault und keine Möglichkeit, die
 reproduzierbare Projektkonfiguration unbemerkt zu überschreiben.}{An explicit
-\texttt{bundle\_preset} in the project manifest takes precedence. The user file
+\option{bundle\_preset} in the project manifest takes precedence. The user file
 is therefore a convenience default, not a way to override reproducible project
 configuration unnoticed.}
 
 \subsection{\LaTeX\ldeen{-Konfiguration}{ Configuration}}
 
 \ldeen{Die gemeinsame \LaTeX-Konfiguration liegt standardmäßig in
-\texttt{Include/projectconfig.tex}. Sie wird früh genug gelesen, um Profile
+\File{Include/projectconfig.tex}. Sie wird früh genug gelesen, um Profile
 und Basisklassenoptionen festzulegen. Ein typischer Kern ist}{The shared
-\LaTeX\ configuration is stored in \texttt{Include/projectconfig.tex} by
+\LaTeX\ configuration is stored in \File{Include/projectconfig.tex} by
 default. It is read early enough to select profiles and base-class options. A
 typical core is}:
 
@@ -201,41 +201,41 @@ typical core is}:
 \author{Nora Example}
 \end{verbatim}
 
-\ldeen{\texttt{class/NAME} enthält unveränderte Optionen für die wirkliche
-Basisklasse und wird vor deren Laden ausgewertet. \texttt{mode/NAME} enthält
+\ldeen{\option{class/NAME} enthält unveränderte Optionen für die wirkliche
+Basisklasse und wird vor deren Laden ausgewertet. \option{mode/NAME} enthält
 dagegen Einstellungen für eine Ausgabeeigenschaft und wird nach Finalisierung
 des Modusgraphen von allgemein nach spezifisch angewandt. Eine
 targetspezifische Profilwahl erfolgt mit
-\texttt{\string\LectureTargetSetup\{slides\}\{profile=...\}}.}{
-\texttt{class/NAME} contains unchanged options for the actual base class and
-is evaluated before that class is loaded. \texttt{mode/NAME}, in contrast,
+\cs{LectureTargetSetup}\Marg{slides}\Marg{profile=\meta{profile}}.}{
+\option{class/NAME} contains unchanged options for the actual base class and
+is evaluated before that class is loaded. \option{mode/NAME}, in contrast,
 contains settings for an output property and is applied from general to
 specific after the mode graph has been finalized. A target-specific profile is
 selected with
-\texttt{\string\LectureTargetSetup\{slides\}\{profile=...\}}.}
+\cs{LectureTargetSetup}\Marg{slides}\Marg{profile=\meta{profile}}.}
 
 \ldeen{Frei programmierter Präambelcode gehört vorzugsweise in getrennte
-Fragmente, die mit \texttt{\string\IncludeOsgLecturePreamble\{name\}}
+Fragmente, die mit \cs{IncludeOsgLecturePreamble}\marg{name}
 eingebunden werden. Sie dürfen Paketladungen und eigene Makros enthalten und
-können durch einen Modusausdruck oder \texttt{class=...} eingeschränkt werden.
-Damit bleibt \texttt{projectconfig.tex} eine lesbare Sammlung semantischer
+können durch einen Modusausdruck oder \keyis{class}{\meta{class}} eingeschränkt werden.
+Damit bleibt \File{projectconfig.tex} eine lesbare Sammlung semantischer
 Projektentscheidungen.}{Freely programmable preamble code should preferably
 be placed in separate fragments included with
-\texttt{\string\IncludeOsgLecturePreamble\{name\}}. They may contain package
+\cs{IncludeOsgLecturePreamble}\marg{name}. They may contain package
 loads and custom commands and can be restricted by a mode expression or
-\texttt{class=...}. This keeps \texttt{projectconfig.tex} a readable
+\keyis{class}{\meta{class}}. This keeps \File{projectconfig.tex} a readable
 collection of semantic project decisions.}
 
 \paragraph{\ldeen{Metadaten}{Metadata}.}
 \ldeen{Felder wie Titel und Autor können modusabhängige Werte besitzen. Eigene
-Felder werden mit \texttt{\string\DeclareOsgLectureMetadataField} registriert.
+Felder werden mit \cs{DeclareOsgLectureMetadataField} registriert.
 Die normale Priorität lautet Fallback, Profil, Projekt und schließlich Unit.
-\texttt{\string\EnforceLectureProjectConfiguration} macht eine Projektvorgabe
+\cs{EnforceLectureProjectConfiguration} macht eine Projektvorgabe
 verbindlich, sodass eine Unit sie nicht überschreiben kann.}{Fields such as
 title and author may have mode-dependent values. Custom fields are registered
-with \texttt{\string\DeclareOsgLectureMetadataField}. Normal precedence is
+with \cs{DeclareOsgLectureMetadataField}. Normal precedence is
 fallback, profile, project, and finally unit.
-\texttt{\string\EnforceLectureProjectConfiguration} makes a project setting
+\cs{EnforceLectureProjectConfiguration} makes a project setting
 binding so that a unit cannot override it.}
 
 \begin{verbatim}
@@ -245,52 +245,52 @@ binding so that a unit cannot override it.}
 \supervisor<longform>{Ada Professor}
 \end{verbatim}
 
-\ldeen{\texttt{documentmetadata.tex} hat eine andere Aufgabe: Sein
-\texttt{\string\DocumentMetadata}-Aufruf muss vor der Dokumentklasse erfolgen
-und steuert PDF-Eigenschaften, nicht die sichtbaren fachlichen Metadaten. OLLM
+\ldeen{\File{documentmetadata.tex} hat eine andere Aufgabe: Sein
+\cs{DocumentMetadata}-Aufruf muss vor der Dokumentklasse erfolgen
+und steuert PDF-Eigenschaften, nicht die sichtbaren fachlichen Metadaten. \OLLM\ 
 bindet die Datei nur ein, wenn der Targetvertrag sie verlangt. Dabei stehen
-Symbole wie \texttt{\string\OsgLectureRequestedLanguage} zur Verfügung.}{
-\texttt{documentmetadata.tex} has a different role: its
-\texttt{\string\DocumentMetadata} call must precede the document class and
-controls PDF properties rather than visible subject metadata. OLLM includes the
+Symbole wie \cs{OsgLectureRequestedLanguage} zur Verfügung.}{
+\File{documentmetadata.tex} has a different role: its
+\cs{DocumentMetadata} call must precede the document class and
+controls PDF properties rather than visible subject metadata. \OLLM\  includes the
 file only when required by the target contract. Symbols such as
-\texttt{\string\OsgLectureRequestedLanguage} are available there.}
+\cs{OsgLectureRequestedLanguage} are available there.}
 
 \subsection{\ldeen{Dokumentenprofile}{Document Profiles}}
 
 \ldeen{Ein Dokumentprofil verbindet einen fachlichen Dokumenttyp mit einer
 technischen Satzumgebung. Es benennt Basisklasse, Backendadapter, unterstützte
 Dokumenttypen, zusätzliche Modi, Klassenoptionen und den
-\texttt{DocumentMetadata}-Vertrag. Mitgeliefert werden}{A document profile
+\cs{DocumentMetadata}-Vertrag. Mitgeliefert werden}{A document profile
 connects a conceptual document type to a technical typesetting environment. It
 names the base class, backend adapter, supported document types, additional
-modes, class options, and the \texttt{DocumentMetadata} contract. The supplied
+modes, class options, and the \cs{DocumentMetadata} contract. The supplied
 profiles are}:
 
 \begin{description}
-  \item[\texttt{beamer}] \ldeen{für \texttt{slides} und \texttt{handout};
-    Metadaten vor der Klasse sind verboten}{for \texttt{slides} and
-    \texttt{handout}; metadata before the class is forbidden}.
-  \item[\texttt{ltx-talk}] \ldeen{für \texttt{slides} und \texttt{handout};
-    \texttt{DocumentMetadata} ist erforderlich}{for \texttt{slides} and
-    \texttt{handout}; \texttt{DocumentMetadata} is required}.
-  \item[\texttt{book}] \ldeen{für \texttt{script} und \texttt{article} auf
-    Basis der Standardklasse \texttt{book}}{for \texttt{script} and
-    \texttt{article}, based on the standard \texttt{book} class}.
-  \item[\texttt{scrbook}] \ldeen{für \texttt{script} und \texttt{article}
-    auf Basis von KOMA-Script}{for \texttt{script} and \texttt{article}, based
+  \item[\cls{beamer}] \ldeen{für \code{slides} und \code{handout};
+    Metadaten vor der Klasse sind verboten}{for \code{slides} and
+    \code{handout}; metadata before the class is forbidden}.
+  \item[\cls{ltx-talk}] \ldeen{für \code{slides} und \code{handout};
+    \cs{DocumentMetadata} ist erforderlich}{for \code{slides} and
+    \code{handout}; \cs{DocumentMetadata} is required}.
+  \item[\cls{book}] \ldeen{für \code{script} und \code{article} auf
+    Basis der Standardklasse \cls{book}}{for \code{script} and
+    \code{article}, based on the standard \cls{book} class}.
+  \item[\cls{scrbook}] \ldeen{für \code{script} und \code{article}
+    auf Basis von KOMA-Script}{for \code{script} and \code{article}, based
     on KOMA-Script}.
 \end{description}
 
 \ldeen{Ein eigenes Profil liegt üblicherweise als
-\texttt{osglecture-profile-NAME.def} im TeX-Suchpfad. Es kann ein vorhandenes
+\File{osglecture-profile-NAME.def} im TeX-Suchpfad. Es kann ein vorhandenes
 Backend und dessen Adapter wiederverwenden; eine neue Basisklasse benötigt
 zusätzlich einen passenden Adapter. Die drei Pflichtangaben sind
-\texttt{backend}, \texttt{class} und \texttt{doctypes}}{A custom profile is
-normally provided as \texttt{osglecture-profile-NAME.def} on the TeX search
+\option{backend}, \option{class} und \option{doctypes}}{A custom profile is
+normally provided as \File{osglecture-profile-NAME.def} on the TeX search
 path. It may reuse an existing backend and its adapter; a new base class also
-requires a suitable adapter. The three required entries are \texttt{backend},
-\texttt{class}, and \texttt{doctypes}}:
+requires a suitable adapter. The three required entries are \option{backend},
+\option{class}, and \option{doctypes}}:
 
 \begin{verbatim}
 \ProvidesExplFile{osglecture-profile-mybook.def}{2026-08-28}{1.0}
@@ -311,9 +311,9 @@ requires a suitable adapter. The three required entries are \texttt{backend},
 
 \ldeen{Nach Installation oder Aufnahme des gemeinsamen Verzeichnisses in den
 TeX-Suchpfad genügt
-\texttt{longform-profile=mybook}. \osglecture\ lädt die Datei bei der ersten
+\keyis{longform-profile}{mybook}. \osglecture\ lädt die Datei bei der ersten
 Auswahl automatisch und prüft, ob der angeforderte Dokumenttyp unterstützt
 wird.}{After installation or adding the shared directory to the TeX search
-path, \texttt{longform-profile=mybook} is sufficient. \osglecture\ loads the
+path, \keyis{longform-profile}{mybook} is sufficient. \osglecture\ loads the
 file automatically when first selected and checks whether the requested
 document type is supported.}

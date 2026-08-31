@@ -1,80 +1,84 @@
 \section{\ldeen{Konzepte}{Concepts}}
 \label{sec:concepts}
+\ldeen{Nach dem kurzen Tutorial sollen nun die Begriffe und Konzepte von \osglecture\ etwas systematischer und ausführlicher besprochen werden.}{}
+
+\ldeen*{Dabei ist zu beachten, dass der Name @1 in diesem Bundle zwei Bedeutungen hat: Zum einen bezeichnet er das gesamte Bundle, zum anderen dessen Hauptklasse. Zur besseren Unterscheidung wird in diesem Manual für den ersten Fall die Schreibweise @2 verwendet, für den zweiten dagegen @3.}{The name @1 has two meanings in this bundle: it denotes both the bundle as a whole and its main class. To distinguish the two, @2 is used below for the bundle and @3 for the class.}{"`Osglecture"'}{\osglecture}{\cls{osglecture}}
+
 \subsection{\ldeen{Projekt}{Project}}
 \ldeen{
-  Als ein "`Projekt"' wird hier die Sammlung von zusammengehörigen Materialen verstanden.
-  Im Kontext unseres Anwendungsfalls bedeutet dies Lehrmaterialien wie Vorlesungsfolien oder 
+  Als ein "`Projekt"' wird hier eine Sammlung zusammengehöriger Materialien verstanden.
+  Im Kontext unseres Anwendungsfalls bedeutet dies Lehrmaterialien wie Vorlesungsfolien oder
   Skripts, auch wenn \osglecture\ auf andere Anwendungsfälle übertragbar ist.
   Mit anderen Worten: Ein \osglecture-Projekt ist ein \emph{Kurs}.}{
   In this context, a "`project"' refers to a collection of related materials.
-  In the context of our use case, this means teaching materials such as lecture slides or 
+  In the context of our use case, this means teaching materials such as lecture slides or
   lecture notes, even though \osglecture\ can be applied to other use cases as well.
   In other words: An \osglecture project is a \emph{course}.
   }
 
   \ldeen*{Alle Kursmaterialien stehen in einem Verzeichnis, welches in der Regel ein spezielles Manifest enthält.
-  Die Ausnahme zu dieser Regel sind sogenannte \emph{standalone}-Projekte, ursprünglich für 
+  Eine Ausnahme von dieser Regel bilden sogenannte \emph{Standalone}-Projekte, die ursprünglich für
   einen der oben angesprochenen anderen Anwendungsfälle gedacht waren, nämlich Konferenzbeiträge.
   Diese Ausnahme wird später gesondert betrachtet.
-  Im Folgendem gehen wir aber von Kursen aus.}{All course materials are located in a directory that typically contains a special manifest.
-  The exception to this rule are so-called \emph{standalone} projects, which were originally intended for
+  Im Folgenden gehen wir aber von Kursen aus.}{All course materials are located in a directory that typically contains a special manifest.
+  An exception to this rule is formed by so-called \emph{standalone} projects, which were originally intended for
   one of the other use cases mentioned above, namely conference papers.
   This special case is discussed separately later.
   In what follows, however, we will focus on courses.}
 
 \subsection{\ldeen{Lehreinheit}{Course Unit}}
-\ldeen{Ein Kurs ist aus Sicht von \osglecture\ eine Serie von zusammenhängenden 
-Lehreinheiten, z.\,B. Vorlesungen oder Übungen (oder beidem), die 
+\ldeen{Ein Kurs ist aus Sicht von \osglecture\ eine Serie von zusammenhängenden
+Lehreinheiten, z.\,B. Vorlesungen oder Übungen (oder beidem), die
 typischerweise im Laufe eines Semesters gehalten werden.}{
-  From the perspective of \osglecture\, a course is a series of related 
-course units, e.g.\ lectures or tutorials (or both), which 
+  From the perspective of \osglecture\, a course is a series of related
+course units, e.g.\ lectures or tutorials (or both), which
 are typically held over the course of a semester.
 }
-\ldeen{Eine Lehreinheit ist hier eher ein didaktisches Konzept als ein 
+\ldeen{Eine Lehreinheit ist hier eher ein didaktisches Konzept als ein
   zeitliches Konzept: Es ist durchaus möglich, dass sich eine Lehreinheit
   über mehrere Termine streckt oder dass zu einem Termin mehrere (eher kurze)
-  Einheiten behandelt werden.}{A teaching unit here is a didactic concept rather than a 
+  Einheiten behandelt werden.}{A teaching unit here is a didactic concept rather than a
   temporal one: It is entirely possible for a teaching unit to
   span multiple sessions or for several (rather short)
   units to be covered in a single session.}
-\ldeen{Welchen Satz von Lehrmaterialien für einen Kurs benötigt werden, kann recht
+\ldeen{Welche Lehrmaterialien für einen Kurs benötigt werden, kann recht
 unterschiedlich sein. In der OSG gibt es einige typische Lehrszenarien}{
   The set of teaching materials required for a course can vary quite
 a lot. At the OSG, there are a number of typical teaching scenarios
 }:
 \
 \begin{enumerate}
-  \item \label{it:ts:lec}\ldeen{Es gibt Präsentationen, die die Lehrenden benutzen, 
+  \item \label{it:ts:lec}\ldeen{Es gibt Präsentationen, die die Lehrenden benutzen,
         während die Studierenden dazu passende Handouts erhalten.
-        }{There are presentations that lecturers use whilst students are given 
+        }{There are presentations that lecturers use whilst students are given
         the relevant handouts.}
 
-  \item \label{it:ts:ml}\ldeen*{Wie @1, aber die Handouts gibt es in einer 
+  \item \label{it:ts:ml}\ldeen*{Wie @1, aber die Handouts gibt es in einer
         englischen und einer deutschen Sprachfassung.
         }{
         Same as @1, but the handouts are available in both English and German.
         }{\ref{it:ts:lec}}
-  \item \ldeen*{Wie @1, aber statt der Handouts pro Lehrthema 
+  \item \ldeen*{Wie @1, aber statt der Handouts pro Lehrthema
         gibt es jeweils ein Gesamtskript pro Sprache.
         }{
-        As in @1, but instead of handouts for each teaching topic, 
+        As in @1, but instead of handouts for each teaching topic,
         there is one comprehensive set of lecture notes for each language.
         }{\ref{it:ts:ml}}
 \end{enumerate}
 
 \ldeen{All diese und noch viel mehr Szenarien werden durch \osglecture{} unterstützt.}{
   All of these scenarios—and many more—are supported by \osglecture.}
-  \ldeen{Dabei spielt @1 die Rolle einer \emph{Metaklasse}: Sie organisiert im Wesentlichen,
-  welche konkrete Klasse geladen wird (z.\,B. \texttt{article}, \texttt{book}, \texttt{ltx-talk} oder \texttt{beamer}) und sorgt dafür, dass es ein gemeinsames Interface gibt.}{In this context, @1 acts as a \emph{metaclass}: It essentially determines
-  which specific class is loaded (e.g., \texttt{article}, \texttt{book}, \texttt{ltx-talk}, or \texttt{beamer}) and ensures that there is a common interface.}
-  \ldeen{Dabei werden Materialien, die nicht die nicht so unmittelbar präsentationsbezogen wie die eigentliche Präsentation oder Handouts sind, also beispielsweise Skripte oder Lehrbücher unter dem Begriff "`Langform"' zusammengefasst.}{  Materials that are not as directly related to the presentation itself or to handouts--such as lecture notes or textbooks--are grouped under the term "`long-form"'.}
+\ldeen*{Dabei spielt @1 die Rolle einer \emph{Metaklasse}: Sie organisiert im Wesentlichen,
+  welche konkrete Klasse geladen wird (z.\,B. \code{article}, \cls{book}, \cls{ltx-talk} oder \cls{beamer}) und sorgt dafür, dass es ein gemeinsames Interface gibt.}{In this context, @1 acts as a \emph{metaclass}: It essentially determines
+  which specific class is loaded (e.g., \code{article}, \cls{book}, \cls{ltx-talk}, or \cls{beamer}) and ensures that there is a common interface.}{\cls{osglecture}}
+\ldeen{Dabei werden Materialien, die nicht so unmittelbar präsentationsbezogen sind wie die eigentliche Präsentation oder Handouts, also beispielsweise Skripte oder Lehrbücher, unter dem Begriff "`Langform"' zusammengefasst.}{Materials that are not as directly related to the presentation itself or to handouts---such as lecture notes or textbooks---are grouped under the term "`long form"'.}
 
 \subsection{\ldeen{Verzeichnisstruktur}{Directory Structure}}
 \ldeen{
-  Die Materialien jedes Kurs' sind in einem eigenen Verzeichnis, dem sogenannten (Kurs-)Projektverzeichnis 
+  Die Materialien jedes Kurses befinden sich in einem eigenen Verzeichnis, dem sogenannten (Kurs-)Projektverzeichnis
   oder (bezogen auf das Projekt) Rootverzeichnis.
-  Dabei bildet die Verzeichnisstruktur die Stuktur des Kurses nach.}{
-  The materials for each course are located in their own directory, known as the (course) project directory 
+  Dabei bildet die Verzeichnisstruktur die Struktur des Kurses nach.}{
+  The materials for each course are located in their own directory, known as the (course) project directory
   or (in relation to the project) root directory.
   The directory structure mirrors the structure of the course.
   }
@@ -112,7 +116,7 @@ a lot. At the OSG, there are a number of typical teaching scenarios
 
 \ldeen{Der Verzeichnisname einer Lehreinheit besteht mindestens aus einer dreistelligen Nummer
   und einer durch einen Bindestrich abgetrennten Themenbeschreibung.}{
-  The directory name of a course consists of at least a three-digit number
+  The directory name of a course unit consists of at least a three-digit number
   and a description of the topic, separated by a hyphen.
   }
   \ldeen{Die Nummer muss dreistellig sein (führende Nullen sind erlaubt) und legt lediglich die Reihenfolge
@@ -120,16 +124,16 @@ a lot. At the OSG, there are a number of typical teaching scenarios
   }{The number must be three digits long (leading zeros are allowed) and simply determines the order
   of the learning units, not chapter numbers. Therefore, at least during the development phase of a course, it makes sense to choose a larger increment so that chapters can be reorganized later without much effort.}\footnote{\ldeen{Ältere Programmierer kennen dieses Prinzip vielleicht noch von Programmiersprachen wie BASIC}{Older programmers may still be familiar with this principle from programming languages such as BASIC}.}
 
-\ldeen{  Die Themenbeschreibung im Verzeichnisnamen ist frei wählbar und soll nur als Gedächtnisstütze dienen, was der  
+\ldeen{  Die Themenbeschreibung im Verzeichnisnamen ist frei wählbar und soll nur als Gedächtnisstütze dienen, was der
   Inhalt der jeweiligen Einheit ist. Mehrere Worte können durch Unterstrich oder Gedankenstrich getrennt werden, aber in der Regel empfiehlt es sich, ein einzelnes aussagekräftiges Wort zu nutzen.}{  The topic description in the directory name can be chosen freely and is intended only as a reminder of what the content of the respective unit is. Multiple words can be separated by an underscore or a dash, but as a general rule, it is recommended to use a single, meaningful word.}
 
-  \ldeen{Der Verzeichnisname kann aber noch zusätzliche Informationen beinhalten. Insgesamt hat der Verzeichnisname     
+  \ldeen{Der Verzeichnisname kann aber noch zusätzliche Informationen beinhalten. Insgesamt hat der Verzeichnisname
     einer Lehreinheit das folgende Format
   }{
     However, the directory name may also contain additional information. Overall, the directory name of a
     course unit has the following format}:
 
-  \centerline{\texttt{<nummer>[<target>]-[<role>]-<topic>}}
+  \centerline{\code{\meta{number}[\meta{target}]-[\meta{role}]-\meta{topic}}}
 
 \ldeen{Die Teile in eckigen Klammern sind jeweils optional. Sie haben folgende Bedeutung
 }{
@@ -137,7 +141,7 @@ a lot. At the OSG, there are a number of typical teaching scenarios
 }:
 
 \begin{description}
-\item [\texttt{target}] Beschreibt das Ziel dieser Einheit.
+\item [\meta{target}] Beschreibt das Ziel dieser Einheit.
   \ldeen{Manchmal gibt es Material, das nur für bestimmte Arten von Materialien sinnvoll ist.
   Beispielsweise werden häufig die organisatorischen Inhalte der Auftaktvorlesung nicht
   mit im Skript stehen. Dies kann mit dem Target(bereich) beschrieben werden. Es ist ein Code
@@ -149,67 +153,71 @@ a lot. At the OSG, there are a number of typical teaching scenarios
   consisting of one or two letters
   }:
   \begin{itemize}
-    \item [\texttt{a}] \ldeen{Es ist nur Material eine sogenannte Langform (also ein Skript,  
+    \item [\code{a}] \ldeen{Es ist nur Material eine sogenannte Langform (also ein Skript,
       ein Buch, etc.) in dem Verzeichnis enthalten}{
         The directory contains only material for long-form work (script, book, etc.)
       }.
-    \item [\texttt{b}] \ldeen{Das Verzeichnis enthält Material für eine Präsentation}{The directory contains materials for a presentation}.
+    \item [\code{b}] \ldeen{Das Verzeichnis enthält Material für eine Präsentation}{The directory contains materials for a presentation}.
   \end{itemize}
 
-  \ldeen{Ein zusätzlicher zweiter Buchstabe kann es noch weiter einschränken. Beispielsweise steht "`\texttt{bh}"' für ausschließlich
-  Handouts, es werden also keine Slides erstellt.}{An additional second letter can narrow it down even further. For example, "`\texttt{bh}"' stands for handouts only, so no slides are created.}
+  \ldeen{Ein zusätzlicher zweiter Buchstabe kann es noch weiter einschränken. Beispielsweise steht "`\code{bh}"' für ausschließlich
+  Handouts, es werden also keine Slides erstellt.}{An additional second letter can narrow it down even further. For example, "`\code{bh}"' stands for handouts only, so no slides are created.}
 
   \ldeen{Ohne eine Target-Spezifikation enthält das Verzeichnis Material für \emph{alle} konfigurierten
     Dokumentarten}{Without a target specification, the directory contains material for \emph{all} configured
     document types}.
 
-  \ldeen{Dieser Zielbereich ist erweiterbar, siehe die Dokumentation zu \texttt{ollm}.}{This target range can be extended; see the documentation for \texttt{ollm}.}
-  \item [\texttt{role}] \ldeen{Rolle, die die Einheit einnimmt. Dies wird stets durch einen einzelnen Buchstaben        
+  \ldeen{Dieser Zielbereich ist erweiterbar, siehe die Dokumentation zu \code{ollm}.}{This target range can be extended; see the documentation for \code{ollm}.}
+  \item [\meta{role}] \ldeen{Rolle, die die Einheit einnimmt. Dies wird stets durch einen einzelnen Buchstaben
       beschrieben:}{The role that the unit plays. This is always described by a single letter}
   \begin{itemize}
-    \item [\texttt{a}] \ldeen{Die Einheit ist ein Anhang}{Unit is an appendix}.
-    \item [\texttt{c}] \ldeen{Dies ist synonym zu einer ausgelassenen Rollenangabe und steht für eine normale Einheit}{This is synonymous with an omitted role specification and represents a normal unit}.
-    \item [\texttt{e}] \ldeen{Die Einheit ist ein Ergänzung. Damit ist gemeint, dass sie zur vorhergehenden Einheit zugehörig ist, aber eine gewisse Eigenständigkeit besitzt. Beispielsweise könnte es ein Übungsblatt oder Ergänzungsmaterial sein.}{The unit is a supplement. This means that it is related to the preceding unit but has a certain degree of independence. For example, it could be a worksheet or supplementary material.}
-    \item [\texttt{i}] \ldeen{Diese Einheit integriert andere Einheiten. Beispielsweise würde die Integrationseinheit eines Vorlesungsskrits alle Skriptkapitel (die anderen Einheiten) zusammenfügen und ein Titelblatt, gemeinsames Inhaltsverzeichnis etc.\ hinzufügen. Jede Dokumentenart darf nur eine Integrationseinheit haben.}{This unit integrates other units. For example, the integration unit for a lecture transcript would combine all the transcript chapters (the other units) and add a title page, a common table of contents, etc. Each document type may have only one integration unit.}
+    \item [\code{a}] \ldeen{Die Einheit ist ein Anhang}{Unit is an appendix}.
+    \item [\code{c}] \ldeen{Dies ist synonym zu einer ausgelassenen Rollenangabe und steht für eine normale Einheit}{This is synonymous with an omitted role specification and represents a normal unit}.
+    \item [\code{e}] \ldeen{Die Einheit ist ein Ergänzung. Damit ist gemeint, dass sie zur vorhergehenden Einheit zugehörig ist, aber eine gewisse Eigenständigkeit besitzt. Beispielsweise könnte es ein Übungsblatt oder Ergänzungsmaterial sein.}{The unit is a supplement. This means that it is related to the preceding unit but has a certain degree of independence. For example, it could be a worksheet or supplementary material.}
+    \item [\code{i}] \ldeen{Diese Einheit integriert andere Einheiten. Beispielsweise würde die Integrationseinheit eines Vorlesungsskrits alle Skriptkapitel (die anderen Einheiten) zusammenfügen und ein Titelblatt, gemeinsames Inhaltsverzeichnis etc.\ hinzufügen. Jede Dokumentenart darf nur eine Integrationseinheit haben.}{This unit integrates other units. For example, the integration unit for a lecture transcript would combine all the transcript chapters (the other units) and add a title page, a common table of contents, etc. Each document type may have only one integration unit.}
   \end{itemize}
 \end{description}
 
 \begin{warnbox}{}
-  \ldeen*{Bitte beachten sie, dass der Aufbau der Verzeichnisnamen nicht nur Konvention ist: Sowohl die Hauptklasse @1 als auch das Tool @2 werten die Namen aus.}{Please note that the structure of the directory names is not merely a convention: Both the main class @1 and the tool @2 evaluate the names.}{\texttt{osglecture.cls}}{\texttt{ollm}}
+  \ldeen*{Bitte beachten Sie, dass der Aufbau der Verzeichnisnamen nicht nur Konvention ist: Sowohl die Hauptklasse @1 als auch das Tool @2 werten die Namen aus.}{Please note that the structure of the directory names is not merely a convention: both the main class @1 and the tool @2 interpret these names.}{\cls{osglecture}}{\OLLM}
 \end{warnbox}
+\ldeen*{In jedem Lehreinheitenverzeichnis befindet sich eine \LaTeX-Datei. Sie verwendet die Dokumentklasse @1 und trägt in der Standardkonfiguration den Namen @2. Neben dieser Datei kann sich beliebiges weiteres Material in dem Verzeichnis befinden, etwa Bilder, einzubindende Dateien oder private \File{.sty}-Dateien, die nur in dieser Einheit benötigt werden.}{Each course-unit directory contains a \LaTeX\ file. It uses the document class @1 and, in the default configuration, is named @2. The directory may also contain any other material, such as images, files to be included, or private \File{.sty} files needed only by that unit.}{\cls{osglecture}}{\File{main.tex}}
 
-\subsection{\ldeen{Dokumententypen}{Document Types}}
-\ldeen{Ein \emph{Dokumenttyp} (\emph{doctype}) bezeichnet die fachliche
-Ausgabeform, die Sie anfordern: beispielsweise \texttt{slides},
-\texttt{handout}, \texttt{script} oder \texttt{article}. Denken Sie dabei an
+\ldeen{Dagegen sollten private \File{.sty}-Dateien oder andere Materialien, die in \emph{allen} Lehreinheiten benötigt werden, im \path{Include}-Verzeichnis stehen.}{}
+
+\subsection{\ldeen{Dokumententypen und Profile}{Document Types and Profiles}}
+\label{sec:types-profiles}
+\ldeen{Ein \emph{Dokumenttyp} (\emph{doctype}) bezeichnet die
+Ausgabeform, die angefordert werden kann: beispielsweise \code{slides},
+\code{handout}, \code{script} oder \code{article}. Denken Sie dabei an
 die Frage "`Was soll für wen entstehen?"' und nicht an eine konkrete
 \LaTeX-Klasse.}{A \emph{document type} (\emph{doctype}) denotes the conceptual
-output form you request, for example \texttt{slides}, \texttt{handout},
-\texttt{script}, or \texttt{article}. Think of the question "`What should be
+output form you request, for example \code{slides}, \code{handout},
+\code{script}, or \code{article}. Think of the question "`What should be
 produced, and for whom?"' rather than of a particular \LaTeX\ class.}
 
 \begin{figure}[htbp]
 \centering
 \begin{tcolorbox}[width=.92\linewidth,colback=blue!2,colframe=blue!55!black]
 \centering
-\texttt{ollm build slides --language=en}
+\code{ollm build slides --language=en}
 \par\medskip$\Downarrow$\par\smallskip
 \begin{tabular}{c@{\quad$\longrightarrow$\quad}c@{\quad$\longrightarrow$\quad}c}
 \ldeen{Target}{Target} & \ldeen{Profil und Klasse}{Profile and class} & \ldeen{aktive Modi}{active modes}\\
-\texttt{slides} & \texttt{beamer} & \texttt{slides, presentation, screen}
+\code{slides} & \cls{beamer} & \code{slides, presentation, screen}
 \end{tabular}
 \end{tcolorbox}
 \caption{\ldeen{Von der Nutzerwahl zur konkreten Darstellung.}{From the user's choice to the concrete rendering.}}
 \end{figure}
 
 \ldeen{Im normalen Arbeitsablauf begegnet Ihnen der Dokumenttyp als Targetname
-im OLLM-Befehl. OLLM prüft im Manifest, ob dieses Target und die gewünschte
+im \OLLM-Befehl. \OLLM\ prüft im Manifest, ob dieses Target und die gewünschte
 Sprache für das Projekt vorgesehen sind. Anschließend übergibt es die
-normalisierte Auswahl an \texttt{osglecture}.}{In the normal workflow, the
-document type appears as the target name in the OLLM command. OLLM checks the
+normalisierte Auswahl an \cls{osglecture}.}{In the normal workflow, the
+document type appears as the target name in the \OLLM\ command. \OLLM\ checks the
 manifest to determine whether this target and the requested language are
 configured for the project. It then passes the normalized selection to
-\texttt{osglecture}.}
+\cls{osglecture}.}
 
 \ldeen{Der anschließende Build \emph{instanziiert} die gemeinsame Quelle für
 genau diese Auswahl. Das konkrete Ergebnis heißt \emph{Dokumentinstanz}. Zwei
@@ -220,16 +228,55 @@ result is called a \emph{document instance}. Thus, two instances may contain the
 same subject matter while differing in language, document type, or both.}
 
 \ldeen{Die Klasse wählt zu jedem Target ein \emph{Profil}. Das Profil legt die
-konkrete Basisklasse und deren Adapter fest. So kann \texttt{slides} in einem
-Projekt mit \texttt{beamer}, in einem anderen mit \texttt{ltx-talk} gesetzt
+konkrete Basisklasse und deren Adapter fest. So kann \code{slides} in einem
+Projekt mit \cls{beamer}, in einem anderen mit \cls{ltx-talk} gesetzt
 werden, ohne dass die Lehreinheiten umgeschrieben werden. Targetspezifische
-Ausnahmen sind ebenfalls möglich, etwa \texttt{beamer} für Folien und
-\texttt{ltx-talk} für Handouts.}{For each target, the class selects a
+Ausnahmen sind ebenfalls möglich, etwa \cls{beamer} für Folien und
+\cls{ltx-talk} für Handouts.}{For each target, the class selects a
 \emph{profile}. The profile determines the concrete base class and its adapter.
-Thus, \texttt{slides} can use \texttt{beamer} in one project and
-\texttt{ltx-talk} in another without rewriting the course units. Target-specific
-exceptions are possible as well, for example \texttt{beamer} for slides and
-\texttt{ltx-talk} for handouts.}
+Thus, \code{slides} can use \cls{beamer} in one project and
+\cls{ltx-talk} in another without rewriting the course units. Target-specific
+exceptions are possible as well, for example \cls{beamer} for slides and
+\cls{ltx-talk} for handouts.}
+
+\ldeen{Die \emph{Basisklasse} ist die eigentliche \LaTeX-Klasse, die den Satz
+ausführt, beispielsweise \cls{beamer}, \cls{ltx-talk}, \cls{book} oder
+\cls{scrbook}. Ein \emph{Adapter} übersetzt die einheitliche Schnittstelle von
+\cls{osglecture} in die Befehle und Konventionen dieser Basisklasse. Dadurch
+kann der fachliche Quelltext unabhängig von der gewählten Basisklasse bleiben.}{The
+\emph{base class} is the actual \LaTeX\ class that performs the typesetting,
+such as \cls{beamer}, \cls{ltx-talk}, \cls{book}, or \cls{scrbook}. An
+\emph{adapter} translates the uniform \cls{osglecture} interface into the
+commands and conventions of that base class. The subject-matter source can
+therefore remain independent of the selected base class.}
+
+\ldeen*{Für Präsentationen wählen Sie das Profil projektweit mit der Option
+\option{presentation-profile}, für Langformen mit
+\option{longform-profile} in \File{Include/projectconfig.tex}. Soll nur ein
+einzelnes Target abweichen, verwenden Sie
+@1. Im
+Standalone-Betrieb steht dafür die Klassenoption \option{profile} zur
+Verfügung.}{Select the project-wide presentation profile with
+\option{presentation-profile} and the long-form profile with
+\option{longform-profile} in \File{Include/projectconfig.tex}. To override the
+profile for just one target, use
+@1. In standalone
+mode, use the \option{profile} class option instead.}
+{\cs{LectureTargetSetup}\marg{target}\Marg{profile=\meta{profile}}}
+
+\ldeen{Die Profilwahl betrifft mehr als das Erscheinungsbild. \cls{beamer}
+bietet beispielsweise ein großes Ökosystem vorhandener Themes;
+\cls{ltx-talk} ist dagegen von Grund auf auf Tagged PDF und damit auf
+automatisches Struktur-Tagging ausgelegt. Bei Langformen unterscheiden sich
+\cls{book} und \cls{scrbook} unter anderem in ihren Klassenoptionen und
+Anpassungsmöglichkeiten. Ein Profilwechsel sollte deshalb durch einen
+vollständigen Build der betroffenen Targets geprüft werden.}{Choosing a
+profile affects more than appearance. For example, \cls{beamer} provides a
+large ecosystem of existing themes, whereas \cls{ltx-talk} is designed around
+Tagged PDF and automatic structure tagging. For long forms, \cls{book} and
+\cls{scrbook} differ in their class options and customization facilities,
+among other things. A profile change should therefore be checked with a full
+build of the affected targets.}
 
 \ldeen{Dokumenttypen und Klassen sind daher absichtlich getrennt. Die Trennung
 hält Ihre Quellen stabil: Sie entscheiden im Projekt, \emph{wie} Folien gesetzt
@@ -240,19 +287,37 @@ you decide \emph{how} slides are typeset; in the course unit you only write
 \emph{what} should appear in slides and long forms.}
 
 \begin{description}
-  \item[\texttt{slides}] \ldeen{bildschirmorientierte Präsentation für die
+  \item[\code{slides}] \ldeen{bildschirmorientierte Präsentation für die
     Lehrveranstaltung}{screen-oriented presentation for teaching};
-  \item[\texttt{handout}] \ldeen{druckorientierte Präsentationsfassung für das
+  \item[\code{handout}] \ldeen{druckorientierte Präsentationsfassung für das
     Publikum}{print-oriented presentation version for the audience};
-  \item[\texttt{script}] \ldeen{zusammenhängende Langform, typischerweise als
+  \item[\code{script}] \ldeen{zusammenhängende Langform, typischerweise als
     Kapitel oder Gesamtskript}{continuous long form, typically a chapter or
     complete set of lecture notes};
-  \item[\texttt{article}] \ldeen{eigenständige Langform, beispielsweise für
+  \item[\code{article}] \ldeen{eigenständige Langform, beispielsweise für
     einen Beitrag}{standalone long form, for example a paper}.
 \end{description}
 
 \ldeen{Diese Liste ist erweiterbar. Für den Einstieg sollten Sie jedoch die
-mitgelieferten Typen verwenden: Sie sind in OLLM registriert und besitzen bereits
+mitgelieferten Typen verwenden: Sie sind in \OLLM\ registriert und besitzen bereits
 passende Profile, Modi und Anwendungsbereiche.}{This list is extensible. When
 starting out, however, use the supplied types: they are already registered with
-OLLM and have suitable profiles, modes, and scopes.}
+\OLLM\ and have suitable profiles, modes, and scopes.}
+
+\begin{table}[htbp]
+  \centering
+  \begin{tabular}{llll}
+    \textbf{\ldeen{Profil}{Profile}} & \textbf{\ldeen{Basisklasse}{Base class}} &
+    \textbf{\ldeen{Dokumenttypen}{Document types}} & \textbf{\ldeen{Kennzeichen}{Characteristics}}\\
+    \cls{beamer} & \cls{beamer} & \code{slides}, \code{handout} &
+      \ldeen{große Theme-Auswahl}{large choice of themes}\\
+    \cls{ltx-talk} & \cls{ltx-talk} & \code{slides}, \code{handout} &
+      \ldeen{Tagged PDF erforderlich}{Tagged PDF required}\\
+    \cls{book} & \cls{book} & \code{script}, \code{article} &
+      \ldeen{Standardklasse}{standard class}\\
+    \cls{scrbook} & \cls{scrbook} & \code{script}, \code{article} &
+      KOMA-Script\\
+  \end{tabular}
+  \caption{\ldeen{Mitgelieferte Dokumentprofile.}{Document profiles supplied with the bundle.}}
+  \label{tab:profiles}
+\end{table}

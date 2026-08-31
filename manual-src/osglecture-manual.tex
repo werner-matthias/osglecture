@@ -1,8 +1,7 @@
  \documentclass[
  ]{scrarticle}
-% TODO: Wording im ganzen Dokument vereinheitlichen: Instanz/instanziieren statt Projektion/projizieren.
 % Für die Markierung LaTeX-typischer Dinge wie Befehle, Pakete etc. verwende bitte die Möglichkeiten
-% von cnltx-doc (die über osgdoc importiert werden.)
+% von cnltx-doc (die größtenteils über osgdoc importiert werden.) Für Dateien bitte immer \File verwenden.
 \usepackage{hyperref}
 \usepackage{enumitem}
 \usepackage{fontspec}
@@ -19,7 +18,8 @@ load babel
 \usepackage{subcaption}
 \usepackage{osgdoc}
 \colorlet{linkblue}{blue!50!black}
-\newcommand{\osglecture}{\textcolor{blue}{OSG Lecture}}
+\newcommand{\osglecture}{\textcolor{teal!50!black}{OSG Lecture}}
+\newcommand{\OLLM}{\textcolor{teal!50!black}{\sffamily OLLM}}
 
 \hypersetup{
   pdftitle  = {OSG Lecture Bundle - Benutzerhandbuch},
@@ -29,7 +29,7 @@ load babel
   urlcolor  = linkblue
 }
 \author{Matthias Werner}
-\title{\ldeen{Das OSG Lecture Bundle}{}}
+\title{\ldeen{Das OSG Lecture Bundle}{The OSG Lecture Bundle}}
 \subtitle{\ldeen{Benutzerhandbuch}{User Manual}}
 \KOMAoptions{parskip=half,toc=indented}
 

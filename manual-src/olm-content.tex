@@ -1,22 +1,22 @@
 \section{\ldeen{Inhalte anpassen}{Adapted Content}}
 \subsection{\ldeen{Mehrsprachige Dokumente}{Multilingual Documents}}
 \ldeen{In einem \osglecture-Projekt können mehere Sprachfassungen eines
-Inhalts erstellt werden. Dabei teilen sich OLLM und das Paket \texttt{langselect}
+Inhalts erstellt werden. Dabei teilen sich OLLM und das Paket \pkg{langselect}
 die Arbeit: Das Manifest sagt, \emph{welche} Sprachfassungen gebaut werden
-dürfen; OLLM wählt eine davon; \texttt{langselect} setzt in der Quelle die
+dürfen; OLLM wählt eine davon; \pkg{langselect} setzt in der Quelle die
 passende Formulierung. Diese Aufgabenteilung verhindert, dass die Buildlogik in
-den Fachtext wandert.}{In an \osglecture\ project, OLLM and the packet \texttt{langselect}
+den Fachtext wandert.}{In an \osglecture\ project, OLLM and the packet \pkg{langselect}
 share the work: the manifest states \emph{which} language versions may be built;
-OLLM selects one of them; \texttt{langselect} typesets the matching wording in
+OLLM selects one of them; \pkg{langselect} typesets the matching wording in
 the source. This division of responsibility keeps build logic out of the subject
 matter.}
 
 \ldeen{Tragen Sie jede Projektsprache zuerst im Manifest ein und ordnen Sie sie
-anschließend in \texttt{Include/projectconfig.tex} einem von \texttt{babel}
+anschließend in \File{Include/projectconfig.tex} einem von \pkg{babel}
 verstandenen Namen zu. Für Deutsch und britisches Englisch sieht die praktische
 Konfiguration so aus}{First list every project language in the manifest, then map
-it in \texttt{Include/projectconfig.tex} to a name understood by \texttt{babel}.
-For German and British English, a practical configuration is}:
+it in \File{Include/projectconfig.tex} to a name understood by \pkg{babel}.
+For German and British English, a practical configuration is}: 
 \begin{verbatim}
 \LectureProjectSetup{
   languages={
@@ -29,12 +29,12 @@ For German and British English, a practical configuration is}:
 \end{verbatim}
 
 \ldeen{In den Lehreinheiten verwenden Sie danach die bereitgestellten
-Sprachmakros. Bei der Reihenfolge \texttt{selectable=\{de,en\}} ist
-\texttt{\string\ldeen\{deutsch\}\{English\}} die naheliegende Form. Schreiben
+Sprachmakros. Bei der Reihenfolge \keyis{selectable}{de,en} ist
+\cs{ldeen}\Marg{deutsch}\Marg{English} die naheliegende Form. Schreiben
 Sie kurze, vollständige Varianten; Satzzeichen gehören in die jeweilige
 Sprachfassung, wenn sie sich unterscheiden können.}{In the course units, use the
-provided language commands. With \texttt{selectable=\{de,en\}},
-\texttt{\string\ldeen\{Deutsch\}\{English\}} is the natural form. Write short,
+provided language commands. With \keyis{selectable}{de,en},
+\cs{ldeen}\Marg{Deutsch}\Marg{English} is the natural form. Write short,
 complete variants; punctuation belongs inside each language version whenever it
 may differ.}
 
@@ -56,11 +56,11 @@ occurs in only one place}:
        {$10\,\mathrm{ms}$}
 \end{verbatim}
 
-\ldeen{Die Platzhalter \texttt{@1}, \texttt{@2} usw. werden in jeder
+\ldeen{Die Platzhalter \meta{@1}, \meta{@2} usw. werden in jeder
 Sprachfassung durch dieselben nachfolgenden Argumente ersetzt. Das ist besonders
 nützlich für Fachbegriffe, Querverweise und Zahlen. Wenn eine Sprache eine andere
 Wortstellung benötigt, platzieren Sie denselben Platzhalter einfach an der
-passenden Stelle.}{The placeholders \texttt{@1}, \texttt{@2}, and so on are
+passenden Stelle.}{The placeholders \meta{@1}, \meta{@2}, and so on are
 replaced in every language version by the same following arguments. This is
 particularly useful for technical terms, cross-references, and numbers. If a
 language requires a different word order, simply put the same placeholder in the
@@ -68,10 +68,10 @@ appropriate position.}
 
 \begin{warnbox}{}
 \ldeen{Starten Sie Builds über OLLM und wählen Sie die Sprache mit
-\texttt{--language}. Setzen Sie die Zielsprache \textbf{nicht} zusätzlich von Hand im
+\option{--language}. Setzen Sie die Zielsprache \textbf{nicht} zusätzlich von Hand im
 Quelldokument; sonst können Manifest, Artefaktname und tatsächlich gesetzte
 Sprache auseinanderlaufen.}{Start builds through OLLM and select the language
-with \texttt{--language}. \textbf{Do not} additionally hard-code the target language in
+with \option{--language}. \textbf{Do not} additionally hard-code the target language in
 the source; otherwise the manifest, artifact name, and actually typeset language
 can disagree.}
 \end{warnbox}
@@ -90,22 +90,22 @@ ollm build --all
 \ldeen{Ein \emph{Modus} ist eine benannte Eigenschaft der gerade erzeugten
 Dokumentinstanz. Er beantwortet eine einfache Frage wie "`Ist dies eine
 Präsentation?"', "`Ist dies eine Langform?"' oder "`Wird für den Bildschirm
-gesetzt?"'. Der Befehl \texttt{\string\lecturemode<modus>\{Inhalt\}} gibt
+gesetzt?"'. Der Befehl \cs{lecturemode}\meta{modus}\marg{Inhalt} gibt
 seinen Inhalt nur aus, wenn die aktuelle Instanz diese Eigenschaft besitzt.}{A
 \emph{mode} is a named property of the document instance currently being
 created. It answers a simple question such as "`Is this a presentation?"',
 "`Is this a long form?"', or "`Is this being typeset for a screen?"'. The
-command \texttt{\string\lecturemode<mode>\{content\}} emits its content only
+command \cs{lecturemode}\meta{mode}\marg{content} emits its content only
 when the current instance has that property.}
 
-\ldeen{Wer \texttt{beamer} oder \texttt{ltx-talk} kennt, kennt bereits ähnlich
-geschriebene Modusbefehle. \texttt{\string\lecturemode} ist die portable
+\ldeen{Wer \cls{beamer} oder \cls{ltx-talk} kennt, kennt bereits ähnlich
+geschriebene Modusbefehle. \cs{lecturemode} ist die portable
 Schnittstelle von \osglecture: Sie fragt den von Dokumentklasse und Profil
 unabhängigen Modusgraphen ab und funktioniert deshalb beim Wechsel zwischen
 beiden Präsentationsklassen ebenso wie in Langformen. Die spitzen Klammern sind
 hier eine Modusauswahl und keine Beamer-Overlayangabe.}{Users familiar with
-\texttt{beamer} or \texttt{ltx-talk} will already know similarly written mode
-commands. \texttt{\string\lecturemode} is \osglecture's portable interface: it
+\cls{beamer} or \cls{ltx-talk} will already know similarly written mode
+commands. \cs{lecturemode} is \osglecture's portable interface: it
 queries the mode graph independently of the document class and profile and
 therefore continues to work when switching between the two presentation
 classes as well as in long forms. Here the angle brackets select a mode; they
@@ -113,12 +113,12 @@ are not a Beamer overlay specification.}
 
 \ldeen{Beginnen Sie bei angepassten Inhalten mit der allgemeinsten Absicht.
 Soll ein Absatz ausschließlich in einer Langform erscheinen, wählen Sie den
-Verhaltensmodus \texttt{longform}; soll er nur auf Folien stehen, wählen Sie
-\texttt{slides}. Eine Festlegung auf die konkrete Basisklasse ist selten nötig
+Verhaltensmodus \code{longform}; soll er nur auf Folien stehen, wählen Sie
+\code{slides}. Eine Festlegung auf die konkrete Basisklasse ist selten nötig
 und erschwert einen späteren Profilwechsel.}{When adapting content, begin with
 the most general intention. If a paragraph should appear only in a long form,
-select the \texttt{longform} behavior mode; if it belongs only on slides, select
-\texttt{slides}. Selecting the concrete base class is rarely necessary and makes
+select the \code{longform} behavior mode; if it belongs only on slides, select
+\code{slides}. Selecting the concrete base class is rarely necessary and makes
 a later profile change harder.}
 
 \begin{verbatim}
@@ -134,20 +134,20 @@ a later profile change harder.}
 \ldeen{Modi sind hier Eigenschaften der Ausgabe. Ein konkreter Dokumenttyp
 aktiviert zugleich allgemeinere Modi: Ein Handout ist beispielsweise eine
 Präsentationsform und eine Druckausgabe. Dadurch kann derselbe Inhalt mit
-\texttt{<presentation>} für Folien und Handouts oder mit \texttt{<print>} für
+\code{<presentation>} für Folien und Handouts oder mit \code{<print>} für
 alle druckorientierten Ergebnisse freigeschaltet werden. Mehrere Alternativen
-lassen sich mit \texttt{|} verbinden.}{Modes are properties of the output in
+lassen sich mit \code{|} verbinden.}{Modes are properties of the output in
 this context. A concrete document type also activates more general modes: a
 handout, for example, is both a presentation form and a print output. Thus, the
-same content can be enabled with \texttt{<presentation>} for slides and handouts,
-or with \texttt{<print>} for all print-oriented results. Multiple alternatives
-can be joined with \texttt{|}.}
+same content can be enabled with \code{<presentation>} for slides and handouts,
+or with \code{<print>} for all print-oriented results. Multiple alternatives
+can be joined with \code{|}.}
 
 \subsection{\ldeen{Aufzählungen als Fließtext}{Lists as Continuous Text}}
 \ldeen{Für Aufzählungen, die im Skript besser als Fließtext lesbar sind, ist
-\texttt{presitemize} die nutzerfreundlichere Wahl. Die Einträge beschreiben
+\pkg{presitemize} die nutzerfreundlichere Wahl. Die Einträge beschreiben
 Aussagen; die Einleitungsbefehle geben deren logische Beziehung an.}{For lists
-that read better as prose in lecture notes, \texttt{presitemize} is the more
+that read better as prose in lecture notes, \pkg{presitemize} is the more
 convenient choice. Entries describe statements; their introductory commands
 specify the logical relationship between them.}
 
@@ -161,104 +161,104 @@ specify the logical relationship between them.}
 \end{verbatim}
 
 \ldeen{In Präsentationen bleibt daraus eine Liste. In der Langform verbindet
-\texttt{presitemize} die Aussagen sinngemäß zu: "`Die Übersetzung funktioniert
+\pkg{presitemize} die Aussagen sinngemäß zu: "`Die Übersetzung funktioniert
 und das Programm liefert ein Ergebnis, aber wir haben vereinfacht, weshalb wir
-das Ergebnis prüfen müssen."' \texttt{\string\finite} markiert das finite Verb,
+das Ergebnis prüfen müssen."' \cs{finite} markiert das finite Verb,
 damit es insbesondere im deutschen Nebensatz an die richtige Stelle rücken
 kann.}{In presentations this remains a list. In the long form,
-\texttt{presitemize} combines the statements approximately as follows: "`The
+\pkg{presitemize} combines the statements approximately as follows: "`The
 translation works and the program produces a result, but we simplified, and
-therefore we have to check the result."' \texttt{\string\finite} marks the finite
+therefore we have to check the result."' \cs{finite} marks the finite
 verb so that it can be moved to the correct position, especially in a German
 subordinate clause.}
 
 \ldeen{Für reine Interpunktionsfortsetzungen stehen
-\texttt{\string\commaitem} und \texttt{\string\colonitem} zur Verfügung. Sie
-erzeugen in der Langform "`\texttt{, }"' beziehungsweise "`\texttt{: }"' ohne ein
+\cs{commaitem} und \cs{colonitem} zur Verfügung. Sie
+erzeugen in der Langform "`\code{, }"' beziehungsweise "`\code{: }"' ohne ein
 zusätzliches Verbindungswort; in Präsentationen erscheinen sie als gewöhnliche
-Items. Gleichwertig sind \texttt{\string\presitem[relation=comma]} und
-\texttt{\string\presitem[relation=colon]}.}{For punctuation-only
-continuations, \texttt{\string\commaitem} and
-\texttt{\string\colonitem} are available. In long-form output they produce
-"`\texttt{, }"' and "`\texttt{: }"', respectively, without an additional
+Items. Gleichwertig sind \cs{presitem}\Oarg{relation=comma} und
+\cs{presitem}\Oarg{relation=colon}.}{For punctuation-only
+continuations, \cs{commaitem} and
+\cs{colonitem} are available. In long-form output they produce
+"`\code{, }"' and "`\code{: }"', respectively, without an additional
 conjunction; in presentations they appear as ordinary items. The equivalent
-key forms are \texttt{\string\presitem[relation=comma]} and
-\texttt{\string\presitem[relation=colon]}.}
+key forms are \cs{presitem}\Oarg{relation=comma} and
+\cs{presitem}\Oarg{relation=colon}.}
 
-\ldeen{Verwenden Sie \texttt{presitemize} für flache Folgen kurzer Aussagen.
+\ldeen{Verwenden Sie \pkg{presitemize} für flache Folgen kurzer Aussagen.
 Für verschachtelte Listen, Tabellen oder deutlich verschiedene Erklärwege sind
 explizite Modusvarianten verständlicher. Als Faustregel gilt: Ändert sich nur
-die sprachliche Verbindung, genügt \texttt{presitemize}; ändert sich die
-didaktische Struktur, verwenden Sie \texttt{\string\lecturemode}.}{Use
-\texttt{presitemize} for flat sequences of short statements. For nested lists,
+die sprachliche Verbindung, genügt \pkg{presitemize}; ändert sich die
+didaktische Struktur, verwenden Sie \cs{lecturemode}.}{Use
+\pkg{presitemize} for flat sequences of short statements. For nested lists,
 tables, or substantially different explanations, explicit mode variants are
 clearer. As a rule of thumb: if only the linguistic connection changes,
-\texttt{presitemize} is sufficient; if the didactic structure changes, use
-\texttt{\string\lecturemode}.}
+\pkg{presitemize} is sufficient; if the didactic structure changes, use
+\cs{lecturemode}.}
 
 \begin{infobox}{}
-\ldeen{Die automatische Fließtextverknüpfung von \texttt{presitemize} besitzt
+\ldeen{Die automatische Fließtextverknüpfung von \pkg{presitemize} besitzt
 derzeit Sprachprofile für Deutsch, Englisch und Französisch einschließlich
-üblicher Varianten wie \texttt{ngerman}, \texttt{british} und
-\texttt{fr-CA}. Bei einer anderen Sprache warnt das Paket und verwendet für die
+üblicher Varianten wie \code{ngerman}, \code{british} und
+\code{fr-CA}. Bei einer anderen Sprache warnt das Paket und verwendet für die
 Verbindungswörter ersatzweise das englische Profil. Das ist nur dann sinnvoll,
 wenn die betreffende Ausgabe tatsächlich englischen Text enthält.}{The
-automatic prose joining performed by \texttt{presitemize} currently has
+automatic prose joining performed by \pkg{presitemize} currently has
 language profiles for German, English, and French, including common variants
-such as \texttt{ngerman}, \texttt{british}, and \texttt{fr-CA}. For another
+such as \code{ngerman}, \code{british}, and \code{fr-CA}. For another
 language the package issues a warning and uses the English profile for its
 connectives as a fallback. This is useful only if the affected output actually
 contains English text.}
 \end{infobox}
 
 \ldeen{Für weitere Sprachen formulieren Sie die Langform explizit und wählen
-mit \texttt{\string\lecturemode} zwischen ihr und der Präsentationsliste. So
+mit \cs{lecturemode} zwischen ihr und der Präsentationsliste. So
 bleiben Wortstellung, Flexion und Interpunktion unter Ihrer Kontrolle; die
-einzelnen Formulierungen können darin weiterhin mit den von \texttt{langselect}
+einzelnen Formulierungen können darin weiterhin mit den von \pkg{langselect}
 erzeugten Sprachmakros ausgewählt werden.}{For additional languages, write the
-long form explicitly and use \texttt{\string\lecturemode} to select between it
+long form explicitly and use \cs{lecturemode} to select between it
 and the presentation list. This keeps word order, inflection, and punctuation
 under your control; the individual formulations can still be selected with the
-language commands generated by \texttt{langselect}.}
+language commands generated by \pkg{langselect}.}
 
 \subsection{\ldeen{Querverweise}{Cross References}}
 \ldeen{Für Verweise innerhalb derselben Dokumentinstanz können Sie die
-üblichen Befehle von \texttt{hyperref} verwenden. \osglecture\ stellt daneben
-\texttt{\string\olref} und \texttt{\string\olpageref} bereit. Ohne optionale
-Dokumentadresse verhalten sie sich wie \texttt{\string\ref} und
-\texttt{\string\pageref}}{For references within the same document instance,
-you can use the usual \texttt{hyperref} commands. In addition, \osglecture\
-provides \texttt{\string\olref} and \texttt{\string\olpageref}. Without an
-optional document address they behave like \texttt{\string\ref} and
-\texttt{\string\pageref}}:
+üblichen Befehle von \pkg{hyperref} verwenden. \osglecture\ stellt daneben
+\cs{olref} und \cs{olpageref} bereit. Ohne optionale
+Dokumentadresse verhalten sie sich wie \cs{ref} und
+\cs{pageref}}{For references within the same document instance,
+you can use the usual \pkg{hyperref} commands. In addition, \osglecture\
+provides \cs{olref} and \cs{olpageref}. Without an
+optional document address they behave like \cs{ref} and
+\cs{pageref}}:
 \begin{verbatim}
 \section{Scheduling}\label{sec:scheduling}
 Siehe Abschnitt~\olref{sec:scheduling} auf Seite~\olpageref{sec:scheduling}.
 \end{verbatim}
 
-\ldeen{Die optionale Argument vor dem Label bezeichnet eine (andere) logische
-Lehreinheit derselben Serie. Sie erinneren sich: Diese logische 
-Identität wird im dritten Parameter des \texttt{\string\lecture}-Befehls
+\ldeen{Das optionale Argument vor dem Label bezeichnet eine (andere) logische
+Lehreinheit derselben Serie. Sie erinnern sich: Diese logische
+Identität wird im dritten Parameter des \cs{lecture}-Befehls
 festgelegt.
 Standardmäßig verwendet der Verweis dabei
 denselben Dokumenttyp und dieselbe Sprache wie das aktuelle Dokument. Der
-folgende Verweis aus der Unit \texttt{memory} führt daher in einem deutschen
-Skript zum deutschen Skript der Unit \texttt{processes}, in englischen Folien
+folgende Verweis aus der Unit \code{memory} führt daher in einem deutschen
+Skript zum deutschen Skript der Unit \code{processes}, in englischen Folien
 dagegen zu deren englischen Folien}{The optional address before the label names
 another logical unit in the same series. By default, the reference uses the
 same document type and language as the current document. Thus, from the
-\texttt{memory} unit, the following reference leads from a German script to the
-German script of \texttt{processes}, but from English slides to its English
+\code{memory} unit, the following reference leads from a German script to the
+German script of \code{processes}, but from English slides to its English
 slides}:
 \begin{verbatim}
 \olref[processes]{sec:scheduling}
 \end{verbatim}
 
-\ldeen{Mit den Schlüsseln \texttt{type} und \texttt{lang} im optionalen Argument
-lässt sich diese aber Projektion ausdrücklich überschreiben. Das ist dann ein dokumenttypübergreifender
+\ldeen{Mit den Schlüsseln \option{type} und \option{lang} im optionalen Argument
+lässt sich diese Dokumentinstanz ausdrücklich überschreiben. Das ist dann ein dokumenttypübergreifender
 Verweis: Er kann beispielsweise von Folien auf die ausführliche Herleitung im
-Skript zeigen}{The \texttt{type} and \texttt{lang} keys explicitly override
-that projection. This creates a cross-document-type reference, for example
+Skript zeigen}{The \option{type} and \option{lang} keys explicitly override
+that document instance. This creates a cross-document-type reference, for example
 from slides to the detailed derivation in the script}:
 \begin{verbatim}
 \olautoref[processes,type=script,lang=de]{sec:scheduling-proof}
@@ -269,26 +269,26 @@ Sie stabile logische IDs statt Verzeichnisnamen; OLLM löst die gewünschte
 Kombination aus Unit, Dokumenttyp und Sprache über seinen Referenz-Snapshot
 auf. Das Zieldokument muss mindestens einmal erfolgreich gebaut und sein
 Referenzexport promoviert worden sein. Nach Änderungen an abhängigen Units ist
-\texttt{ollm build --resolve} der bequemste Weg, Produzenten und Konsumenten
+\code{ollm build --resolve} der bequemste Weg, Produzenten und Konsumenten
 bis zu einem konsistenten Zustand neu zu bauen.}{A keyless address entry is
 always the unit ID. Use stable logical IDs rather than directory names; OLLM
 resolves the requested combination of unit, document type, and language through
 its reference snapshot. The target document must have been built successfully
 at least once and its reference export promoted. After changing dependent
-units, \texttt{ollm build --resolve} is the easiest way to rebuild producers
+units, \code{ollm build --resolve} is the easiest way to rebuild producers
 and consumers to a consistent state.}
 
 \begin{warnbox}{}
 \ldeen{Seitenangaben über Dokumentgrenzen hinweg sind zwar technisch möglich,
 aber häufig keine stabile Leseführung: Die Leserin hat das andere PDF womöglich
 nicht geöffnet, und dessen Seitenzahl kann sich unabhängig ändern. Bevorzugen
-Sie für solche Verweise \texttt{\string\olref} oder
-\texttt{\string\olautoref}. Entfernungsabhängige Befehle wie
-\texttt{\string\vpageref} sind nur innerhalb des aktuellen Dokuments
+Sie für solche Verweise \cs{olref} oder
+\cs{olautoref}. Entfernungsabhängige Befehle wie
+\cs{vpageref} sind nur innerhalb des aktuellen Dokuments
 sinnvoll.}{Page references across document boundaries are technically
 possible, but often provide poor navigation: the reader may not have the other
 PDF open, and its pagination can change independently. Prefer
-\texttt{\string\olref} or \texttt{\string\olautoref} for such references.
-Distance-sensitive commands such as \texttt{\string\vpageref} are meaningful
+\cs{olref} or \cs{olautoref} for such references.
+Distance-sensitive commands such as \cs{vpageref} are meaningful
 only within the current document.}
 \end{warnbox}

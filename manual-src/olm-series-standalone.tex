@@ -1,17 +1,18 @@
 \section{\ldeen{Serien und Standalone}{Series and Standalone}}
 \label{sec:series-standalone}
 
-\ldeen{Die Klasse \texttt{osglecture.cls} unterstützt zwei Arbeitsformen: 
-Serie und Standalone. 
-Die Form die wir bisher betrachtet haben, war die Serie. 
-In einer Serie liefert OLLM den Buildauftrag, kennt die 
+\ldeen{Die Klasse \cls{osglecture} unterstützt zwei Arbeitsformen:
+Serie und Standalone.
+Die Form, die wir bisher betrachtet haben, war die Serie.
+In einer Serie liefert OLLM den Buildauftrag, kennt die
 Nachbarlehreinheiten und verwaltet Referenz- und
-Integrationszustände. 
+Integrationszustände.
 
 Im Standalone-Betrieb beschreibt das Dokument seine
 Ausgabe selbst und wird ohne Projektmanifest gesetzt. Die fachlichen Befehle
 bleiben weitgehend gleich; unterschiedlich ist vor allem, woher Kontext und
-Defaults stammen.}{The same class supports two workflows. In a series, OLLM
+Defaults stammen.}{The \cls{osglecture} class supports two workflows: series
+and standalone. The workflow considered so far is the series. In a series, OLLM
 provides the build request, knows neighbouring units, and manages reference and
 integration state. In standalone operation, the document describes its own
 output and is typeset without a project manifest. The subject-facing commands
@@ -25,18 +26,28 @@ Sie können jedoch auch zu einem gesamten Dokument integriert werden.
 So könnte jede Lehreinheit ein Kapitel eines Skripts bilden, die dann zu einem Gesamtskript
 integriert werden. Es kann aber z.\,B. auch eine Handoutsammlung angelegt
 werden.
-}{}
-\ldeen{Ein Gesamtskript entsteht in \osglecture\ in der Regel nicht durch 
-\texttt{\string\include} der TeX-Quellen, sondern durch Zusammenfügen bereits
-übersetzter Dokumente.}{}
+}{The documents produced for the course units in a series can be used
+individually, as is usually appropriate for presentations. They can also be
+integrated into a single document. Each course unit might, for example, form a
+chapter that is integrated into a complete set of lecture notes; a collection
+of handouts can be assembled in the same way.}
+\ldeen{Ein Gesamtskript entsteht in \osglecture\ in der Regel nicht durch
+\cs{include} der TeX-Quellen, sondern durch Zusammenfügen bereits
+übersetzter Dokumente.}{In \osglecture, a complete set of lecture notes is
+normally not created by applying \cs{include} to the TeX sources, but by
+combining documents that have already been compiled.}
 \ldeen{Dafür muss es eine eigene Integrationseinheit
-mit einem Rahmendokument geben. 
+mit einem Rahmendokument geben.
 Diese Einheit ist durch den Buchstaben "`i"' beim Rollenelement gekennzeichnet.
-DIe laufende Nummer des Verzeichnisses ist egal, weil es bei der Zählung
-nicht berüksichtig wird. Es empfiehlt sich aber, hierfür entweder die kleinste
-oder die größte Nummer zu wählen, so dass die zu integrierenden Einheiten 
+Die laufende Nummer des Verzeichnisses ist unerheblich, weil sie bei der Zählung
+nicht berücksichtigt wird. Es empfiehlt sich aber, hierfür entweder die kleinste
+oder die größte Nummer zu wählen, so dass die zu integrierenden Einheiten
 aufeinander folgen können.
-}{}
+}{This requires a separate integration unit containing a wrapper document. Its
+role element is marked with the letter "`i"'. The directory's sequence number
+does not affect numbering. It is nevertheless advisable to use either the
+smallest or the largest number so that all units to be integrated can remain
+adjacent.}
 
 \begin{verbatim}
 course/
@@ -49,15 +60,21 @@ course/
   900-i-collection/main.tex
 \end{verbatim}
 
-\ldeen{Der normale Workflow der Integration ist inkrementell: 
-Zunächst bauen Sie beim Schreiben die zu integrierenden Dokumente und erst zuletzt 
+\ldeen{Der normale Workflow der Integration ist inkrementell:
+Zunächst bauen Sie beim Schreiben die zu integrierenden Dokumente und erst zuletzt
 das Rahmendokument.
-Es empfiehlt sich, vor dem des des Rahmendokuments mit \texttt{ollm check} zu überprüfen
+Es empfiehlt sich, vor dem Bau des Rahmendokuments mit \code{ollm check} zu überprüfen,
 ob alle zu integrierenden Dokumente erstellt und alle Referenzen aufgelöst sind.
 Falls nicht, müssen Sie ggf.\ weitere Übersetzungsläufe anstossen.
-Auch hier kann Sie \texttt{ollm} unterstützen: 
-Mit Hilfe der Option \texttt{--resolve} werden Abhängigkeiten bis zu einer
-vorgegeben Tiefe erkannt und ausgelöst.}{}
+Auch hier kann Sie \code{ollm} unterstützen:
+Mit Hilfe der Option \option{--resolve} werden Abhängigkeiten bis zu einer
+vorgegebenen Tiefe erkannt und ausgelöst.}{The normal integration workflow is
+incremental: while writing, first build the documents to be integrated and
+build the wrapper document last. Before building the wrapper, use
+\code{ollm check} to verify that all documents to be integrated have been
+created and all references have been resolved. Further compilation runs may be
+necessary. OLLM can help here as well: the \option{--resolve} option discovers
+and triggers dependencies up to a specified depth.}
 
 \begin{verbatim}
 cd 020-processes
@@ -71,8 +88,8 @@ ollm check --scope=series
 \ldeen{ Die Klasse erkennt diese Rolle am Verzeichnisnamen und lädt den
 Integrationsdienst automatisch. Das Dokument nennt die einzubindenden
 logischen Units in der gewünschten Reihenfolge}{A complete script is not
-created by applying \texttt{\string\include} to the TeX sources. Instead, the
-wrapper document is a separate unit with role \texttt{i}. The class recognizes
+created by applying \cs{include} to the TeX sources. Instead, the
+wrapper document is a separate unit with role \code{i}. The class recognizes
 this role from the directory name and loads the integration service
 automatically. The document names the logical units to include in the desired
 order}:
@@ -87,43 +104,43 @@ order}:
 \end{document}
 \end{verbatim}
 
-\ldeen{\texttt{\string\includeunit} wählt automatisch dieselbe Sprache und
+\ldeen{\cs{includeunit} wählt automatisch dieselbe Sprache und
 denselben Dokumenttyp wie das Rahmendokument. Es importiert also bei einem
-deutschen Skript genau die deutschen Skriptprojektionen. OLLM baut die
-Collection mit \texttt{--scope=collection}; existieren keine oder mehrere
+deutschen Skript genau die deutschen Skriptinstanzen. OLLM baut die
+Collection mit \keyis*{--scope}{collection}; existieren keine oder mehrere
 passende Integrationsunits für den Dokumenttyp, ist die Auswahl nicht
-eindeutig und der Build schlägt fehl.}{\texttt{\string\includeunit}
+eindeutig und der Build schlägt fehl.}{\cs{includeunit}
 automatically selects the same language and document type as the wrapper. Thus
-a German script imports exactly the German script projections. OLLM builds the
-collection with \texttt{--scope=collection}; if there is no matching
+a German script imports exactly the German script instances. OLLM builds the
+collection with \keyis*{--scope}{collection}; if there is no matching
 integration unit for the document type, or more than one, the selection is
 ambiguous and the build fails.}
 
-\ldeen{Jede einzubindende Projektion muss zuvor mindestens einmal gebaut sein.
+\ldeen{Jede einzubindende Dokumentinstanz muss zuvor mindestens einmal gebaut sein.
 Der Integrationslauf protokolliert die tatsächlich verwendete Generation als
 Abhängigkeit. Nach Änderungen genügt deshalb normalerweise ein erneuter Lauf
-mit \texttt{--resolve}. Die Reihenfolge der
-\texttt{\string\includeunit}-Befehle ist die Reihenfolge im Ergebnis; sie wird
-nicht aus den Verzeichnisnummern erraten.}{Every projection to be included must
+mit \option{--resolve}. Die Reihenfolge der
+\cs{includeunit}-Befehle ist die Reihenfolge im Ergebnis; sie wird
+nicht aus den Verzeichnisnummern erraten.}{Every document instance to be included must
 have been built at least once. The integration run records the generation
 actually used as a dependency. After changes, another run with
-\texttt{--resolve} is therefore normally sufficient. The order of the
-\texttt{\string\includeunit} commands is the order in the result; it is not
+\option{--resolve} is therefore normally sufficient. The order of the
+\cs{includeunit} commands is the order in the result; it is not
 inferred from directory numbers.}
 
 \subsubsection{\ldeen{Tags, Links und Fallback}{Tags, Links, and Fallback}}
 
 \ldeen{Sind Rahmendokument und importierte Units als Tagged PDF gebaut,
-übernimmt \texttt{tagpax} Seiten, Strukturbaum, Ziele, Links,
+übernimmt \pkg{tagpax} Seiten, Strukturbaum, Ziele, Links,
 Inhaltsverzeichniseinträge und Lesezeichen. Dadurch bleiben
 Barrierefreiheitsstruktur und Navigation über Unit-Grenzen erhalten. Dafür
-muss das Target \texttt{DocumentMetadata} erlauben beziehungsweise verlangen,
-und \texttt{documentmetadata.tex} muss Tagging aktivieren.}{If the wrapper and
-imported units are built as Tagged PDF, \texttt{tagpax} carries across pages,
+muss das Target \cs{DocumentMetadata} erlauben beziehungsweise verlangen,
+und \File{documentmetadata.tex} muss Tagging aktivieren.}{If the wrapper and
+imported units are built as Tagged PDF, \pkg{tagpax} carries across pages,
 the structure tree, destinations, links, table-of-contents entries, and
 bookmarks. This preserves accessibility structure and navigation across unit
-boundaries. The target must permit or require \texttt{DocumentMetadata}, and
-\texttt{documentmetadata.tex} must enable tagging.}
+boundaries. The target must permit or require \cs{DocumentMetadata}, and
+\File{documentmetadata.tex} must enable tagging.}
 
 \begin{verbatim}
 \DocumentMetadata{
@@ -132,15 +149,15 @@ boundaries. The target must permit or require \texttt{DocumentMetadata}, and
 }
 \end{verbatim}
 
-\ldeen{Für ungetaggte Projektionen verwendet die Integration einen Fallback
-über \texttt{pdfpages} und \texttt{newpax}. Links und Gliederung bleiben dabei
+\ldeen{Für ungetaggte Dokumentinstanzen verwendet die Integration einen Fallback
+über \pkg{pdfpages} und \pkg{newpax}. Links und Gliederung bleiben dabei
 weitgehend funktionsfähig, die importierten Seiten werden jedoch als Artefakt
 eingebunden und besitzen keine erschlossene Lesereihenfolge oder
 Überschriftenstruktur. Gemischte getaggte und ungetaggte Units zwingen für den
 betroffenen Dokumenttyp den ungetaggten Pfad und erzeugen eine deutliche
 Warnung. Eine vollständig getaggte Serie ist daher nicht nur qualitativ besser,
-sondern auch vorhersehbarer.}{For untagged projections, integration uses a
-fallback based on \texttt{pdfpages} and \texttt{newpax}. Links and document
+sondern auch vorhersehbarer.}{For untagged document instances, integration uses a
+fallback based on \pkg{pdfpages} and \pkg{newpax}. Links and document
 navigation largely remain functional, but imported pages are included as an
 artifact and have no accessible reading order or heading structure. Mixing
 tagged and untagged units forces the untagged path for the affected document
@@ -150,15 +167,15 @@ therefore both higher quality and more predictable.}
 \subsection{\ldeen{Standalone}{Standalone}}
 
 \ldeen{Ein Standalone-Dokument besitzt weder Buildauftrag noch
-Serienmanifest. Es muss dies mit der Klassenoption \texttt{standalone}
+Serienmanifest. Es muss dies mit der Klassenoption \option{standalone}
 ausdrücklich erklären. Dokumenttyp und Sprache, die in einer Serie von OLLM
-kommen, werden nun mit \texttt{doctype} und \texttt{lang} gewählt. Mit
-\texttt{profile} kann das Dokumentprofil überschrieben werden}{A standalone
+kommen, werden nun mit \option{doctype} und \option{lang} gewählt. Mit
+\option{profile} kann das Dokumentprofil überschrieben werden}{A standalone
 document has neither a build request nor a series manifest. It must declare
-this explicitly with the \texttt{standalone} class option. The document type
+this explicitly with the \option{standalone} class option. The document type
 and language that OLLM supplies in a series are now selected with
-\texttt{doctype} and \texttt{lang}. The document profile can be overridden
-with \texttt{profile}}:
+\option{doctype} and \option{lang}. The document profile can be overridden
+with \option{profile}}:
 
 \begin{verbatim}
 \documentclass[
@@ -170,26 +187,26 @@ with \texttt{profile}}:
 ]{osglecture}
 \end{verbatim}
 
-\ldeen{\texttt{doctype} ist ohne Angabe \texttt{slides}; für die eingebauten
+\ldeen{\option{doctype} ist ohne Angabe \code{slides}; für die eingebauten
 Dokumenttypen existieren Defaultprofile. Explizite Werte machen ein
 Standalone-Dokument dennoch verständlicher und reproduzierbarer.
-\texttt{class-options} reicht Optionen direkt an die vom Profil gewählte
+\option{class-options} reicht Optionen direkt an die vom Profil gewählte
 Basisklasse weiter. Eine gleichzeitig vorhandene OLLM-Auftragsdatei und die
-Option \texttt{standalone} sind ein Fehler, weil sonst zwei Quellen denselben
-Buildkontext bestimmen würden.}{\texttt{doctype} defaults to \texttt{slides},
+Option \option{standalone} sind ein Fehler, weil sonst zwei Quellen denselben
+Buildkontext bestimmen würden.}{\option{doctype} defaults to \code{slides},
 and built-in document types have default profiles. Explicit values nevertheless
 make a standalone document clearer and more reproducible.
-\texttt{class-options} passes options directly to the base class selected by
-the profile. Having both an OLLM build request and the \texttt{standalone}
+\option{class-options} passes options directly to the base class selected by
+the profile. Having both an OLLM build request and the \option{standalone}
 option is an error because two sources would otherwise determine the same build
 context.}
 
-\ldeen{Ohne Manifest wird \texttt{Include/projectconfig.tex} nicht automatisch
+\ldeen{Ohne Manifest wird \File{Include/projectconfig.tex} nicht automatisch
 gefunden. Gemeinsam genutzte Pakete, Sprachkonfiguration, Titel und eigene
 Makros müssen daher im Dokument geladen oder ausdrücklich aus einer Datei
 eingelesen werden. Ein eigenständiges mehrsprachiges Skript kann beispielsweise
 so beginnen}{Without a manifest,
-\texttt{Include/projectconfig.tex} is not discovered automatically. Shared
+\File{Include/projectconfig.tex} is not discovered automatically. Shared
 packages, language configuration, title, and custom commands must therefore be
 loaded in the document or explicitly read from a file. A standalone
 multilingual script might begin as follows}:
@@ -206,14 +223,14 @@ multilingual script might begin as follows}:
 \title{\ldeen{Betriebssysteme}{Operating Systems}}
 \end{verbatim}
 
-\ldeen{Profile wie \texttt{ltx-talk} verlangen
-\texttt{\string\DocumentMetadata} bereits vor
-\texttt{\string\documentclass}. In einem Standalone-Dokument gibt es keine
-von OLLM vorgeschaltete \texttt{documentmetadata.tex}; der Aufruf muss daher
-wirklich am Dateianfang stehen}{Profiles such as \texttt{ltx-talk} require
-\texttt{\string\DocumentMetadata} before
-\texttt{\string\documentclass}. A standalone document has no
-\texttt{documentmetadata.tex} inserted by OLLM, so the call must genuinely be
+\ldeen{Profile wie \cls{ltx-talk} verlangen
+\cs{DocumentMetadata} bereits vor
+\cs{documentclass}. In einem Standalone-Dokument gibt es keine
+von OLLM vorgeschaltete \File{documentmetadata.tex}; der Aufruf muss daher
+wirklich am Dateianfang stehen}{Profiles such as \cls{ltx-talk} require
+\cs{DocumentMetadata} before
+\cs{documentclass}. A standalone document has no
+\File{documentmetadata.tex} inserted by OLLM, so the call must genuinely be
 placed at the start of the file}:
 
 \begin{verbatim}
@@ -224,15 +241,15 @@ placed at the start of the file}:
 \end{verbatim}
 
 \ldeen{Sie können ein solches Dokument direkt mit Lua\LaTeX\ beziehungsweise
-\texttt{latexmk} bauen. Der kompatible Komfortaufruf
-\texttt{ollm standalone main.tex} verwendet ebenfalls die Klassenoptionen;
+\code{latexmk} bauen. Der kompatible Komfortaufruf
+\code{ollm standalone main.tex} verwendet ebenfalls die Klassenoptionen;
 Target-, Sprach- und Matrixoptionen von OLLM sind dabei nicht zulässig. Ohne
 Serienzustand gibt es keine externen Unit-Referenzen, Counter-Continuation oder
-\texttt{\string\includeunit}-Auflösung. Lokale Referenzen und alle
+\cs{includeunit}-Auflösung. Lokale Referenzen und alle
 modusabhängigen Darstellungsbefehle funktionieren unverändert.}{Such a
-document can be built directly with Lua\LaTeX\ or \texttt{latexmk}. The
-compatible convenience command \texttt{ollm standalone main.tex} also uses the
+document can be built directly with Lua\LaTeX\ or \code{latexmk}. The
+compatible convenience command \code{ollm standalone main.tex} also uses the
 class options; OLLM target, language, and matrix options are not permitted in
 this mode. Without series state there are no external unit references, counter
-continuation, or \texttt{\string\includeunit} resolution. Local references and
+continuation, or \cs{includeunit} resolution. Local references and
 all mode-aware rendering commands continue to work unchanged.}

@@ -14,6 +14,7 @@ modules = {
    "osglecture-modes",
    "osglecture",
    "tagpax",
+   "semcat",
    "manual-src",
  }
 
