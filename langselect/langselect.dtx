@@ -48,8 +48,9 @@ load-preamble,
 
 \usepackage[
 languages={de,en},
-map={de=ngerman,en=english},
+map={de=german,en=english},
 targetlang={job=2},
+load babel
 ]{langselect}
 \usepackage{enumitem}
 
@@ -106,7 +107,7 @@ targetlang={job=2},
 \item \ldeen*{Binden Sie @1 ein}{Include @1}{\cs{usepackage}\Oarg{languages=\Marg{en,de}}\Marg{langselect}}
 \item \ldeen{Nutzen Sie im Quelldokument 
     \cs*{lende}\marg{Text$_{en}$}\marg{Text$_{de}$}. \meta{Text$_{en}$} wird in
-    der englischen Version erscheinen, während Text$_{de}$ in der deutschen
+    der englischen Version erscheinen, während \meta{Text$_{de}$} in der deutschen
     Version erscheinen wird.}{Use in the
   source \cs*{lende}\marg{text$_{en}$}\marg{text$_{de}$}. \meta{text$_{en}$} will
   appear in the Englisch version, whereas \meta{text$_{de}$} will appear in the German
@@ -124,12 +125,12 @@ targetlang={job=2},
     get the English version and with @2 for the German version.}{
     
     \centerline{\code{> latex
-        "\cs*{def}\cs{olsTargetLanguage}\Marg{en}\cs{include}\marg{document}}"}
+        "\cs*{def}\cs{olsTargetLanguage}\Marg{en}\cs{include}\marg{document}"}}
       
     }{
 
       \centerline{\code{> latex
-          "\cs*{def}\cs{olsTargetLanguage}\Marg{de}\cs{include}\marg{document}}"}
+          "\cs*{def}\cs{olsTargetLanguage}\Marg{de}\cs{include}\marg{document}"}}
 
     }
     
@@ -313,7 +314,7 @@ mechanisms for selecting the target language.
     }
 \end{enumerate}
 \ldeen{
-  Sprachen werden in \thepkg über ISO 639-1-Codes (z.\,B. "`en"', "`fr"',
+  Sprachen werden in \thepkg\ über ISO 639-1-Codes (z.\,B. "`en"', "`fr"',
   "`de"', \ldots) bezeichnet.
   Wenn für die Sprachbehandlung auf der Ebene von Babel/Polyglossia ein
   bestimmter Dialekt oder eine bestimmte Variante gewünscht ist, kann ein
@@ -382,7 +383,7 @@ Section~@1.%
            An element is a part of the job name separated by "`-"' (minus), see
            the documentation for the package \needpackage{varsfromjobname}, which is loaded
            for this purpose.
-         }%
+         }
         \ldeen{%
           Beispielsweise kann bei \keyis*{targetlang}{job=2} über 
         }{%
@@ -597,36 +598,25 @@ Section~@1.%
 \begin{example}[
   compile,
   pages=1,
-  graphics={trim=3cm 22cm 3cm 4cm,clip},
-  pre-output={\begin{mdframed}[
-    backgroundcolor=white,
-    hidealllines=true,
-    innerleftmargin=0pt,
-    innerrightmargin=0pt,
-    innertopmargin=4pt,
-    innerbottommargin=4pt
-  ]},
-  after-output={\end{mdframed}}]
-    \documentclass{article}
-    \usepackage[languages={en,fr},
-    targetlang=fr]{langselect}
-    
-    \begin{document}
-    \lenfr*{
-      The formula @1 generally refers to the Pythagorean theorem.
-    }{
-      La formule @1 fait généralement référence au théorème de
+  graphics={trim=3cm 22cm 3cm 4cm,clip}]
+      \documentclass{article}
+      \usepackage[languages={en,fr},targetlang=fr]{langselect}
+      \begin{document}
+      \lenfr*{
+        The formula @1 generally refers to the Pythagorean theorem.
+      }{
+        La formule @1 fait généralement référence au théorème de
       Pythagore.
-    }{$a^{2}+b^{2}=c^{2}$}
+      }{$a^{2}+b^{2}=c^{2}$}
     
-    \lenfr*{
-      Calculate the length of the third side if one side is @1 units long
-      and the hypotenuse is @2 units long.
-    }{
-      Calculez la longueur du troisième
-      côté si un côté mesure @1 unités et l'hypoténuse @2 unités.
-    }{$4$}{$5$}  
-    \end{document}
+      \lenfr*{
+        Calculate the length of the third side if one side is @1 units long
+        and the hypotenuse is @2 units long.
+      }{
+        Calculez la longueur du troisième
+        côté si un côté mesure @1 unités et l'hypoténuse @2 unités.
+      }{$4$}{$5$}  
+      \end{document}
 \end{example}
 \subsection{\ldeen{Individuelle Sprachmakros}{Individual Language Commands}}
 \label{sec:own-names}
@@ -777,10 +767,10 @@ Section~@1.%
       Please report any bugs you find via @1.     
     .}{\url{https://github.com/werner-matthias/osglecture/issues}}
   \item \textbf{\ldeen{Wofür steht das "`o"' im \cs*{ols}-Prefix?}{What does the
-        "`o"' in the \cs*{ols} prefix stand for}}?
+        "`o"' in the \cs*{ols} prefix stand for?}}
     
-    \ldeen{Das Paket gehört zu Bundle \pkg{osglecture}, von dort ist das
-      "`o"' geerbt.}{The package belongs to the \pkg{osglecture} bundle,
+    \ldeen{Das Paket gehört zu Bundle \bnd{osglecture}, von dort ist das
+      "`o"' geerbt.}{The package belongs to the \bnd{osglecture} bundle,
       from which the "`o"' is inherited.}
   \item \textbf{\ldeen{Gibt es Anwendungsbeispiele, die über ein Toy-Hello-World
         hinausgehen?}{Are there any application examples that go beyond a toy
