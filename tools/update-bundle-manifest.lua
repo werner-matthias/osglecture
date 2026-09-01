@@ -18,7 +18,7 @@ local modules = {
   exclude = { ["osglecture-osgbeamer.code.tex"] = true },
     lua = ':full_moon:' },
   { name = "osglecture-modes", files = { "osglecture-modes/osglecture-modes.dtx" },
-    lua = ':full_moon:' },
+    lua = ':new_moon:' },
   -- ollm is Perl, not a docstripped LaTeX package: it keeps its version
   -- as the single $VERSION in OLLM::Version, the same file ollm.tex's
   -- own driver already parses (with the same "VERSION = '...'" pattern)
