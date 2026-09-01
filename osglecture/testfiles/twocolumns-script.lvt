@@ -16,7 +16,7 @@
 \begin{twocolumns}<longform>[t,.4]
   Longform left\nextcolumn Longform right
 \end{twocolumns}
-\begin{twocolumns}<presentation|longform>[b,.6]
+\begin{twocolumns}<presentation||longform>[b,.6]
   Shared left\nextcolumn Shared right
 \end{twocolumns}
 \END
