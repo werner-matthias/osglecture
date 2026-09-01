@@ -211,7 +211,7 @@ local function lines_of(s,kind)
   return out
 end
 
-local trace_marker="__ANSITERM_INPUT_7E3D1A__"
+local trace_marker="__ANSITERM_INPUT_2A2F0B__"
 
 -- Shell tracing writes a uniquely marked command immediately before that
 -- command's output.  Converting the merged stream preserves this order and,
