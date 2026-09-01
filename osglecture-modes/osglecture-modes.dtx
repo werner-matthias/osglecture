@@ -41,6 +41,7 @@ Matthias Werner.
   {Portable document-modes}
 %</package>
 %<*driver>
+\ExplSyntaxOff
 \documentclass[load-preamble+]{osgdoc}
 
 \usepackage{enumitem}
@@ -139,7 +140,7 @@ Matthias Werner.
 \AddLectureModes{reading}
 \FinalizeLectureModes
 
-\lecturemode<article|presentation>{Common source text}
+\lecturemode<article||presentation>{Common source text}
 \end{verbatim}
 
 \section{\ldeen{Voraussetzungen und eigenständige Nutzung}
@@ -222,12 +223,16 @@ der Klasse \cls*{osglecture} wird an dieses Paket weitergereicht.
 
 \ldeen{
   Eine Modusliste ist kommasepariert. In Ausdrücken für Abfragen und
-  \cs{lecturemode} kann zusätzlich \code{|} als Oder-Verknüpfung verwendet
-  werden. \code{all} ist immer aktiv. Die erste Abfrage finalisiert einen noch
-  offenen Graphen automatisch.
+  \cs{lecturemode} kann zusätzlich \code{||} als Oder-Verknüpfung verwendet
+  werden. Ein einfaches \code{|} ist dort kein Operator, sondern bleibt der
+  Modusskopierung der Overlaybackends vorbehalten (siehe
+  Abschnitt~\ref{sec:backend-interaction}). \code{all} ist immer aktiv. Die
+  erste Abfrage finalisiert einen noch offenen Graphen automatisch.
 }{
   A mode list is comma-separated. Queries and \cs{lecturemode} expressions may
-  additionally use \code{|} for disjunction. \code{all} is always active. The
+  additionally use \code{||} for disjunction. A single \code{|} is not an
+  operator there; it stays reserved for the overlay backends' mode scoping
+  (see Section~\ref{sec:backend-interaction}). \code{all} is always active. The
   first query automatically finalizes a graph that is still open.
 }
 
@@ -535,36 +540,96 @@ Text\\<slides>[3ex]
 }
 
 \section{\ldeen{Zusammenspiel mit Backends}{Backend interaction}}
+\label{sec:backend-interaction}
 
 \ldeen{
   Besitzt die geladene Klasse keinen Befehl \cs{mode}, stellt das Paket dessen
   portable Inlineform bereit. Existiert bereits eine native Implementierung,
   behandelt das Paket ausschließlich Inlineausdrücke aus registrierten Modi.
-  Außerdem erkennen die nativen Overlaybefehle und -Environments von Beamer
-  und \pkg*{ltx-talk} reine Ausdrücke aus registrierten Modi. Unbekannte oder
-  komplexe Spezifikationen, Beamers ungebundene Modusschalter und \cs{mode*}
-  werden unverändert an das Backend delegiert. Diese Eingriffe lassen sich
-  mit \code{patch-overlays=false} abschalten.
+  Ebenso sortieren die patchbaren Overlaybefehle und -Decoder von Beamer und
+  \pkg*{ltx-talk} eine Winkelspezifikation in folgende Arten ein:
 }{
   If the loaded class has no \cs{mode} command, the package provides its
   portable inline form. If a native implementation already exists, the package
-  handles only inline expressions composed of registered modes. The native
-  overlay commands and environments of Beamer and \pkg*{ltx-talk} also accept
-  pure expressions composed of registered modes. Unknown or complex
-  specifications, Beamer's unbraced mode switches, and \cs{mode*} are
-  delegated unchanged to the backend. Set
-  \code{patch-overlays=false} to disable these patches.
+  handles only inline expressions composed of registered modes. The patched
+  overlay commands and decoders of Beamer and \pkg*{ltx-talk} likewise sort an
+  angle-bracket specification into the following kinds:
+}
+
+\begin{itemize}
+  \item \ldeen{
+    \emph{portabel} -- eine mit \code{||} verknüpfte Oder-Liste registrierter
+    Modi (oder \code{all}). Sie wird vollständig vom Paket ausgewertet und
+    funktioniert auch ohne Overlaybackend.
+  }{
+    \emph{portable} -- a \code{||}-separated disjunction of registered modes
+    (or \code{all}). Evaluated entirely by the package; works without any
+    overlay backend.
+  }
+  \item \ldeen{
+    \emph{modusqualifiziert} -- jedes mit \code{|} getrennte Segment ist ein
+    registrierter Modus, eine Form \code{modus:rest} oder
+    ein rein numerisches Overlayatom. Die portablen Anteile wertet das Paket
+    aus; die aktiven nativen Reste werden zu einer einzigen
+    Backendspezifikation zusammengesetzt. So wird \code{<slides:2-|handout:0>}
+    portabel entschieden und dem Backend nur der zutreffende Overlaybereich
+    gereicht.
+  }{
+    \emph{mode-qualified} -- every \code{|}-separated segment is a registered
+    mode, a \code{mode:tail} form, or a purely numeric overlay
+    atom. The package evaluates the portable parts and recombines the surviving
+    native tails into a single backend specification. This lets
+    \code{<slides:2-|handout:0>} be decided portably while only the matching
+    overlay range reaches the backend.
+  }
+  \item \ldeen{
+    \emph{nativ} -- alles Übrige: Backend-Modusnamen, \code{|}-Modusskopierung
+    über unbekannte Modi, Actionspezifikationen, Beamers ungebundene
+    Modusschalter, \cs{mode*}. Wird unverändert an das Backend delegiert.
+  }{
+    \emph{native} -- everything else: backend mode names, \code{|} mode scoping
+    over unknown modes, action specifications, Beamer's unbraced mode switches,
+    \cs{mode*}. Delegated to the backend unchanged.
+  }
+\end{itemize}
+
+\ldeen{
+  \code{|} und \code{,} innerhalb von \code{<...>} sind stets Backendsyntax;
+  \code{||} ist der einzige portable Oder-Operator. Ein Ausdruck, der portable
+  Modi mit nativen Overlayatomen mischt, muss dies also über \code{||} oder die
+  Form \code{modus:rest} kenntlich machen. Fehlt der geladenen Klasse ein
+  Overlaybackend, wird eine native oder unerkannte Spezifikation zu
+  \emph{anzeigen} abgeschwächt. Alle diese Eingriffe lassen sich mit
+  \code{patch-overlays=false} abschalten.
+}{
+  \code{|} and \code{,} inside \code{<...>} are always backend syntax; \code{||}
+  is the only portable disjunction operator, so an expression that mixes
+  portable modes with native overlay atoms must signal this with \code{||} or
+  the \code{mode:tail} form. When the loaded class has no overlay backend, a
+  native or unrecognised specification degrades to \emph{show}. All of these
+  patches can be turned off with \code{patch-overlays=false}.
 }
 
 \section{\ldeen{Einschränkungen}{Limitations}}
 
 \begin{itemize}
   \item \ldeen{
-    Gemischte native Spezifikationen wie \code{slides:2-} bleiben Sache des
-    Backends. Portable Modusausdrücke müssen die gesamte Spezifikation bilden.
+    Ein registrierter Modus darf einem nativen Overlayrest vorangestellt
+    (\code{<slides:2->}), mit \code{|} modusweise gestaffelt
+    (\code{<slides:2-|handout:0>}) oder per \code{||} oder-verknüpft werden. Ein
+    Segment mit einem nicht registrierten Modusnamen macht jedoch die gesamte
+    Spezifikation nativ, und eine Disjunktion mit nacktem \code{|} oder
+    \code{,} über die Grenze zwischen portablem Modus und nativem Atom hinweg
+    (\code{<presentation|2->}) ist nicht als portable Oder-Verknüpfung
+    verfügbar; dafür ist \code{||} zu verwenden.
   }{
-    Mixed native specifications such as \code{slides:2-} remain backend
-    syntax. A portable mode expression must occupy the complete specification.
+    A registered mode may prefix a native overlay tail (\code{<slides:2->}), be
+    staggered per mode with \code{|} (\code{<slides:2-|handout:0>}), or be
+    \code{||}-combined with one. A segment carrying an unregistered mode name
+    makes the whole specification native, and a disjunction with a bare
+    \code{|} or \code{,} across the boundary between a portable mode and a
+    native atom (\code{<presentation|2->}) is not available as a portable
+    \emph{or}; use \code{||} for that.
   }
   \item \ldeen{
     Eine Basisklasse muss vor \thepkg\ geladen sein, damit ihre Fähigkeiten
@@ -832,7 +897,9 @@ Text\\<slides>[3ex]
     \bool_if:NF \g_osglecture_modes_frozen_bool { \osglecture_modes_finalize: }
     \bool_set_false:N \l_tmpa_bool
     \tl_set:Nn \l_tmpa_tl {#1}
-    \tl_replace_all:Nnn \l_tmpa_tl {|} {,}
+    % "||" is the portable disjunction operator; a bare "|" is backend
+    % overlay syntax and has no meaning in a portable mode expression.
+    \tl_replace_all:Nnn \l_tmpa_tl {||} {,}
     \clist_map_inline:Vn \l_tmpa_tl
       {
         \str_if_eq:nnTF {##1} {all}
@@ -1134,22 +1201,28 @@ Text\\<slides>[3ex]
 \bool_new:N \g_osglecture_modes_native_alt_bool
 \bool_set:Nn \g_osglecture_modes_native_alt_bool { \cs_if_exist_p:N \alt }
 
+\cs_new_protected:Npn \osglecture_modes_overlay_alt:nnn #1#2#3
+  { \alt<#1>{#2}{#3} }
+\cs_generate_variant:Nn \osglecture_modes_overlay_alt:nnn { Vnn }
+
 \cs_new_protected:Npn \osglecture_modes_overlay_apply:nn #1#2
   {
-    \osglecture_modes_if_portable_spec:nTF {#2}
+    \osglecture_modes_classify:n {#2}
+    \str_case:Vn \l_osglecture_modes_action_tl
       {
-        \osglecture_modes_if_active:nTF {#2}
-          { \osglecture_modes_overlay_original:n {#1} }
-          { \osglecture_modes_overlay_gobble:n {#1} }
-      }
-      {
-        \bool_if:NTF \g_osglecture_modes_native_alt_bool
+        { show } { \osglecture_modes_overlay_original:n {#1} }
+        { hide } { \osglecture_modes_overlay_gobble:n {#1} }
+        { native }
           {
-            \alt<#2>
-              { \osglecture_modes_overlay_original:n {#1} }
-              { \osglecture_modes_overlay_gobble:n {#1} }
+            \bool_if:NTF \g_osglecture_modes_native_alt_bool
+              {
+                \osglecture_modes_overlay_alt:Vnn
+                  \l_osglecture_modes_native_tl
+                  { \osglecture_modes_overlay_original:n {#1} }
+                  { \osglecture_modes_overlay_gobble:n {#1} }
+              }
+              { \osglecture_modes_overlay_fallback:nn {#1} {#2} }
           }
-          { \osglecture_modes_overlay_fallback:nn {#1} {#2} }
       }
   }
 
@@ -1206,22 +1279,188 @@ Text\\<slides>[3ex]
   }
 \cs_generate_variant:Nn \osglecture_modes_overlay_apply:nn { nV }
 
-\prg_new_conditional:Npnn \osglecture_modes_if_portable_spec:n #1 { TF }
+% Every angle-bracket specification handed to \cs{only}, \cs{mode}, the
+% overlay-aware commands, or the patched backend decoders is sorted into one
+% of three kinds.  The classifier records show, hide, or native, and for a
+% native verdict the specification to forward to the backend.
+%
+%   portable  -- a "||"-separated disjunction of registered modes (or
+%                "all").  Evaluated entirely here; needs no overlay backend.
+%   qualified -- not portable, but every "|"-separated segment is a
+%                registered mode, "registeredmode:tail", or a purely numeric
+%                overlay atom.  The portable parts are evaluated here and the
+%                surviving native tails are recombined into one backend spec.
+%   native    -- anything else: backend mode names, "|" mode scoping over
+%                unknown modes, action specs, ...  Forwarded verbatim.
+%
+% "|" and "," inside <...> are always backend syntax.  "||" is the only
+% portable disjunction operator, so a spec that mixes portable modes with
+% native overlay atoms must use "||" (or the "mode:tail" form) to say so.
+\tl_new:N    \l_osglecture_modes_action_tl
+\tl_new:N    \l_osglecture_modes_native_tl
+\bool_new:N  \l_osglecture_modes_spec_ok_bool
+\bool_new:N  \l_osglecture_modes_spec_qual_bool
+\seq_new:N   \l_osglecture_modes_spec_atoms_seq
+\seq_new:N   \l_osglecture_modes_spec_segs_seq
+\seq_new:N   \l_osglecture_modes_spec_colon_seq
+\clist_new:N \l_osglecture_modes_spec_parts_clist
+\tl_new:N    \l_osglecture_modes_spec_mode_tl
+\tl_new:N    \l_osglecture_modes_spec_rest_tl
+\tl_new:N    \l_osglecture_modes_spec_resolved_tl
+
+\cs_generate_variant:Nn \osglecture_modes_resolve:nN { VN }
+\prg_generate_conditional_variant:Nnn \osglecture_modes_if_active:n
+  { V } { T, F, TF }
+% ":" is a letter in this syntax regime, so a literal one never matches the
+% category-12 colons that reach us from the document; split on the colon
+% string constant instead.
+\cs_generate_variant:Nn \seq_set_split:Nnn { NVn }
+\cs_generate_variant:Nn \seq_use:Nn { NV }
+
+\prg_new_protected_conditional:Npnn \osglecture_modes_spec_if_portable:n #1
+  { TF }
   {
-    \bool_set_true:N \l_tmpa_bool
-    \tl_set:Nn \l_tmpa_tl {#1}
-    \tl_replace_all:Nnn \l_tmpa_tl {|} {,}
-    \clist_map_inline:Vn \l_tmpa_tl
+    \seq_set_split:Nnn \l_osglecture_modes_spec_atoms_seq { || } {#1}
+    \bool_set_true:N \l_osglecture_modes_spec_ok_bool
+    \seq_map_inline:Nn \l_osglecture_modes_spec_atoms_seq
       {
-        \str_if_eq:nnF {##1} {all}
+        \tl_set:Nn \l_osglecture_modes_spec_mode_tl {##1}
+        \tl_trim_spaces:N \l_osglecture_modes_spec_mode_tl
+        \str_if_eq:VnF \l_osglecture_modes_spec_mode_tl { all }
           {
-            \osglecture_modes_resolve:nN {##1} \l_tmpb_tl
-            \seq_if_in:NVF \g_osglecture_modes_known_seq \l_tmpb_tl
-              { \bool_set_false:N \l_tmpa_bool }
+            \osglecture_modes_resolve:VN \l_osglecture_modes_spec_mode_tl
+              \l_osglecture_modes_spec_resolved_tl
+            \seq_if_in:NVF \g_osglecture_modes_known_seq
+              \l_osglecture_modes_spec_resolved_tl
+              { \bool_set_false:N \l_osglecture_modes_spec_ok_bool }
           }
       }
-    \bool_if:NTF \l_tmpa_bool
+    \bool_if:NTF \l_osglecture_modes_spec_ok_bool
       { \prg_return_true: } { \prg_return_false: }
+  }
+
+% A segment is "native shape" when it holds only overlay-number characters,
+% i.e. it is a mode-independent overlay atom rather than a backend mode name.
+\prg_new_protected_conditional:Npnn \osglecture_modes_spec_if_native_shape:n
+  #1 { TF }
+  {
+    \bool_set_true:N \l_osglecture_modes_spec_ok_bool
+    \str_map_inline:nn {#1}
+      {
+        \str_if_in:nnF { 0123456789+-.(),~ } {##1}
+          {
+            \bool_set_false:N \l_osglecture_modes_spec_ok_bool
+            \str_map_break:
+          }
+      }
+    \bool_if:NTF \l_osglecture_modes_spec_ok_bool
+      { \prg_return_true: } { \prg_return_false: }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_spec_segment_bare:n #1
+  {
+    \tl_set:Nn \l_osglecture_modes_spec_mode_tl {#1}
+    \osglecture_modes_resolve:VN \l_osglecture_modes_spec_mode_tl
+      \l_osglecture_modes_spec_resolved_tl
+    \seq_if_in:NVTF \g_osglecture_modes_known_seq
+      \l_osglecture_modes_spec_resolved_tl
+      {
+        % A bare registered mode means "in this mode, on every slide".
+        \osglecture_modes_if_active:VT \l_osglecture_modes_spec_resolved_tl
+          { \clist_put_right:Nn \l_osglecture_modes_spec_parts_clist { all } }
+      }
+      {
+        \osglecture_modes_spec_if_native_shape:nTF {#1}
+          { \clist_put_right:Nn \l_osglecture_modes_spec_parts_clist {#1} }
+          { \bool_set_false:N \l_osglecture_modes_spec_qual_bool }
+      }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_spec_segment_colon:n #1
+  {
+    \seq_set_split:NVn \l_osglecture_modes_spec_colon_seq \c_colon_str {#1}
+    \seq_pop_left:NN \l_osglecture_modes_spec_colon_seq
+      \l_osglecture_modes_spec_mode_tl
+    \tl_set:Nx \l_osglecture_modes_spec_rest_tl
+      { \seq_use:NV \l_osglecture_modes_spec_colon_seq \c_colon_str }
+    \tl_trim_spaces:N \l_osglecture_modes_spec_mode_tl
+    \tl_trim_spaces:N \l_osglecture_modes_spec_rest_tl
+    \osglecture_modes_resolve:VN \l_osglecture_modes_spec_mode_tl
+      \l_osglecture_modes_spec_resolved_tl
+    \seq_if_in:NVTF \g_osglecture_modes_known_seq
+      \l_osglecture_modes_spec_resolved_tl
+      {
+        \osglecture_modes_if_active:VT \l_osglecture_modes_spec_resolved_tl
+          {
+            \clist_put_right:NV \l_osglecture_modes_spec_parts_clist
+              \l_osglecture_modes_spec_rest_tl
+          }
+      }
+      { \bool_set_false:N \l_osglecture_modes_spec_qual_bool }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_spec_segment:n #1
+  {
+    \bool_if:NT \l_osglecture_modes_spec_qual_bool
+      {
+        \tl_set:Nn \l_osglecture_modes_spec_mode_tl {#1}
+        \tl_trim_spaces:N \l_osglecture_modes_spec_mode_tl
+        \tl_if_empty:NF \l_osglecture_modes_spec_mode_tl
+          {
+            \exp_args:NV \str_if_in:nnTF \l_osglecture_modes_spec_mode_tl { : }
+              {
+                \exp_args:NV \osglecture_modes_spec_segment_colon:n
+                  \l_osglecture_modes_spec_mode_tl
+              }
+              {
+                \exp_args:NV \osglecture_modes_spec_segment_bare:n
+                  \l_osglecture_modes_spec_mode_tl
+              }
+          }
+      }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_classify:n #1
+  {
+    \tl_clear:N \l_osglecture_modes_native_tl
+    \osglecture_modes_spec_if_portable:nTF {#1}
+      {
+        \osglecture_modes_if_active:nTF {#1}
+          { \tl_set:Nn \l_osglecture_modes_action_tl { show } }
+          { \tl_set:Nn \l_osglecture_modes_action_tl { hide } }
+      }
+      {
+        \bool_set_true:N \l_osglecture_modes_spec_qual_bool
+        \clist_clear:N \l_osglecture_modes_spec_parts_clist
+        \seq_set_split:Nnn \l_osglecture_modes_spec_segs_seq { | } {#1}
+        \seq_map_inline:Nn \l_osglecture_modes_spec_segs_seq
+          { \osglecture_modes_spec_segment:n {##1} }
+        \bool_if:NTF \l_osglecture_modes_spec_qual_bool
+          {
+            \clist_if_empty:NTF \l_osglecture_modes_spec_parts_clist
+              { \tl_set:Nn \l_osglecture_modes_action_tl { hide } }
+              {
+                \tl_set:Nn \l_osglecture_modes_action_tl { native }
+                \tl_set:Nx \l_osglecture_modes_native_tl
+                  { \clist_use:Nn \l_osglecture_modes_spec_parts_clist { , } }
+              }
+          }
+          {
+            \tl_set:Nn \l_osglecture_modes_action_tl { native }
+            \tl_set:Nn \l_osglecture_modes_native_tl {#1}
+          }
+      }
+  }
+
+% Content shows unless a portable expression is present and evaluates false;
+% a native or unrecognised specification degrades to "show" where no overlay
+% backend can honour it.
+\prg_new_protected_conditional:Npnn \osglecture_modes_if_reveal:n #1
+  { T, F, TF }
+  {
+    \osglecture_modes_classify:n {#1}
+    \str_if_eq:VnTF \l_osglecture_modes_action_tl { hide }
+      { \prg_return_false: } { \prg_return_true: }
   }
 
 % Defaults describe semantics, not a backend choice.
@@ -1283,13 +1522,17 @@ Text\\<slides>[3ex]
           \beamer@masterdecode
         \cs_set_protected:Npn \beamer@masterdecode #1
           {
-            \osglecture_modes_if_portable_spec:nTF {#1}
+            \osglecture_modes_classify:n {#1}
+            \str_case:Vn \l_osglecture_modes_action_tl
               {
-                \osglecture_modes_if_active:nTF {#1}
-                  { \osglecture_modes_native_beamer_masterdecode {all} }
-                  { \osglecture_modes_native_beamer_masterdecode {0} }
+                { show } { \osglecture_modes_native_beamer_masterdecode {all} }
+                { hide } { \osglecture_modes_native_beamer_masterdecode {0} }
+                { native }
+                  {
+                    \exp_args:NV \osglecture_modes_native_beamer_masterdecode
+                      \l_osglecture_modes_native_tl
+                  }
               }
-              { \osglecture_modes_native_beamer_masterdecode {#1} }
           }
       }
     \cs_if_exist:NT \__talk_decode_parse:n
@@ -1298,17 +1541,23 @@ Text\\<slides>[3ex]
           \__talk_decode_parse:n
         \cs_set_protected:Npn \__talk_decode_parse:n #1
           {
-            \osglecture_modes_if_portable_spec:nTF {#1}
+            \osglecture_modes_classify:n {#1}
+            \str_case:Vn \l_osglecture_modes_action_tl
               {
-                \osglecture_modes_if_active:nTF {#1}
+                { show }
                   { \osglecture_modes_native_talk_decode_parse:n {all} }
+                { hide }
                   {
                     \str_if_eq:VnTF \l__talk_mode_str {article}
                       { \osglecture_modes_native_talk_decode_parse:n {projector} }
                       { \osglecture_modes_native_talk_decode_parse:n {article} }
                   }
+                { native }
+                  {
+                    \exp_args:NV \osglecture_modes_native_talk_decode_parse:n
+                      \l_osglecture_modes_native_tl
+                  }
               }
-              { \osglecture_modes_native_talk_decode_parse:n {#1} }
           }
       }
   }
@@ -1334,11 +1583,21 @@ Text\\<slides>[3ex]
                   }
               }
           }
+        \cs_new_protected:Npn \osglecture_modes_mode_native:nn #1#2
+          { \osglecture_modes_native_mode <#1> {#2} }
         \cs_new_protected:Npn \osglecture_modes_mode_inline:n #1#2
           {
-            \osglecture_modes_if_portable_spec:nTF {#1}
-              { \osglecture_modes_if_active:nT {#1} {#2} }
-              { \osglecture_modes_native_mode <#1> {#2} }
+            \osglecture_modes_classify:n {#1}
+            \str_case:Vn \l_osglecture_modes_action_tl
+              {
+                { show } {#2}
+                { hide } { }
+                { native }
+                  {
+                    \exp_args:NV \osglecture_modes_mode_native:nn
+                      \l_osglecture_modes_native_tl {#2}
+                  }
+              }
           }
       }
   }
@@ -1347,7 +1606,7 @@ Text\\<slides>[3ex]
       {
         \IfNoValueTF {#1}
           {#2}
-          { \osglecture_modes_if_active:nT {#1} {#2} }
+          { \osglecture_modes_if_reveal:nT {#1} {#2} }
       }
   }
 
@@ -1369,7 +1628,7 @@ Text\\<slides>[3ex]
       {
         \IfNoValueTF {#1}
           {#2}
-          { \osglecture_modes_if_active:nT {#1} {#2} }
+          { \osglecture_modes_if_reveal:nT {#1} {#2} }
       }
   }
 
@@ -1387,7 +1646,7 @@ Text\\<slides>[3ex]
       {
         \IfNoValueTF {#1}
           {#2}
-          { \osglecture_modes_if_active:nT {#1} {#2} }
+          { \osglecture_modes_if_reveal:nT {#1} {#2} }
       }
   }
 \cs_if_exist:NF \visible
@@ -1396,7 +1655,7 @@ Text\\<slides>[3ex]
       {
         \IfNoValueTF {#1}
           {#2}
-          { \osglecture_modes_if_active:nT {#1} {#2} }
+          { \osglecture_modes_if_reveal:nT {#1} {#2} }
       }
   }
 \cs_if_exist:NF \onslide
@@ -1405,31 +1664,39 @@ Text\\<slides>[3ex]
       {
         \IfNoValueTF {#1}
           {#2}
-          { \osglecture_modes_if_active:nT {#1} {#2} }
+          { \osglecture_modes_if_reveal:nT {#1} {#2} }
       }
   }
 
 % \cs{invisible} inverts the polarity: content shows everywhere except in
-% the given mode.
+% the given mode.  A native or unrecognised specification degrades to
+% "show" like the positive commands.
 \cs_if_exist:NF \invisible
   {
     \NewDocumentCommand \invisible { d<> +m }
       {
         \IfNoValueTF {#1}
           {#2}
-          { \osglecture_modes_if_active:nF {#1} {#2} }
+          {
+            \osglecture_modes_classify:n {#1}
+            \str_if_eq:VnF \l_osglecture_modes_action_tl { show } {#2}
+          }
       }
   }
 
 % \cs{alt} takes two content arguments (active branch, inactive branch)
-% instead of \cs{only}'s single one; the fallback mirrors that shape.
+% instead of \cs{only}'s single one; the fallback mirrors that shape and
+% treats a native or unrecognised specification as the active branch.
 \cs_if_exist:NF \alt
   {
     \NewDocumentCommand \alt { d<> +m +m }
       {
         \IfNoValueTF {#1}
           {#2}
-          { \osglecture_modes_if_active:nTF {#1} {#2} {#3} }
+          {
+            \osglecture_modes_classify:n {#1}
+            \str_if_eq:VnTF \l_osglecture_modes_action_tl { hide } {#3} {#2}
+          }
       }
   }
 

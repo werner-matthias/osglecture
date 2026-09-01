@@ -11,6 +11,8 @@
 \mode<slides>{\TYPE{PORTABLE MODE YES}}
 \only<slides>{\TYPE{ONLY SLIDES YES}}
 \only<article>{\TYPE{ONLY ARTICLE NO}}
+\only<slides||article>{\TYPE{ONLY OR YES}}
+\only<article||handout>{\TYPE{ONLY OR NO}}
 \uncover<slides>{\TYPE{UNCOVER SLIDES YES}}
 \visible<slides>{\TYPE{VISIBLE SLIDES YES}}
 \invisible<slides>{\TYPE{INVISIBLE SLIDES YES}}

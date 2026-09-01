@@ -269,16 +269,20 @@ Schnittstelle lautet:
 \FinalizeLectureModes
 ```
 
-`\lecturemode<script|handout>{...}` und `\IfLectureModeTF` sind die garantiert
-portable Oberfläche. Bei einer generischen Basisklasse stellt `osglecture-modes`
+`\lecturemode<script||handout>{...}` und `\IfLectureModeTF` sind die garantiert
+portable Oberfläche (`||` ist der portable Oder-Operator; ein einfaches `|`
+gehört der Backend-Overlaysyntax). Bei einer generischen Basisklasse stellt `osglecture-modes`
 zusätzlich die entsprechende Inlineform von `\mode` bereit. Definiert ein
-Backend bereits `\mode`, übernimmt `osglecture-modes` nur Inlineausdrücke, die
-ausschließlich registrierte portable Modi enthalten; unbekannte Ausdrücke,
-Beamers ungebundene Modusschalter und `\mode*` werden unverändert an das
-Backend delegiert. Damit zieht sich die Erweiterung automatisch zurück, sobald
-ein Backend die betreffende Syntax selbst verwaltet. Eine Erweiterung aller
-Overlaybefehle um frei registrierte Modi ist damit ausdrücklich nicht
-versprochen.
+Backend bereits `\mode`, übernimmt `osglecture-modes` Inlineausdrücke, die
+ausschließlich registrierte portable Modi enthalten, sowie modusqualifizierte
+Spezifikationen der Form `<modus:overlayrest>` bzw. `<modus:rest|modus2:rest2>`,
+bei denen der Modusteil portabel entschieden und nur der aktive native Rest ans
+Backend gereicht wird. Unbekannte Ausdrücke, `|`-Modusskopierung über nicht
+registrierte Modi, Beamers ungebundene Modusschalter und `\mode*` werden
+unverändert an das Backend delegiert. Damit zieht sich die Erweiterung
+automatisch zurück, sobald ein Backend die betreffende Syntax selbst verwaltet.
+Eine vollständige Nachbildung der Backend-Overlaygrammatik ist damit
+ausdrücklich nicht versprochen.
 
 Die automatische Moduserkennung dient nur der Standalone-Kompatibilität und
 geschieht bereits beim Laden des Pakets. `osglecture` registriert und aktiviert

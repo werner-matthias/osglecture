@@ -14,7 +14,10 @@
 \IfLectureModeTF{presentation}{\TYPE{PRESENTATION YES}}{\TYPE{PRESENTATION NO}}
 \IfLectureModeTF{reader}{\TYPE{READER YES}}{\TYPE{READER NO}}
 \IfLectureModeTF{script,reading}{\TYPE{OR YES}}{\TYPE{OR NO}}
+\IfLectureModeTF{presentation||script}{\TYPE{PIPEOR YES}}{\TYPE{PIPEOR NO}}
+\IfLectureModeTF{presentation||beamer}{\TYPE{PIPEOR NONE YES}}{\TYPE{PIPEOR NONE NO}}
 \lecturemode<article>{\TYPE{INLINE ARTICLE}}
+\lecturemode<presentation||script>{\TYPE{INLINE OR}}
 \mode<script>{\TYPE{INLINE MODE}}
 \END
 \end{document}

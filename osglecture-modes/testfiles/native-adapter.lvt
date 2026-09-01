@@ -13,7 +13,9 @@
 \begin{document}
 \START
 \mode<script>{\TYPE{PORTABLE INLINE}}
-\mode<script|presentation>{\TYPE{PORTABLE OR}}
+\mode<script||presentation>{\TYPE{PORTABLE OR}}
+\mode<presentation:sw-a|script:sw-b>{\TYPE{QUALIFIED BODY}}
+\mode<script|handout>{\TYPE{PIPE BODY}}
 \mode<backend-special>{ignored}
 \mode<backend-switch>
 \mode*

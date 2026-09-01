@@ -2,6 +2,9 @@ This is a generated file for the l3build validation system.
 Don't change this file in any respect.
 ONLY-BARE=shown
 ONLY-ACTIVE=shown
+ONLY-OR-ACTIVE=shown
+ONLY-NATIVE=shown
+ONLY-QUALIFIED-ACTIVE=shown
 UNCOVER-BARE=shown
 UNCOVER-ACTIVE=shown
 VISIBLE-BARE=shown

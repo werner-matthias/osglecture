@@ -7,6 +7,11 @@
 \only{\TYPE{ONLY-BARE=shown}}
 \only<script>{\TYPE{ONLY-ACTIVE=shown}}
 \only<slides>{\TYPE{ONLY-INACTIVE=shown}}
+\only<script||slides>{\TYPE{ONLY-OR-ACTIVE=shown}}
+\only<presentation||slides>{\TYPE{ONLY-OR-INACTIVE=shown}}
+\only<2->{\TYPE{ONLY-NATIVE=shown}}
+\only<script:2->{\TYPE{ONLY-QUALIFIED-ACTIVE=shown}}
+\only<slides:2->{\TYPE{ONLY-QUALIFIED-INACTIVE=shown}}
 \uncover{\TYPE{UNCOVER-BARE=shown}}
 \uncover<script>{\TYPE{UNCOVER-ACTIVE=shown}}
 \uncover<slides>{\TYPE{UNCOVER-INACTIVE=shown}}

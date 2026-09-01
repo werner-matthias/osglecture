@@ -14,6 +14,10 @@
 \mode<unknown-native>{\TYPE{NATIVE MODE BODY}}
 \only<slides>{\TYPE{ONLY SLIDES YES}}
 \only<article>{\TYPE{ONLY ARTICLE NO}}
+\only<slides||article>{\TYPE{ONLY OR YES}}
+\only<article||handout>{\TYPE{ONLY OR NO}}
+\only<slides:1->{\TYPE{ONLY QUALIFIED YES}}
+\only<article:1->{\TYPE{ONLY QUALIFIED NO}}
 \uncover<slides>{\TYPE{UNCOVER SLIDES YES}}
 \visible<slides>{\TYPE{VISIBLE SLIDES YES}}
 \invisible<slides>{\TYPE{INVISIBLE SLIDES YES}}
