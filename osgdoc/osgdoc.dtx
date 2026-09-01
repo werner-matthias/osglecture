@@ -35,7 +35,7 @@
 \ProvidesExplClass
 {osgdoc}
 {2026/08/30}
-{v0.3.5}
+{v0.3.6}
 {A thin wrapper around cnltx-doc}
 \ExplSyntaxOff
 %</cls>
@@ -318,15 +318,6 @@ load babel
     }
   }
 }
-\mdfdefinestyle{cnltxmdframed}{
-  backgroundcolor = cnltxbg ,
-  linecolor = cnltx ,
-  roundcorner = 5pt
-}
-% \ldeen{Noch ein paar Einstellungen, die ich bevorzuge.}{A few more settings that I prefer.}
-\setcnltx{
-  color-scheme=blue
-  }
 \RequirePackage[hidelinks]{hyperref}
 \RequirePackage{osgdoc}
 \RequirePackage{imakeidx}
@@ -390,7 +381,7 @@ load babel
 \ProvidesExplPackage
 {osgdoc}
 {2026/08/30}
-{v0.3.5}
+{v0.3.6}
 {small tools for documentation}
 % \ldeen{Wir beginnen mit den Funktionalitäten, die nicht Lua braucht.}{
 % We'll start with the features that doesn't require Lua.}
@@ -430,6 +421,30 @@ load babel
   \RequirePackage[example,names]{cnltx}
 }
 % \ldeen{Noch ein paar Einstellungen, die ich bevorzuge.}{A few more settings that I prefer.}
+\mdfdefinestyle{cnltxmdframed}{
+  backgroundcolor = cnltxbg ,
+  linecolor = cnltx ,
+  roundcorner = 5pt
+}
+\newcommand\osgdoc@example@pre{%
+ \begin{mdframed}[
+    backgroundcolor=white,
+    hidealllines=true,
+    innerleftmargin=0pt,
+    innerrightmargin=0pt,
+    innertopmargin=0pt,
+    innerbottommargin=0pt
+  ]
+}
+\newcommand\osgdoc@example@after{%
+  \end{mdframed}
+} 
+\AddToHook{env/example/begin}{
+  \setcnltx{
+    pre-output   = \osgdoc@example@pre,
+    after-output = \osgdoc@example@after,
+  }%
+}
 \setcnltx{
   color-scheme=blue
 }
