@@ -17,6 +17,7 @@ unit-short-title=U.~Title
 project-numbering=section
 project-theme=osg-accessible
 project-languages=selectable={en,de},prefix=mv
+target-language=de
 mvende-check=german
 target-profile=scrbook
 job-unit-scopes=a,as

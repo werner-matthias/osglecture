@@ -1073,6 +1073,7 @@ load-preamble+
 % prevents exactly that silent option loss.}{\cs{g\_\_osglecture\_language\_setup\_tl}}
 % {\cs{RequirePackage}}{\code{osglecture/project/languages}}
 \tl_new:N \g__osglecture_language_setup_tl
+\bool_new:N \g__osglecture_language_target_explicit_bool
 \cs_new_protected:Npn \__osglecture_language_setup_append:nn #1#2
   {
     \tl_if_empty:NF \g__osglecture_language_setup_tl
@@ -1095,7 +1096,10 @@ load-preamble+
     selectable .code:n =
       { \__osglecture_language_setup_append:nn {languages}{#1} },
     targetlang .code:n =
-      { \__osglecture_language_setup_append:nn {targetlang}{#1} },
+      {
+        \bool_gset_true:N \g__osglecture_language_target_explicit_bool
+        \__osglecture_language_setup_append:nn {targetlang}{#1}
+      },
     prefix .code:n =
       { \__osglecture_language_setup_append:nn {prefix}{#1} },
     auto .code:n =
@@ -1145,7 +1149,13 @@ load-preamble+
     languages .code:n =
       {
         \tl_gclear:N \g__osglecture_language_setup_tl
+        \bool_gset_false:N \g__osglecture_language_target_explicit_bool
         \keys_set:nn { osglecture/project/languages } {#1}
+        \bool_if:NF \g__osglecture_language_target_explicit_bool
+          {
+            \__osglecture_language_setup_append:nn
+              {targetlang}{\l__osglecture_language_tl}
+          }
         \__osglecture_policy_set:nn {languages}{#1}
         \tl_set:Nx \l_tmpa_tl
           {
