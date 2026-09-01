@@ -77,21 +77,28 @@ from the selected base class. A theme designed for \cls{beamer} is therefore
 not automatically usable with \cls{ltx-talk}. Use the modes described in the
 following section for portable content selection.}
 
-\ldeen{Standardmäßig bindet \option{patch-overlays=true} reine Ausdrücke aus
+\ldeen{Standardmäßig bindet \option{patch-overlays=true} Ausdrücke aus
 registrierten Modi in die nativen Modus- und Overlaybefehle von \cls{beamer}
-und \cls{ltx-talk} ein. Eine Spezifikation wie \code{<longform>} wird dann als
-portable Modusabfrage erkannt; eine numerische Spezifikation wie \code{<2->}
-bleibt ein natives Overlay. Unbekannte oder gemischte Ausdrücke werden ebenfalls
-an die Basisklasse weitergereicht. Wer diese Integration nicht möchte, setzt
-\option{patch-overlays=false}; \cs{lecturemode} und
-\cs{IfLectureModeTF} funktionieren weiterhin.}{By default,
-\option{patch-overlays=true} integrates pure expressions made up of registered
+und \cls{ltx-talk} ein. Eine Spezifikation wie \code{<longform>} oder
+\code{<slides||handout>} wird dann portabel ausgewertet; bei \code{<slides:2->}
+wertet \osglecture\ den Modusteil aus und reicht dem Backend nur den
+Overlaybereich \code{<2->}. Eine rein numerische Spezifikation wie \code{<2->}
+bleibt ein natives Overlay. \code{|} und \code{,} innerhalb von \code{<...>}
+sind stets Backendsyntax; \code{||} ist der portable Oder-Operator. Unbekannte
+Ausdrücke werden unverändert an die Basisklasse weitergereicht. Wer diese
+Integration nicht möchte, setzt \option{patch-overlays=false}; \cs{lecturemode}
+und \cs{IfLectureModeTF} funktionieren weiterhin.}{By default,
+\option{patch-overlays=true} integrates expressions made up of registered
 modes into the native mode and overlay commands of \cls{beamer} and
-\cls{ltx-talk}. A specification such as \code{<longform>} is then recognized
-as a portable mode query, while a numeric specification such as \code{<2->}
-remains a native overlay. Unknown or mixed expressions are also delegated to
-the base class. Set \option{patch-overlays=false} to disable this integration;
-\cs{lecturemode} and \cs{IfLectureModeTF} continue to work.}
+\cls{ltx-talk}. A specification such as \code{<longform>} or
+\code{<slides||handout>} is then evaluated portably; for \code{<slides:2->}
+\osglecture\ evaluates the mode part and hands the backend only the overlay
+range \code{<2->}. A purely numeric specification such as \code{<2->} remains a
+native overlay. \code{|} and \code{,} inside \code{<...>} are always backend
+syntax; \code{||} is the portable disjunction operator. Unknown expressions are
+delegated unchanged to the base class. Set \option{patch-overlays=false} to
+disable this integration; \cs{lecturemode} and \cs{IfLectureModeTF} continue to
+work.}
 \subsection{\ldeen{Mehrsprachige Dokumente}{Multilingual Documents}}
 \ldeen{In einem \osglecture-Projekt können mehrere Sprachfassungen eines
 Inhalts erstellt werden. Dabei teilen sich OLLM und das Paket \pkg{langselect}
@@ -114,12 +121,19 @@ For German and British English, a practical configuration is}:
 \LectureProjectSetup{
   languages={
     selectable={de,en},
-    targetlang={\OsgLectureLanguage},
     map={de=ngerman,en=british},
     load babel
   }
 }
 \end{verbatim}
+
+\ldeen{Ohne expliziten Unterschlüssel \option{targetlang} verwendet
+\osglecture\ automatisch \cs{OsgLectureLanguage}, also die vom Build gewählte
+Projektsprache. \option{targetlang} bleibt für einen bewussten Override
+verfügbar.}{Without an explicit \option{targetlang} sub-key, \osglecture
+automatically uses \cs{OsgLectureLanguage}, that is, the project language
+selected by the build. \option{targetlang} remains available as an explicit
+override.}
 
 \ldeen{In den Lehreinheiten verwenden Sie danach die bereitgestellten
 Sprachmakros. Bei der Reihenfolge \keyis{selectable}{de,en} ist
@@ -256,12 +270,12 @@ aktiviert zugleich allgemeinere Modi: Ein Handout ist beispielsweise eine
 Präsentationsform und eine Druckausgabe. Dadurch kann derselbe Inhalt mit
 \code{<presentation>} für Folien und Handouts oder mit \code{<print>} für
 alle druckorientierten Ergebnisse freigeschaltet werden. Mehrere Alternativen
-lassen sich mit \code{|} verbinden.}{Modes are properties of the output in
+lassen sich mit \code{||} verbinden.}{Modes are properties of the output in
 this context. A concrete document type also activates more general modes: a
 handout, for example, is both a presentation form and a print output. Thus, the
 same content can be enabled with \code{<presentation>} for slides and handouts,
 or with \code{<print>} for all print-oriented results. Multiple alternatives
-can be joined with \code{|}.}
+can be joined with \code{||}.}
 
 \ldeen{Dasselbe Modusargument steht auch an Metadatenbefehlen wie
 \cs{course}\aarg{longform} und an bedingt geladenen Präambelfragmenten zur
@@ -467,9 +481,9 @@ ordinary course units.}
 \begin{description}
   \item[\cs{lecturemode}\aarg{mode expression}\marg{content}]
     \ldeen{gibt den Inhalt aus, wenn mindestens einer der mit Komma oder
-    \code{|} getrennten Modi aktiv ist; ohne Modusausdruck wird der Inhalt
+    \code{||} getrennten Modi aktiv ist; ohne Modusausdruck wird der Inhalt
     immer ausgegeben}{emits the content if at least one mode separated by a
-    comma or \code{|} is active; without a mode expression it always emits the
+    comma or \code{||} is active; without a mode expression it always emits the
     content}.
   \item[\cs{IfLectureModeTF}\marg{expression}\marg{true}\marg{false}]
     \ldeen{vollständige Verzweigung}{full conditional}.

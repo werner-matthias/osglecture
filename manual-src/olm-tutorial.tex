@@ -255,8 +255,7 @@ long form.}
 \ldeen*{Sie schreibt in @1}{She writes into @1}{\File{/Include/projectconfig.tex}}
 
 \begin{verbatim}
-\title{\ldeen{Betriebssysteme}
-             {Operating Systems}}
+\title{\ldeen{Betriebssysteme}{Operating Systems}}
 \author{Nora Example}
 
 \LectureProjectSetup{
@@ -264,7 +263,6 @@ long form.}
   longform-profile=scrbook,
   languages={
     selectable={de,en},
-    targetlang={\OsgLectureLanguage},
     map={de=ngerman,en=british},
     load babel
   }
@@ -276,15 +274,17 @@ arbeitet mit den kurzen, portablen Kennungen \code{de} und \code{en}, wie sie
 in der Norm ISO 639-1 definiert sind.
 Das verbreitete Sprachpaket \pkg{babel} benötigt dagegen die konkreteren Namen \code{ngerman} und
 \code{british}. Der Schlüssel \option{languages} reicht diese Konfiguration
-an \pkg{langselect} weiter und lädt das Paket; Nora muss
+einerseits an \cls{osglecture} (genauer gesagt: an das zu \osglecture\ gehörende \pkg{langselect})
+weiter und lädt auch das Paket \pkg{babel}; Nora muss
 sich diese Arbeitsteilung nicht bei jedem Absatz neu überlegen; die Konfiguration
 gilt für das ganze Projekt.}{The language configuration contains two different
 kinds of names. \OLLM\ uses the short, portable identifiers \code{de} and
 \code{en}. The popular language package \pkg{babel}, by contrast, needs the more specific names
-\code{ngerman} and \code{british}. The \option{languages} key passes this
-configuration to \pkg{langselect} and loads the package. Nora need not
-reconsider this division of labour for every paragraph;
-the configuration applies to the whole project.}
+\code{ngerman} and \code{british}. The \option{languages} option passes this configuration
+on to \cls{osglecture} (more precisely, to \pkg{langselect}, which is associated with \osglecture)
+and also loads the \pkg{babel} package; Nora doesn’t have to
+rethink this division of labor for every paragraph; the configuration
+applies to the entire project.}
 
 \paragraph{\ldeen{Endlich etwas Fachliches}{At Last, Some Subject Matter}.}
 \ldeen{Nun schreibt Nora \File{010-Memory/main.tex}. Sie beginnt bewusst mit
@@ -298,7 +298,7 @@ point than twenty pages with a missing closing brace.}
 \documentclass{osglecture}
 
 \begin{document}
-\lecture[Memory]{\ldeen{Virtueller Speicher}{Virtual Memory}}{memory}
+\lecture[Memory]{\ldeen{Virtueller Speicher}{Virtual Memory}}{lec:memory}
 
 \begin{frame}
   \frametitle{\ldeen{Warum virtueller Speicher?}{Why virtual memory?}}
@@ -313,20 +313,20 @@ Das erste Pflichtargument ist der Titel, das optionale Argument seine Kurzform.}
 \cs{lecture} command begins a course unit. Its first mandatory argument is the
 title, and the optional argument is the short title.}
 \ldeen{Das zweite Pflichtargument von \cs{lecture}, hier
-\code{memory}, ist das Label der Unterrichtseinheit
+\code{lec:memory}, ist das Label der Unterrichtseinheit
 Dieses etabliert die Identität der Einheit. Nora darf den sichtbaren
 Titel später verbessern und sogar das Verzeichnis umbenennen. Die Identität
 sollte sie aber dabei nicht beiläufig ändern; Querverweise und Buildzustand verwenden
  diesen Wert, um die richtige Lehreinheit zu finden.}{The third argument of \cs{lecture}, here
-\code{memory}, is the label of the unit. It constitutes the unit's stable identity.
+\code{lec:memory}, is the label of the unit. It constitutes the unit's stable identity.
 Nora may improve the visible title later and may even rename the directory.
 She should not casually change the identity while doing so; cross-references and build state use this
 very value.}
 
-\ldeen{Die \env{frame}-Umgebung kennt Nora schon aus ihrer früheren Arbeit mit \pkg{beamer}.
+\ldeen{Die \env{frame}-Umgebung kennt Nora schon aus ihrer früheren Arbeit mit \cls{beamer}.
   Sie hat dort zwar häufig den Titel in ein Umgebungsargument geschrieben, aber das darf sie bei \osglecture\ nicht;
   dafür gibt es den Befehl \cs{frametitle}.}{Nora already knows the
-\env{frame} environment from her earlier work with \pkg{beamer}. She often
+\env{frame} environment from her earlier work with \cls{beamer}. She often
 put the title in an environment argument there, but \osglecture\ does not
 permit that; the \cs{frametitle} command must be used instead.}
 \ldeen{Den Befehl \cs{ldeen} kennt Nora noch nicht. Sie findet auch bei einer kurzen Suche mit \code{grep} in ihrem \LaTeX-Verzeichnis kein Paket, das ihn definiert. Dennoch ist Nora intuitiv klar, was er macht: Er stellt die
@@ -719,7 +719,7 @@ project configuration contains shared decisions, and each course unit keeps its
 subject matter in one place. Nora can now add new units following the same
 pattern without creating new language or document copies.}
 
-\begin{infobox}{}\sffamily
+\begin{infobox}{\ldeen{Hinweis}{Hint}}\sffamily
 \ldeen{Wenn Sie dem Tutorial mit eigenen Dateien folgen, beginnen Sie ebenfalls
 mit einer einzigen kleinen Einheit und einer Dokumentinstanz. Erst wenn diese gebaut
 wird, ergänzen Sie die zweite Sprache, die Langform und schließlich

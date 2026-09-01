@@ -226,7 +226,6 @@ typical core is}:
   longform-profile=scrbook,
   languages={
     selectable={de,en},
-    targetlang={\OsgLectureLanguage},
     map={de=ngerman,en=british},
     load babel
   }
@@ -490,6 +489,11 @@ should not pre-empt them.}
 \option{selectable}, \option{targetlang}, \option{prefix}, \option{auto},
 \option{trim}, \option{map}, \option{load babel},
 \option{load polyglossia}, and \option{unified shorthands}.}
+\ldeen{Wird \option{targetlang} ausgelassen, setzt \osglecture\ dafür
+automatisch \cs{OsgLectureLanguage} ein. Ein expliziter Wert überschreibt
+diese Konvention.}{If \option{targetlang} is omitted, \osglecture
+automatically supplies \cs{OsgLectureLanguage}. An explicit value overrides
+this convention.}
 
 \paragraph{\ldeen{Weitere Projektbefehle}{Other project commands}.}
 \begin{description}
