@@ -147,11 +147,20 @@ target_list.cleanall = {
   func = stdclean,
 }
 
-docfiles     = docfiles or {
-  "*.dtx",
-  "*.pdf",
-  "README-*.md"
-}
+--[[ We need the documentation pdf's only at time of distribution,
+     but not during build, where they pollute the build/doc directory.
+--]]
+local target = options["target"]
+local with_distributed_docs =
+  target == "ctan"
+  or target == "bundlectan"
+  or target == "install"
+
+docfiles = docfiles or (
+  with_distributed_docs
+  and { "*.pdf" }
+  or {}
+)
 
 sourcefiles  = sourcefiles  or { "*.dtx"}
 typesetfiles = typesetfiles or { "*.dtx"}
