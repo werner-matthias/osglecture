@@ -2,16 +2,11 @@ Dieses Dokument enthält sowohl tatsächliche ToDos als auch längerfristige
 Featurewünsche.
 
 # osglecture + Ergänzungspakete
-* [x] Übergreifende Links
-* [x] Querreferenzen zwischen Folien und Script
-* [x] Kapitelübergreifende Literaturreferenzen
-* [x] Lang-/Kurzformunterstützung auf Sprachebene
 * [ ] Integrationsworkflow (Fallback auf ungetaggte Quell-PDFs über
   `pdfpages`/`newpax` ist umgesetzt, siehe `osglecture/README-cls.md`
   Abschnitt „Dokumentintegration"; offen bleiben u.a. `\includeunits` und die
   `...`-Bereichssyntax aus `DESIGN.md` §14.4)
 * [ ] tagging bei presitemize und twocolumns
-* [ ] Cat-code sichere Includes
 * [ ] Windows-CI: `\LoadClass` in `osglecture.cls` (Laden der Basisklasse,
   z.B. `scrbook`) schlägt auf der Windows-Runner-TeX-Live-Installation
   weiterhin fehl (`ollm/testfiles/reference-lifecycle.t`s echter
@@ -35,9 +30,4 @@ Featurewünsche.
   den Kontext der laufenden OLLM/osglecture-Migration, während der der Bug
   auffiel).
 
-# lttheme
-* [ ] Unterstützung für innere Themes
 
-# Ergänzungspakete
-* [ ] ANSI-Terminal
-* [ ] termexec
