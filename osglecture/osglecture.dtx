@@ -49,6 +49,8 @@
 }
 \expandafter\endbatchfile
 \fi
+
+\iffalse
 %</driver>
 %<*class>
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
@@ -59,10 +61,9 @@
   {Profile-driven lecture documents}
 %</class>
 %<*driver>
+\fi
 \DocumentMetadata{}
-\documentclass[
-load-preamble+
-]{osgdoc}
+\documentclass[add-bib=false]{osgdoc}
 
 \usepackage[
   languages={de,en},
@@ -80,16 +81,16 @@ load-preamble+
   class   = osglecture,
   version = \UseVersionOf{osglecture.cls},
   date    = \UseDateOf{osglecture.cls},
-  title   = {\ldeen{Die \pkg*{osglecture}-Klasse}{The \pkg*{osglecture}\ class}},
+  title   = {\ldeen{Die \pkg*{osglecture}-Klasse}{The \pkg*{osglecture} class}},
   info    = {\ldeen{Metaklasse für Vorlesungsdokumente}{Meta class for lecture documents}},
   authors = {Matthias Werner[matthias.werner@informatik.tu-chemnitz.de]},
   abstract = {
     \ldeen*{
-      Die Klasse @1 ist die \LuaLaTeX-Kernklasse des \pkg*{osglecture}-Bundles. Sie
+      Die Klasse @1 ist die \LuaLaTeX-Kernklasse des \bnd*{osglecture}-Bundles. Sie
       projiziert ein gemeinsame Lehrquellendokument auf 
       auf Präsentationen und Langformen (Skript, Buch).
     }{
-      THe class @1 is the \LuaLaTeX core class of the \pkg*{osglecture} bundle. It
+      The class @1 is the \LuaLaTeX\ core class of the \bnd*{osglecture} bundle. It
       projects a shared teaching source onto
       presentations and long-form documents (script or book)
     }{\cls*{osglecture}}
@@ -98,7 +99,7 @@ load-preamble+
   build-title
 }
 
-%\OnlyDescription
+\OnlyDescription
 
 \begin{document}
 \ldeen{
@@ -154,11 +155,10 @@ load-preamble+
 \AutoDocInput{osglecture.dtx}{twocolumns}
 \subsection{\code{osglecture-series.sty}}
 \AutoDocInput{osglecture.dtx}{series}
-\subsection{\code{osglecture-osgbeamer.code.tex}}
-\ldeen{Unpublizierte Legacy-Implementierung; keine automatische
-  Kommentar-Dokumentation.}{Unpublished legacy implementation; not
-  auto-documented.}
-
+%\subsection{\code{osglecture-osgbeamer.code.tex}}
+%\ldeen{Unpublizierte Legacy-Implementierung; keine automatische
+%  Kommentar-Dokumentation.}{Unpublished legacy implementation; not
+%  auto-documented.}
 \subsection{\code{osglecture-adapter-beamer.def}}
 \AutoDocInput{osglecture-adapters.dtx}{beamer}
 \subsection{\code{osglecture-adapter-book.def}}
