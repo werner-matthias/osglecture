@@ -1,26 +1,34 @@
 \input regression-test
 \documentclass{article}
 \usepackage{osgdoc}
+\usepackage{hyperref}
 \begin{document}
 \START
 \UseVersionOf{fixture-expl.sty}\quad\UseDateOf{fixture-expl.sty}
+
+\edef\ExplVersion{\UseVersionOf{fixture-expl.sty}}
+\edef\ClassicDate{\UseDateOf{fixture-classic.sty}}
+\pdfstringdef\FileMetadata
+  {\UseVersionOf{fixture-classic.sty}, \UseDateOf{fixture-expl.sty}}
+\TYPE{expanded-version=\ExplVersion}
+\TYPE{expanded-classic-date=\ClassicDate}
 
 \directlua{
   local function report(key, value)
     texio.write_nl("log", key .. "=" .. tostring(value))
   end
 
-  fileinfo.getinfo("fixture-expl.sty")
-  report("expl-name", fileinfo.data["name"])
-  report("expl-date", fileinfo.data["date"])
-  report("expl-version", fileinfo.data["version"])
-  report("expl-type", fileinfo.data["type"])
+  local expl = fileinfo.getinfo("fixture-expl.sty")
+  report("expl-name", expl.name)
+  report("expl-date", expl.date)
+  report("expl-version", expl.version)
+  report("expl-type", expl.type)
 
-  fileinfo.getinfo("fixture-classic.sty")
-  report("classic-name", fileinfo.data["name"])
-  report("classic-date", fileinfo.data["date"])
-  report("classic-version", fileinfo.data["version"])
-  report("classic-type", fileinfo.data["type"])
+  local classic = fileinfo.getinfo("fixture-classic.sty")
+  report("classic-name", classic.name)
+  report("classic-date", classic.date)
+  report("classic-version", classic.version)
+  report("classic-type", classic.type)
 }
 \END
 \end{document}

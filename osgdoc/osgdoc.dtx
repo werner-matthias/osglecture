@@ -36,7 +36,7 @@
 \ProvidesExplClass
 {osgdoc}
 {2026/09/02}
-{v0.4.0}
+{v0.4.1}
 {A thin wrapper around cnltx-doc}
 \ExplSyntaxOff
 %</cls>
@@ -54,7 +54,6 @@ load babel
 ]{langselect}
 
 \newpackagename{\cnltx}{cnltx-doc}
-
 \makeindex
 \setcnltx{
   name  =  osgdoc,
@@ -210,6 +209,11 @@ load babel
     optional argument. If you are certain that files are \emph{not} written in LaTeX3 syntax,
     it is better to use @1.
   }{\needpackage*[tex-archive/macros/latex/contrib/fileinfo]{readprov}}
+
+  \item \ldeen{Obwohl das \bnd*{osglecture}-Bundle bemüht ist, die Barrierefreiheit mittels Tagging zu
+    unterstützen, erzeugt \osgdoc\ \emph{keine} korrekt getaggten PDFs.}{Although the \bnd*{osglecture} bundle
+    strives to support accessibility through tagging,
+    \osgdoc\ does \emph{not} generate correctly tagged PDFs.}
 \end{itemize}
 \section{Implementation}
 \MaybeStop{\ldeen*{Um die Implementationsbeschreibung zu erhalten, kommentieren Sie bitte \cs{OnlyDescription} in \code{osgdoc.dtx} aus.}{To view the implementation description, please uncomment \cs{OnlyDescription} in \File{osgdoc.dtx}.}}
@@ -383,7 +387,7 @@ load babel
 \ProvidesExplPackage
 {osgdoc}
 {2026/09/02}
-{v0.4.0}
+{v0.4.1}
 {small tools for documentation}
 % \ldeen{Wir beginnen mit den Funktionalitäten, die nicht Lua braucht.}{
 % We'll start with the features that doesn't require Lua.}
@@ -1194,14 +1198,12 @@ luatexbase.add_to_callback(
 % }{
 % Both, @1 and @2 use the lua function @3.
 % }{\cs{UseVersionOf}}{\cs{UseDateOf}}{\code{useversion}}
-\NewDocumentCommand{\UseVersionOf}{m}
-{
-   \directlua{fileinfo.useversion(\luastring{#1})}
+\NewExpandableDocumentCommand{\UseVersionOf}{m}{%
+  \directlua{fileinfo.useversion(\luastring{#1})}%
 }
 
-\NewDocumentCommand{\UseDateOf}{m}
-{
-   \directlua{fileinfo.usedate(\luastring{#1})}
+\NewExpandableDocumentCommand{\UseDateOf}{m}{%
+  \directlua{fileinfo.usedate(\luastring{#1})}%
 }
 
 \begin{luacode*}
@@ -1210,8 +1212,16 @@ fileinfo = fileinfo or {}
 fileinfo.data = {}
 
 function fileinfo.getinfo(filename)
-   filename = kpse.find_file(filename)
-   local f = texassert(io.open(filename, "r"),"Can't read '"..filename.."'")
+   local cached = fileinfo.data[filename]
+   if cached ~= nil then
+      return cached
+   end
+
+   local resolved_filename = kpse.find_file(filename)
+   local f = texassert(
+      resolved_filename and io.open(resolved_filename, "r"),
+      "Can't read '" .. filename .. "'"
+   )
    local s = f:read("*a")
    f:close()
    local ftype = nil
@@ -1256,36 +1266,27 @@ function fileinfo.getinfo(filename)
    if name ~= nil then
       date = date or "??"
       version = version or "??"
-      fileinfo.data["name"] = name
-      fileinfo.data["date"] = date
-      fileinfo.data["version"] = version
-      fileinfo.data["descr"] = descr
-      fileinfo.data["type"] = ftype
+      cached = {
+         name = name,
+         date = date,
+         version = version,
+         descr = descr,
+         type = ftype,
+      }
+      fileinfo.data[filename] = cached
    end
+
+   return cached
 end
 
 function fileinfo.useversion(filename)
-   if fileinfo.data["name"] == nil then
-      fileinfo.getinfo(filename)
-   end
-   local res = fileinfo.data["version"]
-   if res == nil then
-      tex.print("??")
-   else
-      tex.print(res)
-   end
+   local info = fileinfo.getinfo(filename)
+   tex.sprint(info and info.version or "??")
 end
 
 function fileinfo.usedate(filename)
-   if fileinfo.data["name"] == nil then
-      fileinfo.getinfo(filename)
-   end
-   local res = fileinfo.data["date"]
-   if res == nil then
-      tex.print("??")
-   else
-      tex.print(res)
-   end
+   local info = fileinfo.getinfo(filename)
+   tex.sprint(info and info.date or "??")
 end
 \end{luacode*}
 
