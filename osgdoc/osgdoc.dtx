@@ -29,6 +29,7 @@
 }
   \expandafter\endbatchfile
 \fi
+\iffalse
 %</driver>
 %<*cls>
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
@@ -40,8 +41,9 @@
 \ExplSyntaxOff
 %</cls>
 %<*driver>
-\documentclass{osgdoc}
+\fi
 
+\documentclass{osgdoc}
 \usepackage{enumitem}
 \usepackage{microtype}
 \usepackage[
@@ -233,82 +235,67 @@ load babel
     }
   }
 }
+\AddToHook{class/cnltx-doc/before}{
+  \ClassInfo{osgdoc}{Patches~applied~for~cnltx-doc.cls}
+}
 % \ldeen*{Die Pakete @1 und @2 müssen explizit geladen werden, um nicht den Fehler "`\emph{@3}"' zu triggern.}{
 %  The packages @1 and @2 must be explicitly loaded to avoid triggering "`\emph{@3}"' error .
 % }{\pkg{multicol}}{\pkg{ragged2e}}{Loading in a group}
 \RequirePackage{multicol,ragged2e}
-\RequirePackage{luatex85, shellesc}
+\sys_if_engine_luatex:T{
+  \RequirePackage{luatex85}
+}
+% \ldeen*{Die @1-Umgebung braucht @2.}{The @1 environment needs @2.}{\env{example}}{\pkg{shellesc}}
+\RequirePackage{shellesc}
 %
 % \ldeen*{
-%   @1 lädt für die Logo-Kerning-Anpassung an @2 unbedingt das Paket @3 --
-%   dieses ist aber nicht auf @4 verfügbar und wird von uns nicht mitgeliefert.
-%   Wir unterbinden daher auch diesen Ladeversuch per Dateisubstitution und
-%   nutzen stattdessen @5, das dieselbe Aufgabe für viele Schriften (darunter
-%   @2) übernimmt und regulär auf @4 verfügbar ist, siehe unten.
+%   @1 versucht für die Logo-Kerning-Anpassung an @2 das (nichtveröffentlichte) Paket @3
+%   zu laden. Dies wird per Dateisubstitution und unterbunden und  stattdessen @4 genutzt,
+%   das dieselbe Aufgabe für viele Schriften übernimmt.
 % }{
-%   @1 unconditionally requires the package @3 to adjust logo kerning for @2
-%   -- but that package isn't available on @4 and we don't ship it ourselves.
-%   We therefore suppress this load attempt via file substitution as well and
-%   use @5 instead, which handles the same task for many fonts (including @2)
-%   and is regularly available on @4, see below.
-% }{\cls*{cnltx-doc}}{\pkg{libertine}}{\pkg{libertinehologopatch}}{\ctan{}}{\pkg{metalogox}}
+%   @1 attempts to load the (unpublished) package @3 to adjust the logo kerning to @2.
+%   This is prevented via file substitution, and @4 is used instead,
+%   which performs the same task for many fonts.
+% }{\cls*{cnltx-doc}}{\pkg{libertine}}{\pkg{libertinehologopatch}}{\pkg{metalogox}}
 \declare@file@substitution{libertinehologopatch.sty}{}
 % \ldeen*{
-%   @1 lädt, sobald @2 (oder eine der @3-Varianten) aktiv ist, unbedingt und sofort
-%   @4 und mit fest einprogrammierten Optionen. Das kollidiert unausweichlich, sobald
-%   das Dokument selbst (etwa über @5) @4 mit anderen Optionen laden will, denn
-%   ein zweiter @6-Aufruf mit abweichenden Optionen ist ein harter Fehler, auch
-%   wenn der erste Aufruf mit leeren Optionen erfolgte.
-%   Wir unterbinden daher @4s sofortigen Ladeversuch temporär per Dateisubstitution
+%   Die Option @2 von @1 (oder eine ihrer Varianten) lädt @3 und mit fest einprogrammierten 
+%   Optionen. Das kollidiert, sobald das Dokument selbst (etwa über @4) @3 mit anderen
+%   Optionen laden will. 
+%   Wir unterbinden daher den Ladeversuch temporär per Dateisubstitution
 %   und holen ihn mit denselben von @1 konfigurierten Optionen erst am Ende
-%   der Präambel nach, und zwar nur dann, wenn bis dahin noch niemand @4 (oder
-%   @7) geladen hat. So bleibt @1s Verhalten für alle erhalten, die \emph{kein}
-%   eigenes Spracheladen betreiben, während Pakete wie @5 (oder ein manuelles
-%   @8) den Vortritt bekommen, sobald sie existieren.
+%   der Präambel nach, und zwar nur dann, wenn bis dahin noch niemand @3 (oder
+%   @5) geladen hat. 
 % }{
-%   @1 unconditionally and immediately loads @4 -- with hard-coded options --
-%   as soon as @2 (or one of the @3 variants) is active. This inevitably clashes
-%   once the document itself (e.g.\ via @5) wants to load @4 with different
-%   options, since a second @6 call with differing options is a hard error,
-%   even if the first call used empty options.
-%   We therefore temporarily suppress @4's immediate load attempt via file
-%   substitution and instead re-issue it -- with the same options @1 would
-%   have configured -- at the very end of the preamble, and only if nobody has
-%   loaded @4 (or @7) by then. This preserves @1's original behaviour for
-%   anyone \emph{not} doing their own language loading, while packages such as
-%   @5 (or a manual @8) get precedence whenever they are present.
-% }{\cls*{cnltx-doc}}{\code{load-preamble}}{\code{load-preamble-/+}}{\pkg{babel}}{\pkg{langselect}}{\cs*{RequirePackage}}{\pkg{polyglossia}}{\cs*{usepackage}[ngerman]\Marg{babel}}
+%   Option @2 of @1 (or one of its variants) loads @3 with hard-coded options. 
+%   This causes a conflict as soon as the document itself (for example, via @4) attempts 
+%   to load @3 with different options.
+%   We therefore temporarily prevent the attempt to load @3 via file substitution
+%   and load it with the same options configured by @1 only at the end
+%   of the preamble—and only if no one has loaded @3 (or @5) by that point.
+% }{\cls*{cnltx-doc}}{\code{load-preamble}}{\pkg{babel}}{\pkg{langselect}}{\pkg{polyglossia}}
 \declare@file@substitution{babel.sty}{}
-\AddToHook{class/cnltx-doc/before}{
-  \typeout{==>~Patch~for~cnltx-doc.cls~applied!}
-}
+
 % \ldeen*{
 %   Damit @1s eigene Font-/Microtype-/Babel-Logik (Option @2) unverändert
-%   greift -- statt sie hier ein zweites Mal von Hand nachzubauen --, wird sie
-%   als Vorgabe an @1 durchgereicht. @3 sorgt dafür, dass alle weiteren, dem
-%   Anwender explizit übergebenen Optionen (etwa @4, @5, @6) ebenfalls
-%   unverändert an @1 durchgereicht werden.
+%   greift, wird sie als Vorgabe an @1 durchgereicht, ebenso alle weiteren vom
+%   Anwender explizit übergebenen Optionen (etwa @3, @4, @5).
 % }{
-%   To let @1's own font/microtype/babel logic (option @2) apply unchanged --
-%   rather than reimplementing it here a second time --, it is passed to @1 as
-%   a default. @3 ensures that any further options the user explicitly gives
-%   (e.g.\ @4, @5, @6) are likewise passed through to @1 unchanged.
-% }{\cls*{cnltx-doc}}{\code{load-preamble+}}{\cs*{DeclareOption*}}{\code{load-fonts=false}}{\code{add-index}}{\code{babel-options}}
+%   To ensure that @1's own font/Microtype/Babel logic (option @2) remains unchanged,
+%   it is passed on to @1 as the default, as are all other options explicitly provided
+%   by the user (such as @3, @4, @5).
+% }{\cls*{cnltx-doc}}{\code{load-preamble+}}{\code{load-fonts=false}}{\code{add-index}}{\code{babel-options}}
 \PassOptionsToClass{load-preamble+}{cnltx-doc}
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{cnltx-doc}}
 \ProcessOptions\relax
 \LoadClass{cnltx-doc}
 \undeclare@file@substitution{babel.sty}
 % \ldeen*{
-%   @1s eigener Font-Codepfad definiert @2 unter Rückgriff auf @3 -- ohne das
-%   dafür nötige @4 zu laden (es ist im Original auskommentiert). Jede
-%   nummerierte Fußnote würde daher mit einem undefinierten Kontrollwort
-%   abbrechen; wir stellen einen minimalen Ersatz bereit.
+%   @1s nutzt @3 für die Redefinition von @2 ohne Bereitstellung von @4.
+%   Wir stellen einen minimalen Ersatz bereit.
 % }{
-%   @1's own font code path redefines @2 relying on @3 -- without loading the
-%   @4 package that would provide it (it is commented out upstream). Any
-%   numbered footnote would therefore abort with an undefined control
-%   sequence; we provide a minimal replacement.
+%   @1s uses @3 to redefine @2 without providing @4.
+%   We provide a minimal replacement.
 % }{\cls*{cnltx-doc}}{\cs{@makefnmark}}{\cs{textsu}}{\pkg{superiors}}
 \providecommand\textsu[1]{\textsuperscript{#1}}
 % \ldeen*{
