@@ -152,12 +152,152 @@ fn main() {
 \subsection{\ldeen{Links in Online-Editoren}{Links to Online Editors}}
 \ldeen*{Der Schlüssel @1 hinterlegt eine URL; @2 legt fest, wo sie
   erscheint: @3 (ein Symbol in der Titelzeile, nur für @4), @5 (ein
-  klickbarer Text unterhalb der Box) oder @6 (kein sichtbarer Hinweis).}
+  klickbarer Text unterhalb der Box), @6 (ein QR-Code unterhalb der Box)
+  oder @7 (kein sichtbarer Hinweis).}
   {The @1 key attaches a URL; @2 controls where it shows up: @3 (an icon in
-  the title bar, @4 style only), @5 (clickable text below the box), or @6
-  (no visible indicator).}
+  the title bar, @4 style only), @5 (clickable text below the box), @6
+  (a QR code below the box), or @7 (no visible indicator).}
   {\code{link}}{\code{link-display}}{\code{titlebar}}{\code{editor}}
-  {\code{label}}{\code{none}}
+  {\code{label}}{\code{qrcode}}{\code{none}}
+
+\subsection{\ldeen{Remote-Quellen}{Remote Sources}}
+\ldeen*{Das dritte Argument von @1 akzeptiert statt eines lokalen Pfads
+  auch einen @2- oder @3-Lokator, z.\,B.\ @4 bzw.\ @5. Der Quelltext wird
+  beim ersten Kompilieren geladen und unter @6 gecacht; @7 steuert die
+  Wiederverwendung: @8 (Voreinstellung) nutzt einen vorhandenen Cache-
+  Eintrag, @9 lädt immer neu und aktualisiert ihn.}
+  {The third argument of @1 accepts, besides a local path, a @2 or @3
+  locator as well, e.g.\ @4 or @5. The source is fetched on first
+  compile and cached under @6; @7 controls reuse: @8 (the default) uses
+  an existing cache entry, @9 always re-fetches and updates it.}
+  {\cs{osglistinginput}}{\code{gist:}}{\code{github:}}
+  {\code{gist:}\meta{owner}\code{/}\meta{gist-id}\code{/}\meta{filename}}
+  {\code{github:}\meta{owner}\code{/}\meta{repo}\code{@}\meta{ref}\code{/}\meta{path}}
+  {\file{\cs{jobname}.osglistings-cache/}}{\code{cache}}{\code{cache=true}}
+  {\code{cache=refresh}}
+
+\begin{example}[code-only]
+\osglistinginput[style=editor, title={fizzbuzz.rs}]
+  {rust}{gist:werner-matthias/3af1e0.../fizzbuzz.rs}
+\end{example}
+
+\ldeen*{Fehlt der Schlüssel @1, leitet das Paket automatisch einen
+  Editor-Link aus dem Sprachregister ab: aus @2, falls für die Sprache
+  hinterlegt und die Quelle ein Gist ist (Vorlage typischerweise mit
+  @3 statt @4), sonst aus @5. Der Platzhalter @4 wird durch den
+  URL-codierten Quelltext ersetzt, @3 durch die Gist-ID.}
+  {When @1 is not set, the package automatically derives an editor link
+  from the language registry: from @2, if declared for the language and
+  the source is a gist (template typically using @3 instead of @4), else
+  from @5. The @4 placeholder is replaced with the URL-encoded source,
+  @3 with the gist id.}
+  {\code{link}}{\code{editor-url-gist}}{\code{\{GIST\_ID\}}}
+  {\code{\{CODE\}}}{\code{editor-url}}
+
+\ldeen*{Ein einmal gecachter Eintrag wird beim Kompilieren nicht
+  automatisch gegen die Quelle validiert -- @1 (Voreinstellung) prüft
+  gar nicht; @2 löst am Dokumentende genau eine Anfrage pro
+  \emph{unterschiedlichem} Repository/Gist aus (nicht pro Datei) und
+  warnt bei veralteten Einträgen; @3 aktualisiert veraltete Einträge
+  dabei zusätzlich sofort. Außerhalb von \LaTeX{} übernimmt das
+  Kommandozeilenskript @4 dieselbe Prüfung für einen oder mehrere
+  Cache-Ordner.}{An entry, once cached, is not automatically validated
+  against its source on compile -- @1 (the default) checks nothing;
+  @2 fires exactly one request per \emph{distinct} repository/gist at
+  the end of the document (not per file) and warns about stale entries;
+  @3 additionally refreshes stale entries immediately. Outside \LaTeX,
+  the command-line script @4 runs the same check for one or more cache
+  directories.}
+  {\code{remote-check=manual}}{\code{remote-check=compile}}
+  {\code{remote-refresh=true}}{\file{osglistings-check-updates.lua}}
+
+\begin{example}[code-only]
+texlua osglistings-check-updates.lua --refresh myfile.osglistings-cache
+\end{example}
+
+\begin{warnbox}{\ldeen{Achtung, Sicherheitsrisiko!}{Attention, Security Risk!}}
+\ldeen*{Ein @1- oder @2-Lokator benötigt zur Übersetzung @3 und ruft
+  dabei intern @4 mit den Rechten des \TeX-Prozesses auf. Verwenden Sie
+  diese Lokatoren nur in Dokumenten, deren Inhalt (und deren Lokatoren)
+  Sie vertrauen -- ein böswillig gewählter Lokator könnte sonst beliebige
+  Netzwerkanfragen unter Ihrer Identität auslösen.}
+  {A @1 or @2 locator requires compiling with @3 and internally invokes
+  @4 with the \TeX{} process's own permissions. Only use these locators
+  with documents (and locators) you trust -- a maliciously chosen
+  locator could otherwise trigger arbitrary network requests under your
+  identity.}
+  {\code{gist:}}{\code{github:}}{\texttt{--shell-escape}}{\texttt{curl}}
+\end{warnbox}
+
+\subsection{\ldeen{Zeichengenaue Markierungen}{Character-level Marks}}
+\ldeen*{@1 legt an der Stelle, an der es im Quelltext steht, einen
+  unsichtbaren, benannten \pkg*{tikz}-Knoten ab; ein späteres @2 kann
+  von oder zu ihm zeichnen. Für Inline-Quelltext (Umgebung @3) muss dazu
+  @4 selbst gesetzt werden (z.\,B.\ @5), damit @1 überhaupt als
+  \LaTeX-Code statt als Verbatim-Text erkannt wird.}
+  {@1 drops an invisible, named \pkg*{tikz} node exactly where it appears
+  in the source; a later @2 can then draw to or from it. For inline
+  source (the @3 environment) @4 itself must be set (e.g.\ @5) for @1 to
+  be recognized as \LaTeX{} code at all, rather than verbatim text.}
+  {\cs{osglistingsmark}\Marg{name}}{\code{tikzpicture}}
+  {\code{osglisting}}{\code{escapeinside}}{\code{escapeinside=§§}}
+
+\begin{example}[compile,program=lualatex,exe-with=--shell-escape]
+  \documentclass{article}
+  \usepackage{tikz}
+  \usepackage{osglistings}
+  \begin{document}
+    \begin{osglisting}[style=plain, escapeinside=§§]{rust}
+let code = ExitCode::from(42§\osglistingsmark{here}§);
+    \end{osglisting}
+    \begin{tikzpicture}[remember picture, overlay]
+      \draw[->, red, thick] (osgm-here) ++(0,1) node[above]{Exit-Code}
+        -- (osgm-here);
+    \end{tikzpicture}
+  \end{document}
+\end{example}
+
+\ldeen*{Für externe Quellen übernimmt der Schlüssel @1 von @2 dieselbe
+  Aufgabe, ohne dass @3 manuell gesetzt werden muss -- ist @1 nicht
+  leer, schaltet das Paket @3 selbst ein (Trennzeichen @4, änderbar über
+  @5). Jeder durch Komma getrennte Eintrag adressiert entweder
+  zeichengenau über @6 (@7 zählt in \emph{Zeichen}, nicht Bytes) oder
+  über eine wörtliche Textsuche mit @8 bzw.\ @9, optional gefolgt von
+  \code{occurrence=}\meta{n} (Voreinstellung~1).}
+  {For external sources, the @1 key of @2 does the same job without
+  needing @3 set manually -- when @1 is non-empty, the package switches
+  on @3 itself (delimiter @4, overridable via @5). Each comma-separated
+  entry addresses a position either exactly by @6 (@7 counts in
+  \emph{characters}, not bytes) or via a literal text search using @8 or
+  @9, optionally followed by \code{occurrence=}\meta{n} (default~1).}
+  {\code{marks}}{\cs{osglistinginput}}{\code{escapeinside}}{\code{§}}
+  {\code{marks-escape}}{\meta{name}\code{ at }\meta{line}\code{:}\meta{col}}
+  {\meta{col}}{\meta{name}\code{ after "}\meta{text}\code{"}}
+  {\meta{name}\code{ before "}\meta{text}\code{"}}
+
+\begin{example}[code-only]
+\osglistinginput[
+  marks = {
+    exitc after "ExitCode",
+    semi before ";" occurrence=2,
+  }
+]{rust}{src/example.rs}
+\end{example}
+
+\ldeen{@1 (wie jede Nutzung von @2) benötigt Lua\LaTeX.}
+  {@1 (like any use of @2) requires Lua\LaTeX.}
+  {\code{marks}}{\cs{osglistingsmark}}
+
+\begin{warnbox}{\ldeen{Zweiter Kompilierlauf nötig}{Second Compile Run Needed}}
+\ldeen*{@1 löst sich, wie jedes seitenübergreifende \pkg*{tikz}-Overlay,
+  erst nach einem zweiten Kompilierlauf korrekt auf -- vor dem ersten
+  Lauf (oder nach Änderungen an den markierten Positionen) zeigen
+  Pfeile/Markierungen noch auf ihre vorherige Position oder gar nicht.}
+  {@1 only resolves correctly, like any cross-page \pkg*{tikz} overlay,
+  after a second compile run -- before the first run (or after changing
+  the marked positions) arrows/markers still point at their previous
+  position or not at all.}{\code{remember~picture}}
+\end{warnbox}
 
 \subsection{\ldeen{Tagging}{Tagging}}
 \ldeen*{Ist \LaTeX{} mit @1 gestartet, wird der Quelltext als
@@ -186,6 +326,7 @@ fn main() {
 \tcbuselibrary{skins,breakable}
 \RequirePackage{fontawesome5}
 \RequirePackage{hyperref}
+\RequirePackage{qrcode}
 \RequirePackage[newfloat,highlightmode=immediate]{minted}
 \setminted{style=default}
 % \ldeen{Latin Modern Mono (die Standardschrift von \pkg*{minted}/\pkg*{fvextra})
@@ -221,9 +362,7 @@ fn main() {
 \makeatletter
 \ExplSyntaxOn
 
-% --------------------------------------------------------------------------
-% \ldeen{Farbpalette}{Color palette}
-% --------------------------------------------------------------------------
+% \subsection{\ldeen{Farbpalette}{Color palette}}
 % \ldeen*{Eine Palette bildet portable Slotnamen auf konkrete
 %   \pkg*{xcolor}-Farben ab; die Rohangaben (Ressource oder Alias) landen in
 %   dieser Prop unter dem Schlüssel "\meta{Palette}/\meta{Slot}". Erst
@@ -324,7 +463,7 @@ fn main() {
 %   Eintrag; sie werden vorher geleert, weil @1 nicht erwähnte Keys nicht
 %   auf ihren @2 zurücksetzt.}{Sets the three slot-spec variables from a
 %   stored entry; they are cleared first because @1 does not reset keys
-%   it isn't given back to their @2.}{\cs{keys_set:nn}}{\code{.initial:n}}
+%   it isn't given back to their @2.}{\cs{keys\_set:nn}}{\code{.initial:n}}
 \cs_new_protected:Npn \__osglistings_slot_spec_set:n #1
   {
     \tl_clear:N \l__osglistings_slot_model_tl
@@ -423,9 +562,7 @@ fn main() {
   }
 \UseOsgListingsPalette { osglistings-default }
 
-% --------------------------------------------------------------------------
-% \ldeen{Pygments-Farbkopplung}{Pygments color hook}
-% --------------------------------------------------------------------------
+% \subsection{\ldeen{Pygments-Farbkopplung}{Pygments color hook}}
 % \ldeen*{\pkg*{minted} legt seine Token-Farben als
 %   \cs{PYG@tok@}\meta{Kürzel}-Makros neu an, jedes Mal wenn ein Stil
 %   (wieder-)geladen wird -- lokal zum jeweiligen Aufruf, siehe
@@ -449,7 +586,7 @@ fn main() {
 %   enthält dadurch selbst kein \code{\#}~mehr und muss nicht durch
 %   mehrere ineinander verschachtelte \cs{tex\_def:D}-Aufrufe hindurch mit
 %   der richtigen Anzahl Doppelraute überleben.}{The real parameter marker
-%   \code{#1} lives entirely inside @1's own, single-level definition;
+%   \code{\#1} lives entirely inside @1's own, single-level definition;
 %   \cs{PYG@tok@}\meta{code}'s body therefore contains no \code{\#} of its
 %   own and doesn't have to survive the right number of doubled hashes
 %   through several nested \cs{tex\_def:D} calls.}
@@ -487,15 +624,31 @@ fn main() {
 \cs_if_exist:NT \minted@patch@PygmentsStyledef
   { \g@addto@macro \minted@patch@PygmentsStyledef \__osglistings_patch_pygments_colors: }
 
-% --------------------------------------------------------------------------
-% \ldeen{Sprachregister}{Language registry}
-% --------------------------------------------------------------------------
+% \subsection{\ldeen{Sprachregister}{Language registry}}
 \prop_new:N \g__osglistings_lang_icon_prop
 \prop_new:N \g__osglistings_lang_url_prop
+\prop_new:N \g__osglistings_lang_gisturl_prop
 \keys_define:nn { osglistings/language }
   {
-    icon .code:n = \prop_gput:Nnn \g__osglistings_lang_icon_prop { \l__osglistings_lang_name_tl } {#1},
-    editor-url .code:n = \prop_gput:Nnn \g__osglistings_lang_url_prop { \l__osglistings_lang_name_tl } {#1},
+    % \ldeen{\code{.code:n} liefert den Slotnamen unexpandiert -- ohne
+    %   \cs{exp\_args:NNx} wäre der gespeicherte Schlüssel das
+    %   \emph{Makro} \cs{l\_\_osglistings\_lang\_name\_tl} selbst, nicht
+    %   sein Wert, sodass alle Sprachen denselben (falschen) Eintrag
+    %   überschreiben würden.}{\code{.code:n} leaves the slot name
+    %   unexpanded -- without \cs{exp\_args:NNx} the stored key would be
+    %   the \emph{macro} \cs{l\_\_osglistings\_lang\_name\_tl} itself, not
+    %   its value, so every language would overwrite the same (wrong)
+    %   entry.}
+    icon .code:n = \exp_args:NNx \prop_gput:Nnn \g__osglistings_lang_icon_prop { \l__osglistings_lang_name_tl } {#1},
+    editor-url .code:n = \exp_args:NNx \prop_gput:Nnn \g__osglistings_lang_url_prop { \l__osglistings_lang_name_tl } {#1},
+    % \ldeen{Eigene, bevorzugte Vorlage für Gist-Quellen (typischerweise
+    %   mit \code{\{GIST\_ID\}} statt \code{\{CODE\}}, z.\,B.\ Rust
+    %   Playgrounds \code{gist=}-Parameter) -- \code{editor-url} bleibt
+    %   der Fallback für alle anderen Quellen.}{Own, preferred template for
+    %   gist sources (typically using \code{\{GIST\_ID\}} instead of
+    %   \code{\{CODE\}}, e.g.\ Rust Playground's \code{gist=} parameter) --
+    %   \code{editor-url} remains the fallback for every other source.}
+    editor-url-gist .code:n = \exp_args:NNx \prop_gput:Nnn \g__osglistings_lang_gisturl_prop { \l__osglistings_lang_name_tl } {#1},
   }
 \tl_new:N \l__osglistings_lang_name_tl
 \cs_new_protected:Npn \DeclareOsgListingsLanguage #1 #2
@@ -517,7 +670,7 @@ fn main() {
 %   the URL templates is a placeholder for the (Phase~2) encoded source --
 %   unused in Phase~1, but already stored so the language registry doesn't
 %   need to change later.}{\{CODE\}}
-\DeclareOsgListingsLanguage { rust }   { icon = \faRust,   editor-url = { https://play.rust-lang.org/?version=stable\&mode=debug\&edition=2021\&code={CODE} } }
+\DeclareOsgListingsLanguage { rust }   { icon = \faRust,   editor-url = { https://play.rust-lang.org/?version=stable\&mode=debug\&edition=2021\&code={CODE} }, editor-url-gist = { https://play.rust-lang.org/?version=stable\&mode=debug\&edition=2021\&gist={GIST_ID} } }
 \DeclareOsgListingsLanguage { python } { icon = \faPython, editor-url = { https://trinket.io/python3?code={CODE} } }
 \DeclareOsgListingsLanguage { c }      { icon = \osglistingshextile{C}, editor-url = { https://code.livegap.com/?l=c\&code={CODE} } }
 \DeclareOsgListingsLanguage { cpp }    { icon = \osglistingshextile{\smash{\raisebox{1pt}{\scalebox{.7}{C++}}}}, editor-url = { https://code.livegap.com/?l=cpp\&code={CODE} } }
@@ -527,9 +680,7 @@ fn main() {
     \prop_item:Nn \g__osglistings_lang_icon_prop {#1}
   }
 
-% --------------------------------------------------------------------------
-% \ldeen{Tagging}{Tagging}
-% --------------------------------------------------------------------------
+% \subsection{\ldeen{Tagging}{Tagging}}
 % \ldeen{Tagging darf nicht erfolgen, wenn das Dokument nicht mit @1
 %   geladen wurde.}{Tagging must not happen when the document was not
 %   loaded with @1.}{\cs{DocumentMetadata}\Marg{tagging=on}}
@@ -543,9 +694,7 @@ fn main() {
     \AssignStructureRole{ osglistings/code }{ Code }
   }
 
-% --------------------------------------------------------------------------
-% \ldeen{Schlüssel}{Keys}
-% --------------------------------------------------------------------------
+% \subsection{\ldeen{Schlüssel}{Keys}}
 \tl_new:N \l__osglistings_style_tl
 \tl_new:N \l__osglistings_title_tl
 \tl_new:N \l__osglistings_langicon_tl
@@ -555,6 +704,11 @@ fn main() {
 \bool_new:N \l__osglistings_tag_bool
 \tl_new:N \l__osglistings_tagname_tl
 \tl_new:N \l__osglistings_extra_tl
+\tl_new:N \l__osglistings_cache_tl
+\tl_new:N \l__osglistings_remotecheck_tl
+\bool_new:N \l__osglistings_remoterefresh_bool
+\tl_new:N \l__osglistings_marks_tl
+\tl_new:N \l__osglistings_marksescape_tl
 
 \keys_define:nn { osglistings }
   {
@@ -563,29 +717,62 @@ fn main() {
     title .tl_set:N = \l__osglistings_title_tl,
     lang-icon .tl_set:N = \l__osglistings_langicon_tl,
     link .tl_set:N = \l__osglistings_link_tl,
-    link-display .choices:nn = { titlebar, label, none }
+    link-display .choices:nn = { titlebar, label, none, qrcode }
       { \tl_set:Nx \l__osglistings_linkdisplay_tl { \l_keys_choice_tl } },
     palette .tl_set:N = \l__osglistings_palette_tl,
+    % \ldeen{Nur für \cs{osglistinginput} relevant; siehe Abschnitt
+    %   \glqq Zeichengenaue Markierungen\grqq.}{Only relevant for
+    %   \cs{osglistinginput}; see the \glqq Character-level marks\grqq{}
+    %   section.}
+    marks .tl_set:N = \l__osglistings_marks_tl,
+    marks-escape .tl_set:N = \l__osglistings_marksescape_tl,
     tag .bool_set:N = \l__osglistings_tag_bool,
     tag .default:n = true,
     tag-name .tl_set:N = \l__osglistings_tagname_tl,
+    % \ldeen{Nur für \code{gist:}/\code{github:}-Quellen relevant; steuert,
+    %   ob eine vorhandene, gecachte Fassung wiederverwendet wird.}{Only
+    %   relevant for \code{gist:}/\code{github:} sources; controls whether
+    %   an existing cached copy is reused.}
+    cache .choices:nn = { true, false, refresh }
+      { \tl_set:Nx \l__osglistings_cache_tl { \l_keys_choice_tl } },
+    % \ldeen{Paketweite Option (nicht pro Aufruf): automatischer
+    %   Aktualisierungscheck beim Kompilieren -- bewusst standardmäßig aus,
+    %   siehe Sicherheitshinweis im Abschnitt \glqq Remote-Quellen\grqq.}
+    %   {Package-wide option (not per call): automatic update check on
+    %   compile -- deliberately off by default, see the security note in
+    %   the \glqq Remote sources\grqq{} section.}
+    remote-check .choices:nn = { manual, compile }
+      { \tl_set:Nx \l__osglistings_remotecheck_tl { \l_keys_choice_tl } },
+    remote-refresh .bool_set:N = \l__osglistings_remoterefresh_bool,
+    % \ldeen{@1 statt @2: \code{l\_keys\_key\_str} ist eine
+    %   gemeinsam genutzte l3keys-Variable, die \pkg*{minted}s eigener
+    %   \cs{keys\_set:nn}-Aufruf (beim späteren Verarbeiten von @3)
+    %   selbst wieder überschreibt -- ohne sofortige Expansion würde
+    %   hier nur eine \emph{Referenz} gespeichert, die zum
+    %   Verwendungszeitpunkt längst einen anderen Schlüsselnamen
+    %   trägt.}{@1 instead of @2: \code{l\_keys\_key\_str} is a shared
+    %   l3keys variable that \pkg*{minted}'s own \cs{keys\_set:nn} call
+    %   (when later processing @3) overwrites again itself -- without
+    %   immediate expansion this would only store a \emph{reference},
+    %   which by the time it's used already holds some other key's
+    %   name.}{\cs{tl\_set:Nx}}{\cs{tl\_set:Nn}}{\cs{l\_\_osglistings\_extra\_tl}}
     unknown .code:n =
       {
         \tl_if_empty:NTF \l__osglistings_extra_tl
-          { \tl_set:Nn \l__osglistings_extra_tl { \l_keys_key_str = {#1} } }
-          { \tl_put_right:Nn \l__osglistings_extra_tl { , \l_keys_key_str = {#1} } }
+          { \tl_set:Nx \l__osglistings_extra_tl { \l_keys_key_str = {#1} } }
+          { \tl_put_right:Nx \l__osglistings_extra_tl { , \l_keys_key_str = {#1} } }
       },
   }
 \keys_set:nn { osglistings }
   {
     style = plain, title = {}, lang-icon = auto, link = {},
     link-display = titlebar, palette = {}, tag = true,
-    tag-name = osglistings/code,
+    tag-name = osglistings/code, cache = true,
+    remote-check = manual, remote-refresh = false,
+    marks = {}, marks-escape = §,
   }
 
-% --------------------------------------------------------------------------
-% \ldeen{Rahmenstile}{Box styles}
-% --------------------------------------------------------------------------
+% \subsection{\ldeen{Rahmenstile}{Box styles}}
 % \ldeen{Sprachsymbol oben links, in allen drei Stilen gleich
 %   positioniert.}{Language badge top-left, positioned the same way in
 %   all three styles.}
@@ -625,6 +812,11 @@ fn main() {
           {
             \par\noindent\hfill
             {\scriptsize\href{\l__osglistings_link_tl}{\faLink~\ttfamily\l__osglistings_link_tl}}\par
+          }
+        \tl_if_eq:NnT \l__osglistings_linkdisplay_tl { qrcode }
+          {
+            \par\noindent\hfill
+            \qrcode*[height=1.5cm]{\l__osglistings_link_tl}\par
           }
       }
   }
@@ -692,15 +884,214 @@ fn main() {
 \cs_new_protected:Npn \__osglistings_box_end:
   { \end{tcolorbox} \__osglistings_below_link: }
 
-% --------------------------------------------------------------------------
-% \ldeen{Öffentliche Schnittstelle}{Public interface}
-% --------------------------------------------------------------------------
+% \subsection{\ldeen{Remote-Quellen und Lua-Anbindung}{Remote sources and Lua bridge}}
+\ExplSyntaxOff
+\newcommand\osglistingsluainit{%
+  % A missing osglistings.lua (e.g.\ an unfinished local install) must
+  % not turn ordinary package loading into a fatal error -- only actually
+  % using a gist:/github: locator should fail, and only then.
+  \ifdefined\directlua
+    \directlua{local found; found, osglistings = pcall(require, "osglistings"); if not found then osglistings = nil end}%
+  \fi
+}
+\newcommand\osglistingsluafetch[2]{%
+  % \#1 = locator, \#2 = cache mode (true/false/refresh)
+  \directlua{
+    local bs = string.char(92)
+    local locator = "\luaescapestring{#1}"
+    if not osglistings then
+      tex.error("osglistings: the Lua module osglistings.lua was not found; remote sources are unavailable")
+    else
+      local ok, result = pcall(osglistings.fetch, {
+        locator = locator,
+        cache_dir = "\luaescapestring{\jobname}.osglistings-cache",
+        cache = "\luaescapestring{#2}",
+      })
+      if ok then
+        local loc = osglistings.parse_locator(locator)
+        tex.print(bs .. "gdef" .. bs .. "gosglistingsresolvedpath{" .. result .. "}")
+        tex.print(bs .. "gdef" .. bs .. "gosglistingsresolvedkind{" .. loc.kind .. "}")
+        tex.print(bs .. "gdef" .. bs .. "gosglistingsresolvedgistid{" .. (loc.id or "") .. "}")
+      else
+        tex.error("osglistings: could not fetch '" .. locator .. "': " .. tostring(result))
+      end
+    end
+  }%
+}
+\newcommand\osglistingsluabuildlink[2]{%
+  % \#1 = editor-url template (may contain \{CODE\}/\{GIST\_ID\}), \#2 = resolved content path
+  \directlua{
+    local bs = string.char(92)
+    local url = "\luaescapestring{#1}"
+    url = osglistings.replace_once(url, "{GIST_ID}", "\luaescapestring{\gosglistingsresolvedgistid}")
+    if url:find("{CODE}", 1, true) then
+      local f = io.open("\luaescapestring{#2}", "rb")
+      local content = f and f:read("*a") or ""
+      if f then f:close() end
+      url = osglistings.replace_once(url, "{CODE}", osglistings.percent_encode(content))
+    end
+    tex.print(bs .. "gdef" .. bs .. "gosglistingsbuiltlink{" .. url .. "}")
+  }%
+}
+\newcommand\osglistingsluacheckupdates[1]{%
+  % \#1 = "true"/"false" -- refresh stale entries immediately?
+  \directlua{
+    local bs = string.char(92)
+    if osglistings then
+      local ok, report = pcall(osglistings.check_updates,
+        "\luaescapestring{\jobname}.osglistings-cache", { refresh = ("\luaescapestring{#1}" == "true") })
+      if ok then
+        for _, e in ipairs(report) do
+          local refreshed = {}
+          for _, r in ipairs(e.refreshed) do refreshed[r] = true end
+          for _, loc in ipairs(e.stale_files) do
+            if not refreshed[loc] then
+              tex.print(bs .. "osglistingsremotestalewarning{"
+                .. loc .. "}{" .. e.type .. " " .. e.key .. "}")
+            end
+          end
+        end
+      end
+    end
+  }%
+}
+\newcommand\osglistingsluaapplymarks[3]{%
+  % \#1 = source path, \#2 = marks spec, \#3 = escape char (used for both
+  % the escapeinside open and close delimiter)
+  \directlua{
+    local bs = string.char(92)
+    if not osglistings then
+      tex.error("osglistings: the Lua module osglistings.lua was not found; marks are unavailable")
+    else
+      local ok, result = pcall(osglistings.inject_marks, {
+        path = "\luaescapestring{#1}",
+        marks = "\luaescapestring{#2}",
+        escape_open = "\luaescapestring{#3}",
+        escape_close = "\luaescapestring{#3}",
+        cache_dir = "\luaescapestring{\jobname}.osglistings-cache",
+      })
+      if ok then
+        tex.print(bs .. "gdef" .. bs .. "gosglistingsmarkedpath{" .. result .. "}")
+      else
+        tex.error("osglistings: could not apply marks to '" .. "\luaescapestring{#1}" .. "': " .. tostring(result))
+      end
+    end
+  }%
+}
+\ExplSyntaxOn
+
+\osglistingsluainit
+\msg_new:nnn { osglistings } { luatex-required-remote }
+  { Remote~sources~(gist:/github:)~require~LuaLaTeX. }
+\msg_new:nnn { osglistings } { luatex-required-marks }
+  { Character-level~marks~(the~marks~key)~require~LuaLaTeX. }
+\msg_new:nnn { osglistings } { remote-stale }
+  { Cached~source~'#1'~may~be~out~of~date~(#2).~Run~texlua~osglistings-check-updates.lua,~or~set~cache=refresh. }
+\cs_new_protected:Npn \osglistingsremotestalewarning #1 #2
+  { \msg_warning:nnnn { osglistings } { remote-stale } {#1} {#2} }
+\bool_new:N \g__osglistings_was_remote_bool
+\tl_new:N \g__osglistings_remote_kind_tl
+\tl_new:N \g__osglistings_remote_gistid_tl
+\cs_new_protected:Npn \__osglistings_resolve_remote:nN #1 #2
+  {
+    \sys_if_engine_luatex:TF
+      {
+        \osglistingsluafetch{#1}{\l__osglistings_cache_tl}
+        \tl_set:Nx #2 { \gosglistingsresolvedpath }
+        \bool_gset_true:N \g__osglistings_was_remote_bool
+        \tl_gset:Nx \g__osglistings_remote_kind_tl { \gosglistingsresolvedkind }
+        \tl_gset:Nx \g__osglistings_remote_gistid_tl { \gosglistingsresolvedgistid }
+      }
+      { \msg_fatal:nn { osglistings } { luatex-required-remote } }
+  }
+\cs_new_protected:Npn \__osglistings_input_path:nN #1 #2
+  {
+    \bool_gset_false:N \g__osglistings_was_remote_bool
+    \regex_match:nnTF { \A (?: gist | github ) : } {#1}
+      { \__osglistings_resolve_remote:nN {#1} #2 }
+      { \tl_set:Nn #2 {#1} }
+  }
+
+% \subsection{\ldeen{Zeichengenaue Markierungen}{Character-level marks}}
+% \ldeen{@1 legt an dieser Stelle einen namentlich adressierbaren,
+%   unsichtbaren \pkg*{tikz}-Knoten ab (@2); ein späteres @3 kann von
+%   oder zu ihm zeichnen. Die Auflösung passiert erst im zweiten
+%   Kompilierlauf, wie bei jedem seitenübergreifenden \pkg*{tikz}-Overlay.}
+%   {@1 drops an addressable, invisible \pkg*{tikz} node at this exact
+%   spot (@2); a later @3 can then draw to or from it. Resolution only
+%   happens on the second compile pass, like any cross-element
+%   \pkg*{tikz} overlay.}{\cs{osglistingsmark}}{\code{remember~picture}}
+%   {\code{tikzpicture}}
+\NewDocumentCommand \osglistingsmark { m }
+  {
+    \tikz[remember~picture,~overlay,~baseline=-0.5ex]
+      \node[inner~sep=0pt](osgm-#1){};
+  }
+
+\cs_new_protected:Npn \__osglistings_apply_marks:N #1
+  {
+    \tl_if_empty:NF \l__osglistings_marks_tl
+      {
+        \sys_if_engine_luatex:TF
+          {
+            \osglistingsluaapplymarks { #1 } { \l__osglistings_marks_tl } { \l__osglistings_marksescape_tl }
+            \tl_set:Nx #1 { \gosglistingsmarkedpath }
+          }
+          { \msg_fatal:nn { osglistings } { luatex-required-marks } }
+      }
+  }
+
+\cs_new_protected:Npn \__osglistings_maybe_derive_link:n #1 % #1 = language
+  {
+    \bool_if:NT \g__osglistings_was_remote_bool
+      {
+        \tl_if_empty:NT \l__osglistings_link_tl
+          {
+            \tl_clear:N \l__osglistings_tmp_tl
+            \tl_if_eq:NnT \g__osglistings_remote_kind_tl { gist }
+              { \prop_get:NnNTF \g__osglistings_lang_gisturl_prop {#1} \l__osglistings_tmp_tl { } { } }
+            \tl_if_empty:NT \l__osglistings_tmp_tl
+              { \prop_get:NnNTF \g__osglistings_lang_url_prop {#1} \l__osglistings_tmp_tl { } { } }
+            \tl_if_empty:NF \l__osglistings_tmp_tl
+              {
+                \sys_if_engine_luatex:T
+                  {
+                    \osglistingsluabuildlink { \l__osglistings_tmp_tl } { \l__osglistings_input_path_tl }
+                    \tl_set:Nx \l__osglistings_link_tl { \gosglistingsbuiltlink }
+                  }
+              }
+          }
+      }
+  }
+\cs_new_protected:Npn \__osglistings_check_updates_now:
+  {
+    \sys_if_engine_luatex:T
+      { \bool_if:NTF \l__osglistings_remoterefresh_bool { \osglistingsluacheckupdates{true} } { \osglistingsluacheckupdates{false} } }
+  }
+\AtEndDocument{
+  \tl_if_eq:NnT \l__osglistings_remotecheck_tl { compile }
+    { \__osglistings_check_updates_now: }
+}
+
+% \subsection{\ldeen{Öffentliche Schnittstelle}{Public interface}}
 \cs_new_protected:Npn \__osglistings_setup:n #1
   {
     \tl_clear:N \l__osglistings_extra_tl
     \keys_set:nn { osglistings } {#1}
     \tl_if_empty:NF \l__osglistings_palette_tl
       { \UseOsgListingsPalette { \l__osglistings_palette_tl } }
+    \tl_if_empty:NF \l__osglistings_marks_tl
+      {
+        \tl_if_empty:NTF \l__osglistings_extra_tl
+          {
+            \tl_set:Nx \l__osglistings_extra_tl
+              { escapeinside = \l__osglistings_marksescape_tl \l__osglistings_marksescape_tl }
+          }
+          {
+            \tl_put_right:Nx \l__osglistings_extra_tl
+              { , escapeinside = \l__osglistings_marksescape_tl \l__osglistings_marksescape_tl }
+          }
+      }
   }
 
 % \ldeen{@1 muss ausgeführt werden, \emph{bevor} die umschließende
@@ -721,7 +1112,15 @@ fn main() {
     \__osglistings_box_begin:n {#2}
     \bool_if:NT \l__osglistings_tag_bool
       { \__osglistings_tag_struct_begin:n { \UseStructureName{ \l__osglistings_tagname_tl } } }
-    \setminted { \l__osglistings_extra_tl }
+    % \ldeen{@1 statt @2 -- @3 nimmt sein Argument als Kontrollsequenz
+    %   entgegen und würde diese sonst unexpandiert (also den
+    %   Variablennamen statt ihres Inhalts) an \pkg*{pgfkeys}
+    %   weiterreichen.}{@1 instead of @2 -- @3 takes its argument as a
+    %   bare control sequence and would otherwise forward it
+    %   unexpanded (i.e.\ the variable's name rather than its content)
+    %   to \pkg*{pgfkeys}.}{\cs{exp\_args:No}}{a~plain~brace~group}
+    %   {\cs{setminted}}
+    \exp_args:No \setminted { \l__osglistings_extra_tl }
     \begin{minted}{#2}
   }
   {
@@ -731,14 +1130,30 @@ fn main() {
     \group_end:
   }
 
+\tl_new:N \l__osglistings_input_path_tl
 \NewDocumentCommand \osglistinginput { O{} m m }
   {
     \group_begin:
     \__osglistings_setup:n {#1}
+    \__osglistings_input_path:nN {#3} \l__osglistings_input_path_tl
+    \__osglistings_maybe_derive_link:n {#2}
+    \__osglistings_apply_marks:N \l__osglistings_input_path_tl
     \__osglistings_box_begin:n {#2}
     \bool_if:NT \l__osglistings_tag_bool
       { \__osglistings_tag_struct_begin:n { \UseStructureName{ \l__osglistings_tagname_tl } } }
-    \inputminted [ \l__osglistings_extra_tl ] {#2} {#3}
+    % \ldeen{@1 statt einer eckigen Klammer mit @2 darin -- @2 wäre
+    %   dort nur ein unexpandiertes Token; @3 setzt dieselben
+    %   Optionen global (innerhalb der \cs{group\_begin:}/\cs{group\_end:}
+    %   dieses Aufrufs also effektiv lokal) und wirkt genauso auf das
+    %   folgende, klammerlose @4.}{@1 instead of a bracket option
+    %   holding @2 -- @2 there would be just an unexpanded token; @3
+    %   sets the same options globally (effectively local within this
+    %   call's \cs{group\_begin:}/\cs{group\_end:}) and applies just as
+    %   well to the following, bracket-less @4.}
+    %   {\cs{exp\_args:No}\cs{setminted}}{\cs{l\_\_osglistings\_extra\_tl}}
+    %   {\cs{setminted}}{\cs{inputminted}}
+    \exp_args:No \setminted { \l__osglistings_extra_tl }
+    \inputminted {#2} { \l__osglistings_input_path_tl }
     \bool_if:NT \l__osglistings_tag_bool { \__osglistings_tag_struct_end: }
     \__osglistings_box_end:
     \group_end:

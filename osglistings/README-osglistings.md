@@ -50,10 +50,26 @@ tagged as structure `Code` (structure name `osglistings/code`, remappable
 with `\NewStructureName`/`\AssignStructureRole`); switch it off per call
 with `tag=false`.
 
-This is the Phase 1 slice of a larger design: remote source (gist/repository)
-with caching, marker-comment-based semantic range selection, character-level
-`tikz` annotation, and a QR-code link display are follow-up phases, not yet
-implemented.
+`\osglistinginput`'s file argument also accepts a `gist:owner/gist-id/file`
+or `github:owner/repo@ref/path` locator instead of a local path; the source
+is fetched once and cached under `\jobname.osglistings-cache/`, and an
+editor link is derived automatically when none is given explicitly. This
+requires LuaLaTeX and `--shell-escape`, and — since it invokes `curl` with
+the compiling process's own permissions — should only be used with
+trusted documents/locators. `texlua osglistings-check-updates.lua
+[--refresh] <cache-dir>` checks a cache for staleness outside LaTeX;
+`remote-check=compile` does the same automatically at the end of a
+compile run.
+
+`\osglistingsmark{name}` drops a named, invisible `tikz` node at an exact
+character position in inline source (needs `escapeinside` on); a later
+`tikzpicture[remember picture, overlay]` can then draw to or from it,
+resolving after a second compile run like any such overlay. The `marks`
+key on `\osglistinginput` does the same for external sources, addressing
+positions either by `name at line:col` or by a literal text search
+(`name after/before "text" [occurrence=n]`) — no manual `escapeinside`
+needed there. `link-display=qrcode` renders the link as a QR code below
+the box instead of a titlebar icon or text label.
 
 ## Build
 

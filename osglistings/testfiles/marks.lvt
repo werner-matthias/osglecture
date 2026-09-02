@@ -1,0 +1,31 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{tikz}
+\usepackage{osglistings}
+\begin{document}
+\START
+
+\OMIT
+\osglistinginput[
+  style=plain,
+  marks = {
+    semi at 2:34,
+    exitc after "ExitCode",
+    paren before "(" occurrence=2,
+  }
+]{rust}{sample-marks.rs}
+\TIMO
+\TYPE{marks-linecol-and-search-ok}
+
+\OMIT
+\begin{osglisting}[style=plain, escapeinside=§§]{rust}
+let code = ExitCode::from(42§\osglistingsmark{one}§);
+\end{osglisting}
+\begin{tikzpicture}[remember picture, overlay]
+  \draw[->] (osgm-one) ++(0,1) -- (osgm-one);
+\end{tikzpicture}
+\TIMO
+\TYPE{inline-mark-ok}
+
+\END
+\end{document}

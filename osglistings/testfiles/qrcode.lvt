@@ -1,0 +1,15 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osglistings}
+\begin{document}
+\START
+
+\OMIT
+\begin{osglisting}[style=plain, link-display=qrcode, link=https://example.org]{python}
+pass
+\end{osglisting}
+\TIMO
+\TYPE{qrcode-link-ok}
+
+\END
+\end{document}
