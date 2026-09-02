@@ -34,8 +34,8 @@
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
 \ProvidesExplClass
 {osgdoc}
-{2026/08/30}
-{v0.3.6}
+{2026/09/02}
+{v0.4.0}
 {A thin wrapper around cnltx-doc}
 \ExplSyntaxOff
 %</cls>
@@ -123,7 +123,7 @@ load babel
     Unlike the latter, however (as in @1), @2 is not required, and Lua code can also be documented.
   }{\pkg{gmdoc}}{\cs*{begin}\Marg{macrocode}\ldots \cs*{end}\Marg{macrocode}}
 
-  \begin{quote}
+    \begin{quote}
     \begin{options}
       \opt*{mode}\Default{tex}
       \ldeen{
@@ -144,6 +144,21 @@ load babel
         Name of the guard. Only simple names are allowed here, no complex guard expressions.}
     \end{options}
   \end{quote}
+  \ldeen{
+    Für eine bessere Kompatibilität mit \LaTeX3 maskiert \cs{AutoDocInput} 
+    in Quelltextkommentaren nicht maskierte Unterstriche innerhalb der Argumente
+    von \cs{cs} und \cs{cs*}.
+    Dadurch können beispielsweise \cs{keys\_set:nn} und
+    \cs*{\_\_module\_function:N} direkt geschrieben werden.
+    Der Makroname muss vollständig in einer Zeile stehen.
+  }{
+    To improve compatibility with \LaTeX3, \cs{AutoDocInput}
+    masks unmasked underscores within the arguments
+    of \cs{cs} and \cs{cs*} in source code comments.
+    This allows, for example, \cs{keys\_set:nn} and
+    \cs*{\_\_module\_function:N} to be written directly.
+    The macro name must appear entirely on a single line.
+  }
   \command{OnlyDescription}\default{}
   \command{MaybeStop}[\marg{text}]
     \ldeen{Die beiden Makros erfüllen die gleiche Funktion wie die gleichnamigen Makros aus dem \pkg{doc}-Paket}{These macros perform the same functions as the macros of the same name from the \pkg{doc} package}.
@@ -380,8 +395,8 @@ load babel
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
 \ProvidesExplPackage
 {osgdoc}
-{2026/08/30}
-{v0.3.6}
+{2026/09/02}
+{v0.4.0}
 {small tools for documentation}
 % \ldeen{Wir beginnen mit den Funktionalitäten, die nicht Lua braucht.}{
 % We'll start with the features that doesn't require Lua.}
@@ -700,6 +715,119 @@ local function lua_long_comment_line(line, long_comment)
   return line, false
 end
 
+% \ldeen{Nicht maskierte Unterstriche in \cs{cs}-Argumenten maskieren.}
+%   {Escape unescaped underscores in \cs{cs} arguments.}
+local function is_escaped(text, position)
+  local backslashes = 0
+  local index = position - 1
+
+  while index >= 1 and text:sub(index, index) == "\\" do
+    backslashes = backslashes + 1
+    index = index - 1
+  end
+
+  return backslashes % 2 == 1
+end
+
+local function skip_spaces(text, position)
+  while position <= #text and text:sub(position, position):match("%s") do
+    position = position + 1
+  end
+
+  return position
+end
+
+
+local function skip_balanced(text, position, opening, closing)
+  local depth = 0
+
+  for index = position, #text do
+    local character = text:sub(index, index)
+
+    if not is_escaped(text, index) then
+      if character == opening then
+        depth = depth + 1
+      elseif character == closing then
+        depth = depth - 1
+
+        if depth == 0 then
+          return index + 1
+        end
+      end
+    end
+  end
+
+  return nil
+end
+
+
+local function escape_cs_underscores(text)
+  local result = {}
+  local cursor = 1
+  local search = 1
+
+  while search <= #text do
+    local command_start, after_name = text:find("\\cs", search, true)
+
+    if command_start == nil then
+      break
+    end
+
+    local following = text:sub(after_name + 1, after_name + 1)
+
+    if is_escaped(text, command_start)
+      or following:match("[%a@]")
+    then
+      search = after_name + 1
+    else
+      local position = skip_spaces(text, after_name + 1)
+
+      if text:sub(position, position) == "*" then
+        position = skip_spaces(text, position + 1)
+      end
+
+      if text:sub(position, position) == "[" then
+        position = skip_balanced(text, position, "[", "]")
+
+        if position == nil then
+          break
+        end
+
+        position = skip_spaces(text, position)
+      end
+
+      if text:sub(position, position) ~= "{" then
+        search = after_name + 1
+      else
+        local argument_end = skip_balanced(text, position, "{", "}")
+
+        if argument_end == nil then
+          break
+        end
+
+        result[#result + 1] = text:sub(cursor, position)
+
+        for index = position + 1, argument_end - 2 do
+          local character = text:sub(index, index)
+
+          if character == "_" and not is_escaped(text, index) then
+            result[#result + 1] = "\\"
+          end
+
+          result[#result + 1] = character
+        end
+
+        result[#result + 1] = "}"
+        cursor = argument_end
+        search = argument_end
+      end
+    end
+  end
+
+  result[#result + 1] = text:sub(cursor)
+  return table.concat(result)
+end
+
 % \ldeen{Temporäre Verbatim-Dateien}{Temporary verbatim files}
 local function unique_temp_name()
   local name = string.format(
@@ -804,7 +932,7 @@ function autodoc.autodoc_process(filename, guard, mode)
   end
 
   local function print_documentation(text)
-    tex.print(text or "")
+    tex.print(escape_cs_underscores(text or ""))
   end
 
   local function open_verbatim(first_line)

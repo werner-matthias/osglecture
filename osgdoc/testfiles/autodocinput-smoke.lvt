@@ -8,9 +8,13 @@
 % for a %<*guard>/--<*guard> pair) rather than a content check: comparing
 % the typeset listing itself would tie this test to fvextra's own
 % formatting, which osgdoc does not control any more than it controls
-% cnltx's.
+% cnltx's. Suppress overfull-box diagnostics from the deliberately dense
+% one-line test cases in the fixtures.
+\begingroup
+\hfuzz=\maxdimen
 \AutoDocInput{fixture-guarded.tex}{demo}
 \AutoDocInput[lua]{fixture-guarded.lua}{demo}
+\endgroup
 \directlua{texio.write_nl("log", "autodocinput-completed=true")}
 \END
 \end{document}
