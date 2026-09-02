@@ -33,6 +33,9 @@ typesetexe = "lualatex"
 typesetopts = "-interaction=nonstopmode -shell-escape --synctex=10"
 maxruns    = 3
 
+sourcefiles  = sourcefiles  or { "*.dtx"}
+typesetfiles = typesetfiles or { "*.dtx"}
+
 cleanfiles={
     "*-cnltx*", -- artefacts from cnltx tools
     "*.toc",
@@ -42,6 +45,20 @@ cleanfiles={
     "*.ilg",
     "*.ind"
 }
+--[[ We need the documentation pdf's only at time of distribution,
+     but not during build, where they pollute the build/doc directory.
+--]]
+local target = options["target"]
+local with_distributed_docs =
+  target == "ctan"
+  or target == "bundlectan"
+  or target == "install"
+
+docfiles = docfiles or (
+  with_distributed_docs
+  and { "*.pdf" }
+  or {}
+)
 
 -- All documented sources use osgdoc for their driver and langselect for the
 -- German/English variants.  Declare those as typesetting dependencies so a
@@ -147,26 +164,9 @@ target_list.cleanall = {
   func = stdclean,
 }
 
---[[ We need the documentation pdf's only at time of distribution,
-     but not during build, where they pollute the build/doc directory.
---]]
-local target = options["target"]
-local with_distributed_docs =
-  target == "ctan"
-  or target == "bundlectan"
-  or target == "install"
-
-docfiles = docfiles or (
-  with_distributed_docs
-  and { "*.pdf" }
-  or {}
-)
-
-sourcefiles  = sourcefiles  or { "*.dtx"}
-typesetfiles = typesetfiles or { "*.dtx"}
+-- Tagging
 tagfiles =     tagfiles or { "*.dtx", "*.lua"}
 
--- Tagging
 local function update_lua_tag(content, tagname, tagdate)
   local updated = content:gsub(
     "(Date:%s*\n%s*)%d%d%d%d%-%d%d%-%d%d",
