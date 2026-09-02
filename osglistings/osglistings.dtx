@@ -25,6 +25,8 @@
 \generate{\file{osglistings.sty}{\from{osglistings.dtx}{package}}}
 \expandafter\endbatchfile
 \fi
+
+\iffalse
 %</driver>
 %<*package>
 \NeedsTeXFormat{LaTeX2e}[2022-06-01]
@@ -33,10 +35,9 @@
 \ExplSyntaxOff
 %</package>
 %<*driver>
+\fi
 
-\documentclass[
-load-preamble+
-]{osgdoc}
+\documentclass[add-bib=false]{osgdoc}
 
 \OnlyDescription
 
@@ -60,25 +61,24 @@ load babel
   authors  = {Matthias Werner[matthias.werner@informatik.tu-chemnitz.de]},
   abstract={
     \ldeen*{
-      Das Paket stellt die Umgebung @1 und den Befehl @2 für Inline- bzw.\
-      externe Quelltexte bereit, mit drei wählbaren Rahmenstilen (@3), einer
-      eigenständigen, austauschbaren Farbpalette für die Syntaxhervorhebung
-      und optionalen Links in externe Online-Editoren. Wenn @4 gesetzt ist,
-      wird der Quelltext als @5 getaggt.
+      Das Paket \osglistings\ stellt ein Frontend für \pkg*{minted} 
+      bereit, welches Farben und Rahmenstile leicht konfigurierbar macht und
+      Markierungen, externe Editoren und Codequellen (gists) unterstützt.
+      
+      Außerdem wird der Quelltext als @2 getaggt, falls @1 gesetzt ist.
 
-      Das Paket ist Teil des \pkg*{osglecture}-Bundles, aber von den anderen
+      Das Paket ist Teil des \bnd*{osglecture}-Bundles, aber von den anderen
       Paketen weitgehend unabhängig.
     }{
-      The package provides the @1 environment and the @2 command for
-      inline and external source, respectively, with three selectable box
-      styles (@3), an independent, swappable color palette for syntax
-      highlighting, and optional links into external online editors. If @4
-      is set, the source is tagged as @5.
+            The \osglistings\ package provides a frontend for \pkg*{minted}
+      that makes colors and border styles easily configurable and
+      supports highlights, external editors, and code sources (gists).
 
-      This package is part of the \pkg*{osglecture} bundle, but is largely
+      In addition, the source code is tagged as @2 if @1 is set.
+
+      The package is part of the \bnd*{osglecture} bundle, but is largely
       independent of the other packages.
-    }{\code{osglisting}}{\cs{osglistinginput}}{\code{plain}/\code{paper}/\code{editor}}
-    {\cs{DocumentMetadata}\Marg{tagging=on}}{\code{Code}}
+    }{\cs{DocumentMetadata}\Marg{tagging=on}}{\code{Code}}
   },
   url      =https://github.com/werner-matthias/osglecture,
   build-title
@@ -88,6 +88,25 @@ load babel
 % Documentation
 % --------------------------------------------------------------------------
 \section{\ldeen{Nutzung}{Usage}}
+\ldeen*{Das Paket wird auf dem üblichen Weg mit @1 geladen und lädt seinerseits (u.a.) @2.}{
+The package is loaded in the usual way using @1 and, in turn, loads (among other things) @2.
+}{\cs{usepackage}[\oarg{\ldeen{Optionen}{options}}\Marg{osglistings}]}{\pkg*{minted}}
+
+\ldeen*{@1 kennt vier Paketoptionen: @2, @3, @4 und @5, Diese werden
+  unverändert an @6s eigene, gleichnamige Ladezeit-Optionen weitergereicht
+  und steuern dessen Highlighting-Cache. Ohne Angabe verhält sich
+  @6 wie mit seinen eigenen Voreinstellungen. Andere @6-Paketoptionen
+  lassen sich derzeit nicht über @1 setzen.}{@1 knows four package
+  options: @2, @3, @4, and @5. They are forwarded unchanged to @6's own,
+  identically named load-time options, controlling its highlighting
+  cache. Without them, @6 behaves as with its own defaults. Other @6
+  package options currently cannot be set through @1.}
+  {\pkg*{osglistings}}{\code{cache}}{\code{cachedir}}{\code{frozencache}}
+  {\code{cacheignoresfilecontents}}{\pkg*{minted}}
+
+\begin{example}[code-only]
+\usepackage[cachedir=build/minted-cache]{osglistings}
+\end{example}
 
 \ldeen*{Ein Quelltext, der direkt im Dokument steht, wird mit der Umgebung
   @1 gesetzt; ein Quelltext aus einer externen Datei mit @2. Beide
@@ -99,7 +118,8 @@ load babel
   \ldots), forwarded unchanged.}
   {\code{osglisting}}{\cs{osglistinginput}}{\code{firstline}}{\code{breaklines}}
 
-\begin{example}[compile,program=lualatex,exe-with=--shell-escape]
+\begin{example}[compile,program=lualatex,exe-with=--shell-escape,
+  graphics={trim=30mm 200mm 30mm 30mm,clip,scale=1.2}]
   \documentclass{article}
   \usepackage{osglistings}
   \begin{document}
@@ -173,7 +193,7 @@ fn main() {
   {\cs{osglistinginput}}{\code{gist:}}{\code{github:}}
   {\code{gist:}\meta{owner}\code{/}\meta{gist-id}\code{/}\meta{filename}}
   {\code{github:}\meta{owner}\code{/}\meta{repo}\code{@}\meta{ref}\code{/}\meta{path}}
-  {\file{\cs{jobname}.osglistings-cache/}}{\code{cache}}{\code{cache=true}}
+  {\File{\cs{jobname}.osglistings-cache/}}{\code{cache}}{\code{cache=true}}
   {\code{cache=refresh}}
 
 \begin{example}[code-only]
@@ -209,7 +229,7 @@ fn main() {
   the command-line script @4 runs the same check for one or more cache
   directories.}
   {\code{remote-check=manual}}{\code{remote-check=compile}}
-  {\code{remote-refresh=true}}{\file{osglistings-check-updates.lua}}
+  {\code{remote-refresh=true}}{\File{osglistings-check-updates.lua}}
 
 \begin{example}[code-only]
 texlua osglistings-check-updates.lua --refresh myfile.osglistings-cache
@@ -310,7 +330,7 @@ let code = ExitCode::from(42§\osglistingsmark{here}§);
   {\code{tag=false}}
 
 \section{Implementation}
-\MaybeStop{\ldeen*{Um die Implementationsbeschreibung zu erhalten, kommentieren Sie bitte \cs{OnlyDescription} in @1 aus.}{To view the implementation description, please uncomment @1 in \code{osgdoc.dtx}.}{\file{osglistings.dtx}}}
+\MaybeStop{\ldeen*{Um die Implementationsbeschreibung zu erhalten, kommentieren Sie bitte \cs{OnlyDescription} in @1 aus.}{To view the implementation description, please uncomment @1 in \code{osgdoc.dtx}.}{\File{osglistings.dtx}}}
 
 \subsection{\emph{osglistings.sty}}
 \AutoDocInput{osglistings.dtx}{package}
@@ -327,7 +347,58 @@ let code = ExitCode::from(42§\osglistingsmark{here}§);
 \RequirePackage{fontawesome5}
 \RequirePackage{hyperref}
 \RequirePackage{qrcode}
-\RequirePackage[newfloat,highlightmode=immediate]{minted}
+% \ldeen{@1/@2/\ldots{} sind Ladezeit-Paketoptionen von @3, keine
+%   \cs{setminted}-Schlüssel -- sie steuern, ob/wohin @3 seinen
+%   Highlighting-Cache schreibt, nicht das Aussehen eines einzelnen
+%   Listings. Nur diese vier werden durchgereicht: @4/@5 (der Nummerierungs-
+%   Parent von @3s eigenem, hier ungenutzten Listing-Float) blieben
+%   bewusst außen vor, weil ein falsch gesetzter Wert dort das
+%   Kapitel-/Abschnitts-Zählsystem des ganzen Dokuments durcheinanderbringen
+%   kann, nicht nur die Darstellung eines Listings.}{@1/@2/\ldots{} are
+%   load-time package options of @3, not \cs{setminted} keys -- they
+%   control whether/where @3 writes its highlighting cache, not how a
+%   single listing looks. Only these four are forwarded: @4/@5 (the
+%   numbering parent of @3's own, here-unused listing float) were
+%   deliberately left out, because a wrong value there can derail the
+%   whole document's chapter/section counters, not just one listing's
+%   appearance.}{\code{cache}}{\code{cachedir}}{\pkg*{minted}}
+%   {\code{chapter}}{\code{section}}
+\RequirePackage{l3keys2e}
+\ExplSyntaxOn
+\tl_new:N \l__osglistings_mintedopts_tl
+\tl_set:Nn \l__osglistings_mintedopts_tl { newfloat, highlightmode=immediate }
+\keys_define:nn { osglistings/options }
+  {
+    cache .choices:nn = { true, false }
+      { \tl_put_right:Nx \l__osglistings_mintedopts_tl { , cache = \l_keys_choice_tl } },
+    cache .default:n = true,
+    cachedir .code:n =
+      { \tl_put_right:Nx \l__osglistings_mintedopts_tl { , cachedir = {#1} } },
+    frozencache .choices:nn = { true, false }
+      { \tl_put_right:Nx \l__osglistings_mintedopts_tl { , frozencache = \l_keys_choice_tl } },
+    frozencache .default:n = true,
+    cacheignoresfilecontents .choices:nn = { true, false }
+      { \tl_put_right:Nx \l__osglistings_mintedopts_tl { , cacheignoresfilecontents = \l_keys_choice_tl } },
+    cacheignoresfilecontents .default:n = true,
+  }
+\ProcessKeysPackageOptions { osglistings/options }
+% \ldeen{@1 kann @2 nicht direkt als eckige Klammer füttern -- anders als
+%   bei einem regulären \pkg*{expl3}-Argument nimmt @3 seine optionale
+%   Klammer über eigene, klassische Scan-Logik entgegen, nicht über ein
+%   \pkg*{expl3}-Argumentschema, das \cs{exp\_args:No} umleiten könnte.
+%   Ein \cs{tl\_set:Nx} baut den kompletten Aufruf inklusive Klammer
+%   stattdessen als expandierten Text zusammen.}{@1 cannot feed @2
+%   directly into a square-bracket argument -- unlike a regular
+%   \pkg*{expl3} argument, @3 takes its optional bracket via its own,
+%   classic scanning logic, not an \pkg*{expl3} argument scheme that
+%   \cs{exp\_args:No} could redirect. A \cs{tl\_set:Nx} instead builds
+%   the whole call, brackets included, as expanded text.}
+%   {\cs{exp\_args:No}}{\cs{l\_\_osglistings\_mintedopts\_tl}}{\cs{RequirePackage}}
+\tl_new:N \l__osglistings_mintedload_tl
+\tl_set:Nx \l__osglistings_mintedload_tl
+  { \exp_not:N \RequirePackage [ \l__osglistings_mintedopts_tl ] { minted } }
+\l__osglistings_mintedload_tl
+\ExplSyntaxOff
 \setminted{style=default}
 % \ldeen{Latin Modern Mono (die Standardschrift von \pkg*{minted}/\pkg*{fvextra})
 %   deckt weder Kyrillisch noch die meisten Symbolblöcke ab -- fehlende
@@ -566,12 +637,12 @@ let code = ExitCode::from(42§\osglistingsmark{here}§);
 % \ldeen*{\pkg*{minted} legt seine Token-Farben als
 %   \cs{PYG@tok@}\meta{Kürzel}-Makros neu an, jedes Mal wenn ein Stil
 %   (wieder-)geladen wird -- lokal zum jeweiligen Aufruf, siehe
-%   \cs{minted@patch@PygmentsStyledef} in \file{minted.sty}. Das ist der
+%   \cs{minted@patch@PygmentsStyledef} in \File{minted.sty}. Das ist der
 %   einzige Punkt, an dem sich diese Makros zuverlässig umbiegen lassen,
 %   bevor \pkg*{minted} sie zum Setzen des Quelltexts benutzt.}{@1
 %   redefines its token colors as \cs{PYG@tok@}\meta{code} macros every
 %   time a style is (re)loaded -- locally to that call, see
-%   \cs{minted@patch@PygmentsStyledef} in \file{minted.sty}. That is the
+%   \cs{minted@patch@PygmentsStyledef} in \File{minted.sty}. That is the
 %   only place these macros can reliably be redirected before @1 uses them
 %   to typeset the source.}{\pkg*{minted}}
 % \ldeen{\cs{cs\_gset:cn}/\cs{cs\_gset:Nn} lehnen Zielnamen ohne \code{:} als
@@ -744,13 +815,13 @@ let code = ExitCode::from(42§\osglistingsmark{here}§);
     remote-check .choices:nn = { manual, compile }
       { \tl_set:Nx \l__osglistings_remotecheck_tl { \l_keys_choice_tl } },
     remote-refresh .bool_set:N = \l__osglistings_remoterefresh_bool,
-    % \ldeen{@1 statt @2: \code{l\_keys\_key\_str} ist eine
+    % \ldeen{@1 statt @2: \cs{l_keys_key_str} ist eine
     %   gemeinsam genutzte l3keys-Variable, die \pkg*{minted}s eigener
-    %   \cs{keys\_set:nn}-Aufruf (beim späteren Verarbeiten von @3)
+    %   \cs{keys_set:nn}-Aufruf (beim späteren Verarbeiten von @3)
     %   selbst wieder überschreibt -- ohne sofortige Expansion würde
     %   hier nur eine \emph{Referenz} gespeichert, die zum
     %   Verwendungszeitpunkt längst einen anderen Schlüsselnamen
-    %   trägt.}{@1 instead of @2: \code{l\_keys\_key\_str} is a shared
+    %   trägt.}{@1 instead of @2: \cs{l_keys_key_str} is a shared
     %   l3keys variable that \pkg*{minted}'s own \cs{keys\_set:nn} call
     %   (when later processing @3) overwrites again itself -- without
     %   immediate expansion this would only store a \emph{reference},
