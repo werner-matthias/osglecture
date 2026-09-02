@@ -64,13 +64,13 @@ load babel
       Die Klasse \lttalk{} ist eine \LaTeX-Klasse für Präsentationen und soll 
       mittelfristig die verbreitete Klasse \beamer{} ablösen, um PDF-Tagging 
       für Präsentationen zu ermöglichen.
-      Das Package \lttheme\ unterstützt Entwickler, die Themen für \lttalk{} schreiben.
+      Das Package \lttheme{} unterstützt Entwickler, die Themen für \lttalk{} schreiben.
       Es ist Teil des \pkg*{osglecture}-Bundles, kann aber auch unabhängig eingesetzt werden.
     }{
-      The \lttalk{} class is a \LaTeX class for presentations and is intended 
+      The \lttalk{} class is a \LaTeX{} class for presentations and is intended
       to eventually replace the widely used \beamer{} class in order to enable PDF tagging 
       for presentations.
-      The \lttheme\ package supports developers who write themes for \lttalk.  
+      The \lttheme{} package supports developers who write themes for \lttalk.
       It is part of the \pkg*{osglecture} bundle, but can also be used independently.
     }
   },
@@ -81,7 +81,6 @@ load babel
 % --------------------------------------------------------------------------
 % Documentation
 % --------------------------------------------------------------------------
-
 \section{\ldeen{Einführung}{Introduction}}
 
 \subsection{\ldeen{Ziel des Pakets}{Purpose of the package}}
@@ -102,6 +101,11 @@ load babel
   Gestaltung häufig einem einheitlichen Erscheinungsbild oder einem
   vorgegebenen Corporate Design. Dieses Erscheinungsbild wird in der Regel \emph{Thema} genannt.
 }{
+  For presentation slides, as for many documents, a conceptual separation
+  between content and visual presentation is useful. While the content changes
+  from one talk to the next, the presentation often follows a consistent
+  appearance or a prescribed corporate design. This appearance is called a
+  \emph{theme} in this manual.
 }\medskip
 
 \ldeen{
@@ -150,7 +154,7 @@ load babel
 
 \ldeen{
   Deshalb prüft \lttheme{} beim Laden die unterstützte Version der Klasse.
-  Version~v\UseVersionOf{ltxtalk-theme.sty} unterstützt \cls{ltx-talk}~v0.5.3
+  Version~\UseVersionOf{ltxtalk-theme.sty} unterstützt \cls{ltx-talk}~v0.5.3
   vom 5.~August~2026. Bei einem älteren Stand bricht das Paket mit einer
   gezielten Meldung ab; bei einem neueren Stand gibt es nur eine Warnung, da
   dort noch keine bekannte Inkompatibilität vorliegt. \cls{ltx-talk} bietet
@@ -159,7 +163,7 @@ load babel
   ersetzen.
 }{
   Therefore, \lttheme{} checks the supported class version when it is loaded.
-  Version~v\UseVersionOf{ltxtalk-theme.sty} supports \cls{ltx-talk}~v0.5.3
+  Version~\UseVersionOf{ltxtalk-theme.sty} supports \cls{ltx-talk}~v0.5.3
   dated 5~August~2026. With an older release, the package stops with a
   targeted diagnostic; with a newer one, it only warns, since no known
   incompatibility exists yet. \cls{ltx-talk} currently provides no rollback
@@ -167,7 +171,7 @@ load babel
   subsequently be replaced by the theme.
 }
 
-\subsection{\ldeen{Wer sollte diese Dokumentation lesen?}{Who sould read this documentation?}}
+\subsection{\ldeen{Wer sollte diese Dokumentation lesen?}{Who should read this documentation?}}
 
 \ldeen{
 Diese Dokumentation richtet sich an zwei Zielgruppen. Anwender möchten
@@ -208,7 +212,7 @@ Gruppen zum gezielten Nachschlagen dienen.
   Es lädt das mitgelieferte Theme @1, erzeugt eine Titelfolie
   und eine weitere Folie mit einfachem Inhalt.
 }{
-  The following example demostrates a mall but complete and executable
+  The following example demonstrates a small but complete and executable
   presentation. It loads the provided theme @1, generates a title
   slide and an additional slide with simple content.
 }{\code{magpie}}
@@ -277,7 +281,12 @@ Angaben auf den Folien erscheinen. Das Setzen und semantische Taggen der
 Inhalte bleibt Aufgabe der Klasse. Der eigentliche Inhalt bleibt dadurch
 unabhängig vom gewählten Thema.
 }{
-% TODO: English translation
+The commands for title, author, and date and the \code{frame} environment
+belong to the \cls{ltx-talk} document class. The theme configures the public
+templates of the class and thus determines where and in which form these
+details appear on the slides. Typesetting and semantically tagging the content
+remain the responsibility of the class. The actual content therefore remains
+independent of the selected theme.
 }
 
 \ldeen{
@@ -287,11 +296,149 @@ anderes mitgeliefertes Theme-Paket zu laden und den zugehörigen Namen an
 ein Theme auch innerhalb einer Präsentation gewechselt werden kann,
 beschreibt der folgende Abschnitt.
 }{
-% TODO: English translation
+In the simplest case, changing the appearance only requires loading another
+bundled theme package and passing its name to \cs*{useltxtalktheme}. The
+following overview lists the available themes. Section~\ref{sec:extend-themes}
+explains how to combine a layout theme with an additive partial theme.
 }
 
+\subsection{\ldeen{Mitgelieferte Themes}{Bundled themes}}
 
-% - Selecting and switching a theme
+\ldeen{
+Die vier Layout-Themes unterscheiden sich vor allem in der Aufteilung der
+Seite. \code{minimal} verwendet eine zurückhaltende Kopf- und Fußzeile.
+\code{magpie} zeigt den Folientitel in einem farbigen Kopf und Metadaten in
+einem dreigeteilten Fuß. \code{hawk} ergänzt eine linke Navigationsspalte;
+\code{sparrow} ordnet Abschnitt und Unterabschnitt im Kopf an und setzt den
+Folientitel darunter. Die Namen der jeweiligen Theme-Pakete lauten
+\code{ltxtalk-theme-}\meta{Name}.
+}{
+The four layout themes differ mainly in their division of the page.
+\code{minimal} uses restrained header and footer areas. \code{magpie} places
+the frame title in a coloured header and metadata in a three-part footer.
+\code{hawk} adds a navigation area on the left; \code{sparrow} arranges the
+section and subsection in the header and places the frame title below them.
+The corresponding package is named \code{ltxtalk-theme-}\meta{Name}.
+}
+
+\begin{center}
+\begin{tabular}{lll}
+\hline
+\ldeen{Theme}{Theme} & \ldeen{Kennzeichnendes Layout}{Characteristic layout}
+  & \ldeen{Anregung}{Inspired by} \\
+\hline
+\code{minimal} & \ldeen{schlichte Kopf- und Fußzeile}{plain header and footer} & -- \\
+\code{magpie}  & \ldeen{farbiger Kopf und Fuß}{coloured header and footer} & \beamer{} Madrid \\
+\code{hawk}    & \ldeen{linker Navigationsbereich}{left navigation area} & \beamer{} Hannover \\
+\code{sparrow} & \ldeen{zweistufige Kopfnavigation}{two-level header navigation} & \beamer{} Szeged \\
+\hline
+\end{tabular}
+\end{center}
+
+\ldeen{
+\code{anchovy} und \code{carp} sind dagegen reine Farbthemes. Sie werden nach
+einem Layout-Theme mit \cs*{addltxtalktheme} ergänzt und ändern nur die
+semantischen Farben. \code{anchovy} verwendet ein blau-goldenes,
+\code{carp} ein rotes Farbschema. Weil sie keine Bereiche oder Slots neu
+anlegen, bleibt das zuvor gewählte Layout erhalten.
+}{
+In contrast, \code{anchovy} and \code{carp} are colour-only themes. Add them
+after a layout theme with \cs*{addltxtalktheme}; they change only the semantic
+colours. \code{anchovy} uses a blue-and-gold palette, whereas \code{carp}
+uses a red palette. Because neither defines areas or slots, the previously
+selected layout remains intact.
+}
+
+\begin{sourcecode}
+  \usepackage{ltxtalk-theme-minimal}
+  \usepackage{ltxtalk-theme-anchovy}
+  \useltxtalktheme{minimal}
+  \addltxtalktheme{anchovy}
+\end{sourcecode}
+
+\subsubsection{\ldeen{Vergleich der mitgelieferten Themes}{Comparison of the bundled themes}}
+
+\ldeen{
+Die folgenden Beispielfolien verwenden bewusst denselben Inhalt. Dadurch
+werden Unterschiede in Satzspiegel, Navigation, Titelplatzierung und
+semantischen Farben unmittelbar vergleichbar. Für die reinen Farbthemes
+\code{anchovy} und \code{carp} dient \code{magpie} als Layout-Theme: Seine
+großen Farbflächen im Kopf und Fuß und die Hervorhebung im Inhalt zeigen die
+jeweilige Palette besonders deutlich.
+}{
+The following example slides deliberately use identical content. This makes
+differences in text area, navigation, title placement, and semantic colours
+directly comparable. For the colour-only themes \code{anchovy} and
+\code{carp}, \code{magpie} provides the layout: its large coloured header and
+footer areas and the alert inside the content make each palette particularly
+visible.
+}
+
+\begin{example}[
+  compile,
+  program=lualatex,
+  runs=2,
+  pages={1,2,3,4,5,6},
+  max-pages=2,
+  graphics={width=.90\linewidth},
+  pre-output={\begin{mdframed}[
+    backgroundcolor=white,
+    hidealllines=true,
+    innerleftmargin=0pt,
+    innerrightmargin=0pt,
+    innertopmargin=4pt,
+    innerbottommargin=4pt
+  ]},
+  after-output={\end{mdframed}}
+]
+  \DocumentMetadata{}
+  \documentclass{ltx-talk}
+
+  \usepackage{ltxtalk-theme-minimal}
+  \usepackage{ltxtalk-theme-magpie}
+  \usepackage{ltxtalk-theme-hawk}
+  \usepackage{ltxtalk-theme-sparrow}
+  \usepackage{ltxtalk-theme-anchovy}
+  \usepackage{ltxtalk-theme-carp}
+
+  \title[Theme comparison]{Theme comparison}
+  \author[A. Example]{Ada Example}
+  \institute{Example Institute}
+  \date{2 September 2026}
+  \section{Theme gallery}
+
+  \newcommand*\ThemeExampleFrame[1]{
+    \begin{frame}
+      \frametitle{#1}
+      \framesubtitle{The same content in every theme}
+      A short paragraph demonstrates type, text colour, and the text area.
+      \begin{itemize}
+        \item first list item
+        \item second item with an \alert{alert}
+      \end{itemize}
+      \begin{block}{Example block}
+        Block content with the formula $a^2+b^2=c^2$.
+      \end{block}
+    \end{frame}
+  }
+
+  \begin{document}
+  \useltxtalktheme{minimal}
+  \ThemeExampleFrame{minimal}
+  \useltxtalktheme{magpie}
+  \ThemeExampleFrame{magpie}
+  \useltxtalktheme{hawk}
+  \ThemeExampleFrame{hawk}
+  \useltxtalktheme{sparrow}
+  \ThemeExampleFrame{sparrow}
+  \useltxtalktheme{magpie}
+  \addltxtalktheme{anchovy}
+  \ThemeExampleFrame{magpie + anchovy}
+  \useltxtalktheme{magpie}
+  \addltxtalktheme{carp}
+  \ThemeExampleFrame{magpie + carp}
+  \end{document}
+\end{example}
 
 \section{\ldeen{Themes anpassen}{Customizing themes}}
 \label{sec:customizing-themes}
@@ -303,7 +450,9 @@ Nach der Aktivierung lassen sich die vom Theme gewählten Abmessungen mit
 Eigenschaften geändert. Das folgende Beispiel vergrößert Kopf- und Fußbereich
 und schaltet den rechten Randbereich ab:
 }{
-% TODO: English translation
+After activation, the dimensions selected by the theme can be overridden with
+\cs*{ltxtalksetup}. Only the specified properties are changed. The following
+example enlarges the header and footer and disables the right margin area:
 }
 
 \begin{sourcecode}
@@ -314,17 +463,25 @@ und schaltet den rechten Randbereich ab:
     right-margin = false
   }
 \end{sourcecode}
-
 \ldeen{
-Zur Verfügung stehen \code{header}, \code{left-margin},
-\code{right-margin} und \code{footer} als Schalter sowie
-\code{header-height}, \code{footer-height} und \code{margin-width} als
-Längen. Eine Änderung der Bereichsgröße verschiebt vorhandene Slots nicht
-automatisch. Größere Eingriffe sollten deshalb in einem eigenen Theme oder
-Teiltheme vorgenommen werden; Abschnitt~\ref{sec:develop-themes} beschreibt
-dieses Vorgehen.
+Die Schlüssel von \cs*{ltxtalksetup} sind in
+Abschnitt~\ref{sec:ref-layout} vollständig aufgeführt. Für einfache
+Anpassungen genügen meist die Schalter \code{header}, \code{left-margin},
+\code{right-margin} und \code{footer} sowie die Längen
+\code{header-height}, \code{footer-height} und \code{margin-width}. Eine
+Änderung der Bereichsgröße verschiebt vorhandene Slots nicht automatisch.
+Größere Eingriffe sollten deshalb in einem eigenen Theme oder Teiltheme
+vorgenommen werden; Abschnitt~\ref{sec:theme-workflow} beschreibt das
+Vorgehen.
 }{
-% TODO: English translation
+Section~\ref{sec:ref-layout} lists all keys of \cs*{ltxtalksetup}. For simple
+adjustments, the switches \code{header}, \code{left-margin},
+\code{right-margin}, and \code{footer} and the dimensions
+\code{header-height}, \code{footer-height}, and \code{margin-width} are
+usually sufficient. Changing an area's size does not reposition existing
+slots automatically. Larger changes should therefore be implemented as a
+theme or partial theme; Section~\ref{sec:theme-workflow} describes the
+procedure.
 }
 
 \subsection{\ldeen{Farben anpassen}{Customizing colours}}
@@ -335,9 +492,10 @@ Die acht semantischen Theme-Farben lassen sich mit
 \cs*{definecolor}, Farbmodell und Farbangabe, hier als
 \code{model=...,~value=...}-Paar:
 }{
-% TODO: English translation
+The eight semantic theme colours can be assigned with
+\cs*{setltxtalkcolors}. As with \cs*{definecolor}, every value specifies a
+colour model and value, here as a \code{model=...,~value=...} pair:
 }
-
 \begin{sourcecode}
   \setltxtalkcolors{
     primary    = {model=HTML, value=005B50},
@@ -360,9 +518,28 @@ Namen \code{structure}, \code{alert} und \code{example} verfügbar. Sie stehen
 sichtbar wird, hängt davon ab, ob das aktive Theme an der betreffenden Stelle
 die semantische Farbe oder einen eigenen Farbnamen verwendet.
 }{
-% TODO: English translation
+\code{primary} carries the theme's identity and normally colours prominent
+areas and titles; \code{secondary} supports less prominent information and
+\code{accent} highlights rules or individual details. \code{text} and
+\code{background} form the normal foreground/background pair.
+\code{structure}, \code{alert}, and \code{example} style semantic content
+inside a frame, such as list markers and the corresponding block variants.
 }
-
+\ldeen{
+Nicht angegebene Farben werden in einer festen Kette abgeleitet:
+\code{secondary}, \code{accent} und \code{structure} erben von
+\code{primary}; \code{text} und \code{background} verwenden ihre neutralen
+Vorgaben, \code{alert} und \code{example} ihre semantischen Vorgaben. Eine
+abgeleitete Farbe wird beim Aufruf festgelegt; spätere Änderungen der
+Ausgangsfarbe berechnen sie nicht nachträglich neu.
+}{
+Unspecified colours are derived along a fixed chain: \code{secondary},
+\code{accent}, and \code{structure} inherit from \code{primary};
+\code{text} and \code{background} use their neutral defaults, while
+\code{alert} and \code{example} use their semantic defaults. A derived colour
+is fixed when the command is executed; changing its source later does not
+recompute it automatically.
+}
 \begin{warnbox}{\ldeen{Achtung}{Attention}!}
 \ldeen{
 \cs*{setltxtalkcolors} ist eine \emph{vollständige} Neudeklaration, kein
@@ -377,7 +554,13 @@ einen einzelnen Slot anpassen möchte, ohne die anderen erneut aufzuzählen,
 sollte deshalb den vollständigen letzten Aufruf wiederholen und nur den
 gewünschten Wert ändern.
 }{
-% TODO: English translation
+\cs*{setltxtalkcolors} is a \emph{complete} redeclaration, not an incremental
+update. Omitted entries do not retain their previous value but follow the
+inheritance rules described above. Only \code{primary} is mandatory. If it is
+missing, or if any supplied colour specification is incomplete, the entire
+declaration fails and the previously valid palette remains unchanged. To
+change a single colour while preserving all others, repeat the complete most
+recent declaration and alter the desired entry.
 }
 \end{warnbox}
 
@@ -389,7 +572,9 @@ Theme Folien- und Abschnittstitel vorsieht. Ein Folientitel kann im
 Inhaltsbereich, im Kopf oder in beiden Bereichen erscheinen; ein
 Abschnittstitel kann im Kopf ein- oder ausgeblendet werden:
 }{
-% TODO: English translation
+\cs*{setltxtalktitleplacement} declares in which area a theme provides frame
+and section titles. A frame title can occur in the content area, the header,
+or both; a section title can be shown or hidden in the header:
 }
 
 \begin{sourcecode}
@@ -400,11 +585,13 @@ Abschnittstitel kann im Kopf ein- oder ausgeblendet werden:
 \end{sourcecode}
 
 \ldeen{
-Diese Einstellung ist eine Vereinbarung zwischen Core und Theme. Das Theme
+Diese Einstellung ist eine Vereinbarung zwischen Paket und Theme. Das Theme
 muss passende Slots für die gewählte Platzierung enthalten. Fehlt ein solcher
 Slot, erzeugt die Option allein kein zusätzliches sichtbares Element.
 }{
-% TODO: English translation
+This setting is a contract between the package and the theme. The theme must
+provide suitable slots for the selected placement. The option alone does not
+create an additional visible element when the corresponding slot is absent.
 }
 
 \subsection{\ldeen{Weitere Anpassungen}{Further customizations}}
@@ -416,7 +603,11 @@ verwendete Slotname bekannt sein; er gehört deshalb zur Schnittstelle des
 jeweiligen Themes, nicht zur allgemeinen Anwenderschnittstelle. Ebenso kann
 \cs*{decorateltxtalkarea} beispielsweise eine Linie über dem Footer ändern.
 }{
-% TODO: English translation
+Individual slots can be restyled after activating the theme with
+\cs*{styleltxtalkslot}. This requires knowing the slot name used by that
+theme; slot names are therefore part of a particular theme's interface, not
+of the general user interface. Likewise, \cs*{decorateltxtalkarea} can, for
+example, change a rule above the footer.
 }
 
 \begin{sourcecode}
@@ -438,7 +629,10 @@ weil eine spätere erneute Theme-Aktivierung alle Slots und Dekorationen
 zurücksetzt. Für wiederverwendbare oder strukturelle Ergänzungen ist ein
 Teiltheme mit \cs*{addltxtalktheme} geeigneter.
 }{
-% TODO: English translation
+Place such customizations immediately after \cs*{useltxtalktheme}, because
+activating another theme later resets all slots and decorations. For reusable
+or structural additions, a partial theme activated with
+\cs*{addltxtalktheme} is more appropriate.
 }
 
 
@@ -453,7 +647,11 @@ Gliederungsebenen mit \cs*{section} beziehungsweise \cs*{subsection}
 ausgezeichnet werden. Rein optisch formatierter Text kann diese semantischen
 Befehle nicht ersetzen.
 }{
-% TODO: English translation
+A theme changes visual presentation but must not replace the document
+structure created by \cls{ltx-talk}. Mark frame titles with
+\cs*{frametitle}, subtitles with \cs*{framesubtitle}, and structural levels
+with \cs*{section} and \cs*{subsection}. Merely formatting text visually
+cannot replace these semantic commands.
 }
 
 \subsection{\ldeen{Lesbare Gestaltung}{Readable design}}
@@ -466,7 +664,11 @@ Randbereiche sind auf Projektoren und bei starker Vergrößerung besonders
 problematisch. Entscheidend ist nicht nur die Titelfolie, sondern auch eine
 inhaltlich volle Standardfolie.
 }{
-% TODO: English translation
+Custom foreground and background colours must provide sufficient contrast.
+Colour should never be the only means of conveying meaning. Small type, very
+thin rules, and densely filled margin areas are particularly problematic on
+projectors and at high magnification. Test not only the title slide but also
+a content-heavy standard slide.
 }
 
 \ldeen{
@@ -475,7 +677,10 @@ bleiben. Eine Änderung von \code{margin-width}, \code{header-height} oder
 \code{footer-height} muss deshalb mit langen Titeln, mehrzeiligen Angaben und
 verschiedenen Seitenverhältnissen geprüft werden.
 }{
-% TODO: English translation
+Text and essential graphics should remain within the available areas. Changes
+to \code{margin-width}, \code{header-height}, or \code{footer-height} must
+therefore be tested with long titles, multi-line metadata, and different
+aspect ratios.
 }
 
 \subsection{\ldeen{Grafiken und Logos}{Graphics and logos}}
@@ -489,7 +694,12 @@ belasten. Ein Theme-Autor kennzeichnet solche Elemente durch die passende
 Slot-Rolle; Anwender sollten ein inhaltliches Bild daher nicht lediglich als
 Theme-Logo einsetzen.
 }{
-% TODO: English translation
+Content graphics use the facilities of \cls{ltx-talk} and the loaded graphics
+packages; provide meaningful alternative text there. Repeated logos, colour
+fields, and rules are usually decorative and must not burden the reading order
+with duplicate information. Theme authors mark such elements with a suitable
+slot role; users should not place a content-bearing image merely as a theme
+logo.
 }
 
 \subsection{\ldeen{Tagging und Prüfung}{Tagging and testing}}
@@ -503,7 +713,12 @@ gesetzt werden. Die Accessibility-Angaben der Slot-Schnittstelle dokumentieren
 zusätzlich die beabsichtigte Rolle; sie werden noch nicht in jedem Fall in
 einen eigenen PDF-Tag des Slots umgesetzt.
 }{
-% TODO: English translation
+For tagged PDF output, begin the presentation with \cs*{DocumentMetadata}.
+At present, \cls{ltx-talk} performs most tagging of frame content and
+headings. \lttheme{} preserves that connection by typesetting frame titles in
+the content area through the class's public commands. Accessibility data in
+the slot interface additionally records the intended role, although it does
+not yet produce a separate PDF tag for every slot.
 }
 
 \ldeen{
@@ -512,21 +727,21 @@ mit langen und leeren Metadaten, mehreren Gliederungsebenen, fortgesetzten
 Folien und einem PDF-Prüfwerkzeug. Das Bundle enthält dafür l3build-Tests, die
 unter anderem die von \cls{ltx-talk} erzeugte Überschriftenstruktur prüfen.
 }{
-% TODO: English translation
+Testing must therefore cover both visual appearance and structure: use long
+and empty metadata, multiple section levels, continuation frames, and a PDF
+checking tool. The bundle provides l3build tests that, among other things,
+check the heading structure generated by \cls{ltx-talk}.
 }
 
 
 % ==========================================================================
 % For theme authors
 % ==========================================================================
-
-
 \part{\ldeen{Eigene Themes entwickeln}{Developing custom themes}}
 \label{part:develop-themes}
 
 \section{\ldeen{Das Theme-Modell}{The theme model}}
 \label{sec:theme-model}
-
 \subsection{\ldeen{Designprinzipien}{Design principles}}
 \subsubsection{\ldeen{Semantische Elemente}{Semantic elements}}
 
@@ -541,11 +756,15 @@ as text or graphics at fixed positions.
 }
 
 \ldeen{
-Die technische Repräsentation solcher Elemente durch Slots wird im
-Abschnitt über das Theme-Modell erläutert.
+Ein \emph{Slot} ist die technische Repräsentation eines solchen Elements.
+Sein Typ bestimmt den Inhalt, Bereich und Position bestimmen den Ort, und
+seine Template-Instanz bestimmt die Darstellung. Derselbe semantische Inhalt
+kann deshalb in verschiedenen Themes an verschiedenen Stellen erscheinen.
 }{
-The technical representation of such elements by slots is explained
-in the section on the theme model.
+A \emph{slot} is the technical representation of such an element. Its type
+determines the content, its area and position determine the location, and its
+template instance determines the appearance. The same semantic content can
+therefore appear in different places in different themes.
 }
 
 
@@ -575,10 +794,21 @@ Colours, fonts, rules, backgrounds, and similar properties determine
 its appearance. This separation allows arrangement and visual design
 to be developed largely independently.
 }
-
+\ldeen{
+Diese Trennung gilt auch innerhalb des Inhaltsbereichs. Über die von
+\pkg*{osgstyler} bereitgestellten Template-Instanzen gestaltet ein Theme
+Blöcke mit \cs*{styleltxtalkblock}; \cs*{setltxtalkitemize} wählt die Marken
+der Aufzählungsebenen. Umgebungen und semantische Struktur stammen weiterhin
+aus \cls{ltx-talk}.
+}{
+The same separation applies inside the content area. Through template
+instances provided by \pkg*{osgstyler}, a theme styles blocks with
+\cs*{styleltxtalkblock}; \cs*{setltxtalkitemize} selects the markers for the
+itemize levels. Environments and semantic structure continue to come from
+\cls{ltx-talk}.
+}
 
 \subsubsection{\ldeen{Erweiterbarkeit}{Extensibility}}
-
 \ldeen{
 Themes sollen nicht in jedem Fall vollständig neu erstellt werden
 müssen. Vorhandene Definitionen können als Ausgangspunkt dienen und
@@ -596,6 +826,17 @@ erforderlich ist.
 }{
 In this way, related themes can share common properties and differ only
 where this is actually necessary.
+}
+\ldeen{
+Ein vollständiges Theme wird mit \cs*{useltxtalktheme} aktiviert und ersetzt
+den bisherigen Theme-Zustand. Ein mit \cs*{addltxtalktheme} hinzugefügtes
+Teiltheme ergänzt ihn. Farbthemes, Kursnavigationen und institutionelle Logos
+lassen sich so unabhängig vom Grundlayout pflegen.
+}{
+A complete theme is activated with \cs*{useltxtalktheme} and replaces the
+previous theme state. A partial theme added with \cs*{addltxtalktheme}
+extends it. Colour themes, course navigation, and institutional logos can thus
+be maintained independently of the base layout.
 }
 
 
@@ -622,7 +863,12 @@ beschreiben darüber hinaus die angestrebte Semantik der Slots. Sie sind noch
 nicht in allen Fällen unmittelbar mit der von \cls{ltx-talk} erzeugten
 Tag-Struktur verbunden.
 }{
-% TODO: English translation
+At present, \cls{ltx-talk} performs most PDF tagging of the slides that are
+actually output. A theme must preserve the class's semantic structure;
+\lttheme{} therefore configures the public templates of the class. The
+accessibility data stored in the slot model additionally describes the
+intended semantics of slots. It is not yet directly connected to the tag
+structure produced by \cls{ltx-talk} in every case.
 }
 
 \ldeen{
@@ -635,59 +881,119 @@ dedicated section.
 
 \subsection{\ldeen{Bereiche}{Areas}}
 
-Ein Theme ordnet Seitenelemente den fünf Bereichen \texttt{header},
+\ldeen{Ein Theme ordnet Seitenelemente den fünf Bereichen \texttt{header},
 \texttt{left}, \texttt{content}, \texttt{right} und \texttt{footer} zu.
 Header, Ränder und Footer werden durch den Seitenstil \texttt{lttheme}
 ausgegeben. Der Inhaltsbereich bleibt Teil des normalen Frame-Inhalts; dadurch
 bleiben Umbruch, Overlays und die semantische Einordnung durch \pkg{ltx-talk}
-erhalten.
+erhalten.}{A theme assigns page elements to the five areas \code{header},
+\code{left}, \code{content}, \code{right}, and \code{footer}. The
+\code{lttheme} page style outputs the header, margins, and footer. The content
+area remains part of the normal frame content, preserving line breaking,
+overlays, and semantic classification by \cls{ltx-talk}.}
+
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\multicolumn{3}{|c|}{\code{header}: \ldeen{Titel und Navigation}{titles and navigation}} \\
+\hline
+\code{left} & \code{content}: \ldeen{Frame-Inhalt}{frame content} & \code{right} \\
+\hline
+\multicolumn{3}{|c|}{\code{footer}: \ldeen{Metadaten und Foliennummer}{metadata and frame number}} \\
+\hline
+\end{tabular}
+\end{center}
+
+\ldeen{Die Abbildung zeigt nur die räumliche Schachtelung. Ein Theme darf
+jeden Bereich leer lassen, und mehrere Slots dürfen denselben Bereich belegen.
+Überlappungen werden nicht automatisch verhindert.}{The diagram shows only
+the spatial nesting. A theme may leave any area empty, and several slots may
+occupy the same area. Overlaps are not prevented automatically.}
 
 \subsection{\ldeen{Slots}{Slots}}
 
-Ein Slot bezeichnet ein Element mit einer Aufgabe, nicht eine fest verdrahtete
+\ldeen{Ein Slot bezeichnet ein Element mit einer Aufgabe, nicht eine fest verdrahtete
 Stelle. Erst die Zuordnung zu einem Bereich, seine Position und sein
 Darstellungs-Template ergeben das konkrete Layout. Mehrere Slots desselben
 Typs sind zulässig. So kann etwa ein Folientitel im Header, im Inhaltsbereich
-oder in beiden Bereichen vorkommen.
+oder in beiden Bereichen vorkommen.}{A slot represents an element with a
+purpose, not a hard-wired location. Its assignment to an area, position, and
+rendering template form the concrete layout. Several slots of the same type
+are allowed; a frame title may occur in the header, the content area, or both.}
 
 \subsection{\ldeen{Slottypen}{Slot types}}
 
-Vordefinierte Typen liefern unter anderem Dokumenttitel, Autor, Institut,
+\ldeen{Vordefinierte Typen liefern unter anderem Dokumenttitel, Autor, Institut,
 Abschnitt, Unterabschnitt, Folientitel, Folienuntertitel und Foliennummer.
 Der Typ \texttt{custom} bezieht seinen Inhalt aus
 \cs{setltxtalkslotcontent}; damit lassen sich beispielsweise Pfad- und
-Baumnavigationen oder frei gestaltete Logos ergänzen.
+Baumnavigationen oder frei gestaltete Logos ergänzen.}{Predefined types
+provide the document title, author, institute, section, subsection, frame
+title, frame subtitle, and frame number, among other data. The \code{custom}
+type obtains its content from \cs*{setltxtalkslotcontent}; it can therefore
+implement breadcrumb or tree navigation and freely designed logos.}
 
 \subsection{\ldeen{Layout}{Layout}}
 
-Die Seitenbereiche werden mit Coffins zusammengesetzt. Jeder Slot besitzt eine
+\ldeen{Die Seitenbereiche werden intern mit Coffins zusammengesetzt. Jeder Slot besitzt eine
 horizontale und vertikale Ankerposition sowie Breite und Höhe. Symbolische
 Positionen wie \texttt{left}, \texttt{center}, \texttt{right}, \texttt{top}
 und \texttt{bottom} können mit absoluten Längen kombiniert werden. Die
-Core-Logik kennt dabei keine Namen konkreter Themes.
+Paketlogik kennt dabei keine Namen konkreter Themes.}{Intern, the package
+assembles the page areas with coffins. Every slot has horizontal and vertical
+anchor positions, a width, and a height. Symbolic positions such as
+\code{left}, \code{center}, \code{right}, \code{top}, and \code{bottom}
+can be combined with absolute dimensions. The package logic does not know the
+names of concrete themes.}
 
 \subsection{\ldeen{Gestaltung}{Styling}}
 
-Für jeden Slot existiert eine Instanz des Templates \texttt{lttheme-slot}.
+\ldeen{Für jeden Slot existiert eine Instanz des Templates \texttt{lttheme-slot}.
 Themes geben geeignete Vorgaben vor; Anwender können diese Instanzen mit den
 üblichen Template-Mitteln weiter bearbeiten. Schrift, Farbe, Hintergrund,
 Ausrichtung, Innenabstand und Regeln gehören damit zum Theme, nicht zum
-Seitenstil.
+Seitenstil.}{Every slot has an instance of the \code{lttheme-slot} template.
+Themes provide suitable defaults, and users can edit the instances through
+the public styling command. Font, colour, background, alignment, padding, and
+rules thus belong to the theme rather than the page style.}
 
 \subsection{\ldeen{Dekoration von Bereichen}{Area decoration}}
 
-Bereichsdekorationen sind von den Slots unabhängig. Das Template
+\ldeen{Bereichsdekorationen sind von den Slots unabhängig. Das Template
 \texttt{lttheme-area} kann insbesondere Hintergrundflächen und Trennlinien
 zeichnen. Eine obere Linie des Footers ist daher eine Eigenschaft des
-Footer-Bereichs und kein künstlicher Footer-Slot.
+Footer-Bereichs und kein künstlicher Footer-Slot.}{Area decorations are
+independent of slots. In particular, the \code{lttheme-area} template draws
+backgrounds and separator rules. A rule above the footer is therefore a
+property of the footer area, not an artificial footer slot.}
 
-Der Seitenstil bildet die stabile Verbindung zu \lttalk. Sockets teilen
+\ldeen{Der Seitenstil bildet die stabile Verbindung zu \lttalk. Sockets teilen
 seine Ausgabe zusätzlich in Hintergrund, die vier Seitenbereiche und
 Vordergrund. Ein vollständiges Theme muss diese Sockets nicht anfassen; sie
 sind Erweiterungspunkte für austauschbare Layoutphasen, nicht der Ersatz für
-die additive Slot-Schnittstelle.
+die additive Slot-Schnittstelle.}{The page style forms the stable connection
+to \lttalk. Sockets additionally split its output into background, the four
+peripheral areas, and foreground. A complete theme need not touch these
+sockets; they are extension points for replaceable layout phases, not a
+replacement for the additive slot interface.}
 
-\subsection{\ldeen{Aufbau eines Themes}{Structure of a theme}}
+\section{\ldeen{Ein Theme schrittweise entwickeln}{Developing a theme step by step}}
+\label{sec:theme-workflow}
+
+\ldeen{
+Die Entwicklung folgt am zuverlässigsten dieser Reihenfolge: zuerst mit
+\cs*{ltxtalksetup} die benötigten Bereiche dimensionieren, dann Slots
+definieren und mit Testinhalten positionieren, anschließend Slots und Bereiche
+gestalten und zuletzt innere Elemente, Titelseite und Farben abstimmen. So
+bleiben geometrische und rein visuelle Fehler voneinander unterscheidbar.
+}{
+The most reliable development order is: first size the required areas with
+\cs*{ltxtalksetup}; then define and position slots using test content; next
+style slots and areas; finally coordinate inner elements, title page, and
+colours. This keeps geometric and purely visual errors distinguishable.
+}
+
+\subsection{\ldeen{Theme registrieren und Geometrie wählen}{Registering the theme and choosing its geometry}}
 
 \ldeen{
 Ein Theme-Paket lädt zunächst \pkg{ltxtalk-theme}, definiert eine
@@ -696,7 +1002,10 @@ Setup-Anweisung wird nicht beim Laden, sondern erst durch
 \cs*{useltxtalktheme} ausgeführt. Dadurch können mehrere Theme-Pakete geladen
 und später gezielt aktiviert werden.
 }{
-% TODO: English translation
+A theme package first loads \pkg{ltxtalk-theme}, defines a setup command, and
+registers it under a unique name. The setup command is not executed when the
+package is loaded but only by \cs*{useltxtalktheme}. Several theme packages
+can therefore be loaded and one of them activated later.
 }
 
 \begin{sourcecode}
@@ -712,12 +1021,15 @@ und später gezielt aktiviert werden.
 \end{sourcecode}
 
 \ldeen{
-Die Core-Logik kennt den Namen des Themes nicht. Bei der Aktivierung leert
+Die Paketlogik kennt den Namen des Themes nicht. Bei der Aktivierung leert
 sie den bisherigen Theme-Zustand, führt die registrierte Setup-Anweisung aus,
 passt den Textbereich an und wählt den Seitenstil \code{lttheme}. Das Theme
 beschreibt daher ausschließlich Bereiche, Slots und deren Erscheinungsbild.
 }{
-% TODO: English translation
+The package logic does not know the name of the theme. On activation it clears
+the previous theme state, executes the registered setup command, adjusts the
+text area, and selects the \code{lttheme} page style. The theme therefore
+describes only areas, slots, and their appearance.
 }
 
 \subsection{\ldeen{Bereiche und Slots definieren}{Defining areas and slots}}
@@ -728,7 +1040,9 @@ Name muss innerhalb des aktiven Themes eindeutig sein. Als Bereiche sind
 \code{header}, \code{left}, \code{content}, \code{right} und \code{footer}
 vorgesehen.
 }{
-% TODO: English translation
+A slot is defined by name, area, type, and accessibility data. Its name must
+be unique within the active theme. The standard areas are \code{header},
+\code{left}, \code{content}, \code{right}, and \code{footer}.
 }
 
 \begin{sourcecode}
@@ -751,7 +1065,12 @@ Klasse. Der Typ \code{custom} sowie unbekannte eigene Typen verwenden den mit
 \cs*{setltxtalkslotcontent} hinterlegten Inhalt. Auch Logos werden zweckmäßig
 auf diese Weise mit explizitem Grafikcode belegt.
 }{
-% TODO: English translation
+The predefined types \code{title}, \code{author}, \code{date},
+\code{institute}, \code{section}, \code{subsection}, \code{frametitle},
+\code{framesubtitle}, and \code{pagenumber} obtain their content from the
+class. The \code{custom} type and unknown custom types use content stored with
+\cs*{setltxtalkslotcontent}. Logos are conveniently supplied in the same way
+using explicit graphics code.
 }
 
 \subsection{\ldeen{Slots positionieren}{Positioning slots}}
@@ -759,7 +1078,7 @@ auf diese Weise mit explizitem Grafikcode belegt.
 \ldeen{
 Nach der Definition erhält jeder sichtbare Slot eine Position und eine Größe:
 }{
-% TODO: English translation
+After definition, every visible slot receives a position and a size:
 }
 
 \begin{sourcecode}
@@ -777,7 +1096,11 @@ zulässig. Stattdessen kann jeweils eine Länge ab der linken beziehungsweise
 oberen Bereichskante angegeben werden. Breite und Höhe sind Längen; ein Slot
 wird nicht automatisch vor Überlappungen mit anderen Slots geschützt.
 }{
-% TODO: English translation
+The second and third arguments specify horizontal and vertical positions
+within the area. Horizontally, \code{left}, \code{center}, and \code{right}
+are accepted; vertically, \code{top}, \code{center}, and \code{bottom}.
+Alternatively, a dimension is measured from the left or top edge. Width and
+height are dimensions; slots are not automatically protected from overlap.
 }
 
 \subsection{\ldeen{Slots gestalten}{Styling slots}}
@@ -787,7 +1110,8 @@ wird nicht automatisch vor Überlappungen mit anderen Slots geschützt.
 Templates \code{lttheme-slot}. So bleiben Inhalt, Position und Gestaltung
 voneinander getrennt.
 }{
-% TODO: English translation
+\cs*{styleltxtalkslot} edits the \code{lttheme-slot} template instance created
+for a slot. Content, position, and styling therefore remain separate.
 }
 
 \begin{sourcecode}
@@ -811,7 +1135,13 @@ die Optionen \code{rotate}, \code{opacity}, \code{shadow}, \code{uppercase}
 und \code{lowercase}; deren vollständige visuelle Umsetzung ist derzeit noch
 nicht abgeschlossen und sollte in stabilen Themes nicht vorausgesetzt werden.
 }{
-% TODO: English translation
+Besides \code{font}, \code{color}, \code{align}, and \code{padding}, the
+keys \code{background}, \code{frame}, \code{rule-color}, and
+\code{rule-thick} are available. \code{frame} accepts \code{none},
+\code{box}, \code{top}, \code{bottom}, \code{left}, and \code{right}. The
+interface also contains \code{rotate}, \code{opacity}, \code{shadow},
+\code{uppercase}, and \code{lowercase}; their visual implementation is not
+yet complete and stable themes should not rely on them.
 }
 
 \subsection{\ldeen{Bereiche dekorieren}{Decorating areas}}
@@ -821,7 +1151,9 @@ Hintergrundflächen und Trennlinien, die einen ganzen Bereich betreffen,
 gehören nicht in einen Slot. Sie werden mit \cs*{decorateltxtalkarea} an der
 Instanz des Templates \code{lttheme-area} eingestellt:
 }{
-% TODO: English translation
+Backgrounds and separator rules affecting an entire area do not belong in a
+slot. Configure them on the \code{lttheme-area} template instance with
+\cs*{decorateltxtalkarea}:
 }
 
 \begin{sourcecode}
@@ -841,7 +1173,11 @@ zulässig. Die Dekoration wird vor den Slots des Bereichs gesetzt. Die Optionen
 \code{shadow-offset}, \code{margin-top} und \code{margin-bottom} sind bereits
 Teil der Schnittstelle, werden aber noch nicht vollständig gezeichnet.
 }{
-% TODO: English translation
+For \code{frame}, \code{topbottom} and the usual individual sides are also
+accepted. The decoration is drawn before the area's slots. The keys
+\code{background-opacity}, \code{shadow}, \code{shadow-color},
+\code{shadow-offset}, \code{margin-top}, and \code{margin-bottom} are already
+part of the interface but are not yet rendered completely.
 }
 
 \subsection{
@@ -849,13 +1185,19 @@ Teil der Schnittstelle, werden aber noch nicht vollständig gezeichnet.
     {Vorhandene Themes erweitern}
     {Extending existing themes}
 }
+\label{sec:extend-themes}
 
-Ein registriertes Theme kann auch nur zusätzliche Slots oder eine einzelne
+\ldeen{Ein registriertes Theme kann auch nur zusätzliche Slots oder eine einzelne
 Dekoration enthalten. Nach der Aktivierung des Basisthemes fügt
 \cs{addltxtalktheme}\marg{Name} ein solches Teiltheme hinzu, ohne vorhandene
 Slots zu löschen. Das Beispiel \code{example-switching.tex} ergänzt auf diese
 Weise eine eigene Pfadnavigation. Das erneute Aktivieren eines Themes beginnt
-dagegen bewusst mit einem leeren Theme-Zustand.
+dagegen bewusst mit einem leeren Theme-Zustand.}{A registered theme may
+contain only additional slots or a single decoration. After activating the
+base theme, \cs*{addltxtalktheme}\marg{Name} adds such a partial theme without
+deleting existing slots. The \code{example-switching.tex} example adds
+breadcrumb navigation in this way. Activating a full theme again deliberately
+starts from an empty theme state.}
 
 \begin{sourcecode}
   \useltxtalktheme{minimal}
@@ -868,8 +1210,23 @@ ergänzt. Insbesondere darf es weder den Theme-Zustand leeren noch selbst den
 Seitenstil wechseln. Slotnamen sollten einen paketspezifischen Präfix tragen,
 damit sie nicht mit denen des Basisthemes kollidieren.
 }{
-% TODO: English translation
+A partial theme should define only the properties it actually adds. In
+particular, it must neither clear the theme state nor select the page style
+itself. Prefix slot names with a package-specific identifier to avoid
+collisions with the base theme.
 }
+
+\subsection{\ldeen{Innere Elemente abstimmen}{Coordinating inner elements}}
+
+\ldeen{Ein vollständiges Theme sollte nicht bei Kopf, Rändern und Fuß enden.
+\cs*{styleltxtalkblock} stimmt normale, hervorgehobene und Beispielblöcke auf
+die semantischen Farben ab; \cs*{setltxtalkitemize} wählt dazu passende
+Listenmarken. Beide Befehle ändern nur die Darstellung der von
+\cls{ltx-talk} bereitgestellten Strukturen.}{A complete theme should not stop
+at the header, margins, and footer. \cs*{styleltxtalkblock} coordinates
+normal, alert, and example blocks with the semantic colours, while
+\cs*{setltxtalkitemize} selects matching list markers. Both commands change
+only the appearance of structures provided by \cls{ltx-talk}.}
 
 \subsection{\ldeen{Empfehlungen}{Recommendations}}
 
@@ -879,7 +1236,10 @@ sollten als Artefakt, Navigation als solche und echte Überschriften mit einer
 passenden Ebene beschrieben werden. Wiederkehrende Seitenelemente dürfen den
 eigentlichen Frame-Inhalt und dessen Lesereihenfolge nicht duplizieren.
 }{
-% TODO: English translation
+Prefer semantic slot types to custom types. Mark decorative elements as
+artifacts, navigation as navigation, and genuine headings with the appropriate
+level. Repeated page elements must not duplicate the actual frame content or
+its reading order.
 }
 
 \ldeen{
@@ -887,10 +1247,15 @@ Themes sollten kurze und lange Inhalte, fehlende Metadaten, mehrzeilige
 Kopfzeilen, beide Randbereiche sowie Folien mit und ohne Untertitel abdecken.
 Für jedes Theme empfiehlt sich ein l3build-Sichttest; strukturelle Tests sollten
 zusätzlich die getaggte Überschriftenhierarchie prüfen. Theme-spezifische
-Logik bleibt im Theme-Paket, während der Core nur die allgemeinen Bereiche,
+Logik bleibt im Theme-Paket, während \lttheme{} nur die allgemeinen Bereiche,
 Slots, Templates und den Seitenstil bereitstellt.
 }{
-% TODO: English translation
+Themes should cover short and long content, missing metadata, multi-line
+headers, both margin areas, and frames with and without subtitles. An l3build
+visual test is recommended for every theme; structural tests should also check
+the tagged heading hierarchy. Theme-specific logic remains in the theme
+package, while \lttheme{} provides only the general areas, slots, templates,
+and page style.
 }
 
 
@@ -908,7 +1273,10 @@ Slots, Templates und den Seitenstil bereitstellt.
     Aktiviert das registrierte Theme \meta{Name}. Der bisherige Theme-Zustand
     wird vollständig geleert. \code{default} stellt den Seitenstil der Klasse
     ohne lttheme-Slots wieder her.
-  }{% TODO: English translation
+  }{
+    Activates the registered theme \meta{Name} and completely clears the
+    previous theme state. \code{default} restores the class page style
+    without lttheme slots.
   }
 
   \command{addltxtalktheme}[\marg{Name}]
@@ -916,7 +1284,10 @@ Slots, Templates und den Seitenstil bereitstellt.
     Führt die Setup-Anweisung eines registrierten Themes zusätzlich zum
     aktiven Theme aus, ohne vorhandene Slots zu löschen. Der Befehl dient vor
     allem zum Hinzufügen von Teilthemes.
-  }{% TODO: English translation
+  }{
+    Executes the setup command of a registered theme in addition to the active
+    theme without deleting existing slots. This command primarily adds partial
+    themes.
   }
 
   \command{RegisterLTXTalkTheme}[\marg{Name}\marg{Setup-Code}]
@@ -924,11 +1295,15 @@ Slots, Templates und den Seitenstil bereitstellt.
     Registriert \meta{Setup-Code} unter \meta{Name}. Üblicherweise wird hier
     eine geschützte interne Anweisung des Theme-Pakets übergeben. Eine
     vorhandene Registrierung gleichen Namens wird ersetzt.
-  }{% TODO: English translation
+  }{
+    Registers \meta{Setup code} under \meta{Name}. This is normally a
+    protected internal command of the theme package. An existing registration
+    with the same name is replaced.
   }
 \end{commands}
 
 \subsection{\ldeen{Layout-Konfiguration}{Layout configuration}}
+\label{sec:ref-layout}
 
 \begin{commands}
   \command{ltxtalksetup}[\marg{Optionen}]
@@ -945,7 +1320,17 @@ Slots, Templates und den Seitenstil bereitstellt.
     \code{footer-columns} erwarten kommagetrennte Anteile. Die beiden letzten
     Spaltenangaben gehören zur älteren Layoutschnittstelle und beeinflussen
     die frei positionierten Slots derzeit nicht.
-  }{% TODO: English translation
+  }{
+    Changes the geometry of the theme areas. The Boolean keys \code{header},
+    \code{left-margin}, \code{right-margin}, and \code{footer} enable areas;
+    \code{header-height}, \code{footer-height}, and \code{margin-width} take
+    dimensions. For asymmetric layouts, visible area widths and content
+    insets can be set separately with \code{left-area-width},
+    \code{right-area-width}, \code{content-inset-left}, and
+    \code{content-inset-right}. \code{header-rows} takes an integer;
+    \code{header-columns} and \code{footer-columns} take comma-separated
+    proportions. The latter two belong to the older layout interface and do
+    not currently affect freely positioned slots.
   }
 
   \command{DeclareLTXTalkLayout}[\marg{Name}\marg{Optionen}]
@@ -1018,7 +1403,14 @@ Slots, Templates und den Seitenstil bereitstellt.
     \code{ltxtalk-alert} und \code{ltxtalk-example}. Die letzten drei werden
     zugleich auf die Klassennamen \code{structure}, \code{alert} und
     \code{example} abgebildet.
-  }{% TODO: English translation
+  }{
+    Defines the semantic colours \code{primary}, \code{secondary},
+    \code{accent}, \code{text}, \code{background}, \code{structure},
+    \code{alert}, and \code{example}. Each value has the form
+    \code{model=...,~value=...}. Their colour names use the
+    \code{ltxtalk-} prefix, with \code{ltxtalk-bg} for the background. The
+    final three are also mapped to the class colour names \code{structure},
+    \code{alert}, and \code{example}.
   }
 \end{commands}
 
@@ -1036,7 +1428,14 @@ Slots, Templates und den Seitenstil bereitstellt.
     Eigene Template-Codes können weitere Darstellungen, etwa echte Rundungen
     oder Schatten, ergänzen. Die Standardinstanz bleibt ohne Rahmen und
     bewahrt damit die Darstellung der Klasse.
-  }{% TODO: English translation
+  }{
+    Edits the \code{block}, \code{alertblock}, or \code{exampleblock}
+    instance of the \code{osgstyler-block} template type provided by
+    \pkg*{osgstyler}. The standard interface includes \code{background},
+    \code{rule-color}, \code{rule-thickness}, \code{padding},
+    \code{corner-radius}, \code{shadow}, \code{shadow-offset},
+    \code{before}, and \code{after}. The default instance has no frame and
+    therefore preserves the class appearance.
   }
 
   \command{setltxtalkitemize}[\marg{Optionen}]
@@ -1044,7 +1443,10 @@ Slots, Templates und den Seitenstil bereitstellt.
     Setzt mit \code{level-1} bis \code{level-4} das Aufzählungszeichen der
     jeweiligen \code{itemize}-Ebene. Es wird nur die visuelle Marke geändert;
     Listen- und Listenelement-Tags der Klasse bleiben unverändert.
-  }{% TODO: English translation
+  }{
+    Sets the item marker for each \code{itemize} level with \code{level-1}
+    through \code{level-4}. Only the visual marker changes; the class's list
+    and list-item tags remain unchanged.
   }
 \end{commands}
 
@@ -1060,14 +1462,22 @@ Slots, Templates und den Seitenstil bereitstellt.
     \code{author}, \code{date}, \code{institute}, \code{section},
     \code{subsection}, \code{frametitle}, \code{framesubtitle},
     \code{pagenumber}, \code{logo} und \code{custom}.
-  }{% TODO: English translation
+  }{
+    Defines a slot and appends it to the specified area. Standard areas are
+    \code{header}, \code{left}, \code{content}, \code{right}, and
+    \code{footer}. Predefined types are \code{title}, \code{author},
+    \code{date}, \code{institute}, \code{section}, \code{subsection},
+    \code{frametitle}, \code{framesubtitle}, \code{pagenumber}, \code{logo},
+    and \code{custom}.
   }
 
   \command{setltxtalkslotcontent}[\marg{Name}\marg{Inhalt}]
   \ldeen{
     Hinterlegt den auszuführenden Inhalt eines freien Slots. Er wird für
     \code{custom}, \code{logo} und nicht vordefinierte eigene Typen verwendet.
-  }{% TODO: English translation
+  }{
+    Stores the executable content of a free slot. It is used for
+    \code{custom}, \code{logo}, and non-predefined custom types.
   }
 \end{commands}
 
@@ -1082,7 +1492,11 @@ Slots, Templates und den Seitenstil bereitstellt.
     \meta{y} entsprechend \code{top}, \code{center}, \code{bottom} oder eine
     Länge. Positive Längen werden von der linken beziehungsweise oberen Kante
     gemessen.
-  }{% TODO: English translation
+  }{
+    Positions a slot relative to its area. For \meta{x}, \code{left},
+    \code{center}, \code{right}, or a dimension is accepted; for \meta{y},
+    use \code{top}, \code{center}, \code{bottom}, or a dimension. Positive
+    dimensions are measured from the left or top edge.
   }
 
   \command{DeclareLTXTalkAreaGrid}
@@ -1106,6 +1520,7 @@ Slots, Templates und den Seitenstil bereitstellt.
 \end{commands}
 
 \subsection{\ldeen{Titelseiten}{Title pages}}
+\label{sec:ref-title-pages}
 
 \begin{commands}
   \command{DeclareLTXTalkTitleLayout}
@@ -1151,7 +1566,13 @@ Slots, Templates und den Seitenstil bereitstellt.
     akzeptiert \code{left}, \code{center} und \code{right}; \code{frame}
     akzeptiert \code{none}, \code{box}, \code{top}, \code{bottom},
     \code{left} und \code{right}.
-  }{% TODO: English translation
+  }{
+    Edits a slot's template instance. The stable keys are \code{font},
+    \code{color}, \code{background}, \code{align}, \code{frame},
+    \code{padding}, \code{rule-color}, and \code{rule-thick}. \code{align}
+    accepts \code{left}, \code{center}, and \code{right}; \code{frame}
+    accepts \code{none}, \code{box}, \code{top}, \code{bottom}, \code{left},
+    and \code{right}.
   }
 \end{commands}
 
@@ -1165,7 +1586,10 @@ Slots, Templates und den Seitenstil bereitstellt.
     \code{rule-thickness}, \code{padding} und \code{artifact-type}.
     \code{frame} akzeptiert \code{none}, \code{box}, \code{top},
     \code{bottom}, \code{left}, \code{right} und \code{topbottom}.
-  }{% TODO: English translation
+  }{
+    Edits an area's template instance. The stable keys are \code{background},
+    \code{frame}, \code{rule-color}, \code{rule-thickness}, \code{padding},
+    and \code{artifact-type}. \code{frame} also accepts \code{topbottom}.
   }
 \end{commands}
 
@@ -1177,7 +1601,11 @@ Slots, Templates und den Seitenstil bereitstellt.
     Legt mit \code{frametitle=content|header|both} und
     \code{section=header|none} die beabsichtigte Titelplatzierung fest. Das
     aktive Theme muss Slots für die gewählten Bereiche definieren.
-  }{% TODO: English translation
+  }{
+    Declares the intended title placement with
+    \code{frametitle=content|header|both} and
+    \code{section=header|none}. The active theme must define slots in the
+    selected areas.
   }
 \end{commands}
 
@@ -1197,7 +1625,14 @@ Zahl; \code{alt-text}; \code{continuation-text}; sowie
 beabsichtigte Semantik des Slots. Ihre Abbildung auf PDF-Tags ist derzeit noch
 nicht für alle Slots implementiert.
 }{
-% TODO: English translation
+The fourth argument of \cs*{defineltxtalkslot} accepts \code{role} with the
+values \code{heading}, \code{heading-1}, \code{heading-2},
+\code{heading-3}, \code{artifact}, \code{content}, \code{navigation}, or
+\code{note}; an integer \code{heading-level}; \code{alt-text};
+\code{continuation-text}; and
+\code{continuation-mode=explicit|implicit}. These keys describe the intended
+semantics of the slot. Their mapping to PDF tags is not yet implemented for
+all slots.
 }
 
 \begin{commands}
@@ -1208,7 +1643,11 @@ nicht für alle Slots implementiert.
     \code{header-as-navigation}. Diese Schnittstelle ist experimentell; das
     tatsächlich erzeugte Tagging wird wesentlich durch \cls{ltx-talk}
     bestimmt.
-  }{% TODO: English translation
+  }{
+    Configures heading handling with the Boolean keys
+    \code{auto-section-title}, \code{detect-continuation}, and
+    \code{header-as-navigation}. This interface is experimental; the actual
+    tagging is determined largely by \cls{ltx-talk}.
   }
 \end{commands}
 
@@ -1220,7 +1659,9 @@ Für jeden Slot existiert eine Instanz des Template-Typs
 Zum Bearbeiten dieser Instanzen dienen die beiden zuvor dokumentierten
 Befehle für Slotgestaltung und Bereichsdekoration.
 }{
-% TODO: English translation
+Every slot has an instance of the \code{lttheme-slot} template type and every
+area an instance of \code{lttheme-area}. Use the previously documented slot
+styling and area decoration commands to edit them.
 }
 
 \ldeen{
@@ -1233,54 +1674,38 @@ zugehörigen Bereich. Eigene Plugs sind für grundlegende, austauschbare
 Ausgabephasen gedacht; zusätzliche Seitenelemente sollten gewöhnlich als
 Slots eines Teilthemes implementiert werden.
 }{
-% TODO: English translation
+The page style provides sockets for the page background, the \code{header},
+\code{left}, \code{right}, and \code{footer} areas, and the page foreground.
+Their names follow \code{lttheme/area/}\meta{Area} and
+\code{lttheme/page/}\meta{Layer}. The \code{standard} plug renders the
+corresponding area. Custom plugs are intended for fundamental replaceable
+output phases; additional page elements should normally be slots in a partial
+theme.
 }
 
 \begin{table}[ht]
 \centering
 \begin{tabular}{lll}
 \hline
-\textbf{Type} & \textbf{Description} & \textbf{Default Role} \\
+\textbf{\ldeen{Typ}{Type}} & \textbf{\ldeen{Beschreibung}{Description}}
+  & \textbf{\ldeen{Standardrolle}{Default role}} \\
 \hline
-\texttt{frametitle}    & Frame title        & heading (H2)     \\
-\texttt{framesubtitle} & Frame subtitle     & heading (H3)     \\
-\texttt{title}         & Presentation title & heading (H1)     \\
-\texttt{section}       & Current section    & heading (H2)     \\
-\texttt{subsection}    & Current subsection & heading (H3)     \\
-\texttt{author}        & Author name        & note             \\
-\texttt{date}          & Date               & note             \\
-\texttt{institute}     & Institute name     & note             \\
-\texttt{pagenumber}    & Page number        & navigation       \\
-\texttt{logo}          & Logo               & graphic artifact \\
-\texttt{custom}        & User-defined       & artifact         \\
+\texttt{frametitle}    & \ldeen{Folientitel}{Frame title}        & heading (H2)     \\
+\texttt{framesubtitle} & \ldeen{Folienuntertitel}{Frame subtitle} & heading (H3)     \\
+\texttt{title}         & \ldeen{Präsentationstitel}{Presentation title} & heading (H1) \\
+\texttt{section}       & \ldeen{Aktueller Abschnitt}{Current section} & heading (H2) \\
+\texttt{subsection}    & \ldeen{Aktueller Unterabschnitt}{Current subsection} & heading (H3) \\
+\texttt{author}        & \ldeen{Autor}{Author name}        & note             \\
+\texttt{date}          & \ldeen{Datum}{Date}               & note             \\
+\texttt{institute}     & \ldeen{Institut}{Institute name}  & note             \\
+\texttt{pagenumber}    & \ldeen{Foliennummer}{Page number} & navigation       \\
+\texttt{logo}          & Logo                                & artifact         \\
+\texttt{custom}        & \ldeen{Frei definiert}{User-defined} & artifact       \\
 \hline
 \end{tabular}
-\caption{Available Template Variables}
+\caption{\ldeen{Vordefinierte Slottypen}{Predefined slot types}}
 \label{tab:template-variables}
 \end{table}
-
-\begin{table}[ht]
-\centering
-\begin{tabular}{ll}
-\hline
-\textbf{Area} & \textbf{Description} \\
-\hline
-\texttt{header}  & Top of the frame     \\
-\texttt{left}    & Left margin          \\
-\texttt{content} & Main content area    \\
-\texttt{right}   & Right margin         \\
-\texttt{footer}  & Bottom of the frame  \\
-\hline
-\end{tabular}
-\caption{Available Areas}
-\label{tab:available-areas}
-\end{table}
-
-\part{\ldeen{Referenz}{Reference}}
-\label{part:reference}
-
-% bisherige API-Referenz
-
 
 %\section{\ldeen{Nutzung}{Usage}}
 %
@@ -1438,17 +1863,6 @@ Slots eines Teilthemes implementiert werden.
 % Die englische API-Referenz wurde zunächst unverändert übernommen.
 % \end{lang}
 %
-\part{Implementation}
-\section{lttheme.sty}
-%\AutoDocInput{lttheme.dtx}{pkg}
-\section{\ldeen{Enthaltene Themen}{Includes Themes}}
-%\AutoDocInput{lttheme.dtx}{minimal}
-%\AutoDocInput{lttheme.dtx}{magpie}
-%\AutoDocInput{lttheme.dtx}{hawk}
-%\AutoDocInput{lttheme.dtx}{sparrow}
-%\section{\ldeen{Farbthemen}{Color Themes}}
-%\AutoDocInput{lttheme.dtx}{anchovy}
-%\AutoDocInput{lttheme.dtx}{carp}
 \end{document}
 %</driver>
 %<*pkg>
