@@ -1,0 +1,22 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage[
+  languages={de,en},
+  targetlang=en
+]{langselect}
+\usepackage[unicode=false]{hyperref}
+\olsMakeTrilangualMacro{de}{en}{fr}[trilang]
+\begin{document}
+\START
+\pdfstringdef\BilingualPdf
+  {\ldeen{Deutsch \LaTeX}{English \LaTeX}}
+\pdfstringdef\BilingualStarPdf
+  {\ldeen*{Deutsch}{English}}
+\pdfstringdef\TrilingualPdf
+  {\ltrilang{Deutsch}{English}{Français}}
+\TYPE{bilingual-pdf=\BilingualPdf}
+\TYPE{bilingual-star-pdf=\BilingualStarPdf}
+\TYPE{trilingual-pdf=\TrilingualPdf}
+\TYPE{pdfstrings-completed=true}
+\END
+\end{document}

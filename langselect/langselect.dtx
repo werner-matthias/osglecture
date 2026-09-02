@@ -31,17 +31,20 @@ This work is "maintained" (as per LPPL maintenance status) by
 }
   \expandafter\endbatchfile
 \fi
+
+\iffalse
 %</driver>
 %<*pkg> 
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
 \def\packagename{langselect}
 \ProvidesExplPackage{langselect}
 {2026/08/05}
-{v1.0.2}
+{v1.0.3}
 {support for different languages versions from a common source}
 \ExplSyntaxOff
 %</pkg>
-%<*driver> 
+%<*driver>
+\fi 
 \documentclass[
 load-preamble,
 ]{osgdoc}
@@ -74,7 +77,7 @@ load babel
       Quelldokument. Es wird ein entsprechendes Nutzermakro generiert und es
       gibt mehrere Methoden, die Zielsprache zu bestimmen.
       
-      Das Paket gehört zum \pkg*{osglecture}-Bundle, wird in die \cls*{osglecture}-Klasse
+      Das Paket gehört zum \bnd*{osglecture}-Bundle, wird in die \cls*{osglecture}-Klasse
       integriert und vom Buildscript \code{ollm} unterstützt, kann aber auch eigenständig
       genutzt werden.
     }{
@@ -82,7 +85,7 @@ load babel
       versions from a common source document. A corresponding user macro is
       generated, and there are several methods for determining the target language.
       
-      The package is part of the \pkg*{osglecture} bundle, is integrated into
+      The package is part of the \bnd*{osglecture} bundle, is integrated into
       the \cls*{osglecture} class 
       and supported by the build script \code{ollm}, but can also be used independently.
     }
@@ -576,10 +579,6 @@ Section~@1.%
   Hinter dem Makro müssen dann weitere Argumente angegeben werden, und zwar so
   viele, wie es dem höchsten verwendeten \meta{n} entspricht. Die Sternvariante
   ersetzt die Platzhalter mit den entsprechenden Argumenten.
-
-  Die Sternvariante der Sprachmakros ist "`zerbrechlich"', bitte verwenden Sie
-  sie nicht in einem beweglichen Kontext, z.\,B.\ innerhalb eines
-  \cs{section}-Arguments. 
 }{A common problem with multiple language versions is the consistency of
   non-language-dependent data, especially if this data changes frequently
   (think, for example, of timetables).
@@ -591,9 +590,6 @@ Section~@1.%
   Additional arguments must then be specified after the command, namely as many
   as correspond to the highest \meta{n} used. The starred variant
   replaces the placeholders with the corresponding arguments.
-
-  The star variant of the language macros is "`fragile"', please do not use
-  them in a mobile context, e.g., within an argument of \cs{section}. 
 }
 \begin{example}[
   compile,
@@ -618,6 +614,24 @@ Section~@1.%
       }{$4$}{$5$}  
       \end{document}
 \end{example}
+\ldeen{Die Sternvariante der Sprachmakros ist nicht vollständig expandierbar und sollte
+  daher nicht in Kontexten verwendet werden, in denen vollständige Expandierbarkeit
+  erforderlich ist. 
+  Dies gilt insbesondere für PDF-Strings, wie sie \pkg{hyperref} für die Metadaten
+  eines PDF-Dokuments benötigt. 
+  Dort wählt \pkg{langselect} zwar die aktive Sprachfassung aus, Platzhalter wie 
+  "`@\meta{n}"' werden jedoch nicht ersetzt, und die zugehörigen Ersetzungsargumente 
+  bleiben im Eingabestrom erhalten. 
+  Verwenden Sie in PDF-Strings daher nur die ungesternte Form.
+}{The starred variant of the language macros is not fully expandable and should
+  therefore not be used in contexts where full expandability
+  is required.
+  This applies in particular to PDF strings, such as those required by \pkg{hyperref} 
+  for the metadata of a PDF document.
+  Although \pkg{langselect} selects the active language version there, placeholders such as
+  “`@\meta{n}”' are not replaced, and the corresponding replacement arguments
+  remain in the input stream.
+  Therefore, use only the unstarred form in PDF strings.}
 \subsection{\ldeen{Individuelle Sprachmakros}{Individual Language Commands}}
 \label{sec:own-names}
 \ldeen{Wenn Ihnen die generierten Namen der Sprachmakros nicht gefallen oder
@@ -754,18 +768,19 @@ Section~@1.%
 \label{sec:faq}
 \begin{itemize}
   \item \textbf{\ldeen{Ist \thepkg\ stabil?}{Is \thepkg\ stable?}}
-    \ldeen{Obwohl das Paket mittlerweile die Versionsnummer 1 erreicht 
+  
+    \ldeen*{Obwohl das Paket mittlerweile die Versionsnummer 1 erreicht 
       hat\footnote{Übrigens als einziges Paket im \pkg{osglecture}-Bundle}
       und zumindest beim Autor intensiv im Einsatz ist, kann ich nicht versprechen, 
-      das es soweit fehlerfrei ist, dass es das Attribut "`stabil"' verdient.
+      dass es soweit fehlerfrei ist, dass es das Attribut "`stabil"' verdient.
       Ich bitte darum, gefundene Fehler über @1 zu melden.
-    }{
+    }{ 
       Although the package has now reached version 1 
       \footnote{Incidentally, it is the only package in the \pkg{osglecture} bundle}
       and is in heavy use—at least by the author—I cannot promise 
       that it is bug-free enough to deserve the "`stable"' label.
       Please report any bugs you find via @1.     
-    .}{\url{https://github.com/werner-matthias/osglecture/issues}}
+    }{\url{https://github.com/werner-matthias/osglecture/issues}}
   \item \textbf{\ldeen{Wofür steht das "`o"' im \cs*{ols}-Prefix?}{What does the
         "`o"' in the \cs*{ols} prefix stand for?}}
     
@@ -1128,14 +1143,9 @@ Section~@1.%
 }{
   \let\ols_trim:n=\relax
 }
-% \ldeen{Die Makros \cs{olsMakeBilangualMacro} bzw.\ \cs{olsMakeTrilangualMacro}
-% dienen zur Generierung der eigentlichen Sprachmakros.}{The commands
-% \cs{olsMakeBilangualMacro} and \cs{olsMakeTrilangualMacro}, resp., 
-% are used to generate the actual language commands.}\\
-% \ldeen{Wenn @1 existiert (also die @2-Umgebung definiert ist), werden das Sprachmakro
+% \ldeen*{Wenn @1 existiert (also die @2-Umgebung definiert ist), wird das Sprachmakro
 %  dafür registriert.}{If @1 exists (i.e., the @2 environment is defined), the language macro
-%  is registered for it.}{\cs{DeclarePresInitialBranchingCommand}}{presitemize}
-% \#1: prefix, \#2,\#3: selectable languages, \#4: base name
+%  is registered for it.}{\cs{DeclarePresInitialBranchingCommand}}{\env{presitemize}}
 \cs_new_protected:Npn \ols_register_pres_initial_branching:cn #1#2
   {
     \cs_if_exist:NTF \DeclarePresInitialBranchingCommand
@@ -1150,6 +1160,62 @@ Section~@1.%
       }
   }
 
+% \ldeen{Für PDF-Strings registrieren wir eine vereinfachte Fassung jedes
+% Sprachmakros bei \pkg{hyperref}. Sie konsumiert auch einen Stern, wählt aber
+% lediglich den aktiven Sprachzweig und führt weder Hooks noch Ersetzungen aus.}
+% {For PDF strings, we register a simplified version of every language macro
+% with \pkg{hyperref}. It also consumes a star, but only selects the active
+% language branch and runs neither hooks nor replacements.}
+\cs_new_protected:Npn \ols_register_pdfstring_bilingual:cn #1#2
+  {
+    \AddToHook { package/hyperref/after }
+      {
+        \pdfstringdefDisableCommands
+          {
+            \int_compare:nNnTF {#2} = {1}
+              {
+                \ExpandArgs{c}\RenewExpandableDocumentCommand {#1}
+                  {s +m +m} {##2}
+              }
+              {
+                \ExpandArgs{c}\RenewExpandableDocumentCommand {#1}
+                  {s +m +m} {##3}
+              }
+          }
+      }
+  }
+\cs_new_protected:Npn \ols_register_pdfstring_trilingual:cn #1#2
+  {
+    \AddToHook { package/hyperref/after }
+      {
+        \pdfstringdefDisableCommands
+          {
+            \int_case:nn {#2}
+              {
+                {1}
+                  {
+                    \ExpandArgs{c}\RenewExpandableDocumentCommand {#1}
+                      {s +m +m +m} {##2}
+                  }
+                {2}
+                  {
+                    \ExpandArgs{c}\RenewExpandableDocumentCommand {#1}
+                      {s +m +m +m} {##3}
+                  }
+                {3}
+                  {
+                    \ExpandArgs{c}\RenewExpandableDocumentCommand {#1}
+                      {s +m +m +m} {##4}
+                  }
+              }
+          }
+      }
+  }
+% \ldeen{Die Makros \cs{olsMakeBilangualMacro} bzw.\ \cs{olsMakeTrilangualMacro}
+% dienen zur Generierung der eigentlichen Sprachmakros.}{The commands
+% \cs{olsMakeBilangualMacro} and \cs{olsMakeTrilangualMacro}, resp., 
+% are used to generate the actual language commands.}\par
+% \#1: prefix, \#2,\#3: selectable languages, \#4: base name
 \NewDocumentCommand{\olsMakeBilangualMacro}{O{\ols_sprefix} m m o}{
   \str_if_eq:eeT{\olsTargetLanguage}{#2} {
     \IfValueTF{#4}{
@@ -1198,8 +1264,18 @@ Section~@1.%
     }
   }
   \IfValueTF{#4}
-    { \ols_register_pres_initial_branching:cn {#1#4} {2} }
-    { \ols_register_pres_initial_branching:cn {#1#2#3} {2} }
+    {
+      \ols_register_pres_initial_branching:cn {#1#4} {2}
+      \str_if_eq:eeTF {\olsTargetLanguage} {#2}
+        { \ols_register_pdfstring_bilingual:cn {#1#4} {1} }
+        { \ols_register_pdfstring_bilingual:cn {#1#4} {2} }
+    }
+    {
+      \ols_register_pres_initial_branching:cn {#1#2#3} {2}
+      \str_if_eq:eeTF {\olsTargetLanguage} {#2}
+        { \ols_register_pdfstring_bilingual:cn {#1#2#3} {1} }
+        { \ols_register_pdfstring_bilingual:cn {#1#2#3} {2} }
+    }
 }
 % \ldeen{Nun das Gleiche nochmal für \emph{drei} Sprachen.}{Now do the same
 % thing again for \emph{three} languages.}\\ 
@@ -1275,11 +1351,29 @@ Section~@1.%
     }
   }
   \IfValueTF{#5}
-    { \ols_register_pres_initial_branching:cn {#1#5} {3} }
-    { \ols_register_pres_initial_branching:cn {#1#2#3#4} {3} }
+    {
+      \ols_register_pres_initial_branching:cn {#1#5} {3}
+      \str_if_eq:eeTF {\olsTargetLanguage} {#2}
+        { \ols_register_pdfstring_trilingual:cn {#1#5} {1} }
+        {
+          \str_if_eq:eeTF {\olsTargetLanguage} {#3}
+            { \ols_register_pdfstring_trilingual:cn {#1#5} {2} }
+            { \ols_register_pdfstring_trilingual:cn {#1#5} {3} }
+        }
+    }
+    {
+      \ols_register_pres_initial_branching:cn {#1#2#3#4} {3}
+      \str_if_eq:eeTF {\olsTargetLanguage} {#2}
+        { \ols_register_pdfstring_trilingual:cn {#1#2#3#4} {1} }
+        {
+          \str_if_eq:eeTF {\olsTargetLanguage} {#3}
+            { \ols_register_pdfstring_trilingual:cn {#1#2#3#4} {2} }
+            { \ols_register_pdfstring_trilingual:cn {#1#2#3#4} {3} }
+        }
+    }
 }
 % \ldeen{Falls die automatische Erzeugung nicht deaktivert ist, werden die
-% konkreten Sprachmakros angelegt. Der Name sind
+% konkreten Sprachmakros angelegt. Die Namen sind
 % \cs*{\meta{Prefix}\meta{Sprache$_{1}$}\meta{Sprache$_{2}$}}
 % bzw. \cs*{\meta{Prefix}\meta{Sprache$_{1}$}\meta{Sprache$_{2}$}\meta{Sprache$_{3}$}}.}{%
 % If automatic generation is not disabled, the
@@ -1301,7 +1395,6 @@ Section~@1.%
 % das die folgenden Argumente verarbeitet.}{For the starred variants of the
 % language commands, we create a command that processes the subsequent
 % arguments.}
-
 \seq_new:N \ols_args_seq 
 \int_new:N \ols_num_of_args
 \tl_new:N \ols_format_str_tl
