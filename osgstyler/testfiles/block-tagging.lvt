@@ -1,0 +1,34 @@
+\input regression-test.tex
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}
+\usepackage{osgstyler}
+
+\DeclareOsgColorPalette{p}{
+  primary   = {model=HTML, value=204070},
+  structure = {alias=primary},
+  text      = {model=HTML, value=111111},
+  background = {model=HTML, value=FFFFFF}
+}
+\DeclareOsgBlockInstance{tb}{traits={titlebar}}
+\NewOsgStyledEnvironment{tb}{tb}{none}[1]{#1}
+
+\begin{document}
+\UseOsgColorPalette{p}
+
+A paragraph before the block.
+
+\begin{tb}{The block title}
+  First body paragraph of the block, long enough to wrap onto a
+  second line so a line break is exercised inside the block body.
+
+  Second body paragraph.
+\end{tb}
+
+A paragraph after the block.
+
+% The titled block must add no structure of its own: title and both body
+% paragraphs are plain text-unit>text siblings of the surrounding text,
+% no Div, no nested or empty paragraphs.
+\clearpage
+\SHOWPDFTAGS
+\end{document}
