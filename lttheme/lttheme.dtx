@@ -1439,13 +1439,14 @@ and page style.
     Standard-Schnittstelle umfasst \code{background}, \code{rule-color},
     \code{rule-thickness}, \code{padding}, \code{corner-radius},
     \code{shadow}, \code{shadow-offset}, \code{before} und \code{after}.
-    Fertige Optiken liegen als \pkg*{osgstyler}-Traits vor:
-    \code{plain} (rahmenlos), \code{framed} (dünner Rahmen), \code{filled}
-    (getönte Fläche) und \code{titlebar} (farbiger Kopfstreifen wie Beamers
-    Madrid). Ohne Aufruf bleibt der Block rahmenlos und bewahrt die
-    Darstellung der Klasse; \code{minimal} nutzt das, \code{hawk} verwendet
-    \code{framed}, \code{sparrow} \code{filled}, \code{magpie}
-    \code{titlebar}. Ein Blockstil wird beim Theme-Wechsel zurückgesetzt.
+    Fertige Optiken liegen als \pkg*{osgstyler}-Traits vor: \code{plain}
+    (rahmenlos), \code{titlebar} (farbiger Kopfstreifen wie Beamers Madrid,
+    voll fließend -- lässt das Tagging der Klasse unangetastet) sowie
+    \code{framed}/\code{filled} (echter Kasten, erzeugt in getaggtem PDF
+    ein \code{Div}). Ohne Aufruf bleibt der Block rahmenlos und bewahrt die
+    Darstellung der Klasse; \code{minimal} nutzt das, \code{magpie},
+    \code{hawk} und \code{sparrow} verwenden \code{titlebar} in ihrer
+    jeweiligen Farbe. Ein Blockstil wird beim Theme-Wechsel zurückgesetzt.
   }{
     Edits the \code{block}, \code{alertblock}, or \code{exampleblock}
     instance of the \code{osgstyler-block} template type provided by
@@ -1453,12 +1454,14 @@ and page style.
     \code{rule-color}, \code{rule-thickness}, \code{padding},
     \code{corner-radius}, \code{shadow}, \code{shadow-offset},
     \code{before}, and \code{after}. Ready-made looks are available as
-    \pkg*{osgstyler} traits: \code{plain} (frameless), \code{framed} (thin
-    frame), \code{filled} (tinted area), and \code{titlebar} (a coloured
-    head strip like beamer's Madrid). Without a call the block stays
-    frameless and preserves the class appearance; \code{minimal} relies on
-    that, \code{hawk} uses \code{framed}, \code{sparrow} \code{filled},
-    \code{magpie} \code{titlebar}. A block style is reset on a theme switch.
+    \pkg*{osgstyler} traits: \code{plain} (frameless), \code{titlebar} (a
+    coloured head strip like beamer's Madrid, fully flowing -- leaves the
+    class's tagging untouched), and \code{framed}/\code{filled} (a real
+    box, which yields a \code{Div} in tagged PDF). Without a call the block
+    stays frameless and preserves the class appearance; \code{minimal}
+    relies on that, while \code{magpie}, \code{hawk}, and \code{sparrow}
+    use \code{titlebar} in their respective colour. A block style is reset
+    on a theme switch.
   }
 
   \command{setltxtalkitemize}[\marg{Optionen}]
@@ -2401,15 +2404,11 @@ theme.
   {
     \OsgIfBlockTitledTF {#1}
       {
-        % The titled composition has no leading/trailing medskip of its own
-        % (unlike the class's block env used on the plain path).
-        \par \addvspace { \medskipamount }
         \IfNoValueTF {#2}
           { \__talk_if_overlay:nT { all }
               { \__osgstyler_block_use:nnn {#1} {#3} {#4} } }
           { \__talk_if_overlay:nT {#2}
               { \__osgstyler_block_use:nnn {#1} {#3} {#4} } }
-        \par \addvspace { \medskipamount }
       }
       {
         \__osgstyler_block_use:nnn {#1} { }
@@ -4013,13 +4012,10 @@ theme.
       accent={model=rgb,value={0.2,0.2,0.7}},
       text={model=HTML,value=000000},background={model=HTML,value=FFFFFF},
       structure={model=HTML,value=2B3A67},alert={model=HTML,value=B00020},example={model=HTML,value=166534}}
-    % Madrid signature: coloured title bar, tinted body.
-    \styleltxtalkblock{block}{traits=titlebar,head-background=primary,
-      body-background=primary!8}
-    \styleltxtalkblock{alertblock}{traits=titlebar,head-background=alert,
-      body-background=alert!8}
-    \styleltxtalkblock{exampleblock}{traits=titlebar,head-background=example,
-      body-background=example!8}
+    % Madrid signature: coloured title bar over a flowing, indented body.
+    \styleltxtalkblock{block}{traits=titlebar,head-background=primary}
+    \styleltxtalkblock{alertblock}{traits=titlebar,head-background=alert}
+    \styleltxtalkblock{exampleblock}{traits=titlebar,head-background=example}
   }
 \RegisterLTXTalkTheme{magpie}{\__ltxtalk_magpie_theme_setup:}
 %</magpie>
@@ -4075,9 +4071,9 @@ theme.
       accent={model=rgb,value={0.2,0.2,0.7}},
       text={model=HTML,value=000000},background={model=HTML,value=FFFFFF},
       structure={model=HTML,value=2B3A67},alert={model=HTML,value=B00020},example={model=HTML,value=166534}}
-    \styleltxtalkblock{block}{traits=framed,rule-color=primary}
-    \styleltxtalkblock{alertblock}{traits=framed,rule-color=alert}
-    \styleltxtalkblock{exampleblock}{traits=framed,rule-color=example}
+    \styleltxtalkblock{block}{traits=titlebar,head-background=primary}
+    \styleltxtalkblock{alertblock}{traits=titlebar,head-background=alert}
+    \styleltxtalkblock{exampleblock}{traits=titlebar,head-background=example}
   }
 \RegisterLTXTalkTheme{hawk}{\__ltxtalk_hawk_theme_setup:}
 %</hawk>
@@ -4140,10 +4136,9 @@ theme.
       accent={model=rgb,value={0.2,0.2,0.7}},
       text={model=HTML,value=000000},background={model=HTML,value=FFFFFF},
       structure={model=HTML,value=2B3A67},alert={model=HTML,value=B00020},example={model=HTML,value=166534}}
-    \styleltxtalkblock{block}{traits=filled,rule-color=primary,background=primary!8}
-    \styleltxtalkblock{alertblock}{traits=filled,rule-color=alert,background=alert!8}
-    \styleltxtalkblock{exampleblock}
-      {traits=filled,rule-color=example,background=example!8}
+    \styleltxtalkblock{block}{traits=titlebar,head-background=primary}
+    \styleltxtalkblock{alertblock}{traits=titlebar,head-background=alert}
+    \styleltxtalkblock{exampleblock}{traits=titlebar,head-background=example}
   }
 \RegisterLTXTalkTheme{sparrow}{\__ltxtalk_sparrow_theme_setup:}
 %</sparrow>

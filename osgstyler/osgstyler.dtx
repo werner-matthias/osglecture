@@ -4028,84 +4028,66 @@ load babel
   }
 
 % \ldeen*{\code{titled}: farbiger Kopfstreifen mit dem Titel, darunter der
-% Body -- optisch abhebende Blöcke im Stil von Beamers Madrid. Kopf und
-% Body sind je eine \env{minipage} voller Breite; ein positives
-% \code{rule-thickness} zieht zusätzlich einen Rahmen um beide.}
-% {\code{titled}: a coloured head strip carrying the title, the body below
-% -- visually distinct blocks in the style of beamer's Madrid. Head and
-% body are each a full-width \env{minipage}; a positive
-% \code{rule-thickness} additionally frames both.}
-\tl_new:N \l__osgstyler_block_body_tl
-\dim_new:N \l__osgstyler_block_width_dim
-
-\cs_new_protected:Npn \__osgstyler_block_head_box:
-  {
-    \tl_if_empty:NF \l__osgstyler_block_title_tl
-      {
-        \group_begin:
-          \setlength\fboxsep{\l__osgstyler_block_head_padding_dim}%
-          \colorbox { \OsgColorName{\l__osgstyler_block_head_bg_tl} }
-            {%
-              \makebox
-                [ \dim_eval:n
-                  { \l__osgstyler_block_width_dim
-                    - 2 \l__osgstyler_block_head_padding_dim } ]
-                [ l ]
-                {%
-                  \color{ \OsgColorName{\l__osgstyler_block_head_fg_tl} }%
-                  \l__osgstyler_block_head_font_tl
-                  \strut \l__osgstyler_block_title_tl
-                }%
-            }%
-        \group_end:
-        \par \nointerlineskip
-        \dim_compare:nNnT { \l__osgstyler_block_head_rule_dim } > { 0pt }
-          {
-            \noindent
-            {\color{ \OsgColorName{\l__osgstyler_block_head_rule_color_tl} }%
-             \rule{\l__osgstyler_block_width_dim}
-               {\l__osgstyler_block_head_rule_dim}}%
-            \par \nointerlineskip
-          }
-      }
-  }
-
-\cs_new_protected:Npn \__osgstyler_block_body_box:
-  {
-    \group_begin:
-      \setlength\fboxsep{\l__osgstyler_block_body_padding_dim}%
-      \colorbox { \__osgstyler_block_bg:V \l__osgstyler_block_body_bg_tl }
-        {%
-          \begin{minipage}{\dim_eval:n
-            { \l__osgstyler_block_width_dim
-              - 2 \l__osgstyler_block_body_padding_dim }}%
-            \l__osgstyler_block_body_tl
-          \end{minipage}%
-        }%
-    \group_end:
-  }
-
+% eingerückte Body -- optisch abhebende Blöcke im Stil von Beamers Madrid.
+%
+% Bewusst \emph{ohne} \env{minipage}/\cs{colorbox} um den Text: beide
+% erzwingen in getaggtem PDF ein \code{Div}- bzw.\ verschachtelte
+% Absatz-Strukturen, die die flache Lesereihenfolge der Klasse zerstören.
+% Stattdessen fließt der Titel als normale Textzeile, der farbige Streifen
+% liegt als \code{artifact}-\cs{rule} dahinter; der Body fließt mit
+% \cs{leftskip}/\cs{rightskip} als Innenabstand. Ergebnis: Titel und
+% Body-Absätze sind Geschwister im Frame -- getaggt wie ein Absatz ohne
+% Block. Eine getönte Body-Fläche ist so nicht möglich (sie bräuchte einen
+% Kasten) und entfällt.}
+% {\code{titled}: a coloured head strip carrying the title, the indented
+% body below -- visually distinct blocks in the style of beamer's Madrid.
+%
+% Deliberately \emph{without} \env{minipage}/\cs{colorbox} around the text:
+% both force a \code{Div} or nested paragraph structure in tagged PDF that
+% breaks the class's flat reading order. Instead the title flows as a
+% normal text line with the coloured strip behind it as an \code{artifact}
+% \cs{rule}; the body flows with \cs{leftskip}/\cs{rightskip} as inner
+% padding. Result: title and body paragraphs are siblings in the frame --
+% tagged like a paragraph with no block at all. A tinted body area is not
+% possible this way (it would need a box) and is dropped.}
 \cs_new_protected:Npn \__osgstyler_block_typeset_titled:n #1
   {
+    \par
+    \addvspace { \medskipamount }
     \group_begin:
-      \tl_set:Nn \l__osgstyler_block_body_tl {#1}
-      \dim_set:Nn \l__osgstyler_block_width_dim
+      \tl_if_empty:NF \l__osgstyler_block_title_tl
         {
-          \linewidth
-          \dim_compare:nNnT { \l__osgstyler_block_rule_dim } > { 0pt }
-            { - 2 \l__osgstyler_block_rule_dim }
+          % The coloured strip sits behind the title's own line, drawn as a
+          % zero-size \rlap\smash so it does not enter the vertical list. The
+          % \tag_mc push/pop marks just the rule as an artifact and hands the
+          % marked content straight back, so the title glyphs that follow
+          % stay in the paragraph's structure and reach the reader.
+          \noindent
+          \rlap { \smash {
+            \tag_mc_end_push: \tag_mc_begin:n { artifact }
+              \skip_horizontal:n { -\l__osgstyler_block_head_padding_dim }
+              \color { \OsgColorName{ \l__osgstyler_block_head_bg_tl } }
+              \rule
+                [ \dim_eval:n { -0.32 \baselineskip } ]
+                { \dim_eval:n
+                  { \linewidth + \l__osgstyler_block_head_padding_dim } }
+                { \dim_eval:n { 1.2 \baselineskip } }
+            \tag_mc_end: \tag_mc_begin_pop:n { }
+          } }%
+          {
+            \color { \OsgColorName{ \l__osgstyler_block_head_fg_tl } }
+            \l__osgstyler_block_head_font_tl
+            \l__osgstyler_block_title_tl
+          }
+          \par
         }
-      \noindent
-      \dim_compare:nNnTF { \l__osgstyler_block_rule_dim } > { 0pt }
-        {
-          \setlength\fboxsep{\c_zero_dim}%
-          \setlength\fboxrule{\l__osgstyler_block_rule_dim}%
-          \fcolorbox { \OsgColorName{\l__osgstyler_block_rule_color_tl} }
-            { \__osgstyler_block_bg:V \l__osgstyler_block_body_bg_tl }
-            { \vbox { \__osgstyler_block_head_box: \__osgstyler_block_body_box: } }
-        }
-        { \vbox { \__osgstyler_block_head_box: \__osgstyler_block_body_box: } }
+      \group_begin:
+        \dim_set:Nn \leftskip  { \l__osgstyler_block_body_padding_dim }
+        \dim_set:Nn \rightskip { \l__osgstyler_block_body_padding_dim }
+        \noindent \ignorespaces #1 \par
+      \group_end:
     \group_end:
+    \addvspace { \medskipamount }
   }
 
 % \ldeen*{Instanzen sind bei xtemplate ohnehin nur gespeichertes
@@ -4741,14 +4723,28 @@ load babel
     after  = \__osgstyler_osl_modern_rule_after:
   }
 
-% \ldeen*{Vier gebrauchsfertige Block-Optiken als Traits. Farben sind
+% \ldeen*{Gebrauchsfertige Block-Optiken als Traits. Farben sind
 % Slot-Namen (\code{structure} usw.), sodass sie der ladenden Palette bzw.
 % dem Theme folgen; \code{alertblock}/\code{exampleblock} überschreiben
-% danach nur den Slot. \code{titlebar} ist Beamers Madrid nachempfunden.}
-% {Four ready-made block looks as traits. Colours are slot names
+% danach nur den Slot.
+%
+% \code{titlebar} (Beamers Madrid nachempfunden) fließt vollständig und
+% belässt das Tagging der Klasse unangetastet -- die einzige Wahl, wenn
+% getaggtes PDF zählt. \code{framed} und \code{filled} setzen einen echten
+% Kasten (\cs{fcolorbox} um eine \env{minipage}); das ergibt in getaggtem
+% PDF ein \code{Div} und geschachtelte Absätze und sollte nur in der
+% Langform oder bei ausdrücklichem Vorrang der Kastenoptik verwendet
+% werden.}
+% {Ready-made block looks as traits. Colours are slot names
 % (\code{structure} etc.) so they follow the loaded palette or theme;
 % \code{alertblock}/\code{exampleblock} then only override the slot.
-% \code{titlebar} is modelled on beamer's Madrid.}
+%
+% \code{titlebar} (modelled on beamer's Madrid) is fully flowing and
+% leaves the class's tagging untouched -- the only choice when tagged PDF
+% matters. \code{framed} and \code{filled} put a real box
+% (\cs{fcolorbox} around a \env{minipage}); in tagged PDF that yields a
+% \code{Div} and nested paragraphs and should be used only in the long
+% form or when the box look explicitly takes priority.}
 \DeclareOsgBlockTrait { plain }
   { layout = plain, rule-thickness = 0pt, background = none }
 \DeclareOsgBlockTrait { framed }
@@ -4761,9 +4757,7 @@ load babel
   {
     layout = titled,
     head-background = structure, head-color = background,
-    head-padding = 0.4em,
-    body-background = structure!8, body-padding = 0.5em,
-    rule-thickness = 0pt
+    head-padding = 0.4em, body-padding = 0.6em
   }
 
 % \ldeen*{Ein Preset besteht aus bis zu vier unabhängig deklarierten

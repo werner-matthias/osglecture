@@ -7,118 +7,48 @@ tb-still-titled:passed
 LaTeX template Info: Declaring instance 'tb' of type osgstyler-block on line ....
 tb-cleared:passed
 LaTeX template Info: Declaring instance 'tb' of type osgstyler-block on line ....
-Overfull \hbox (15.0pt too wide) in paragraph at lines ...
-[][][][][][][] 
-\hbox(12.3999+7.59998)x345.0, direction TLT
-.\localpar
-..\localinterlinepenalty=0
-..\localbrokenpenalty=0
-..\localleftbox=null
-..\localrightbox=null
-.\hbox(0.0+0.0)x15.0, direction TLT
-.\pdfcolorstack 0 push {0.12549 0.25098 0.43922 rg 0.12549 0.25098 0.43922 RG}
-.\pdfcolorstack 0 push {0.12549 0.25098 0.43922 rg 0.12549 0.25098 0.43922 RG}
-.\hbox(12.3999+7.59998)x0.0, glue set - 345.0fil, direction TLT
-..\rule(12.3999+7.59998)x345.0
-..\glue 0.0 plus 1.0fil minus 1.0fil
-.\pdfcolorstack 0 pop
-.\hbox(12.3999+7.59998)x345.0, direction TLT
-..\kern3.99994
-..\pdfcolorstack 0 push {0 g 0 G}
-..\hbox(8.39996+3.60004)x337.00012, glue set 276.15009fil, direction TLT
-...\pdfcolorstack 0 push {1 1 1 rg 1 1 1 RG}
-...\rule(8.39996+3.60004)x0.0
-...\TU/lmr/bx/n/10 T
-...\TU/lmr/bx/n/10 i
-...\discretionary (penalty 50)
-....< \TU/lmr/bx/n/10 -
-...\TU/lmr/bx/n/10 t
-...\TU/lmr/bx/n/10 l
-...\TU/lmr/bx/n/10 e
-...\TU/lmr/bx/n/10 d
-...\glue(\spaceskip) 3.83 plus 1.915 minus 1.27667
-...\TU/lmr/bx/n/10 b
-...\TU/lmr/bx/n/10 l
-...\TU/lmr/bx/n/10 o
-...\kern0.32 (font)
-...\TU/lmr/bx/n/10 c
-...\kern-0.32 (font)
-...\TU/lmr/bx/n/10 k
-...\pdfcolorstack 0 pop
-...\glue 0.0 plus 1.0fil minus 1.0fil
-..\pdfcolorstack 0 pop
-..\kern3.99994
-.\pdfcolorstack 0 pop
-.\penalty 10000
-.\glue(\parfillskip) 0.0 plus 1.0fil
-.\glue(\rightskip) 0.0
+! Undefined control sequence.
+<argument> \tag_mc_end_push: 
+                             \tag_mc_begin:n {artifact}\skip_horizontal:n {-...
+l. ...\end
+         {tb}
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+! Undefined control sequence.
+<argument> \tag_mc_end_push: \tag_mc_begin:n 
+                                             {artifact}\skip_horizontal:n {-...
+l. ...\end
+         {tb}
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+! Undefined control sequence.
+<argument> ...:n {1.2\baselineskip }}\tag_mc_end: 
+                                                  \tag_mc_begin_pop:n {}
+l. ...\end
+         {tb}
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+! Undefined control sequence.
+<argument> ... }}\tag_mc_end: \tag_mc_begin_pop:n 
+                                                  {}
+l. ...\end
+         {tb}
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
 LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <7> on input line ....
 LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <5> on input line ....
-Overfull \hbox (15.0pt too wide) in paragraph at lines ...
-[][][][][][][] 
-\hbox(12.05+7.05)x345.0, direction TLT
-.\localpar
-..\localinterlinepenalty=0
-..\localbrokenpenalty=0
-..\localleftbox=null
-..\localrightbox=null
-.\hbox(0.0+0.0)x15.0, direction TLT
-.\pdfcolorstack 0 push {0.93004 0.94008 0.95514 rg 0.93004 0.94008 0.95514 RG}
-.\pdfcolorstack 0 push {0.93004 0.94008 0.95514 rg 0.93004 0.94008 0.95514 RG}
-.\hbox(12.05+7.05)x0.0, glue set - 345.0fil, direction TLT
-..\rule(12.05+7.05)x345.0
-..\glue 0.0 plus 1.0fil minus 1.0fil
-.\pdfcolorstack 0 pop
-.\hbox(12.05+7.05)x345.0, direction TLT
-..\kern5.0
-..\pdfcolorstack 0 push {0 g 0 G}
-..\vbox(7.05+2.05)x335.0, direction TLT
-...\hbox(7.05+2.05)x335.0, glue set 227.35fil, direction TLT
-....\localpar
-.....\localinterlinepenalty=0
-.....\localbrokenpenalty=0
-.....\localleftbox=null
-.....\localrightbox=null
-....\hbox(0.0+0.0)x0.0, direction TLT
-....\TU/lmr/m/n/10 B
-....\TU/lmr/m/n/10 o
-....\kern0.28 (font)
-....\TU/lmr/m/n/10 d
-....\TU/lmr/m/n/10 y
-....\glue(\spaceskip) 3.33 plus 1.665 minus 1.11
-....\TU/lmr/m/n/10 o
-....\TU/lmr/m/n/10 f
-....\glue(\spaceskip) 3.33 plus 1.665 minus 1.11
-....\TU/lmr/m/n/10 t
-....\TU/lmr/m/n/10 h
-....\TU/lmr/m/n/10 e
-....\glue(\spaceskip) 3.33 plus 1.665 minus 1.11
-....\TU/lmr/m/n/10 t
-....\TU/lmr/m/n/10 i
-....\discretionary (penalty 50)
-.....< \TU/lmr/m/n/10 -
-....\TU/lmr/m/n/10 t
-....\TU/lmr/m/n/10 l
-....\TU/lmr/m/n/10 e
-....\TU/lmr/m/n/10 d
-....\glue(\spaceskip) 3.33 plus 1.665 minus 1.11
-....\TU/lmr/m/n/10 b
-....\TU/lmr/m/n/10 l
-....\TU/lmr/m/n/10 o
-....\kern0.28 (font)
-....\TU/lmr/m/n/10 c
-....\kern-0.28 (font)
-....\TU/lmr/m/n/10 k
-....\TU/lmr/m/n/10 .
-....\penalty 10000
-....\glue(\parfillskip) 0.0 plus 1.0fil
-....\glue(\rightskip) 0.0
-..\pdfcolorstack 0 pop
-..\kern5.0
-.\pdfcolorstack 0 pop
-.\penalty 10000
-.\glue(\parfillskip) 0.0 plus 1.0fil
-.\glue(\rightskip) 0.0
 rendered:passed
