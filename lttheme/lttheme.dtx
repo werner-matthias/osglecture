@@ -2251,6 +2251,13 @@ theme.
 \bool_new:N \l__ltxtalk_title_page_bool
 \int_new:N \g__ltxtalk_title_header_rows_int
 \int_new:N \g__ltxtalk_saved_header_grid_rows_int
+% \ldeen{Wahr, während eine Titelseite den Zeilenzähler des Kopfrasters
+%   überschreibt -- nur dann muss er nach dem Ausgeben wiederhergestellt
+%   werden. Themes ohne Kopfraster tragen keinen Eintrag ein.}{True while a
+%   title page has overridden the header grid's row count -- only then does it
+%   need restoring after shipout. Themes without a header grid leave no
+%   entry.}
+\bool_new:N \g__ltxtalk_title_grid_saved_bool
 
 \NewExpandableDocumentCommand \LTXTalkHeaderRows {}
   {\bool_if:NTF \l__ltxtalk_title_page_bool
@@ -2285,9 +2292,16 @@ theme.
           \bool_gset_true:N \l__ltxtalk_title_page_bool
           \int_gset_eq:NN \g__ltxtalk_title_header_rows_int
             \l__ltxtalk_header_rows_int
-          \prop_if_exist:NT \g__ltxtalk_area_grid_rows_prop
+          % \ldeen{Nur wenn das Theme ein Kopfraster nutzt, gibt es eine
+          %   Zeilenzahl zu sichern und zu ersetzen; ohne Eintrag lieferte
+          %   \cs{prop_get:NnN} \cs{q_no_value} und \cs{int_gset:Nn} liefe
+          %   sich fest.}{Only a theme with a header grid has a row count to
+          %   save and replace; without an entry \cs{prop_get:NnN} would
+          %   yield \cs{q_no_value} and \cs{int_gset:Nn} would spin.}
+          \bool_gset_false:N \g__ltxtalk_title_grid_saved_bool
+          \prop_get:NnNT \g__ltxtalk_area_grid_rows_prop {header} \l_tmpa_tl
             {
-              \prop_get:NnN \g__ltxtalk_area_grid_rows_prop {header} \l_tmpa_tl
+              \bool_gset_true:N \g__ltxtalk_title_grid_saved_bool
               \int_gset:Nn \g__ltxtalk_saved_header_grid_rows_int {\l_tmpa_tl}
               \prop_gput:NnV \g__ltxtalk_area_grid_rows_prop {header}
                 \l__ltxtalk_header_rows_int
@@ -2295,7 +2309,7 @@ theme.
           \AddToHookNext{shipout/after}
             {
               \bool_gset_false:N \l__ltxtalk_title_page_bool
-              \prop_if_exist:NT \g__ltxtalk_area_grid_rows_prop
+              \bool_if:NT \g__ltxtalk_title_grid_saved_bool
                 {\prop_gput:Nnx \g__ltxtalk_area_grid_rows_prop {header}
                   {\int_use:N \g__ltxtalk_saved_header_grid_rows_int}}
             }
