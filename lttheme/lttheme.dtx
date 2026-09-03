@@ -1440,16 +1440,21 @@ and page style.
     \code{rule-thickness}, \code{padding}, \code{corner-radius},
     \code{shadow}, \code{shadow-offset}, \code{before} und \code{after}.
     Eigene Template-Codes können weitere Darstellungen, etwa echte Rundungen
-    oder Schatten, ergänzen. Die Standardinstanz bleibt ohne Rahmen und
-    bewahrt damit die Darstellung der Klasse.
+    oder Schatten, ergänzen. Ohne Aufruf bleibt der Block rahmenlos und
+    bewahrt die Darstellung der Klasse; \code{minimal} nutzt das,
+    \code{magpie}, \code{hawk} und \code{sparrow} setzen dagegen einen
+    dünnen, farbig getönten Rahmen. Ein Blockstil wird beim Theme-Wechsel
+    zurückgesetzt.
   }{
     Edits the \code{block}, \code{alertblock}, or \code{exampleblock}
     instance of the \code{osgstyler-block} template type provided by
     \pkg*{osgstyler}. The standard interface includes \code{background},
     \code{rule-color}, \code{rule-thickness}, \code{padding},
     \code{corner-radius}, \code{shadow}, \code{shadow-offset},
-    \code{before}, and \code{after}. The default instance has no frame and
-    therefore preserves the class appearance.
+    \code{before}, and \code{after}. Without a call the block stays
+    frameless and preserves the class appearance; \code{minimal} relies on
+    that, whereas \code{magpie}, \code{hawk}, and \code{sparrow} draw a
+    thin, colour-tinted frame. A block style is reset on a theme switch.
   }
 
   \command{setltxtalkitemize}[\marg{Optionen}]
@@ -3325,6 +3330,11 @@ theme.
     \seq_gclear:N \g__ltxtalk_content_slots_seq
     \seq_gclear:N \g__ltxtalk_right_slots_seq
     \seq_gclear:N \g__ltxtalk_footer_slots_seq
+    % Block appearance is an osgstyler-block instance edit, not reset by the
+    % clears above; a theme that styles its blocks would otherwise leak that
+    % style into the next theme.  Restore the plain lttheme default.
+    \clist_map_inline:nn { block, alertblock, exampleblock }
+      { \DeclareInstance { osgstyler-block } {##1} { standard } { } }
   }
 
 \cs_new_protected:Npn \__ltxtalk_update_text_area:
@@ -3958,6 +3968,12 @@ theme.
       accent={model=rgb,value={0.2,0.2,0.7}},
       text={model=HTML,value=000000},background={model=HTML,value=FFFFFF},
       structure={model=HTML,value=2B3A67},alert={model=HTML,value=B00020},example={model=HTML,value=166534}}
+    \styleltxtalkblock{block}
+      {rule-color=primary,rule-thickness=0.5pt,background=primary!7,padding=0.45em}
+    \styleltxtalkblock{alertblock}
+      {rule-color=alert,rule-thickness=0.5pt,background=alert!7,padding=0.45em}
+    \styleltxtalkblock{exampleblock}
+      {rule-color=example,rule-thickness=0.5pt,background=example!7,padding=0.45em}
   }
 \RegisterLTXTalkTheme{magpie}{\__ltxtalk_magpie_theme_setup:}
 %</magpie>
@@ -4013,6 +4029,12 @@ theme.
       accent={model=rgb,value={0.2,0.2,0.7}},
       text={model=HTML,value=000000},background={model=HTML,value=FFFFFF},
       structure={model=HTML,value=2B3A67},alert={model=HTML,value=B00020},example={model=HTML,value=166534}}
+    \styleltxtalkblock{block}
+      {rule-color=primary,rule-thickness=0.5pt,background=primary!7,padding=0.45em}
+    \styleltxtalkblock{alertblock}
+      {rule-color=alert,rule-thickness=0.5pt,background=alert!7,padding=0.45em}
+    \styleltxtalkblock{exampleblock}
+      {rule-color=example,rule-thickness=0.5pt,background=example!7,padding=0.45em}
   }
 \RegisterLTXTalkTheme{hawk}{\__ltxtalk_hawk_theme_setup:}
 %</hawk>
@@ -4075,6 +4097,12 @@ theme.
       accent={model=rgb,value={0.2,0.2,0.7}},
       text={model=HTML,value=000000},background={model=HTML,value=FFFFFF},
       structure={model=HTML,value=2B3A67},alert={model=HTML,value=B00020},example={model=HTML,value=166534}}
+    \styleltxtalkblock{block}
+      {rule-color=primary,rule-thickness=0.5pt,background=primary!7,padding=0.45em}
+    \styleltxtalkblock{alertblock}
+      {rule-color=alert,rule-thickness=0.5pt,background=alert!7,padding=0.45em}
+    \styleltxtalkblock{exampleblock}
+      {rule-color=example,rule-thickness=0.5pt,background=example!7,padding=0.45em}
   }
 \RegisterLTXTalkTheme{sparrow}{\__ltxtalk_sparrow_theme_setup:}
 %</sparrow>
