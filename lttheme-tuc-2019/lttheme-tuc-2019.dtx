@@ -28,9 +28,8 @@
 }
   \expandafter\endbatchfile
 \fi
- \documentclass[
-load-preamble+
-]{osgdoc}
+
+\documentclass[add-bib=false]{osgdoc}
 
 \usepackage{enumitem}
 \usepackage{microtype}
@@ -613,38 +612,30 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
 \cs_new:Npn \__ltxtalk_tuc_header_content_height:
   {\dimexpr \c__ltxtalk_tuc_header_line_dim*\LTXTalkHeaderRows \relax}
 % \ldeen{Der obere (und wegen der Zentrierung gleich große untere)
-%   Abstand des Kopfzeilenmaterials zur tatsächlich sichtbaren
-%   Kopfzeilenfläche. Diese ist um \cs{headsep} niedriger als
-%   \cs{l__ltxtalk_header_height_dim}, da der Seitenstil die Kopfzeilenhöhe
-%   der \pkg{geometry}-Kopfzone entnimmt.}{
+%   Abstand des Kopfzeilenmaterials zur Kopfzeilenfläche. Deren interner
+%   Nullpunkt liegt auf der sichtbaren Oberkante und ihre volle Höhe ist
+%   \cs{l__ltxtalk_header_height_dim}; das Material wird also schlicht darin
+%   zentriert.}{
 %   The top (and, by centering, equally sized bottom) distance of the
-%   header material from the actually visible header area. That area is
-%   shorter than \cs{l__ltxtalk_header_height_dim} by \cs{headsep}, because
-%   the page style derives the header height from \pkg{geometry}'s head
-%   zone.}
+%   header material from the header area. That area's internal origin is on
+%   its visible top edge and its full height is
+%   \cs{l__ltxtalk_header_height_dim}, so the material is simply centered
+%   within it.}
 \cs_new:Npn \__ltxtalk_tuc_header_margin_y:
   {
     \dimexpr
       (
-        \l__ltxtalk_header_height_dim-\headsep
+        \l__ltxtalk_header_height_dim
         -\__ltxtalk_tuc_header_content_height:
       )/2
     \relax
   }
 % \ldeen{Y-Position von Logo, Trennstrich und oberster Textzeile innerhalb
-%   der Kopfzeilenfläche. Deren interner Nullpunkt liegt um \cs{headsep}
-%   \emph{oberhalb} des sichtbar bleibenden Bereichs (derselbe \cs{headsep},
-%   der die sichtbare Fläche gegenüber \cs{l__ltxtalk_header_height_dim}
-%   verkürzt); der obere Randabstand wird deshalb ab diesem verschobenen
-%   Nullpunkt gezählt, nicht ab der sichtbaren Oberkante.}{
+%   der Kopfzeilenfläche, gezählt ab deren Oberkante.}{
 %   Y position of the logo, divider, and topmost text line within the
-%   header area. That area's internal origin sits \cs{headsep}
-%   \emph{above} the region that stays visible (the same \cs{headsep} that
-%   shortens the visible area relative to \cs{l__ltxtalk_header_height_dim});
-%   the top margin is therefore counted from that shifted origin, not from
-%   the visible top edge.}
+%   header area, counted from its top edge.}
 \cs_new:Npn \__ltxtalk_tuc_header_y_offset:
-  {\dimexpr \headsep+\__ltxtalk_tuc_header_margin_y: \relax}
+  {\__ltxtalk_tuc_header_margin_y:}
 % \ldeen{Ermittelt die aktuell zu verwendende Logodatei (explizit gesetzt,
 %   Jubiläumslogo oder Standardlogo) in \cs{l__ltxtalk_tuc_logo_file_tl}.
 %   Sowohl die Anzeige des Logos als auch die Vermessung seiner Breite

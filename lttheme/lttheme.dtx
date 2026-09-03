@@ -1128,16 +1128,16 @@ for a slot. Content, position, and styling therefore remain separate.
 
 \ldeen{
 Neben \code{font}, \code{color}, \code{align} und \code{padding} stehen
-\code{background}, \code{frame}, \code{rule-color} und \code{rule-thick}
-zur Verfügung. \code{frame} akzeptiert \code{none}, \code{box}, \code{top},
+\code{background}, \code{frame}, \code{rule-color}, \code{rule-thick} und
+\code{space-after} zur Verfügung. \code{frame} akzeptiert \code{none}, \code{box}, \code{top},
 \code{bottom}, \code{left} und \code{right}. Die Schnittstelle kennt außerdem
 die Optionen \code{rotate}, \code{opacity}, \code{shadow}, \code{uppercase}
 und \code{lowercase}; deren vollständige visuelle Umsetzung ist derzeit noch
 nicht abgeschlossen und sollte in stabilen Themes nicht vorausgesetzt werden.
 }{
 Besides \code{font}, \code{color}, \code{align}, and \code{padding}, the
-keys \code{background}, \code{frame}, \code{rule-color}, and
-\code{rule-thick} are available. \code{frame} accepts \code{none},
+keys \code{background}, \code{frame}, \code{rule-color}, \code{rule-thick},
+and \code{space-after} are available. \code{frame} accepts \code{none},
 \code{box}, \code{top}, \code{bottom}, \code{left}, and \code{right}. The
 interface also contains \code{rotate}, \code{opacity}, \code{shadow},
 \code{uppercase}, and \code{lowercase}; their visual implementation is not
@@ -1562,17 +1562,25 @@ and page style.
   \ldeen{
     Bearbeitet die Template-Instanz eines Slots. Stabil umgesetzt sind
     \code{font}, \code{color}, \code{background}, \code{align}, \code{frame},
-    \code{padding}, \code{rule-color} und \code{rule-thick}. \code{align}
-    akzeptiert \code{left}, \code{center} und \code{right}; \code{frame}
-    akzeptiert \code{none}, \code{box}, \code{top}, \code{bottom},
-    \code{left} und \code{right}.
+    \code{padding}, \code{rule-color}, \code{rule-thick} und
+    \code{space-after}. \code{align} akzeptiert \code{left}, \code{center}
+    und \code{right}; \code{frame} akzeptiert \code{none}, \code{box},
+    \code{top}, \code{bottom}, \code{left} und \code{right}.
+    \code{space-after} setzt den vertikalen Abstand unter einem im
+    Textfluss gesetzten Slot (Folientitel und -untertitel im Inhaltsbereich);
+    bei \code{0pt} wählt lttheme selbst einen zur Schriftgröße passenden
+    Abstand. Auf absolut positionierte Slots wirkt der Schlüssel nicht.
   }{
     Edits a slot's template instance. The stable keys are \code{font},
     \code{color}, \code{background}, \code{align}, \code{frame},
-    \code{padding}, \code{rule-color}, and \code{rule-thick}. \code{align}
-    accepts \code{left}, \code{center}, and \code{right}; \code{frame}
-    accepts \code{none}, \code{box}, \code{top}, \code{bottom}, \code{left},
-    and \code{right}.
+    \code{padding}, \code{rule-color}, \code{rule-thick}, and
+    \code{space-after}. \code{align} accepts \code{left}, \code{center}, and
+    \code{right}; \code{frame} accepts \code{none}, \code{box}, \code{top},
+    \code{bottom}, \code{left}, and \code{right}. \code{space-after} sets the
+    vertical gap below a slot set in the text stream (frame title and
+    subtitle in the content area); at \code{0pt} lttheme picks a gap that
+    matches the font size. The key has no effect on absolutely positioned
+    slots.
   }
 \end{commands}
 
@@ -2455,10 +2463,21 @@ theme.
 
 \dim_new:N \l__ltxtalk_slot_padding_dim
 \dim_new:N \l__ltxtalk_slot_rule_thick_dim
+\dim_new:N \l__ltxtalk_slot_space_after_dim
 
 \bool_new:N \l__ltxtalk_slot_shadow_bool
 \bool_new:N \l__ltxtalk_slot_uppercase_bool
 \bool_new:N \l__ltxtalk_slot_lowercase_bool
+% \ldeen{Wahr, während ein Slot im Textfluss des Frames gesetzt wird
+%   (Folientitel/-untertitel im Inhaltsbereich), im Gegensatz zu absolut
+%   positionierten Slots in Kopf, Fuß oder Randspalten. Nur im Textfluss
+%   trägt \code{space-after} bzw.\ die schriftgrößenabhängige Vorgabe.}{
+%   True while a slot is set in the frame's text stream (frame
+%   title/subtitle in the content area), as opposed to absolutely
+%   positioned slots in the header, footer, or margin columns. Only in the
+%   text stream does \code{space-after}, or the font-size-dependent
+%   default, take effect.}
+\bool_new:N \l__ltxtalk_slot_flow_bool
 
 \keys_define:nn { ltxtalk / slot-style }
   {
@@ -2871,444 +2890,6 @@ theme.
     \group_end:
   }
 
-\cs_new_protected:Npn \__ltxtalk_resolve_slot_content:Nn #1 #2
-  {
-    % 
-    % \begin{itemize}
-    %  \item \#1: Slot-Typ
-    %  \item \#2: Ziel-Tokenlist
-    % \end{itemize}
-    
-    \str_case:nn { #1 }
-      {
-        { title }      { \tl_set:Nn #2 { \LTXTalkMetadata{short-title} } }
-        { subtitle }   { \tl_set:Nn #2 { \LTXTalkMetadata{short-subtitle} } }
-        { author }     { \tl_set:Nn #2 { \LTXTalkMetadata{short-author} } }
-        { date }       { \tl_set:Nn #2 { \LTXTalkMetadata{date} } }
-        { institute }  { \tl_set:Nn #2 { \LTXTalkMetadata{short-institute} } }
-        { section }    { \tl_set:Nn #2 { \g__ltxtalk_current_section_tl } }
-        { subsection } { \tl_set:Nn #2 { \g__ltxtalk_current_subsection_tl } }
-        { frametitle } { \tl_set:Nn #2 { \g__ltxtalk_current_frametitle_tl } }
-        { framesubtitle } { \tl_set:Nn #2 { \g__ltxtalk_current_framesubtitle_tl } }
-        { pagenumber } { \tl_set:Nn #2 { \insertframenumber } }
-        { logo }       { \tl_set:Nn #2 { \includegraphics[height=1cm]{\insertlogo} } }
-      }
-  }
-
-\cs_generate_variant:Nn \__ltxtalk_resolve_slot_content:Nn { NV }
-
-% ==========================================
-% SLOT-RENDERING
-% ==========================================
-
-\cs_new_protected:Npn \__ltxtalk_render_named_slot:n #1
-  {
-    \prop_get:NnNTF \g__ltxtalk_slot_types_prop { #1 } \l__ltxtalk_slot_type_tl
-      {
-        \__ltxtalk_resolve_slot_content:NV \l__ltxtalk_slot_type_tl \l__ltxtalk_slot_content_tl
-        
-        % Formatierung anwenden
-        \prop_get:NnNTF \g__ltxtalk_slot_styles_prop { #1 } \l__ltxtalk_slot_style_tl
-          {
-            \keys_set:nV { ltxtalk / slot-style } \l__ltxtalk_slot_style_tl
-          }
-          {
-            \__ltxtalk_default_slot_style:V \l__ltxtalk_slot_type_tl
-          }
-        
-        % Accessibility-Tagging
-        \__ltxtalk_tag_slot_content:n { \l__ltxtalk_slot_content_tl }
-      }
-      {}
-  }
-
-% ==========================================
-% DEFAULT-FORMATIERUNG
-% ==========================================
-
-\cs_new_protected:Npn \__ltxtalk_default_slot_style:n #1
-  {
-    \str_case:nn { #1 }
-      {
-        { title }      { 
-          \keys_set:nn { ltxtalk / slot-style } {
-            font = \Large\bfseries\sffamily,
-            color = ltxtalk-primary,
-          }
-        }
-        { frametitle } { 
-          \keys_set:nn { ltxtalk / slot-style } {
-            font = \Large\bfseries,
-            color = ltxtalk-primary,
-            frame = bottom,
-            rule-color = ltxtalk-primary,
-            rule-thick = 1pt,
-          }
-        }
-        { author }     { 
-          \keys_set:nn { ltxtalk / slot-style } {
-            font = \small\itshape,
-            color = ltxtalk-secondary,
-          }
-        }
-        { date }       { 
-          \keys_set:nn { ltxtalk / slot-style } {
-            font = \small,
-            color = ltxtalk-secondary!70,
-          }
-        }
-        { section }    { 
-          \keys_set:nn { ltxtalk / slot-style } {
-            font = \normalsize\bfseries,
-            color = ltxtalk-accent,
-          }
-        }
-        { subsection } { 
-          \keys_set:nn { ltxtalk / slot-style } {
-            font = \small\bfseries,
-            color = ltxtalk-accent!80,
-          }
-        }
-        { pagenumber } { 
-          \keys_set:nn { ltxtalk / slot-style } {
-            font = \tiny\sffamily,
-            color = ltxtalk-secondary!50,
-          }
-        }
-        { framesubtitle } { 
-          \keys_set:nn { ltxtalk / slot-style } {
-            font = \large\itshape,
-            color = ltxtalk-secondary,
-          }
-        }
-      }
-  }
-
-\cs_generate_variant:Nn \__ltxtalk_default_slot_style:n { V }
-
-% ==========================================
-% ACCESSIBILITY-TAGGING
-% ==========================================
-
-\cs_new_protected:Npn \__ltxtalk_tag_slot_content:n #1
-  {
-    \prop_get:NnNTF \g__ltxtalk_slot_accessibility_prop
-      { \l__ltxtalk_current_slot_name_tl } 
-      \l__ltxtalk_slot_accessibility_tl
-      {
-        \keys_set:nV { ltxtalk / a11y } \l__ltxtalk_slot_accessibility_tl
-      }
-      {
-        \keys_set:nn { ltxtalk / a11y } { role = artifact }
-      }
-    
-    \str_case:Vn \l__ltxtalk_slot_role_tl
-      {
-        { heading } {
-          \__ltxtalk_track_heading_appearance:nnn 
-            { \l__ltxtalk_heading_level_int } 
-            { #1 }
-            { frame }
-        }
-        { H1 } {
-          \__ltxtalk_track_heading_appearance:nnn { 1 } { #1 } { frame }
-        }
-        { H2 } {
-          \__ltxtalk_track_heading_appearance:nnn { 2 } { #1 } { frame }
-        }
-        { H3 } {
-          \__ltxtalk_track_heading_appearance:nnn { 3 } { #1 } { frame }
-        }
-        { artifact } {
-          \__ltxtalk_render_artifact:n { #1 }
-        }
-        { navigation } {
-          \__ltxtalk_render_navigation:n { #1 }
-        }
-        { content } {
-          \__ltxtalk_render_content:n { #1 }
-        }
-        { note } {
-          \__ltxtalk_render_note:n { #1 }
-        }
-      }
-  }
-
-\cs_new_protected:Npn \__ltxtalk_track_heading_appearance:nnn #1 #2 #3
-  {
-    \int_gincr:N \g__ltxtalk_heading_id_int
-    
-    \tl_set:Nx \l__ltxtalk_heading_hash_tl {
-      H#1- \tl_to_str:n { #2 } - \tl_to_str:n { #3 }
-    }
-    
-    \prop_get:NnNTF \g__ltxtalk_heading_context_prop 
-      { \l__ltxtalk_heading_hash_tl } 
-      \l__ltxtalk_previous_context_tl
-      {
-        % Wiederholtes Heading -> Artifact
-        \__ltxtalk_render_artifact:n { #2 }
-      }
-      {
-        % Erstmaliges Heading -> Semantisch
-        \prop_gput:Nnn \g__ltxtalk_heading_context_prop 
-          { \l__ltxtalk_heading_hash_tl } 
-          { #3- \int_use:N \g__ltxtalk_heading_id_int }
-        
-        \__ltxtalk_render_heading:nn { #1 } { #2 }
-      }
-  }
-
-\cs_new_protected:Npn \__ltxtalk_render_heading:nn #1 #2
-  {
-    \tl_set:Nx \l__ltxtalk_heading_tag_tl { H#1 }
-    % Hier würde echtes PDF-Tagging stattfinden
-    #2
-  }
-
-\cs_new_protected:Npn \__ltxtalk_render_artifact:n #1
-  {
-    % Hier als Artifact taggen
-    #1
-  }
-
-\cs_new_protected:Npn \__ltxtalk_render_navigation:n #1
-  {
-    % Hier als Navigation taggen
-    #1
-  }
-
-\cs_new_protected:Npn \__ltxtalk_render_content:n #1
-  {
-    % Hier als Content taggen
-    #1
-  }
-
-\cs_new_protected:Npn \__ltxtalk_render_note:n #1
-  {
-    % Hier als Note taggen
-    #1
-  }
-
-% ==========================================
-% BEREICHS-RENDERING
-% ==========================================
-
-\cs_new_protected:Npn \__ltxtalk_render_area_with_decorations:nn #1 #2
-  {
-    % \begin{itemize}
-    %  \item \#1: Bereichsname
-    %  \item \#2: Inhalt (Slots)
-    % \end{itemize} 
-    
-    \prop_get:NnNTF \g__ltxtalk_area_decorations_prop { #1 } \l__ltxtalk_area_deco_tl
-      {
-        \keys_set:nV { ltxtalk / area-decoration } \l__ltxtalk_area_deco_tl
-      }
-      {
-        \tl_set:Nn \l__ltxtalk_area_frame_tl { none }
-        \tl_set:Nn \l__ltxtalk_area_background_tl { none }
-      }
-    
-    % Hintergrund (als Artifact)
-    \str_if_eq:VnF \l__ltxtalk_area_background_tl { none }
-      {
-        \__ltxtalk_render_artifact:n {
-          \color{ \l__ltxtalk_area_background_tl }
-          \rule{ \l__ltxtalk_area_width_dim }{ \l__ltxtalk_area_height_dim }
-        }
-      }
-    
-    % Inhalt rendern
-    #2
-    
-    % Rahmen (als Artifact)
-    \str_if_eq:VnF \l__ltxtalk_area_frame_tl { none }
-      {
-        \__ltxtalk_render_artifact:n {
-          \__ltxtalk_draw_area_frame:
-        }
-      }
-  }
-
-\cs_new_protected:Npn \__ltxtalk_draw_area_frame:
-  {
-    \color{ \l__ltxtalk_area_rule_color_tl }
-    \dim_set:Nn \l_tmpa_dim { \l__ltxtalk_area_rule_thickness_dim }
-    
-    \str_case:Vn \l__ltxtalk_area_frame_tl
-      {
-        { bottom } {
-          \rule{ \l__ltxtalk_area_width_dim }{ \l_tmpa_dim }
-        }
-        { top } {
-          \rule{ \l__ltxtalk_area_width_dim }{ \l_tmpa_dim }
-        }
-        { topbottom } {
-          \rule{ \l__ltxtalk_area_width_dim }{ \l_tmpa_dim }
-          \rule{ \l__ltxtalk_area_width_dim }{ \l_tmpa_dim }
-        }
-      }
-  }
-
-% ==========================================
-% SEITENAUFBAU
-% ==========================================
-
-\cs_new_protected:Npn \__ltxtalk_build_themed_page:
-  {
-    \str_if_eq:VnF \g__ltxtalk_active_theme_tl { default }
-      {
-        \vcoffin_set:Nnn \g__ltxtalk_page_coffin 
-          { \paperwidth } { \paperheight }
-          {
-            \color{ltxtalk-bg}
-            \rule{\paperwidth}{\paperheight}
-          }
-        
-        % Header rendern
-        \bool_if:NT \l__ltxtalk_show_header_bool
-          {
-            \__ltxtalk_render_area_with_decorations:nn { header }
-              {
-                % Alle Header-Slots rendern
-                \prop_map_inline:Nn \g__ltxtalk_slot_areas_prop
-                  {
-                    \str_if_eq:nnT { ##2 } { header }
-                      {
-                        \tl_set:Nn \l__ltxtalk_current_slot_name_tl { ##1 }
-                        \__ltxtalk_render_named_slot:n { ##1 }
-                      }
-                  }
-              }
-          }
-        
-        % Linke Margin
-        \bool_if:NT \l__ltxtalk_show_left_margin_bool
-          {
-            \__ltxtalk_render_area_with_decorations:nn { left }
-              {
-                \prop_map_inline:Nn \g__ltxtalk_slot_areas_prop
-                  {
-                    \str_if_eq:nnT { ##2 } { left }
-                      {
-                        \tl_set:Nn \l__ltxtalk_current_slot_name_tl { ##1 }
-                        \__ltxtalk_render_named_slot:n { ##1 }
-                      }
-                  }
-              }
-          }
-        
-        % Content
-        \prop_map_inline:Nn \g__ltxtalk_slot_areas_prop
-          {
-            \str_if_eq:nnT { ##2 } { content }
-              {
-                \tl_set:Nn \l__ltxtalk_current_slot_name_tl { ##1 }
-                \__ltxtalk_render_named_slot:n { ##1 }
-              }
-          }
-        
-        % Rechte Margin
-        \bool_if:NT \l__ltxtalk_show_right_margin_bool
-          {
-            \__ltxtalk_render_area_with_decorations:nn { right }
-              {
-                \prop_map_inline:Nn \g__ltxtalk_slot_areas_prop
-                  {
-                    \str_if_eq:nnT { ##2 } { right }
-                      {
-                        \tl_set:Nn \l__ltxtalk_current_slot_name_tl { ##1 }
-                        \__ltxtalk_render_named_slot:n { ##1 }
-                      }
-                  }
-              }
-          }
-        
-        % Footer
-        \bool_if:NT \l__ltxtalk_show_footer_bool
-          {
-            \__ltxtalk_render_area_with_decorations:nn { footer }
-              {
-                \prop_map_inline:Nn \g__ltxtalk_slot_areas_prop
-                  {
-                    \str_if_eq:nnT { ##2 } { footer }
-                      {
-                        \tl_set:Nn \l__ltxtalk_current_slot_name_tl { ##1 }
-                        \__ltxtalk_render_named_slot:n { ##1 }
-                      }
-                  }
-              }
-          }
-        
-        \coffin_typeset:Nnnnn \g__ltxtalk_page_coffin 
-          { l } { t } { 0pt } { 0pt }
-      }
-  }
-
-% ==========================================
-% INTEGRATION IN DIE LTX-TALK-TEMPLATES
-% ==========================================
-
-\cs_new_protected:Npn \__ltxtalk_apply_class_templates:
-  {
-    \EditInstance { header } { std }
-      {
-        background-color = ltxtalk-primary,
-        color = white,
-        font = \bfseries,
-        height = \headheight + \headsep,
-        print-frame-title = true
-      }
-    \EditInstance { footer } { std }
-      {
-        background-color = ltxtalk-bg,
-        color = ltxtalk-secondary,
-        element-order = { author, institute, date, framenumber },
-        font = \tiny
-      }
-    \EditInstance { frametitle } { header }
-      {
-        color = white,
-        font = \Large \bfseries,
-        before-vspace = 0pt,
-        after-vspace = 0pt
-      }
-    \EditInstance { titlepage-element } { title }
-      { color = ltxtalk-primary, font = \Large \bfseries }
-    \EditInstance { titlepage-element } { subtitle }
-      { color = ltxtalk-secondary }
-    \str_case:Vn \g__ltxtalk_active_theme_tl
-      {
-        { minimal }
-          {
-            \EditInstance { header } { std }
-              { background-color =, color = ltxtalk-primary }
-            \EditInstance { footer } { std }
-              { background-color =, element-order = { framenumber } }
-            \EditInstance { frametitle } { header }
-              { color = ltxtalk-primary, font = \Large \bfseries }
-          }
-        { academic }
-          {
-            \EditInstance { header } { std }
-              { background-color = ltxtalk-primary, color = white }
-            \EditInstance { footer } { std }
-              { element-order = { author, institute, framenumber } }
-          }
-        { corporate }
-          {
-            \EditInstance { header } { std }
-              { background-color = ltxtalk-primary, color = white }
-            \EditInstance { footer } { std }
-              {
-                background-color = ltxtalk-primary,
-                color = white,
-                element-order = { institute, date, framenumber }
-              }
-          }
-      }
-  }
 
 % ==========================================
 % INITIALISIERUNG
@@ -3318,7 +2899,7 @@ theme.
   % Prüfen ob Themes geladen aber nicht aktiviert wurden
   \str_if_eq:VnT \g__ltxtalk_active_theme_tl { default }
     {
-      \clist_map_inline:nn { modern, academic, corporate, minimal }
+      \clist_map_inline:nn { minimal, magpie, hawk, sparrow, anchovy, carp }
         {
           \@ifpackageloaded{ltxtalk-theme-#1}
             {
@@ -3384,7 +2965,8 @@ theme.
     opacity     : tokenlist = 1,
     shadow      : boolean = false,
     uppercase   : boolean = false,
-    lowercase   : boolean = false
+    lowercase   : boolean = false,
+    space-after : length = 0pt
   }
 \DeclareTemplateCode { lttheme-slot } { standard } { 1 }
   {
@@ -3413,7 +2995,8 @@ theme.
     opacity = \l__ltxtalk_slot_opacity_tl,
     shadow = \l__ltxtalk_slot_shadow_bool,
     uppercase = \l__ltxtalk_slot_uppercase_bool,
-    lowercase = \l__ltxtalk_slot_lowercase_bool
+    lowercase = \l__ltxtalk_slot_lowercase_bool,
+    space-after = \l__ltxtalk_slot_space_after_dim
   }
   { \__ltxtalk_typeset_slot:n {#1} }
 
@@ -3444,6 +3027,25 @@ theme.
           \str_if_eq:VnT \l__ltxtalk_slot_bg_tl { none } {#1}
         }
       \par
+      % \ldeen{Im Textfluss (Folientitel/-untertitel) trägt die umgebende
+      %   vertikale Liste den \cs{baselineskip} des Fließtexts. Der ist zu
+      %   klein, um unter einer in größerer Schrift gesetzten Slotzeile einen
+      %   Abstand zu öffnen, sodass \cs{lineskip} greift und die Zeilen fast
+      %   aneinanderstoßen. Hier -- noch mit der Slotschrift aktiv -- wird
+      %   deshalb ein expliziter Abstand ergänzt: \code{space-after}, falls
+      %   gesetzt, sonst schriftgrößenabhängig.}{
+      %   In the text stream (frame title/subtitle) the surrounding vertical
+      %   list carries the body text's \cs{baselineskip}. That is too small to
+      %   open a gap below a slot line set in a larger font, so \cs{lineskip}
+      %   takes over and the lines almost touch. Here -- still with the slot
+      %   font active -- an explicit gap is therefore added: \code{space-after}
+      %   if set, otherwise proportional to the font size.}
+      \bool_if:NT \l__ltxtalk_slot_flow_bool
+        {
+          \dim_compare:nNnTF \l__ltxtalk_slot_space_after_dim > \c_zero_dim
+            { \skip_vertical:N \l__ltxtalk_slot_space_after_dim }
+            { \skip_vertical:n { 0.4 \baselineskip } }
+        }
     \group_end:
   }
 
@@ -3581,7 +3183,7 @@ theme.
 \NewSocketPlug { lttheme/page/foreground } { sparrow-bars }
   {
     \tag_mc_begin:n {artifact}
-    \raisebox{\Gm@tmargin}[0pt][0pt]
+    \raisebox{\dim_eval:n{\Gm@tmargin-\headsep}}[0pt][0pt]
       {\vbox to 0pt
         {
           \color{ltxtalk-primary!35}\rlap{\rule{\paperwidth}{0.35pt}}
@@ -3597,8 +3199,49 @@ theme.
   { page/background, area/header, area/left, area/right, area/footer, page/foreground }
   { \AssignSocketPlug { lttheme/#1 } { standard } }
 
+% \ldeen{
+%   Ein Theme kann jederzeit im Dokument gewechselt werden; die Doku-Galerie
+%   nutzt genau das. \cs{__ltxtalk_clear_theme_state:} muss deshalb jede
+%   Spur des vorigen Themes tilgen, nicht nur dessen Slots. Die Layout-Keys
+%   und die Titelplatzierung werden auf die Paket-Vorgaben zurückgesetzt, und
+%   die fünf Flächen-Instanzen -- \code{header}, \code{left}, \code{content},
+%   \code{right}, \code{footer} tragen feste Namen und werden über das
+%   gesamte Dokument wiederverwendet -- werden neu deklariert, damit
+%   \cs{decorateltxtalkarea} des Vorgängers (Hintergrund, Rahmen, Ränder)
+%   nicht in das nächste Theme durchschlägt.
+% }{
+%   A theme may be switched at any point in the document; the gallery in the
+%   documentation does exactly that. \cs{__ltxtalk_clear_theme_state:} must
+%   therefore erase every trace of the previous theme, not just its slots.
+%   The layout keys and the title placement are restored to the package
+%   defaults, and the five area instances -- \code{header}, \code{left},
+%   \code{content}, \code{right}, \code{footer} carry fixed names and are
+%   reused for the whole document -- are redeclared so that the predecessor's
+%   \cs{decorateltxtalkarea} (background, frame, margins) does not bleed into
+%   the next theme.
+% }
+\cs_new_protected:Npn \__ltxtalk_reset_layout_state:
+  {
+    \keys_set:nn { ltxtalk / layout }
+      {
+        header = false, header-height = 1.5cm, header-rows = 1,
+        left-margin = false, right-margin = false,
+        footer = false, footer-height = 1cm,
+        margin-width = 2.5cm,
+        left-area-width = 2.5cm, right-area-width = 2.5cm,
+        content-inset-left = 2.5cm, content-inset-right = 2.5cm,
+        header-columns = { 0.2, 0.6, 0.2 },
+        footer-columns = { 0.33, 0.34, 0.33 },
+      }
+    \tl_gset:Nn \g__ltxtalk_frametitle_target_tl { content }
+    \tl_gset:Nn \g__ltxtalk_section_target_tl { none }
+    \clist_map_inline:nn { header, left, content, right, footer }
+      { \DeclareInstance { lttheme-area } {##1} { standard } { } }
+  }
+
 \cs_new_protected:Npn \__ltxtalk_clear_theme_state:
   {
+    \__ltxtalk_reset_layout_state:
     \AssignSocketPlug { lttheme/page/background } { standard }
     \AssignSocketPlug { lttheme/area/header } { standard }
     \AssignSocketPlug { lttheme/area/left } { standard }
@@ -3889,7 +3532,10 @@ theme.
 \cs_new_protected:Npn \__ltxtalk_render_content_slot_aux:w
   #1#2#3#4 \q_stop #5
   {
-    \UseInstance {lttheme-slot}{#5}{\__ltxtalk_slot_content:n {#5}}
+    \group_begin:
+      \bool_set_true:N \l__ltxtalk_slot_flow_bool
+      \UseInstance {lttheme-slot}{#5}{\__ltxtalk_slot_content:n {#5}}
+    \group_end:
     \par
   }
 \RenewDocumentCommand \frametitle { D <> { all } O {#3} m }
@@ -3909,6 +3555,28 @@ theme.
       }
   }
 
+% \ldeen{
+%   \cs{@oddhead} wird von der Ausgaberoutine an der Grundlinie des Seitenkopfs
+%   gesetzt. Deren Abstand von der Papieroberkante ist
+%   \cs{Gm@tmargin}~$-$~\cs{headsep} (der obere Rand abzüglich des Kopfabstands,
+%   den \cls{ltx-talk} über \pkg{geometry} vergibt). Alle oben verankerten
+%   Flächen -- Kopf, linke Spalte in \code{hawk}, die \code{sparrow}-Linien --
+%   müssen daher um genau diesen Betrag angehoben werden, damit ihre Oberkante
+%   auf der Papierkante liegt; ein Anheben um \cs{Gm@tmargin} allein schöbe sie
+%   um \cs{headsep} zu weit nach oben. Rechte und linke Spalte ohne
+%   \code{hawk}-Sonderfall beginnen statt an der Papierkante an der Unterkante
+%   des Kopfbereichs, daher dort der zusätzliche Term \cs{headsep}.
+% }{
+%   \cs{@oddhead} is placed by the output routine at the baseline of the running
+%   head. Its distance from the top paper edge is \cs{Gm@tmargin}~$-$~\cs{headsep}
+%   (the top margin less the head separation that \cls{ltx-talk} assigns through
+%   \pkg{geometry}). Every top-anchored area -- the header, the left column in
+%   \code{hawk}, the \code{sparrow} rules -- must therefore be raised by exactly
+%   that amount so its top edge sits on the paper edge; raising by \cs{Gm@tmargin}
+%   alone would push it \cs{headsep} too high. The left and right columns outside
+%   the \code{hawk} special case start at the bottom edge of the header area
+%   rather than at the paper edge, hence the extra \cs{headsep} term there.
+% }
 \cs_new_nopar:Npn \ps@lttheme
   {
     \cs_set_nopar:Npn \@oddhead
@@ -3925,10 +3593,13 @@ theme.
             \bool_if:NT \l__ltxtalk_show_left_margin_bool
               {
                 \str_if_eq:VnTF \g__ltxtalk_active_theme_tl {hawk}
-                  { \raisebox{\Gm@tmargin}[0pt][0pt]{\UseSocket{lttheme/area/left}} }
+                  {
+                    \raisebox{\dim_eval:n{\Gm@tmargin-\headsep}}[0pt][0pt]
+                      {\UseSocket{lttheme/area/left}}
+                  }
                   {
                     \raisebox
-                      {-\dim_eval:n{\l__ltxtalk_header_height_dim-\Gm@tmargin}}
+                      {-\dim_eval:n{\l__ltxtalk_header_height_dim-\Gm@tmargin+\headsep}}
                       [0pt][0pt]{\UseSocket{lttheme/area/left}}
                   }
               }
@@ -3944,7 +3615,7 @@ theme.
                       {-\Gm@lmargin+\paperwidth-\l__ltxtalk_right_area_width_dim}
                   }
                 \raisebox
-                  {-\dim_eval:n{\l__ltxtalk_header_height_dim-\Gm@tmargin}}
+                  {-\dim_eval:n{\l__ltxtalk_header_height_dim-\Gm@tmargin+\headsep}}
                   [0pt][0pt]
                   {\UseSocket{lttheme/area/right}}
               }
@@ -3959,13 +3630,13 @@ theme.
                     \int_compare:nNnF {\@framenumber} = {1}
                       {
                         \skip_horizontal:n {-\Gm@lmargin}
-                        \raisebox{\Gm@tmargin}[0pt][0pt]
+                        \raisebox{\dim_eval:n{\Gm@tmargin-\headsep}}[0pt][0pt]
                           {\UseSocket{lttheme/area/header}}
                       }
                   }
                   {
                     \skip_horizontal:n {-\Gm@lmargin}
-                    \raisebox{\Gm@tmargin}[0pt][0pt]
+                    \raisebox{\dim_eval:n{\Gm@tmargin-\headsep}}[0pt][0pt]
                       {\UseSocket{lttheme/area/header}}
                   }
               }
@@ -4154,7 +3825,7 @@ theme.
 \RequirePackage{ltxtalk-theme}
 \cs_new_protected:Npn \__ltxtalk_magpie_theme_setup:
   {
-    \ltxtalksetup{header=true,header-height=1.15cm,footer=true,footer-height=0.48cm}
+    \ltxtalksetup{header=true,header-height=1.35cm,footer=true,footer-height=0.48cm}
     \setltxtalktitleplacement{frametitle=header,section=none}
     \defineltxtalkslot{magpie-frametitle}{header}{frametitle}
       {role=heading,heading-level=2}
@@ -4166,10 +3837,12 @@ theme.
     \setltxtalkslotcontent{magpie-author}{\@shortauthor\ (\@shortinstitute)}
     \setltxtalkslotcontent{magpie-title}{\@shorttitle}
     \setltxtalkslotcontent{magpie-page}{\@shortdate\quad\@framenumber}
-    \positionltxtalkslot{magpie-frametitle}{0.22cm}{0.22cm}
-      {\dim_eval:n{\paperwidth-0.44cm}}{0.62cm}
-    \positionltxtalkslot{magpie-framesubtitle}{0.22cm}{0.72cm}
-      {\dim_eval:n{\paperwidth-0.44cm}}{0.38cm}
+    % Title and subtitle occupy adjacent, non-overlapping bands with a little
+    % slack top and bottom, so their glyphs never collide.
+    \positionltxtalkslot{magpie-frametitle}{0.22cm}{0.16cm}
+      {\dim_eval:n{\paperwidth-0.44cm}}{0.60cm}
+    \positionltxtalkslot{magpie-framesubtitle}{0.22cm}{0.82cm}
+      {\dim_eval:n{\paperwidth-0.44cm}}{0.40cm}
     \positionltxtalkslot{magpie-author}{0.18cm}{center}{0.30\paperwidth}{0.42cm}
     \positionltxtalkslot{magpie-title}{center}{center}{0.34\paperwidth}{0.42cm}
     \positionltxtalkslot{magpie-page}
@@ -4178,8 +3851,12 @@ theme.
       align=left,padding=3pt}
     \styleltxtalkslot{magpie-framesubtitle}
       {font=\small\sffamily,color=white,align=left}
+    % Madrid-style three-part footer: the cell shades are all derived from the
+    % footer's own base colour (ltxtalk-primary!70!black), so a colour-only
+    % overlay such as anchovy or carp -- which repaints ltxtalk-secondary to an
+    % unrelated hue -- cannot turn a footer cell into an off-colour box.
     \styleltxtalkslot{magpie-author}{font=\tiny\sffamily,color=white,align=left,
-      background=ltxtalk-secondary}
+      background=ltxtalk-primary!55!black}
     \styleltxtalkslot{magpie-title}{font=\tiny\sffamily,color=white,align=center,
       background=ltxtalk-primary!85!black}
     \styleltxtalkslot{magpie-page}{font=\tiny\sffamily,color=white,align=right}
@@ -4216,7 +3893,7 @@ theme.
 \RequirePackage{ltxtalk-theme}
 \cs_new_protected:Npn \__ltxtalk_hawk_theme_setup:
   {
-    \ltxtalksetup{header=true,header-height=1.05cm,left-margin=true,
+    \ltxtalksetup{header=true,header-height=1.25cm,left-margin=true,
       margin-width=1.6cm,footer=false}
     \setltxtalktitleplacement{frametitle=header,section=none}
     \defineltxtalkslot{hawk-title}{left}{custom}{role=note}
@@ -4231,10 +3908,11 @@ theme.
     \positionltxtalkslot{hawk-author}{center}{0.9cm}{1.45cm}{0.5cm}
     \positionltxtalkslot{hawk-section}{0.12cm}{1.8cm}{1.36cm}{0.7cm}
     \positionltxtalkslot{hawk-subsection}{0.12cm}{2.65cm}{1.36cm}{0.7cm}
+    % Non-overlapping title/subtitle bands with slack, so glyphs never collide.
     \positionltxtalkslot{hawk-frametitle}
-      {\dim_eval:n{0.58\paperwidth-2cm}}{0.12cm}{0.42\paperwidth}{0.72cm}
+      {\dim_eval:n{0.58\paperwidth-2cm}}{0.10cm}{0.42\paperwidth}{0.60cm}
     \positionltxtalkslot{hawk-framesubtitle}
-      {\dim_eval:n{0.58\paperwidth-2cm}}{0.78cm}{0.42\paperwidth}{0.42cm}
+      {\dim_eval:n{0.58\paperwidth-2cm}}{0.76cm}{0.42\paperwidth}{0.40cm}
     \styleltxtalkslot{hawk-title}{font=\fontsize{5}{6}\selectfont\sffamily,
       color=ltxtalk-text,align=center}
     \styleltxtalkslot{hawk-author}{font=\tiny\sffamily,color=ltxtalk-secondary,align=center}
@@ -4284,10 +3962,11 @@ theme.
     \positionltxtalkslot{sparrow-section}{0.18cm}{0.02cm}{0.44\paperwidth}{0.3cm}
     \positionltxtalkslot{sparrow-subsection}
       {\dim_eval:n{0.56\paperwidth-0.18cm}}{0.02cm}{0.44\paperwidth}{0.3cm}
-    \positionltxtalkslot{sparrow-frametitle}{0.25cm}{1.38cm}
-      {\dim_eval:n{\paperwidth-0.5cm}}{0.58cm}
-    \positionltxtalkslot{sparrow-framesubtitle}{0.25cm}{1.84cm}
-      {\dim_eval:n{\paperwidth-0.5cm}}{0.35cm}
+    % Non-overlapping title/subtitle bands with slack, so glyphs never collide.
+    \positionltxtalkslot{sparrow-frametitle}{0.25cm}{1.34cm}
+      {\dim_eval:n{\paperwidth-0.5cm}}{0.56cm}
+    \positionltxtalkslot{sparrow-framesubtitle}{0.25cm}{1.96cm}
+      {\dim_eval:n{\paperwidth-0.5cm}}{0.34cm}
     \positionltxtalkslot{sparrow-institute}{0.18cm}{center}{0.3\paperwidth}{0.45cm}
     \positionltxtalkslot{sparrow-title}{center}{center}{0.4\paperwidth}{0.45cm}
     \positionltxtalkslot{sparrow-page}
