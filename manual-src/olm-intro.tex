@@ -38,7 +38,7 @@ In computer science or chemistry, this concept is also known as \emph{polymorphi
   aims to support instructors in this effort. It is based on a central idea:
 }{\osglecture}
 \footnote{
-  \ldeen*{Es ist mir durchaus bewusst, dass dieser Leitgedanke nicht von allen geteilt wird,
+  \ldeen*{Es ist mir durchaus bewusst, dass dieser Leitgedanke nicht allgemein geteilt wird:
   ein \LaTeX-Riese wie \name{Joseph Wright} steht dieser Idee z.\,B. skeptisch gegenüber (@2),
   und er kann gute Gründe anbringen. Falls Sie also glauben, dass solche Gründe überwiegen, nutzen Sie @1 nicht.}{I am well aware that not everyone shares this guiding principle;
   a \LaTeX giant like \name{Joseph Wright}, for example, is skeptical of this idea (@2),
@@ -62,7 +62,7 @@ In computer science or chemistry, this concept is also known as \emph{polymorphi
 \end{infobox}
 
 
-\ldeen*{Daher soll @1 u.\,a.\ ermöglichen
+\ldeen*{Daher soll @1 u.\,a.{} ermöglichen
 }{
   Therefore, @1 is intended, amongst other things, to enable}{\osglecture}:
 \begin{itemize}
@@ -76,7 +76,7 @@ In computer science or chemistry, this concept is also known as \emph{polymorphi
         different language versions from the same source,
         wherein shared data does not need to be presented redundantly};
   \item \ldeen{Unterstützung bei individuellen Erstellen und Überarbeiten von
-        Lehreinheiten mit einfacher Integration (z.\,B.\ Skriptkapitel zu einem
+        Lehreinheiten mit einfacher Integration (z.\,B.{} Skriptkapitel zu einem
         Gesamtskript)}{
         support for creating and revising individual
         instructional units that can be easily integrated (e.g., lecture notes chapters into a
@@ -115,9 +115,108 @@ In computer science or chemistry, this concept is also known as \emph{polymorphi
 {\textcolor{teal!50!black}{OSG Beamer}\footnote{\url{https://github.com/tuc-osg/osgbeamer}}}
 {\footnote{\url{https://ctan.org/pkg/beamer}}}
 
+\subsection{\ldeen{Was genau \emph{ist} denn nun \osglecture?}{So what exactly \emph{is} \osglecture?}}
+\ldeen{\osglecture{} ist ein \LaTeX-Bundle (genauer gesagt: ein \LuaLaTeX-Bundle), das verschiedene Ideen und Ansätze zusammenbringt um Lehrmaterialien zu erstellen. Keine dieser Ideen oder Ansätze ist besonders neu.
+}{\osglecture{} is a \LaTeX bundle (more specifically, a \LuaLaTeX bundle) that brings together various ideas and approaches for creating teaching materials. None of these ideas or approaches is particularly new.}
+
+\begin{itemize}
+  \item \ldeen{
+    \cls{osglecture} ist eine Metaklasse, die die meiste Arbeit an andere Klassen deligiert, so wie es z.\,B.{} auch \needpackage{beamerswitch} macht. Darüber hinaus stellt \cls{osglecture} aber
+    auch einige Dinge selbst bereit, wie ein dokumentübergreifenden Referenzsystem und sogar einige 
+    Fromatierungsumgebungen.
+  }{
+    \cls{osglecture} is a metaclass that delegates most of the work to other classes, much like 
+    \needpackage{beamerswitch}, for example. In addition, \cls{osglecture} itself provides several features,
+    including a cross-document reference system and even some formatting environments.}
+  \item \ldeen{
+    \pkg{langselect} ist ein Paket, das zur (sprachabhängigen) Auswahl von in das Ziel-PDF zu übernehmenden
+    Text, ähnlich wie es auch \needpackage{comment} oder \needpackage{multilang} macht. 
+    Die tatsächliche genutzte Sprache kann auch von außen festgelegt werden.
+  }{
+    \pkg{langselect} is a package for selecting which text is to be included in the target PDF depending on the 
+    language, similar to \needpackage{comment} or \needpackage{multilang}. The language actually used can also 
+    be specified externally.}
+  \item \ldeen{
+    \pkg{osglecture-modes} generalisiert die Idee von Darstellungsmodi, wie man sie aus \needpackage{beamer} 
+    oder \needpackage{ltx-talk} kennt, macht also etwas ähnliches wie \pkg{langselect}, aber nicht auf
+    Sprach- sondern auf Strukturebene. Damit können Modi in der aus \pkg{Peamer} oder \pkg{ltx-talk} 
+    gewohnten \texttt{<>}-Syntay auch außerhalb von Präsentationen genutzt werden.
+  }{
+    \pkg{osglecture-modes} generalizes the concept of presentation modes familiar from \needpackage{beamer} 
+    or \needpackage{ltx-talk}. It therefore does something similar to \pkg{langselect}, but at the structural 
+    rather than the language level. This makes it possible to use modes outside presentations, too, with the 
+    familiar \texttt{<>} syntax of \pkg{beamer} or \pkg{ltx-talk}.}
+  \item \ldeen{
+    \pkg{tagpax} dient dazu, getaggte PDF-Dokumente zu einem wiederum getaggten PDF-Dokument zu vereinen. 
+    Es hat lange nicht soviel Möglichkeiten wie \needpackage{pdfpages} und baut auf den Ideen von 
+    \needpackage{pax}/\needpackage{newpax} auf, behält aber nicht nur Annotationen sondern auch die 
+    Taggingstruktur bei. Im Kontext von \osglecture{} dient es dazu, unabhängige Übersetzungen 
+    z.\,B.\ einzelner Skriptkapitel zu einem Gesamtskript zu ermöglichen, ohne einen "`großen"' 
+    Übersetzungslauf\footnote{Bei meinem Lehrskripten kann so ein großer Lauf durchaus auch mal über 
+    eine Stunde dauern.} durchführen zu müssen.
+  }{
+    \pkg{tagpax} combines tagged PDF documents into a PDF document that is itself tagged. It provides far
+    fewer features than \needpackage{pdfpages} and builds on the ideas of \needpackage{pax}/\needpackage{newpax}, 
+    but preserves not only annotations, but also the tagging structure. In the context of \osglecture{}, it makes 
+    it possible to compile, for example, individual lecture notes chapters independently and combine them into 
+    a complete set of lecture notes without having to perform one "`large"' compilation run.\footnote{For my lecture
+    notes, such a large run can sometimes take more than an hour.}
+    }
+  \item \ldeen{
+    \OLLM{} ist ein \emph{yet another} Build-Tool, aber speziell auf \osglecture{} zugeschnitten und
+    arbeitet eng mit \cls{osglecture} und den anderen genannten Paketen zusammen. Intern ruft \OLLM{} intern 
+    \File{latexmk} auf (es ist aus einem rc-File für \File{latexmk} entstanden), das die meiste Arbeit erledigt.
+  }{
+    The \OLLM{} is a yet another build tool that is tailored specifically to \osglecture{} and works closely with 
+    \cls{osglecture} and the other packages mentioned above. Internally, \OLLM{} invokes \File{latexmk}--it
+    originated as an rc file for \File{latexmk}--which performs most of the work.}
+\end{itemize}
+
+\ldeen{Während diese genannten Pakete den Kern des Bundles bilden, gibt es noch einige Pakete, die sich 
+  für die Erstellung von Lehrmaterialien als nützlich erwiesen haben. Diese interagieren durchaus mit den 
+  Kernpaketen, tragen aber mehr zur direkten Gestaltung der Dokumente bei, als zur Realisierung des 
+  Polymorphieansatzes, den sie aber nutzen.
+}{While the packages mentioned above form the core of the bundle, several additional packages have proved 
+  useful for creating teaching materials. They do interact with the core packages, but contribute more directly
+  to the design of the documents than to implementing the polymorphism approach, although they make use of it.}
+\begin{itemize}
+  \item \ldeen{\pkg{osgstyler} versucht die \LaTeX-Kernidee der Trennung von Inhalt und Gestaltung
+    über eine zentrale semantische Konfiguration zu stärken. Dinge wie Farben, Schriften, Abstände, Hervorhebungen
+    und Blöcke können damit einerseits einfacher konsistent und andererseits leichter austauschbar gestaltet werden.
+    Es kann gut mit \pkg{osglecture-modes} zusammenwirken.
+  }{\pkg{osgstyler} seeks to reinforce the core \LaTeX{} principle of separating content from presentation 
+    through a central semantic configuration. This makes elements such as colors, fonts, spacing, highlighting, 
+    and blocks easier to design consistently as well as easier to replace. It works well in conjunction with \pkg{osglecture-modes}.}
+  \item \ldeen{\pkg{ltxtalk-theme} ist eine experimentelle Theme-Engine für \cls{ltx-talk}. Für "`innere"'
+    Gestaltungsaspekte wird \pkg{osgstyler} genutzt. Vermutlich wird \pkg{ltxtalk-theme} mit der weiteren Entwicklung
+    von \cls{ltx-talk} irgendwann überflüssig.}{\pkg{ltxtalk-theme} is an experimental theme engine for 
+    \cls{ltx-talk}. It uses \pkg{osgstyler} for inner design aspects. As \cls{ltx-talk} continues to evolve, 
+    \pkg{ltxtalk-theme} will probably become obsolete eventually.}
+  \item \ldeen{\pkg{lttheme-tuc-2019} ist die (inoffizielle) Umsetzung des offiziellen Präsentationslayout meiner
+    Universität für \pkg{ltx-talk}. Es nutzt \pkg{ltxtalk-theme}.
+  }{\pkg{lttheme-tuc-2019} is the unofficial implementation of my university's official presentation layout 
+    for \pkg{ltx-talk}. It uses \pkg{ltxtalk-theme}.}
+  \item \ldeen{\pkg{semcat} dient zur einfacheren semantischen Markierung (z.\,B.\ von Kategorien wie
+    "`Hintergründe"',  "`technische Details"' oder "`Wiederholung"') von Textteilen oder QR-Codes.
+  }{\pkg{semcat} facilitates the semantic labeling of passages of text or QR codes, for example with categories 
+    such as "`background"', "`technical details"', or "`review"'.}
+  \item \ldeen{\pkg{ansiterm} stellt zwei semiverbatim Umgebungen für die Darstellung von Computerterminalfenstern zur
+    Verfügung, die ANSI-Escapesequenz\footnote{Siehe z.\,B.\ \url{https://de.wikipedia.org/wiki/ANSI-Escapesequenz}}
+    interpretieren können. Eine davon führt zur Übersetzungszeit den Inhalt in einer Shell aus und liest die
+    Ergebnisse zurück, simuliert also ein "`echtes"' Terminal.
+  }{\pkg{ansiterm} provides two semiverbatim environments for displaying computer terminal windows that can 
+    interpret ANSI escape sequences\footnote{See, for example, \url{https://en.wikipedia.org/wiki/ANSI_escape_code}.}. 
+    One of them executes its contents in a shell at compilation time and reads back the results, thus simulating a 
+    "`real"' terminal.}
+  \item \ldeen{\pkg{osglistings} stellt ein Frontend für \needpackage{minted} zur Verfügung mit erweiterten 
+    Möglichkeiten der Quellcodemarkierung, Einbindung von Gists und Repositories und verschiedenen Darstellungen.
+  }{\pkg{osglistings} provides a front end for \needpackage{minted}, offering advanced source-code highlighting, the 
+    inclusion of gists and repositories, and various presentation styles.}
+\end{itemize}
+
 \subsection{\ldeen{Polymorphie}{Polymorphism} in \osglecture}
 \ldeen{Es ist eine alte \hologo{TeX}-Idee, Texte je nach Kontext unterschiedlich darzustellen. Die \hologo{TeX}-Variante \hologo{ConTeXt} leitet beispielsweise ihren Namen auch davon ab.
-\osglecture\ versucht die Anwendung dieses Konzept noch ein Stück weit zu erweitern.
+\osglecture{} versucht die Anwendung dieses Konzept noch ein Stück weit zu erweitern.
 Dazu ist \cls{osglecture} eine \emph{Metaklasse}: Sie sagt (anders als die meisten
 \LaTeX-Klassen) nicht, wie die fertig gesetzten Dokumente aussehen sollen,\footnote{Es gibt aber
 Pakete im \osglecture-Bundle, die so etwas machen} sondern stellt ein gemeinsames Interfache zur
@@ -125,16 +224,16 @@ Verfügung und verteilt dann die Arbeit an Klassen wie \cls{article}, \cls{scrar
 oder \cls{ltx-talk}.}{It is a
 long-standing \hologo{TeX} concept to render text differently depending on the
 context. The \hologo{TeX} variant \hologo{ConTeXt}, for example, derives its
-name from this concept. \osglecture\ attempts to expand the application of this concept a bit further.
+name from this concept. \osglecture{} attempts to expand the application of this concept a bit further.
 In this regard, \cls{osglecture} is a \emph{metaclass}: Unlike most
-\LaTeX\ classes, it does not specify how the final typeset documents should look,\footnote{However, there are
+\LaTeX{} classes, it does not specify how the final typeset documents should look,\footnote{However, there are
 packages in the \osglecture bundle that do just that} but rather provides a common interface
 and then delegates the work to classes such as \cls{article}, \cls{scrarticle}, \cls{beamer},
 or \cls{ltx-talk}.}
 
 \ldeen{Das Folgende ist ein Mini-Showcase der zeigen soll, wie aus einer Quelle verschiedene Instanzen
 erzeugt werden. Es dient lediglich dazu, dass der Nutzer einen kleinen Eindruck von den
-Möglichkeiten des kontextabhängigen Polymorphismus in \osglecture\ gewinnen kann~-- die Diskussion
+Möglichkeiten des kontextabhängigen Polymorphismus in \osglecture{} gewinnen kann~-- die Diskussion
 über Funktionsweise und die verwendeten Mechanismen erfolgt später.}{
 The following is a mini-showcase designed to demonstrate how different instances are
 created from a single source. Its sole purpose is to give the user a brief glimpse of the
@@ -183,7 +282,7 @@ of how it works and the mechanisms used will follow later.}
 \end{minipage}
 \medskip
 
-\ldeen{Dass auch gewöhnlich Textauszeichnungen unterschiedlich gestaltet und damit polymorph sein können, ist in \LaTeX\ ein alter Hut. \osglecture\ unterstützt dies aber komfortabel durch spezifische Profile.}{It is well known in \LaTeX\ that text markup can vary and thus be polymorphic. However, \osglecture\ provides convenient support for this through specific profiles.}
+\ldeen{Dass auch gewöhnlich Textauszeichnungen unterschiedlich gestaltet und damit polymorph sein können, ist in \LaTeX{} ein alter Hut. \osglecture{} unterstützt dies aber komfortabel durch spezifische Profile.}{It is well known in \LaTeX{} that text markup can vary and thus be polymorphic. However, \osglecture{} provides convenient support for this through specific profiles.}
 
 \begin{minipage}{\linewidth}
 \inputsourcecode[
