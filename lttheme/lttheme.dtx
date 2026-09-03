@@ -2102,30 +2102,6 @@ theme.
     \prop_gput:Nnn \g__ltxtalk_themes_prop { #1 } { #2 }
   }
 
-\NewDocumentCommand \useltxtalktheme { m }
-  {
-    \str_case:nnF { #1 }
-      {
-        { default } { \__ltxtalk_activate_default_theme: }
-      }
-      {
-        \prop_get:NnNTF \g__ltxtalk_themes_prop { #1 } \l_tmpa_tl
-          {
-            \tl_gset:Nn \g__ltxtalk_active_theme_tl { #1 }
-            \l_tmpa_tl
-            \__ltxtalk_apply_class_templates:
-          }
-          {
-            \msg_error:nnn { ltxtalk } { unknown-theme } { #1 }
-          }
-      }
-  }
-
-\cs_new_protected:Npn \__ltxtalk_activate_default_theme:
-  {
-    \tl_gset:Nn \g__ltxtalk_active_theme_tl { default }
-  }
-
 % ==========================================
 % LAYOUT-KONFIGURATION
 % ==========================================
@@ -2547,32 +2523,37 @@ theme.
 \tl_new:N \l__ltxtalk_slot_area_tl
 \tl_new:N \l__ltxtalk_slot_accessibility_tl
 
+% \ldeen{
+%   \#1 Slot-Name (eindeutig), \#2 Bereich (header/left/content/right/footer),
+%   \#3 Slot-Typ (frametitle, section, logo, \dots), \#4 Barrierefreiheits-Optionen
+%   (Key-Value). Idempotent: ein Layout darf pro Frame erneut ausgeführt werden,
+%   ohne dass ein Slot doppelt in die Bereichs-Reihenfolge gerät. Wird ein Slot
+%   in einen anderen Bereich verschoben, wird er zuerst aus der alten Reihenfolge
+%   entfernt.
+% }{
+%   \#1 slot name (unique), \#2 area (header/left/content/right/footer),
+%   \#3 slot type (frametitle, section, logo, \dots), \#4 accessibility options
+%   (key-value). Idempotent: a layout may run again per frame without a slot
+%   ending up twice in an area's order. If a slot moves to another area, it is
+%   first removed from the old order.
+% }
 \NewDocumentCommand \defineltxtalkslot { m m m m }
   {
-    % \begin{itemize}
-    % \item \#1: Slot-Name (eindeutig)
-    % \item \#2: Bereich (header/left/content/right/footer)
-    % \item \#3: Slot-Typ (frametitle, section, logo, etc.)
-    % \item \#4: Accessibility-Optionen (key-value)
-    % \end{itemize}
-    \prop_gput:Nnn \g__ltxtalk_slot_areas_prop { #1 } { #2 }
-    \prop_gput:Nnn \g__ltxtalk_slot_types_prop { #1 } { #3 }
-    \prop_gput:Nnn \g__ltxtalk_slot_accessibility_prop { #1 } { #4 }
-    
-    % Automatische Rollenerkennung basierend auf Slot-Typ
-    \str_case:nnF { #3 }
+    \prop_get:NnNT \g__ltxtalk_slot_areas_prop {#1} \l__ltxtalk_slot_area_tl
       {
-        { frametitle }    { \keys_set:nn { ltxtalk / a11y } { role = heading, heading-level = 2 } }
-        { framesubtitle } { \keys_set:nn { ltxtalk / a11y } { role = heading, heading-level = 3 } }
-        { title }         { \keys_set:nn { ltxtalk / a11y } { role = heading, heading-level = 1 } }
-        { section }       { \keys_set:nn { ltxtalk / a11y } { role = heading, heading-level = 2 } }
-        { subsection }    { \keys_set:nn { ltxtalk / a11y } { role = heading, heading-level = 3 } }
-        { pagenumber }    { \keys_set:nn { ltxtalk / a11y } { role = navigation } }
-        { logo }          { \keys_set:nn { ltxtalk / a11y } { role = artifact, alt-text = Logo } }
+        \seq_if_exist:cT { g__ltxtalk_ \l__ltxtalk_slot_area_tl _slots_seq }
+          { \seq_gremove_all:cn { g__ltxtalk_ \l__ltxtalk_slot_area_tl _slots_seq } {#1} }
       }
-      {
-        \keys_set:nn { ltxtalk / a11y } { role = artifact }
-      }
+    \prop_gput:Nnn \g__ltxtalk_slot_areas_prop {#1} {#2}
+    \prop_gput:Nnn \g__ltxtalk_slot_types_prop {#1} {#3}
+    \prop_gput:Nnn \g__ltxtalk_slot_accessibility_prop {#1} {#4}
+    \seq_if_exist:cF { g__ltxtalk_#2_slots_seq }
+      { \seq_new:c { g__ltxtalk_#2_slots_seq } }
+    \seq_if_in:cnF { g__ltxtalk_#2_slots_seq } {#1}
+      { \seq_gput_right:cn { g__ltxtalk_#2_slots_seq } {#1} }
+    \IfInstanceExistsTF { lttheme-slot } {#1}
+      { \EditInstance { lttheme-slot } {#1} { } }
+      { \DeclareInstance { lttheme-slot } {#1} { standard } { } }
   }
 
 \NewDocumentCommand \positionltxtalkslot { m m m m m }
@@ -2664,13 +2645,16 @@ theme.
     lowercase   .initial:n = false,
   }
 
+% \ldeen{\#1 Slot-Name, \#2 Formatierungsoptionen (Key-Value aus
+%   \code{ltxtalk / slot-style}). Der gespeicherte Wert dient dem
+%   Theme-Wechsel-Reset; \cs{EditInstance} wendet ihn sofort an.}{\#1 slot
+%   name, \#2 styling options (key-value from \code{ltxtalk / slot-style}).
+%   The stored value is used by the theme-switch reset; \cs{EditInstance}
+%   applies it immediately.}
 \NewDocumentCommand \styleltxtalkslot { m m }
   {
-    % \begin{itemize}
-    %  \item \#1: Slot-Name
-    %  \item \#2: Formatierungsoptionen (key-value)
-    % \end{itemize} 
-    \prop_gput:Nnn \g__ltxtalk_slot_styles_prop { #1 } { #2 }
+    \prop_gput:Nnn \g__ltxtalk_slot_styles_prop {#1} {#2}
+    \EditInstance { lttheme-slot } {#1} {#2}
   }
 
 % ==========================================
@@ -2696,14 +2680,17 @@ theme.
 
 \bool_new:N \l__ltxtalk_area_shadow_bool
 
+% \ldeen{\#1 Bereich (header/left/right/footer/content), \#2
+%   Dekorationsoptionen (Key-Value aus \code{ltxtalk / area-decoration}). Der
+%   gespeicherte Wert dient dem Theme-Wechsel-Reset; \cs{EditInstance} wendet
+%   ihn sofort an.}{\#1 area (header/left/right/footer/content), \#2
+%   decoration options (key-value from \code{ltxtalk / area-decoration}). The
+%   stored value is used by the theme-switch reset; \cs{EditInstance} applies
+%   it immediately.}
 \NewDocumentCommand \decorateltxtalkarea { m m }
   {
-    % 
-    % \begin{itemize}
-    %  \item \#1: Bereich (header/left/right/footer/content)
-    %  \item \#2: Dekorationsoptionen (key-value)
-    % \end{itemize}
-    \prop_gput:Nnn \g__ltxtalk_area_decorations_prop { #1 } { #2 }
+    \prop_gput:Nnn \g__ltxtalk_area_decorations_prop {#1} {#2}
+    \EditInstance { lttheme-area } {#1} {#2}
   }
 
 \keys_define:nn { ltxtalk / area-decoration }
@@ -3612,49 +3599,11 @@ theme.
     \dim_gset_eq:NN \hsize \textwidth
   }
 
-% \ldeen{
-%   Idempotent: ein Layout darf pro Frame erneut ausgeführt werden, ohne
-%   dass ein Slot doppelt in die Bereichs-Reihenfolge gerät. Wird ein Slot
-%   in einen anderen Bereich verschoben, wird er zuerst aus der alten
-%   Reihenfolge entfernt.
-% }{
-%   Idempotent: a layout may run again per frame without a slot ending up
-%   twice in an area's order. If a slot moves to another area, it is first
-%   removed from the old order.
-% }
-\RenewDocumentCommand \defineltxtalkslot { m m m m } {
-  \prop_get:NnNT \g__ltxtalk_slot_areas_prop {#1} \l__ltxtalk_slot_area_tl
-    {
-      \seq_if_exist:cT { g__ltxtalk_ \l__ltxtalk_slot_area_tl _slots_seq }
-        { \seq_gremove_all:cn { g__ltxtalk_ \l__ltxtalk_slot_area_tl _slots_seq } {#1} }
-    }
-  \prop_gput:Nnn \g__ltxtalk_slot_areas_prop {#1} {#2}
-  \prop_gput:Nnn \g__ltxtalk_slot_types_prop {#1} {#3}
-  \prop_gput:Nnn \g__ltxtalk_slot_accessibility_prop {#1} {#4}
-  \seq_if_exist:cF { g__ltxtalk_#2_slots_seq }
-    { \seq_new:c { g__ltxtalk_#2_slots_seq } }
-  \seq_if_in:cnF { g__ltxtalk_#2_slots_seq } {#1}
-    { \seq_gput_right:cn { g__ltxtalk_#2_slots_seq } {#1} }
-  \IfInstanceExistsTF { lttheme-slot } {#1}
-    { \EditInstance { lttheme-slot } {#1} { } }
-    { \DeclareInstance { lttheme-slot } {#1} { standard } { } }
-}
-
 \NewDocumentCommand \setltxtalkslotcontent { m m } {
-  \prop_gput:Nnn \g__ltxtalk_slot_contents_prop {#1} {#2} 
+  \prop_gput:Nnn \g__ltxtalk_slot_contents_prop {#1} {#2}
 }
 
-\RenewDocumentCommand \styleltxtalkslot { m m } {
-  \prop_gput:Nnn \g__ltxtalk_slot_styles_prop {#1} {#2}
-  \EditInstance { lttheme-slot } {#1} {#2}
-}
-
-\RenewDocumentCommand \decorateltxtalkarea { m m } {
-  \prop_gput:Nnn \g__ltxtalk_area_decorations_prop {#1} {#2}
-  \EditInstance { lttheme-area } {#1} {#2}
-}
-
-\RenewDocumentCommand \useltxtalktheme { m } {
+\NewDocumentCommand \useltxtalktheme { m } {
   \str_if_eq:nnTF {#1} {default}
     {
       \__ltxtalk_clear_theme_state:
