@@ -32,12 +32,6 @@
       }
     \setltxtalktitleplacement
       { frametitle = header, section = header }
-    \setltxtalkheadingbehavior
-      {
-        auto-section-title = true,
-        detect-continuation = true,
-        header-as-navigation = true
-      }
 
     \defineltxtalkslot{show-title}{header}{title}
       { role = heading, heading-level = 1 }

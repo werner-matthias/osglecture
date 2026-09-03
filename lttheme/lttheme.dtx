@@ -1711,22 +1711,6 @@ semantics of the slot. Their mapping to PDF tags is not yet implemented for
 all slots.
 }
 
-\begin{commands}
-  \command{setltxtalkheadingbehavior}[\marg{Optionen}]
-  \ldeen{
-    Konfiguriert die Überschriftenbehandlung mit den booleschen Schlüsseln
-    \code{auto-section-title}, \code{detect-continuation} und
-    \code{header-as-navigation}. Diese Schnittstelle ist experimentell; das
-    tatsächlich erzeugte Tagging wird wesentlich durch \cls{ltx-talk}
-    bestimmt.
-  }{
-    Configures heading handling with the Boolean keys
-    \code{auto-section-title}, \code{detect-continuation}, and
-    \code{header-as-navigation}. This interface is experimental; the actual
-    tagging is determined largely by \cls{ltx-talk}.
-  }
-\end{commands}
-
 \subsection{\ldeen{Templates und Sockets}{Templates and sockets}}
 
 \ldeen{
@@ -2117,17 +2101,16 @@ theme.
 \dim_new:N \l__ltxtalk_area_height_dim
 
 \int_new:N \l__ltxtalk_header_rows_int
-\int_new:N \g__ltxtalk_heading_id_int
 
 \bool_new:N \l__ltxtalk_show_header_bool
 \bool_new:N \l__ltxtalk_show_left_margin_bool
 \bool_new:N \l__ltxtalk_show_right_margin_bool
 \bool_new:N \l__ltxtalk_show_footer_bool
-\bool_new:N \l__ltxtalk_frametitle_in_header_bool
+% \ldeen{Von \code{ltxtalk / a11y} gesetzt (\code{continuation-mode}); die
+%   übrige Auswertung ist Aufgabe des inneren Themes.}{Set by
+%   \code{ltxtalk / a11y} (\code{continuation-mode}); acting on it is the
+%   inner theme's job.}
 \bool_new:N \l__ltxtalk_explicit_cont_bool
-\bool_new:N \l__ltxtalk_auto_section_title_bool
-\bool_new:N \l__ltxtalk_detect_cont_bool
-\bool_new:N \l__ltxtalk_header_nav_bool
 
 \clist_new:N \l__ltxtalk_header_columns_clist
 \clist_new:N \l__ltxtalk_footer_columns_clist
@@ -2778,10 +2761,6 @@ theme.
 \tl_new:N \l__ltxtalk_slot_role_tl
 \tl_new:N \l__ltxtalk_alt_text_tl
 \tl_new:N \l__ltxtalk_continuation_text_tl
-\tl_new:N \l__ltxtalk_heading_hash_tl
-\tl_new:N \l__ltxtalk_heading_tag_tl
-\tl_new:N \l__ltxtalk_clean_title_tl
-\tl_new:N \l__ltxtalk_previous_context_tl
 
 \int_new:N \l__ltxtalk_heading_level_int
 
@@ -2812,169 +2791,6 @@ theme.
     continuation-mode / implicit .code:n = 
       { \bool_set_false:N \l__ltxtalk_explicit_cont_bool },
     continuation-mode .initial:n = implicit,
-  }
-
-\NewDocumentCommand \setltxtalkheadingbehavior { m }
-  {
-    \keys_set:nn { ltxtalk / heading } { #1 }
-  }
-
-\keys_define:nn { ltxtalk / heading }
-  {
-    auto-section-title .bool_set:N = \l__ltxtalk_auto_section_title_bool,
-    auto-section-title .initial:n = true,
-    detect-continuation .bool_set:N = \l__ltxtalk_detect_cont_bool,
-    detect-continuation .initial:n = true,
-    header-as-navigation .bool_set:N = \l__ltxtalk_header_nav_bool,
-    header-as-navigation .initial:n = true,
-  }
-
-% Heading-Tracking
-\prop_new:N \g__ltxtalk_heading_context_prop
-\seq_new:N \g__ltxtalk_heading_history_seq
-
-% ==========================================
-% FRAME-INFORMATIONEN SAMMELN
-% ==========================================
-
-\tl_new:N \g__ltxtalk_current_frametitle_tl
-\tl_new:N \g__ltxtalk_current_framesubtitle_tl
-\tl_new:N \g__ltxtalk_current_section_tl
-\tl_new:N \g__ltxtalk_current_subsection_tl
-
-\cs_new_protected:Npn \__ltxtalk_capture_frame_info:
-  {
-    \cs_if_exist:NT \insertframetitle
-      {
-        \tl_if_empty:NF \insertframetitle
-          {
-            \tl_gset:Nx \g__ltxtalk_current_frametitle_tl { \insertframetitle }
-          }
-      }
-    
-    \cs_if_exist:NT \insertframesubtitle
-      {
-        \tl_if_empty:NF \insertframesubtitle
-          {
-            \tl_gset:Nx \g__ltxtalk_current_framesubtitle_tl { \insertframesubtitle }
-          }
-      }
-    
-    \cs_if_exist:NT \insertsection
-      {
-        \tl_gset:Nx \g__ltxtalk_current_section_tl { \insertsection }
-      }
-    
-    \cs_if_exist:NT \insertsubsection
-      {
-        \tl_gset:Nx \g__ltxtalk_current_subsection_tl { \insertsubsection }
-      }
-  }
-
-% ==========================================
-% HEADING-QUELLENERKENNUNG
-% ==========================================
-
-\cs_new_protected:Npn \__ltxtalk_detect_heading_source:
-  {
-    \bool_if:NT \l__ltxtalk_auto_section_title_bool
-      {
-        \tl_if_empty:NF \g__ltxtalk_current_frametitle_tl
-          {
-            \str_if_eq:eeTF 
-              { \g__ltxtalk_current_frametitle_tl } 
-              { \g__ltxtalk_current_section_tl }
-              {
-                \keys_set:nn { ltxtalk / a11y } {
-                  role = heading,
-                  heading-level = 2,
-                }
-              }
-              {
-                \str_if_eq:eeTF 
-                  { \g__ltxtalk_current_frametitle_tl } 
-                  { \g__ltxtalk_current_subsection_tl }
-                  {
-                    \keys_set:nn { ltxtalk / a11y } {
-                      role = heading,
-                      heading-level = 3,
-                    }
-                  }
-                  {}
-              }
-          }
-      }
-  }
-
-% ==========================================
-% FORTSETZUNGSFRAME-ERKENNUNG
-% ==========================================
-
-\cs_new_protected:Npn \__ltxtalk_handle_continuation_frame:n #1
-  {
-    \bool_if:NT \l__ltxtalk_detect_cont_bool
-      {
-        \tl_if_in:nnTF { #1 } { \l__ltxtalk_continuation_text_tl }
-          {
-            \__ltxtalk_mark_as_continuation:n { #1 }
-          }
-          {
-            \__ltxtalk_check_implicit_continuation:n { #1 }
-          }
-      }
-  }
-
-\cs_new_protected:Npn \__ltxtalk_mark_as_continuation:n #1
-  {
-    \tl_set:Nx \l__ltxtalk_clean_title_tl {
-      \tl_trim_spaces:n {
-        \str_replace_all:nnn { #1 } { \l__ltxtalk_continuation_text_tl } {}
-      }
-    }
-    
-    \prop_gput:Nnn \g__ltxtalk_heading_context_prop 
-      { heading- \l__ltxtalk_clean_title_tl } 
-      { continued }
-  }
-
-\cs_new_protected:Npn \__ltxtalk_check_implicit_continuation:n #1
-  {
-    \bool_if:NF \l__ltxtalk_explicit_cont_bool
-      {
-        \prop_get:NnNTF \g__ltxtalk_heading_context_prop 
-          { heading-#1 } 
-          \l__ltxtalk_previous_context_tl
-          {
-            \str_if_eq:VnT \l__ltxtalk_previous_context_tl { frame }
-              {
-                \__ltxtalk_mark_as_continuation:n { #1~(cont.) }
-              }
-          }
-          {}
-      }
-  }
-
-% ==========================================
-% DOPPELTE TITEL VERMEIDEN
-% ==========================================
-
-\cs_new_protected:Npn \__ltxtalk_manage_frametitle_placement:
-  {
-    \bool_set_false:N \l__ltxtalk_frametitle_in_header_bool
-    
-    \prop_map_inline:Nn \g__ltxtalk_slot_types_prop
-      {
-        \str_if_eq:nnTF { ##2 } { frametitle }
-          {
-            \prop_get:NnN \g__ltxtalk_slot_areas_prop { ##1 } \l_tmpa_tl
-            \str_if_eq:VnT \l_tmpa_tl { header }
-              {
-                \bool_set_true:N \l__ltxtalk_frametitle_in_header_bool
-                \prop_map_break:
-              }
-          }
-          {}
-      }
   }
 
 % ==========================================

@@ -7,13 +7,6 @@
 
 \useltxtalktheme{hawk}
 
-% Accessibility-Einstellungen
-\setltxtalkheadingbehavior{
-  auto-section-title = true,
-  detect-continuation = true,
-  header-as-navigation = true,
-}
-
 \title{Accessible Presentation}
 \author{Accessibility Team}
 \institute{University of Inclusive Design}
@@ -21,11 +14,14 @@
 
 \begin{document}
 
+% Die Abschnitts- und Folienstruktur wird von ltx-talk getaggt; das Theme
+% platziert und gestaltet sie nur. Explizite Titel statt visueller Umbrüche
+% verwenden, damit jede Folie eine echte Überschrift hat.
+
 \section{Introduction to Accessibility}
 
-% Frame 1: Section-Titel wird automatisch Frame-Titel
 \begin{frame}
-  % \insertsection wird automatisch als Frametitle verwendet
+  \frametitle{Introduction to Accessibility}
   \begin{itemize}
     \item What is accessibility?
     \item Why does it matter?
@@ -33,9 +29,8 @@
   \end{itemize}
 \end{frame}
 
-% Frame 2: Fortsetzung (automatisch erkannt)
 \begin{frame}
-  % Selber Section-Titel -> Fortsetzung
+  \frametitle{Standards and Guidelines}
   \begin{itemize}
     \item WCAG guidelines
     \item PDF/UA standard
@@ -45,8 +40,8 @@
 
 \section{Implementation Strategies}
 
-% Frame 3: Neuer Section-Titel -> Neue H2
 \begin{frame}
+  \frametitle{Implementation Strategies}
   \begin{itemize}
     \item Semantic structure
     \item Alternative texts
@@ -54,9 +49,8 @@
   \end{itemize}
 \end{frame}
 
-% Frame 4: Explizite Fortsetzung
 \begin{frame}
-  \frametitle{Implementation Strategies (cont.)}
+  \frametitle{Testing and Feedback}
   \begin{itemize}
     \item Keyboard navigation
     \item Screen reader testing
@@ -66,7 +60,6 @@
 
 \section{Best Practices}
 
-% Frame 5: Mit explizitem Subtitle
 \begin{frame}
   \frametitle{Best Practices}
   \framesubtitle{Summary of Key Points}
