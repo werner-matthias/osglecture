@@ -1,0 +1,51 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osgstyler}
+
+\DeclareOsgColorPalette{block-titled-test}{
+  primary = {model=HTML, value=204070},
+  structure = {alias=primary},
+  text = {model=HTML, value=111111},
+  background = {model=HTML, value=FFFFFF}
+}
+
+\DeclareOsgBlockInstance{tb}{traits={titlebar}}
+\NewOsgStyledEnvironment{tb}{tb}{none}[1]{#1}
+
+\DeclareOsgBlockInstance{pl}{traits={framed}}
+\NewOsgStyledEnvironment{pl}{pl}{none}[1]{#1}
+
+\begin{document}
+\UseOsgColorPalette{block-titled-test}
+\START
+\ExplSyntaxOn
+
+% 1. The titlebar trait resolves to layout=titled and is recorded.
+\OsgIfBlockTitledTF { tb }
+  { \TYPE { tb-titled:passed } } { \TYPE { tb-titled:FAILED } }
+\OsgIfBlockTitledTF { pl }
+  { \TYPE { pl-titled:FAILED } } { \TYPE { pl-titled:passed } }
+
+% 2. An additive restyle that does not mention the layout keeps the record.
+\StyleOsgBlockInstance { tb } { head-padding = 0.6em }
+\OsgIfBlockTitledTF { tb }
+  { \TYPE { tb-still-titled:passed } } { \TYPE { tb-still-titled:FAILED } }
+
+% 3. An explicit layout=plain clears it.
+\StyleOsgBlockInstance { tb } { layout = plain }
+\OsgIfBlockTitledTF { tb }
+  { \TYPE { tb-cleared:FAILED } } { \TYPE { tb-cleared:passed } }
+\StyleOsgBlockInstance { tb } { traits = { titlebar } }
+
+\ExplSyntaxOff
+
+% 4. Both layouts typeset without error.
+\begin{tb}{Titled block}
+  Body of the titled block.
+\end{tb}
+\begin{pl}{Framed block}
+  Body of the framed block.
+\end{pl}
+\TYPE{rendered:passed}
+\END
+\end{document}

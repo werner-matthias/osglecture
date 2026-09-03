@@ -1,0 +1,47 @@
+\DocumentMetadata{}
+\input regression-test.tex
+\documentclass{ltx-talk}
+\usepackage{ltxtalk-theme-magpie}
+\usepackage{ltxtalk-theme-minimal}
+
+\title[T]{Titled block wrapper}
+\author[A]{A}
+\date{}
+
+\begin{document}
+\useltxtalktheme{magpie}
+
+\begin{frame}
+  \frametitle{Titled}
+  \begin{block}{Bar title}
+    Titled body.
+  \end{block}
+  \begin{block}<2->{Hidden on slide 1}
+    Overlay-gated body.
+  \end{block}
+\end{frame}
+
+% Switching to a plain theme must drop the titled record.
+\useltxtalktheme{minimal}
+\begin{frame}
+  \frametitle{Plain again}
+  \begin{block}{Plain title}
+    Plain body.
+  \end{block}
+\end{frame}
+
+\START
+\ExplSyntaxOn
+% magpie's block is titled; minimal's clear reset it.
+\OsgIfBlockTitledTF { block }
+  { \TYPE { block-titled-after-minimal:FAILED } }
+  { \TYPE { block-titled-after-minimal:passed } }
+
+% Re-activate magpie: titled again.
+\useltxtalktheme { magpie }
+\OsgIfBlockTitledTF { block }
+  { \TYPE { block-titled-after-magpie:passed } }
+  { \TYPE { block-titled-after-magpie:FAILED } }
+\ExplSyntaxOff
+\END
+\end{document}

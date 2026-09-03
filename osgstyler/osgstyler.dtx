@@ -1958,13 +1958,38 @@ load babel
     Abschnitt~\ref{sec:blocks:traits}.}{Only for
     \cs{DeclareOsgBlockInstance}/\cs{StyleOsgBlockInstance}, not an
     interface key itself. See Section~\ref{sec:blocks:traits}.}
+  \keychoice{layout}{plain,titled}\Default{plain}
+    \ldeen{\code{plain}: Titel (sofern die aufrufende Umgebung einen
+    liefert) dem Body vorangestellt, optionaler Rahmen um alles.
+    \code{titled}: farbiger Kopfstreifen mit dem Titel, Body darunter.}
+    {\code{plain}: title (if the calling environment supplies one)
+    prepended to the body, optional frame around all. \code{titled}:
+    a coloured head strip carrying the title, body below.}
+  \keyval{head-background, head-color, head-rule-color}{\ldeen{Farb-Slot}{color slot}}
+    \Default{structure, background, structure}
+    \ldeen{Nur bei \code{layout=titled}: Fläche, Schrift und Unterlinie des
+    Kopfstreifens.}{Only with \code{layout=titled}: fill, text and
+    underline of the head strip.}
+  \keyval{head-font}{\ldeen{Inhalt}{content}}\Default{\cs{normalfont}\cs{bfseries}}
+  \keyval{head-padding, head-rule-thickness, body-padding}{\ldeen{Länge}{length}}
+    \Default{0.35em, 0pt, 0.4em}
+  \keyval{body-background}{\ldeen{Farb-Slot}{color slot}\code{|none}}\Default{none}
+    \ldeen{Nur bei \code{layout=titled}.}{Only with \code{layout=titled}.}
 \end{options}
 \ldeen{Immer deklarierte Instanzen: \env{quote}, \env{quotation},
   \env{block}, \env{alertblock}, \env{exampleblock}. Presets:
-  \code{osl-standard}, \code{osl-modern}. Trait: \code{osl-modern-rules}.}
+  \code{osl-standard}, \code{osl-modern}. Traits: \code{osl-modern-rules},
+  \code{plain}, \code{framed}, \code{filled}, \code{titlebar}. Der Test
+  \cs{OsgIfBlockTitledTF}\marg{Name}\marg{ja}\marg{nein} meldet, ob eine
+  Instanz \code{layout=titled} verwendet -- umhüllende Pakete brauchen das,
+  weil ein Kopf-Titel anders zugeführt werden muss.}
   {Always-declared instances: \env{quote}, \env{quotation}, \env{block},
   \env{alertblock}, \env{exampleblock}. Presets: \code{osl-standard},
-  \code{osl-modern}. Trait: \code{osl-modern-rules}.}
+  \code{osl-modern}. Traits: \code{osl-modern-rules}, \code{plain},
+  \code{framed}, \code{filled}, \code{titlebar}. The test
+  \cs{OsgIfBlockTitledTF}\marg{name}\marg{yes}\marg{no} reports whether an
+  instance uses \code{layout=titled} -- wrapping packages need this because
+  a head title has to be fed in differently.}
 
 \subsection{\ldeen{Nummerierung}{Numbering}}
 \label{sec:numbering:ref}
@@ -3863,11 +3888,35 @@ load babel
 \tl_new:N \l__osgstyler_block_rule_color_tl
 \tl_new:N \l__osgstyler_block_before_tl
 \tl_new:N \l__osgstyler_block_after_tl
+\tl_new:N \l__osgstyler_block_layout_tl
+\tl_new:N \l__osgstyler_block_head_bg_tl
+\tl_new:N \l__osgstyler_block_head_fg_tl
+\tl_new:N \l__osgstyler_block_head_font_tl
+\tl_new:N \l__osgstyler_block_head_rule_color_tl
+\tl_new:N \l__osgstyler_block_body_bg_tl
 \dim_new:N \l__osgstyler_block_rule_dim
 \dim_new:N \l__osgstyler_block_padding_dim
 \dim_new:N \l__osgstyler_block_corner_radius_dim
 \dim_new:N \l__osgstyler_block_shadow_offset_dim
+\dim_new:N \l__osgstyler_block_head_padding_dim
+\dim_new:N \l__osgstyler_block_head_rule_dim
+\dim_new:N \l__osgstyler_block_body_padding_dim
 \bool_new:N \l__osgstyler_block_shadow_bool
+
+% \ldeen*{Der Titel wird nicht als Template-Schlüssel geführt (er wechselt
+% je Verwendung, nicht je Instanz), sondern vor \cs{UseInstance} in diese
+% Variable gelegt -- über \cs{__osgstyler_block_use:nnn}, damit keine
+% Aufrufstelle sie zu setzen vergisst. Im Layout \code{plain} wird er
+% schlicht dem Body vorangestellt (verhält sich wie das frühere
+% \code{Titel\cs{par}Body}); im Layout \code{titled} bekommt er einen
+% eigenen, gestalteten Kopf.}
+% {The title is not a template key (it changes per use, not per instance);
+% callers place it into this variable before \cs{UseInstance}, through
+% \cs{__osgstyler_block_use:nnn} so no call site forgets it. In layout
+% \code{plain} it is simply prepended to the body (behaving like the
+% former \code{title\cs{par}body}); in layout \code{titled} it gets its
+% own styled head.}
+\tl_new:N \l__osgstyler_block_title_tl
 
 \NewTemplateType { osgstyler-block } { 1 }
 \DeclareTemplateInterface { osgstyler-block } { standard } { 1 }
@@ -3880,7 +3929,16 @@ load babel
     shadow        : boolean = false,
     shadow-offset : length = 2pt,
     before        : tokenlist =,
-    after         : tokenlist =
+    after         : tokenlist =,
+    layout        : choice { plain, titled } = plain,
+    head-background     : tokenlist = structure,
+    head-color         : tokenlist = background,
+    head-font          : tokenlist = \normalfont \bfseries,
+    head-padding       : length = 0.35em,
+    head-rule-color    : tokenlist = structure,
+    head-rule-thickness: length = 0pt,
+    body-background    : tokenlist = none,
+    body-padding      : length = 0.4em
   }
 \DeclareTemplateCode { osgstyler-block } { standard } { 1 }
   {
@@ -3892,28 +3950,161 @@ load babel
     shadow = \l__osgstyler_block_shadow_bool,
     shadow-offset = \l__osgstyler_block_shadow_offset_dim,
     before = \l__osgstyler_block_before_tl,
-    after = \l__osgstyler_block_after_tl
+    after = \l__osgstyler_block_after_tl,
+    layout =
+      {
+        plain  = \tl_set:Nn \l__osgstyler_block_layout_tl { plain },
+        titled = \tl_set:Nn \l__osgstyler_block_layout_tl { titled }
+      },
+    head-background = \l__osgstyler_block_head_bg_tl,
+    head-color = \l__osgstyler_block_head_fg_tl,
+    head-font = \l__osgstyler_block_head_font_tl,
+    head-padding = \l__osgstyler_block_head_padding_dim,
+    head-rule-color = \l__osgstyler_block_head_rule_color_tl,
+    head-rule-thickness = \l__osgstyler_block_head_rule_dim,
+    body-background = \l__osgstyler_block_body_bg_tl,
+    body-padding = \l__osgstyler_block_body_padding_dim
   }
   { \__osgstyler_block_typeset:n {#1} }
+
+% \ldeen*{Einzige Aufrufkonvention für den Block-Template-Typ: Titel und
+% Body getrennt übergeben. Aufrufstellen ohne Titel geben \code{\{\}}.}
+% {The one calling convention for the block template type: pass title and
+% body separately. Call sites without a title pass \code{\{\}}.}
+\cs_new_protected:Npn \__osgstyler_block_use:nnn #1#2#3
+  {
+    \tl_set:Nn \l__osgstyler_block_title_tl {#2}
+    \UseInstance { osgstyler-block } {#1} {#3}
+  }
+
+% \ldeen*{Muss expandierbar sein: der Wert landet als Farbargument in
+% \cs{colorbox}/\cs{fcolorbox}, die ihr Argument expandieren.}
+% {Must stay expandable: the value ends up as the colour argument of
+% \cs{colorbox}/\cs{fcolorbox}, which expand their argument.}
+\cs_new:Npn \__osgstyler_block_bg:n #1
+  { \str_if_eq:nnTF {#1} { none } { \OsgColorName{background} } { \OsgColorName{#1} } }
+\cs_generate_variant:Nn \__osgstyler_block_bg:n { V }
 
 \cs_new_protected:Npn \__osgstyler_block_typeset:n #1
   {
     \group_begin:
       \l__osgstyler_block_before_tl
+      \str_if_eq:VnTF \l__osgstyler_block_layout_tl { titled }
+        { \__osgstyler_block_typeset_titled:n {#1} }
+        { \__osgstyler_block_typeset_plain:n {#1} }
+      \l__osgstyler_block_after_tl
+    \group_end:
+  }
+
+% \ldeen*{\code{plain}: Titel (falls gesetzt) plus Body, ungeteilt -- wie
+% bisher, samt optionalem Rahmen um alles, wenn \code{rule-thickness}
+% positiv ist.}
+% {\code{plain}: title (if set) plus body, undivided -- as before,
+% including an optional frame around everything when \code{rule-thickness}
+% is positive.}
+\cs_new_protected:Npn \__osgstyler_block_typeset_plain:n #1
+  {
+    \dim_compare:nNnTF { \l__osgstyler_block_rule_dim } > { 0pt }
+      {
+        \setlength\fboxsep{\l__osgstyler_block_padding_dim}
+        \setlength\fboxrule{\l__osgstyler_block_rule_dim}
+        \noindent\fcolorbox
+          { \OsgColorName{\l__osgstyler_block_rule_color_tl} }
+          { \__osgstyler_block_bg:V \l__osgstyler_block_background_tl }
+          {
+            \begin{minipage}{\dim_eval:n
+              {\linewidth-2\fboxsep-2\fboxrule}}
+              \tl_if_empty:NF \l__osgstyler_block_title_tl
+                { \tl_use:N \l__osgstyler_block_title_tl \par }
+              #1
+            \end{minipage}
+          }
+      }
+      {
+        \tl_if_empty:NF \l__osgstyler_block_title_tl
+          { \tl_use:N \l__osgstyler_block_title_tl \par }
+        #1
+      }
+  }
+
+% \ldeen*{\code{titled}: farbiger Kopfstreifen mit dem Titel, darunter der
+% Body -- optisch abhebende Blöcke im Stil von Beamers Madrid. Kopf und
+% Body sind je eine \env{minipage} voller Breite; ein positives
+% \code{rule-thickness} zieht zusätzlich einen Rahmen um beide.}
+% {\code{titled}: a coloured head strip carrying the title, the body below
+% -- visually distinct blocks in the style of beamer's Madrid. Head and
+% body are each a full-width \env{minipage}; a positive
+% \code{rule-thickness} additionally frames both.}
+\tl_new:N \l__osgstyler_block_body_tl
+\dim_new:N \l__osgstyler_block_width_dim
+
+\cs_new_protected:Npn \__osgstyler_block_head_box:
+  {
+    \tl_if_empty:NF \l__osgstyler_block_title_tl
+      {
+        \group_begin:
+          \setlength\fboxsep{\l__osgstyler_block_head_padding_dim}%
+          \colorbox { \OsgColorName{\l__osgstyler_block_head_bg_tl} }
+            {%
+              \makebox
+                [ \dim_eval:n
+                  { \l__osgstyler_block_width_dim
+                    - 2 \l__osgstyler_block_head_padding_dim } ]
+                [ l ]
+                {%
+                  \color{ \OsgColorName{\l__osgstyler_block_head_fg_tl} }%
+                  \l__osgstyler_block_head_font_tl
+                  \strut \l__osgstyler_block_title_tl
+                }%
+            }%
+        \group_end:
+        \par \nointerlineskip
+        \dim_compare:nNnT { \l__osgstyler_block_head_rule_dim } > { 0pt }
+          {
+            \noindent
+            {\color{ \OsgColorName{\l__osgstyler_block_head_rule_color_tl} }%
+             \rule{\l__osgstyler_block_width_dim}
+               {\l__osgstyler_block_head_rule_dim}}%
+            \par \nointerlineskip
+          }
+      }
+  }
+
+\cs_new_protected:Npn \__osgstyler_block_body_box:
+  {
+    \group_begin:
+      \setlength\fboxsep{\l__osgstyler_block_body_padding_dim}%
+      \colorbox { \__osgstyler_block_bg:V \l__osgstyler_block_body_bg_tl }
+        {%
+          \begin{minipage}{\dim_eval:n
+            { \l__osgstyler_block_width_dim
+              - 2 \l__osgstyler_block_body_padding_dim }}%
+            \l__osgstyler_block_body_tl
+          \end{minipage}%
+        }%
+    \group_end:
+  }
+
+\cs_new_protected:Npn \__osgstyler_block_typeset_titled:n #1
+  {
+    \group_begin:
+      \tl_set:Nn \l__osgstyler_block_body_tl {#1}
+      \dim_set:Nn \l__osgstyler_block_width_dim
+        {
+          \linewidth
+          \dim_compare:nNnT { \l__osgstyler_block_rule_dim } > { 0pt }
+            { - 2 \l__osgstyler_block_rule_dim }
+        }
+      \noindent
       \dim_compare:nNnTF { \l__osgstyler_block_rule_dim } > { 0pt }
         {
-          \setlength\fboxsep{\l__osgstyler_block_padding_dim}
-          \setlength\fboxrule{\l__osgstyler_block_rule_dim}
-          \noindent\fcolorbox
-            { \OsgColorName{\l__osgstyler_block_rule_color_tl} }
-            {\str_if_eq:VnTF \l__osgstyler_block_background_tl {none}
-               {\OsgColorName{background}}
-               {\OsgColorName{\l__osgstyler_block_background_tl}}}
-            {\begin{minipage}{\dim_eval:n
-                {\linewidth-2\fboxsep-2\fboxrule}}#1\end{minipage}}
+          \setlength\fboxsep{\c_zero_dim}%
+          \setlength\fboxrule{\l__osgstyler_block_rule_dim}%
+          \fcolorbox { \OsgColorName{\l__osgstyler_block_rule_color_tl} }
+            { \__osgstyler_block_bg:V \l__osgstyler_block_body_bg_tl }
+            { \vbox { \__osgstyler_block_head_box: \__osgstyler_block_body_box: } }
         }
-        { #1 }
-      \l__osgstyler_block_after_tl
+        { \vbox { \__osgstyler_block_head_box: \__osgstyler_block_body_box: } }
     \group_end:
   }
 
@@ -3962,6 +4153,35 @@ load babel
     \keys_set:nn { osgstyler / block-instance } {#1}
   }
 
+% \ldeen*{Merkt sich pro Instanz, ob \code{layout=titled} wirksam ist
+% (direkt oder über einen Trait). Umhüllende Pakete wie \pkg*{lttheme}
+% brauchen das, weil sie einen Kopf-Titel dann anders zuführen müssen als
+% einen dem Body vorangestellten. Ein Aufruf ohne Layout-Angabe lässt den
+% Vermerk stehen -- \cs{StyleOsgBlockInstance} ist additiv.}
+% {Records per instance whether \code{layout=titled} is in effect
+% (directly or through a trait). Wrapping packages such as \pkg*{lttheme}
+% need this because a head title has to be fed in differently from one
+% prepended to the body. A call without a layout key leaves the record
+% untouched -- \cs{StyleOsgBlockInstance} is additive.}
+\prop_new:N \g__osgstyler_block_titled_prop
+
+\cs_new_protected:Npn \__osgstyler_block_record_layout:n #1
+  {
+    \tl_if_in:NnT \l__osgstyler_block_instance_keys_tl { titled }
+      { \prop_gput:Nnn \g__osgstyler_block_titled_prop {#1} { } }
+    \tl_if_in:NnT \l__osgstyler_block_instance_keys_tl { plain }
+      { \prop_gremove:Nn \g__osgstyler_block_titled_prop {#1} }
+  }
+
+\prg_new_conditional:Npnn \osgstyler_if_block_titled:n #1 { p, T, F, TF }
+  {
+    \prop_if_in:NnTF \g__osgstyler_block_titled_prop {#1}
+      { \prg_return_true: } { \prg_return_false: }
+  }
+\cs_new_eq:NN \OsgIfBlockTitledT \osgstyler_if_block_titled:nT
+\cs_new_eq:NN \OsgIfBlockTitledF \osgstyler_if_block_titled:nF
+\cs_new_eq:NN \OsgIfBlockTitledTF \osgstyler_if_block_titled:nTF
+
 % xtemplate's own key parser, like enumitem's \setlist (see
 % \cs{__osgstyler_list_apply_level:nnn}), scans its keys argument
 % before expansion; a bare macro reference there is read as one
@@ -3972,6 +4192,7 @@ load babel
 \NewDocumentCommand \DeclareOsgBlockInstance { m m }
   {
     \__osgstyler_block_instance_resolve:n {#2}
+    \__osgstyler_block_record_layout:n {#1}
     \tl_set:Ne \l__osgstyler_block_instance_call_tl
       {
         \exp_not:N \DeclareInstance { osgstyler-block } {#1} { standard }
@@ -3983,6 +4204,7 @@ load babel
 \NewDocumentCommand \StyleOsgBlockInstance { m m }
   {
     \__osgstyler_block_instance_resolve:n {#2}
+    \__osgstyler_block_record_layout:n {#1}
     \tl_set:Ne \l__osgstyler_block_instance_call_tl
       {
         \exp_not:N \EditInstance { osgstyler-block } {#1}
@@ -4110,8 +4332,8 @@ load babel
         }
       \IfNoValueF {#4}
         { \tl_put_right:Nn \l__osgstyler_styled_env_title_tl { ~(#4)} }
-      \UseInstance { osgstyler-block } {#1}
-        { \tl_use:N \l__osgstyler_styled_env_title_tl \par #5 }
+      \__osgstyler_block_use:nnn {#1}
+        { \tl_use:N \l__osgstyler_styled_env_title_tl } { #5 }
     \group_end:
   }
 
@@ -4171,7 +4393,7 @@ load babel
 \cs_new_protected:Npn \__osgstyler_styled_env_freetitle_render:nnn #1#2#3
   {
     \group_begin:
-      \UseInstance { osgstyler-block } {#1} { #2 \par #3 }
+      \__osgstyler_block_use:nnn {#1} { #2 } { #3 }
     \group_end:
   }
 
@@ -4375,7 +4597,7 @@ load babel
 
 \cs_new_protected:Npn \__osgstyler_block_render_bound:nnnn #1#2#3#4
   {
-    \UseInstance { osgstyler-block } {#2}
+    \__osgstyler_block_use:nnn {#2} { }
       {
         \IfNoValueTF {#3}
           { \begin{osgstyler-original-#1} #4 \end{osgstyler-original-#1} }
@@ -4519,6 +4741,31 @@ load babel
     after  = \__osgstyler_osl_modern_rule_after:
   }
 
+% \ldeen*{Vier gebrauchsfertige Block-Optiken als Traits. Farben sind
+% Slot-Namen (\code{structure} usw.), sodass sie der ladenden Palette bzw.
+% dem Theme folgen; \code{alertblock}/\code{exampleblock} überschreiben
+% danach nur den Slot. \code{titlebar} ist Beamers Madrid nachempfunden.}
+% {Four ready-made block looks as traits. Colours are slot names
+% (\code{structure} etc.) so they follow the loaded palette or theme;
+% \code{alertblock}/\code{exampleblock} then only override the slot.
+% \code{titlebar} is modelled on beamer's Madrid.}
+\DeclareOsgBlockTrait { plain }
+  { layout = plain, rule-thickness = 0pt, background = none }
+\DeclareOsgBlockTrait { framed }
+  { layout = plain, rule-thickness = 0.4pt, rule-color = structure,
+    padding = 0.5em }
+\DeclareOsgBlockTrait { filled }
+  { layout = plain, rule-thickness = 0.4pt, rule-color = structure,
+    background = structure!8, padding = 0.5em }
+\DeclareOsgBlockTrait { titlebar }
+  {
+    layout = titled,
+    head-background = structure, head-color = background,
+    head-padding = 0.4em,
+    body-background = structure!8, body-padding = 0.5em,
+    rule-thickness = 0pt
+  }
+
 % \ldeen*{Ein Preset besteht aus bis zu vier unabhängig deklarierten
 % Teilen (Farb-, Font- und Listenpalette, Block-Trait) unter demselben
 % Namen; ohne @1 müsste eine Vorlage wie \code{osl-modern} durch vier
@@ -4610,7 +4857,7 @@ load babel
           \tl_put_right:Nn \l__osgstyler_attributed_env_tl
             { \par \hfill ---~#2 }
         }
-      \UseInstance { osgstyler-block } {#1}
+      \__osgstyler_block_use:nnn {#1} { }
         { \tl_use:N \l__osgstyler_attributed_env_tl }
     \group_end:
   }

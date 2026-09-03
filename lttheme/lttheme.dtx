@@ -1439,22 +1439,26 @@ and page style.
     Standard-Schnittstelle umfasst \code{background}, \code{rule-color},
     \code{rule-thickness}, \code{padding}, \code{corner-radius},
     \code{shadow}, \code{shadow-offset}, \code{before} und \code{after}.
-    Eigene Template-Codes können weitere Darstellungen, etwa echte Rundungen
-    oder Schatten, ergänzen. Ohne Aufruf bleibt der Block rahmenlos und
-    bewahrt die Darstellung der Klasse; \code{minimal} nutzt das,
-    \code{magpie}, \code{hawk} und \code{sparrow} setzen dagegen einen
-    dünnen, farbig getönten Rahmen. Ein Blockstil wird beim Theme-Wechsel
-    zurückgesetzt.
+    Fertige Optiken liegen als \pkg*{osgstyler}-Traits vor:
+    \code{plain} (rahmenlos), \code{framed} (dünner Rahmen), \code{filled}
+    (getönte Fläche) und \code{titlebar} (farbiger Kopfstreifen wie Beamers
+    Madrid). Ohne Aufruf bleibt der Block rahmenlos und bewahrt die
+    Darstellung der Klasse; \code{minimal} nutzt das, \code{hawk} verwendet
+    \code{framed}, \code{sparrow} \code{filled}, \code{magpie}
+    \code{titlebar}. Ein Blockstil wird beim Theme-Wechsel zurückgesetzt.
   }{
     Edits the \code{block}, \code{alertblock}, or \code{exampleblock}
     instance of the \code{osgstyler-block} template type provided by
     \pkg*{osgstyler}. The standard interface includes \code{background},
     \code{rule-color}, \code{rule-thickness}, \code{padding},
     \code{corner-radius}, \code{shadow}, \code{shadow-offset},
-    \code{before}, and \code{after}. Without a call the block stays
+    \code{before}, and \code{after}. Ready-made looks are available as
+    \pkg*{osgstyler} traits: \code{plain} (frameless), \code{framed} (thin
+    frame), \code{filled} (tinted area), and \code{titlebar} (a coloured
+    head strip like beamer's Madrid). Without a call the block stays
     frameless and preserves the class appearance; \code{minimal} relies on
-    that, whereas \code{magpie}, \code{hawk}, and \code{sparrow} draw a
-    thin, colour-tinted frame. A block style is reset on a theme switch.
+    that, \code{hawk} uses \code{framed}, \code{sparrow} \code{filled},
+    \code{magpie} \code{titlebar}. A block style is reset on a theme switch.
   }
 
   \command{setltxtalkitemize}[\marg{Optionen}]
@@ -2377,10 +2381,45 @@ theme.
       { \begin{ltxtalk-original-block}<#1>{#2}#3\end{ltxtalk-original-block} }
   }
 
+% \ldeen{
+%   Zwei Wege je nach Block-Layout: \code{plain} reicht die Original-Umgebung
+%   \code{ltxtalk-original-block} (mit deren eigenem Titel) unverteilt an
+%   \code{osgstyler-block} weiter -- die \code{<Overlay>}-Behandlung der
+%   Klasse bleibt erhalten. \code{titled} braucht Titel und Body getrennt:
+%   der Titel geht in den farbigen Kopf, der Body ohne Klassen-Umgebung
+%   direkt; die Overlay-Auswahl übernimmt hier \cs{__talk_if_overlay:nT}.
+% }{
+%   Two paths depending on the block layout: \code{plain} hands the original
+%   \code{ltxtalk-original-block} environment (with its own title)
+%   undivided to \code{osgstyler-block} -- the class's \code{<overlay>}
+%   handling is preserved. \code{titled} needs title and body separately:
+%   the title goes into the coloured head, the body directly without the
+%   class environment; \cs{__talk_if_overlay:nT} does the overlay selection
+%   here.
+% }
+\cs_new_protected:Npn \__ltxtalk_render_block:nnnn #1#2#3#4
+  {
+    \OsgIfBlockTitledTF {#1}
+      {
+        % The titled composition has no leading/trailing medskip of its own
+        % (unlike the class's block env used on the plain path).
+        \par \addvspace { \medskipamount }
+        \IfNoValueTF {#2}
+          { \__talk_if_overlay:nT { all }
+              { \__osgstyler_block_use:nnn {#1} {#3} {#4} } }
+          { \__talk_if_overlay:nT {#2}
+              { \__osgstyler_block_use:nnn {#1} {#3} {#4} } }
+        \par \addvspace { \medskipamount }
+      }
+      {
+        \__osgstyler_block_use:nnn {#1} { }
+          { \__ltxtalk_use_original_block:nnn {#2} {#3} {#4} }
+      }
+  }
+
 \NewEnvironmentCopy { ltxtalk-original-block } { block }
 \RenewDocumentEnvironment { block } { d <> m +b }
-  { \UseInstance { osgstyler-block } { block }
-      {\__ltxtalk_use_original_block:nnn {#1}{#2}{#3}} }
+  { \__ltxtalk_render_block:nnnn { block } {#1} {#2} {#3} }
   { }
 
 % alertblock/exampleblock keep the "structure" rule-color default and
@@ -2394,21 +2433,25 @@ theme.
 \cs_if_exist:cF { alertblock }
   {
     \NewDocumentEnvironment { alertblock } { d <> m +b }
-      { \UseInstance { osgstyler-block } { alertblock }
-          {\group_begin:
-           \exp_args:Nee \colorlet
-             { \OsgColorName{structure} } { \OsgColorName{alert} }
-           \__ltxtalk_use_original_block:nnn {#1}{#2}{#3}\group_end:} }
+      {
+        \group_begin:
+          \exp_args:Nee \colorlet
+            { \OsgColorName{structure} } { \OsgColorName{alert} }
+          \__ltxtalk_render_block:nnnn { alertblock } {#1} {#2} {#3}
+        \group_end:
+      }
       { }
   }
 \cs_if_exist:cF { exampleblock }
   {
     \NewDocumentEnvironment { exampleblock } { d <> m +b }
-      { \UseInstance { osgstyler-block } { exampleblock }
-          {\group_begin:
-           \exp_args:Nee \colorlet
-             { \OsgColorName{structure} } { \OsgColorName{example} }
-           \__ltxtalk_use_original_block:nnn {#1}{#2}{#3}\group_end:} }
+      {
+        \group_begin:
+          \exp_args:Nee \colorlet
+            { \OsgColorName{structure} } { \OsgColorName{example} }
+          \__ltxtalk_render_block:nnnn { exampleblock } {#1} {#2} {#3}
+        \group_end:
+      }
       { }
   }
 
@@ -3332,9 +3375,11 @@ theme.
     \seq_gclear:N \g__ltxtalk_footer_slots_seq
     % Block appearance is an osgstyler-block instance edit, not reset by the
     % clears above; a theme that styles its blocks would otherwise leak that
-    % style into the next theme.  Restore the plain lttheme default.
+    % style into the next theme.  Restore the plain lttheme default -- through
+    % \DeclareOsgBlockInstance (not raw \DeclareInstance) so the titled-layout
+    % record is cleared with it.
     \clist_map_inline:nn { block, alertblock, exampleblock }
-      { \DeclareInstance { osgstyler-block } {##1} { standard } { } }
+      { \DeclareOsgBlockInstance {##1} { layout = plain } }
   }
 
 \cs_new_protected:Npn \__ltxtalk_update_text_area:
@@ -3968,12 +4013,13 @@ theme.
       accent={model=rgb,value={0.2,0.2,0.7}},
       text={model=HTML,value=000000},background={model=HTML,value=FFFFFF},
       structure={model=HTML,value=2B3A67},alert={model=HTML,value=B00020},example={model=HTML,value=166534}}
-    \styleltxtalkblock{block}
-      {rule-color=primary,rule-thickness=0.5pt,background=primary!7,padding=0.45em}
-    \styleltxtalkblock{alertblock}
-      {rule-color=alert,rule-thickness=0.5pt,background=alert!7,padding=0.45em}
-    \styleltxtalkblock{exampleblock}
-      {rule-color=example,rule-thickness=0.5pt,background=example!7,padding=0.45em}
+    % Madrid signature: coloured title bar, tinted body.
+    \styleltxtalkblock{block}{traits=titlebar,head-background=primary,
+      body-background=primary!8}
+    \styleltxtalkblock{alertblock}{traits=titlebar,head-background=alert,
+      body-background=alert!8}
+    \styleltxtalkblock{exampleblock}{traits=titlebar,head-background=example,
+      body-background=example!8}
   }
 \RegisterLTXTalkTheme{magpie}{\__ltxtalk_magpie_theme_setup:}
 %</magpie>
@@ -4029,12 +4075,9 @@ theme.
       accent={model=rgb,value={0.2,0.2,0.7}},
       text={model=HTML,value=000000},background={model=HTML,value=FFFFFF},
       structure={model=HTML,value=2B3A67},alert={model=HTML,value=B00020},example={model=HTML,value=166534}}
-    \styleltxtalkblock{block}
-      {rule-color=primary,rule-thickness=0.5pt,background=primary!7,padding=0.45em}
-    \styleltxtalkblock{alertblock}
-      {rule-color=alert,rule-thickness=0.5pt,background=alert!7,padding=0.45em}
-    \styleltxtalkblock{exampleblock}
-      {rule-color=example,rule-thickness=0.5pt,background=example!7,padding=0.45em}
+    \styleltxtalkblock{block}{traits=framed,rule-color=primary}
+    \styleltxtalkblock{alertblock}{traits=framed,rule-color=alert}
+    \styleltxtalkblock{exampleblock}{traits=framed,rule-color=example}
   }
 \RegisterLTXTalkTheme{hawk}{\__ltxtalk_hawk_theme_setup:}
 %</hawk>
@@ -4097,12 +4140,10 @@ theme.
       accent={model=rgb,value={0.2,0.2,0.7}},
       text={model=HTML,value=000000},background={model=HTML,value=FFFFFF},
       structure={model=HTML,value=2B3A67},alert={model=HTML,value=B00020},example={model=HTML,value=166534}}
-    \styleltxtalkblock{block}
-      {rule-color=primary,rule-thickness=0.5pt,background=primary!7,padding=0.45em}
-    \styleltxtalkblock{alertblock}
-      {rule-color=alert,rule-thickness=0.5pt,background=alert!7,padding=0.45em}
+    \styleltxtalkblock{block}{traits=filled,rule-color=primary,background=primary!8}
+    \styleltxtalkblock{alertblock}{traits=filled,rule-color=alert,background=alert!8}
     \styleltxtalkblock{exampleblock}
-      {rule-color=example,rule-thickness=0.5pt,background=example!7,padding=0.45em}
+      {traits=filled,rule-color=example,background=example!8}
   }
 \RegisterLTXTalkTheme{sparrow}{\__ltxtalk_sparrow_theme_setup:}
 %</sparrow>

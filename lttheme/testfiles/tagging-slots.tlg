@@ -72,7 +72,7 @@
        rolemaps-to="Sect"
       >
      <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
-        id="ID.037"
+        id="ID.040"
         title="Überschrift der Inhaltsfolie"
         rolemaps-to="H4"
        >
@@ -155,16 +155,16 @@
         </itembody>
        </item>
       </itemize>
+     </text-unit>
+     <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+        id="ID.030"
+        rolemaps-to="Part"
+       >
       <text xmlns="https://www.latex-project.org/ns/dflt"
-         id="ID.030"
+         id="ID.031"
          xmlns:Layout="http://iso.org/pdf/ssn/Layout"
          Layout:TextAlign="Start"
          rolemaps-to="P"
-        >
-       <?MarkedContent page="2" ?>
-      </text>
-      <Div xmlns="http://iso.org/pdf2/ssn"
-         id="ID.031"
         >
        <text-unit xmlns="https://www.latex-project.org/ns/dflt"
           id="ID.032"
@@ -176,6 +176,7 @@
            Layout:TextAlign="Start"
            rolemaps-to="P"
           >
+         <?MarkedContent page="2" ?>
          <?MarkedContent page="2" ?>Getaggter Block
         </text>
        </text-unit>
@@ -189,36 +190,53 @@
            Layout:TextAlign="Start"
            rolemaps-to="P"
           >
-         <?MarkedContent page="2" ?>Inhalt des Blocks.
+         <?MarkedContent page="2" ?>
+        </text>
+        <Div xmlns="http://iso.org/pdf2/ssn"
+           id="ID.036"
+          >
+         <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+            id="ID.037"
+            rolemaps-to="Part"
+           >
+          <text xmlns="https://www.latex-project.org/ns/dflt"
+             id="ID.038"
+             xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+             Layout:TextAlign="Start"
+             rolemaps-to="P"
+            >
+           <?MarkedContent page="2" ?>Inhalt des Blocks.
+          </text>
+         </text-unit>
+        </Div>
+        <text xmlns="https://www.latex-project.org/ns/dflt"
+           id="ID.039"
+           rolemaps-to="P"
+          >
+         <?MarkedContent page="2" ?>
+         <?MarkedContent page="2" ?>
         </text>
        </text-unit>
-      </Div>
-      <text xmlns="https://www.latex-project.org/ns/dflt"
-         id="ID.036"
-         rolemaps-to="P"
-        >
-       <?MarkedContent page="2" ?>
-       <?MarkedContent page="2" ?>
       </text>
      </text-unit>
     </frame>
     <frame xmlns="https://www.latex-project.org/ns/local/ltx-talk"
-       id="ID.038"
+       id="ID.041"
        rolemaps-to="Sect"
       >
      <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
-        id="ID.041"
+        id="ID.044"
         title="Überschrift der Inhaltsfolie (Fortsetzung)"
         rolemaps-to="H4"
        >
       <?MarkedContent page="3" ?>Überschrift der Inhaltsfolie (Fortsetzung)
      </frametitle>
      <text-unit xmlns="https://www.latex-project.org/ns/dflt"
-        id="ID.039"
+        id="ID.042"
         rolemaps-to="Part"
        >
       <text xmlns="https://www.latex-project.org/ns/dflt"
-         id="ID.040"
+         id="ID.043"
          xmlns:Layout="http://iso.org/pdf/ssn/Layout"
          Layout:TextAlign="Start"
          rolemaps-to="P"
