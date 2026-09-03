@@ -1333,18 +1333,32 @@ and page style.
     not currently affect freely positioned slots.
   }
 
-  \command{DeclareLTXTalkLayout}[\marg{Name}\marg{Optionen}]
-  \command{UseLTXTalkLayout}[\marg{Name}]
+  \command{DeclareLTXTalkLayout}[\marg{Name}\marg{Optionen}\oarg{Aufbau-Code}]
+  \command{UseLTXTalkLayout}[\marg{Name}\oarg{Overrides}]
   \ldeen{
-    Registriert eine wiederverwendbare Layoutkonfiguration und aktiviert sie.
-    \cs*{UseLTXTalkLayout} darf unmittelbar vor einem \env*{frame} oder als
-    erste Anweisung darin stehen. Damit bleiben Theme-Layouts unabhängig von
-    der optionalen Argument-Schnittstelle der Klasse.
+    Registriert eine benannte Layoutkonfiguration und aktiviert sie.
+    \meta{Optionen} sind Schlüssel aus \code{ltxtalk / layout}; der optionale
+    \meta{Aufbau-Code} kann Slots definieren, Flächen dekorieren oder eine
+    Navigation binden. \cs*{UseLTXTalkLayout} wendet erst die gespeicherten
+    Optionen an, dann die \meta{Overrides} desselben Schlüsselraums, dann den
+    Aufbau-Code -- der Code sieht also die endgültigen Werte (etwa
+    \cs*{LTXTalkHeaderRows}). Nicht genannte Schlüssel behalten ihren Wert,
+    Layouts sind also additiv. Ein Theme darf mehrere Layouts deklarieren und
+    pro Frame zwischen ihnen umschalten; \cs*{UseLTXTalkLayout} darf
+    unmittelbar vor einem \env*{frame} oder als erste Anweisung darin stehen.
+    Enthält der Aufbau-Code unbalancierte eckige Klammern, ist er zusätzlich
+    in geschweifte Klammern einzuschließen.
   }{
-    Registers and activates a reusable layout configuration.
-    \cs*{UseLTXTalkLayout} may be used immediately before a \env*{frame} or
-    as its first command. Theme layouts therefore remain independent of the
-    class's optional frame argument interface.
+    Registers a named layout configuration and activates it. \meta{Optionen}
+    are keys from \code{ltxtalk / layout}; the optional \meta{Aufbau-Code} may
+    define slots, decorate areas, or bind a navigation. \cs*{UseLTXTalkLayout}
+    applies the stored options first, then the \meta{Overrides} in the same
+    key space, then the setup code -- so the code sees the final values (such
+    as \cs*{LTXTalkHeaderRows}). Keys not named keep their value, so layouts
+    are additive. A theme may declare several layouts and switch between them
+    per frame; \cs*{UseLTXTalkLayout} may be used immediately before a
+    \env*{frame} or as its first command. If the setup code contains
+    unbalanced square brackets, enclose it additionally in braces.
   }
 
   \command{LTXTalkBaseLeftMargin}
@@ -2082,6 +2096,7 @@ theme.
 \clist_new:N \l__ltxtalk_header_columns_clist
 \clist_new:N \l__ltxtalk_footer_columns_clist
 \prop_new:N \g__ltxtalk_layouts_prop
+\prop_new:N \g__ltxtalk_layout_code_prop
 
 \keys_define:nn { ltxtalk / layout }
   {
@@ -2129,14 +2144,43 @@ theme.
     \__ltxtalk_update_text_area:
   }
 
-\NewDocumentCommand \DeclareLTXTalkLayout { m m }
-  { \prop_gput:Nnn \g__ltxtalk_layouts_prop {#1} {#2} }
+% \ldeen{
+%   Ein Layout bündelt eine benannte Grundeinstellung: die Keys von
+%   \code{ltxtalk / layout} und optional Aufbau-Code (Slots definieren,
+%   Flächen dekorieren, eine Navigation binden). \cs{UseLTXTalkLayout}
+%   wendet zuerst die gespeicherten Keys an, dann die Aufruf-Overrides,
+%   dann den Code -- der Code sieht also die endgültigen Werte (etwa
+%   \cs{LTXTalkHeaderRows}). Layouts sind additiv: nicht genannte Keys
+%   behalten ihren Wert, sodass ein Theme ein Layout als Ausgangspunkt
+%   nutzen und einzelne Slots danach überschreiben kann. Ein Theme kann
+%   mehrere Layouts deklarieren und pro Frame zwischen ihnen umschalten.
+% }{
+%   A layout bundles a named baseline: the \code{ltxtalk / layout} keys and
+%   optionally setup code (define slots, decorate areas, bind a
+%   navigation). \cs{UseLTXTalkLayout} applies the stored keys first, then
+%   the per-call overrides, then the code -- so the code sees the final
+%   values (such as \cs{LTXTalkHeaderRows}). Layouts are additive: keys not
+%   named keep their value, so a theme can use a layout as a starting point
+%   and override individual slots afterwards. A theme may declare several
+%   layouts and switch between them per frame.
+% }
+\NewDocumentCommand \DeclareLTXTalkLayout { m m O{} }
+  {
+    \prop_gput:Nnn \g__ltxtalk_layouts_prop {#1} {#2}
+    \prop_gput:Nnn \g__ltxtalk_layout_code_prop {#1} {#3}
+  }
 
-\NewDocumentCommand \UseLTXTalkLayout { m }
+\NewDocumentCommand \UseLTXTalkLayout { m O{} }
   {
     \prop_get:NnNTF \g__ltxtalk_layouts_prop {#1} \l_tmpa_tl
-      { \keys_set:nV {ltxtalk/layout} \l_tmpa_tl \__ltxtalk_update_text_area: }
-      { \msg_error:nnn {ltxtalk}{unknown-layout}{#1} }
+      {
+        \keys_set:nV { ltxtalk / layout } \l_tmpa_tl
+        \tl_if_blank:nF {#2} { \keys_set:nn { ltxtalk / layout } {#2} }
+        \prop_get:NnNT \g__ltxtalk_layout_code_prop {#1} \l_tmpb_tl
+          { \tl_use:N \l_tmpb_tl }
+        \__ltxtalk_update_text_area:
+      }
+      { \msg_error:nnn { ltxtalk } { unknown-layout } {#1} }
   }
 
 \prop_new:N \g__ltxtalk_title_layout_options_prop
@@ -3258,6 +3302,8 @@ theme.
     \prop_gclear:N \g__ltxtalk_slot_grid_positions_prop
     \prop_gclear:N \g__ltxtalk_slot_contents_prop
     \prop_gclear:N \g__ltxtalk_area_decorations_prop
+    \prop_gclear:N \g__ltxtalk_layouts_prop
+    \prop_gclear:N \g__ltxtalk_layout_code_prop
     \seq_gclear:N \g__ltxtalk_header_slots_seq
     \seq_gclear:N \g__ltxtalk_left_slots_seq
     \seq_gclear:N \g__ltxtalk_content_slots_seq
@@ -3298,13 +3344,29 @@ theme.
     \dim_gset_eq:NN \hsize \textwidth
   }
 
+% \ldeen{
+%   Idempotent: ein Layout darf pro Frame erneut ausgeführt werden, ohne
+%   dass ein Slot doppelt in die Bereichs-Reihenfolge gerät. Wird ein Slot
+%   in einen anderen Bereich verschoben, wird er zuerst aus der alten
+%   Reihenfolge entfernt.
+% }{
+%   Idempotent: a layout may run again per frame without a slot ending up
+%   twice in an area's order. If a slot moves to another area, it is first
+%   removed from the old order.
+% }
 \RenewDocumentCommand \defineltxtalkslot { m m m m } {
+  \prop_get:NnNT \g__ltxtalk_slot_areas_prop {#1} \l__ltxtalk_slot_area_tl
+    {
+      \seq_if_exist:cT { g__ltxtalk_ \l__ltxtalk_slot_area_tl _slots_seq }
+        { \seq_gremove_all:cn { g__ltxtalk_ \l__ltxtalk_slot_area_tl _slots_seq } {#1} }
+    }
   \prop_gput:Nnn \g__ltxtalk_slot_areas_prop {#1} {#2}
   \prop_gput:Nnn \g__ltxtalk_slot_types_prop {#1} {#3}
   \prop_gput:Nnn \g__ltxtalk_slot_accessibility_prop {#1} {#4}
   \seq_if_exist:cF { g__ltxtalk_#2_slots_seq }
     { \seq_new:c { g__ltxtalk_#2_slots_seq } }
-  \seq_gput_right:cn { g__ltxtalk_#2_slots_seq } {#1}
+  \seq_if_in:cnF { g__ltxtalk_#2_slots_seq } {#1}
+    { \seq_gput_right:cn { g__ltxtalk_#2_slots_seq } {#1} }
   \IfInstanceExistsTF { lttheme-slot } {#1}
     { \EditInstance { lttheme-slot } {#1} { } }
     { \DeclareInstance { lttheme-slot } {#1} { standard } { } }

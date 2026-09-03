@@ -1,0 +1,71 @@
+\DocumentMetadata{}
+\input regression-test.tex
+\documentclass{ltx-talk}
+\usepackage{ltxtalk-theme}
+
+\ExplSyntaxOn
+\tl_new:N \g_lttheme_test_rows_tl
+
+\RegisterLTXTalkTheme { test-recipe }
+  {
+    \ltxtalksetup { }
+    \setltxtalkcolors { primary = { model=HTML, value=204060 } }
+    % A layout that carries setup code.  The code records the header row
+    % count in effect when it ran, so the test can see whether a per-call
+    % override reached it.
+    \DeclareLTXTalkLayout { test-branded }
+      { header = true, header-height = 1.4cm, header-rows = 2 }
+      [
+        \defineltxtalkslot { tl-nav } { header } { custom } { role = navigation }
+        \setltxtalkslotcontent { tl-nav } { nav }
+        \positionltxtalkslot { tl-nav } { left } { 0.2cm } { 4cm } { 0.5cm }
+        \tl_gset:Nx \g_lttheme_test_rows_tl { \int_use:N \l__ltxtalk_header_rows_int }
+      ]
+    \UseLTXTalkLayout { test-branded }
+  }
+\RegisterLTXTalkTheme { test-recipe-empty } { \ltxtalksetup { } }
+\ExplSyntaxOff
+
+\useltxtalktheme{test-recipe}
+
+\begin{document}
+\begin{frame}{First}
+  Body one.
+\end{frame}
+
+% Per-call override: header-rows becomes 3; both the layout keys and the
+% setup code must see it.
+\UseLTXTalkLayout{test-branded}[header-rows = 3]
+
+\begin{frame}{Second}
+  Body two.
+\end{frame}
+
+\START
+\ExplSyntaxOn
+
+% 1. The layout's setup code ran on \UseLTXTalkLayout.
+\IfInstanceExistsTF { lttheme-slot } { tl-nav }
+  { \TYPE { slot-declared:passed } } { \TYPE { slot-declared:FAILED } }
+
+% 2. Idempotency: the layout ran twice (theme + explicit override call),
+%    the slot is in the header order exactly once.
+\int_compare:nNnTF { \seq_count:N \g__ltxtalk_header_slots_seq } = { 1 }
+  { \TYPE { idempotent:passed } }
+  { \TYPE { idempotent:FAILED= \seq_count:N \g__ltxtalk_header_slots_seq } }
+
+% 3. The per-call override reached the layout keys ...
+\int_compare:nNnTF { \l__ltxtalk_header_rows_int } = { 3 }
+  { \TYPE { override-key:passed } } { \TYPE { override-key:FAILED } }
+% ... and the setup code, which ran after the override was applied.
+\str_if_eq:eeTF { \g_lttheme_test_rows_tl } { 3 }
+  { \TYPE { override-code:passed } } { \TYPE { override-code:FAILED } }
+
+% 4. A theme switch drops the previous theme's declared layouts.
+\useltxtalktheme { test-recipe-empty }
+\prop_if_in:NnTF \g__ltxtalk_layouts_prop { test-branded }
+  { \TYPE { layout-cleared:FAILED } } { \TYPE { layout-cleared:passed } }
+
+\ExplSyntaxOff
+\END
+\end{document}
