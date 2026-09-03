@@ -2597,43 +2597,13 @@ theme.
 %   default, take effect.}
 \bool_new:N \l__ltxtalk_slot_flow_bool
 
-\keys_define:nn { ltxtalk / slot-style }
-  {
-    font        .tl_set:N = \l__ltxtalk_slot_font_tl,
-    font        .initial:n = \normalfont,
-    color       .tl_set:N = \l__ltxtalk_slot_color_tl,
-    color       .initial:n = ltxtalk-text,
-    background  .tl_set:N = \l__ltxtalk_slot_bg_tl,
-    background  .initial:n = none,
-    align       .tl_set:N = \l__ltxtalk_slot_align_tl,
-    align       .initial:n = center,
-    frame       .tl_set:N = \l__ltxtalk_slot_frame_tl,
-    frame       .initial:n = none,
-    padding     .dim_set:N = \l__ltxtalk_slot_padding_dim,
-    padding     .initial:n = 0pt,
-    rule-color  .tl_set:N = \l__ltxtalk_slot_rule_tl,
-    rule-color  .initial:n = none,
-    rule-thick  .dim_set:N = \l__ltxtalk_slot_rule_thick_dim,
-    rule-thick  .initial:n = 0.4pt,
-    
-    rotate      .tl_set:N = \l__ltxtalk_slot_rotate_tl,
-    rotate      .initial:n = 0,
-    opacity     .tl_set:N = \l__ltxtalk_slot_opacity_tl,
-    opacity     .initial:n = 1,
-    shadow      .bool_set:N = \l__ltxtalk_slot_shadow_bool,
-    shadow      .initial:n = false,
-    uppercase   .bool_set:N = \l__ltxtalk_slot_uppercase_bool,
-    uppercase   .initial:n = false,
-    lowercase   .bool_set:N = \l__ltxtalk_slot_lowercase_bool,
-    lowercase   .initial:n = false,
-  }
-
-% \ldeen{\#1 Slot-Name, \#2 Formatierungsoptionen (Key-Value aus
-%   \code{ltxtalk / slot-style}). Der gespeicherte Wert dient dem
-%   Theme-Wechsel-Reset; \cs{EditInstance} wendet ihn sofort an.}{\#1 slot
-%   name, \#2 styling options (key-value from \code{ltxtalk / slot-style}).
-%   The stored value is used by the theme-switch reset; \cs{EditInstance}
-%   applies it immediately.}
+% \ldeen{\#1 Slot-Name, \#2 Formatierungsoptionen aus der Schnittstelle des
+%   Template-Typs \code{lttheme-slot}. Der gespeicherte Wert dient dem
+%   Theme-Wechsel-Reset; \cs{EditInstance} prüft die Schlüssel und wendet
+%   sie sofort an.}{\#1 slot name, \#2 styling options from the
+%   \code{lttheme-slot} template type's interface. The stored value is used
+%   by the theme-switch reset; \cs{EditInstance} validates the keys and
+%   applies them immediately.}
 \NewDocumentCommand \styleltxtalkslot { m m }
   {
     \prop_gput:Nnn \g__ltxtalk_slot_styles_prop {#1} {#2}
@@ -2646,14 +2616,11 @@ theme.
 
 \prop_new:N \g__ltxtalk_area_decorations_prop
 
-\tl_new:N \l__ltxtalk_area_deco_tl
 \tl_new:N \l__ltxtalk_area_frame_tl
 \tl_new:N \l__ltxtalk_area_rule_color_tl
-\tl_new:N \l__ltxtalk_area_rule_style_tl
 \tl_new:N \l__ltxtalk_area_background_tl
 \tl_new:N \l__ltxtalk_area_bg_opacity_tl
 \tl_new:N \l__ltxtalk_area_shadow_color_tl
-\tl_new:N \l__ltxtalk_artifact_type_tl
 
 \dim_new:N \l__ltxtalk_area_rule_thickness_dim
 \dim_new:N \l__ltxtalk_area_shadow_offset_dim
@@ -2664,61 +2631,17 @@ theme.
 \bool_new:N \l__ltxtalk_area_shadow_bool
 
 % \ldeen{\#1 Bereich (header/left/right/footer/content), \#2
-%   Dekorationsoptionen (Key-Value aus \code{ltxtalk / area-decoration}). Der
-%   gespeicherte Wert dient dem Theme-Wechsel-Reset; \cs{EditInstance} wendet
-%   ihn sofort an.}{\#1 area (header/left/right/footer/content), \#2
-%   decoration options (key-value from \code{ltxtalk / area-decoration}). The
-%   stored value is used by the theme-switch reset; \cs{EditInstance} applies
-%   it immediately.}
+%   Dekorationsoptionen aus der Schnittstelle des Template-Typs
+%   \code{lttheme-area}. Der gespeicherte Wert dient dem Theme-Wechsel-Reset;
+%   \cs{EditInstance} prüft die Schlüssel und wendet sie sofort an.}{\#1 area
+%   (header/left/right/footer/content), \#2 decoration options from the
+%   \code{lttheme-area} template type's interface. The stored value is used
+%   by the theme-switch reset; \cs{EditInstance} validates the keys and
+%   applies them immediately.}
 \NewDocumentCommand \decorateltxtalkarea { m m }
   {
     \prop_gput:Nnn \g__ltxtalk_area_decorations_prop {#1} {#2}
     \EditInstance { lttheme-area } {#1} {#2}
-  }
-
-\keys_define:nn { ltxtalk / area-decoration }
-  {
-    frame           .choice:,
-    frame / none    .code:n = \tl_set:Nn \l__ltxtalk_area_frame_tl { none },
-    frame / box     .code:n = \tl_set:Nn \l__ltxtalk_area_frame_tl { box },
-    frame / top     .code:n = \tl_set:Nn \l__ltxtalk_area_frame_tl { top },
-    frame / bottom  .code:n = \tl_set:Nn \l__ltxtalk_area_frame_tl { bottom },
-    frame / left    .code:n = \tl_set:Nn \l__ltxtalk_area_frame_tl { left },
-    frame / right   .code:n = \tl_set:Nn \l__ltxtalk_area_frame_tl { right },
-    frame / topbottom .code:n = \tl_set:Nn \l__ltxtalk_area_frame_tl { topbottom },
-    frame .initial:n = none,
-    
-    rule-color      .tl_set:N = \l__ltxtalk_area_rule_color_tl,
-    rule-color      .initial:n = ltxtalk-primary,
-    rule-thickness  .dim_set:N = \l__ltxtalk_area_rule_thickness_dim,
-    rule-thickness  .initial:n = 1pt,
-    rule-style      .tl_set:N = \l__ltxtalk_area_rule_style_tl,
-    rule-style      .initial:n = solid,
-    
-    background      .tl_set:N = \l__ltxtalk_area_background_tl,
-    background      .initial:n = none,
-    background-opacity .tl_set:N = \l__ltxtalk_area_bg_opacity_tl,
-    background-opacity .initial:n = 1,
-    
-    shadow          .bool_set:N = \l__ltxtalk_area_shadow_bool,
-    shadow          .initial:n = false,
-    shadow-color    .tl_set:N = \l__ltxtalk_area_shadow_color_tl,
-    shadow-color    .initial:n = black!30,
-    shadow-offset   .dim_set:N = \l__ltxtalk_area_shadow_offset_dim,
-    shadow-offset   .initial:n = 3pt,
-    
-    padding         .dim_set:N = \l__ltxtalk_area_padding_dim,
-    padding         .initial:n = 0pt,
-    margin-top      .dim_set:N = \l__ltxtalk_area_margin_top_dim,
-    margin-top      .initial:n = 0pt,
-    margin-bottom   .dim_set:N = \l__ltxtalk_area_margin_bottom_dim,
-    margin-bottom   .initial:n = 0pt,
-    
-    artifact-type   .choice:,
-    artifact-type / decorative  .code:n = \tl_set:Nn \l__ltxtalk_artifact_type_tl { decorative },
-    artifact-type / layout      .code:n = \tl_set:Nn \l__ltxtalk_artifact_type_tl { layout },
-    artifact-type / background  .code:n = \tl_set:Nn \l__ltxtalk_artifact_type_tl { background },
-    artifact-type .initial:n = decorative,
   }
 
 % ==========================================

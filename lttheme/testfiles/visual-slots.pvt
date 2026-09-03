@@ -185,16 +185,14 @@
       }
   }
 
-% Besides creating the PDF reference, parse every stored option list.  This
-% makes the test fail when slot, accessibility, or decoration keys regress.
+% Slot styling and area decoration are validated by \styleltxtalkslot and
+% \decorateltxtalkarea themselves (they \EditInstance the stored keys).
+% Only the accessibility options are merely stored, so re-parse those here:
+% the test then fails when an a11y key regresses.
 \cs_new_protected:Npn \__lttheme_test_validate_slot_setup:
   {
-    \prop_map_inline:Nn \g__ltxtalk_slot_styles_prop
-      { \keys_set:nn { ltxtalk / slot-style } { ##2 } }
     \prop_map_inline:Nn \g__ltxtalk_slot_accessibility_prop
       { \keys_set:nn { ltxtalk / a11y } { ##2 } }
-    \prop_map_inline:Nn \g__ltxtalk_area_decorations_prop
-      { \keys_set:nn { ltxtalk / area-decoration } { ##2 } }
   }
 
 \RegisterLTXTalkTheme{slot-showcase}{\__lttheme_test_slot_showcase:}
