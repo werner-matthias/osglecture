@@ -41,7 +41,8 @@ M.resolve_goToR = nil
 -- populates with its own data and queries from within its own @2
 -- function.}{\code{tagpax}}{\code{resolve\_goToR}}
 M.known_units = {}
--- LuaTeX image userdata must stay reachable until shipout has consumed it.
+-- \ldeen*{@1-Bildobjekte müssen bis zum Shipout erreichbar bleiben.}{@1 image
+-- objects must remain reachable until shipout.}{\LuaTeX}
 local images = {}
 
 -- \ldeen*{Geöffnete Quell-PDFs bleiben für die Dauer des Laufs offen, siehe
@@ -49,7 +50,7 @@ local images = {}
 -- @1 below.}{\code{open\_document}}
 local documents = {}
 
--- TeX/PDF boundary helpers -------------------------------------------------
+-- \ldeen{Helfer an der \TeX-/PDF-Grenze}{Helpers at the \TeX/PDF boundary}
 -- \ldeen*{Escaping stammt aus @1 und wird dort zentral gepflegt.}{Escaping
 -- lives in @1 and is maintained there centrally.}{\code{tagpax-ir.lua}}
 local tex_escape = ir_reader.tex_escape
@@ -61,7 +62,9 @@ local function hex(s)
 end
 
 local function page_rotation(page)
-  -- Normalize inherited or direct /Rotate values to the four PDF quadrants.
+  -- \ldeen*{Direkte und geerbte @1-Werte werden auf die vier PDF-Quadranten
+  -- normalisiert.}{Direct and inherited @1 values are normalized to the four
+  -- PDF quadrants.}{\code{/Rotate}}
   local rotation = tonumber(page and page.Rotate) or 0
   if pdfe.getinteger then
     local ok, first, second = pcall(pdfe.getinteger, page, "Rotate")
@@ -71,8 +74,10 @@ local function page_rotation(page)
 end
 
 local function page_geometry(media, rotation, target_width, target_height)
-  -- This is the single source-to-target transform. The same mapping must drive
-  -- link rectangles and destinations or clickable and visible areas diverge.
+  -- \ldeen{Diese einzige Quell-Ziel-Transformation gilt gemeinsam für
+  -- Linkrechtecke und Ziele, damit sichtbare und klickbare Bereiche
+  -- übereinstimmen.}{This single source-to-target transform is shared by link
+  -- rectangles and destinations so visible and clickable areas agree.}
   local width, height = media[3] - media[1], media[4] - media[2]
   local displayed_width = (rotation == 90 or rotation == 270) and height or width
   local displayed_height = (rotation == 90 or rotation == 270) and width or height
@@ -92,8 +97,9 @@ local function page_geometry(media, rotation, target_width, target_height)
     return tx * scale_x, ty * scale_y
   end
   local function rectangle(llx, lly, urx, ury)
-    -- Rotate all corners: after a quarter turn the original lower-left and
-    -- upper-right are no longer sufficient to define the target rectangle.
+    -- \ldeen{Alle Ecken werden gedreht; nach einer Vierteldrehung genügen die
+    -- ursprünglichen Diagonalecken nicht mehr.}{All corners are rotated; after
+    -- a quarter turn the original diagonal corners no longer suffice.}
     local x1, y1 = point(llx, lly)
     local x2, y2 = point(llx, ury)
     local x3, y3 = point(urx, lly)
@@ -109,8 +115,10 @@ end
 M.page_geometry = page_geometry
 
 local function emit_destination(destination, prefix, image_width, geometry, media, rotation)
-  -- Recreate the source view where LaTeX's destination primitives permit it.
-  -- `prefix` prevents equal source names in different imports from colliding.
+  -- \ldeen*{Die Quellansicht wird soweit möglich nachgebildet. @1 trennt
+  -- gleichnamige Ziele verschiedener Importe.}{The source view is reproduced
+  -- where possible. @1 separates equal destination names across imports.}
+  -- {\code{prefix}}
   local name = string.format("tagpax.%s.dest.%s", prefix, destination.id)
   local view = destination.view or "Fit"
   local a1, a2, a3, a4 = tonumber(destination.arg1), tonumber(destination.arg2),
@@ -122,8 +130,10 @@ local function emit_destination(destination, prefix, image_width, geometry, medi
     return
   end
   if view == "XYZ" then
-    -- PDF null coordinates mean “retain current view”. LaTeX cannot express
-    -- that state, so missing values fall back to the corresponding page edge.
+    -- \ldeen{PDF-Nullkoordinaten bedeuten »Ansicht beibehalten«. Da
+    -- \LaTeX-Ziele dies nicht ausdrücken, gilt die jeweilige Seitenkante.}{PDF
+    -- null coordinates mean ``retain current view''. As \LaTeX\ destinations
+    -- cannot express this, the corresponding page edge is used.}
     local x, y = geometry.point(a1 or media[1], a2 or media[4])
     local kind = a3 and a3 > 0 and tostring(math.floor(a3 * 100 + 0.5)) or "xyz"
     tex.sprint(string.format("\\TagPaxPointDestination{%.0f}{%.0f}{%.0f}{%s}{%s}",
@@ -135,7 +145,9 @@ local function emit_destination(destination, prefix, image_width, geometry, medi
   if horizontal then
     local x, y = geometry.point(media[1], a1 or media[4])
     local kind = view == "FitBH" and "fitbh" or "fith"
-    -- A horizontal source constraint becomes vertical after a quarter turn.
+    -- \ldeen{Eine horizontale Quellbeschränkung wird nach einer Vierteldrehung
+    -- vertikal.}{A horizontal source constraint becomes vertical after a
+    -- quarter turn.}
     if rotation == 90 or rotation == 270 then
       kind = view == "FitBH" and "fitbv" or "fitv"
     end
@@ -156,13 +168,9 @@ local function emit_destination(destination, prefix, image_width, geometry, medi
   tex.sprint("\\TagPaxPageDestination{" .. tex_escape(name) .. "}{" .. kind .. "}")
 end
 
--- \ldeen*{@1 wird einmal pro Seite aufgerufen. Ohne Cache würde @2 die
--- Quell-PDF für jede Seite erneut öffnen -- Öffnen liest Xref und Trailer
--- neu ein, ein reiner Overhead gegenüber einmaligem Öffnen und
--- Wiederverwenden.}{@1 is called once per page. Without caching, @2 would
--- reopen the source PDF for every page -- opening re-reads the xref table
--- and trailer, pure overhead compared to opening once and reusing the
--- result.}{\code{write\_page(...)}}{\code{pdfe.open}}
+-- \ldeen*{@1 hält jede Quell-PDF laufzeitweit offen, damit @2 sie seitenweise
+-- wiederverwenden kann.}{@1 keeps each source PDF open for the run so @2 can
+-- reuse it page by page.}{\code{open\_document}}{\code{write\_page}}
 local function open_document(filename)
   local document = documents[filename]
   if not document then
@@ -179,15 +187,18 @@ luatexbase.add_to_callback("stop_run", function()
   for _, document in pairs(documents) do pdfe.close(document) end
 end, "tagpax: close cached source PDFs")
 
---- Write one source PDF page as a Form XObject into the current TeX list.
--- @param filename source PDF
--- @param page one-based page number
--- @param structparents reserved ParentTree key
--- @param stream_id stable tagpax stream ID
--- @return image userdata (also retained until the end of the run)
+--- \ldeen{Schreibt eine Quellseite als Form-XObject in die aktuelle
+--- \TeX-Liste.}{Writes one source page as a Form XObject into the current
+--- \TeX\ list.}
+-- \ldeen*{@1 Quell-PDF; @2 einsbasierte Seitennummer; @3 reservierter
+-- ParentTree-Schlüssel; @4 stabile Stream-ID. Rückgabe: bis Laufende gehaltenes
+-- Bildobjekt.}{@1 source PDF; @2 one-based page number; @3 reserved ParentTree
+-- key; @4 stable stream ID. Returns an image object retained until the end of
+-- the run.}{\code{filename}}{\code{page}}{\code{structparents}}{\code{stream\_id}}
 function M.write_page(filename, page, structparents, stream_id, irfile, prefix, max_width, max_height)
-  -- Phase 1: scan and size the source page, injecting its reserved ParentTree
-  -- key into the Form dictionary before LuaTeX creates the object.
+  -- \ldeen{Phase~1 liest und skaliert die Seite und setzt den reservierten
+  -- ParentTree-Schlüssel vor der Form-Erzeugung.}{Phase~1 reads and scales the
+  -- page and sets the reserved ParentTree key before Form creation.}
   local image = assert(img.scan {
     filename = assert(filename),
     page = assert(tonumber(page)),
@@ -208,8 +219,9 @@ function M.write_page(filename, page, structparents, stream_id, irfile, prefix, 
   assert(image.objnum and image.objnum > 0, "LuaTeX did not allocate an image object")
   images[#images + 1] = image
   local ir = ir_reader.read(irfile)
-  -- Phase 2: reopen only for MediaBox and /Rotate. Semantic objects always
-  -- come from the already extracted IR.
+  -- \ldeen*{Phase~2 liest nur @1 und @2; semantische Objekte stammen stets aus
+  -- der IR.}{Phase~2 reads only @1 and @2; semantic objects always come from
+  -- the IR.}{\code{MediaBox}}{\code{/Rotate}}
   local document = open_document(filename)
   local source_page = pdfe.getpage(document, page)
   local media = pdfe.getbox(source_page, "MediaBox")
@@ -228,8 +240,10 @@ function M.write_page(filename, page, structparents, stream_id, irfile, prefix, 
       end
     end
     for _, annotation in ipairs(ir.annotations or {}) do
-      -- Overlay annotations are target objects, not copied dictionaries. Their
-      -- action and transformed rectangle are emitted through the TeX bridge.
+      -- \ldeen{Overlay-Annotationen sind neue Zielobjekte; Aktion und
+      -- transformiertes Rechteck gehen über die \TeX-Brücke.}{Overlay
+      -- annotations are new target objects; their action and transformed
+      -- rectangle pass through the \TeX\ bridge.}
       if tonumber(annotation.page) == page then
         local destination = annotation.destination and ir.destinations[annotation.destination]
         if annotation.action ~= "GoTo" or destination then
@@ -284,9 +298,11 @@ function M.write_page(filename, page, structparents, stream_id, irfile, prefix, 
       end
     end
   end
-  -- The source document is left open; the stop_run callback registered
-  -- below closes every cached document once, at the end of the run.
-  -- Phase 3: publish the late Form object reference for MCR binding.
+  -- \ldeen*{Das Quelldokument bleibt im Cache offen. Phase~3 veröffentlicht die
+  -- späte Form-Referenz für das MCR-Binding; @1 schließt den Cache am Laufende.}
+  -- {The source document remains open in the cache. Phase~3 publishes the late
+  -- Form reference for MCR binding; @1 closes the cache at the end of the run.}
+  -- {\code{stop\_run}}
   tex.sprint(string.format(
     "\\TagPaxBackendForm{%s}{%d 0 R}{%s}",
     tex_escape(page), image.objnum, tex_escape(stream_id)

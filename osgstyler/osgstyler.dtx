@@ -29,9 +29,20 @@
   }
   \expandafter\endbatchfile
 \fi
- \documentclass[
-load-preamble+
-]{osgdoc}
+
+\iffalse
+%</driver>
+%<*pkg>
+\NeedsTeXFormat{LaTeX2e}[2024-06-01]
+\ProvidesExplPackage{osgstyler}
+{2026/08/24}
+{v0.2.0}
+{Template-based, reusable document styles}
+%</pkg>
+%<*driver>
+\fi
+
+\documentclass[add-bib=false]{osgdoc}
 
 \usepackage{enumitem}
 \usepackage{microtype}
@@ -2093,18 +2104,12 @@ load babel
 \end{document}
 %</driver>
 %<*pkg>
-\NeedsTeXFormat{LaTeX2e}[2024-06-01]
-\ProvidesExplPackage{osgstyler}
-{2026/08/24}
-{v0.2.0}
-{Template-based, reusable document styles}
-\RequirePackage{xcolor}
 % Engine-neutral, unlike fontspec/the Lua decoration backend, so it is
 % required unconditionally rather than gated behind 'colors-only'.
+\RequirePackage{xcolor}
 \RequirePackage{enumitem}
 
 \ExplSyntaxOn
-
 % \ldeen*{@1 hält osgstyler engine-neutral, wenn nur Farb-/Metrik-/
 % Dekorationsverwaltung gebraucht wird: @2 verlangt \LuaTeX{} oder
 % \XeTeX{} (über @3), was unter @4 kein tragbarer Zwang ist. Deklarieren

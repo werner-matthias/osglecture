@@ -1,4 +1,4 @@
--- tagpax-validate.lua -- semantic IR validation
+-- \ldeen{Semantische IR-Validierung.}{Semantic IR validation.}
 local M = {}
 --<*pkg>
 
@@ -25,8 +25,9 @@ function M.validate(ir)
     if stream.kind ~= "page" and stream.kind ~= "object" then fail("invalid stream kind " .. tostring(stream.kind)) end
     if stream.kind == "page" and tonumber(stream.page) == nil then fail("page stream has invalid page") end
   end
-  -- Relations are valid only if both their semantic parent and typed target
-  -- exist. MCID zero is valid, hence numeric conversion rather than truthiness.
+  -- \ldeen{Relationen benötigen Elternknoten und typisiertes Ziel. MCID~0 ist
+  -- gültig und wird daher numerisch geprüft.}{Relations require both a parent
+  -- and a typed target. MCID~0 is valid and is therefore checked numerically.}
   for _, kid in ipairs(ir.kids) do
     if not ir.nodes[kid.parent] then fail("kid has missing parent " .. tostring(kid.parent)) end
     if kid.kind == "node" and not ir.nodes[kid.ref] then fail("kid references missing node " .. tostring(kid.ref)) end
@@ -42,7 +43,8 @@ function M.validate(ir)
       fail("heading role mismatch at " .. heading.node)
     end
   end
-  -- Navigation is checked here, before page geometry is ever consulted.
+  -- \ldeen{Navigation wird vor jedem Zugriff auf Seitengeometrie geprüft.}{Navigation
+  -- is validated before page geometry is consulted.}
   local page_count = ir.source and tonumber(ir.source.pages)
   for id, destination in pairs(ir.destinations) do
     if destination.id ~= id then fail("destination id mismatch " .. tostring(id)) end
@@ -66,7 +68,9 @@ function M.validate(ir)
       fail("FitR destination has incomplete rectangle " .. tostring(id))
     end
   end
-  -- The native writer intentionally supports a narrow, explicit action set.
+  -- \ldeen{Der native Schreiber akzeptiert nur die explizit aufgeführten
+  -- Aktionstypen.}{The native writer accepts only the explicitly listed action
+  -- types.}
   for _, annotation in ipairs(ir.annotations) do
     if annotation.subtype ~= "Link"
       or (annotation.action ~= "GoTo"

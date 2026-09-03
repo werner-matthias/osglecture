@@ -33,6 +33,8 @@ Matthias Werner.
 }
 \expandafter\endbatchfile
 \fi
+
+\iffalse
 %</driver>
 %<*package>
 \ProvidesExplPackage{osglecture-modes}
@@ -41,8 +43,9 @@ Matthias Werner.
   {Portable document-modes}
 %</package>
 %<*driver>
+\fi
 \ExplSyntaxOff
-\documentclass[load-preamble+]{osgdoc}
+\documentclass[add-bib=false]{osgdoc}
 
 \usepackage{enumitem}
 \usepackage{microtype}

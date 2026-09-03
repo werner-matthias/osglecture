@@ -1,12 +1,15 @@
--- build-support/tools.lua -- external PDF tool integration for tagpax
+-- Deutsch: Anbindung externer PDF-Werkzeuge für tagpax.
+-- English: External PDF-tool integration for tagpax.
 
 local M = {}
 
 local is_windows = package.config:sub(1, 1) == "\\"
 
 local function status_code(a, b, c)
-  -- Lua 5.1 commonly returns a numeric status; newer Lua versions return
-  -- success, exit-kind and exit-code.
+  -- Deutsch: Lua 5.1 liefert meist einen Statuscode, neuere Versionen liefern
+  -- Erfolg, Exit-Art und Exit-Code.
+  -- English: Lua 5.1 usually returns a status code; newer versions return
+  -- success, exit kind, and exit code.
   if type(a) == "number" then
     return a
   end
@@ -98,7 +101,8 @@ function M.mutool(pdf)
 end
 
 function M.pdfcpu(pdf, mode)
-  -- pdfcpu accepts the mode abbreviations r(elaxed) and s(trict).
+  -- Deutsch: pdfcpu akzeptiert die Moduskürzel r(elaxed) und s(trict).
+  -- English: pdfcpu accepts the mode abbreviations r(elaxed) and s(trict).
   mode = mode or "s"
   return M.run_optional("pdfcpu", { "validate", "-mode", mode, pdf })
 end

@@ -1,5 +1,6 @@
-% tagpax architecture overview
-% Requires: \usetikzlibrary{arrows.meta,backgrounds,fit,positioning}
+% Deutsch: Architekturübersicht; benötigt die unten genannten TikZ-Bibliotheken.
+% English: Architecture overview; requires the TikZ libraries named below.
+% \usetikzlibrary{arrows.meta,backgrounds,fit,positioning}
 \begin{tikzpicture}[
   font=\sffamily\footnotesize,
   >={Stealth[length=2mm]},
@@ -27,8 +28,10 @@
   zonelabel/.style={font=\sffamily\scriptsize\bfseries, text=black!65, label distance=0.5mm}
 ]
 
-% The top row is the stable semantic pipeline.  PDF object identities stop at
-% the inspector; all following components communicate through canonical IR.
+% Deutsch: Oben liegt die semantische Pipeline. PDF-Objektidentitäten enden am
+% Inspector; danach kommunizieren alle Komponenten über die kanonische IR.
+% English: The top row is the semantic pipeline. PDF object identities end at
+% the inspector; later components communicate through canonical IR.
 \node[source] (pdf) {Tagged source PDF\\[1pt]
   \scriptsize pages, structure, links, destinations};
 \node[semantic, right=9mm of pdf] (inspect) {Inspector\\[1pt]
@@ -42,8 +45,10 @@
 \draw[flow] (inspect) -- (ir);
 \draw[flow] (ir) -- (validate);
 
-% Object references for Forms and annotations are allocated late.  The three
-% boxes make that temporal constraint visible without implying three IRs.
+% Deutsch: Form- und Annotationsreferenzen entstehen spät; die drei Boxen zeigen
+% diese zeitliche Abhängigkeit, nicht drei verschiedene IRs.
+% English: Form and annotation references are allocated late; the three boxes
+% show this timing constraint, not three distinct IRs.
 \node[phase, below=17mm of inspect] (reserve) {
   \textbf{1. Reserve}\\[2pt]
   StructElems and\\ordered MCR/OBJR slots};
@@ -54,15 +59,18 @@
   \textbf{3. Finalize}\\[2pt]
   MCID bindings and\\ParentTree arrays};
 
-% All inter-row connectors bend inside the empty gap between rows: they drop
-% to an intermediate coordinate first and only then turn, so the corner never
-% grazes a neighbouring box.
+% Deutsch: Zeilenübergreifende Kanten knicken im freien Zwischenraum und
+% berühren dadurch keine Nachbarbox.
+% English: Cross-row connectors bend in the open gap and do not touch adjacent
+% boxes.
 \draw[flow] (ir.south) -- ++(0,-7mm) -| (reserve.north);
 \draw[flow] (reserve) -- (write);
 \draw[flow] (write) -- (finalize);
 
-% The page writer deliberately reopens the source only for page content and
-% final geometry; semantic PDF objects are never rediscovered on this path.
+% Deutsch: Der Seitenschreiber öffnet die Quelle nur für Inhalt und Geometrie;
+% semantische Objekte stammen ausschließlich aus der IR.
+% English: The page writer opens the source only for content and geometry;
+% semantic objects come exclusively from the IR.
 \draw[late] (pdf.south) -- ++(0,-11mm) -| (write.north)
   node[pos=0.25, above, font=\scriptsize, text=blue!65!black] {raw page content only};
 
@@ -74,8 +82,10 @@
 \draw[flow] (finalize.south) -- ++(0,-11mm) -| (bridge.north);
 \draw[flow] (bridge) -- (master);
 
-% Dashed frames denote ownership boundaries rather than additional runtime
-% components.  In particular, tagpdf remains the sole owner of global trees.
+% Deutsch: Gestrichelte Rahmen markieren Zuständigkeiten, keine zusätzlichen
+% Laufzeitkomponenten; tagpdf bleibt Eigentümer der globalen Bäume.
+% English: Dashed frames mark ownership, not additional runtime components;
+% tagpdf remains the owner of global trees.
 \begin{scope}[on background layer]
   \node[boundary, fit=(inspect)(ir)(validate),
     label={[zonelabel]above:semantic layer}] {};

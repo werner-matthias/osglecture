@@ -19,9 +19,12 @@ local catlatex = luatexbase.registernumber("catcodetable@latex")
 local tex_escape = ir_reader.tex_escape
 
 local function walk_ir(filename, phase, prefix)
-  -- The same deterministic traversal drives two phases. “reserve” allocates
-  -- StructElems and kid slots; “bind” fills slots whose PDF objects exist only
-  -- after pages have been constructed.
+  -- \ldeen*{Dieselbe deterministische Traversierung steuert @1 und @2:
+  -- @1 reserviert Strukturelemente und Kind-Slots, @2 setzt die erst nach dem
+  -- Seitenbau verfügbaren PDF-Objekte ein.}{The same deterministic traversal
+  -- drives @1 and @2: @1 reserves structure elements and kid slots; @2 inserts
+  -- PDF objects that become available only after page construction.}
+  -- {\code{reserve}}{\code{bind}}
   local ir = ir_reader.read(filename)
   local by_parent = ir_reader.sorted_kids_by_parent(ir)
   local mcr_serial = 0
@@ -47,7 +50,8 @@ local function walk_ir(filename, phase, prefix)
         if stream and stream.kind ~= "page" then
           out("\\TagPaxBackendUnsupportedStream{" .. tex_escape(kid.stream) .. "}{" .. tex_escape(stream.kind) .. "}")
         else
-          -- A traversal serial is the stable rendezvous key between phases.
+          -- \ldeen{Die laufende Nummer verbindet beide Phasen stabil.}{The
+          -- traversal serial links both phases stably.}
           mcr_serial = mcr_serial + 1
           local command = phase == "reserve"
             and "\\TagPaxBackendReserveMCR"
@@ -65,8 +69,10 @@ local function walk_ir(filename, phase, prefix)
   end
 
   if phase == "reserve" then out("\\TagPaxBackendDocumentBegin") end
-  -- A source Document is a transport wrapper. Its children attach directly to
-  -- the synthetic contribution Part; other roots remain explicit children.
+  -- \ldeen*{Ein Quell-@1 dient nur als Transporthülle: Seine Kinder hängen
+  -- direkt unter dem synthetischen @2; andere Wurzeln bleiben explizit.}{A
+  -- source @1 is only a transport wrapper: its children attach directly to the
+  -- synthetic @2; other roots remain explicit.}{\code{Document}}{\code{Part}}
   for _, root in ipairs(ir_reader.sorted_roots(ir)) do
     local node = ir.nodes[root.node]
     if node and node.role == "Document" then
@@ -90,8 +96,10 @@ function M.emit_bindings(filename, prefix)
   walk_ir(filename, "bind", prefix)
 end
 
--- Compatibility entry point for callers which only need the old, monolithic
--- emitter. Native inclusion deliberately uses the two phase API above.
+-- \ldeen*{Kompatibilitätseinstieg für den monolithischen Emitter. Der native
+-- Import nutzt die Zweiphasen-API @1 und @2.}{Compatibility entry point for
+-- the monolithic emitter. Native import uses the two-phase API @1 and @2.}
+-- {\code{emit\_reservations}}{\code{emit\_bindings}}
 function M.emit_tex(filename, prefix)
   M.emit_reservations(filename, prefix)
   M.emit_bindings(filename, prefix)

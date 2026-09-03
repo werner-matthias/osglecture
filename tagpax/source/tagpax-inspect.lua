@@ -13,8 +13,9 @@ local validator = require("tagpax-validate")
 local M = {}
 
 function M.from_pdf(filename, output)
-  -- Parse the artifact just written: this validates exactly what later builds
-  -- consume, rather than a privileged in-memory extractor representation.
+  -- \ldeen{Geprüft wird die geschriebene Datei, also genau die Eingabe späterer
+  -- Läufe, nicht ein interner Extraktor-Zustand.}{The written file is validated,
+  -- exactly as consumed by later runs, rather than internal extractor state.}
   --
   -- \ldeen*{Bewusst lazy: @1 verlangt beim Laden @2. Wer nur @3 nutzt, soll
   -- diese Abhängigkeit nicht erzwungen bekommen.}{Deliberately lazy: @1
@@ -29,7 +30,8 @@ function M.from_pdf(filename, output)
 end
 
 function M.from_file(filename)
-  -- Public inspection never exposes malformed IR to transformations.
+  -- \ldeen{Die öffentliche Inspektion gibt nur validierte IR weiter.}{Public
+  -- inspection exposes only validated IR.}
   local ir = ir_module.read(filename)
   local ok, errors = validator.validate(ir)
   if not ok then error("invalid tagpax IR: " .. table.concat(errors, "; ")) end
@@ -37,7 +39,8 @@ function M.from_file(filename)
 end
 
 function M.summary(ir)
-  -- Stable, shallow diagnostics; deliberately not a second IR schema.
+  -- \ldeen{Stabile flache Diagnose, kein zweites IR-Schema.}{Stable shallow
+  -- diagnostics, not a second IR schema.}
   return {
     pages = ir.source and tonumber(ir.source.pages) or 0,
     nodes = ir_module.count_nodes(ir),

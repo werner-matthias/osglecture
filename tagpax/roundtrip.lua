@@ -1,4 +1,5 @@
--- l3build configuration for the live PDF roundtrip
+-- Deutsch: l3build-Konfiguration für den PDF-Roundtrip.
+-- English: l3build configuration for the PDF roundtrip.
 local base_checkinit_hook = checkinit_hook
 includetests = { "roundtrip" }
 excludetests = { }

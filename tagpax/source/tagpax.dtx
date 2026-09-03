@@ -28,6 +28,8 @@
 }
 \expandafter\endbatchfile
 \fi
+
+\iffalse
 %</driver>
 %<*package>
 \NeedsTeXFormat{LaTeX2e}[2024-11-01]
@@ -37,9 +39,10 @@
 {import of tagged PDF documents}
 %</package>
 %<*driver> 
+\fi
 \DocumentMetadata{}
 \documentclass[
-load-preamble+
+add-bib=false
 ]{osgdoc}
 
 %\OnlyDescription
@@ -363,8 +366,10 @@ load-preamble+
   zonelabel/.style={font=\sffamily\scriptsize\bfseries, text=black!65, label distance=0.5mm}
 ]
 
-% The top row is the stable semantic pipeline.  PDF object identities stop at
-% the inspector; all following components communicate through canonical IR.
+% Deutsch: Oben liegt die semantische Pipeline. PDF-Objektidentitäten enden am
+% Inspector; danach kommunizieren alle Komponenten über die kanonische IR.
+% English: The top row is the semantic pipeline. PDF object identities end at
+% the inspector; later components communicate through canonical IR.
 \node[source] (pdf) {Tagged source PDF\\[1pt]
   \scriptsize pages, structure, links, destinations};
 \node[semantic, right=9mm of pdf] (inspect) {Inspector\\[1pt]
@@ -378,8 +383,10 @@ load-preamble+
 \draw[flow] (inspect) -- (ir);
 \draw[flow] (ir) -- (validate);
 
-% Object references for Forms and annotations are allocated late.  The three
-% boxes make that temporal constraint visible without implying three IRs.
+% Deutsch: Form- und Annotationsreferenzen entstehen spät; die drei Boxen zeigen
+% diese zeitliche Abhängigkeit, nicht drei verschiedene IRs.
+% English: Form and annotation references are allocated late; the three boxes
+% show this timing constraint, not three distinct IRs.
 \node[phase, below=17mm of inspect] (reserve) {
   \textbf{1. Reserve}\\[2pt]
   StructElems and\\ordered MCR/OBJR slots};
@@ -390,15 +397,18 @@ load-preamble+
   \textbf{3. Finalize}\\[2pt]
   MCID bindings and\\ParentTree arrays};
 
-% All inter-row connectors bend inside the empty gap between rows: they drop
-% to an intermediate coordinate first and only then turn, so the corner never
-% grazes a neighbouring box.
+% Deutsch: Zeilenübergreifende Kanten knicken im freien Zwischenraum und
+% berühren dadurch keine Nachbarbox.
+% English: Cross-row connectors bend in the open gap and do not touch adjacent
+% boxes.
 \draw[flow] (ir.south) -- ++(0,-7mm) -| (reserve.north);
 \draw[flow] (reserve) -- (write);
 \draw[flow] (write) -- (finalize);
 
-% The page writer deliberately reopens the source only for page content and
-% final geometry; semantic PDF objects are never rediscovered on this path.
+% Deutsch: Der Seitenschreiber öffnet die Quelle nur für Inhalt und Geometrie;
+% semantische Objekte stammen ausschließlich aus der IR.
+% English: The page writer opens the source only for content and geometry;
+% semantic objects come exclusively from the IR.
 \draw[late] (pdf.south) -- ++(0,-11mm) -| (write.north)
   node[pos=0.25, above, font=\scriptsize, text=blue!65!black] {raw page content only};
 
@@ -410,8 +420,10 @@ load-preamble+
 \draw[flow] (finalize.south) -- ++(0,-11mm) -| (bridge.north);
 \draw[flow] (bridge) -- (master);
 
-% Dashed frames denote ownership boundaries rather than additional runtime
-% components.  In particular, tagpdf remains the sole owner of global trees.
+% Deutsch: Gestrichelte Rahmen markieren Zuständigkeiten, keine zusätzlichen
+% Laufzeitkomponenten; tagpdf bleibt Eigentümer der globalen Bäume.
+% English: Dashed frames mark ownership, not additional runtime components;
+% tagpdf remains the owner of global trees.
 \begin{scope}[on background layer]
   \node[boundary, fit=(inspect)(ir)(validate),
     label={[zonelabel]above:semantic layer}] {};
@@ -704,8 +716,10 @@ The bridge must not mutate the global \tagpdfpkg{} structure stack.
 \NewDocumentCommand\tagpaxroundtripinclude{O{}m}
   {\tagpaxinclude[#1]{#2}}
 
-% The migration alias is deliberately part of tagpax rather than a second
-% package: it cannot accidentally become another page-import implementation.
+% \ldeen*{Der Migrationsalias bleibt Teil von @1 und damit lediglich eine zweite
+% Oberfläche für denselben Seitenimport.}{The migration alias remains part of
+% @1 and is therefore only a second interface to the same page import.}
+% {\pkg{tagpax}}
 \msg_new:nnn {tagpax}{pdfpages-pages}
   {The~tagpax~pdfpages~compatibility~option~supports~only~pages=-.}
 \msg_new:nnn {tagpax}{pdfpages-option}
@@ -771,9 +785,11 @@ The bridge must not mutate the global \tagpdfpkg{} structure stack.
           {
             \NewDocumentCommand \includepdf { O{} m }
               { \__tagpax_includepdf:nn {#1}{#2} }
-            % If pdfpages is loaded later, release the public command before
-            % that package defines its own version and retain only tagpax's
-            % unambiguous native interface.
+            % \ldeen*{Wird @1 später geladen, gibt @2 den öffentlichen Befehl
+            % zuvor frei; die eindeutige native @3-Schnittstelle bleibt.}{When
+            % @1 is loaded later, @2 releases the public command first; the
+            % unambiguous native @3 interface remains.}
+            % {\pkg{pdfpages}}{\pkg{tagpax}}{\cs{tagpaxinclude}}
             \AddToHook {package/pdfpages/before}
               { \__tagpax_disable_includepdf: }
           }
@@ -815,15 +831,11 @@ The bridge must not mutate the global \tagpdfpkg{} structure stack.
     \__tag_seq_new:c { g__tag_struct_kids_\tl_use:N #3 _seq }
     \pdf_object_new_indexed:nn { __tag/struct } { \tl_use:N #3 }
     \__tag_struct_prop_gput:nne { \tl_use:N #3 } { Type } { /StructElem }
-    % An imported role is usually a source-side LaTeX role (chapter,
-    % section, text, ...), not already a native pdf/pdf2 tag. Resolving it
-    % in the tag's own namespace first -- the same namespace tagpdf
-    % populated when it read the latex/latex-book/latex-lab namespaces at
-    % load time -- lets tagpdf translate it to its proper native role
-    % (chapter to H1, text to P, ...) instead of failing the lookup in
-    % pdf/pdf2 and falling back to the bare, unmapped tag name. Only a
-    % genuinely unknown role (absent from every namespace) still uses the
-    % pdf/pdf2 guess, matching prior behavior for that case.
+    % \ldeen*{Importierte Rollen werden zuerst in ihrem eigenen @1-Namensraum
+    % aufgelöst, damit @2 sie auf native Rollen abbildet. Nur unbekannte Rollen
+    % verwenden den @3-Fallback.}{Imported roles are first resolved in their own
+    % @1 namespace so @2 maps them to native roles. Only unknown roles use the
+    % @3 fallback.}{\LaTeX}{\pkg{tagpdf}}{\code{pdf/pdf2}}
     \prop_get:NnNTF \g__tag_role_tags_NS_prop {#1} \l__tagpax_bridge_role_ns_tl
       { }
       {
@@ -1055,10 +1067,11 @@ The bridge must not mutate the global \tagpdfpkg{} structure stack.
       {#1}\l__tagpax_backend_annotation_parent_tl
     \tl_set:Ne \l__tagpax_backend_annotation_key_tl
       {\int_use:N \c@g__tag_parenttree_obj_int}
-    % The Lua link-splitting callback associates annotations from the current
-    % structure attribute.  Imported links already have an explicit source
-    % parent and are bound by the plugs below, so make the callback ignore
-    % these nodes; otherwise it creates a second OBJR in tagpdf's link bin.
+    % \ldeen*{Importierte Links besitzen bereits einen expliziten Quell-Elternknoten
+    % und werden unten gebunden. Der Lua-Callback ignoriert sie, damit kein
+    % zweites @1 im Link-Bin entsteht.}{Imported links already have an explicit
+    % source parent and are bound below. The Lua callback ignores them so no
+    % second @1 is created in the link bin.}{\code{OBJR}}
     \lua_now:n
       {tex.setattribute(luatexbase.attributes.g__tag_structnum_attr,-1)}
     \AssignTaggingSocketPlug{link/before}{tagpax-import}

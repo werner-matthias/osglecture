@@ -15,8 +15,9 @@ local default_role_map = {
   ["text-unit"] = "Part", text = "P", item = "LI",
 }
 
--- Roundtrip comparison is semantic, not object-based. Normalize conventional
--- role names used differently by source and target producers.
+-- \ldeen{Der Roundtrip-Vergleich normalisiert konventionelle Rollennamen und
+-- vergleicht Semantik statt PDF-Objekte.}{The roundtrip comparison normalizes
+-- conventional role names and compares semantics rather than PDF objects.}
 local function role_of(role, options)
   local map = options and options.role_map or default_role_map
   return map[role] or role
@@ -32,8 +33,10 @@ local function root_node_ids(ir)
 end
 
 local function signatures(ir, unwrap_document, options)
-  -- A depth-first event stream preserves nesting, child order, MCIDs and
-  -- annotation action kinds while ignoring unstable PDF object numbers.
+  -- \ldeen{Der Tiefenstrom bewahrt Verschachtelung, Kindreihenfolge, MCIDs und
+  -- Annotationstypen; instabile PDF-Objektnummern bleiben außen vor.}{The
+  -- depth-first stream preserves nesting, child order, MCIDs, and annotation
+  -- kinds while excluding unstable PDF object numbers.}
   local by_parent = ir_reader.sorted_kids_by_parent(ir)
   local out = {}
   local function walk(id)
@@ -65,8 +68,10 @@ local function signatures(ir, unwrap_document, options)
 end
 
 local function all_subtree_signatures(ir, role, options)
-  -- Master documents may contain unrelated material, so compare candidate
-  -- contribution wrappers instead of requiring whole-document equality.
+  -- \ldeen{Da Masterdokumente weiteres Material enthalten können, werden
+  -- passende Beitragshüllen statt ganzer Dokumente verglichen.}{Because master
+  -- documents may contain other material, candidate contribution wrappers are
+  -- compared instead of whole documents.}
   local by_parent = ir_reader.sorted_kids_by_parent(ir)
   local result = {}
   local function sig(id, out)
@@ -106,7 +111,8 @@ function M.semantic(source, target, options)
   options = options or {}
   local expected = signatures(source, options.unwrap_source_document ~= false, options)
   local candidates = all_subtree_signatures(target, options.target_wrapper_role or "Part", options)
-  -- Target wrapper itself is synthetic; compare its children.
+  -- \ldeen{Die Zielhülle ist synthetisch; verglichen werden ihre Kinder.}{The
+  -- target wrapper is synthetic; its children are compared.}
   for _, candidate in ipairs(candidates) do
     local stripped = {}
     for i = 2, #candidate - 1 do stripped[#stripped + 1] = candidate[i] end

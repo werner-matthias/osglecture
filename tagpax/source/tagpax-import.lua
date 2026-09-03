@@ -29,13 +29,15 @@ local function source_children(ir, parent, by_parent)
   return result
 end
 
--- Build a semantic plan.  Bindings are deliberately opaque strings/objects:
---   bindings.pages[page-number]  -> target page Form XObject handle
---   bindings.streams[stream-id]  -> target nested Form XObject handle
--- The PDF backend is responsible for turning handles into indirect references.
+-- \ldeen*{@1 erzeugt einen backendneutralen Plan. Bindings bleiben opake
+-- Handles; erst das PDF-Backend macht daraus indirekte Referenzen.}{@1 builds
+-- a backend-neutral plan. Bindings remain opaque handles; only the PDF backend
+-- turns them into indirect references.}{\code{plan}}
 function M.plan(ir, bindings, options)
-  -- Refuse to plan malformed semantics. Backends should not need defensive
-  -- checks for dangling nodes, streams or navigation targets.
+  -- \ldeen{Die Planung akzeptiert nur validierte IR; Backends prüfen keine
+  -- verwaisten Knoten, Streams oder Navigationsziele.}{Planning accepts only
+  -- validated IR; backends do not check for dangling nodes, streams, or
+  -- navigation targets.}
   local ok, errors = validator.validate(ir)
   if not ok then error("invalid tagpax IR: " .. table.concat(errors, "; "), 2) end
   bindings = bindings or {}
@@ -60,8 +62,9 @@ function M.plan(ir, bindings, options)
   local imported_roots = {}
 
   for _, id in ipairs(plan.source_roots) do
-    -- The imported contribution receives one synthetic Part wrapper. A source
-    -- Document root is omitted to avoid nesting a document inside a document.
+    -- \ldeen*{Jeder Beitrag erhält eine synthetische @1-Hülle; eine
+    -- Quell-@2-Wurzel entfällt.}{Each contribution receives a synthetic @1
+    -- wrapper; a source @2 root is omitted.}{\code{Part}}{\code{Document}}
     local node = ir.nodes[id]
     if unwrap and node and node.role == "Document" then
       for _, child in ipairs(source_children(ir, id, by_parent)) do
@@ -74,7 +77,8 @@ function M.plan(ir, bindings, options)
   plan.imported_roots = imported_roots
 
   for id, node in pairs(ir.nodes) do
-    -- Copy semantic attributes, but never source object numbers.
+    -- \ldeen{Semantische Attribute werden kopiert, Quellobjektnummern nie.}{Semantic
+    -- attributes are copied; source object numbers never are.}
     local omit = unwrap and root_set[id] and node.role == "Document"
     if not omit then
       plan.nodes[#plan.nodes + 1] = {
@@ -104,8 +108,9 @@ function M.plan(ir, bindings, options)
           }
         end
       elseif kid.kind == "mcr" then
-        -- Binding handles are deliberately opaque. This layer decides which
-        -- source stream is needed; the PDF backend owns indirect references.
+        -- \ldeen{Diese Schicht wählt den Quellstream; indirekte Referenzen
+        -- gehören dem PDF-Backend.}{This layer selects the source stream;
+        -- indirect references belong to the PDF backend.}
         local stream = ir.streams and ir.streams[kid.stream]
         local handle
         if stream and stream.kind == "page" then
@@ -113,7 +118,8 @@ function M.plan(ir, bindings, options)
         elseif stream then
           handle = bindings.streams[stream.id]
         elseif kid.stream == "page" then
-          -- Compatibility with IR version 1 drafts.
+          -- \ldeen{Kompatibilität mit Entwürfen der IR-Version~1.}{Compatibility
+          -- with IR version~1 drafts.}
           handle = bindings.pages[tonumber(kid.page)]
         end
 
@@ -152,8 +158,9 @@ function M.plan(ir, bindings, options)
 end
 
 function M.assert_resolved(plan)
-  -- Return diagnostics instead of throwing so callers can present all missing
-  -- explicit-stream bindings in one report.
+  -- \ldeen{Diagnosen werden gesammelt zurückgegeben, damit alle fehlenden
+  -- Stream-Bindings gemeinsam gemeldet werden.}{Diagnostics are returned as a
+  -- group so all missing stream bindings can be reported together.}
   if #plan.unresolved == 0 then return true end
   local messages = {}
   for _, item in ipairs(plan.unresolved) do

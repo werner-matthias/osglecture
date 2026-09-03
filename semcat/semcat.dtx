@@ -25,6 +25,8 @@
 \generate{\file{semcat.sty}{\from{semcat.dtx}{package}}}
 \expandafter\endbatchfile
 \fi
+
+\iffalse
 %</driver>
 %<*package>
 \NeedsTeXFormat{LaTeX2e}[2022-06-01]
@@ -33,10 +35,9 @@
 \ExplSyntaxOff
 %</package>
 %<*driver>
+\fi
 
-\documentclass[
-load-preamble+
-]{osgdoc}
+\documentclass[add-bib=false]{osgdoc}
 
 \OnlyDescription
 

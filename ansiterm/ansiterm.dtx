@@ -25,6 +25,8 @@
 \generate{\file{ansiterm.sty}{\from{ansiterm.dtx}{package}}}
 \expandafter\endbatchfile
 \fi
+
+\iffalse
 %</driver>
 %<*package>
 \NeedsTeXFormat{LaTeX2e}[2022-06-01]
@@ -33,13 +35,10 @@
 \ExplSyntaxOff
 %</package>
 %<*driver>
-
-\documentclass[
-load-preamble+
-]{osgdoc}
+\fi
+\documentclass[add-bib=false]{osgdoc}
 
 \OnlyDescription
-
 \usepackage{enumitem}
 \usepackage{microtype}
 \usepackage[

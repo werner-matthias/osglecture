@@ -10,14 +10,17 @@
 --<*pkg>
 local M = {}
 
--- Decode only the transport layer. Semantic typing remains a consumer concern,
--- which keeps the line format simple and forward-compatible.
+-- \ldeen{Nur die Transportschicht wird dekodiert; semantische Typisierung bleibt
+-- bei den Konsumenten und das Zeilenformat dadurch erweiterbar.}{Only the
+-- transport layer is decoded; semantic typing remains with consumers, keeping
+-- the line format extensible.}
 local function unpct(s)
   return (s:gsub("%%(%x%x)", function(h) return string.char(tonumber(h, 16)) end))
 end
 
 local function parse_line(line)
-  -- The first tab-separated column is the record discriminator.
+  -- \ldeen{Die erste tabulatorgetrennte Spalte bestimmt den Datensatztyp.}{The
+  -- first tab-separated column selects the record type.}
   local cols = {}
   for col in line:gmatch("[^\t]+") do cols[#cols + 1] = col end
   local record = { record_type = cols[1] }
@@ -29,26 +32,18 @@ local function parse_line(line)
 end
 
 function M.new()
-  -- Annotation records become both an ordered sequence and an ID index.
+  -- \ldeen{Annotationen liegen zugleich geordnet und per ID indiziert vor.}{Annotations
+  -- are stored both in order and indexed by ID.}
   return {
     nodes = {}, kids = {}, roots = {}, headings = {}, streams = {},
     destinations = {}, annotations = {}, header = nil, source = nil,
   }
 end
 
--- \ldeen{Ein Lauf importiert dieselbe IR-Datei typischerweise mehrfach --
--- einmal pro Reserve-/Bind-Phase und zusätzlich einmal pro Seite für
--- Navigation und Seiten-Form. Ohne Cache würde jeder dieser Aufrufe die
--- Datei erneut von der Platte lesen und den kompletten Baum neu aufbauen.
--- Der Cache ist pro Dateiname und lebt für die Dauer des \LuaTeX-Laufs; das
--- IR-Ergebnis ist unveränderlich (siehe unten), Wiederverwendung ist also
--- sicher.}{
--- A single run typically imports the same IR file multiple times -- once
--- per reserve/bind phase and once more per page for navigation and the page
--- Form. Without caching, every such call would re-read the file from disk
--- and rebuild the whole tree. The cache is keyed by filename and lives for
--- the duration of the \LuaTeX\ run; the IR result is immutable (see below),
--- so reuse is safe.}
+-- \ldeen{Der laufzeitweite Cache ist nach Dateiname indiziert. Gelesene
+-- IR-Tabellen gelten als unveränderlich und dürfen von Aufrufern nicht
+-- modifiziert werden.}{The run-wide cache is keyed by filename. Read IR tables
+-- are immutable and must not be modified by callers.}
 local cache = {}
 
 function M.read(filename)
@@ -66,7 +61,9 @@ function M.read(filename)
       elseif record.record_type == "stream" then ir.streams[record.id] = record
       elseif record.record_type == "destination" then ir.destinations[record.id] = record
       elseif record.record_type == "annotation" then
-        -- Order drives page emission; keyed access resolves OBJR references.
+        -- \ldeen{Die Reihenfolge steuert die Seitenausgabe; der ID-Zugriff löst
+        -- OBJR-Verweise auf.}{Order drives page output; ID access resolves OBJR
+        -- references.}
         ir.annotations[#ir.annotations + 1] = record
         ir.annotations[record.id] = record
       elseif record.record_type == "source" then ir.source = record end
@@ -85,16 +82,12 @@ end
 -- \ldeen{Gemeinsame Traversierungs- und Ausgabehelfer.}{Shared traversal and
 -- output helpers.}
 --
--- \ldeen*{Einzige Stelle, an der die Kind- und Wurzel-Reihenfolge einer
--- IR-Tabelle interpretiert wird; @1, @2 und @3 nutzen diese Funktionen
--- gemeinsam. Da @4 die zurückgegebene IR-Tabelle cached und mit jedem
--- Aufrufer teilt (siehe oben), dürfen beide Funktionen weder \code{ir.kids}
--- noch \code{ir.roots} mutieren -- sie sortieren stets eine Kopie.}{
--- The single place that interprets an IR table's kid and root order; @1,
--- @2 and @3 share these functions. Since @4 caches the returned IR table
--- and shares it with every caller (see above), neither function may
--- mutate \code{ir.kids} or \code{ir.roots} -- both always sort a copy.
--- }{\code{tagpax-backend.lua}}{\code{tagpax-import.lua}}{\code{tagpax-compare.lua}}{\code{M.read}}
+-- \ldeen*{Diese Helfer sind die zentrale Interpretation der Kind- und
+-- Wurzelreihenfolge. Wegen des geteilten Caches sortieren sie Kopien und
+-- verändern weder @1 noch @2.}{These helpers are the central interpretation of
+-- kid and root order. Because the cache is shared, they sort copies and mutate
+-- neither @1 nor @2.
+-- }{\code{ir.kids}}{\code{ir.roots}}
 
 -- \ldeen*{Gruppiert @1 nach Elternknoten und sortiert jede Gruppe nach dem
 -- ursprünglichen @2-Index. Die Quell-/K-Reihenfolge ist semantisch (Knoten,
@@ -133,19 +126,11 @@ function M.sorted_roots(ir)
   return list
 end
 
--- \ldeen{Escaped die \LaTeX-Sonderzeichen, die in generierten
--- Kontrollwort-Argumenten vorkommen können: geschweifte Klammern,
--- Prozentzeichen, Rautezeichen und Backslash. Jeder Wert, der aus
--- Quelldokument-Text stammt und in generierten \TeX-Code eingebettet wird,
--- muss durch diese Funktion laufen -- fehlt insbesondere das Escapen des
--- Backslashs, kann Text mit einem literalen Backslash als
--- \TeX-Kontrollsequenz interpretiert werden.}{Escapes the \LaTeX\ special
--- characters that can occur in generated control-word arguments: curly
--- braces, percent sign, hash sign and backslash. Every value that
--- originates from source-document text and is embedded in generated \TeX\
--- code must pass through this function -- if escaping of the backslash in
--- particular is missing, text containing a literal backslash can be
--- interpreted as a \TeX\ control sequence.}
+-- \ldeen{Escaped Klammern, Prozent, Raute und Backslash für erzeugte
+-- \TeX-Makroargumente. Jeder eingebettete Quelltext muss diese Funktion
+-- durchlaufen.}{Escapes braces, percent, hash, and backslash for generated
+-- \TeX\ macro arguments. All embedded source text must pass through this
+-- function.}
 function M.tex_escape(s)
   s = tostring(s or "")
   return (s:gsub("([{}%%#\\])", "\\%1"))

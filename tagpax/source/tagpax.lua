@@ -8,7 +8,8 @@
   semantic tagged-PDF extractor
 ]]
 --<*pkg>
--- determine version and date for compatibility check
+-- \ldeen{Version und Datum für die Kompatibilitätsprüfung.}{Version and date
+-- for compatibility checks.}
 local function package_info(filename)
   local path = kpse and kpse.find_file(filename, "lua") or filename
   local file, err = io.open(path or filename, "r")
@@ -41,9 +42,11 @@ local validator = require("tagpax-validate")
 
 local pdfe = assert(pdfe, "tagpax requires LuaTeX's pdfe library")
 
--- Transport encoding -------------------------------------------------------
--- The format is line-oriented and diffable. Percent encoding prevents tabs,
--- newlines and arbitrary PDF strings from changing record boundaries.
+-- \ldeen{Transportkodierung}{Transport encoding}
+-- \ldeen{Das zeilenorientierte Format bleibt diffbar; Prozentkodierung schützt
+-- Datensatzgrenzen vor Tabs, Zeilenumbrüchen und PDF-Strings.}{The line-oriented
+-- format remains diffable; percent encoding protects record boundaries from
+-- tabs, line breaks, and PDF strings.}
 local function pct(s)
   s = tostring(s or "")
   return (s:gsub("[^%w%-%._~]", function(c)
@@ -64,17 +67,22 @@ local function write_record(f, kind, t)
   f:write(table.concat(fields, "\t"), "\n")
 end
 
--- pdfe normalization -------------------------------------------------------
--- These adapters contain LuaTeX's type-tag and reference conventions so the
--- extraction code below can deal in semantic values.
+-- \ldeen{Normalisierung der @1-Schnittstelle}{Normalization of the @1 interface}
+-- {\code{pdfe}}
+-- \ldeen*{Diese Adapter kapseln die Typ- und Referenzkonventionen von @1; die
+-- Extraktion arbeitet dadurch mit semantischen Werten.}{These adapters
+-- encapsulate @1 type and reference conventions so extraction works with
+-- semantic values.}{\LuaTeX}
 local function value(dict, key)
   local typ, val, detail = pdfe.getfromdictionary(dict, key)
   return typ, val, detail
 end
 
 local function decode_pdf_string(s, hexadecimal)
-  -- Hex and literal strings both represent bytes. Decode UTF-16BE when a BOM
-  -- identifies it; preserve other encodings for lossless transport.
+  -- \ldeen{Hex- und Literalstrings sind Bytefolgen. UTF-16BE wird per BOM
+  -- erkannt; andere Kodierungen bleiben verlustfrei erhalten.}{Hex and literal
+  -- strings are byte sequences. UTF-16BE is detected by its BOM; other
+  -- encodings are preserved losslessly.}
   if hexadecimal then
     s = tostring(s or ""):gsub("%s+", "")
     s = s:gsub("(%x%x)", function(pair)
@@ -114,7 +122,8 @@ local function pdf_name(dict, key)
 end
 
 local function pdf_filespec(dict, key)
-  -- /UF is the Unicode spelling and /F the compatibility fallback.
+  -- \ldeen*{@1 enthält den Unicode-Namen, @2 den Kompatibilitätswert.}{@1 holds
+  -- the Unicode name; @2 is the compatibility fallback.}{\code{/UF}}{\code{/F}}
   local _, item = value(dict, key)
   local current = item
   if type(current) == "string" then return current end
@@ -129,7 +138,8 @@ local function pdf_filespec(dict, key)
 end
 
 local function as_dict(v)
-  -- Structure entries may be direct objects or indirect references.
+  -- \ldeen{Struktureinträge können direkte Objekte oder indirekte Referenzen
+  -- sein.}{Structure entries may be direct objects or indirect references.}
   if pdfe.type(v) == "pdfe.dictionary" then return v end
   if pdfe.type(v) == "pdfe.reference" then
     local _, resolved = pdfe.getfromreference(v)
@@ -147,15 +157,19 @@ end
 
 local function ref_number(v)
   if pdfe.type(v) == "pdfe.reference" then
-    -- LuaTeX's pdfe reference userdata prints as <pdfe.reference N>.
-    -- getfromreference() resolves the object but does not expose N reliably.
+    -- \ldeen*{@1 löst das Objekt auf, liefert dessen Nummer aber nicht
+    -- zuverlässig; die Textdarstellung der Referenz enthält sie.}{@1 resolves
+    -- the object but does not expose its number reliably; the reference's text
+    -- representation contains it.}{\code{pdfe.getfromreference}}
     return tonumber(tostring(v):match("pdfe%.reference%s+(%d+)"))
   end
   return nil
 end
 
 local function page_map(doc)
-  -- IR records use stable one-based page numbers, never PDF object numbers.
+  -- \ldeen{IR-Datensätze verwenden stabile einsbasierte Seitennummern, keine
+  -- PDF-Objektnummern.}{IR records use stable one-based page numbers, never PDF
+  -- object numbers.}
   local pages = pdfe.pagestotable(doc)
   local map = {}
   for number, page in ipairs(pages) do map[page[3]] = number end
@@ -173,7 +187,8 @@ local function array_values(array)
 end
 
 local function name_tree(dict, target)
-  -- Flatten the balanced PDF name tree into one lookup table.
+  -- \ldeen{Der balancierte PDF-Namensbaum wird zu einer Lookup-Tabelle
+  -- abgeflacht.}{The balanced PDF name tree is flattened into a lookup table.}
   if not dict then return end
   local names = pdfe.getarray(dict, "Names")
   if names then
@@ -198,7 +213,8 @@ local function named_destinations(doc)
   local result = {}
   local names = pdfe.getdictionary(doc.Catalog, "Names")
   if names then name_tree(pdfe.getdictionary(names, "Dests"), result) end
-  -- PDF 1.1 compatibility: /Dests may be a dictionary in the catalog.
+  -- \ldeen*{Für PDF~1.1 kann @1 ein Katalog-Dictionary sein.}{For PDF~1.1, @1
+  -- may be a catalog dictionary.}{\code{/Dests}}
   local legacy = pdfe.getdictionary(doc.Catalog, "Dests")
   if legacy then
     for key, item in pairs(pdfe.dictionarytotable(legacy)) do
@@ -214,9 +230,11 @@ local function min_page(a, b)
   return math.min(a, b)
 end
 
--- Page inference -----------------------------------------------------------
--- A StructElem may omit /Pg. ParentTree arrays then reveal where it is used;
--- retain the earliest page as a conservative heading/navigation target.
+-- \ldeen{Seitenermittlung}{Page inference}
+-- \ldeen*{Fehlt @1 an einem @2, bestimmt der @3 dessen Verwendungsseiten; die
+-- früheste Seite dient als konservatives Navigationsziel.}{If @1 is absent
+-- from a @2, the @3 identifies its usage pages; the earliest page is retained
+-- as a conservative navigation target.}{\code{/Pg}}{\code{StructElem}}{\code{ParentTree}}
 local function build_struct_page_map(root)
   local result = {}
   local parent_tree = pdfe.getdictionary(root, "ParentTree")
@@ -261,18 +279,10 @@ local function build_struct_page_map(root)
   return result
 end
 
--- \ldeen*{Billige Existenzprüfung für Aufrufer, die vor einer echten
--- Extraktion zwischen dem getaggten und einem ungetaggten Einbindungspfad
--- entscheiden müssen (etwa @1). Anders als @2 bricht diese Funktion bei einem
--- fehlenden \code{StructTreeRoot} nicht ab, sondern liefert einfach
--- \code{false}; ein beschädigtes oder unlesbares PDF bleibt weiterhin ein
--- harter Fehler, weil ein Aufrufer damit ohnehin keinen sinnvollen
--- Rückfallpfad hätte.}{Cheap existence check for callers that must decide
--- between the tagged and an untagged inclusion path before a real
--- extraction (such as @1). Unlike @2, this function does not abort on a
--- missing \code{StructTreeRoot}; it simply returns \code{false}. A corrupt
--- or unreadable PDF remains a hard error, because a caller would not have a
--- meaningful fallback for that case anyway.}{\code{osglecture-integration}}{\cs{M.extract}}
+-- \ldeen*{@1 prüft nur auf @2 und liefert bei ungetaggten PDFs @3. Unlesbare
+-- oder beschädigte Dateien bleiben Fehler.}{@1 checks only for @2 and returns
+-- @3 for untagged PDFs. Unreadable or corrupt files remain errors.}
+-- {\code{M.is\_tagged}}{\code{StructTreeRoot}}{\code{false}}
 function M.is_tagged(filename)
   assert(type(filename) == "string" and filename ~= "", "missing PDF filename")
   local doc = assert(pdfe.open(filename), "cannot open PDF: " .. filename)
@@ -282,8 +292,10 @@ function M.is_tagged(filename)
 end
 
 function M.extract(filename, outname)
-  -- Extraction is one transaction: open the source, serialize a canonical
-  -- semantic snapshot, then close both handles.
+  -- \ldeen{Die Extraktion öffnet die Quelle, serialisiert einen kanonischen
+  -- semantischen Stand und schließt beide Handles als eine Transaktion.}{Extraction
+  -- opens the source, serializes a canonical semantic snapshot, and closes both
+  -- handles as one transaction.}
   assert(type(filename) == "string" and filename ~= "", "missing PDF filename")
   outname = outname or filename:gsub("%.pdf$", "") .. ".tagpax"
 
@@ -304,8 +316,10 @@ function M.extract(filename, outname)
   local destinations, destination_by_key, annotations = {}, {}, {}
   local annotation_by_object = {}
 
-  -- Destinations and annotations ------------------------------------------
-  -- Destination operands may be arrays, references, dictionaries or names.
+  -- \ldeen{Ziele und Annotationen}{Destinations and annotations}
+  -- \ldeen{Zieloperanden können Arrays, Referenzen, Dictionaries oder Namen
+  -- sein.}{Destination operands may be arrays, references, dictionaries, or
+  -- names.}
   local function destination_array(operand)
     local current = operand
     local guard = 0
@@ -329,7 +343,9 @@ function M.extract(filename, outname)
   end
 
   local function register_destination(operand, name)
-    -- IDs are contribution-local; the importer adds a unique namespace.
+    -- \ldeen{IDs sind beitragslokal; der Importer ergänzt den eindeutigen
+    -- Namensraum.}{IDs are contribution-local; the importer adds the unique
+    -- namespace.}
     local key = name and ("name:" .. name) or ("object:" .. tostring(operand))
     if destination_by_key[key] then return destination_by_key[key] end
     local array = destination_array(operand)
@@ -353,7 +369,9 @@ function M.extract(filename, outname)
   end
 
   local function extract_navigation()
-    -- Register the complete name tree, including targets with no source link.
+    -- \ldeen{Der vollständige Namensbaum wird registriert, auch Ziele ohne
+    -- Quelllink.}{The complete name tree is registered, including targets
+    -- without a source link.}
     local names = {}
     for name in pairs(named_dests) do names[#names + 1] = name end
     table.sort(names)
@@ -361,9 +379,10 @@ function M.extract(filename, outname)
 
     for page_number = 1, npages do
       local page = pdfe.getpage(doc, page_number)
-      -- Page array properties use Lua's zero-based pdfe container access.
-      -- getfromarray() is one-based and is used for ordinary destination
-      -- arrays elsewhere in this module.
+      -- \ldeen*{Seiteneigenschaften nutzen den nullbasierten Containerzugriff;
+      -- @1 für Zielarrays ist einsbasiert.}{Page properties use zero-based
+      -- container access; @1 for destination arrays is one-based.}
+      -- {\code{pdfe.getfromarray}}
       local annots = page.Annots
       if annots then
         for index = 0, #annots - 1 do
@@ -424,7 +443,7 @@ function M.extract(filename, outname)
               record.urx, record.ury = rect[3], rect[4]
               -- \ldeen*{Diese Schlüssel werden von @1 nur geschrieben, wenn
               -- ein Link von einer logisch identifizierten externen
-              -- Einheit (z.B. via @2s \olref) stammt; sie erlauben es
+              -- Einheit (z.B. via @2s \cs{olref}) stammt; sie erlauben es
               -- einem Konsumenten der IR (z.B. der
               -- osglecture-Integrationsschicht), eine @3-Annotation
               -- nachträglich als projektintern zu erkennen und in einen
@@ -432,7 +451,7 @@ function M.extract(filename, outname)
               -- irgendetwas über osglecture-Semantik wissen
               -- muss.}{These keys are only written by @1 when a link
               -- originates from a logically identified external unit
-              -- (e.g. via @2's \olref); they let a consumer of the IR
+              -- (e.g. via @2's \cs{olref}); they let a consumer of the IR
               -- (e.g. the osglecture integration layer) later recognize a
               -- @3 annotation as project-internal and rewrite it into an
               -- internal jump, without @1 itself needing to know
@@ -458,9 +477,11 @@ function M.extract(filename, outname)
 
   extract_navigation()
 
-  -- Content-stream inventory ----------------------------------------------
-  -- MCIDs are local to a stream, so page streams and explicit /Stm objects
-  -- receive identities before any MCR record refers to them.
+  -- \ldeen{Inhaltsstream-Inventar}{Content-stream inventory}
+  -- \ldeen*{MCIDs sind streamlokal. Seitenstreams und explizite @1-Objekte
+  -- erhalten daher IDs, bevor MCR-Datensätze sie referenzieren.}{MCIDs are
+  -- stream-local. Page streams and explicit @1 objects therefore receive IDs
+  -- before MCR records reference them.}{\code{/Stm}}
   local function emit_stream(id, kind, page, object_number, structparents, subtype)
     if streams[id] then return id end
     streams[id] = true
@@ -503,7 +524,8 @@ function M.extract(filename, outname)
   end
 
   local function emit_mcr(parent, index, dict, inherited_page)
-    -- Preserve both MCID and source /K index; changing either loses meaning.
+    -- \ldeen*{MCID und Quell-@1-Index sind semantisch und bleiben erhalten.}{MCID
+    -- and the source @1 index are semantic and remain unchanged.}{\code{/K}}
     local mcid = select(2, value(dict, "MCID"))
     if mcid == nil then return nil end
     local page = page_from_ref(select(2, value(dict, "Pg")), inherited_page)
@@ -519,7 +541,9 @@ function M.extract(filename, outname)
 
   local walk
   local function walkkid(parent, index, kid, inherited_page)
-    -- Normalize the polymorphic /K grammar into explicit node/MCR/OBJR kids.
+    -- \ldeen*{Die polymorphe @1-Grammatik wird in explizite Knoten-, MCR- und
+    -- OBJR-Kinder normalisiert.}{The polymorphic @1 grammar is normalized into
+    -- explicit node, MCR, and OBJR children.}{\code{/K}}
     local kid_type = pdfe.type(kid)
     if type(kid) == "number" then
       write_record(f, "kid", {
@@ -559,7 +583,9 @@ function M.extract(filename, outname)
   end
 
   walk = function(dict, inherited_page, supplied_object_number)
-    -- Preserve graph identity when an indirect StructElem is referenced twice.
+    -- \ldeen*{Mehrfach referenzierte indirekte @1 behalten ihre Graphidentität.}
+    -- {Indirect @1 objects referenced more than once retain graph identity.}
+    -- {\code{StructElem}}
     local object_number = supplied_object_number or ref_number(dict)
     if object_number and seen[object_number] then
       local id = seen[object_number]
@@ -609,9 +635,10 @@ function M.extract(filename, outname)
     return id, first_page
   end
 
-  -- Root and deferred records ---------------------------------------------
-  -- Navigation and annotations depend on traversal results and are written
-  -- after the structure graph without weakening their source ordering.
+  -- \ldeen{Wurzel- und nachgelagerte Datensätze}{Root and deferred records}
+  -- \ldeen{Navigation und Annotationen folgen dem Strukturgraphen, bewahren
+  -- aber ihre Quellreihenfolge.}{Navigation and annotations follow the
+  -- structure graph while preserving source order.}
   local _, root_kids = value(root, "K")
   local roots, array = {}, as_array(root_kids)
   if array then
@@ -673,19 +700,20 @@ function M.extract(filename, outname)
   return outname
 end
 
--- \tagpaxextract's O{} default argument arrives as an empty string, not
--- nil; \ExplSyntaxOn also sets space to catcode 9 (ignored), so a
--- multi-statement "local x = ...; local y = ..." body inline in \directlua
--- silently loses its separating spaces and becomes invalid Lua. This
--- wrapper keeps the empty-to-nil conversion here, in a real .lua file, so
--- the \directlua call site can stay a single safe chained expression.
+-- \ldeen*{Das leere optionale Argument von @1 kommt als Leerstring an. Die
+-- Umwandlung zu @2 bleibt in Lua, damit der @3-Aufruf trotz der von @4
+-- geänderten Leerzeichen-Catcodes ein einzelner Ausdruck bleibt.}{The empty
+-- optional argument of @1 arrives as an empty string. Conversion to @2 stays
+-- in Lua so the @3 call remains one expression despite the space catcodes set
+-- by @4.}{\cs{tagpaxextract}}{\code{nil}}{\cs{directlua}}{\cs{ExplSyntaxOn}}
 function M.extract_command(filename, outname)
   return M.extract(filename, outname ~= "" and outname or nil)
 end
 
--- Compatibility facade ----------------------------------------------------
--- Reading and validation have dedicated modules. These forwarding functions
--- preserve the early public API without maintaining duplicate implementations.
+-- \ldeen{Kompatibilitätsfassade}{Compatibility facade}
+-- \ldeen{Lesen und Validieren liegen in eigenen Modulen; diese Funktionen
+-- leiten ohne doppelte Implementierung weiter.}{Reading and validation live in
+-- dedicated modules; these functions forward without duplicate implementation.}
 function M.read(filename)
   return ir_reader.read(filename)
 end
@@ -694,7 +722,7 @@ function M.validate(ir)
   return validator.validate(ir)
 end
 
--- TeX navigation adapter ---------------------------------------------------
+-- \ldeen{\TeX-Navigationsadapter}{\TeX\ navigation adapter}
 -- \ldeen*{Nur validierte Heading-Datensätze überqueren die Grenze von Lua zu
 -- \TeX-Makroargumenten. Das Escaping selbst stammt aus @1 (dort auch mit
 -- Begründung, warum es alle relevanten Zeichen abdecken muss); hier kommt
