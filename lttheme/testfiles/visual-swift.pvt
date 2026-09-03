@@ -1,0 +1,47 @@
+\DocumentMetadata{}
+\ExplSyntaxOn
+\pdfmeta_set_regression_data:
+\ExplSyntaxOff
+\documentclass{ltx-talk}
+
+\usepackage{ltxtalk-theme-swift}
+\useltxtalktheme{swift}
+
+\title[Swift]{Swift theme visual reference}
+\subtitle{Header navigation and progress}
+\author[A. Beispiel]{Ada Beispiel}
+\institute{Beispiel-Institut}
+\date{3. Juli 2026}
+
+\begin{document}
+
+\MakeLTXTalkTitle[swift/band]
+
+\section{Erster Abschnitt}
+\subsection{Ein Aspekt}
+\begin{frame}
+  \frametitle{Typografie und Navigation}
+  \framesubtitle{Eine feste visuelle Referenz}
+  Ein kurzer Absatz prüft Schrift, Textfarbe und Satzspiegel.
+  \begin{itemize}
+    \item erster Listenpunkt
+    \item zweiter Listenpunkt mit \alert{Hervorhebung}
+  \end{itemize}
+  \begin{block}{Beispielblock}
+    Inhalt des Blocks mit der Formel $a^2+b^2=c^2$.
+  \end{block}
+\end{frame}
+
+\section{Zweiter Abschnitt}
+\begin{frame}
+  \frametitle{Zweite Folie}
+  Die Kopfzeile zeigt jetzt den zweiten Abschnitt.
+\end{frame}
+
+\section{Dritter Abschnitt}
+\UseLTXTalkLayout{swift/plain}
+\begin{frame}
+  Eine Folie ohne Kopf und Fuss.
+\end{frame}
+
+\end{document}
