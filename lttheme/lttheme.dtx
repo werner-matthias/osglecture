@@ -2183,7 +2183,22 @@ theme.
       { \msg_error:nnn { ltxtalk } { unknown-layout } {#1} }
   }
 
-\prop_new:N \g__ltxtalk_title_layout_options_prop
+% \ldeen{
+%   Die Titelseite ist der Spezialfall eines Layouts: ihre Optionen liegen
+%   im selben Speicher und Schlüsselraum (\code{ltxtalk / layout}) wie
+%   gewöhnliche Layouts. Der dritte Parameter von
+%   \cs{DeclareLTXTalkTitleLayout} ist jedoch kein Aufbau-Code, sondern der
+%   \emph{Inhalt} des Titel-Frames -- er wird von \cs{MakeLTXTalkTitle}
+%   einmalig in einer \env{frame}-Umgebung ausgeführt, nicht als
+%   persistenter Aufbau. Deshalb ein eigener Code-Speicher.
+% }{
+%   The title page is the special case of a layout: its options live in the
+%   same store and key space (\code{ltxtalk / layout}) as ordinary layouts.
+%   The third parameter of \cs{DeclareLTXTalkTitleLayout} is not setup code
+%   but the \emph{content} of the title frame -- \cs{MakeLTXTalkTitle} runs
+%   it once inside a \env{frame}, not as persistent setup. Hence a separate
+%   code store.
+% }
 \prop_new:N \g__ltxtalk_title_layout_code_prop
 \tl_new:N \g__ltxtalk_title_layout_tl
 \bool_new:N \l__ltxtalk_title_page_bool
@@ -2200,7 +2215,7 @@ theme.
 
 \NewDocumentCommand \DeclareLTXTalkTitleLayout { m m m }
   {
-    \prop_gput:Nnn \g__ltxtalk_title_layout_options_prop {#1} {#2}
+    \prop_gput:Nnn \g__ltxtalk_layouts_prop {#1} {#2}
     \prop_gput:Nnn \g__ltxtalk_title_layout_code_prop {#1} {#3}
   }
 
@@ -2214,7 +2229,7 @@ theme.
       {\tl_set:Nn \l_tmpa_tl {#1}}
     \prop_get:NVNTF \g__ltxtalk_title_layout_code_prop \l_tmpa_tl \l_tmpb_tl
       {
-        \prop_get:NVN \g__ltxtalk_title_layout_options_prop \l_tmpa_tl \l_tmpc_tl
+        \prop_get:NVN \g__ltxtalk_layouts_prop \l_tmpa_tl \l_tmpc_tl
         \group_begin:
           \keys_set:nV {ltxtalk/layout} \l_tmpc_tl
           % ltx-talk 0.5.3 can defer construction of the running head until
@@ -3304,6 +3319,7 @@ theme.
     \prop_gclear:N \g__ltxtalk_area_decorations_prop
     \prop_gclear:N \g__ltxtalk_layouts_prop
     \prop_gclear:N \g__ltxtalk_layout_code_prop
+    \prop_gclear:N \g__ltxtalk_title_layout_code_prop
     \seq_gclear:N \g__ltxtalk_header_slots_seq
     \seq_gclear:N \g__ltxtalk_left_slots_seq
     \seq_gclear:N \g__ltxtalk_content_slots_seq
