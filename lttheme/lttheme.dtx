@@ -1402,6 +1402,48 @@ and page style.
   }
 \end{commands}
 
+\subsection{\ldeen{Navigation}{Navigation}}
+\label{sec:ref-navigation}
+
+\begin{commands}
+  \command{LTXTalkNavigation}[\marg{Name}]
+  \command{DeclareLTXTalkNavigation}[\marg{Name}\marg{Code}]
+  \ldeen{
+    \cs*{LTXTalkNavigation} setzt einen benannten Navigations-Renderer --
+    gedacht als Slot-Inhalt im Aufbau-Code eines Layouts oder Themes.
+    Mitgeliefert sind \code{current-section} und \code{current-subsection}
+    (der Titel des aktuellen Abschnitts; ein Durchlauf genügt) sowie
+    \code{section-list} (alle Abschnitte in Dokumentreihenfolge, der aktuelle
+    in \code{ltxtalk-primary} hervorgehoben, die übrigen gedämpft).
+    \cs*{DeclareLTXTalkNavigation} registriert einen eigenen Renderer;
+    \meta{Code} wird bei jedem Aufruf ausgeführt und darf die interne
+    Abschnittssequenz auswerten.
+
+    Die Abschnittsstruktur wird über die Hooks \code{section/begin} und
+    \code{subsection/begin} gesammelt, in die \file{.aux} geschrieben und im
+    nächsten Lauf zurückgelesen. Renderer wie \code{section-list}, die diese
+    Struktur nutzen, brauchen also zwei Läufe; ändert sich die Struktur, mahnt
+    lttheme einen weiteren Lauf an. Abschnittstitel mit Auszeichnung erscheinen
+    in der Liste als Klartext, da sie ein bewegliches Argument sind.
+  }{
+    \cs*{LTXTalkNavigation} typesets a named navigation renderer -- intended
+    as slot content in the setup code of a layout or theme. Bundled renderers
+    are \code{current-section} and \code{current-subsection} (the title of the
+    current section; one pass suffices) and \code{section-list} (every section
+    in document order, the current one highlighted in \code{ltxtalk-primary},
+    the rest dimmed). \cs*{DeclareLTXTalkNavigation} registers a custom
+    renderer; \meta{Code} runs on every call and may read the internal section
+    sequence.
+
+    The section structure is collected through the \code{section/begin} and
+    \code{subsection/begin} hooks, written to the \file{.aux}, and read back on
+    the next run. Renderers such as \code{section-list} that use this
+    structure therefore need two passes; if the structure changes, lttheme
+    asks for another run. Section titles with markup appear in the list as
+    plain text, being a moving argument.
+  }
+\end{commands}
+
 \subsection{\ldeen{Farbkonfiguration}{Colour configuration}}
 
 \begin{commands}
@@ -2024,6 +2066,12 @@ theme.
 \msg_new:nnnn { ltxtalk } { unknown-title-layout }
   { Unknown~title~layout~'#1'. }
   { Declare~it~with~\token_to_str:N\DeclareLTXTalkTitleLayout. }
+\msg_new:nnnn { ltxtalk } { unknown-navigation }
+  { Unknown~navigation~'#1'. }
+  { Declare~it~with~\token_to_str:N\DeclareLTXTalkNavigation~or~use~one~of~
+    current-section,~current-subsection,~section-list. }
+\msg_new:nnn { ltxtalk } { rerun-navigation }
+  { The~document~structure~changed;~rerun~to~get~the~navigation~right. }
 
 % ==========================================
 % INTERNE COFFINS (VERSTECKT VOR NUTZER)
@@ -2995,6 +3043,156 @@ theme.
       \tl_use:N \l_tmpa_tl
     \group_end:
   }
+
+% ==========================================
+% NAVIGATION
+% ==========================================
+% \ldeen{
+%   Eine \emph{Navigation} ist eine benannte, wiederverwendbare Darstellung
+%   der Dokumentstruktur. Ein Layout bindet sie im Aufbau-Code an einen Slot
+%   (\cs{setltxtalkslotcontent}\Marg{slot}\Marg{\cs{LTXTalkNavigation}
+%   \Marg{name}}); \cs{DeclareLTXTalkNavigation} registriert eigene.
+%
+%   Renderer, die die \emph{gesamte} Abschnittsfolge zeigen (nicht nur den
+%   aktuellen Eintrag), brauchen zwei Läufe: \cls{ltx-talk} setzt Abschnitte
+%   nicht selbst, deshalb sammelt lttheme über die Haken
+%   \code{section/begin} und \code{subsection/begin} die Struktur in die
+%   \file{.aux} und liest sie beim nächsten Lauf. Ändert sich die Struktur,
+%   meldet lttheme \enquote{rerun to get the navigation right}. Renderer,
+%   die nur den aktuellen Abschnitt zeigen, kommen mit einem Lauf aus.
+% }{
+%   A \emph{navigation} is a named, reusable rendering of the document
+%   structure. A layout binds it to a slot in its setup code
+%   (\cs{setltxtalkslotcontent}\Marg{slot}\Marg{\cs{LTXTalkNavigation}
+%   \Marg{name}}); \cs{DeclareLTXTalkNavigation} registers new ones.
+%
+%   Renderers that show the \emph{whole} section sequence (not just the
+%   current entry) need two passes: \cls{ltx-talk} does not typeset
+%   sections, so lttheme collects the structure into the \file{.aux}
+%   through the \code{section/begin} and \code{subsection/begin} hooks and
+%   reads it back on the next run. If the structure changes, lttheme asks
+%   for a rerun. Renderers that show only the current section need one pass.
+% }
+
+\prop_new:N \g__ltxtalk_navigations_prop
+% Each entry is a brace group { {level} {number} {title} {frame} }.
+\seq_new:N \g__ltxtalk_nav_toc_seq         % read from the .aux (previous run)
+\seq_new:N \g__ltxtalk_nav_thisrun_seq     % collected during this run
+\bool_new:N \g__ltxtalk_nav_structure_used_bool
+\int_new:N \g__ltxtalk_nav_map_int
+\tl_new:N \l__ltxtalk_nav_sep_tl
+\tl_set:Nn \l__ltxtalk_nav_sep_tl { \nobreakspace \textbullet \nobreakspace }
+
+\NewDocumentCommand \DeclareLTXTalkNavigation { m +m }
+  { \prop_gput:Nnn \g__ltxtalk_navigations_prop {#1} {#2} }
+
+\NewDocumentCommand \LTXTalkNavigation { m }
+  {
+    \prop_if_in:NnTF \g__ltxtalk_navigations_prop {#1}
+      { \prop_item:Nn \g__ltxtalk_navigations_prop {#1} }
+      { \msg_error:nnn { ltxtalk } { unknown-navigation } {#1} }
+  }
+
+% \ldeen{Renderer rufen dies auf, wenn sie die gesammelte Struktur nutzen;
+%   nur dann wird am Dokumentende ein Rerun angemahnt.}{Renderers call this
+%   when they use the collected structure; only then is a rerun requested at
+%   the end of the document.}
+\cs_new_protected:Npn \__ltxtalk_nav_use_structure:
+  { \bool_gset_true:N \g__ltxtalk_nav_structure_used_bool }
+
+% \ldeen{Der Titel wird detokenisiert in die \file{.aux} geschrieben --
+%   einfache Titel erscheinen unverändert, Titel mit Auszeichnung als
+%   Klartext (dokumentierte Einschränkung, da bewegliches Argument). Die
+%   Signatur (Ebene/Nummer/Titel/Frame je Eintrag) dient der
+%   Rerun-Erkennung.}{The title is written detokenised to the \file{.aux} --
+%   plain titles appear unchanged, marked-up titles as plain text
+%   (documented limitation, being a moving argument). The signature
+%   (level/number/title/frame per entry) drives rerun detection.}
+\cs_new_protected:Npn \__ltxtalk_nav_record:nnn #1#2#3
+  {
+    \seq_gput_right:Ne \g__ltxtalk_nav_thisrun_seq
+      { { #1 } { #2 } { #3 } { \@framenumber } }
+    \legacy_if:nT { @filesw }
+      {
+        \iow_now:Ne \@auxout
+          {
+            \token_to_str:N \ltxtalk@nav@entry
+              { #1 } { #2 } { #3 } { \@framenumber }
+          }
+      }
+  }
+
+\cs_new_protected:Npn \ltxtalk@nav@entry #1#2#3#4
+  { \seq_gput_right:Nn \g__ltxtalk_nav_toc_seq { {#1} {#2} {#3} {#4} } }
+
+% \ldeen{\cs{insertsection} ist \cs{protected} und expandiert unter \code{:e}
+%   nicht; die internen Titel-Variablen der Klasse werden hier direkt
+%   detokenisiert (in der Variablenliste von \cls{ltx-talk} dokumentiert,
+%   mit Existenzprüfung als Absicherung).}{\cs{insertsection} is
+%   \cs{protected} and will not expand under \code{:e}; the class's internal
+%   title variables are detokenised here directly (documented in
+%   \cls{ltx-talk}'s variable list, guarded by an existence test).}
+\cs_new:Npn \__ltxtalk_nav_sec_title:
+  { \tl_if_exist:cT { l__talk_section_tl }
+      { \tl_to_str:c { l__talk_section_tl } } }
+\cs_new:Npn \__ltxtalk_nav_subsec_title:
+  { \tl_if_exist:cT { l__talk_subsection_tl }
+      { \tl_to_str:c { l__talk_subsection_tl } } }
+
+\AddToHook { section / begin }
+  { \__ltxtalk_nav_record:nnn { 1 } { \thesection } { \__ltxtalk_nav_sec_title: } }
+\AddToHook { subsection / begin }
+  { \__ltxtalk_nav_record:nnn { 2 } { \thesubsection }
+      { \__ltxtalk_nav_subsec_title: } }
+
+\AddToHook { enddocument / afterlastpage }
+  {
+    \bool_if:NT \g__ltxtalk_nav_structure_used_bool
+      {
+        \str_if_eq:eeF
+          { \seq_use:Nn \g__ltxtalk_nav_toc_seq     { | } }
+          { \seq_use:Nn \g__ltxtalk_nav_thisrun_seq { | } }
+          { \msg_warning:nn { ltxtalk } { rerun-navigation } }
+      }
+  }
+
+% \ldeen{Setzt einen Eintrag der Abschnittsliste; der aktuelle Abschnitt
+%   wird über die Klassenfarbe \code{ltxtalk-primary} hervorgehoben, die
+%   übrigen gedämpft.}{Typesets one section-list entry; the current section
+%   is emphasised in the class colour \code{ltxtalk-primary}, the others
+%   dimmed.}
+\cs_new_protected:Npn \__ltxtalk_nav_list_entry:nnnn #1#2#3#4
+  {
+    \str_if_eq:nnT {#1} { 1 }
+      {
+        \int_compare:nNnT \g__ltxtalk_nav_map_int > { 0 }
+          { \l__ltxtalk_nav_sep_tl }
+        \int_incr:N \g__ltxtalk_nav_map_int
+        \str_if_eq:eeTF {#2} { \thesection }
+          { {\color{ltxtalk-primary} #3} }
+          { {\color{ltxtalk-secondary!55} #3} }
+      }
+  }
+
+% \ldeen{Der Renderer lebt in einer eigenen Funktion, nicht direkt im
+%   gespeicherten Navigations-Code: \cs{seq_map_inline:Nn} braucht dort ein
+%   echtes Makro als Rahmen, damit \code{##1} eindeutig ist.}{The renderer
+%   lives in its own function rather than inline in the stored navigation
+%   code: \cs{seq_map_inline:Nn} needs a real macro frame there for
+%   \code{##1} to be unambiguous.}
+\cs_new_protected:Npn \__ltxtalk_nav_render_section_list:
+  {
+    \int_gzero:N \g__ltxtalk_nav_map_int
+    \seq_map_inline:Nn \g__ltxtalk_nav_toc_seq
+      { \__ltxtalk_nav_list_entry:nnnn ##1 }
+  }
+
+\DeclareLTXTalkNavigation { current-section }
+  { \LTXTalkMetadata { section } }
+\DeclareLTXTalkNavigation { current-subsection }
+  { \LTXTalkMetadata { subsection } }
+\DeclareLTXTalkNavigation { section-list }
+  { \__ltxtalk_nav_use_structure: \__ltxtalk_nav_render_section_list: }
 
 
 % ==========================================

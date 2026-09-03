@@ -1,0 +1,8 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+registry-builtin:passed
+thisrun-count:passed
+thisrun-seq={1}{1}{Einleitung}{0}||{1}{2}{Hauptteil}{1}||{2}{2.1}{Erster Aspekt}{1}||{1}{3}{Schluss}{2}
+structure-used:passed
+aux-roundtrip:passed
+signature-stable:passed

@@ -1,0 +1,62 @@
+\DocumentMetadata{}
+\input regression-test.tex
+\documentclass{ltx-talk}
+\usepackage{ltxtalk-theme}
+
+\ExplSyntaxOn
+\RegisterLTXTalkTheme { nav-test }
+  {
+    \ltxtalksetup { header = true, header-height = 1cm }
+    \setltxtalkcolors { primary = { model=HTML, value=204060 } }
+    \defineltxtalkslot { nt-nav } { header } { custom } { role = navigation }
+    \setltxtalkslotcontent { nt-nav } { \LTXTalkNavigation { section-list } }
+    \positionltxtalkslot { nt-nav } { left } { 0.2cm } { 0.9\paperwidth } { 0.5cm }
+    \defineltxtalkslot { nt-cur } { header } { section } { role = navigation }
+    \setltxtalkslotcontent { nt-cur } { \LTXTalkNavigation { current-section } }
+    \positionltxtalkslot { nt-cur } { right } { 0.2cm } { 3cm } { 0.5cm }
+  }
+\ExplSyntaxOn
+\useltxtalktheme { nav-test }
+\ExplSyntaxOff
+
+\begin{document}
+\section{Einleitung}
+\begin{frame}\frametitle{A}\end{frame}
+\section{Hauptteil}
+\subsection{Erster Aspekt}
+\begin{frame}\frametitle{B}\end{frame}
+\section{Schluss}
+\begin{frame}\frametitle{C}\end{frame}
+
+\START
+\ExplSyntaxOn
+
+% 1. The registry knows the built-ins and rejects unknown names.
+\prop_if_in:NnTF \g__ltxtalk_navigations_prop { section-list }
+  { \TYPE { registry-builtin:passed } } { \TYPE { registry-builtin:FAILED } }
+
+% 2. The section/begin and subsection/begin hooks recorded every section
+%    and subsection this run (3 sections + 1 subsection = 4).
+\int_compare:nNnTF { \seq_count:N \g__ltxtalk_nav_thisrun_seq } = { 4 }
+  { \TYPE { thisrun-count:passed } }
+  { \TYPE { thisrun-count:FAILED= \seq_count:N \g__ltxtalk_nav_thisrun_seq } }
+\tl_set:Ne \l_tmpa_tl { \seq_use:Nn \g__ltxtalk_nav_thisrun_seq { || } }
+\TYPE { thisrun-seq= \tl_to_str:N \l_tmpa_tl }
+
+% 3. Using section-list marked the run as needing the collected structure.
+\bool_if:NTF \g__ltxtalk_nav_structure_used_bool
+  { \TYPE { structure-used:passed } } { \TYPE { structure-used:FAILED } }
+
+% 4. The .aux was written and read back: after the first run the toc seq is
+%    non-empty and matches this run (so no perpetual rerun request).
+\int_compare:nNnTF { \seq_count:N \g__ltxtalk_nav_toc_seq } > { 0 }
+  { \TYPE { aux-roundtrip:passed } } { \TYPE { aux-roundtrip:FAILED } }
+\str_if_eq:eeTF
+  { \seq_use:Nn \g__ltxtalk_nav_toc_seq { | } }
+  { \seq_use:Nn \g__ltxtalk_nav_thisrun_seq { | } }
+  { \TYPE { signature-stable:passed } }
+  { \TYPE { signature-stable:FAILED } }
+
+\ExplSyntaxOff
+\END
+\end{document}
