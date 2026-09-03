@@ -234,9 +234,23 @@ The results are available as \code{tuccolor@info},
 \end{tabular}
 \end{center}
 
+\ldeen{Die Blockumgebungen \env{block}, \env{alertblock} und
+\env{exampleblock} bekommen ein durchgehendes Kopfband -- \env{block} in der
+Fakultätsfarbe, \env{alertblock} in \code{warning}, \env{exampleblock} in
+\code{info} -- über einem eingerückten, im Textfluss gesetzten Körper. Das
+Kopfband greift die Seitenkopfzeile auf und baut keine Box, sodass das
+PDF-Tagging dem der Klasse \cls{ltx-talk} entspricht.}{The block environments
+\env{block}, \env{alertblock} and \env{exampleblock} get a solid header band
+-- \env{block} in the faculty colour, \env{alertblock} in \code{warning},
+\env{exampleblock} in \code{info} -- above an indented body set in the text
+stream. The band echoes the page header and builds no box, so PDF tagging
+matches that of the \cls{ltx-talk} class.}
+
 \clearpage
 \begin{sourcecode}
   \begin{block}{Information} ... \end{block}
+  \begin{alertblock}{Achtung} ... \end{alertblock}
+  \begin{exampleblock}{Beispiel} ... \end{exampleblock}
   {\color{example} Beispieltext}
   {\color{alert} Warntext}
 \end{sourcecode}
@@ -970,6 +984,18 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
     \exp_args:Nne   \color_set:nn { tuccolor@danger } { tuccolor@danger@  \g_ltxtalk_tuc_func_color }
     \color_set:nn {alert} {tuccolor@warning}
     \color_set:nn {example} {tuccolor@info}
+    % \ldeen{Die Themenengine spiegelt \code{structure}/\code{alert}/%
+    %   \code{example} beim \cs{setltxtalkcolors} auf die osgstyler-Farbslots
+    %   (die \pkg{osgstyler-block} auflöst). Da hier stattdessen direkt
+    %   \cs{color_set:nn} gesetzt wird, muss dieselbe Spiegelung von Hand
+    %   nachgezogen werden.}{The engine mirrors \code{structure}/\code{alert}/%
+    %   \code{example} onto the osgstyler colour slots (which
+    %   \pkg{osgstyler-block} resolves) during \cs{setltxtalkcolors}. Since
+    %   this uses \cs{color_set:nn} directly instead, the same mirroring has
+    %   to be redone by hand.}
+    \exp_args:Nne \color_set:nn { osgstyler-structure } { tuccolor@ \g_ltxtalk_tuc_fak_color }
+    \color_set:nn { osgstyler-alert }   { tuccolor@warning }
+    \color_set:nn { osgstyler-example } { tuccolor@info }
     
     \setltxtalktitleplacement{frametitle=content,section=none}
 
@@ -1103,6 +1129,18 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
         rule-thickness=0.35pt,
         artifact-type=layout
       }
+
+    % \ldeen{Blöcke bekommen ein durchgehendes Kopfband in der
+    %   Funktionsfarbe -- ein Echo des Seitenkopfs -- über einem
+    %   eingerückten, im Textfluss gesetzten Körper. Der \code{titlebar}-Trait
+    %   baut keine Box, das PDF-Tagging bleibt also wie bei \cls{ltx-talk}.}{
+    %   Blocks get a solid header band in the functional colour -- an echo of
+    %   the page header -- above an indented body set in the text stream. The
+    %   \code{titlebar} trait builds no box, so PDF tagging stays as in
+    %   \cls{ltx-talk}.}
+    \styleltxtalkblock{block}{traits=titlebar,head-background=structure}
+    \styleltxtalkblock{alertblock}{traits=titlebar,head-background=alert}
+    \styleltxtalkblock{exampleblock}{traits=titlebar,head-background=example}
   }
 
 % \ldeen{Der Abstand vor dem Textblock wird aus der Kopfzeilengeometrie
