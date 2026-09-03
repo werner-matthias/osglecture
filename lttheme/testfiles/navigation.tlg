@@ -6,3 +6,7 @@ thisrun-seq={1}{1}{Einleitung}{0}||{1}{2}{Hauptteil}{1}||{2}{2.1}{Erster Aspekt}
 structure-used:passed
 aux-roundtrip:passed
 signature-stable:passed
+measure-total:passed
+measure-index:passed
+subsec-in-current:passed
+subsec-not-in-current:passed

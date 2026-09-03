@@ -1411,36 +1411,64 @@ and page style.
   \ldeen{
     \cs*{LTXTalkNavigation} setzt einen benannten Navigations-Renderer --
     gedacht als Slot-Inhalt im Aufbau-Code eines Layouts oder Themes.
-    Mitgeliefert sind \code{current-section} und \code{current-subsection}
-    (der Titel des aktuellen Abschnitts; ein Durchlauf genügt) sowie
-    \code{section-list} (alle Abschnitte in Dokumentreihenfolge, der aktuelle
-    in \code{ltxtalk-primary} hervorgehoben, die übrigen gedämpft).
     \cs*{DeclareLTXTalkNavigation} registriert einen eigenen Renderer;
     \meta{Code} wird bei jedem Aufruf ausgeführt und darf die interne
     Abschnittssequenz auswerten.
 
+    Mitgeliefert:
+    \begin{itemize}
+      \item \code{current-section}, \code{current-subsection} -- Titel des
+        aktuellen Abschnitts bzw.\ Unterabschnitts; ein Durchlauf genügt.
+      \item \code{section-list} -- alle Abschnitte in Dokumentreihenfolge,
+        nebeneinander.
+      \item \code{subsection-list} -- die Unterabschnitte des aktuellen
+        Abschnitts, nebeneinander.
+      \item \code{toc} -- Abschnitte untereinander, unter dem aktuellen
+        seine Unterabschnitte eingerückt.
+      \item \code{section-dots} -- ein Punkt je Abschnitt (aktueller gefüllt,
+        zurückliegende gedämpft, folgende offen).
+      \item \code{section-progress} -- \enquote{\meta{Position} /
+        \meta{Anzahl}}.
+    \end{itemize}
+    Der jeweils aktuelle Eintrag steht in \code{ltxtalk-primary}, die
+    übrigen gedämpft.
+
     Die Abschnittsstruktur wird über die Hooks \code{section/begin} und
     \code{subsection/begin} gesammelt, in die \file{.aux} geschrieben und im
-    nächsten Lauf zurückgelesen. Renderer wie \code{section-list}, die diese
-    Struktur nutzen, brauchen also zwei Läufe; ändert sich die Struktur, mahnt
-    lttheme einen weiteren Lauf an. Abschnittstitel mit Auszeichnung erscheinen
-    in der Liste als Klartext, da sie ein bewegliches Argument sind.
+    nächsten Lauf zurückgelesen. Alle Renderer außer \code{current-section}
+    und \code{current-subsection} brauchen also zwei Läufe; ändert sich die
+    Struktur, mahnt lttheme einen weiteren Lauf an. Abschnittstitel mit
+    Auszeichnung erscheinen als Klartext, da sie ein bewegliches Argument
+    sind.
   }{
     \cs*{LTXTalkNavigation} typesets a named navigation renderer -- intended
-    as slot content in the setup code of a layout or theme. Bundled renderers
-    are \code{current-section} and \code{current-subsection} (the title of the
-    current section; one pass suffices) and \code{section-list} (every section
-    in document order, the current one highlighted in \code{ltxtalk-primary},
-    the rest dimmed). \cs*{DeclareLTXTalkNavigation} registers a custom
-    renderer; \meta{Code} runs on every call and may read the internal section
-    sequence.
+    as slot content in the setup code of a layout or theme.
+    \cs*{DeclareLTXTalkNavigation} registers a custom renderer; \meta{Code}
+    runs on every call and may read the internal section sequence.
+
+    Bundled:
+    \begin{itemize}
+      \item \code{current-section}, \code{current-subsection} -- title of the
+        current section or subsection; one pass suffices.
+      \item \code{section-list} -- every section in document order, side by
+        side.
+      \item \code{subsection-list} -- the current section's subsections, side
+        by side.
+      \item \code{toc} -- sections one per line, the current section's
+        subsections indented below it.
+      \item \code{section-dots} -- one dot per section (current filled, past
+        dimmed, upcoming open).
+      \item \code{section-progress} -- \enquote{\meta{position} /
+        \meta{count}}.
+    \end{itemize}
+    The current entry is set in \code{ltxtalk-primary}, the rest dimmed.
 
     The section structure is collected through the \code{section/begin} and
-    \code{subsection/begin} hooks, written to the \file{.aux}, and read back on
-    the next run. Renderers such as \code{section-list} that use this
-    structure therefore need two passes; if the structure changes, lttheme
-    asks for another run. Section titles with markup appear in the list as
-    plain text, being a moving argument.
+    \code{subsection/begin} hooks, written to the \file{.aux}, and read back
+    on the next run. Every renderer except \code{current-section} and
+    \code{current-subsection} therefore needs two passes; if the structure
+    changes, lttheme asks for another run. Section titles with markup appear
+    as plain text, being a moving argument.
   }
 \end{commands}
 
@@ -2804,8 +2832,11 @@ theme.
 % Each entry is a brace group { {level} {number} {title} {frame} }.
 \seq_new:N \g__ltxtalk_nav_toc_seq         % read from the .aux (previous run)
 \seq_new:N \g__ltxtalk_nav_thisrun_seq     % collected during this run
+\seq_new:N \l__ltxtalk_nav_tmp_seq
 \bool_new:N \g__ltxtalk_nav_structure_used_bool
-\int_new:N \g__ltxtalk_nav_map_int
+\int_new:N \g__ltxtalk_nav_map_int         % running entry count (separator logic)
+\int_new:N \g__ltxtalk_nav_total_int       % number of sections
+\int_new:N \g__ltxtalk_nav_index_int       % 1-based position of the current section
 \tl_new:N \l__ltxtalk_nav_sep_tl
 \tl_set:Nn \l__ltxtalk_nav_sep_tl { \nobreakspace \textbullet \nobreakspace }
 
@@ -2900,10 +2931,10 @@ theme.
       }
   }
 
-% \ldeen{Der Renderer lebt in einer eigenen Funktion, nicht direkt im
+% \ldeen{Die Renderer leben in eigenen Funktionen, nicht direkt im
 %   gespeicherten Navigations-Code: \cs{seq_map_inline:Nn} braucht dort ein
-%   echtes Makro als Rahmen, damit \code{##1} eindeutig ist.}{The renderer
-%   lives in its own function rather than inline in the stored navigation
+%   echtes Makro als Rahmen, damit \code{##1} eindeutig ist.}{The renderers
+%   live in their own functions rather than inline in the stored navigation
 %   code: \cs{seq_map_inline:Nn} needs a real macro frame there for
 %   \code{##1} to be unambiguous.}
 \cs_new_protected:Npn \__ltxtalk_nav_render_section_list:
@@ -2913,12 +2944,156 @@ theme.
       { \__ltxtalk_nav_list_entry:nnnn ##1 }
   }
 
+% \ldeen{Wahr, wenn die Unterabschnittsnummer \#1 zum aktuellen Abschnitt
+%   gehört -- also ihr Bestandteil vor dem ersten Punkt gleich
+%   \cs{thesection} ist.}{True when the subsection number \#1 belongs to the
+%   current section -- i.e.\ its component before the first dot equals
+%   \cs{thesection}.}
+\prg_new_protected_conditional:Npnn \__ltxtalk_nav_subsec_in_current:n #1 { T, F, TF }
+  {
+    \seq_set_split:Nnn \l__ltxtalk_nav_tmp_seq { . } {#1}
+    \str_if_eq:eeTF { \seq_item:Nn \l__ltxtalk_nav_tmp_seq { 1 } } { \thesection }
+      { \prg_return_true: } { \prg_return_false: }
+  }
+
+% \ldeen{Zählt die Abschnitte und merkt sich die Position des aktuellen; von
+%   den Renderern \code{section-dots} und \code{section-progress} vor dem
+%   Setzen aufgerufen.}{Counts the sections and records the current one's
+%   position; called by the \code{section-dots} and \code{section-progress}
+%   renderers before they typeset.}
+\cs_new_protected:Npn \__ltxtalk_nav_measure:
+  {
+    \int_gzero:N \g__ltxtalk_nav_total_int
+    \int_gzero:N \g__ltxtalk_nav_index_int
+    \seq_map_inline:Nn \g__ltxtalk_nav_toc_seq
+      { \__ltxtalk_nav_measure_entry:nnnn ##1 }
+  }
+\cs_new_protected:Npn \__ltxtalk_nav_measure_entry:nnnn #1#2#3#4
+  {
+    \str_if_eq:nnT {#1} { 1 }
+      {
+        \int_gincr:N \g__ltxtalk_nav_total_int
+        \str_if_eq:eeT {#2} { \thesection }
+          { \int_gset_eq:NN \g__ltxtalk_nav_index_int \g__ltxtalk_nav_total_int }
+      }
+  }
+
+% \ldeen{Unterabschnittsliste des aktuellen Abschnitts, aktueller
+%   Unterabschnitt hervorgehoben.}{Subsection list of the current section,
+%   current subsection emphasised.}
+\cs_new_protected:Npn \__ltxtalk_nav_render_subsection_list:
+  {
+    \int_gzero:N \g__ltxtalk_nav_map_int
+    \seq_map_inline:Nn \g__ltxtalk_nav_toc_seq
+      { \__ltxtalk_nav_subsec_entry:nnnn ##1 }
+  }
+\cs_new_protected:Npn \__ltxtalk_nav_subsec_entry:nnnn #1#2#3#4
+  {
+    \str_if_eq:nnT {#1} { 2 }
+      {
+        \__ltxtalk_nav_subsec_in_current:nT {#2}
+          {
+            \int_compare:nNnT \g__ltxtalk_nav_map_int > { 0 }
+              { \l__ltxtalk_nav_sep_tl }
+            \int_incr:N \g__ltxtalk_nav_map_int
+            \str_if_eq:eeTF {#2} { \thesubsection }
+              { {\color{ltxtalk-primary} #3} }
+              { {\color{ltxtalk-secondary!55} #3} }
+          }
+      }
+  }
+
+% \ldeen{Abschnitte untereinander; unter dem aktuellen Abschnitt seine
+%   Unterabschnitte eingerückt. Zeilen werden mit \cs{newline} getrennt, es
+%   entsteht also kein zusätzlicher Absatz.}{Sections one per line; the
+%   current section's subsections indented below it. Lines are separated with
+%   \cs{newline}, so no extra paragraph is created.}
+\cs_new_protected:Npn \__ltxtalk_nav_render_toc:
+  {
+    \int_gzero:N \g__ltxtalk_nav_map_int
+    \seq_map_inline:Nn \g__ltxtalk_nav_toc_seq
+      { \__ltxtalk_nav_toc_entry:nnnn ##1 }
+  }
+\cs_new_protected:Npn \__ltxtalk_nav_toc_entry:nnnn #1#2#3#4
+  {
+    \str_if_eq:nnTF {#1} { 1 }
+      {
+        \int_compare:nNnT \g__ltxtalk_nav_map_int > { 0 } { \newline }
+        \int_incr:N \g__ltxtalk_nav_map_int
+        \str_if_eq:eeTF {#2} { \thesection }
+          { {\color{ltxtalk-primary} #3} }
+          { {\color{ltxtalk-secondary!55} #3} }
+      }
+      {
+        \str_if_eq:nnT {#1} { 2 }
+          {
+            \__ltxtalk_nav_subsec_in_current:nT {#2}
+              {
+                \int_compare:nNnT \g__ltxtalk_nav_map_int > { 0 } { \newline }
+                \int_incr:N \g__ltxtalk_nav_map_int
+                \hspace { 1em }
+                \str_if_eq:eeTF {#2} { \thesubsection }
+                  { {\color{ltxtalk-primary} #3} }
+                  { {\color{ltxtalk-secondary!55} #3} }
+              }
+          }
+      }
+  }
+
+% \ldeen{Ein Punkt je Abschnitt: aktueller gefüllt in \code{ltxtalk-primary},
+%   zurückliegende gefüllt gedämpft, folgende offen. Beide Symbole aus dem
+%   Mathematikmodus, damit die Schrift keine Rolle spielt.}{One dot per
+%   section: current filled in \code{ltxtalk-primary}, past filled and dimmed,
+%   upcoming open. Both symbols from math mode so the font does not matter.}
+\cs_new_protected:Npn \__ltxtalk_nav_render_section_dots:
+  {
+    \__ltxtalk_nav_measure:
+    \int_gzero:N \g__ltxtalk_nav_map_int
+    \seq_map_inline:Nn \g__ltxtalk_nav_toc_seq
+      { \__ltxtalk_nav_dot_entry:nnnn ##1 }
+  }
+\cs_new_protected:Npn \__ltxtalk_nav_dot_entry:nnnn #1#2#3#4
+  {
+    \str_if_eq:nnT {#1} { 1 }
+      {
+        \int_compare:nNnT \g__ltxtalk_nav_map_int > { 0 } { \nobreakspace }
+        \int_incr:N \g__ltxtalk_nav_map_int
+        \int_compare:nNnTF \g__ltxtalk_nav_map_int = \g__ltxtalk_nav_index_int
+          { {\color{ltxtalk-primary} \ensuremath{\bullet}} }
+          {
+            \int_compare:nNnTF \g__ltxtalk_nav_map_int < \g__ltxtalk_nav_index_int
+              { {\color{ltxtalk-primary!45} \ensuremath{\bullet}} }
+              { {\color{ltxtalk-secondary!45} \ensuremath{\circ}} }
+          }
+      }
+  }
+
+% \ldeen{Textueller Fortschritt \enquote{\meta{Position} / \meta{Anzahl}};
+%   sprachneutral. Vor dem ersten Abschnitt entfällt der Positionsteil.}{
+%   Textual progress \enquote{\meta{position} / \meta{count}};
+%   language-neutral. Before the first section the position part is omitted.}
+\cs_new_protected:Npn \__ltxtalk_nav_render_section_progress:
+  {
+    \__ltxtalk_nav_measure:
+    \int_compare:nNnT \g__ltxtalk_nav_index_int > { 0 }
+      { \int_use:N \g__ltxtalk_nav_index_int \nobreakspace / \nobreakspace }
+    \int_use:N \g__ltxtalk_nav_total_int
+  }
+
 \DeclareLTXTalkNavigation { current-section }
   { \LTXTalkMetadata { section } }
 \DeclareLTXTalkNavigation { current-subsection }
   { \LTXTalkMetadata { subsection } }
 \DeclareLTXTalkNavigation { section-list }
   { \__ltxtalk_nav_use_structure: \__ltxtalk_nav_render_section_list: }
+\DeclareLTXTalkNavigation { subsection-list }
+  { \__ltxtalk_nav_use_structure: \__ltxtalk_nav_render_subsection_list: }
+\DeclareLTXTalkNavigation { toc }
+  { \__ltxtalk_nav_use_structure: \__ltxtalk_nav_render_toc: }
+\DeclareLTXTalkNavigation { section-dots }
+  { \__ltxtalk_nav_use_structure: \__ltxtalk_nav_render_section_dots: }
+\DeclareLTXTalkNavigation { section-progress }
+  { \__ltxtalk_nav_use_structure: \__ltxtalk_nav_render_section_progress: }
 
 
 % ==========================================

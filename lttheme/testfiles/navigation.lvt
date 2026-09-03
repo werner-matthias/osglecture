@@ -31,8 +31,14 @@
 \START
 \ExplSyntaxOn
 
-% 1. The registry knows the built-ins and rejects unknown names.
-\prop_if_in:NnTF \g__ltxtalk_navigations_prop { section-list }
+% 1. The registry knows every built-in renderer.
+\bool_set_true:N \l_tmpa_bool
+\clist_map_inline:nn
+  { current-section, current-subsection, section-list, subsection-list,
+    toc, section-dots, section-progress }
+  { \prop_if_in:NnF \g__ltxtalk_navigations_prop {#1}
+      { \bool_set_false:N \l_tmpa_bool \TYPE { missing-renderer= #1 } } }
+\bool_if:NTF \l_tmpa_bool
   { \TYPE { registry-builtin:passed } } { \TYPE { registry-builtin:FAILED } }
 
 % 2. The section/begin and subsection/begin hooks recorded every section
@@ -56,6 +62,23 @@
   { \seq_use:Nn \g__ltxtalk_nav_thisrun_seq { | } }
   { \TYPE { signature-stable:passed } }
   { \TYPE { signature-stable:FAILED } }
+
+% 5. \__ltxtalk_nav_measure: counts the three sections; the current one
+%    (\thesection is 3 after the last section) is at position 3.
+\__ltxtalk_nav_measure:
+\int_compare:nNnTF \g__ltxtalk_nav_total_int = { 3 }
+  { \TYPE { measure-total:passed } }
+  { \TYPE { measure-total:FAILED= \int_use:N \g__ltxtalk_nav_total_int } }
+\int_compare:nNnTF \g__ltxtalk_nav_index_int = { 3 }
+  { \TYPE { measure-index:passed } }
+  { \TYPE { measure-index:FAILED= \int_use:N \g__ltxtalk_nav_index_int } }
+
+% 6. The parent-section test: subsection 2.1 belongs to section 2, not to
+%    the current section 3.
+\__ltxtalk_nav_subsec_in_current:nTF { 3.1 }
+  { \TYPE { subsec-in-current:passed } } { \TYPE { subsec-in-current:FAILED } }
+\__ltxtalk_nav_subsec_in_current:nTF { 2.1 }
+  { \TYPE { subsec-not-in-current:FAILED } } { \TYPE { subsec-not-in-current:passed } }
 
 \ExplSyntaxOff
 \END
