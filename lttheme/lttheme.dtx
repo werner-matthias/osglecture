@@ -1533,14 +1533,16 @@ and page style.
     Standard-Schnittstelle umfasst \code{background}, \code{rule-color},
     \code{rule-thickness}, \code{padding}, \code{corner-radius},
     \code{shadow}, \code{shadow-offset}, \code{before} und \code{after}.
-    Fertige Optiken liegen als \pkg*{osgstyler}-Traits vor: \code{plain}
-    (rahmenlos), \code{titlebar} (farbiger Kopfstreifen wie Beamers Madrid,
-    voll fließend -- lässt das Tagging der Klasse unangetastet) sowie
-    \code{framed}/\code{filled} (echter Kasten, erzeugt in getaggtem PDF
-    ein \code{Div}). Ohne Aufruf bleibt der Block rahmenlos und bewahrt die
-    Darstellung der Klasse; \code{minimal} nutzt das, \code{magpie},
-    \code{hawk} und \code{sparrow} verwenden \code{titlebar} in ihrer
-    jeweiligen Farbe. Ein Blockstil wird beim Theme-Wechsel zurückgesetzt.
+    Fertige Optiken liegen als \pkg*{osgstyler}-Traits vor: \code{soft}
+    (dezent getönter Kopf mit dünner Linie, voll fließend), \code{titlebar}
+    (farbiger Kopfstreifen wie Beamers Madrid, voll fließend -- beide
+    lassen das Tagging der Klasse unangetastet) sowie \code{plain}
+    (rahmenlos) und \code{framed}/\code{filled} (echter Kasten, erzeugt in
+    getaggtem PDF ein \code{Div}). Ohne Aufruf verwendet lttheme den
+    Trait \code{soft}, sodass ein Block stets erkennbar ist; \code{magpie},
+    \code{hawk}, \code{sparrow}, \code{bluebird} und \code{goose} setzen
+    \code{titlebar} in ihrer jeweiligen Farbe. Ein Blockstil wird beim
+    Theme-Wechsel auf den \code{soft}-Standard zurückgesetzt.
   }{
     Edits the \code{block}, \code{alertblock}, or \code{exampleblock}
     instance of the \code{osgstyler-block} template type provided by
@@ -1548,14 +1550,15 @@ and page style.
     \code{rule-color}, \code{rule-thickness}, \code{padding},
     \code{corner-radius}, \code{shadow}, \code{shadow-offset},
     \code{before}, and \code{after}. Ready-made looks are available as
-    \pkg*{osgstyler} traits: \code{plain} (frameless), \code{titlebar} (a
-    coloured head strip like beamer's Madrid, fully flowing -- leaves the
-    class's tagging untouched), and \code{framed}/\code{filled} (a real
-    box, which yields a \code{Div} in tagged PDF). Without a call the block
-    stays frameless and preserves the class appearance; \code{minimal}
-    relies on that, while \code{magpie}, \code{hawk}, and \code{sparrow}
-    use \code{titlebar} in their respective colour. A block style is reset
-    on a theme switch.
+    \pkg*{osgstyler} traits: \code{soft} (a lightly tinted head with a thin
+    rule, fully flowing), \code{titlebar} (a coloured head strip like
+    beamer's Madrid, fully flowing -- both leave the class's tagging
+    untouched), and \code{plain} (frameless) and \code{framed}/\code{filled}
+    (a real box, which yields a \code{Div} in tagged PDF). Without a call
+    lttheme uses the \code{soft} trait, so a block is always recognisable;
+    \code{magpie}, \code{hawk}, \code{sparrow}, \code{bluebird}, and
+    \code{goose} use \code{titlebar} in their respective colour. A block
+    style is reset to the \code{soft} default on a theme switch.
   }
 
   \command{setltxtalkitemize}[\marg{Optionen}]
@@ -1693,17 +1696,24 @@ and page style.
     Textfluss gesetzten Slot (Folientitel und -untertitel im Inhaltsbereich);
     bei \code{0pt} wählt lttheme selbst einen zur Schriftgröße passenden
     Abstand. Auf absolut positionierte Slots wirkt der Schlüssel nicht.
+    \code{background-fill=true} färbt die Slotfläche in ihrer vollen
+    erklärten Breite und Höhe ein (statt nur hinter dem Text), sodass ein
+    Slot als Farbfeld in Kopf, Fuß oder Randspalte dienen kann;
+    \code{padding} rückt den Text darin ein.
   }{
     Edits a slot's template instance. The stable keys are \code{font},
-    \code{color}, \code{background}, \code{align}, \code{frame},
-    \code{padding}, \code{rule-color}, \code{rule-thick}, and
+    \code{color}, \code{background}, \code{background-fill}, \code{align},
+    \code{frame}, \code{padding}, \code{rule-color}, \code{rule-thick}, and
     \code{space-after}. \code{align} accepts \code{left}, \code{center}, and
     \code{right}; \code{frame} accepts \code{none}, \code{box}, \code{top},
     \code{bottom}, \code{left}, and \code{right}. \code{space-after} sets the
     vertical gap below a slot set in the text stream (frame title and
     subtitle in the content area); at \code{0pt} lttheme picks a gap that
     matches the font size. The key has no effect on absolutely positioned
-    slots.
+    slots. \code{background-fill=true} colours the slot area at its full
+    declared width and height (rather than only behind the text), so a slot
+    can serve as a colour field in a header, footer, or margin column;
+    \code{padding} then insets the text.
   }
 \end{commands}
 
@@ -1713,14 +1723,24 @@ and page style.
   \command{decorateltxtalkarea}[\marg{Bereich}\marg{Optionen}]
   \ldeen{
     Bearbeitet die Template-Instanz eines Bereichs. Stabil umgesetzt sind
-    \code{background}, \code{frame}, \code{rule-color},
-    \code{rule-thickness}, \code{padding} und \code{artifact-type}.
-    \code{frame} akzeptiert \code{none}, \code{box}, \code{top},
-    \code{bottom}, \code{left}, \code{right} und \code{topbottom}.
+    \code{background}, \code{background-split}, \code{frame},
+    \code{rule-color}, \code{rule-thickness}, \code{padding} und
+    \code{artifact-type}. \code{frame} akzeptiert \code{none}, \code{box},
+    \code{top}, \code{bottom}, \code{left}, \code{right} und
+    \code{topbottom}. \code{background-split} nennt eine Farbliste für einen
+    quer geteilten Hintergrund, optional gewichtet
+    (\code{farbe*2}) -- etwa \code{background-split=\{primary!60!black*3,
+    primary!80!black*2, primary*2\}} für einen dreigeteilten Fuß im
+    Madrid-Stil. Die Segmente werden als Artefakt getaggt.
   }{
     Edits an area's template instance. The stable keys are \code{background},
-    \code{frame}, \code{rule-color}, \code{rule-thickness}, \code{padding},
-    and \code{artifact-type}. \code{frame} also accepts \code{topbottom}.
+    \code{background-split}, \code{frame}, \code{rule-color},
+    \code{rule-thickness}, \code{padding}, and \code{artifact-type}.
+    \code{frame} also accepts \code{topbottom}. \code{background-split} takes
+    a colour list for a horizontally divided background, optionally weighted
+    (\code{colour*2}) -- e.g.\ \code{background-split=\{primary!60!black*3,
+    primary!80!black*2, primary*2\}} for a Madrid-style three-part footer.
+    The segments are tagged as an artifact.
   }
 \end{commands}
 
@@ -2135,6 +2155,7 @@ theme.
 \tl_gset:Nn \g__ltxtalk_active_theme_tl { default }
 
 \prop_new:N \g__ltxtalk_themes_prop
+\tl_new:N \l__ltxtalk_theme_setup_tl
 
 \NewDocumentCommand \RegisterLTXTalkTheme { m m }
   {
@@ -2653,6 +2674,7 @@ theme.
 \dim_new:N \l__ltxtalk_slot_space_after_dim
 
 \bool_new:N \l__ltxtalk_slot_shadow_bool
+\bool_new:N \l__ltxtalk_slot_bg_fill_bool
 \bool_new:N \l__ltxtalk_slot_uppercase_bool
 \bool_new:N \l__ltxtalk_slot_lowercase_bool
 % \ldeen{Wahr, während ein Slot im Textfluss des Frames gesetzt wird
@@ -2688,8 +2710,13 @@ theme.
 \tl_new:N \l__ltxtalk_area_frame_tl
 \tl_new:N \l__ltxtalk_area_rule_color_tl
 \tl_new:N \l__ltxtalk_area_background_tl
+\tl_new:N \l__ltxtalk_area_bg_split_tl
 \tl_new:N \l__ltxtalk_area_bg_opacity_tl
 \tl_new:N \l__ltxtalk_area_shadow_color_tl
+\clist_new:N \l__ltxtalk_area_bg_split_clist
+\fp_new:N   \l__ltxtalk_area_bg_split_wt_fp
+\dim_new:N  \l__ltxtalk_area_bg_split_x_dim
+\dim_new:N  \l__ltxtalk_area_bg_split_seg_dim
 
 \dim_new:N \l__ltxtalk_area_rule_thickness_dim
 \dim_new:N \l__ltxtalk_area_shadow_offset_dim
@@ -3206,6 +3233,7 @@ theme.
     font        : tokenlist = \normalfont,
     color       : tokenlist = ltxtalk-text,
     background  : tokenlist = none,
+    background-fill : boolean = false,
     align       : choice { left, center, right } = center,
     frame       : choice { none, box, top, bottom, left, right } = none,
     padding     : length = 0pt,
@@ -3223,6 +3251,7 @@ theme.
     font       = \l__ltxtalk_slot_font_tl,
     color      = \l__ltxtalk_slot_color_tl,
     background = \l__ltxtalk_slot_bg_tl,
+    background-fill = \l__ltxtalk_slot_bg_fill_bool,
     align      =
       {
         left   = \tl_set:Nn \l__ltxtalk_slot_align_tl { left },
@@ -3250,6 +3279,45 @@ theme.
   }
   { \__ltxtalk_typeset_slot:n {#1} }
 
+% \ldeen{\code{background-fill}: die Slotfläche wird in ihrer vollen erklärten
+%   Breite und Höhe eingefärbt (verschachtelte \cs{parbox} in gleicher Grösse),
+%   nicht nur hinter dem Text -- für Farbfelder in Kopf, Fuss oder Seitenleiste.
+%   \code{padding} rückt den Text ein.}{\code{background-fill}: the slot area is
+%   coloured at its full declared width and height (a nested \cs{parbox} of the
+%   same size), not just behind the text -- for colour fields in a header,
+%   footer, or sidebar. \code{padding} insets the text.}
+\cs_new_protected:Npn \__ltxtalk_slot_bg_fill:n #1
+  {
+    \group_begin:
+      \setlength\fboxsep{0pt}
+      \colorbox { \l__ltxtalk_slot_bg_tl }
+        {
+          \parbox [c] [\l__ltxtalk_current_slot_height_dim] [c]
+            { \l__ltxtalk_current_slot_width_dim }
+            {
+              \color { \l__ltxtalk_slot_color_tl }
+              \str_case:Vn \l__ltxtalk_slot_align_tl
+                {
+                  { left }   { \raggedright }
+                  { center } { \centering }
+                  { right }  { \raggedleft }
+                }
+              % \ldeen{nach der Ausrichtung, da \cs{raggedright} \cs{leftskip}
+              %   zurücksetzt}{after the alignment, since \cs{raggedright}
+              %   resets \cs{leftskip}}
+              \dim_add:Nn \leftskip  { \l__ltxtalk_slot_padding_dim }
+              \dim_add:Nn \rightskip { \l__ltxtalk_slot_padding_dim }
+              % \ldeen{\cs{strut}: eine \cs{parbox} mit leerem Inhalt fällt in
+              %   der Breite zusammen, auch bei erzwungener Höhe.}{\cs{strut}: a
+              %   \cs{parbox} with empty content collapses in width even when
+              %   the height is forced.}
+              \leavevmode \strut #1 \strut
+              \par
+            }
+        }
+    \group_end:
+  }
+
 \cs_new_protected:Npn \__ltxtalk_typeset_slot:n #1
   {
     \group_begin:
@@ -3272,9 +3340,14 @@ theme.
             {\color{\l__ltxtalk_slot_color_tl}#1}
         }
         {
-          \str_if_eq:VnF \l__ltxtalk_slot_bg_tl { none }
-            { \colorbox{\l__ltxtalk_slot_bg_tl}{\color{\l__ltxtalk_slot_color_tl}#1} }
-          \str_if_eq:VnT \l__ltxtalk_slot_bg_tl { none } {#1}
+          \str_if_eq:VnTF \l__ltxtalk_slot_bg_tl { none }
+            {#1}
+            {
+              \bool_if:NTF \l__ltxtalk_slot_bg_fill_bool
+                { \__ltxtalk_slot_bg_fill:n {#1} }
+                { \colorbox{\l__ltxtalk_slot_bg_tl}
+                    {\color{\l__ltxtalk_slot_color_tl}#1} }
+            }
         }
       \par
       % \ldeen{Im Textfluss (Folientitel/-untertitel) trägt die umgebende
@@ -3303,6 +3376,7 @@ theme.
 \DeclareTemplateInterface { lttheme-area } { standard } { 1 }
   {
     background     : tokenlist = none,
+    background-split : tokenlist = ,
     frame          : choice { none, box, top, bottom, left, right, topbottom } = none,
     rule-color     : tokenlist = ltxtalk-primary,
     rule-thickness : length = 0.4pt,
@@ -3318,6 +3392,7 @@ theme.
 \DeclareTemplateCode { lttheme-area } { standard } { 1 }
   {
     background = \l__ltxtalk_area_background_tl,
+    background-split = \l__ltxtalk_area_bg_split_tl,
     frame =
       {
         none      = \tl_set:Nn \l__ltxtalk_area_frame_tl { none },
@@ -3354,7 +3429,9 @@ theme.
           \rule{\l__ltxtalk_current_area_width_dim}
             {\l__ltxtalk_area_rule_thickness_dim}\par\nointerlineskip
         }
-      \str_if_eq:VnTF \l__ltxtalk_area_background_tl { none }
+      \bool_lazy_or:nnTF
+        { \str_if_eq_p:Vn \l__ltxtalk_area_background_tl { none } }
+        { ! \tl_if_blank_p:V \l__ltxtalk_area_bg_split_tl }
         {\parbox[c][\l__ltxtalk_current_area_height_dim][c]
            {\l__ltxtalk_current_area_width_dim}
            {\__ltxtalk_typeset_area_sides:n {#1}}}
@@ -3372,6 +3449,8 @@ theme.
   }
 \cs_new_protected:Npn \__ltxtalk_typeset_area_sides:n #1
   {
+    \tl_if_blank:VF \l__ltxtalk_area_bg_split_tl
+      { \__ltxtalk_area_bg_split_draw: }
     \str_if_eq:VnT \l__ltxtalk_area_frame_tl {left}
       {
         \color{\l__ltxtalk_area_rule_color_tl}
@@ -3385,6 +3464,72 @@ theme.
         \rule{\l__ltxtalk_area_rule_thickness_dim}
           {\l__ltxtalk_current_area_height_dim}
       }
+  }
+% \ldeen{Ein farblich geteilter Bereichshintergrund: \code{background-split}
+%   nennt Farben, wahlweise mit Gewicht (\code{farbe*2}). Die Segmente werden
+%   als \cs{rule}"=Kette ohne horizontale Ausdehnung (\cs{rlap}) hinter die
+%   Slots gelegt und als Artefakt getaggt; das letzte Segment füllt exakt bis
+%   zur Bereichskante, damit Rundung keine Lücke lässt.}{A colour-divided
+%   area background: \code{background-split} lists colours, optionally
+%   weighted (\code{colour*2}). The segments are a \cs{rule} chain that fills
+%   the area's width and height like the \code{frame} rules, tagged as an
+%   artifact; the last segment fills exactly to the area edge so rounding
+%   leaves no gap. The strut \code{#1} that follows keeps the line box at the
+%   full area height.}
+\cs_new_protected:Npn \__ltxtalk_area_bg_split_draw:
+  {
+    \clist_set:NV \l__ltxtalk_area_bg_split_clist \l__ltxtalk_area_bg_split_tl
+    \fp_zero:N \l__ltxtalk_area_bg_split_wt_fp
+    \clist_map_inline:Nn \l__ltxtalk_area_bg_split_clist
+      { \__ltxtalk_area_bg_split_weight:n {##1} }
+    \dim_zero:N \l__ltxtalk_area_bg_split_x_dim
+    \int_zero:N \l_tmpa_int
+    \tag_mc_begin:n { artifact }
+    \clist_map_inline:Nn \l__ltxtalk_area_bg_split_clist
+      { \__ltxtalk_area_bg_split_seg:n {##1} }
+    \tag_mc_end:
+    \skip_horizontal:n { -\l__ltxtalk_current_area_width_dim }
+  }
+\cs_new_protected:Npn \__ltxtalk_area_bg_split_weight:n #1
+  {
+    \seq_set_split:Nnn \l_tmpa_seq { * } {#1}
+    \fp_add:Nn \l__ltxtalk_area_bg_split_wt_fp
+      {
+        \int_compare:nNnTF { \seq_count:N \l_tmpa_seq } > { 1 }
+          { \seq_item:Nn \l_tmpa_seq { 2 } } { 1 }
+      }
+  }
+\cs_new_protected:Npn \__ltxtalk_area_bg_split_seg:n #1
+  {
+    \int_incr:N \l_tmpa_int
+    \seq_set_split:Nnn \l_tmpa_seq { * } {#1}
+    \int_compare:nNnTF \l_tmpa_int = { \clist_count:N \l__ltxtalk_area_bg_split_clist }
+      {
+        \dim_set:Nn \l__ltxtalk_area_bg_split_seg_dim
+          { \l__ltxtalk_current_area_width_dim - \l__ltxtalk_area_bg_split_x_dim }
+      }
+      {
+        \dim_set:Nn \l__ltxtalk_area_bg_split_seg_dim
+          {
+            \fp_to_dim:n
+              {
+                \l__ltxtalk_current_area_width_dim *
+                ( \int_compare:nNnTF { \seq_count:N \l_tmpa_seq } > { 1 }
+                    { \seq_item:Nn \l_tmpa_seq { 2 } } { 1 } )
+                / \l__ltxtalk_area_bg_split_wt_fp
+              }
+          }
+      }
+    \dim_add:Nn \l__ltxtalk_area_bg_split_x_dim \l__ltxtalk_area_bg_split_seg_dim
+    \exp_args:Ne \__ltxtalk_area_bg_split_rule:n
+      { \tl_trim_spaces:n { \seq_item:Nn \l_tmpa_seq { 1 } } }
+  }
+\cs_new_protected:Npn \__ltxtalk_area_bg_split_rule:n #1
+  {
+    { \color{#1}
+      \rule
+        { \l__ltxtalk_area_bg_split_seg_dim }
+        { \l__ltxtalk_current_area_height_dim } }
   }
 % \ldeen{Über Sockets können die einzelnen Bereichebehandlungen gezielt ersetzt werden.
 % }{
@@ -3414,6 +3559,8 @@ theme.
   { \__ltxtalk_render_area:nnn {left}{\l__ltxtalk_left_area_width_dim}{\paperheight} }
 \NewSocketPlug { lttheme/area/right } { standard }
   { \__ltxtalk_render_area:nnn {right}{\l__ltxtalk_right_area_width_dim}{\textheight} }
+\NewSocketPlug { lttheme/area/right } { goose }
+  { \__ltxtalk_render_area:nnn {right}{\l__ltxtalk_right_area_width_dim}{\paperheight} }
 \NewSocketPlug { lttheme/area/footer } { standard }
   { \__ltxtalk_render_area:nnn {footer}{\paperwidth}{\l__ltxtalk_footer_height_dim} }
 \NewSocketPlug { lttheme/page/foreground } { standard } { }
@@ -3518,11 +3665,22 @@ theme.
     \seq_gclear:N \g__ltxtalk_footer_slots_seq
     % Block appearance is an osgstyler-block instance edit, not reset by the
     % clears above; a theme that styles its blocks would otherwise leak that
-    % style into the next theme.  Restore the plain lttheme default -- through
+    % style into the next theme.  Restore the lttheme default -- through
     % \DeclareOsgBlockInstance (not raw \DeclareInstance) so the titled-layout
-    % record is cleared with it.
-    \clist_map_inline:nn { block, alertblock, exampleblock }
-      { \DeclareOsgBlockInstance {##1} { layout = plain } }
+    % record is cleared with it.  The default is the subtle \enquote{soft}
+    % look (light tinted head plus a thin rule), so a block is always at
+    % least recognisable even under a theme that does not style its blocks.
+    % Not looped: the \code{traits} key nests a \cs{clist_map_inline:nn} of
+    % its own, which must not run inside another one.
+    \DeclareOsgBlockInstance { block }        { traits = soft }
+    \DeclareOsgBlockInstance { alertblock }   { traits = soft }
+    \DeclareOsgBlockInstance { exampleblock } { traits = soft }
+    \StyleOsgBlockInstance { alertblock }
+      { head-color = alert, head-rule-color = alert,
+        foot-rule-color = alert!45 }
+    \StyleOsgBlockInstance { exampleblock }
+      { head-color = example, head-rule-color = example,
+        foot-rule-color = example!45 }
   }
 
 \cs_new_protected:Npn \__ltxtalk_update_text_area:
@@ -3571,11 +3729,17 @@ theme.
       \pagestyle{talk}
     }
     {
-      \prop_get:NnNTF \g__ltxtalk_themes_prop {#1} \l_tmpa_tl
+      % \ldeen{Das Setup in einer eigenen Variablen halten, nicht in
+      %   \cs{l_tmpa_tl}: \cs{__ltxtalk_clear_theme_state:} ruft Fremdcode
+      %   (osgstyler-Block-Traits), der \cs{l_tmpa_tl} überschreiben darf.}{
+      %   Keep the setup in a dedicated variable, not \cs{l_tmpa_tl}:
+      %   \cs{__ltxtalk_clear_theme_state:} calls out to third-party code
+      %   (osgstyler block traits) that is free to clobber \cs{l_tmpa_tl}.}
+      \prop_get:NnNTF \g__ltxtalk_themes_prop {#1} \l__ltxtalk_theme_setup_tl
         {
           \__ltxtalk_clear_theme_state:
           \tl_gset:Nn \g__ltxtalk_active_theme_tl {#1}
-          \l_tmpa_tl
+          \l__ltxtalk_theme_setup_tl
           \__ltxtalk_apply_class_templates:
         }
         { \msg_error:nnn {ltxtalk}{unknown-theme}{#1} }
@@ -3852,10 +4016,17 @@ theme.
                     \dim_eval:n
                       {-\Gm@lmargin+\paperwidth-\l__ltxtalk_right_area_width_dim}
                   }
-                \raisebox
-                  {-\dim_eval:n{\l__ltxtalk_header_height_dim-\Gm@tmargin+\headsep}}
-                  [0pt][0pt]
-                  {\UseSocket{lttheme/area/right}}
+                \str_if_eq:VnTF \g__ltxtalk_active_theme_tl {goose}
+                  {
+                    \raisebox{\dim_eval:n{\Gm@tmargin-\headsep}}[0pt][0pt]
+                      {\UseSocket{lttheme/area/right}}
+                  }
+                  {
+                    \raisebox
+                      {-\dim_eval:n{\l__ltxtalk_header_height_dim-\Gm@tmargin+\headsep}}
+                      [0pt][0pt]
+                      {\UseSocket{lttheme/area/right}}
+                  }
               }
             \hss
           }
@@ -4081,25 +4252,29 @@ theme.
       {\dim_eval:n{\paperwidth-0.44cm}}{0.60cm}
     \positionltxtalkslot{magpie-framesubtitle}{0.22cm}{0.82cm}
       {\dim_eval:n{\paperwidth-0.44cm}}{0.40cm}
-    \positionltxtalkslot{magpie-author}{0.18cm}{center}{0.30\paperwidth}{0.42cm}
-    \positionltxtalkslot{magpie-title}{center}{center}{0.34\paperwidth}{0.42cm}
+    \positionltxtalkslot{magpie-author}{0.28cm}{center}{0.44\paperwidth}{0.48cm}
+    \positionltxtalkslot{magpie-title}{0.46\paperwidth}{center}{0.30\paperwidth}{0.48cm}
     \positionltxtalkslot{magpie-page}
-      {\dim_eval:n{0.88\paperwidth-0.18cm}}{center}{0.12\paperwidth}{0.42cm}
+      {\dim_eval:n{0.78\paperwidth}}{center}{\dim_eval:n{0.22\paperwidth-0.28cm}}{0.48cm}
     \styleltxtalkslot{magpie-frametitle}{font=\Large\bfseries\sffamily,color=white,
       align=left,padding=3pt}
     \styleltxtalkslot{magpie-framesubtitle}
       {font=\small\sffamily,color=white,align=left}
-    % Madrid-style three-part footer: the cell shades are all derived from the
-    % footer's own base colour (ltxtalk-primary!70!black), so a colour-only
-    % overlay such as anchovy or carp -- which repaints ltxtalk-secondary to an
-    % unrelated hue -- cannot turn a footer cell into an off-colour box.
-    \styleltxtalkslot{magpie-author}{font=\tiny\sffamily,color=white,align=left,
-      background=ltxtalk-primary!55!black}
-    \styleltxtalkslot{magpie-title}{font=\tiny\sffamily,color=white,align=center,
-      background=ltxtalk-primary!85!black}
+    \styleltxtalkslot{magpie-author}{font=\tiny\sffamily,color=white,align=left}
+    \styleltxtalkslot{magpie-title}{font=\tiny\sffamily,color=white,align=center}
     \styleltxtalkslot{magpie-page}{font=\tiny\sffamily,color=white,align=right}
     \decorateltxtalkarea{header}{background=ltxtalk-primary,artifact-type=layout}
-    \decorateltxtalkarea{footer}{background=ltxtalk-primary!70!black,artifact-type=layout}
+    % Madrid-style three-part footer.  The cell shades are all tints of
+    % ltxtalk-primary, so a colour-only overlay (anchovy, carp) that repaints
+    % primary carries the whole footer with it and no cell drifts off-colour.
+    \decorateltxtalkarea{footer}
+      {
+        background = ltxtalk-primary!52!black,
+        background-split =
+          { ltxtalk-primary!52!black *23, ltxtalk-primary!74!black *15,
+            ltxtalk-primary *11 },
+        artifact-type = layout,
+      }
     \AssignSocketPlug { lttheme/page/background } { magpie-title }
     \AssignSocketPlug { lttheme/page/foreground } { magpie-title }
     \EditTemplateDefaults {titlepage}{talk}
@@ -4288,60 +4463,89 @@ theme.
 
 \cs_new_protected:Npn \__ltxtalk_bluebird_theme_setup:
   {
-    \ltxtalksetup{header=true,header-height=1.5cm,footer=true,footer-height=0.5cm}
-    \setltxtalktitleplacement{frametitle=content,section=none}
+    \ltxtalksetup{header=true,header-height=1.65cm,footer=true,footer-height=0.7cm}
+    \setltxtalktitleplacement{frametitle=header,section=none}
 
-    % --- header: section navigation ---
+    % \ldeen{Berlin-Kopf: ein helles Navigationsband über einem satten Band
+    %   mit dem Folientitel. Die Bänder sind \code{background-fill}-Slots, die
+    %   vor den Textslots deklariert sind und daher hinter ihnen liegen.}{
+    %   Berlin header: a light navigation band above a solid band carrying the
+    %   frame title. The bands are \code{background-fill} slots declared before
+    %   the text slots, so they sit behind them.}
+    \defineltxtalkslot{bluebird-navband}{header}{custom}{role=artifact}
+    \setltxtalkslotcontent{bluebird-navband}{}
+    \positionltxtalkslot{bluebird-navband}{0cm}{0cm}{\paperwidth}{0.72cm}
+    \styleltxtalkslot{bluebird-navband}
+      {background=ltxtalk-primary!13,background-fill=true}
+    \defineltxtalkslot{bluebird-titleband}{header}{custom}{role=artifact}
+    \setltxtalkslotcontent{bluebird-titleband}{}
+    \positionltxtalkslot{bluebird-titleband}{0cm}{0.72cm}{\paperwidth}{0.93cm}
+    \styleltxtalkslot{bluebird-titleband}
+      {background=ltxtalk-primary,background-fill=true}
+
+    % --- header: section navigation on the light band ---
     \defineltxtalkslot{bluebird-seclist}{header}{custom}{role=navigation}
     \setltxtalkslotcontent{bluebird-seclist}{\LTXTalkNavigation{section-list}}
-    \positionltxtalkslot{bluebird-seclist}{center}{0.14cm}{0.94\paperwidth}{0.5cm}
+    \positionltxtalkslot{bluebird-seclist}{center}{0.1cm}{0.7\paperwidth}{0.5cm}
     \styleltxtalkslot{bluebird-seclist}{font=\footnotesize\sffamily,align=center}
-
     \defineltxtalkslot{bluebird-dots}{header}{custom}{role=navigation}
     \setltxtalkslotcontent{bluebird-dots}{\LTXTalkNavigation{section-dots}}
-    \positionltxtalkslot{bluebird-dots}{0.3cm}{0.78cm}{0.6\paperwidth}{0.45cm}
-    \styleltxtalkslot{bluebird-dots}{font=\normalsize,align=left,color=ltxtalk-secondary}
-
+    \positionltxtalkslot{bluebird-dots}{0.3cm}{0.18cm}{0.14\paperwidth}{0.4cm}
+    \styleltxtalkslot{bluebird-dots}
+      {font=\normalsize,align=left,color=ltxtalk-primary!55}
     \defineltxtalkslot{bluebird-progress}{header}{custom}{role=navigation}
     \setltxtalkslotcontent{bluebird-progress}{\LTXTalkNavigation{section-progress}}
     \positionltxtalkslot{bluebird-progress}
-      {\dim_eval:n{0.7\paperwidth}}{0.78cm}{0.24\paperwidth}{0.45cm}
+      {\dim_eval:n{0.83\paperwidth}}{0.2cm}{0.14\paperwidth}{0.4cm}
     \styleltxtalkslot{bluebird-progress}
-      {font=\scriptsize\sffamily,align=right,color=ltxtalk-secondary}
+      {font=\scriptsize\sffamily,align=right,color=ltxtalk-primary!55}
 
-    % \ldeen{Titel/Untertitel sind Kopf-Slots, direkt an der Unterkante der
-    %   Kopfzeile -- so werden sie absolut gesetzt statt in den Textfluss.}{
-    %   Title/subtitle are header slots pinned to the header's lower edge, so
-    %   they are placed absolutely rather than in the text stream.}
+    % --- frame title / subtitle on the solid band ---
     \defineltxtalkslot{bluebird-ftitle}{header}{frametitle}{role=heading,heading-level=2}
     \defineltxtalkslot{bluebird-fsub}{header}{framesubtitle}{role=heading,heading-level=3}
-    \positionltxtalkslot{bluebird-ftitle}{0.25cm}{1.5cm}{0.92\paperwidth}{0.8cm}
-    \positionltxtalkslot{bluebird-fsub}{0.25cm}{2.34cm}{0.92\paperwidth}{0.5cm}
+    \positionltxtalkslot{bluebird-ftitle}{0.3cm}{0.82cm}{0.75\paperwidth}{0.55cm}
+    \positionltxtalkslot{bluebird-fsub}{0.3cm}{1.34cm}{0.75\paperwidth}{0.3cm}
     \styleltxtalkslot{bluebird-ftitle}
-      {font=\LARGE\bfseries\sffamily,color=ltxtalk-primary,align=left,space-after=0.35em}
+      {font=\Large\bfseries\sffamily,color=white,align=left}
     \styleltxtalkslot{bluebird-fsub}
-      {font=\large\itshape,color=ltxtalk-secondary,align=left}
+      {font=\footnotesize\sffamily,color=ltxtalk-primary!20,align=left}
 
-    % --- footer: author, title, frame number ---
+    % --- footer: two coloured lines (Berlin infolines) ---
+    \defineltxtalkslot{bluebird-footline1}{footer}{custom}{role=artifact}
+    \setltxtalkslotcontent{bluebird-footline1}{}
+    \positionltxtalkslot{bluebird-footline1}{0cm}{0cm}{\paperwidth}{0.36cm}
+    \styleltxtalkslot{bluebird-footline1}
+      {background=ltxtalk-primary!62!black,background-fill=true}
+    \defineltxtalkslot{bluebird-footline2}{footer}{custom}{role=artifact}
+    \setltxtalkslotcontent{bluebird-footline2}{}
+    \positionltxtalkslot{bluebird-footline2}{0cm}{0.36cm}{\paperwidth}{0.34cm}
+    \styleltxtalkslot{bluebird-footline2}
+      {background=ltxtalk-primary,background-fill=true}
+
     \defineltxtalkslot{bluebird-fauthor}{footer}{custom}{role=note}
-    \setltxtalkslotcontent{bluebird-fauthor}{\LTXTalkMetadata{short-author}}
-    \positionltxtalkslot{bluebird-fauthor}{0.3cm}{center}{0.33\paperwidth}{0.4cm}
+    \setltxtalkslotcontent{bluebird-fauthor}
+      {\LTXTalkMetadata{short-author}}
+    \positionltxtalkslot{bluebird-fauthor}{0.3cm}{0cm}{0.6\paperwidth}{0.36cm}
     \styleltxtalkslot{bluebird-fauthor}{font=\tiny\sffamily,color=white,align=left}
+    \defineltxtalkslot{bluebird-finst}{footer}{custom}{role=note}
+    \setltxtalkslotcontent{bluebird-finst}{\LTXTalkMetadata{short-institute}}
+    \positionltxtalkslot{bluebird-finst}
+      {\dim_eval:n{0.55\paperwidth}}{0cm}{\dim_eval:n{0.45\paperwidth-0.3cm}}{0.36cm}
+    \styleltxtalkslot{bluebird-finst}{font=\tiny\sffamily,color=white,align=right}
     \defineltxtalkslot{bluebird-ftitle-foot}{footer}{custom}{role=note}
     \setltxtalkslotcontent{bluebird-ftitle-foot}{\LTXTalkMetadata{short-title}}
-    \positionltxtalkslot{bluebird-ftitle-foot}{center}{center}{0.34\paperwidth}{0.4cm}
-    \styleltxtalkslot{bluebird-ftitle-foot}{font=\tiny\sffamily,color=white,align=center}
+    \positionltxtalkslot{bluebird-ftitle-foot}{0.3cm}{0.36cm}{0.6\paperwidth}{0.34cm}
+    \styleltxtalkslot{bluebird-ftitle-foot}{font=\tiny\sffamily,color=white,align=left}
     \defineltxtalkslot{bluebird-fpage}{footer}{pagenumber}{role=navigation}
     \setltxtalkslotcontent{bluebird-fpage}
-      {\LTXTalkMetadata{framenumber}\,/\,\LTXTalkMetadata{totalframes}}
+      {\LTXTalkNavigation{section-progress}}
     \positionltxtalkslot{bluebird-fpage}
-      {\dim_eval:n{0.85\paperwidth}}{center}{0.12\paperwidth}{0.4cm}
+      {\dim_eval:n{0.7\paperwidth}}{0.36cm}{\dim_eval:n{0.3\paperwidth-0.3cm}}{0.34cm}
     \styleltxtalkslot{bluebird-fpage}{font=\tiny\sffamily,color=white,align=right}
 
     % --- areas ---
-    \decorateltxtalkarea{header}{background=ltxtalk-primary!12,frame=bottom,
-      rule-color=ltxtalk-primary,rule-thickness=1pt,artifact-type=layout}
-    \decorateltxtalkarea{footer}{background=ltxtalk-primary,artifact-type=layout}
+    \decorateltxtalkarea{header}{artifact-type=layout}
+    \decorateltxtalkarea{footer}{artifact-type=layout}
 
     % --- native title page ---
     \EditTemplateDefaults{titlepage}{talk}{framestyle=lttheme,vertical-alignment=center}
@@ -4393,59 +4597,66 @@ theme.
   {
     \setltxtalktitleplacement{frametitle=content,section=none}
 
-    % --- right sidebar: a live table of contents ---
+    % \ldeen{Göttingen-Muster: die rechte Spalte trägt alles und reicht über
+    %   die volle Seitenhöhe (eigener Sockel-Plug \code{goose}). Oben Autor
+    %   und Kurztitel, darunter das mitlaufende Inhaltsverzeichnis. Keine
+    %   Fußzeile.}{Goettingen pattern: the right column carries everything and
+    %   spans the full page height (its own \code{goose} socket plug). Author
+    %   and short title at the top, the running table of contents below. No
+    %   footer.}
+    \AssignSocketPlug { lttheme/area/right } { goose }
+
+    \defineltxtalkslot{goose-sidemeta}{right}{custom}{role=note}
+    \setltxtalkslotcontent{goose-sidemeta}
+      {
+        {\color{ltxtalk-primary} \bfseries \LTXTalkMetadata{short-author}} \\ [0.2em]
+        \LTXTalkMetadata{short-title}
+      }
+    \positionltxtalkslot{goose-sidemeta}{0.25cm}{0.55cm}{2.4cm}{1.5cm}
+    \styleltxtalkslot{goose-sidemeta}
+      {font=\scriptsize\sffamily,color=ltxtalk-secondary,align=left}
+
     \defineltxtalkslot{goose-toc}{right}{custom}{role=navigation}
     \setltxtalkslotcontent{goose-toc}{\LTXTalkNavigation{toc}}
-    % \ldeen{Der Slot zentriert seinen Inhalt vertikal (\cs{parbox}[c]);
-    %   eine mässige Höhe hält das Verzeichnis nahe der Oberkante.}{The slot
-    %   centres its content vertically (\cs{parbox}[c]); a moderate height
-    %   keeps the contents near the top edge.}
-    \positionltxtalkslot{goose-toc}{0.25cm}{0.7cm}{2.35cm}{3cm}
+    \positionltxtalkslot{goose-toc}
+      {0.25cm}{2.2cm}{2.4cm}{0.6\paperheight}
     \styleltxtalkslot{goose-toc}{font=\scriptsize\sffamily,align=left}
+
+    \defineltxtalkslot{goose-progress}{right}{custom}{role=navigation}
+    \setltxtalkslotcontent{goose-progress}
+      {\LTXTalkNavigation{section-progress}}
+    \positionltxtalkslot{goose-progress}
+      {0.25cm}{\dim_eval:n{\paperheight-1cm}}{2.4cm}{0.5cm}
+    \styleltxtalkslot{goose-progress}
+      {font=\scriptsize\sffamily,color=ltxtalk-primary,align=left}
 
     % --- header: subsections of the current section ---
     \defineltxtalkslot{goose-subs}{header}{custom}{role=navigation}
     \setltxtalkslotcontent{goose-subs}{\LTXTalkNavigation{subsection-list}}
-    \positionltxtalkslot{goose-subs}{0.3cm}{0.2cm}{0.86\paperwidth}{0.5cm}
+    \positionltxtalkslot{goose-subs}{0.3cm}{0.16cm}{0.86\paperwidth}{0.5cm}
     \styleltxtalkslot{goose-subs}
       {font=\scriptsize\sffamily,align=left,color=ltxtalk-secondary}
 
     % --- content: frame title and subtitle (header slots -> absolute) ---
     \defineltxtalkslot{goose-ftitle}{header}{frametitle}{role=heading,heading-level=2}
     \defineltxtalkslot{goose-fsub}{header}{framesubtitle}{role=heading,heading-level=3}
-    \positionltxtalkslot{goose-ftitle}{0.3cm}{0.9cm}{0.78\paperwidth}{0.8cm}
-    \positionltxtalkslot{goose-fsub}{0.3cm}{1.62cm}{0.78\paperwidth}{0.5cm}
+    \positionltxtalkslot{goose-ftitle}{0.3cm}{0.85cm}{0.7\paperwidth}{0.75cm}
+    \positionltxtalkslot{goose-fsub}{0.3cm}{1.55cm}{0.7\paperwidth}{0.45cm}
     \styleltxtalkslot{goose-ftitle}
-      {font=\Large\bfseries\sffamily,color=ltxtalk-primary,align=left,space-after=0.3em}
+      {font=\Large\bfseries\sffamily,color=ltxtalk-primary,align=left}
     \styleltxtalkslot{goose-fsub}
       {font=\normalsize\itshape,color=ltxtalk-secondary,align=left}
-
-    % --- footer ---
-    \defineltxtalkslot{goose-fauthor}{footer}{custom}{role=note}
-    \setltxtalkslotcontent{goose-fauthor}
-      {\LTXTalkMetadata{short-author}~---~\LTXTalkMetadata{short-title}}
-    \positionltxtalkslot{goose-fauthor}{0.3cm}{center}{0.7\paperwidth}{0.35cm}
-    \styleltxtalkslot{goose-fauthor}
-      {font=\tiny\sffamily,color=ltxtalk-secondary,align=left}
-    \defineltxtalkslot{goose-fprogress}{footer}{custom}{role=navigation}
-    \setltxtalkslotcontent{goose-fprogress}{\LTXTalkNavigation{section-progress}}
-    \positionltxtalkslot{goose-fprogress}
-      {\dim_eval:n{0.82\paperwidth}}{center}{0.14\paperwidth}{0.35cm}
-    \styleltxtalkslot{goose-fprogress}
-      {font=\tiny\sffamily,color=ltxtalk-secondary,align=right}
 
     % --- areas ---
     \decorateltxtalkarea{right}{background=ltxtalk-primary!10,frame=left,
       rule-color=ltxtalk-primary!40,rule-thickness=0.6pt,artifact-type=layout}
     \decorateltxtalkarea{header}{frame=bottom,rule-color=ltxtalk-primary!30,
       rule-thickness=0.4pt,artifact-type=decorative}
-    \decorateltxtalkarea{footer}{frame=top,rule-color=ltxtalk-primary!30,
-      rule-thickness=0.4pt,artifact-type=decorative}
 
     % --- layouts: sidebar (standard) vs. full width (wide) ---
     \DeclareLTXTalkLayout{goose/standard}
-      {header=true,header-height=0.9cm,footer=true,footer-height=0.5cm,
-       right-margin=true,right-area-width=2.6cm,content-inset-right=2.9cm}
+      {header=true,header-height=0.85cm,footer=false,
+       right-margin=true,right-area-width=2.7cm,content-inset-right=3.0cm}
     \DeclareLTXTalkLayout{goose/wide}
       {right-margin=false,content-inset-right=0pt}
 

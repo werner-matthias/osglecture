@@ -242,7 +242,12 @@ Die Umgebung kennt die Optionen:
 
 - `language=de|en|fr` überschreibt die automatisch bestimmte Sprache.
 - `punctuation=auto|manual` schaltet die automatisch eingefügten
-  Konnektoren und Satzpunkte ein oder aus.
+  Konnektoren und Satzzeichen ein oder aus. Bei `auto` bleiben vorhandene
+  Satzzeichen (`.`, `,`, `:`, `;`, `!`, `?`) erhalten und werden nicht durch
+  ein weiteres Zeichen ergänzt.
+- `whitespace=normalize|preserve` ignoriert standardmäßig führende Leerzeichen
+  nach Eintragsbefehlen und behandelt Leerzeilen in der Langform wie einfachen
+  Wortabstand. `preserve` stellt das gewöhnliche TeX-Verhalten wieder her.
 
 Ohne `language` gilt die Reihenfolge Babel, Polyglossia, `langselect`,
 Klassenoption `lang`. Unterstützt sind deutsche, englische und französische

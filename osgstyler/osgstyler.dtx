@@ -1979,14 +1979,14 @@ load babel
 \ldeen{Immer deklarierte Instanzen: \env{quote}, \env{quotation},
   \env{block}, \env{alertblock}, \env{exampleblock}. Presets:
   \code{osl-standard}, \code{osl-modern}. Traits: \code{osl-modern-rules},
-  \code{plain}, \code{framed}, \code{filled}, \code{titlebar}. Der Test
+  \code{plain}, \code{framed}, \code{filled}, \code{titlebar}, \code{soft}. Der Test
   \cs{OsgIfBlockTitledTF}\marg{Name}\marg{ja}\marg{nein} meldet, ob eine
   Instanz \code{layout=titled} verwendet -- umhüllende Pakete brauchen das,
   weil ein Kopf-Titel anders zugeführt werden muss.}
   {Always-declared instances: \env{quote}, \env{quotation}, \env{block},
   \env{alertblock}, \env{exampleblock}. Presets: \code{osl-standard},
   \code{osl-modern}. Traits: \code{osl-modern-rules}, \code{plain},
-  \code{framed}, \code{filled}, \code{titlebar}. The test
+  \code{framed}, \code{filled}, \code{titlebar}, \code{soft}. The test
   \cs{OsgIfBlockTitledTF}\marg{name}\marg{yes}\marg{no} reports whether an
   instance uses \code{layout=titled} -- wrapping packages need this because
   a head title has to be fed in differently.}
@@ -3893,6 +3893,7 @@ load babel
 \tl_new:N \l__osgstyler_block_head_fg_tl
 \tl_new:N \l__osgstyler_block_head_font_tl
 \tl_new:N \l__osgstyler_block_head_rule_color_tl
+\tl_new:N \l__osgstyler_block_foot_rule_color_tl
 \tl_new:N \l__osgstyler_block_body_bg_tl
 \dim_new:N \l__osgstyler_block_rule_dim
 \dim_new:N \l__osgstyler_block_padding_dim
@@ -3900,6 +3901,7 @@ load babel
 \dim_new:N \l__osgstyler_block_shadow_offset_dim
 \dim_new:N \l__osgstyler_block_head_padding_dim
 \dim_new:N \l__osgstyler_block_head_rule_dim
+\dim_new:N \l__osgstyler_block_foot_rule_dim
 \dim_new:N \l__osgstyler_block_body_padding_dim
 \bool_new:N \l__osgstyler_block_shadow_bool
 
@@ -3937,6 +3939,8 @@ load babel
     head-padding       : length = 0.35em,
     head-rule-color    : tokenlist = structure,
     head-rule-thickness: length = 0pt,
+    foot-rule-color    : tokenlist = structure,
+    foot-rule-thickness: length = 0pt,
     body-background    : tokenlist = none,
     body-padding      : length = 0.4em
   }
@@ -3962,6 +3966,8 @@ load babel
     head-padding = \l__osgstyler_block_head_padding_dim,
     head-rule-color = \l__osgstyler_block_head_rule_color_tl,
     head-rule-thickness = \l__osgstyler_block_head_rule_dim,
+    foot-rule-color = \l__osgstyler_block_foot_rule_color_tl,
+    foot-rule-thickness = \l__osgstyler_block_foot_rule_dim,
     body-background = \l__osgstyler_block_body_bg_tl,
     body-padding = \l__osgstyler_block_body_padding_dim
   }
@@ -4050,6 +4056,19 @@ load babel
 % padding. Result: title and body paragraphs are siblings in the frame --
 % tagged like a paragraph with no block at all. A tinted body area is not
 % possible this way (it would need a box) and is dropped.}
+% \ldeen{Eine volle Zeilenbreite überspannende Deko-Linie in eigener Zeile,
+%   getaggt als ausgesetzt (nicht Teil der Struktur).}{A full-width
+%   decorative rule on its own line, tagged as suspended (not part of the
+%   structure).}
+\cs_new_protected:Npn \__osgstyler_block_rule:nn #1#2
+  {
+    \tag_suspend:n { osgstyler-block-rule }
+    \nobreak
+    \noindent
+    { \color { \OsgColorName{#1} } \rule { \linewidth } {#2} }%
+    \par
+    \tag_resume:n { osgstyler-block-rule }
+  }
 \cs_new_protected:Npn \__osgstyler_block_typeset_titled:n #1
   {
     \par
@@ -4057,35 +4076,63 @@ load babel
     \group_begin:
       \tl_if_empty:NF \l__osgstyler_block_title_tl
         {
-          % The coloured strip sits behind the title's own line, drawn as a
-          % zero-size \rlap\smash so it does not enter the vertical list. The
-          % \tag_mc push/pop marks just the rule as an artifact and hands the
-          % marked content straight back, so the title glyphs that follow
-          % stay in the paragraph's structure and reach the reader.
+          % Optional rule above the head (booktabs-style bracket top).
+          \dim_compare:nNnT \l__osgstyler_block_head_rule_dim > \c_zero_dim
+            {
+              \__osgstyler_block_rule:nn
+                { \l__osgstyler_block_head_rule_color_tl }
+                { \l__osgstyler_block_head_rule_dim }
+              \nointerlineskip
+              \skip_vertical:n { 0.2 \baselineskip }
+            }
+          % The coloured strip (if any) sits behind the title's own line,
+          % drawn as a zero-size \rlap\smash so it does not enter the
+          % vertical list; wrapped in \tag_mc push/pop as one artifact so the
+          % resumed title MC still receives the glyphs.
           \noindent
-          \rlap { \smash {
-            \tag_mc_end_push: \tag_mc_begin:n { artifact }
-              \skip_horizontal:n { -\l__osgstyler_block_head_padding_dim }
-              \color { \OsgColorName{ \l__osgstyler_block_head_bg_tl } }
-              \rule
-                [ \dim_eval:n { -0.32 \baselineskip } ]
-                { \dim_eval:n
-                  { \linewidth + \l__osgstyler_block_head_padding_dim } }
-                { \dim_eval:n { 1.2 \baselineskip } }
-            \tag_mc_end: \tag_mc_begin_pop:n { }
-          } }%
+          \str_if_eq:VnF \l__osgstyler_block_head_bg_tl { none }
+            {
+              \rlap { \smash {
+                \tag_mc_end_push: \tag_mc_begin:n { artifact }
+                  \skip_horizontal:n { -\l__osgstyler_block_head_padding_dim }
+                  \color { \OsgColorName{ \l__osgstyler_block_head_bg_tl } }
+                  \rule
+                    [ \dim_eval:n { -0.32 \baselineskip } ]
+                    { \dim_eval:n
+                      { \linewidth + \l__osgstyler_block_head_padding_dim } }
+                    { \dim_eval:n { 1.2 \baselineskip } }
+                \tag_mc_end: \tag_mc_begin_pop:n { }
+              } }%
+            }
           {
             \color { \OsgColorName{ \l__osgstyler_block_head_fg_tl } }
             \l__osgstyler_block_head_font_tl
             \l__osgstyler_block_title_tl
-          }
+          }%
           \par
+          % \ldeen{Der Streifen ist \cs{smash}ed, der normale Zeilenabstand
+          %   rechnet also nur mit der Textzeile -- ohne diesen Abstand
+          %   stiesse die erste Body-Zeile fast an ihn.}{The strip is
+          %   \cs{smash}ed, so ordinary interline spacing only counts the text
+          %   line -- without this gap the first body line would nearly touch
+          %   it.}
+          \nointerlineskip
+          \skip_vertical:n { 0.5 \baselineskip }
         }
       \group_begin:
         \dim_set:Nn \leftskip  { \l__osgstyler_block_body_padding_dim }
         \dim_set:Nn \rightskip { \l__osgstyler_block_body_padding_dim }
         \noindent \ignorespaces #1 \par
       \group_end:
+      % Optional rule below the body (bracket bottom).
+      \dim_compare:nNnT \l__osgstyler_block_foot_rule_dim > \c_zero_dim
+        {
+          \nointerlineskip
+          \skip_vertical:n { 0.35 \baselineskip }
+          \__osgstyler_block_rule:nn
+            { \l__osgstyler_block_foot_rule_color_tl }
+            { \l__osgstyler_block_foot_rule_dim }
+        }
     \group_end:
     \addvspace { \medskipamount }
   }
@@ -4107,6 +4154,7 @@ load babel
 
 \prop_new:N \g__osgstyler_block_trait_prop
 \tl_new:N \l__osgstyler_block_instance_keys_tl
+\tl_new:N \l__osgstyler_block_trait_tl
 
 \msg_new:nnnn { osgstyler } { unknown-block-trait }
   { Unknown~block~trait~'#1'. }
@@ -4117,11 +4165,17 @@ load babel
 
 \keys_define:nn { osgstyler / block-instance }
   {
+    % \ldeen{Ein eigener Scratch, nicht \cs{l_tmpa_tl}: der Aufrufer kann
+    %   \cs{l_tmpa_tl} über den \cs{keys_set:nn}"=Aufruf hinweg brauchen.}{A
+    %   private scratch, not \cs{l_tmpa_tl}: the caller may rely on
+    %   \cs{l_tmpa_tl} across the \cs{keys_set:nn} call.}
     traits .code:n =
       \clist_map_inline:nn {#1}
         {
-          \prop_get:NnNTF \g__osgstyler_block_trait_prop {##1} \l_tmpa_tl
-            { \tl_put_right:Nx \l__osgstyler_block_instance_keys_tl { \l_tmpa_tl , } }
+          \prop_get:NnNTF \g__osgstyler_block_trait_prop {##1}
+            \l__osgstyler_block_trait_tl
+            { \tl_put_right:Nx \l__osgstyler_block_instance_keys_tl
+                { \l__osgstyler_block_trait_tl , } }
             { \msg_error:nnn { osgstyler } { unknown-block-trait } {##1} }
         },
     unknown .code:n =
@@ -4728,8 +4782,9 @@ load babel
 % dem Theme folgen; \code{alertblock}/\code{exampleblock} überschreiben
 % danach nur den Slot.
 %
-% \code{titlebar} (Beamers Madrid nachempfunden) fließt vollständig und
-% belässt das Tagging der Klasse unangetastet -- die einzige Wahl, wenn
+% \code{titlebar} (Beamers Madrid nachempfunden) und \code{soft} (ein
+% dezenter, hell getönter Kopf mit dünner Linie) fließen vollständig und
+% belassen das Tagging der Klasse unangetastet -- die richtige Wahl, wenn
 % getaggtes PDF zählt. \code{framed} und \code{filled} setzen einen echten
 % Kasten (\cs{fcolorbox} um eine \env{minipage}); das ergibt in getaggtem
 % PDF ein \code{Div} und geschachtelte Absätze und sollte nur in der
@@ -4739,8 +4794,9 @@ load babel
 % (\code{structure} etc.) so they follow the loaded palette or theme;
 % \code{alertblock}/\code{exampleblock} then only override the slot.
 %
-% \code{titlebar} (modelled on beamer's Madrid) is fully flowing and
-% leaves the class's tagging untouched -- the only choice when tagged PDF
+% \code{titlebar} (modelled on beamer's Madrid) and \code{soft} (a
+% restrained, lightly tinted head with a thin rule) are fully flowing and
+% leave the class's tagging untouched -- the right choice when tagged PDF
 % matters. \code{framed} and \code{filled} put a real box
 % (\cs{fcolorbox} around a \env{minipage}); in tagged PDF that yields a
 % \code{Div} and nested paragraphs and should be used only in the long
@@ -4757,7 +4813,16 @@ load babel
   {
     layout = titled,
     head-background = structure, head-color = background,
+    head-rule-thickness = 0pt, foot-rule-thickness = 0pt,
     head-padding = 0.4em, body-padding = 0.6em
+  }
+\DeclareOsgBlockTrait { soft }
+  {
+    layout = titled,
+    head-background = none, head-color = structure,
+    head-rule-color = structure, head-rule-thickness = 1pt,
+    foot-rule-color = structure!45, foot-rule-thickness = 0.6pt,
+    head-padding = 0pt, body-padding = 0.9em
   }
 
 % \ldeen*{Ein Preset besteht aus bis zu vier unabhängig deklarierten

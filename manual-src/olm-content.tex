@@ -507,13 +507,17 @@ profile configuration rather than ordinary unit authoring.}
 
 \paragraph{\ldeen{Präsentationslisten}{Presentation lists}.}
 \begin{description}
-  \item[\env{presitemize}\oarg{language, punctuation}]
+  \item[\env{presitemize}\oarg{language, punctuation, whitespace}]
     \ldeen{erzeugt in Präsentationen eine Liste und in Langformen einen
     grammatisch verbundenen Absatz. \option{language} überschreibt die
     erkannte Sprache; \option{punctuation} akzeptiert \code{auto} oder
-    \code{manual}}{produces a list in presentations and a grammatically joined
+    \code{manual} und respektiert bei \code{auto} vorhandene Satzzeichen;
+    \option{whitespace} akzeptiert \code{normalize} (Vorgabe) oder
+    \code{preserve}}{produces a list in presentations and a grammatically joined
     paragraph in long forms. \option{language} overrides the detected language;
-    \option{punctuation} accepts \code{auto} or \code{manual}}.
+    \option{punctuation} accepts \code{auto} or \code{manual} and preserves
+    existing punctuation in \code{auto} mode; \option{whitespace} accepts
+    \code{normalize} (the default) or \code{preserve}}.
   \item[\cs{presitem}\oarg{relation, initial}\aarg{overlay}\oarg{label}]
     \option{relation}: \code{sentence}, \code{and}, \code{but},
     \code{therefore}, \code{comma}, \code{colon}; \option{initial}:

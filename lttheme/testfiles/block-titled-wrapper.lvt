@@ -21,23 +21,24 @@
   \end{block}
 \end{frame}
 
-% Switching to a plain theme must drop the titled record.
+% Switching themes resets the block to the lttheme default (the subtle
+% "soft" titled look), not to magpie's title bar and not to plain.
 \useltxtalktheme{minimal}
 \begin{frame}
-  \frametitle{Plain again}
-  \begin{block}{Plain title}
-    Plain body.
+  \frametitle{Soft again}
+  \begin{block}{Soft title}
+    Soft body.
   \end{block}
 \end{frame}
 
 \START
 \ExplSyntaxOn
-% magpie's block is titled; minimal's clear reset it.
+% The default is titled (soft); the clear reset magpie's title bar to it.
 \OsgIfBlockTitledTF { block }
-  { \TYPE { block-titled-after-minimal:FAILED } }
   { \TYPE { block-titled-after-minimal:passed } }
+  { \TYPE { block-titled-after-minimal:FAILED } }
 
-% Re-activate magpie: titled again.
+% Re-activate magpie: still titled.
 \useltxtalktheme { magpie }
 \OsgIfBlockTitledTF { block }
   { \TYPE { block-titled-after-magpie:passed } }

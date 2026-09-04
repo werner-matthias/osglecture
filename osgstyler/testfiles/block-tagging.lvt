@@ -12,6 +12,9 @@
 \DeclareOsgBlockInstance{tb}{traits={titlebar}}
 \NewOsgStyledEnvironment{tb}{tb}{none}[1]{#1}
 
+\DeclareOsgBlockInstance{softb}{traits={soft}}
+\NewOsgStyledEnvironment{softb}{softb}{none}[1]{#1}
+
 \begin{document}
 \UseOsgColorPalette{p}
 
@@ -26,7 +29,14 @@ A paragraph before the block.
 
 A paragraph after the block.
 
-% The titled block must add no structure of its own: title and both body
+\begin{softb}{A soft block}
+  The soft trait adds a tinted head and a thin rule; both are artifacts,
+  so the structure must stay just as flat as the title-bar block.
+\end{softb}
+
+A paragraph after the soft block.
+
+% Neither titled block adds structure of its own: titles and body
 % paragraphs are plain text-unit>text siblings of the surrounding text,
 % no Div, no nested or empty paragraphs.
 \clearpage
