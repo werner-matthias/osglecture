@@ -3559,6 +3559,8 @@ theme.
   { \__ltxtalk_render_area:nnn {left}{\l__ltxtalk_left_area_width_dim}{\paperheight} }
 \NewSocketPlug { lttheme/area/right } { standard }
   { \__ltxtalk_render_area:nnn {right}{\l__ltxtalk_right_area_width_dim}{\textheight} }
+\NewSocketPlug { lttheme/area/right } { goose }
+  { \__ltxtalk_render_area:nnn {right}{\l__ltxtalk_right_area_width_dim}{\paperheight} }
 \NewSocketPlug { lttheme/area/footer } { standard }
   { \__ltxtalk_render_area:nnn {footer}{\paperwidth}{\l__ltxtalk_footer_height_dim} }
 \NewSocketPlug { lttheme/page/foreground } { standard } { }
@@ -3673,10 +3675,12 @@ theme.
     \DeclareOsgBlockInstance { block }        { traits = soft }
     \DeclareOsgBlockInstance { alertblock }   { traits = soft }
     \DeclareOsgBlockInstance { exampleblock } { traits = soft }
-    \StyleOsgBlockInstance { alertblock } { head-background = alert!14,
-      head-color = alert, head-rule-color = alert }
-    \StyleOsgBlockInstance { exampleblock } { head-background = example!14,
-      head-color = example, head-rule-color = example }
+    \StyleOsgBlockInstance { alertblock }
+      { head-color = alert, head-rule-color = alert,
+        foot-rule-color = alert!45 }
+    \StyleOsgBlockInstance { exampleblock }
+      { head-color = example, head-rule-color = example,
+        foot-rule-color = example!45 }
   }
 
 \cs_new_protected:Npn \__ltxtalk_update_text_area:
@@ -4012,10 +4016,17 @@ theme.
                     \dim_eval:n
                       {-\Gm@lmargin+\paperwidth-\l__ltxtalk_right_area_width_dim}
                   }
-                \raisebox
-                  {-\dim_eval:n{\l__ltxtalk_header_height_dim-\Gm@tmargin+\headsep}}
-                  [0pt][0pt]
-                  {\UseSocket{lttheme/area/right}}
+                \str_if_eq:VnTF \g__ltxtalk_active_theme_tl {goose}
+                  {
+                    \raisebox{\dim_eval:n{\Gm@tmargin-\headsep}}[0pt][0pt]
+                      {\UseSocket{lttheme/area/right}}
+                  }
+                  {
+                    \raisebox
+                      {-\dim_eval:n{\l__ltxtalk_header_height_dim-\Gm@tmargin+\headsep}}
+                      [0pt][0pt]
+                      {\UseSocket{lttheme/area/right}}
+                  }
               }
             \hss
           }
@@ -4586,28 +4597,38 @@ theme.
   {
     \setltxtalktitleplacement{frametitle=content,section=none}
 
-    % \ldeen{Göttingen-Muster: die rechte Spalte trägt alles -- oben das
-    %   mitlaufende Inhaltsverzeichnis, unten Autor, Kurztitel und
-    %   Fortschritt. Eine Fußzeile gibt es nicht.}{Goettingen pattern: the
-    %   right column carries everything -- the running table of contents at
-    %   the top, author, short title and progress at the bottom. There is no
+    % \ldeen{Göttingen-Muster: die rechte Spalte trägt alles und reicht über
+    %   die volle Seitenhöhe (eigener Sockel-Plug \code{goose}). Oben Autor
+    %   und Kurztitel, darunter das mitlaufende Inhaltsverzeichnis. Keine
+    %   Fußzeile.}{Goettingen pattern: the right column carries everything and
+    %   spans the full page height (its own \code{goose} socket plug). Author
+    %   and short title at the top, the running table of contents below. No
     %   footer.}
-    \defineltxtalkslot{goose-toc}{right}{custom}{role=navigation}
-    \setltxtalkslotcontent{goose-toc}{\LTXTalkNavigation{toc}}
-    \positionltxtalkslot{goose-toc}{0.25cm}{0.55cm}{2.4cm}{3cm}
-    \styleltxtalkslot{goose-toc}{font=\scriptsize\sffamily,align=left}
+    \AssignSocketPlug { lttheme/area/right } { goose }
 
     \defineltxtalkslot{goose-sidemeta}{right}{custom}{role=note}
     \setltxtalkslotcontent{goose-sidemeta}
       {
-        \LTXTalkMetadata{short-author} \\ [0.15em]
-        \LTXTalkMetadata{short-title} \\ [0.35em]
-        {\color{ltxtalk-primary} \LTXTalkNavigation{section-progress}}
+        {\color{ltxtalk-primary} \bfseries \LTXTalkMetadata{short-author}} \\ [0.2em]
+        \LTXTalkMetadata{short-title}
       }
-    \positionltxtalkslot{goose-sidemeta}
-      {0.25cm}{\dim_eval:n{\textheight-1.9cm}}{2.4cm}{1.7cm}
+    \positionltxtalkslot{goose-sidemeta}{0.25cm}{0.55cm}{2.4cm}{1.5cm}
     \styleltxtalkslot{goose-sidemeta}
       {font=\scriptsize\sffamily,color=ltxtalk-secondary,align=left}
+
+    \defineltxtalkslot{goose-toc}{right}{custom}{role=navigation}
+    \setltxtalkslotcontent{goose-toc}{\LTXTalkNavigation{toc}}
+    \positionltxtalkslot{goose-toc}
+      {0.25cm}{2.2cm}{2.4cm}{0.6\paperheight}
+    \styleltxtalkslot{goose-toc}{font=\scriptsize\sffamily,align=left}
+
+    \defineltxtalkslot{goose-progress}{right}{custom}{role=navigation}
+    \setltxtalkslotcontent{goose-progress}
+      {\LTXTalkNavigation{section-progress}}
+    \positionltxtalkslot{goose-progress}
+      {0.25cm}{\dim_eval:n{\paperheight-1cm}}{2.4cm}{0.5cm}
+    \styleltxtalkslot{goose-progress}
+      {font=\scriptsize\sffamily,color=ltxtalk-primary,align=left}
 
     % --- header: subsections of the current section ---
     \defineltxtalkslot{goose-subs}{header}{custom}{role=navigation}

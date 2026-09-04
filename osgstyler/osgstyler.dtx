@@ -3893,6 +3893,7 @@ load babel
 \tl_new:N \l__osgstyler_block_head_fg_tl
 \tl_new:N \l__osgstyler_block_head_font_tl
 \tl_new:N \l__osgstyler_block_head_rule_color_tl
+\tl_new:N \l__osgstyler_block_foot_rule_color_tl
 \tl_new:N \l__osgstyler_block_body_bg_tl
 \dim_new:N \l__osgstyler_block_rule_dim
 \dim_new:N \l__osgstyler_block_padding_dim
@@ -3900,6 +3901,7 @@ load babel
 \dim_new:N \l__osgstyler_block_shadow_offset_dim
 \dim_new:N \l__osgstyler_block_head_padding_dim
 \dim_new:N \l__osgstyler_block_head_rule_dim
+\dim_new:N \l__osgstyler_block_foot_rule_dim
 \dim_new:N \l__osgstyler_block_body_padding_dim
 \bool_new:N \l__osgstyler_block_shadow_bool
 
@@ -3937,6 +3939,8 @@ load babel
     head-padding       : length = 0.35em,
     head-rule-color    : tokenlist = structure,
     head-rule-thickness: length = 0pt,
+    foot-rule-color    : tokenlist = structure,
+    foot-rule-thickness: length = 0pt,
     body-background    : tokenlist = none,
     body-padding      : length = 0.4em
   }
@@ -3962,6 +3966,8 @@ load babel
     head-padding = \l__osgstyler_block_head_padding_dim,
     head-rule-color = \l__osgstyler_block_head_rule_color_tl,
     head-rule-thickness = \l__osgstyler_block_head_rule_dim,
+    foot-rule-color = \l__osgstyler_block_foot_rule_color_tl,
+    foot-rule-thickness = \l__osgstyler_block_foot_rule_dim,
     body-background = \l__osgstyler_block_body_bg_tl,
     body-padding = \l__osgstyler_block_body_padding_dim
   }
@@ -4050,6 +4056,19 @@ load babel
 % padding. Result: title and body paragraphs are siblings in the frame --
 % tagged like a paragraph with no block at all. A tinted body area is not
 % possible this way (it would need a box) and is dropped.}
+% \ldeen{Eine volle Zeilenbreite überspannende Deko-Linie in eigener Zeile,
+%   getaggt als ausgesetzt (nicht Teil der Struktur).}{A full-width
+%   decorative rule on its own line, tagged as suspended (not part of the
+%   structure).}
+\cs_new_protected:Npn \__osgstyler_block_rule:nn #1#2
+  {
+    \tag_suspend:n { osgstyler-block-rule }
+    \nobreak
+    \noindent
+    { \color { \OsgColorName{#1} } \rule { \linewidth } {#2} }%
+    \par
+    \tag_resume:n { osgstyler-block-rule }
+  }
 \cs_new_protected:Npn \__osgstyler_block_typeset_titled:n #1
   {
     \par
@@ -4057,57 +4076,63 @@ load babel
     \group_begin:
       \tl_if_empty:NF \l__osgstyler_block_title_tl
         {
-          % The coloured strip -- and, if asked for, a rule under the head --
-          % sit behind the title's own line, drawn as zero-size \rlap\smash so
-          % they do not enter the vertical list. Both go before the title
-          % glyphs and are wrapped in a single \tag_mc push/pop as one
-          % artifact, so the resumed title MC still receives the glyphs and
-          % the paragraph structure stays flat.
+          % Optional rule above the head (booktabs-style bracket top).
+          \dim_compare:nNnT \l__osgstyler_block_head_rule_dim > \c_zero_dim
+            {
+              \__osgstyler_block_rule:nn
+                { \l__osgstyler_block_head_rule_color_tl }
+                { \l__osgstyler_block_head_rule_dim }
+              \nointerlineskip
+              \skip_vertical:n { 0.2 \baselineskip }
+            }
+          % The coloured strip (if any) sits behind the title's own line,
+          % drawn as a zero-size \rlap\smash so it does not enter the
+          % vertical list; wrapped in \tag_mc push/pop as one artifact so the
+          % resumed title MC still receives the glyphs.
           \noindent
-          \rlap { \smash {
-            \tag_mc_end_push: \tag_mc_begin:n { artifact }
-              \skip_horizontal:n { -\l__osgstyler_block_head_padding_dim }
-              \color { \OsgColorName{ \l__osgstyler_block_head_bg_tl } }
-              \rule
-                [ \dim_eval:n { -0.32 \baselineskip } ]
-                { \dim_eval:n
-                  { \linewidth + \l__osgstyler_block_head_padding_dim } }
-                { \dim_eval:n { 1.2 \baselineskip } }
-              \dim_compare:nNnT \l__osgstyler_block_head_rule_dim > \c_zero_dim
-                {
-                  \skip_horizontal:n
-                    { -\dim_eval:n
-                      { \linewidth + \l__osgstyler_block_head_padding_dim } }
-                  \color
-                    { \OsgColorName{ \l__osgstyler_block_head_rule_color_tl } }
+          \str_if_eq:VnF \l__osgstyler_block_head_bg_tl { none }
+            {
+              \rlap { \smash {
+                \tag_mc_end_push: \tag_mc_begin:n { artifact }
+                  \skip_horizontal:n { -\l__osgstyler_block_head_padding_dim }
+                  \color { \OsgColorName{ \l__osgstyler_block_head_bg_tl } }
                   \rule
-                    [ \dim_eval:n { -0.5 \baselineskip } ]
+                    [ \dim_eval:n { -0.32 \baselineskip } ]
                     { \dim_eval:n
                       { \linewidth + \l__osgstyler_block_head_padding_dim } }
-                    { \l__osgstyler_block_head_rule_dim }
-                }
-            \tag_mc_end: \tag_mc_begin_pop:n { }
-          } }%
+                    { \dim_eval:n { 1.2 \baselineskip } }
+                \tag_mc_end: \tag_mc_begin_pop:n { }
+              } }%
+            }
           {
             \color { \OsgColorName{ \l__osgstyler_block_head_fg_tl } }
             \l__osgstyler_block_head_font_tl
             \l__osgstyler_block_title_tl
           }%
           \par
-          % \ldeen{Ohne diesen Abstand stösst die erste Body-Zeile fast an den
-          %   Kopfstreifen -- der normale Zeilenabstand rechnet nur mit der
-          %   Textzeile, nicht mit dem darüberliegenden Streifen.}{Without this
-          %   the first body line nearly touches the head strip -- ordinary
-          %   interline spacing only accounts for the text line, not the strip
-          %   drawn above it.}
+          % \ldeen{Der Streifen ist \cs{smash}ed, der normale Zeilenabstand
+          %   rechnet also nur mit der Textzeile -- ohne diesen Abstand
+          %   stiesse die erste Body-Zeile fast an ihn.}{The strip is
+          %   \cs{smash}ed, so ordinary interline spacing only counts the text
+          %   line -- without this gap the first body line would nearly touch
+          %   it.}
           \nointerlineskip
-          \skip_vertical:n { 0.45 \baselineskip }
+          \skip_vertical:n { 0.5 \baselineskip }
         }
       \group_begin:
         \dim_set:Nn \leftskip  { \l__osgstyler_block_body_padding_dim }
         \dim_set:Nn \rightskip { \l__osgstyler_block_body_padding_dim }
         \noindent \ignorespaces #1 \par
       \group_end:
+      % Optional rule below the body (bracket bottom).
+      \dim_compare:nNnT \l__osgstyler_block_foot_rule_dim > \c_zero_dim
+        {
+          \nointerlineskip
+          \skip_vertical:n { 0.35 \baselineskip }
+          \__osgstyler_block_rule:nn
+            { \l__osgstyler_block_foot_rule_color_tl }
+            { \l__osgstyler_block_foot_rule_dim }
+        }
     \group_end:
     \addvspace { \medskipamount }
   }
@@ -4788,15 +4813,16 @@ load babel
   {
     layout = titled,
     head-background = structure, head-color = background,
-    head-rule-thickness = 0pt,
+    head-rule-thickness = 0pt, foot-rule-thickness = 0pt,
     head-padding = 0.4em, body-padding = 0.6em
   }
 \DeclareOsgBlockTrait { soft }
   {
     layout = titled,
-    head-background = structure!12, head-color = structure,
-    head-rule-color = structure, head-rule-thickness = 0.6pt,
-    head-padding = 0.4em, body-padding = 0.6em
+    head-background = none, head-color = structure,
+    head-rule-color = structure, head-rule-thickness = 1pt,
+    foot-rule-color = structure!45, foot-rule-thickness = 0.6pt,
+    head-padding = 0pt, body-padding = 0.9em
   }
 
 % \ldeen*{Ein Preset besteht aus bis zu vier unabhängig deklarierten

@@ -28,7 +28,7 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 ! Undefined control sequence.
-<argument> ..._block_head_rule_dim }}\tag_mc_end: 
+<argument> ...:n {1.2\baselineskip }}\tag_mc_end: 
                                                   \tag_mc_begin_pop:n {}
 l. ...\end
          {tb}
