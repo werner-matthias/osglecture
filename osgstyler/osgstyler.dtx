@@ -4197,29 +4197,35 @@ load babel
 %
 % Zwei Varianten je nach \code{body-background}. Bei \code{none} fließt
 % alles: der Titel als normale Textzeile mit dem farbigen Streifen als
-% \code{artifact}-\cs{rule} dahinter, der Body mit
+% nullgroßer \cs{rlap}\cs{smash} dahinter, der Body mit
 % \cs{leftskip}/\cs{rightskip} als Innenabstand. Titel und Body-Absätze
 % sind dann Geschwister im Frame -- getaggt wie ein Absatz ohne Block, ohne
 % zusätzliches \code{Div}. Eine getönte Body-Fläche braucht dagegen einen
 % Kasten: ist \code{body-background} gesetzt, liegt der Block in genau
-% einer \cs{fcolorbox} um eine \env{minipage} (ein \code{Div}, wie bei
-% \code{card}); der Kopfstreifen bleibt eine \code{artifact}-\cs{rule}, die
-% bis an die Kastenkanten läuft, sodass Titel und Body auch dort saubere
-% \code{text-unit}s bleiben. Die Kastenunterkante markiert das Blockende.}
+% einer \cs{fcolorbox} um eine \env{minipage}. \cs{tagpdfparaOff} um den
+% Kasten hält das Absatz-Tagging der Klasse davon ab, ihn in einen eigenen,
+% um das \code{Div} herum aufgespaltenen Absatz zu hüllen; das \code{Div}
+% steht damit sauber neben den umgebenden Absätzen (wie bei \code{card}),
+% mit \code{text-unit}s als Kindern, ohne leere Strukturelemente. Der
+% Kopfbalken fließt textlos in die MC der Titelzeile. Die Kastenunterkante
+% markiert das Blockende.}
 % {\code{titled}: a coloured head strip carrying the title, the indented
 % body below -- visually distinct blocks in the style of beamer's Madrid.
 %
 % Two variants depending on \code{body-background}. With \code{none}
 % everything flows: the title as a normal text line with the coloured strip
-% behind it as an \code{artifact} \cs{rule}, the body with
+% behind it as a zero-size \cs{rlap}\cs{smash}, the body with
 % \cs{leftskip}/\cs{rightskip} as inner padding. Title and body paragraphs
 % are then siblings in the frame -- tagged like a paragraph with no block,
 % no extra \code{Div}. A tinted body area needs a box: when
 % \code{body-background} is set the block sits in exactly one \cs{fcolorbox}
-% around a \env{minipage} (one \code{Div}, as with \code{card}); the head
-% strip stays an \code{artifact} \cs{rule} bled to the box edges, so title
-% and body still stay clean \code{text-unit}s there. The box's bottom edge
-% marks where the block ends.}
+% around a \env{minipage}. \cs{tagpdfparaOff} around the box keeps the
+% class's paragraph tagging from wrapping it in a paragraph of its own that
+% would be split around the \code{Div}; the \code{Div} then sits cleanly
+% beside the surrounding paragraphs (as with \code{card}), with
+% \code{text-unit} children and no empty structure elements. The head bar
+% flows textlessly into the title line's MC. The box's bottom edge marks
+% where the block ends.}
 % \ldeen{Eine volle Zeilenbreite überspannende Deko-Linie in eigener Zeile,
 %   getaggt als ausgesetzt (nicht Teil der Struktur).}{A full-width
 %   decorative rule on its own line, tagged as suspended (not part of the
