@@ -168,7 +168,7 @@ The package provides two environments and needs Lua\LaTeX.}
   {\ldeen{Erzeugt Fehlermeldung, wenn die die Ausführung einen Fehlerstatus zurück gibt.}{Generates an error message if the execution returns an error status.}}
 \end{options}
 \section{Implementation}
-\MaybeStop{\ldeen*{Um die Implementationsbeschreibung zu erhalten, kommentieren Sie bitte \cs{OnlyDescription} in @1 aus.}{To view the implementation description, please uncomment @1 in \code{osgdoc.dtx}.}{\file{ansiterm.dtx}}}
+\MaybeStop{\ldeen*{Um die Implementationsbeschreibung zu erhalten, kommentieren Sie bitte \cs{OnlyDescription} in @1 aus.}{To view the implementation description, please uncomment \cs{OnlyDescription} in @1.}{\File{ansiterm.dtx}}}
 
 \subsection{\emph{ansiterm.sty}}
 \AutoDocInput{ansiterm.dtx}{package}
@@ -371,7 +371,7 @@ The package provides two environments and needs Lua\LaTeX.}
     % @2 erzeugt nur die umgebende @3-Struktur.}{@1 tags the 
     % input/output lines it writes itself.
     % @2 supplies the surrounding @3 structure they nest in.}
-    % {\file{ansiterm.lua}}{\cs{ansitermtaginput}/\cs{ansitermtagoutput}}{\code{Code}}
+    % {\File{ansiterm.lua}}{\cs{ansitermtaginput}/\cs{ansitermtagoutput}}{\code{Code}}
     \__ansiterm_tag_struct_begin:n { Code }
     \input{\l_tmpa_tl.tex}
     \__ansiterm_tag_struct_end:
