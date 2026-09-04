@@ -26,59 +26,57 @@
        Layout:TextAlign="Justify"
        rolemaps-to="P"
       >
-     <?MarkedContent page="1" ?>The block title
+     <?MarkedContent page="1" ?>
     </text>
-   </text-unit>
-   <text-unit xmlns="https://www.latex-project.org/ns/dflt"
-      id="ID.00010"
-      rolemaps-to="Part"
-     >
-    <text xmlns="https://www.latex-project.org/ns/dflt"
-       id="ID.00011"
-       xmlns:Layout="http://iso.org/pdf/ssn/Layout"
-       Layout:TextAlign="Justify"
-       rolemaps-to="P"
+    <Div xmlns="http://iso.org/pdf2/ssn"
+       id="ID.00010"
       >
-     <?MarkedContent page="1" ?>First body paragraph of the block, long enough to wrap onto a second line so a line break is exercised inside the block body.
-    </text>
-   </text-unit>
-   <text-unit xmlns="https://www.latex-project.org/ns/dflt"
-      id="ID.00012"
-      rolemaps-to="Part"
-     >
-    <text xmlns="https://www.latex-project.org/ns/dflt"
-       id="ID.00013"
-       xmlns:Layout="http://iso.org/pdf/ssn/Layout"
-       Layout:TextAlign="Justify"
-       rolemaps-to="P"
-      >
-     <?MarkedContent page="1" ?>Second body paragraph.
-    </text>
-   </text-unit>
-   <text-unit xmlns="https://www.latex-project.org/ns/dflt"
-      id="ID.00014"
-      rolemaps-to="Part"
-     >
-    <text xmlns="https://www.latex-project.org/ns/dflt"
-       id="ID.00015"
-       xmlns:Layout="http://iso.org/pdf/ssn/Layout"
-       Layout:TextAlign="Justify"
-       rolemaps-to="P"
-      >
-     <?MarkedContent page="1" ?>A paragraph after the block.
-    </text>
-   </text-unit>
-   <text-unit xmlns="https://www.latex-project.org/ns/dflt"
-      id="ID.00016"
-      rolemaps-to="Part"
-     >
+     <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+        id="ID.00011"
+        rolemaps-to="Part"
+       >
+      <text xmlns="https://www.latex-project.org/ns/dflt"
+         id="ID.00012"
+         xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+         Layout:TextAlign="Justify"
+         rolemaps-to="P"
+        >
+       <?MarkedContent page="1" ?>The block title
+      </text>
+     </text-unit>
+     <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+        id="ID.00013"
+        rolemaps-to="Part"
+       >
+      <text xmlns="https://www.latex-project.org/ns/dflt"
+         id="ID.00014"
+         xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+         Layout:TextAlign="Justify"
+         rolemaps-to="P"
+        >
+       <?MarkedContent page="1" ?>First body paragraph of the block, long enough to wrap onto a second line so a line break is exercised inside the block body.
+      </text>
+     </text-unit>
+     <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+        id="ID.00015"
+        rolemaps-to="Part"
+       >
+      <text xmlns="https://www.latex-project.org/ns/dflt"
+         id="ID.00016"
+         xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+         Layout:TextAlign="Justify"
+         rolemaps-to="P"
+        >
+       <?MarkedContent page="1" ?>Second body paragraph.
+      </text>
+     </text-unit>
+    </Div>
     <text xmlns="https://www.latex-project.org/ns/dflt"
        id="ID.00017"
-       xmlns:Layout="http://iso.org/pdf/ssn/Layout"
-       Layout:TextAlign="Justify"
        rolemaps-to="P"
       >
-     <?MarkedContent page="1" ?>A soft block
+     <?MarkedContent page="1" ?>
+     <?MarkedContent page="1" ?>
     </text>
    </text-unit>
    <text-unit xmlns="https://www.latex-project.org/ns/dflt"
@@ -91,7 +89,7 @@
        Layout:TextAlign="Justify"
        rolemaps-to="P"
       >
-     <?MarkedContent page="1" ?>The soft trait adds a tinted head and a thin rule; both are artifacts, so the structure must stay just as flat as the title-bar block.
+     <?MarkedContent page="1" ?>A paragraph after the block.
     </text>
    </text-unit>
    <text-unit xmlns="https://www.latex-project.org/ns/dflt"
@@ -104,7 +102,7 @@
        Layout:TextAlign="Justify"
        rolemaps-to="P"
       >
-     <?MarkedContent page="1" ?>A paragraph after the soft block.
+     <?MarkedContent page="1" ?>A soft block
     </text>
    </text-unit>
    <text-unit xmlns="https://www.latex-project.org/ns/dflt"
@@ -114,22 +112,23 @@
     <text xmlns="https://www.latex-project.org/ns/dflt"
        id="ID.00023"
        xmlns:Layout="http://iso.org/pdf/ssn/Layout"
-       Layout:TextAlign="Center"
+       Layout:TextAlign="Justify"
        rolemaps-to="P"
       >
+     <?MarkedContent page="1" ?>The soft trait adds a tinted head and a thin rule; both are artifacts, so the structure stays flat: title and body are plain text-unit>text siblings of the surrounding text, no Div.
     </text>
+   </text-unit>
+   <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+      id="ID.00024"
+      rolemaps-to="Part"
+     >
     <text xmlns="https://www.latex-project.org/ns/dflt"
-       id="ID.00024"
+       id="ID.00025"
        xmlns:Layout="http://iso.org/pdf/ssn/Layout"
        Layout:TextAlign="Justify"
        rolemaps-to="P"
       >
-     <Span xmlns="http://iso.org/pdf2/ssn"
-        id="ID.00025"
-        actualtext="LaTeX"
-        phoneme="[ˈlaːtɛx]"
-       >
-     </Span>
+     <?MarkedContent page="1" ?>A paragraph after the soft block.
     </text>
    </text-unit>
    <text-unit xmlns="https://www.latex-project.org/ns/dflt"
@@ -139,11 +138,36 @@
     <text xmlns="https://www.latex-project.org/ns/dflt"
        id="ID.00027"
        xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+       Layout:TextAlign="Center"
+       rolemaps-to="P"
+      >
+    </text>
+    <text xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.00028"
+       xmlns:Layout="http://iso.org/pdf/ssn/Layout"
        Layout:TextAlign="Justify"
        rolemaps-to="P"
       >
      <Span xmlns="http://iso.org/pdf2/ssn"
-        id="ID.00028"
+        id="ID.00029"
+        actualtext="LaTeX"
+        phoneme="[ˈlaːtɛx]"
+       >
+     </Span>
+    </text>
+   </text-unit>
+   <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+      id="ID.00030"
+      rolemaps-to="Part"
+     >
+    <text xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.00031"
+       xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+       Layout:TextAlign="Justify"
+       rolemaps-to="P"
+      >
+     <Span xmlns="http://iso.org/pdf2/ssn"
+        id="ID.00032"
         actualtext="LaTeX"
         phoneme="[ˈlaːtɛx]"
        >

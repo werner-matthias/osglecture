@@ -1537,18 +1537,19 @@ and page style.
     \code{rule-thickness}, \code{padding}, \code{corner-radius},
     \code{shadow}, \code{shadow-offset}, \code{before} und \code{after}.
     Fertige Optiken liegen als \pkg*{osgstyler}-Traits vor: \code{card}
-    (leicht gerahmte, zart getönte Box mit fettem Titel), \code{soft}
-    (dezent getönter Kopf mit dünner Linie, voll fließend), \code{titlebar}
-    (farbiger Kopfstreifen wie Beamers Madrid, voll fließend -- \code{soft}
-    und \code{titlebar} lassen das Tagging der Klasse unangetastet) sowie
-    \code{plain} (rahmenlos) und \code{framed}/\code{filled} (echter
-    Kasten). \code{card}, \code{framed} und \code{filled} fügen im
-    getaggten PDF genau ein \code{Div} je Block hinzu. Ohne Aufruf
+    (leicht gerahmte, zart getönte Box mit fettem Titel), \code{titlebar}
+    (Beamers Madrid: voller Farbbalken über getönter Body-Fläche mit
+    Unterkante), \code{soft} (dezent getönter Kopf mit dünner Linie, voll
+    fließend, lässt das Tagging der Klasse unangetastet), \code{plain}
+    (rahmenlos) sowie \code{framed}/\code{filled} (Rahmen ohne bzw.\ mit
+    Tönung). Alle außer \code{soft} und \code{plain} sind echte Kästen und
+    fügen im getaggten PDF genau ein \code{Div} je Block hinzu. Ohne Aufruf
     verwendet lttheme den Trait \code{card}, sodass ein Block stets
-    erkennbar ist; \code{magpie}, \code{hawk}, \code{sparrow},
-    \code{bluebird} und \code{goose} setzen \code{titlebar} in ihrer
-    jeweiligen Farbe. Ein Blockstil wird beim Theme-Wechsel auf den
-    \code{card}-Standard zurückgesetzt.
+    erkennbar ist; \code{magpie}, \code{hawk}, \code{sparrow} und
+    \code{bluebird} setzen \code{titlebar} in ihrer jeweiligen Farbe,
+    \code{goose} bleibt bei \code{framed} (nur dünner Rahmen). Ein
+    Blockstil wird beim Theme-Wechsel auf den \code{card}-Standard
+    zurückgesetzt.
   }{
     Edits the \code{block}, \code{alertblock}, or \code{exampleblock}
     instance of the \code{osgstyler-block} template type provided by
@@ -1557,17 +1558,17 @@ and page style.
     \code{corner-radius}, \code{shadow}, \code{shadow-offset},
     \code{before}, and \code{after}. Ready-made looks are available as
     \pkg*{osgstyler} traits: \code{card} (a lightly framed, faintly tinted
-    box with a bold title), \code{soft} (a lightly tinted head with a thin
-    rule, fully flowing), \code{titlebar} (a coloured head strip like
-    beamer's Madrid, fully flowing -- \code{soft} and \code{titlebar} leave
-    the class's tagging untouched), and \code{plain} (frameless) and
-    \code{framed}/\code{filled} (a real box). \code{card}, \code{framed},
-    and \code{filled} add exactly one \code{Div} per block in tagged PDF.
+    box with a bold title), \code{titlebar} (beamer's Madrid: a full colour
+    bar over a tinted body area with a bottom edge), \code{soft} (a lightly
+    tinted head with a thin rule, fully flowing, leaves the class's tagging
+    untouched), \code{plain} (frameless), and \code{framed}/\code{filled}
+    (a frame without / with a tint). All but \code{soft} and \code{plain}
+    are real boxes and add exactly one \code{Div} per block in tagged PDF.
     Without a call lttheme uses the \code{card} trait, so a block is always
-    recognisable; \code{magpie}, \code{hawk}, \code{sparrow},
-    \code{bluebird}, and \code{goose} use \code{titlebar} in their
-    respective colour. A block style is reset to the \code{card} default on
-    a theme switch.
+    recognisable; \code{magpie}, \code{hawk}, \code{sparrow}, and
+    \code{bluebird} use \code{titlebar} in their respective colour,
+    \code{goose} stays with \code{framed} (a thin frame only). A block
+    style is reset to the \code{card} default on a theme switch.
   }
 
   \command{setltxtalkitemize}[\marg{Optionen}]
@@ -4300,10 +4301,13 @@ theme.
       accent={model=rgb,value={0.2,0.2,0.7}},
       text={model=HTML,value=000000},background={model=HTML,value=FFFFFF},
       structure={model=HTML,value=2B3A67},alert={model=HTML,value=B00020},example={model=HTML,value=166534}}
-    % Madrid signature: coloured title bar over a flowing, indented body.
-    \styleltxtalkblock{block}{traits=titlebar,head-background=primary}
-    \styleltxtalkblock{alertblock}{traits=titlebar,head-background=alert}
-    \styleltxtalkblock{exampleblock}{traits=titlebar,head-background=example}
+    % Madrid signature: a coloured title bar over a tinted body box.
+    \styleltxtalkblock{block}
+      {traits=titlebar,head-background=primary,body-background=primary!10}
+    \styleltxtalkblock{alertblock}
+      {traits=titlebar,head-background=alert,body-background=alert!10}
+    \styleltxtalkblock{exampleblock}
+      {traits=titlebar,head-background=example,body-background=example!10}
   }
 \RegisterLTXTalkTheme{magpie}{\__ltxtalk_magpie_theme_setup:}
 %</magpie>
@@ -4359,9 +4363,12 @@ theme.
       accent={model=rgb,value={0.2,0.2,0.7}},
       text={model=HTML,value=000000},background={model=HTML,value=FFFFFF},
       structure={model=HTML,value=2B3A67},alert={model=HTML,value=B00020},example={model=HTML,value=166534}}
-    \styleltxtalkblock{block}{traits=titlebar,head-background=primary}
-    \styleltxtalkblock{alertblock}{traits=titlebar,head-background=alert}
-    \styleltxtalkblock{exampleblock}{traits=titlebar,head-background=example}
+    \styleltxtalkblock{block}
+      {traits=titlebar,head-background=primary,body-background=primary!10}
+    \styleltxtalkblock{alertblock}
+      {traits=titlebar,head-background=alert,body-background=alert!10}
+    \styleltxtalkblock{exampleblock}
+      {traits=titlebar,head-background=example,body-background=example!10}
   }
 \RegisterLTXTalkTheme{hawk}{\__ltxtalk_hawk_theme_setup:}
 %</hawk>
@@ -4424,9 +4431,12 @@ theme.
       accent={model=rgb,value={0.2,0.2,0.7}},
       text={model=HTML,value=000000},background={model=HTML,value=FFFFFF},
       structure={model=HTML,value=2B3A67},alert={model=HTML,value=B00020},example={model=HTML,value=166534}}
-    \styleltxtalkblock{block}{traits=titlebar,head-background=primary}
-    \styleltxtalkblock{alertblock}{traits=titlebar,head-background=alert}
-    \styleltxtalkblock{exampleblock}{traits=titlebar,head-background=example}
+    \styleltxtalkblock{block}
+      {traits=titlebar,head-background=primary,body-background=primary!10}
+    \styleltxtalkblock{alertblock}
+      {traits=titlebar,head-background=alert,body-background=alert!10}
+    \styleltxtalkblock{exampleblock}
+      {traits=titlebar,head-background=example,body-background=example!10}
   }
 \RegisterLTXTalkTheme{sparrow}{\__ltxtalk_sparrow_theme_setup:}
 %</sparrow>
@@ -4578,9 +4588,12 @@ theme.
       text={model=HTML,value=1A2733},background={model=HTML,value=FFFFFF},
       structure={model=HTML,value=1F5C8A},alert={model=HTML,value=B00020},
       example={model=HTML,value=166534}}
-    \styleltxtalkblock{block}{traits=titlebar,head-background=structure}
-    \styleltxtalkblock{alertblock}{traits=titlebar,head-background=alert}
-    \styleltxtalkblock{exampleblock}{traits=titlebar,head-background=example}
+    \styleltxtalkblock{block}
+      {traits=titlebar,head-background=structure,body-background=structure!12}
+    \styleltxtalkblock{alertblock}
+      {traits=titlebar,head-background=alert,body-background=alert!10}
+    \styleltxtalkblock{exampleblock}
+      {traits=titlebar,head-background=example,body-background=example!10}
   }
 \RegisterLTXTalkTheme{bluebird}{\__ltxtalk_bluebird_theme_setup:}
 %</bluebird>
@@ -4682,9 +4695,11 @@ theme.
       text={model=HTML,value=20281A},background={model=HTML,value=FFFFFF},
       structure={model=HTML,value=4A6B2E},alert={model=HTML,value=B00020},
       example={model=HTML,value=166534}}
-    \styleltxtalkblock{block}{traits=titlebar,head-background=structure}
-    \styleltxtalkblock{alertblock}{traits=titlebar,head-background=alert}
-    \styleltxtalkblock{exampleblock}{traits=titlebar,head-background=example}
+    % Goettingen keeps blocks plain: no bar, no fill, just a thin frame
+    % so the extent still reads.
+    \styleltxtalkblock{block}{traits=framed}
+    \styleltxtalkblock{alertblock}{traits=framed,rule-color=alert}
+    \styleltxtalkblock{exampleblock}{traits=framed,rule-color=example}
 
     \UseLTXTalkLayout{goose/standard}
   }

@@ -1961,10 +1961,14 @@ load babel
   \keychoice{layout}{plain,titled}\Default{plain}
     \ldeen{\code{plain}: Titel (sofern die aufrufende Umgebung einen
     liefert) dem Body vorangestellt, optionaler Rahmen um alles.
-    \code{titled}: farbiger Kopfstreifen mit dem Titel, Body darunter.}
+    \code{titled}: farbiger Kopfstreifen mit dem Titel, Body darunter --
+    fließend, solange \code{body-background} \code{none} ist, sonst als
+    Kasten mit Unterkante.}
     {\code{plain}: title (if the calling environment supplies one)
     prepended to the body, optional frame around all. \code{titled}:
-    a coloured head strip carrying the title, body below.}
+    a coloured head strip carrying the title, body below -- flowing while
+    \code{body-background} is \code{none}, otherwise a box with a bottom
+    edge.}
   \keyval{head-background, head-color, head-rule-color}{\ldeen{Farb-Slot}{color slot}}
     \Default{structure, background, structure}
     \ldeen{Nur bei \code{layout=titled}: Fläche, Schrift und Unterlinie des
@@ -1974,7 +1978,11 @@ load babel
   \keyval{head-padding, head-rule-thickness, body-padding}{\ldeen{Länge}{length}}
     \Default{0.35em, 0pt, 0.4em}
   \keyval{body-background}{\ldeen{Farb-Slot}{color slot}\code{|none}}\Default{none}
-    \ldeen{Nur bei \code{layout=titled}.}{Only with \code{layout=titled}.}
+    \ldeen{Nur bei \code{layout=titled}; ein anderer Wert als \code{none}
+    schaltet den Kastenzweig ein (\code{rule-thickness}/\code{rule-color}
+    gelten dann für dessen Rand).}{Only with \code{layout=titled}; any
+    value other than \code{none} switches on the boxed branch
+    (\code{rule-thickness}/\code{rule-color} then apply to its border).}
 \end{options}
 \ldeen{Immer deklarierte Instanzen: \env{quote}, \env{quotation},
   \env{block}, \env{alertblock}, \env{exampleblock}. Presets:
@@ -4057,26 +4065,31 @@ load babel
 % \ldeen*{\code{titled}: farbiger Kopfstreifen mit dem Titel, darunter der
 % eingerückte Body -- optisch abhebende Blöcke im Stil von Beamers Madrid.
 %
-% Bewusst \emph{ohne} \env{minipage}/\cs{colorbox} um den Text: beide
-% erzwingen in getaggtem PDF ein \code{Div}- bzw.\ verschachtelte
-% Absatz-Strukturen, die die flache Lesereihenfolge der Klasse zerstören.
-% Stattdessen fließt der Titel als normale Textzeile, der farbige Streifen
-% liegt als \code{artifact}-\cs{rule} dahinter; der Body fließt mit
-% \cs{leftskip}/\cs{rightskip} als Innenabstand. Ergebnis: Titel und
-% Body-Absätze sind Geschwister im Frame -- getaggt wie ein Absatz ohne
-% Block. Eine getönte Body-Fläche ist so nicht möglich (sie bräuchte einen
-% Kasten) und entfällt.}
+% Zwei Varianten je nach \code{body-background}. Bei \code{none} fließt
+% alles: der Titel als normale Textzeile mit dem farbigen Streifen als
+% \code{artifact}-\cs{rule} dahinter, der Body mit
+% \cs{leftskip}/\cs{rightskip} als Innenabstand. Titel und Body-Absätze
+% sind dann Geschwister im Frame -- getaggt wie ein Absatz ohne Block, ohne
+% zusätzliches \code{Div}. Eine getönte Body-Fläche braucht dagegen einen
+% Kasten: ist \code{body-background} gesetzt, liegt der Block in genau
+% einer \cs{fcolorbox} um eine \env{minipage} (ein \code{Div}, wie bei
+% \code{card}); der Kopfstreifen bleibt eine \code{artifact}-\cs{rule}, die
+% bis an die Kastenkanten läuft, sodass Titel und Body auch dort saubere
+% \code{text-unit}s bleiben. Die Kastenunterkante markiert das Blockende.}
 % {\code{titled}: a coloured head strip carrying the title, the indented
 % body below -- visually distinct blocks in the style of beamer's Madrid.
 %
-% Deliberately \emph{without} \env{minipage}/\cs{colorbox} around the text:
-% both force a \code{Div} or nested paragraph structure in tagged PDF that
-% breaks the class's flat reading order. Instead the title flows as a
-% normal text line with the coloured strip behind it as an \code{artifact}
-% \cs{rule}; the body flows with \cs{leftskip}/\cs{rightskip} as inner
-% padding. Result: title and body paragraphs are siblings in the frame --
-% tagged like a paragraph with no block at all. A tinted body area is not
-% possible this way (it would need a box) and is dropped.}
+% Two variants depending on \code{body-background}. With \code{none}
+% everything flows: the title as a normal text line with the coloured strip
+% behind it as an \code{artifact} \cs{rule}, the body with
+% \cs{leftskip}/\cs{rightskip} as inner padding. Title and body paragraphs
+% are then siblings in the frame -- tagged like a paragraph with no block,
+% no extra \code{Div}. A tinted body area needs a box: when
+% \code{body-background} is set the block sits in exactly one \cs{fcolorbox}
+% around a \env{minipage} (one \code{Div}, as with \code{card}); the head
+% strip stays an \code{artifact} \cs{rule} bled to the box edges, so title
+% and body still stay clean \code{text-unit}s there. The box's bottom edge
+% marks where the block ends.}
 % \ldeen{Eine volle Zeilenbreite überspannende Deko-Linie in eigener Zeile,
 %   getaggt als ausgesetzt (nicht Teil der Struktur).}{A full-width
 %   decorative rule on its own line, tagged as suspended (not part of the
@@ -4092,6 +4105,80 @@ load babel
   }
 \cs_new_protected:Npn \__osgstyler_block_typeset_titled:n #1
   {
+    \str_if_eq:VnTF \l__osgstyler_block_body_bg_tl { none }
+      { \__osgstyler_block_typeset_titled_flow:n {#1} }
+      { \__osgstyler_block_typeset_titled_box:n {#1} }
+  }
+% \ldeen{Der Kopfstreifen als nullhohe \cs{rlap}\cs{smash}-\code{artifact}
+%   hinter der Titelzeile: \cs{tag_mc}-Push/Pop hebt die laufende Titel-MC
+%   kurz an, sodass der Streifen ein eigenes Artefakt bleibt und die Glyphen
+%   der Titelzeile danach weiter in ihre MC laufen. Aufruf im hmode, nachdem
+%   \cs{noindent} die Absatz-MC geöffnet hat. \code{#1} verschiebt die
+%   Streifenkante nach links, \code{#2} ist seine Breite.}{The head strip as
+%   a zero-height \cs{rlap}\cs{smash} \code{artifact} behind the title line:
+%   \cs{tag_mc} push/pop lifts the running title MC for a moment so the
+%   strip stays its own artifact and the title glyphs afterwards keep
+%   flowing into their MC. Call in hmode, after \cs{noindent} has opened the
+%   paragraph MC. \code{#1} shifts the strip edge left, \code{#2} its
+%   width.}
+\cs_new_protected:Npn \__osgstyler_block_headstrip:nn #1#2
+  {
+    \str_if_eq:VnF \l__osgstyler_block_head_bg_tl { none }
+      {
+        \rlap { \smash {
+          \tag_mc_end_push: \tag_mc_begin:n { artifact }
+            \skip_horizontal:n { #1 }
+            \color { \OsgColorName{ \l__osgstyler_block_head_bg_tl } }
+            \rule
+              [ \dim_eval:n { -0.32 \baselineskip } ]
+              { \dim_eval:n { #2 } }
+              { \dim_eval:n { 1.2 \baselineskip } }
+          \tag_mc_end: \tag_mc_begin_pop:n { }
+        } }%
+      }
+  }
+% \ldeen{\code{titled} mit getönter Body-Fläche: ein Kasten
+%   (\cs{fcolorbox}+\env{minipage}, ein \code{Div}) mit randlosem
+%   Kopfstreifen und Unterkante als Blockende.}{\code{titled} with a tinted
+%   body area: a box (\cs{fcolorbox}+\env{minipage}, one \code{Div}) with a
+%   full-bleed head strip and a bottom edge marking where the block ends.}
+\cs_new_protected:Npn \__osgstyler_block_typeset_titled_box:n #1
+  {
+    \par
+    \addvspace { \medskipamount }
+    \group_begin:
+      \setlength \fboxsep { \l__osgstyler_block_body_padding_dim }
+      \setlength \fboxrule { \l__osgstyler_block_rule_dim }
+      \noindent
+      \fcolorbox
+        { \OsgColorName { \l__osgstyler_block_rule_color_tl } }
+        { \__osgstyler_block_bg:V \l__osgstyler_block_body_bg_tl }
+        {
+          \begin { minipage } { \dim_eval:n { \linewidth - 2\fboxsep - 2\fboxrule } }
+            \tl_if_empty:NF \l__osgstyler_block_title_tl
+              {
+                \noindent
+                \__osgstyler_block_headstrip:nn
+                  { -\l__osgstyler_block_body_padding_dim }
+                  { \linewidth + 2\l__osgstyler_block_body_padding_dim }
+                { \color { \OsgColorName{ \l__osgstyler_block_head_fg_tl } }
+                  \l__osgstyler_block_head_font_tl
+                  \l__osgstyler_block_title_tl }%
+                \par
+                \nobreak
+                \skip_vertical:n { 0.5 \baselineskip }
+              }
+            \setlength \parskip { 0.5 \baselineskip }
+            \noindent \ignorespaces #1
+            \par
+          \end { minipage }
+        }%
+    \group_end:
+    \par
+    \addvspace { \medskipamount }
+  }
+\cs_new_protected:Npn \__osgstyler_block_typeset_titled_flow:n #1
+  {
     \par
     \addvspace { \medskipamount }
     \group_begin:
@@ -4106,25 +4193,11 @@ load babel
               \nointerlineskip
               \skip_vertical:n { 0.2 \baselineskip }
             }
-          % The coloured strip (if any) sits behind the title's own line,
-          % drawn as a zero-size \rlap\smash so it does not enter the
-          % vertical list; wrapped in \tag_mc push/pop as one artifact so the
-          % resumed title MC still receives the glyphs.
+          % The coloured strip (if any) sits behind the title's own line.
           \noindent
-          \str_if_eq:VnF \l__osgstyler_block_head_bg_tl { none }
-            {
-              \rlap { \smash {
-                \tag_mc_end_push: \tag_mc_begin:n { artifact }
-                  \skip_horizontal:n { -\l__osgstyler_block_head_padding_dim }
-                  \color { \OsgColorName{ \l__osgstyler_block_head_bg_tl } }
-                  \rule
-                    [ \dim_eval:n { -0.32 \baselineskip } ]
-                    { \dim_eval:n
-                      { \linewidth + \l__osgstyler_block_head_padding_dim } }
-                    { \dim_eval:n { 1.2 \baselineskip } }
-                \tag_mc_end: \tag_mc_begin_pop:n { }
-              } }%
-            }
+          \__osgstyler_block_headstrip:nn
+            { -\l__osgstyler_block_head_padding_dim }
+            { \linewidth + \l__osgstyler_block_head_padding_dim }
           {
             \color { \OsgColorName{ \l__osgstyler_block_head_fg_tl } }
             \l__osgstyler_block_head_font_tl
@@ -4819,26 +4892,26 @@ load babel
 % dem Theme folgen; \code{alertblock}/\code{exampleblock} überschreiben
 % danach nur den Slot.
 %
-% \code{titlebar} (Beamers Madrid nachempfunden) und \code{soft} (ein
-% dezenter, hell getönter Kopf mit dünner Linie) fließen vollständig und
-% belassen das Tagging der Klasse unangetastet -- die richtige Wahl, wenn
-% jede \code{Div}-Ebene im getaggten PDF zählt. \code{card} (die Vorgabe),
-% \code{framed} und \code{filled} setzen einen echten Kasten
-% (\cs{fcolorbox} um eine \env{minipage}); das fügt je Block genau ein
-% \code{Div} hinzu -- Titel und Body bleiben saubere \code{text-unit}s
-% darin, ohne geschachtelte oder leere Absätze.}
+% \code{soft} (ein dezenter, hell getönter Kopf mit dünner Linie) und
+% \code{plain} fließen vollständig und belassen das Tagging der Klasse
+% unangetastet -- die richtige Wahl, wenn jede \code{Div}-Ebene im
+% getaggten PDF zählt. \code{card} (die Vorgabe), \code{titlebar} (Beamers
+% Madrid: Farbbalken über getönter Body-Fläche), \code{framed} und
+% \code{filled} setzen einen echten Kasten (\cs{fcolorbox} um eine
+% \env{minipage}); das fügt je Block genau ein \code{Div} hinzu -- Titel
+% und Body bleiben saubere \code{text-unit}s darin, ohne Verschachtelung.}
 % {Ready-made block looks as traits. Colours are slot names
 % (\code{structure} etc.) so they follow the loaded palette or theme;
 % \code{alertblock}/\code{exampleblock} then only override the slot.
 %
-% \code{titlebar} (modelled on beamer's Madrid) and \code{soft} (a
-% restrained, lightly tinted head with a thin rule) are fully flowing and
-% leave the class's tagging untouched -- the right choice when every
-% \code{Div} level in tagged PDF counts. \code{card} (the default),
-% \code{framed} and \code{filled} put a real box (\cs{fcolorbox} around a
-% \env{minipage}); that adds exactly one \code{Div} per block -- title and
-% body stay clean \code{text-unit}s inside it, with no nested or empty
-% paragraphs.}
+% \code{soft} (a restrained, lightly tinted head with a thin rule) and
+% \code{plain} are fully flowing and leave the class's tagging untouched --
+% the right choice when every \code{Div} level in tagged PDF counts.
+% \code{card} (the default), \code{titlebar} (beamer's Madrid: a colour bar
+% over a tinted body area), \code{framed} and \code{filled} put a real box
+% (\cs{fcolorbox} around a \env{minipage}); that adds exactly one
+% \code{Div} per block -- title and body stay clean \code{text-unit}s
+% inside it, with no nesting.}
 \DeclareOsgBlockTrait { plain }
   { layout = plain, rule-thickness = 0pt, background = none }
 \DeclareOsgBlockTrait { framed }
@@ -4847,10 +4920,19 @@ load babel
 \DeclareOsgBlockTrait { filled }
   { layout = plain, rule-thickness = 0.4pt, rule-color = structure,
     background = structure!8, padding = 0.5em }
+% \ldeen{\code{titlebar}: Beamers Madrid -- voller Farbbalken oben, darunter
+%   die getönte Body-Fläche bis zur Kastenunterkante. Durch das gesetzte
+%   \code{body-background} nimmt der \code{titled}-Renderer seinen
+%   Kastenzweig (ein \code{Div}).}{\code{titlebar}: beamer's Madrid -- a full
+%   colour bar on top, the tinted body area below it down to the box's
+%   bottom edge. The set \code{body-background} makes the \code{titled}
+%   renderer take its boxed branch (one \code{Div}).}
 \DeclareOsgBlockTrait { titlebar }
   {
     layout = titled,
     head-background = structure, head-color = background,
+    body-background = structure!12,
+    rule-thickness = 0pt, rule-color = structure!40,
     head-rule-thickness = 0pt, foot-rule-thickness = 0pt,
     head-padding = 0.4em, body-padding = 0.6em
   }
