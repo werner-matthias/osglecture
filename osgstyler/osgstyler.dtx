@@ -1979,14 +1979,14 @@ load babel
 \ldeen{Immer deklarierte Instanzen: \env{quote}, \env{quotation},
   \env{block}, \env{alertblock}, \env{exampleblock}. Presets:
   \code{osl-standard}, \code{osl-modern}. Traits: \code{osl-modern-rules},
-  \code{plain}, \code{framed}, \code{filled}, \code{titlebar}. Der Test
+  \code{plain}, \code{framed}, \code{filled}, \code{titlebar}, \code{soft}. Der Test
   \cs{OsgIfBlockTitledTF}\marg{Name}\marg{ja}\marg{nein} meldet, ob eine
   Instanz \code{layout=titled} verwendet -- umhüllende Pakete brauchen das,
   weil ein Kopf-Titel anders zugeführt werden muss.}
   {Always-declared instances: \env{quote}, \env{quotation}, \env{block},
   \env{alertblock}, \env{exampleblock}. Presets: \code{osl-standard},
   \code{osl-modern}. Traits: \code{osl-modern-rules}, \code{plain},
-  \code{framed}, \code{filled}, \code{titlebar}. The test
+  \code{framed}, \code{filled}, \code{titlebar}, \code{soft}. The test
   \cs{OsgIfBlockTitledTF}\marg{name}\marg{yes}\marg{no} reports whether an
   instance uses \code{layout=titled} -- wrapping packages need this because
   a head title has to be fed in differently.}
@@ -4057,11 +4057,12 @@ load babel
     \group_begin:
       \tl_if_empty:NF \l__osgstyler_block_title_tl
         {
-          % The coloured strip sits behind the title's own line, drawn as a
-          % zero-size \rlap\smash so it does not enter the vertical list. The
-          % \tag_mc push/pop marks just the rule as an artifact and hands the
-          % marked content straight back, so the title glyphs that follow
-          % stay in the paragraph's structure and reach the reader.
+          % The coloured strip -- and, if asked for, a rule under the head --
+          % sit behind the title's own line, drawn as zero-size \rlap\smash so
+          % they do not enter the vertical list. Both go before the title
+          % glyphs and are wrapped in a single \tag_mc push/pop as one
+          % artifact, so the resumed title MC still receives the glyphs and
+          % the paragraph structure stays flat.
           \noindent
           \rlap { \smash {
             \tag_mc_end_push: \tag_mc_begin:n { artifact }
@@ -4072,14 +4073,35 @@ load babel
                 { \dim_eval:n
                   { \linewidth + \l__osgstyler_block_head_padding_dim } }
                 { \dim_eval:n { 1.2 \baselineskip } }
+              \dim_compare:nNnT \l__osgstyler_block_head_rule_dim > \c_zero_dim
+                {
+                  \skip_horizontal:n
+                    { -\dim_eval:n
+                      { \linewidth + \l__osgstyler_block_head_padding_dim } }
+                  \color
+                    { \OsgColorName{ \l__osgstyler_block_head_rule_color_tl } }
+                  \rule
+                    [ \dim_eval:n { -0.5 \baselineskip } ]
+                    { \dim_eval:n
+                      { \linewidth + \l__osgstyler_block_head_padding_dim } }
+                    { \l__osgstyler_block_head_rule_dim }
+                }
             \tag_mc_end: \tag_mc_begin_pop:n { }
           } }%
           {
             \color { \OsgColorName{ \l__osgstyler_block_head_fg_tl } }
             \l__osgstyler_block_head_font_tl
             \l__osgstyler_block_title_tl
-          }
+          }%
           \par
+          % \ldeen{Ohne diesen Abstand stösst die erste Body-Zeile fast an den
+          %   Kopfstreifen -- der normale Zeilenabstand rechnet nur mit der
+          %   Textzeile, nicht mit dem darüberliegenden Streifen.}{Without this
+          %   the first body line nearly touches the head strip -- ordinary
+          %   interline spacing only accounts for the text line, not the strip
+          %   drawn above it.}
+          \nointerlineskip
+          \skip_vertical:n { 0.45 \baselineskip }
         }
       \group_begin:
         \dim_set:Nn \leftskip  { \l__osgstyler_block_body_padding_dim }
@@ -4107,6 +4129,7 @@ load babel
 
 \prop_new:N \g__osgstyler_block_trait_prop
 \tl_new:N \l__osgstyler_block_instance_keys_tl
+\tl_new:N \l__osgstyler_block_trait_tl
 
 \msg_new:nnnn { osgstyler } { unknown-block-trait }
   { Unknown~block~trait~'#1'. }
@@ -4117,11 +4140,17 @@ load babel
 
 \keys_define:nn { osgstyler / block-instance }
   {
+    % \ldeen{Ein eigener Scratch, nicht \cs{l_tmpa_tl}: der Aufrufer kann
+    %   \cs{l_tmpa_tl} über den \cs{keys_set:nn}"=Aufruf hinweg brauchen.}{A
+    %   private scratch, not \cs{l_tmpa_tl}: the caller may rely on
+    %   \cs{l_tmpa_tl} across the \cs{keys_set:nn} call.}
     traits .code:n =
       \clist_map_inline:nn {#1}
         {
-          \prop_get:NnNTF \g__osgstyler_block_trait_prop {##1} \l_tmpa_tl
-            { \tl_put_right:Nx \l__osgstyler_block_instance_keys_tl { \l_tmpa_tl , } }
+          \prop_get:NnNTF \g__osgstyler_block_trait_prop {##1}
+            \l__osgstyler_block_trait_tl
+            { \tl_put_right:Nx \l__osgstyler_block_instance_keys_tl
+                { \l__osgstyler_block_trait_tl , } }
             { \msg_error:nnn { osgstyler } { unknown-block-trait } {##1} }
         },
     unknown .code:n =
@@ -4728,8 +4757,9 @@ load babel
 % dem Theme folgen; \code{alertblock}/\code{exampleblock} überschreiben
 % danach nur den Slot.
 %
-% \code{titlebar} (Beamers Madrid nachempfunden) fließt vollständig und
-% belässt das Tagging der Klasse unangetastet -- die einzige Wahl, wenn
+% \code{titlebar} (Beamers Madrid nachempfunden) und \code{soft} (ein
+% dezenter, hell getönter Kopf mit dünner Linie) fließen vollständig und
+% belassen das Tagging der Klasse unangetastet -- die richtige Wahl, wenn
 % getaggtes PDF zählt. \code{framed} und \code{filled} setzen einen echten
 % Kasten (\cs{fcolorbox} um eine \env{minipage}); das ergibt in getaggtem
 % PDF ein \code{Div} und geschachtelte Absätze und sollte nur in der
@@ -4739,8 +4769,9 @@ load babel
 % (\code{structure} etc.) so they follow the loaded palette or theme;
 % \code{alertblock}/\code{exampleblock} then only override the slot.
 %
-% \code{titlebar} (modelled on beamer's Madrid) is fully flowing and
-% leaves the class's tagging untouched -- the only choice when tagged PDF
+% \code{titlebar} (modelled on beamer's Madrid) and \code{soft} (a
+% restrained, lightly tinted head with a thin rule) are fully flowing and
+% leave the class's tagging untouched -- the right choice when tagged PDF
 % matters. \code{framed} and \code{filled} put a real box
 % (\cs{fcolorbox} around a \env{minipage}); in tagged PDF that yields a
 % \code{Div} and nested paragraphs and should be used only in the long
@@ -4757,6 +4788,13 @@ load babel
   {
     layout = titled,
     head-background = structure, head-color = background,
+    head-padding = 0.4em, body-padding = 0.6em
+  }
+\DeclareOsgBlockTrait { soft }
+  {
+    layout = titled,
+    head-background = structure!12, head-color = structure,
+    head-rule-color = structure, head-rule-thickness = 0.6pt,
     head-padding = 0.4em, body-padding = 0.6em
   }
 
