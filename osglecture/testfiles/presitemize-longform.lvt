@@ -2,6 +2,31 @@
 \documentclass[standalone,doctype=script,lang=de]{osglecture}
 \begin{document}
 \START
+\setbox0=\hbox{%
+  \begin{presitemize}[language=en]
+
+    \item Alpha?
+
+    \butitem Beta!
+
+  \end{presitemize}%
+}
+\directlua{
+  local chars = {}
+  local hlist = node.id("hlist")
+  local vlist = node.id("vlist")
+  local function collect(head)
+    for n in node.traverse(head) do
+      if n.id == node.id("glyph") then
+        table.insert(chars, utf8.char(n.char))
+      elseif (n.id == hlist or n.id == vlist) and n.head then
+        collect(n.head)
+      end
+    end
+  end
+  collect(tex.box[0].head)
+  tex.sprint("\\TYPE{normalized-text=" .. table.concat(chars) .. "}")
+}
 \begin{presitemize}
   \longform{\TYPE{de-longform=true}}
   \slides{\TYPE{de-slides=true}}
@@ -62,6 +87,14 @@
     {\TYPE{fr-punctuation=auto}}
     {\TYPE{fr-punctuation=manual}}
   \ExplSyntaxOff
+\end{presitemize}
+\begin{presitemize}[whitespace=preserve,punctuation=manual]
+  \ExplSyntaxOn
+  \bool_if:NTF \l__osglecture_pres_normalize_whitespace_bool
+    {\TYPE{whitespace=normalize}}
+    {\TYPE{whitespace=preserve}}
+  \ExplSyntaxOff
+  \item Preserved manually.
 \end{presitemize}
 \END
 \end{document}

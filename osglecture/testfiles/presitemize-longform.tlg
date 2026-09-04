@@ -1,5 +1,6 @@
 This is a generated file for the l3build validation system.
 Don't change this file in any respect.
+normalized-text=Alpha?butBeta!
 de-longform=true
 finite-tail-nodes=glyph,glue
 de-language=de
@@ -12,3 +13,4 @@ en-finite=inplace
 key-keep-body=true
 fr-language=fr
 fr-punctuation=manual
+whitespace=preserve

@@ -103,9 +103,11 @@
 
 \begin{document}
 \ldeen{
-  Diese Dokumentation enthält nur eine Beschreibung der Klassenoptionen und die Implementation.
+  Diese Dokumentation beschreibt die Klassenoptionen, die Umgebungen
+  \env{presitemize} und \env{twocolumns} sowie die Implementation.
   Für die Nutzung von \pkg*{osglecture} siehe \code{osglecture-manual-de.pdf}.}{
-  This documentation contains only a description of the class options and its implementation.
+  This documentation describes the class options, the \env{presitemize} and
+  \env{twocolumns} environments, and the implementation.
   For information on using \pkg*{osglecture}, see \code{osglecture-manual-en.pdf}.
 }
 \section{\ldeen{Klassenoptionen}{Class options}}
@@ -126,6 +128,92 @@
   \keybool{patch-overlays}\Default{true}
   \ldeen{Erweitert die Overlay-Syntax von \pkg*{ltx-talk} oder \pkg*{beamer} um portable Modusausdrücke.}{Extends the overlay syntax of \pkg*{ltx-talk} or \pkg*{beamer} to include portable mode expressions.}
 \end{options}
+
+\section{\ldeen{Die Umgebung \code{presitemize}}{The \code{presitemize} environment}}
+
+\begin{environments}
+\environment{presitemize}[\oarg{\ldeen{Optionen}{options}}]
+\ldeen{setzt eine flache Folge kurzer Aussagen in Präsentationen als
+\env{itemize}-Liste und verbindet sie in Langformen zu Fließtext. Die Klasse
+lädt das bereitstellende Paket \pkg*{osglecture-presitemize} automatisch.}{
+typesets a flat sequence of short statements as an \env{itemize} list in
+presentations and joins them into prose in long-form documents. The class
+loads the providing package \pkg*{osglecture-presitemize} automatically.}
+\end{environments}
+
+\cs{item}, \cs{anditem}, \cs{butitem}, \cs{thereforeitem}, \cs{commaitem}
+\ldeen{und}{and} \cs{colonitem} \ldeen{sind delimiterartige Befehle: Der
+Inhalt reicht jeweils bis zum nächsten Eintrag. Sie akzeptieren die
+Beamer-Overlay-Syntax und ein optionales Item-Label. Die ausführliche Form}{
+are delimiter-like commands: their content extends up to the next item. They
+accept Beamer overlay syntax and an optional item label. The explicit form}
+\cs{presitem}\oarg{\ldeen{Optionen}{options}}
+\ldeen{erlaubt für \code{relation}}{accepts for \code{relation}}
+\code{sentence}, \code{and},
+\code{but}, \code{therefore}, \code{comma} \ldeen{und}{and} \code{colon}
+\ldeen{als Relationen sowie}{as relations and} \code{auto}
+\ldeen{oder}{or} \code{keep} \ldeen{für}{for} \code{initial}.
+
+\begin{options}
+  \keychoice{language}{de,en,fr}
+  \ldeen{Überschreibt die automatisch aus der Dokument- oder
+  Sprachkonfiguration bestimmte Sprache.}{Overrides the language determined
+  automatically from the document or language configuration.}
+  \keychoice{punctuation}{auto,manual}\Default{auto}
+  \ldeen{Steuert, ob Konnektoren und abschließende Satzzeichen in der
+  Langform automatisch erzeugt werden. Bereits gesetzte Satzzeichen bleiben
+  dabei erhalten und werden nicht ergänzt.}{Controls whether connectors and
+  final punctuation are generated automatically in long-form output. Existing
+  punctuation is preserved and not supplemented.}
+  \keychoice{whitespace}{normalize,preserve}\Default{normalize}
+  \ldeen{Ignoriert führende Leerzeichen nach Eintragsbefehlen und behandelt
+  Leerzeilen in der Langform wie einfachen Wortabstand. \code{preserve}
+  behält stattdessen das gewöhnliche \TeX-Verhalten bei.}{Ignores leading
+  spaces after item commands and treats blank lines in long-form output as a
+  single interword space. \code{preserve} retains the usual \TeX\ behaviour.}
+\end{options}
+
+\cs{finite}\marg{Text} \ldeen{markiert das finite Verb. Bei der deutschen
+Relation \code{therefore} wird es in der Langform ans Satzende verschoben.}{
+marks the finite verb. For the German \code{therefore} relation it is moved
+to the end of the clause in long-form output.}
+\cs{preskeepcase}\marg{Text} \ldeen{verhindert die automatische Anpassung
+des Anfangsbuchstabens.}{prevents automatic adjustment of the initial letter.}
+\cs{prescase}\marg{Präsentation}\marg{Langform}
+\ldeen{wählt eine Formulierung passend zur Projektion.}{selects wording for
+the current projection.}
+\cs{longslides}\marg{Langform}\marg{Präsentation},
+\cs{longform}\marg{Text} \ldeen{und}{and} \cs{slides}\marg{Text}
+\ldeen{bieten weitere projektionabhängige Auswahlmöglichkeiten innerhalb der
+Einträge.}{provide further projection-dependent selections within items.}
+
+\section{\ldeen{Die Umgebung \code{twocolumns}}{The \code{twocolumns} environment}}
+
+\begin{environments}
+\environment{twocolumns}[\code{<}\meta{Modusausdruck}\code{>}
+  \oarg{Ausrichtung,Anteil}]
+\ldeen{setzt zwei durch \cs{nextcolumn} getrennte Inhalte nebeneinander,
+wenn der Modusausdruck erfüllt ist, andernfalls untereinander. Der
+Modusausdruck steht in spitzen Klammern und ist standardmäßig
+\code{presentation}.}{typesets two parts separated by \cs{nextcolumn} side by
+side when the mode expression matches, and one after the other otherwise.
+The mode expression is enclosed in angle brackets and defaults to
+\code{presentation}.}
+\end{environments}
+
+\ldeen{Eine Zahl zwischen null und eins bestimmt den Anteil der ersten
+Spalte an der verfügbaren Breite (Vorgabe \code{.5}). Ein Wert
+\code{t}, \code{c} oder \code{b} richtet beide Spalten oben, mittig oder
+unten aus; zwei solche Werte richten die Spalten einzeln aus. \code{<all>}
+erzwingt Spalten in jedem Modus, beispielsweise \code{<longform>} nur in
+Langformen und \code{<presentation|longform>} in beiden Verhaltensklassen.}{
+A number between zero and one sets the first column's share of the available
+width (default \code{.5}). One value \code{t}, \code{c}, or \code{b} aligns
+both columns at the top, centre, or bottom; two such values align the columns
+individually. \code{<all>} forces columns in every mode, while, for example,
+\code{<longform>} selects only long-form documents and
+\code{<presentation|longform>} selects both behaviour classes.}
+
 \section{Implementation}
 \MaybeStop{\ldeen*{Um die Implementationsbeschreibung zu erhalten, kommentieren Sie bitte \cs{OnlyDescription} in \code{osglecture.dtx} aus.}{To view the implementation description, please uncomment \cs{OnlyDescription} in \code{osglecture.dtx}.}}
 
@@ -3310,6 +3398,7 @@
 \bool_new:N \l__osglecture_pres_subordinate_bool
 \bool_new:N \l__osglecture_pres_has_item_bool
 \bool_new:N \l__osglecture_pres_auto_punctuation_bool
+\bool_new:N \l__osglecture_pres_normalize_whitespace_bool
 \tl_new:N \l__osglecture_pres_language_tl
 \tl_new:N \l__osglecture_pres_language_override_tl
 \tl_new:N \l__osglecture_pres_join_tl
@@ -3320,6 +3409,38 @@
 \prop_new:N \g__osglecture_pres_relation_prop
 \prop_new:N \g__osglecture_pres_initial_command_prop
 \cs_generate_variant:Nn \prop_get:NnNTF {NVNTF}
+\cs_new_eq:NN \__osglecture_pres_par_token: \par
+
+\prg_new_conditional:Npnn \__osglecture_pres_ends_with_punctuation: { TF }
+  {
+    \int_compare:nNnTF
+      {
+        \lua_now:e
+          {
+            local\c_space_tl n=tex.nest[tex.nest.ptr].tail;
+            local\c_space_tl punctuation=
+              { [33]=true, [44]=true, [46]=true,
+                [58]=true, [59]=true, [63]=true };
+            while\c_space_tl n\c_space_tl and\c_space_tl
+              not\c_space_tl(n.id==node.id("glyph"))\c_space_tl do\c_space_tl
+              n=n.prev;
+            end;
+            tex.sprint
+              (n\c_space_tl and\c_space_tl n.id==node.id("glyph")
+                \c_space_tl and\c_space_tl punctuation[n.char]
+                \c_space_tl and\c_space_tl 1\c_space_tl or\c_space_tl 0)
+          }
+      }
+      = { 1 }
+      { \prg_return_true: }
+      { \prg_return_false: }
+  }
+
+\cs_new_protected:Npn \__osglecture_pres_punctuate:n #1
+  {
+    \unskip
+    \__osglecture_pres_ends_with_punctuation:TF { } {#1}
+  }
 
 \msg_new:nnnn { osglecture-presitemize } { unsupported-language }
   { Language~'#1'~has~no~presitemize~profile. }
@@ -3352,43 +3473,43 @@
   }
 
 \__osglecture_pres_declare_relation:nnnn {de}{sentence}
-  {\unskip.\c_space_tl}{inplace}
+  {\__osglecture_pres_punctuate:n {.}\c_space_tl}{inplace}
 \__osglecture_pres_declare_relation:nnnn {de}{and}
-  {\unskip\c_space_tl und\c_space_tl}{inplace}
+  {\__osglecture_pres_punctuate:n {}\c_space_tl und\c_space_tl}{inplace}
 \__osglecture_pres_declare_relation:nnnn {de}{but}
-  {\unskip,\c_space_tl aber\c_space_tl}{inplace}
+  {\__osglecture_pres_punctuate:n {,}\c_space_tl aber\c_space_tl}{inplace}
 \__osglecture_pres_declare_relation:nnnn {de}{therefore}
-  {\unskip,\c_space_tl weshalb\c_space_tl}{final}
+  {\__osglecture_pres_punctuate:n {,}\c_space_tl weshalb\c_space_tl}{final}
 \__osglecture_pres_declare_relation:nnnn {de}{comma}
-  {\unskip,\c_space_tl}{inplace}
+  {\__osglecture_pres_punctuate:n {,}\c_space_tl}{inplace}
 \__osglecture_pres_declare_relation:nnnn {de}{colon}
-  {\unskip\c_colon_str\c_space_tl}{inplace}
+  {\__osglecture_pres_punctuate:n {\c_colon_str}\c_space_tl}{inplace}
 
 \__osglecture_pres_declare_relation:nnnn {en}{sentence}
-  {\unskip.\c_space_tl}{inplace}
+  {\__osglecture_pres_punctuate:n {.}\c_space_tl}{inplace}
 \__osglecture_pres_declare_relation:nnnn {en}{and}
-  {\unskip\c_space_tl and\c_space_tl}{inplace}
+  {\__osglecture_pres_punctuate:n {}\c_space_tl and\c_space_tl}{inplace}
 \__osglecture_pres_declare_relation:nnnn {en}{but}
-  {\unskip,\c_space_tl but\c_space_tl}{inplace}
+  {\__osglecture_pres_punctuate:n {,}\c_space_tl but\c_space_tl}{inplace}
 \__osglecture_pres_declare_relation:nnnn {en}{therefore}
-  {\unskip,\c_space_tl so\c_space_tl}{inplace}
+  {\__osglecture_pres_punctuate:n {,}\c_space_tl so\c_space_tl}{inplace}
 \__osglecture_pres_declare_relation:nnnn {en}{comma}
-  {\unskip,\c_space_tl}{inplace}
+  {\__osglecture_pres_punctuate:n {,}\c_space_tl}{inplace}
 \__osglecture_pres_declare_relation:nnnn {en}{colon}
-  {\unskip\c_colon_str\c_space_tl}{inplace}
+  {\__osglecture_pres_punctuate:n {\c_colon_str}\c_space_tl}{inplace}
 
 \__osglecture_pres_declare_relation:nnnn {fr}{sentence}
-  {\unskip.\c_space_tl}{inplace}
+  {\__osglecture_pres_punctuate:n {.}\c_space_tl}{inplace}
 \__osglecture_pres_declare_relation:nnnn {fr}{and}
-  {\unskip\c_space_tl et\c_space_tl}{inplace}
+  {\__osglecture_pres_punctuate:n {}\c_space_tl et\c_space_tl}{inplace}
 \__osglecture_pres_declare_relation:nnnn {fr}{but}
-  {\unskip,\c_space_tl mais\c_space_tl}{inplace}
+  {\__osglecture_pres_punctuate:n {,}\c_space_tl mais\c_space_tl}{inplace}
 \__osglecture_pres_declare_relation:nnnn {fr}{therefore}
-  {\unskip,\c_space_tl donc\c_space_tl}{inplace}
+  {\__osglecture_pres_punctuate:n {,}\c_space_tl donc\c_space_tl}{inplace}
 \__osglecture_pres_declare_relation:nnnn {fr}{comma}
-  {\unskip,\c_space_tl}{inplace}
+  {\__osglecture_pres_punctuate:n {,}\c_space_tl}{inplace}
 \__osglecture_pres_declare_relation:nnnn {fr}{colon}
-  {\unskip\c_colon_str\c_space_tl}{inplace}
+  {\__osglecture_pres_punctuate:n {\c_colon_str}\c_space_tl}{inplace}
 
 \keys_define:nn { osglecture/presitemize }
   {
@@ -3399,6 +3520,12 @@
     punctuation / manual .code:n =
       { \bool_set_false:N \l__osglecture_pres_auto_punctuation_bool },
     punctuation .initial:n = auto,
+    whitespace .choice:,
+    whitespace / normalize .code:n =
+      { \bool_set_true:N \l__osglecture_pres_normalize_whitespace_bool },
+    whitespace / preserve .code:n =
+      { \bool_set_false:N \l__osglecture_pres_normalize_whitespace_bool },
+    whitespace .initial:n = normalize,
   }
 
 \keys_define:nn { osglecture/presitem }
@@ -3687,6 +3814,8 @@
       { \tl_set:Nn \l__osglecture_pres_join_tl {\c_space_tl} }
     \__osglecture_pres_original_item:nn {#2}{#3}
     \bool_set_true:N \l__osglecture_pres_has_item_bool
+    \bool_if:NT \l__osglecture_pres_normalize_whitespace_bool
+      { \ignorespaces }
     \str_if_eq:VnTF \l__osglecture_pres_initial_tl {keep}
       {#4}
       {
@@ -3699,6 +3828,29 @@
 \cs_new_protected:Npn \__osglecture_pres_compact_item:nnnn #1#2#3#4
   { \__osglecture_pres_item:nnnn {relation=#1}{#2}{#3}{#4} }
 
+\cs_new_protected:Npn \__osglecture_pres_begin_item:nnn #1#2#3
+  {
+    \bool_if:NTF \l__osglecture_pres_normalize_whitespace_bool
+      {
+        \peek_remove_spaces:n
+          { \__osglecture_pres_skip_pars:nnn {#1}{#2}{#3} }
+      }
+      { \__osglecture_pres_item:nnnn {#1}{#2}{#3} }
+  }
+
+\cs_new_protected:Npn \__osglecture_pres_skip_pars:nnn #1#2#3
+  {
+    \peek_meaning_remove:NTF \__osglecture_pres_par_token:
+      {
+        \peek_remove_spaces:n
+          { \__osglecture_pres_skip_pars:nnn {#1}{#2}{#3} }
+      }
+      { \__osglecture_pres_item:nnnn {#1}{#2}{#3} }
+  }
+
+\cs_new_protected:Npn \__osglecture_pres_begin_compact_item:nnn #1#2#3
+  { \__osglecture_pres_begin_item:nnn {relation=#1}{#2}{#3} }
+
 \IfLectureModeTF{longform}
   {
     \bool_set_true:N \l__osglecture_pres_longform_bool
@@ -3708,12 +3860,21 @@
         \group_begin:
         \tl_clear:N \l__osglecture_pres_language_override_tl
         \bool_set_true:N \l__osglecture_pres_auto_punctuation_bool
+        \bool_set_true:N \l__osglecture_pres_normalize_whitespace_bool
         \keys_set:nn {osglecture/presitemize}{#1}
         \__osglecture_pres_resolve_language:
         \tl_clear:N \l__osglecture_pres_finite_tl
         \tl_clear:N \l__osglecture_pres_join_tl
         \bool_set_false:N \l__osglecture_pres_subordinate_bool
         \bool_set_false:N \l__osglecture_pres_has_item_bool
+        \bool_if:NT \l__osglecture_pres_normalize_whitespace_bool
+          {
+            \cs_set_protected:cpn { par }
+              {
+                \bool_if:NT \l__osglecture_pres_has_item_bool
+                  { \unskip \c_space_tl }
+              }
+          }
         % \ldeen{Die Langform ist semantischer Fließtext, keine Inline-Liste.
         % Der Verzicht auf eine Listenumgebung erlaubt es der \LaTeX-Tagging-
         % Schicht außerdem, das Ergebnis als gewöhnlichen Absatzinhalt zu
@@ -3727,21 +3888,21 @@
           }
         \RenewDocumentCommand \item {d<> o}
           {
-            \__osglecture_pres_item:nnnn
-              {relation=sentence}{##1}{##2}{}
+            \__osglecture_pres_begin_item:nnn
+              {relation=sentence}{##1}{##2}
           }
         \RenewDocumentCommand \presitem {O{} d<> o}
-          { \__osglecture_pres_item:nnnn {##1}{##2}{##3} }
+          { \__osglecture_pres_begin_item:nnn {##1}{##2}{##3} }
         \RenewDocumentCommand \anditem {d<> o}
-          { \__osglecture_pres_compact_item:nnnn {and}{##1}{##2} }
+          { \__osglecture_pres_begin_compact_item:nnn {and}{##1}{##2} }
         \RenewDocumentCommand \butitem {d<> o}
-          { \__osglecture_pres_compact_item:nnnn {but}{##1}{##2} }
+          { \__osglecture_pres_begin_compact_item:nnn {but}{##1}{##2} }
         \RenewDocumentCommand \thereforeitem {d<> o}
-          { \__osglecture_pres_compact_item:nnnn {therefore}{##1}{##2} }
+          { \__osglecture_pres_begin_compact_item:nnn {therefore}{##1}{##2} }
         \RenewDocumentCommand \commaitem {d<> o}
-          { \__osglecture_pres_compact_item:nnnn {comma}{##1}{##2} }
+          { \__osglecture_pres_begin_compact_item:nnn {comma}{##1}{##2} }
         \RenewDocumentCommand \colonitem {d<> o}
-          { \__osglecture_pres_compact_item:nnnn {colon}{##1}{##2} }
+          { \__osglecture_pres_begin_compact_item:nnn {colon}{##1}{##2} }
       }
       {
         \__osglecture_pres_flush_finite:
@@ -3750,7 +3911,7 @@
             \l__osglecture_pres_has_item_bool
             && \l__osglecture_pres_auto_punctuation_bool
           }
-          {\unskip.}
+          { \__osglecture_pres_punctuate:n {.} }
         \group_end:
       }
   }
@@ -3779,6 +3940,7 @@
         \group_begin:
         \tl_clear:N \l__osglecture_pres_language_override_tl
         \bool_set_true:N \l__osglecture_pres_auto_punctuation_bool
+        \bool_set_true:N \l__osglecture_pres_normalize_whitespace_bool
         \keys_set:nn {osglecture/presitemize}{#1}
         \__osglecture_pres_resolve_language:
         \begin{itemize}
