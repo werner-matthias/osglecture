@@ -7,46 +7,6 @@ tb-still-titled:passed
 LaTeX template Info: Declaring instance 'tb' of type osgstyler-block on line ....
 tb-cleared:passed
 LaTeX template Info: Declaring instance 'tb' of type osgstyler-block on line ....
-! Undefined control sequence.
-<argument> \tag_mc_end_push: 
-                             \tag_mc_begin:n {artifact}\color {\OsgColorName...
-l. ...\end
-         {tb}
-The control sequence at the end of the top line
-of your error message was never \def'ed. If you have
-misspelled it (e.g., `\hobx'), type `I' and the correct
-spelling (e.g., `I\hbox'). Otherwise just continue,
-and I'll forget about whatever was undefined.
-! Undefined control sequence.
-<argument> \tag_mc_end_push: \tag_mc_begin:n 
-                                             {artifact}\color {\OsgColorName...
-l. ...\end
-         {tb}
-The control sequence at the end of the top line
-of your error message was never \def'ed. If you have
-misspelled it (e.g., `\hobx'), type `I' and the correct
-spelling (e.g., `I\hbox'). Otherwise just continue,
-and I'll forget about whatever was undefined.
-! Undefined control sequence.
-<argument> ...er_block_bar_pad_dim }}\tag_mc_end: 
-                                                  \tag_mc_begin_pop:n {}
-l. ...\end
-         {tb}
-The control sequence at the end of the top line
-of your error message was never \def'ed. If you have
-misspelled it (e.g., `\hobx'), type `I' and the correct
-spelling (e.g., `I\hbox'). Otherwise just continue,
-and I'll forget about whatever was undefined.
-! Undefined control sequence.
-<argument> ... }}\tag_mc_end: \tag_mc_begin_pop:n 
-                                                  {}
-l. ...\end
-         {tb}
-The control sequence at the end of the top line
-of your error message was never \def'ed. If you have
-misspelled it (e.g., `\hobx'), type `I' and the correct
-spelling (e.g., `I\hbox'). Otherwise just continue,
-and I'll forget about whatever was undefined.
 LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <7> on input line ....
 LaTeX Font Info:    External font `cmex10' loaded for size
