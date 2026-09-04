@@ -4,10 +4,10 @@
 \ExplSyntaxOff
 \documentclass{ltx-talk}
 
-\usepackage{ltxtalk-theme-swift}
-\useltxtalktheme{swift}
+\usepackage{ltxtalk-theme-bluebird}
+\useltxtalktheme{bluebird}
 
-\title[Swift]{Swift theme visual reference}
+\title[Bluebird]{Bluebird theme visual reference}
 \subtitle{Header navigation and progress}
 \author[A. Beispiel]{Ada Beispiel}
 \institute{Beispiel-Institut}
@@ -15,7 +15,7 @@
 
 \begin{document}
 
-\MakeLTXTalkTitle[swift/band]
+\MakeLTXTalkTitle[bluebird/band]
 
 \section{Erster Abschnitt}
 \subsection{Ein Aspekt}
@@ -39,7 +39,7 @@
 \end{frame}
 
 \section{Dritter Abschnitt}
-\UseLTXTalkLayout{swift/plain}
+\UseLTXTalkLayout{bluebird/plain}
 \begin{frame}
   Eine Folie ohne Kopf und Fuss.
 \end{frame}

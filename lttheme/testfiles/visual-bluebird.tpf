@@ -1,23 +1,23 @@
 %PDF-2.0
 %Ã’¡‘≈ÿ–ƒ∆
 23 0 obj
-<< /Filter /FlateDecode /Length 667 >>        
+<< /Filter /FlateDecode /Length 412 >>        
 [BINARY STREAM]
 endobj
-33 0 obj
-<< /Filter /FlateDecode /Length 1061 >>       
+32 0 obj
+<< /Filter /FlateDecode /Length 1084 >>       
 [BINARY STREAM]
 endobj
 44 0 obj
-<< /Filter /FlateDecode /Length 693 >>        
+<< /Filter /FlateDecode /Length 695 >>        
 [BINARY STREAM]
 endobj
 50 0 obj
-<< /Filter /FlateDecode /Length 358 >>        
+<< /Filter /FlateDecode /Length 143 >>        
 [BINARY STREAM]
 endobj
 47 0 obj
-<< /Type /Metadata /Subtype /XML /Length 12376 >>      
+<< /Type /Metadata /Subtype /XML /Length 12388 >>      
 stream
 <?xpacket begin="Ôªø" id="W5M0MpCehiHzreSzNTczkc9d"?>
 <x:xmpmeta xmlns:x="adobe:ns:meta/">
@@ -232,8 +232,8 @@ stream
    </dc:creator>
    <dc:title>
     <rdf:Alt>
-     <rdf:li xml:lang="x-default">Wren theme visual reference</rdf:li>
-     <rdf:li xml:lang="en">Wren theme visual reference</rdf:li>
+     <rdf:li xml:lang="x-default">Bluebird theme visual reference</rdf:li>
+     <rdf:li xml:lang="en">Bluebird theme visual reference</rdf:li>
     </rdf:Alt>
    </dc:title>
    <dc:type>
@@ -252,12 +252,12 @@ stream
     </rdf:Seq>
    </dc:date>
    <dc:format>application/pdf</dc:format>
-   <dc:source>visual-wren.tex</dc:source>
+   <dc:source>visual-bluebird.tex</dc:source>
    <xmp:CreatorTool>LaTeX with hyperref</xmp:CreatorTool>
    <xmp:CreateDate>2016-05-20T09:00:00Z</xmp:CreateDate>
    <xmp:ModifyDate>2016-05-20T09:00:00Z</xmp:ModifyDate>
    <xmp:MetadataDate>2016-05-20T09:00:00Z</xmp:MetadataDate>
-   <xmpMM:DocumentID>uuid:76e31fe0-5bfe-49d2-8ce1-43116db77d99</xmpMM:DocumentID>
+   <xmpMM:DocumentID>uuid:7ebca0c6-a937-4ad1-8b77-95a47c505ec4</xmpMM:DocumentID>
    <xmpMM:InstanceID>uuid:0a57c455-157a-4141-8c19-6237d832fc80</xmpMM:InstanceID>
    <prism:complianceProfile>three</prism:complianceProfile>
    <prism:pageCount>4</prism:pageCount>
@@ -276,56 +276,56 @@ endobj
 [BINARY STREAM]
 endobj
 72 0 obj
-<< /Subtype /CIDFontType0C /Filter /FlateDecode /Length 1003 >>       
-[BINARY STREAM]
-endobj
-73 0 obj
-<< /Filter /FlateDecode /Length 388 >>        
-[BINARY STREAM]
-endobj
-77 0 obj
 << /Subtype /CIDFontType0C /Filter /FlateDecode /Length 1242 >>       
 [BINARY STREAM]
 endobj
-78 0 obj
+73 0 obj
 << /Filter /FlateDecode /Length 421 >>        
 [BINARY STREAM]
 endobj
+77 0 obj
+<< /Subtype /CIDFontType0C /Filter /FlateDecode /Length 1708 >>       
+[BINARY STREAM]
+endobj
+78 0 obj
+<< /Filter /FlateDecode /Length 430 >>        
+[BINARY STREAM]
+endobj
 82 0 obj
-<< /Subtype /CIDFontType0C /Filter /FlateDecode /Length 3308 >>       
+<< /Subtype /CIDFontType0C /Filter /FlateDecode /Length 1111 >>       
 [BINARY STREAM]
 endobj
 83 0 obj
-<< /Filter /FlateDecode /Length 564 >>        
+<< /Filter /FlateDecode /Length 408 >>        
 [BINARY STREAM]
 endobj
 87 0 obj
-<< /Subtype /CIDFontType0C /Filter /FlateDecode /Length 2343 >>       
+<< /Subtype /CIDFontType0C /Filter /FlateDecode /Length 3280 >>       
 [BINARY STREAM]
 endobj
 88 0 obj
-<< /Filter /FlateDecode /Length 490 >>        
+<< /Filter /FlateDecode /Length 572 >>        
 [BINARY STREAM]
 endobj
 92 0 obj
-<< /Subtype /CIDFontType0C /Filter /FlateDecode /Length 2137 >>       
+<< /Subtype /CIDFontType0C /Filter /FlateDecode /Length 2269 >>       
 [BINARY STREAM]
 endobj
 93 0 obj
-<< /Filter /FlateDecode /Length 486 >>        
+<< /Filter /FlateDecode /Length 489 >>        
 [BINARY STREAM]
 endobj
 99 0 obj
-<< /Producer (LuaTeX)/Creator <FEFF004C006100540065005800200077006900740068002000680079007000650072007200650066>/Title <FEFF005700720065006E0020007400680065006D0065002000760069007300750061006C0020007200650066006500720065006E00630065>/Author <FEFF00410064006100200042006500690073007000690065006C>/CreationDate (D:20160520090000Z)/ModDate (D:20160520090000Z) /Trapped /False >>
+<< /Producer (LuaTeX)/Creator <FEFF004C006100540065005800200077006900740068002000680079007000650072007200650066>/Title <FEFF0042006C0075006500620069007200640020007400680065006D0065002000760069007300750061006C0020007200650066006500720065006E00630065>/Author <FEFF00410064006100200042006500690073007000690065006C>/CreationDate (D:20160520090000Z)/ModDate (D:20160520090000Z) /Trapped /False >>
 endobj
-30 0 obj
-<< /Type /ObjStm /N 64 /First 490 /Filter /FlateDecode /Length 1992 >>       
+29 0 obj
+<< /Type /ObjStm /N 64 /First 490 /Filter /FlateDecode /Length 1966 >>       
 [BINARY STREAM]
 endobj
 100 0 obj
-<< /Type /XRef /Index [ 0 101 ] /Size 101 /W [ 1 2 1 ] /Root 98 0 R /Info 99 0 R /ID [ <2350CAD05F8A7AF0AA4058486855344F> <2350CAD05F8A7AF0AA4058486855344F> ] /Filter /FlateDecode /Length 233 >>        
+<< /Type /XRef /Index [ 0 101 ] /Size 101 /W [ 1 2 1 ] /Root 98 0 R /Info 99 0 R /ID [ <2350CAD05F8A7AF0AA4058486855344F> <2350CAD05F8A7AF0AA4058486855344F> ] /Filter /FlateDecode /Length 230 >>        
 [BINARY STREAM]
 endobj
 startxref
-32458
+31563
 %%EOF

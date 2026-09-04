@@ -29,8 +29,8 @@
   \file{ltxtalk-theme-magpie.sty}{\from{lttheme.dtx}{magpie}}
   \file{ltxtalk-theme-hawk.sty}{\from{lttheme.dtx}{hawk}}
   \file{ltxtalk-theme-sparrow.sty}{\from{lttheme.dtx}{sparrow}}
-  \file{ltxtalk-theme-swift.sty}{\from{lttheme.dtx}{swift}}
-  \file{ltxtalk-theme-wren.sty}{\from{lttheme.dtx}{wren}}
+  \file{ltxtalk-theme-bluebird.sty}{\from{lttheme.dtx}{bluebird}}
+  \file{ltxtalk-theme-goose.sty}{\from{lttheme.dtx}{goose}}
   \file{ltxtalk-theme-anchovy.sty}{\from{lttheme.dtx}{anchovy}}
   \file{ltxtalk-theme-carp.sty}{\from{lttheme.dtx}{carp}}
   }
@@ -97,21 +97,21 @@ load babel
   for presentations.
 }{\lttalk\footnote{\CTANurl{ltx-talk}}}{\beamer\footnote{\CTANurl{beamer}}}
 
-\ldeen{Bei Präsentationsfolien spielen (wie bei vielen Texten) eine konzeptionelle Trennung  
-  zwischen ihrem Inhalt 
-  und  dessen visueller Darstellung. Während sich der Inhalt von Vortrag zu Vortrag ändert, folgt die
+\ldeen{Bei Präsentationsfolien spielen (wie bei vielen Texten) die konzeptionelle Trennung  
+  zwischen ihrem Inhalt und  dessen visueller Darstellung eine wesentliche Rolle.
+  Während sich der Inhalt von Vortrag zu Vortrag ändert, folgt die
   Gestaltung häufig einem einheitlichen Erscheinungsbild oder einem
   vorgegebenen Corporate Design. Dieses Erscheinungsbild wird in der Regel \emph{Thema} genannt.
 }{
-  For presentation slides, as for many documents, a conceptual separation
+  For presentation slides, as for many documents, the conceptual separation
   between content and visual presentation is useful. While the content changes
   from one talk to the next, the presentation often follows a consistent
   appearance or a prescribed corporate design. This appearance is called a
   \emph{theme} in this manual.
 }\medskip
 
-\ldeen{
-  Es ist ausdrücklich \emph{kein} Ziel von \cls{ltx-talk}, Themen zur Verfügung zu stellen.
+\ldeen*{
+  Es ist ausdrücklich \emph{kein} Ziel von \cls{ltx-talk}, Themen zur Verfügung zu stellen.@1
   Damit bleibt es einzelnen Entwicklern überlassen, Themen für \lttalk{} zu schreiben.
   Bei dieser Arbeit will sie das Paket \lttheme{} ein Stück weit unterstützen.%
   \footnote{Tatsächlich ist \lttheme{} bei dem Versuch entstanden, ein eigenes Thema für
@@ -119,13 +119,13 @@ load babel
   Es stellt ein Theme-System für die Dokumentklasse
   \lttalk{} bereit.  
 }{
-  It is expressly \emph{not} the goal of \cls{ltx-talk} to provide themes.
+  It is expressly \emph{not} the goal of \cls{ltx-talk} to provide themes.@1
   This leaves it up to individual developers to write themes for \lttalk{}.
   The \lttheme{} package is intended to provide some support for this work.%
   \footnote{In fact, \lttheme{} was created while attempting to write a custom theme for
   \lttalk{} in the corporate design of the author's university.}
   It provides a theme engine for the document class \lttalk.
-}
+}{\footnote{\url{https://github.com/josephwright/ltx-talk/blob/main/CONTRIBUTING.md}}}
 
 \ldeen{
   Ein Thema umfasst dabei mehr als Farben und Schriftarten. Es legt fest,
@@ -312,11 +312,11 @@ Seite. \code{minimal} verwendet eine zurückhaltende Kopf- und Fußzeile.
 \code{magpie} zeigt den Folientitel in einem farbigen Kopf und Metadaten in
 einem dreigeteilten Fuß. \code{hawk} ergänzt eine linke Navigationsspalte;
 \code{sparrow} ordnet Abschnitt und Unterabschnitt im Kopf an und setzt den
-Folientitel darunter. \code{swift} führt im Kopf die Abschnittsliste, eine
+Folientitel darunter. \code{bluebird} führt im Kopf die Abschnittsliste, eine
 Punktreihe und den Fortschritt (siehe Abschnitt~\ref{sec:ref-navigation}) und
-bringt ein alternatives Titel-Layout \code{swift/band} sowie ein Layout
-\code{swift/plain} ohne Kopf und Fuß mit. \code{wren} stellt rechts ein
-mitlaufendes Inhaltsverzeichnis auf; sein Layout \code{wren/wide} blendet
+bringt ein alternatives Titel-Layout \code{bluebird/band} sowie ein Layout
+\code{bluebird/plain} ohne Kopf und Fuß mit. \code{goose} stellt rechts ein
+mitlaufendes Inhaltsverzeichnis auf; sein Layout \code{goose/wide} blendet
 die Leiste für breite Abbildungen aus. Die Namen der jeweiligen
 Theme-Pakete lauten \code{ltxtalk-theme-}\meta{Name}.
 }{
@@ -325,11 +325,11 @@ The six layout themes differ mainly in their division of the page.
 the frame title in a coloured header and metadata in a three-part footer.
 \code{hawk} adds a navigation area on the left; \code{sparrow} arranges the
 section and subsection in the header and places the frame title below them.
-\code{swift} runs the section list, a row of dots, and a progress readout
+\code{bluebird} runs the section list, a row of dots, and a progress readout
 (see Section~\ref{sec:ref-navigation}) in the header, and adds an alternative
-title layout \code{swift/band} plus a chrome-free layout \code{swift/plain}.
-\code{wren} raises a live table of contents on the right; its
-\code{wren/wide} layout drops that sidebar for wide figures. The
+title layout \code{bluebird/band} plus a chrome-free layout \code{bluebird/plain}.
+\code{goose} raises a live table of contents on the right; its
+\code{goose/wide} layout drops that sidebar for wide figures. The
 corresponding package is named \code{ltxtalk-theme-}\meta{Name}.
 }
 
@@ -339,12 +339,12 @@ corresponding package is named \code{ltxtalk-theme-}\meta{Name}.
 \ldeen{Theme}{Theme} & \ldeen{Kennzeichnendes Layout}{Characteristic layout}
   & \ldeen{Anregung}{Inspired by} \\
 \hline
-\code{minimal} & \ldeen{schlichte Kopf- und Fußzeile}{plain header and footer} & -- \\
-\code{magpie}  & \ldeen{farbiger Kopf und Fuß}{coloured header and footer} & \beamer{} Madrid \\
-\code{hawk}    & \ldeen{linker Navigationsbereich}{left navigation area} & \beamer{} Hannover \\
-\code{sparrow} & \ldeen{zweistufige Kopfnavigation}{two-level header navigation} & \beamer{} Szeged \\
-\code{swift}   & \ldeen{Abschnittsnavigation und Fortschritt im Kopf}{header section navigation and progress} & \beamer{} Berlin \\
-\code{wren}    & \ldeen{rechtes Inhaltsverzeichnis}{right table of contents} & \beamer{} Goettingen \\
+\code{minimal}  & \ldeen{schlichte Kopf- und Fußzeile}{plain header and footer} & -- \\
+\code{magpie}   & \ldeen{farbiger Kopf und Fuß}{coloured header and footer} & \beamer{} Madrid \\
+\code{hawk}     & \ldeen{linker Navigationsbereich}{left navigation area} & \beamer{} Hannover \\
+\code{sparrow}  & \ldeen{zweistufige Kopfnavigation}{two-level header navigation} & \beamer{} Szeged \\
+\code{bluebird} & \ldeen{Abschnittsnavigation und Fortschritt im Kopf}{header section navigation and progress} & \beamer{} Berlin \\
+\code{goose}    & \ldeen{rechtes Inhaltsverzeichnis}{right table of contents} & \beamer{} Goettingen \\
 \hline
 \end{tabular}
 \end{center}
@@ -412,8 +412,8 @@ visible.
   \usepackage{ltxtalk-theme-magpie}
   \usepackage{ltxtalk-theme-hawk}
   \usepackage{ltxtalk-theme-sparrow}
-  \usepackage{ltxtalk-theme-swift}
-  \usepackage{ltxtalk-theme-wren}
+  \usepackage{ltxtalk-theme-bluebird}
+  \usepackage{ltxtalk-theme-goose}
   \usepackage{ltxtalk-theme-anchovy}
   \usepackage{ltxtalk-theme-carp}
 
@@ -449,12 +449,12 @@ visible.
   \ThemeExampleFrame{hawk}
   \useltxtalktheme{sparrow}
   \ThemeExampleFrame{sparrow}
-  \useltxtalktheme{swift}
-  \ThemeExampleFrame{swift}
+  \useltxtalktheme{bluebird}
+  \ThemeExampleFrame{bluebird}
   \section{Third topic}
   \subsection{Its detail}
-  \useltxtalktheme{wren}
-  \ThemeExampleFrame{wren}
+  \useltxtalktheme{goose}
+  \ThemeExampleFrame{goose}
   \useltxtalktheme{magpie}
   \addltxtalktheme{anchovy}
   \ThemeExampleFrame{magpie + anchovy}
@@ -1652,16 +1652,16 @@ and page style.
     ihrem Inhalt. \cs*{UseLTXTalkTitleLayout} wählt die Vorgabe;
     \cs*{MakeLTXTalkTitle} erzeugt den Frame und kann optional eine Variante
     nur für diesen Aufruf wählen. Nach der Titelseite wird die vorherige
-    Geometrie wiederhergestellt. Das Theme \code{swift} bringt mit
-    \code{swift/band} eine solche Variante mit; \cls{ltx-talk}s
+    Geometrie wiederhergestellt. Das Theme \code{bluebird} bringt mit
+    \code{bluebird/band} eine solche Variante mit; \cls{ltx-talk}s
     \cs*{maketitle} bleibt davon unberührt.
   }{
     Registers a title-page variant consisting of temporary layout options and
     its contents. \cs*{UseLTXTalkTitleLayout} selects the default;
     \cs*{MakeLTXTalkTitle} creates the frame and can optionally select a
     variant for that invocation. The previous geometry is restored after the
-    title page. The \code{swift} theme ships one such variant as
-    \code{swift/band}; \cls{ltx-talk}'s own \cs*{maketitle} is unaffected.
+    title page. The \code{bluebird} theme ships one such variant as
+    \code{bluebird/band}; \cls{ltx-talk}'s own \cs*{maketitle} is unaffected.
   }
   \command{LTXTalkHeaderRows}
   \command{IfLTXTalkTitlePageTF}[\marg{Titelseitencode}\marg{Framecode}]
@@ -3149,7 +3149,7 @@ theme.
   % Prüfen ob Themes geladen aber nicht aktiviert wurden
   \str_if_eq:VnT \g__ltxtalk_active_theme_tl { default }
     {
-      \clist_map_inline:nn { minimal, magpie, hawk, sparrow, swift, wren, anchovy, carp }
+      \clist_map_inline:nn { minimal, magpie, hawk, sparrow, bluebird, goose, anchovy, carp }
         {
           \@ifpackageloaded{ltxtalk-theme-#1}
             {
@@ -4248,29 +4248,29 @@ theme.
   }
 \RegisterLTXTalkTheme{sparrow}{\__ltxtalk_sparrow_theme_setup:}
 %</sparrow>
-%<*swift>
-% \subsection{Swift theme (inspired by Beamer Berlin)}
+%<*bluebird>
+% \subsection{Bluebird theme (inspired by Beamer Berlin)}
 % \ldeen{Zeigt die Navigations-Renderer: \code{section-list} und
 %   \code{section-dots} im Kopf, \code{section-progress} als Fortschritt.
-%   Zusätzlich ein alternatives Titel-Layout (\code{swift/band}) und ein
-%   Layout ohne Kopf/Fuß (\code{swift/plain}) für Betonungs- oder
+%   Zusätzlich ein alternatives Titel-Layout (\code{bluebird/band}) und ein
+%   Layout ohne Kopf/Fuß (\code{bluebird/plain}) für Betonungs- oder
 %   Zitatfolien.}{Shows the navigation renderers: \code{section-list} and
 %   \code{section-dots} in the header, \code{section-progress} as a progress
-%   readout. Also an alternative title layout (\code{swift/band}) and a
-%   chrome-free layout (\code{swift/plain}) for emphasis or quotation
+%   readout. Also an alternative title layout (\code{bluebird/band}) and a
+%   chrome-free layout (\code{bluebird/plain}) for emphasis or quotation
 %   frames.}
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesExplPackage{ltxtalk-theme-swift}
+\ProvidesExplPackage{ltxtalk-theme-bluebird}
 {2026/09/03}
 {v0.5.0}
-{Swift theme for ltx-talk, inspired by Beamer Berlin}
+{Bluebird theme for ltx-talk, inspired by Beamer Berlin}
 \RequirePackage{ltxtalk-theme}
 
-% \ldeen{Inhalt des \code{swift/band}-Titel-Frames -- als eigene Funktion,
+% \ldeen{Inhalt des \code{bluebird/band}-Titel-Frames -- als eigene Funktion,
 %   da \cs{DeclareLTXTalkTitleLayout} ein kurzes Argument nimmt.}{Content of
-%   the \code{swift/band} title frame -- a function of its own, since
+%   the \code{bluebird/band} title frame -- a function of its own, since
 %   \cs{DeclareLTXTalkTitleLayout} takes a short argument.}
-\cs_new_protected:Npn \__ltxtalk_swift_title_band:
+\cs_new_protected:Npn \__ltxtalk_bluebird_title_band:
   {
     \centering \sffamily
     \null \vfill
@@ -4286,57 +4286,57 @@ theme.
     \vfill
   }
 
-\cs_new_protected:Npn \__ltxtalk_swift_theme_setup:
+\cs_new_protected:Npn \__ltxtalk_bluebird_theme_setup:
   {
     \ltxtalksetup{header=true,header-height=1.5cm,footer=true,footer-height=0.5cm}
     \setltxtalktitleplacement{frametitle=content,section=none}
 
     % --- header: section navigation ---
-    \defineltxtalkslot{swift-seclist}{header}{custom}{role=navigation}
-    \setltxtalkslotcontent{swift-seclist}{\LTXTalkNavigation{section-list}}
-    \positionltxtalkslot{swift-seclist}{center}{0.14cm}{0.94\paperwidth}{0.5cm}
-    \styleltxtalkslot{swift-seclist}{font=\footnotesize\sffamily,align=center}
+    \defineltxtalkslot{bluebird-seclist}{header}{custom}{role=navigation}
+    \setltxtalkslotcontent{bluebird-seclist}{\LTXTalkNavigation{section-list}}
+    \positionltxtalkslot{bluebird-seclist}{center}{0.14cm}{0.94\paperwidth}{0.5cm}
+    \styleltxtalkslot{bluebird-seclist}{font=\footnotesize\sffamily,align=center}
 
-    \defineltxtalkslot{swift-dots}{header}{custom}{role=navigation}
-    \setltxtalkslotcontent{swift-dots}{\LTXTalkNavigation{section-dots}}
-    \positionltxtalkslot{swift-dots}{0.3cm}{0.78cm}{0.6\paperwidth}{0.45cm}
-    \styleltxtalkslot{swift-dots}{font=\normalsize,align=left,color=ltxtalk-secondary}
+    \defineltxtalkslot{bluebird-dots}{header}{custom}{role=navigation}
+    \setltxtalkslotcontent{bluebird-dots}{\LTXTalkNavigation{section-dots}}
+    \positionltxtalkslot{bluebird-dots}{0.3cm}{0.78cm}{0.6\paperwidth}{0.45cm}
+    \styleltxtalkslot{bluebird-dots}{font=\normalsize,align=left,color=ltxtalk-secondary}
 
-    \defineltxtalkslot{swift-progress}{header}{custom}{role=navigation}
-    \setltxtalkslotcontent{swift-progress}{\LTXTalkNavigation{section-progress}}
-    \positionltxtalkslot{swift-progress}
+    \defineltxtalkslot{bluebird-progress}{header}{custom}{role=navigation}
+    \setltxtalkslotcontent{bluebird-progress}{\LTXTalkNavigation{section-progress}}
+    \positionltxtalkslot{bluebird-progress}
       {\dim_eval:n{0.7\paperwidth}}{0.78cm}{0.24\paperwidth}{0.45cm}
-    \styleltxtalkslot{swift-progress}
+    \styleltxtalkslot{bluebird-progress}
       {font=\scriptsize\sffamily,align=right,color=ltxtalk-secondary}
 
     % \ldeen{Titel/Untertitel sind Kopf-Slots, direkt an der Unterkante der
     %   Kopfzeile -- so werden sie absolut gesetzt statt in den Textfluss.}{
     %   Title/subtitle are header slots pinned to the header's lower edge, so
     %   they are placed absolutely rather than in the text stream.}
-    \defineltxtalkslot{swift-ftitle}{header}{frametitle}{role=heading,heading-level=2}
-    \defineltxtalkslot{swift-fsub}{header}{framesubtitle}{role=heading,heading-level=3}
-    \positionltxtalkslot{swift-ftitle}{0.25cm}{1.5cm}{0.92\paperwidth}{0.8cm}
-    \positionltxtalkslot{swift-fsub}{0.25cm}{2.34cm}{0.92\paperwidth}{0.5cm}
-    \styleltxtalkslot{swift-ftitle}
+    \defineltxtalkslot{bluebird-ftitle}{header}{frametitle}{role=heading,heading-level=2}
+    \defineltxtalkslot{bluebird-fsub}{header}{framesubtitle}{role=heading,heading-level=3}
+    \positionltxtalkslot{bluebird-ftitle}{0.25cm}{1.5cm}{0.92\paperwidth}{0.8cm}
+    \positionltxtalkslot{bluebird-fsub}{0.25cm}{2.34cm}{0.92\paperwidth}{0.5cm}
+    \styleltxtalkslot{bluebird-ftitle}
       {font=\LARGE\bfseries\sffamily,color=ltxtalk-primary,align=left,space-after=0.35em}
-    \styleltxtalkslot{swift-fsub}
+    \styleltxtalkslot{bluebird-fsub}
       {font=\large\itshape,color=ltxtalk-secondary,align=left}
 
     % --- footer: author, title, frame number ---
-    \defineltxtalkslot{swift-fauthor}{footer}{custom}{role=note}
-    \setltxtalkslotcontent{swift-fauthor}{\LTXTalkMetadata{short-author}}
-    \positionltxtalkslot{swift-fauthor}{0.3cm}{center}{0.33\paperwidth}{0.4cm}
-    \styleltxtalkslot{swift-fauthor}{font=\tiny\sffamily,color=white,align=left}
-    \defineltxtalkslot{swift-ftitle-foot}{footer}{custom}{role=note}
-    \setltxtalkslotcontent{swift-ftitle-foot}{\LTXTalkMetadata{short-title}}
-    \positionltxtalkslot{swift-ftitle-foot}{center}{center}{0.34\paperwidth}{0.4cm}
-    \styleltxtalkslot{swift-ftitle-foot}{font=\tiny\sffamily,color=white,align=center}
-    \defineltxtalkslot{swift-fpage}{footer}{pagenumber}{role=navigation}
-    \setltxtalkslotcontent{swift-fpage}
+    \defineltxtalkslot{bluebird-fauthor}{footer}{custom}{role=note}
+    \setltxtalkslotcontent{bluebird-fauthor}{\LTXTalkMetadata{short-author}}
+    \positionltxtalkslot{bluebird-fauthor}{0.3cm}{center}{0.33\paperwidth}{0.4cm}
+    \styleltxtalkslot{bluebird-fauthor}{font=\tiny\sffamily,color=white,align=left}
+    \defineltxtalkslot{bluebird-ftitle-foot}{footer}{custom}{role=note}
+    \setltxtalkslotcontent{bluebird-ftitle-foot}{\LTXTalkMetadata{short-title}}
+    \positionltxtalkslot{bluebird-ftitle-foot}{center}{center}{0.34\paperwidth}{0.4cm}
+    \styleltxtalkslot{bluebird-ftitle-foot}{font=\tiny\sffamily,color=white,align=center}
+    \defineltxtalkslot{bluebird-fpage}{footer}{pagenumber}{role=navigation}
+    \setltxtalkslotcontent{bluebird-fpage}
       {\LTXTalkMetadata{framenumber}\,/\,\LTXTalkMetadata{totalframes}}
-    \positionltxtalkslot{swift-fpage}
+    \positionltxtalkslot{bluebird-fpage}
       {\dim_eval:n{0.85\paperwidth}}{center}{0.12\paperwidth}{0.4cm}
-    \styleltxtalkslot{swift-fpage}{font=\tiny\sffamily,color=white,align=right}
+    \styleltxtalkslot{bluebird-fpage}{font=\tiny\sffamily,color=white,align=right}
 
     % --- areas ---
     \decorateltxtalkarea{header}{background=ltxtalk-primary!12,frame=bottom,
@@ -4354,12 +4354,12 @@ theme.
     \EditInstance{titlepage-element}{date}{color=ltxtalk-text}
 
     % --- alternative title layout: a banded centred title ---
-    \DeclareLTXTalkTitleLayout{swift/band}
+    \DeclareLTXTalkTitleLayout{bluebird/band}
       {header=false,footer=false}
-      {\__ltxtalk_swift_title_band:}
+      {\__ltxtalk_bluebird_title_band:}
 
     % --- chrome-free layout for emphasis / quotation frames ---
-    \DeclareLTXTalkLayout{swift/plain}
+    \DeclareLTXTalkLayout{bluebird/plain}
       {header=false,footer=false}
 
     \setltxtalkcolors{primary={model=HTML,value=1F5C8A},
@@ -4371,67 +4371,67 @@ theme.
     \styleltxtalkblock{alertblock}{traits=titlebar,head-background=alert}
     \styleltxtalkblock{exampleblock}{traits=titlebar,head-background=example}
   }
-\RegisterLTXTalkTheme{swift}{\__ltxtalk_swift_theme_setup:}
-%</swift>
-%<swift>\endinput
-%<*wren>
-% \subsection{Wren theme (inspired by Beamer Goettingen)}
+\RegisterLTXTalkTheme{bluebird}{\__ltxtalk_bluebird_theme_setup:}
+%</bluebird>
+%<bluebird>\endinput
+%<*goose>
+% \subsection{Goose theme (inspired by Beamer Goettingen)}
 % \ldeen{Rechte Seitenleiste mit \code{toc}-Navigation (Abschnitte,
 %   darunter die Unterabschnitte des aktuellen), im Kopf die
-%   \code{subsection-list}. Das Layout \code{wren/wide} blendet die
+%   \code{subsection-list}. Das Layout \code{goose/wide} blendet die
 %   Seitenleiste für breite Abbildungen aus.}{Right sidebar with the
 %   \code{toc} navigation (sections, with the current section's subsections
-%   below it), \code{subsection-list} in the header. The \code{wren/wide}
+%   below it), \code{subsection-list} in the header. The \code{goose/wide}
 %   layout drops the sidebar for wide figures.}
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesExplPackage{ltxtalk-theme-wren}
+\ProvidesExplPackage{ltxtalk-theme-goose}
 {2026/09/03}
 {v0.5.0}
-{Wren theme for ltx-talk, inspired by Beamer Goettingen}
+{Goose theme for ltx-talk, inspired by Beamer Goettingen}
 \RequirePackage{ltxtalk-theme}
-\cs_new_protected:Npn \__ltxtalk_wren_theme_setup:
+\cs_new_protected:Npn \__ltxtalk_goose_theme_setup:
   {
     \setltxtalktitleplacement{frametitle=content,section=none}
 
     % --- right sidebar: a live table of contents ---
-    \defineltxtalkslot{wren-toc}{right}{custom}{role=navigation}
-    \setltxtalkslotcontent{wren-toc}{\LTXTalkNavigation{toc}}
+    \defineltxtalkslot{goose-toc}{right}{custom}{role=navigation}
+    \setltxtalkslotcontent{goose-toc}{\LTXTalkNavigation{toc}}
     % \ldeen{Der Slot zentriert seinen Inhalt vertikal (\cs{parbox}[c]);
     %   eine mässige Höhe hält das Verzeichnis nahe der Oberkante.}{The slot
     %   centres its content vertically (\cs{parbox}[c]); a moderate height
     %   keeps the contents near the top edge.}
-    \positionltxtalkslot{wren-toc}{0.25cm}{0.7cm}{2.35cm}{3cm}
-    \styleltxtalkslot{wren-toc}{font=\scriptsize\sffamily,align=left}
+    \positionltxtalkslot{goose-toc}{0.25cm}{0.7cm}{2.35cm}{3cm}
+    \styleltxtalkslot{goose-toc}{font=\scriptsize\sffamily,align=left}
 
     % --- header: subsections of the current section ---
-    \defineltxtalkslot{wren-subs}{header}{custom}{role=navigation}
-    \setltxtalkslotcontent{wren-subs}{\LTXTalkNavigation{subsection-list}}
-    \positionltxtalkslot{wren-subs}{0.3cm}{0.2cm}{0.86\paperwidth}{0.5cm}
-    \styleltxtalkslot{wren-subs}
+    \defineltxtalkslot{goose-subs}{header}{custom}{role=navigation}
+    \setltxtalkslotcontent{goose-subs}{\LTXTalkNavigation{subsection-list}}
+    \positionltxtalkslot{goose-subs}{0.3cm}{0.2cm}{0.86\paperwidth}{0.5cm}
+    \styleltxtalkslot{goose-subs}
       {font=\scriptsize\sffamily,align=left,color=ltxtalk-secondary}
 
     % --- content: frame title and subtitle (header slots -> absolute) ---
-    \defineltxtalkslot{wren-ftitle}{header}{frametitle}{role=heading,heading-level=2}
-    \defineltxtalkslot{wren-fsub}{header}{framesubtitle}{role=heading,heading-level=3}
-    \positionltxtalkslot{wren-ftitle}{0.3cm}{0.9cm}{0.78\paperwidth}{0.8cm}
-    \positionltxtalkslot{wren-fsub}{0.3cm}{1.62cm}{0.78\paperwidth}{0.5cm}
-    \styleltxtalkslot{wren-ftitle}
+    \defineltxtalkslot{goose-ftitle}{header}{frametitle}{role=heading,heading-level=2}
+    \defineltxtalkslot{goose-fsub}{header}{framesubtitle}{role=heading,heading-level=3}
+    \positionltxtalkslot{goose-ftitle}{0.3cm}{0.9cm}{0.78\paperwidth}{0.8cm}
+    \positionltxtalkslot{goose-fsub}{0.3cm}{1.62cm}{0.78\paperwidth}{0.5cm}
+    \styleltxtalkslot{goose-ftitle}
       {font=\Large\bfseries\sffamily,color=ltxtalk-primary,align=left,space-after=0.3em}
-    \styleltxtalkslot{wren-fsub}
+    \styleltxtalkslot{goose-fsub}
       {font=\normalsize\itshape,color=ltxtalk-secondary,align=left}
 
     % --- footer ---
-    \defineltxtalkslot{wren-fauthor}{footer}{custom}{role=note}
-    \setltxtalkslotcontent{wren-fauthor}
+    \defineltxtalkslot{goose-fauthor}{footer}{custom}{role=note}
+    \setltxtalkslotcontent{goose-fauthor}
       {\LTXTalkMetadata{short-author}~---~\LTXTalkMetadata{short-title}}
-    \positionltxtalkslot{wren-fauthor}{0.3cm}{center}{0.7\paperwidth}{0.35cm}
-    \styleltxtalkslot{wren-fauthor}
+    \positionltxtalkslot{goose-fauthor}{0.3cm}{center}{0.7\paperwidth}{0.35cm}
+    \styleltxtalkslot{goose-fauthor}
       {font=\tiny\sffamily,color=ltxtalk-secondary,align=left}
-    \defineltxtalkslot{wren-fprogress}{footer}{custom}{role=navigation}
-    \setltxtalkslotcontent{wren-fprogress}{\LTXTalkNavigation{section-progress}}
-    \positionltxtalkslot{wren-fprogress}
+    \defineltxtalkslot{goose-fprogress}{footer}{custom}{role=navigation}
+    \setltxtalkslotcontent{goose-fprogress}{\LTXTalkNavigation{section-progress}}
+    \positionltxtalkslot{goose-fprogress}
       {\dim_eval:n{0.82\paperwidth}}{center}{0.14\paperwidth}{0.35cm}
-    \styleltxtalkslot{wren-fprogress}
+    \styleltxtalkslot{goose-fprogress}
       {font=\tiny\sffamily,color=ltxtalk-secondary,align=right}
 
     % --- areas ---
@@ -4443,10 +4443,10 @@ theme.
       rule-thickness=0.4pt,artifact-type=decorative}
 
     % --- layouts: sidebar (standard) vs. full width (wide) ---
-    \DeclareLTXTalkLayout{wren/standard}
+    \DeclareLTXTalkLayout{goose/standard}
       {header=true,header-height=0.9cm,footer=true,footer-height=0.5cm,
        right-margin=true,right-area-width=2.6cm,content-inset-right=2.9cm}
-    \DeclareLTXTalkLayout{wren/wide}
+    \DeclareLTXTalkLayout{goose/wide}
       {right-margin=false,content-inset-right=0pt}
 
     % --- native title page ---
@@ -4468,11 +4468,11 @@ theme.
     \styleltxtalkblock{alertblock}{traits=titlebar,head-background=alert}
     \styleltxtalkblock{exampleblock}{traits=titlebar,head-background=example}
 
-    \UseLTXTalkLayout{wren/standard}
+    \UseLTXTalkLayout{goose/standard}
   }
-\RegisterLTXTalkTheme{wren}{\__ltxtalk_wren_theme_setup:}
-%</wren>
-%<wren>\endinput
+\RegisterLTXTalkTheme{goose}{\__ltxtalk_goose_theme_setup:}
+%</goose>
+%<goose>\endinput
 %<*anchovy>
 % \subsection{Anchovy colour theme (colours inspired by Beamer AnnArbor)}
 \NeedsTeXFormat{LaTeX2e}
