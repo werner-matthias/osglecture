@@ -4131,6 +4131,20 @@ load babel
 % {\code{plain}: title (if set) plus body, undivided -- as before,
 % including an optional frame around everything when \code{rule-thickness}
 % is positive.}
+% \ldeen{\cs{tagpdfparaOff} um die \cs{fcolorbox}: ohne das umhüllt das
+%   Absatz-Tagging der Klasse den Kasten in einem eigenen Absatz, den der
+%   \env{minipage}-Sockel dann um sein \code{Div} herum aufspaltet und
+%   leere \code{P}-Fragmente hinterlässt. Mit ausgeschaltetem Absatz-Tagging
+%   liegt das \code{Div} sauber neben den umgebenden Absätzen. Wirkt nur bei
+%   geladenem \pkg{tagpdf} und wird von der einschließenden Gruppe wieder
+%   zurückgesetzt.}{\cs{tagpdfparaOff} around the \cs{fcolorbox}: without it
+%   the class's paragraph tagging wraps the box in a paragraph of its own,
+%   which the \env{minipage} socket then splits around its \code{Div},
+%   leaving empty \code{P} fragments. With paragraph tagging off the
+%   \code{Div} sits cleanly beside the surrounding paragraphs. Only matters
+%   when \pkg{tagpdf} is loaded, and the enclosing group restores it.}
+\cs_new_protected:Npn \__osgstyler_block_box_para_off:
+  { \cs_if_exist_use:N \tagpdfparaOff }
 % \ldeen{Setzt den Blocktitel im Kopf-Font und in der Kopffarbe (wie beim
 %   \code{titled}-Layout), aber als gewöhnliche erste Absatzzeile.}{Typesets
 %   the block title in the head font and head colour (as in the \code{titled}
@@ -4151,22 +4165,25 @@ load babel
     \dim_compare:nNnTF { \l__osgstyler_block_rule_dim } > { 0pt }
       {
         \par
-        \addvspace { \medskipamount }
-        \setlength\fboxsep{\l__osgstyler_block_padding_dim}
-        \setlength\fboxrule{\l__osgstyler_block_rule_dim}
-        \noindent\fcolorbox
-          { \OsgColorName{\l__osgstyler_block_rule_color_tl} }
-          { \__osgstyler_block_bg:V \l__osgstyler_block_background_tl }
-          {
-            \begin{minipage}{\dim_eval:n
-              {\linewidth-2\fboxsep-2\fboxrule}}
-              \__osgstyler_block_plain_title:
-              \setlength\parskip{0.5\baselineskip}
-              #1
-              \par
-            \end{minipage}
-          }
-        \par
+        \group_begin:
+          \__osgstyler_block_box_para_off:
+          \addvspace { \medskipamount }
+          \setlength\fboxsep{\l__osgstyler_block_padding_dim}
+          \setlength\fboxrule{\l__osgstyler_block_rule_dim}
+          \noindent\fcolorbox
+            { \OsgColorName{\l__osgstyler_block_rule_color_tl} }
+            { \__osgstyler_block_bg:V \l__osgstyler_block_background_tl }
+            {
+              \begin{minipage}{\dim_eval:n
+                {\linewidth-2\fboxsep-2\fboxrule}}
+                \__osgstyler_block_plain_title:
+                \setlength\parskip{0.5\baselineskip}
+                #1
+                \par
+              \end{minipage}
+            }
+          \par
+        \group_end:
         \addvspace { \medskipamount }
       }
       {
@@ -4323,8 +4340,9 @@ load babel
 \cs_new_protected:Npn \__osgstyler_block_typeset_titled_box:n #1
   {
     \par
-    \addvspace { \medskipamount }
     \group_begin:
+      \__osgstyler_block_box_para_off:
+      \addvspace { \medskipamount }
       \dim_set_eq:NN \l__osgstyler_block_bar_pad_dim
         \l__osgstyler_block_head_padding_dim
       \setlength \fboxsep { 0pt }
@@ -4367,8 +4385,8 @@ load babel
             \tex_kern:D \l__osgstyler_block_body_padding_dim
           \end { minipage }
         }%
+      \par
     \group_end:
-    \par
     \addvspace { \medskipamount }
   }
 \cs_new_protected:Npn \__osgstyler_block_typeset_titled_flow:n #1

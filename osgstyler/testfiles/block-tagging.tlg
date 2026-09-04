@@ -16,76 +16,56 @@
      <?MarkedContent page="1" ?>A paragraph before the block.
     </text>
    </text-unit>
-   <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+   <Div xmlns="http://iso.org/pdf2/ssn"
       id="ID.00008"
-      rolemaps-to="Part"
      >
-    <text xmlns="https://www.latex-project.org/ns/dflt"
+    <text-unit xmlns="https://www.latex-project.org/ns/dflt"
        id="ID.00009"
-       xmlns:Layout="http://iso.org/pdf/ssn/Layout"
-       Layout:TextAlign="Justify"
-       rolemaps-to="P"
+       rolemaps-to="Part"
       >
-     <?MarkedContent page="1" ?>
-    </text>
-    <Div xmlns="http://iso.org/pdf2/ssn"
-       id="ID.00010"
+     <text xmlns="https://www.latex-project.org/ns/dflt"
+        id="ID.00010"
+        xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+        Layout:TextAlign="Justify"
+        rolemaps-to="P"
+       >
+      <?MarkedContent page="1" ?>
+      <?MarkedContent page="1" ?>The block title
+     </text>
+    </text-unit>
+    <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.00011"
+       rolemaps-to="Part"
       >
-     <text-unit xmlns="https://www.latex-project.org/ns/dflt"
-        id="ID.00011"
-        rolemaps-to="Part"
+     <text xmlns="https://www.latex-project.org/ns/dflt"
+        id="ID.00012"
+        xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+        Layout:TextAlign="Justify"
+        rolemaps-to="P"
        >
-      <text xmlns="https://www.latex-project.org/ns/dflt"
-         id="ID.00012"
-         xmlns:Layout="http://iso.org/pdf/ssn/Layout"
-         Layout:TextAlign="Justify"
-         rolemaps-to="P"
-        >
-       <?MarkedContent page="1" ?>
-       <?MarkedContent page="1" ?>The block title
-      </text>
-     </text-unit>
-     <text-unit xmlns="https://www.latex-project.org/ns/dflt"
-        id="ID.00013"
-        rolemaps-to="Part"
-       >
-      <text xmlns="https://www.latex-project.org/ns/dflt"
-         id="ID.00014"
-         xmlns:Layout="http://iso.org/pdf/ssn/Layout"
-         Layout:TextAlign="Justify"
-         rolemaps-to="P"
-        >
-       <?MarkedContent page="1" ?>First body paragraph of the block, long enough to wrap onto a second line so a line break is exercised inside the block body.
-      </text>
-     </text-unit>
-     <text-unit xmlns="https://www.latex-project.org/ns/dflt"
-        id="ID.00015"
-        rolemaps-to="Part"
-       >
-      <text xmlns="https://www.latex-project.org/ns/dflt"
-         id="ID.00016"
-         xmlns:Layout="http://iso.org/pdf/ssn/Layout"
-         Layout:TextAlign="Justify"
-         rolemaps-to="P"
-        >
-       <?MarkedContent page="1" ?>Second body paragraph.
-      </text>
-     </text-unit>
-    </Div>
-    <text xmlns="https://www.latex-project.org/ns/dflt"
-       id="ID.00017"
-       rolemaps-to="P"
+      <?MarkedContent page="1" ?>First body paragraph of the block, long enough to wrap onto a second line so a line break is exercised inside the block body.
+     </text>
+    </text-unit>
+    <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.00013"
+       rolemaps-to="Part"
       >
-     <?MarkedContent page="1" ?>
-     <?MarkedContent page="1" ?>
-    </text>
-   </text-unit>
+     <text xmlns="https://www.latex-project.org/ns/dflt"
+        id="ID.00014"
+        xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+        Layout:TextAlign="Justify"
+        rolemaps-to="P"
+       >
+      <?MarkedContent page="1" ?>Second body paragraph.
+     </text>
+    </text-unit>
+   </Div>
    <text-unit xmlns="https://www.latex-project.org/ns/dflt"
-      id="ID.00018"
+      id="ID.00015"
       rolemaps-to="Part"
      >
     <text xmlns="https://www.latex-project.org/ns/dflt"
-       id="ID.00019"
+       id="ID.00016"
        xmlns:Layout="http://iso.org/pdf/ssn/Layout"
        Layout:TextAlign="Justify"
        rolemaps-to="P"
@@ -94,11 +74,11 @@
     </text>
    </text-unit>
    <text-unit xmlns="https://www.latex-project.org/ns/dflt"
-      id="ID.00020"
+      id="ID.00017"
       rolemaps-to="Part"
      >
     <text xmlns="https://www.latex-project.org/ns/dflt"
-       id="ID.00021"
+       id="ID.00018"
        xmlns:Layout="http://iso.org/pdf/ssn/Layout"
        Layout:TextAlign="Justify"
        rolemaps-to="P"
@@ -107,11 +87,11 @@
     </text>
    </text-unit>
    <text-unit xmlns="https://www.latex-project.org/ns/dflt"
-      id="ID.00022"
+      id="ID.00019"
       rolemaps-to="Part"
      >
     <text xmlns="https://www.latex-project.org/ns/dflt"
-       id="ID.00023"
+       id="ID.00020"
        xmlns:Layout="http://iso.org/pdf/ssn/Layout"
        Layout:TextAlign="Justify"
        rolemaps-to="P"
@@ -120,11 +100,11 @@
     </text>
    </text-unit>
    <text-unit xmlns="https://www.latex-project.org/ns/dflt"
-      id="ID.00024"
+      id="ID.00021"
       rolemaps-to="Part"
      >
     <text xmlns="https://www.latex-project.org/ns/dflt"
-       id="ID.00025"
+       id="ID.00022"
        xmlns:Layout="http://iso.org/pdf/ssn/Layout"
        Layout:TextAlign="Justify"
        rolemaps-to="P"
@@ -132,52 +112,73 @@
      <?MarkedContent page="1" ?>A paragraph after the soft block.
     </text>
    </text-unit>
+   <Div xmlns="http://iso.org/pdf2/ssn"
+      id="ID.00023"
+     >
+    <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.00024"
+       rolemaps-to="Part"
+      >
+     <text xmlns="https://www.latex-project.org/ns/dflt"
+        id="ID.00025"
+        xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+        Layout:TextAlign="Justify"
+        rolemaps-to="P"
+       >
+      <?MarkedContent page="1" ?>
+      <?MarkedContent page="1" ?>A rounded block
+     </text>
+    </text-unit>
+    <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.00026"
+       rolemaps-to="Part"
+      >
+     <text xmlns="https://www.latex-project.org/ns/dflt"
+        id="ID.00027"
+        xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+        Layout:TextAlign="Justify"
+        rolemaps-to="P"
+       >
+      <?MarkedContent page="1" ?>The pgf-drawn rounded frame and drop shadow are one artifact behind the box; the structure must stay exactly as for the square title-bar block.
+     </text>
+    </text-unit>
+   </Div>
    <text-unit xmlns="https://www.latex-project.org/ns/dflt"
-      id="ID.00026"
+      id="ID.00028"
       rolemaps-to="Part"
      >
     <text xmlns="https://www.latex-project.org/ns/dflt"
-       id="ID.00027"
+       id="ID.00029"
        xmlns:Layout="http://iso.org/pdf/ssn/Layout"
        Layout:TextAlign="Justify"
        rolemaps-to="P"
       >
+     <?MarkedContent page="1" ?>A paragraph after the rounded block.
     </text>
-    <Div xmlns="http://iso.org/pdf2/ssn"
-       id="ID.00028"
-      >
-     <text-unit xmlns="https://www.latex-project.org/ns/dflt"
-        id="ID.00029"
-        rolemaps-to="Part"
-       >
-      <text xmlns="https://www.latex-project.org/ns/dflt"
-         id="ID.00030"
-         xmlns:Layout="http://iso.org/pdf/ssn/Layout"
-         Layout:TextAlign="Justify"
-         rolemaps-to="P"
-        >
-       <?MarkedContent page="1" ?>
-       <?MarkedContent page="1" ?>A rounded block
-      </text>
-     </text-unit>
-     <text-unit xmlns="https://www.latex-project.org/ns/dflt"
-        id="ID.00031"
-        rolemaps-to="Part"
-       >
-      <text xmlns="https://www.latex-project.org/ns/dflt"
-         id="ID.00032"
-         xmlns:Layout="http://iso.org/pdf/ssn/Layout"
-         Layout:TextAlign="Justify"
-         rolemaps-to="P"
-        >
-       <?MarkedContent page="1" ?>The pgf-drawn rounded frame and drop shadow are one artifact behind the box; the structure must stay exactly as for the square title-bar block.
-      </text>
-     </text-unit>
-    </Div>
+   </text-unit>
+   <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+      id="ID.00030"
+      rolemaps-to="Part"
+     >
     <text xmlns="https://www.latex-project.org/ns/dflt"
-       id="ID.00033"
+       id="ID.00031"
+       xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+       Layout:TextAlign="Center"
        rolemaps-to="P"
       >
+    </text>
+    <text xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.00032"
+       xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+       Layout:TextAlign="Justify"
+       rolemaps-to="P"
+      >
+     <Span xmlns="http://iso.org/pdf2/ssn"
+        id="ID.00033"
+        actualtext="LaTeX"
+        phoneme="[ˈlaːtɛx]"
+       >
+     </Span>
     </text>
    </text-unit>
    <text-unit xmlns="https://www.latex-project.org/ns/dflt"
@@ -190,46 +191,8 @@
        Layout:TextAlign="Justify"
        rolemaps-to="P"
       >
-     <?MarkedContent page="1" ?>A paragraph after the rounded block.
-    </text>
-   </text-unit>
-   <text-unit xmlns="https://www.latex-project.org/ns/dflt"
-      id="ID.00036"
-      rolemaps-to="Part"
-     >
-    <text xmlns="https://www.latex-project.org/ns/dflt"
-       id="ID.00037"
-       xmlns:Layout="http://iso.org/pdf/ssn/Layout"
-       Layout:TextAlign="Center"
-       rolemaps-to="P"
-      >
-    </text>
-    <text xmlns="https://www.latex-project.org/ns/dflt"
-       id="ID.00038"
-       xmlns:Layout="http://iso.org/pdf/ssn/Layout"
-       Layout:TextAlign="Justify"
-       rolemaps-to="P"
-      >
      <Span xmlns="http://iso.org/pdf2/ssn"
-        id="ID.00039"
-        actualtext="LaTeX"
-        phoneme="[ˈlaːtɛx]"
-       >
-     </Span>
-    </text>
-   </text-unit>
-   <text-unit xmlns="https://www.latex-project.org/ns/dflt"
-      id="ID.00040"
-      rolemaps-to="Part"
-     >
-    <text xmlns="https://www.latex-project.org/ns/dflt"
-       id="ID.00041"
-       xmlns:Layout="http://iso.org/pdf/ssn/Layout"
-       Layout:TextAlign="Justify"
-       rolemaps-to="P"
-      >
-     <Span xmlns="http://iso.org/pdf2/ssn"
-        id="ID.00042"
+        id="ID.00036"
         actualtext="LaTeX"
         phoneme="[ˈlaːtɛx]"
        >
