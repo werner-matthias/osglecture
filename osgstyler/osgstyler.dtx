@@ -1979,14 +1979,16 @@ load babel
 \ldeen{Immer deklarierte Instanzen: \env{quote}, \env{quotation},
   \env{block}, \env{alertblock}, \env{exampleblock}. Presets:
   \code{osl-standard}, \code{osl-modern}. Traits: \code{osl-modern-rules},
-  \code{plain}, \code{framed}, \code{filled}, \code{titlebar}, \code{soft}. Der Test
+  \code{plain}, \code{framed}, \code{filled}, \code{titlebar}, \code{soft},
+  \code{card}. Der Test
   \cs{OsgIfBlockTitledTF}\marg{Name}\marg{ja}\marg{nein} meldet, ob eine
   Instanz \code{layout=titled} verwendet -- umhüllende Pakete brauchen das,
   weil ein Kopf-Titel anders zugeführt werden muss.}
   {Always-declared instances: \env{quote}, \env{quotation}, \env{block},
   \env{alertblock}, \env{exampleblock}. Presets: \code{osl-standard},
   \code{osl-modern}. Traits: \code{osl-modern-rules}, \code{plain},
-  \code{framed}, \code{filled}, \code{titlebar}, \code{soft}. The test
+  \code{framed}, \code{filled}, \code{titlebar}, \code{soft}, \code{card}.
+  The test
   \cs{OsgIfBlockTitledTF}\marg{name}\marg{yes}\marg{no} reports whether an
   instance uses \code{layout=titled} -- wrapping packages need this because
   a head title has to be fed in differently.}
@@ -4008,10 +4010,27 @@ load babel
 % {\code{plain}: title (if set) plus body, undivided -- as before,
 % including an optional frame around everything when \code{rule-thickness}
 % is positive.}
+% \ldeen{Setzt den Blocktitel im Kopf-Font und in der Kopffarbe (wie beim
+%   \code{titled}-Layout), aber als gewöhnliche erste Absatzzeile.}{Typesets
+%   the block title in the head font and head colour (as in the \code{titled}
+%   layout), but as an ordinary first paragraph line.}
+\cs_new_protected:Npn \__osgstyler_block_plain_title:
+  {
+    \tl_if_empty:NF \l__osgstyler_block_title_tl
+      {
+        { \color { \OsgColorName{ \l__osgstyler_block_head_fg_tl } }
+          \l__osgstyler_block_head_font_tl
+          \l__osgstyler_block_title_tl \par }
+        \nobreak
+        \skip_vertical:n { 0.3 \baselineskip }
+      }
+  }
 \cs_new_protected:Npn \__osgstyler_block_typeset_plain:n #1
   {
     \dim_compare:nNnTF { \l__osgstyler_block_rule_dim } > { 0pt }
       {
+        \par
+        \addvspace { \medskipamount }
         \setlength\fboxsep{\l__osgstyler_block_padding_dim}
         \setlength\fboxrule{\l__osgstyler_block_rule_dim}
         \noindent\fcolorbox
@@ -4020,15 +4039,17 @@ load babel
           {
             \begin{minipage}{\dim_eval:n
               {\linewidth-2\fboxsep-2\fboxrule}}
-              \tl_if_empty:NF \l__osgstyler_block_title_tl
-                { \tl_use:N \l__osgstyler_block_title_tl \par }
+              \__osgstyler_block_plain_title:
+              \setlength\parskip{0.5\baselineskip}
               #1
+              \par
             \end{minipage}
           }
+        \par
+        \addvspace { \medskipamount }
       }
       {
-        \tl_if_empty:NF \l__osgstyler_block_title_tl
-          { \tl_use:N \l__osgstyler_block_title_tl \par }
+        \__osgstyler_block_plain_title:
         #1
       }
   }
@@ -4172,10 +4193,19 @@ load babel
     traits .code:n =
       \clist_map_inline:nn {#1}
         {
+          % \ldeen{\cs{tl_put_right:NV} statt \cs{tl_put_right:Nx}: der
+          %   Trait-Wert darf \cs{normalfont} u.\,ä.\ enthalten, die eine
+          %   vollständige Expansion sprengen würden.}{\cs{tl_put_right:NV}
+          %   not \cs{tl_put_right:Nx}: a trait value may contain
+          %   \cs{normalfont} and the like, which would break full
+          %   expansion.}
           \prop_get:NnNTF \g__osgstyler_block_trait_prop {##1}
             \l__osgstyler_block_trait_tl
-            { \tl_put_right:Nx \l__osgstyler_block_instance_keys_tl
-                { \l__osgstyler_block_trait_tl , } }
+            {
+              \tl_put_right:NV \l__osgstyler_block_instance_keys_tl
+                \l__osgstyler_block_trait_tl
+              \tl_put_right:Nn \l__osgstyler_block_instance_keys_tl { , }
+            }
             { \msg_error:nnn { osgstyler } { unknown-block-trait } {##1} }
         },
     unknown .code:n =
@@ -4225,14 +4255,20 @@ load babel
 % already-expanded literal text avoids that.
 \tl_new:N \l__osgstyler_block_instance_call_tl
 
+% \ldeen{\cs{exp_not:V} um die gesammelten Schlüssel: sie dürfen
+%   \cs{normalfont} u.\,ä.\ enthalten (etwa aus \code{head-font}), die eine
+%   vollständige Expansion sprengen würden.}{\cs{exp_not:V} around the
+%   collected keys: they may contain \cs{normalfont} and the like (e.g.\ from
+%   \code{head-font}), which would break full expansion.}
 \NewDocumentCommand \DeclareOsgBlockInstance { m m }
   {
     \__osgstyler_block_instance_resolve:n {#2}
     \__osgstyler_block_record_layout:n {#1}
     \tl_set:Ne \l__osgstyler_block_instance_call_tl
       {
-        \exp_not:N \DeclareInstance { osgstyler-block } {#1} { standard }
-          { \l__osgstyler_block_instance_keys_tl }
+        \exp_not:N \DeclareInstance { osgstyler-block }
+          { \exp_not:n {#1} } { standard }
+          { \exp_not:V \l__osgstyler_block_instance_keys_tl }
       }
     \tl_use:N \l__osgstyler_block_instance_call_tl
   }
@@ -4243,8 +4279,9 @@ load babel
     \__osgstyler_block_record_layout:n {#1}
     \tl_set:Ne \l__osgstyler_block_instance_call_tl
       {
-        \exp_not:N \EditInstance { osgstyler-block } {#1}
-          { \l__osgstyler_block_instance_keys_tl }
+        \exp_not:N \EditInstance { osgstyler-block }
+          { \exp_not:n {#1} }
+          { \exp_not:V \l__osgstyler_block_instance_keys_tl }
       }
     \tl_use:N \l__osgstyler_block_instance_call_tl
   }
@@ -4785,22 +4822,23 @@ load babel
 % \code{titlebar} (Beamers Madrid nachempfunden) und \code{soft} (ein
 % dezenter, hell getönter Kopf mit dünner Linie) fließen vollständig und
 % belassen das Tagging der Klasse unangetastet -- die richtige Wahl, wenn
-% getaggtes PDF zählt. \code{framed} und \code{filled} setzen einen echten
-% Kasten (\cs{fcolorbox} um eine \env{minipage}); das ergibt in getaggtem
-% PDF ein \code{Div} und geschachtelte Absätze und sollte nur in der
-% Langform oder bei ausdrücklichem Vorrang der Kastenoptik verwendet
-% werden.}
+% jede \code{Div}-Ebene im getaggten PDF zählt. \code{card} (die Vorgabe),
+% \code{framed} und \code{filled} setzen einen echten Kasten
+% (\cs{fcolorbox} um eine \env{minipage}); das fügt je Block genau ein
+% \code{Div} hinzu -- Titel und Body bleiben saubere \code{text-unit}s
+% darin, ohne geschachtelte oder leere Absätze.}
 % {Ready-made block looks as traits. Colours are slot names
 % (\code{structure} etc.) so they follow the loaded palette or theme;
 % \code{alertblock}/\code{exampleblock} then only override the slot.
 %
 % \code{titlebar} (modelled on beamer's Madrid) and \code{soft} (a
 % restrained, lightly tinted head with a thin rule) are fully flowing and
-% leave the class's tagging untouched -- the right choice when tagged PDF
-% matters. \code{framed} and \code{filled} put a real box
-% (\cs{fcolorbox} around a \env{minipage}); in tagged PDF that yields a
-% \code{Div} and nested paragraphs and should be used only in the long
-% form or when the box look explicitly takes priority.}
+% leave the class's tagging untouched -- the right choice when every
+% \code{Div} level in tagged PDF counts. \code{card} (the default),
+% \code{framed} and \code{filled} put a real box (\cs{fcolorbox} around a
+% \env{minipage}); that adds exactly one \code{Div} per block -- title and
+% body stay clean \code{text-unit}s inside it, with no nested or empty
+% paragraphs.}
 \DeclareOsgBlockTrait { plain }
   { layout = plain, rule-thickness = 0pt, background = none }
 \DeclareOsgBlockTrait { framed }
@@ -4823,6 +4861,22 @@ load babel
     head-rule-color = structure, head-rule-thickness = 1pt,
     foot-rule-color = structure!45, foot-rule-thickness = 0.6pt,
     head-padding = 0pt, body-padding = 0.9em
+  }
+% \ldeen{\code{card}: eine leicht gerahmte, zart getönte Box mit farbig
+%   fettem Titel -- die Vorgabe. Als echter Kasten (\cs{fcolorbox} um eine
+%   \env{minipage}) fügt sie im getaggten PDF ein \code{Div} je Block hinzu,
+%   sonst nichts (Titel und Body bleiben saubere \code{text-unit}s darin).}{
+%   \code{card}: a lightly framed, faintly tinted box with a coloured bold
+%   title -- the default. Being a real box (\cs{fcolorbox} around a
+%   \env{minipage}) it adds one \code{Div} per block in tagged PDF and
+%   nothing else (title and body stay clean \code{text-unit}s inside it).}
+\DeclareOsgBlockTrait { card }
+  {
+    layout = plain,
+    rule-thickness = 0.5pt, rule-color = structure!55,
+    background = structure!5,
+    padding = 0.65em,
+    head-color = structure, head-font = \normalfont \bfseries
   }
 
 % \ldeen*{Ein Preset besteht aus bis zu vier unabhängig deklarierten

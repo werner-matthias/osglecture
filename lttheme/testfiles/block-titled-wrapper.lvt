@@ -21,22 +21,23 @@
   \end{block}
 \end{frame}
 
-% Switching themes resets the block to the lttheme default (the subtle
-% "soft" titled look), not to magpie's title bar and not to plain.
+% Switching themes resets the block to the lttheme default (the framed
+% "card" look), not to magpie's title bar.
 \useltxtalktheme{minimal}
 \begin{frame}
-  \frametitle{Soft again}
-  \begin{block}{Soft title}
-    Soft body.
+  \frametitle{Card again}
+  \begin{block}{Card title}
+    Card body.
   \end{block}
 \end{frame}
 
 \START
 \ExplSyntaxOn
-% The default is titled (soft); the clear reset magpie's title bar to it.
+% The default "card" uses the plain layout, so the block is not titled
+% in the \OsgIfBlockTitledTF sense; the clear undid magpie's title bar.
 \OsgIfBlockTitledTF { block }
-  { \TYPE { block-titled-after-minimal:passed } }
   { \TYPE { block-titled-after-minimal:FAILED } }
+  { \TYPE { block-titled-after-minimal:passed } }
 
 % Re-activate magpie: still titled.
 \useltxtalktheme { magpie }

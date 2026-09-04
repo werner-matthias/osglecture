@@ -375,17 +375,20 @@ selected layout remains intact.
 \ldeen{
 Die folgenden Beispielfolien verwenden bewusst denselben Inhalt. Dadurch
 werden Unterschiede in Satzspiegel, Navigation, Titelplatzierung und
-semantischen Farben unmittelbar vergleichbar. Für die reinen Farbthemes
-\code{anchovy} und \code{carp} dient \code{magpie} als Layout-Theme: Seine
-großen Farbflächen im Kopf und Fuß und die Hervorhebung im Inhalt zeigen die
-jeweilige Palette besonders deutlich.
+semantischen Farben unmittelbar vergleichbar. Die reinen Farbthemes werden
+über einem Layout gezeigt, das ihre Palette sichtbar macht: \code{carp} färbt
+\code{primary} um und wirkt daher unter \code{magpie} mit seinen großen
+Kopf- und Fußflächen am deutlichsten; \code{anchovy} legt das Gold in die
+Akzentslots und braucht ein Layout wie \code{sparrow}, das \code{secondary}
+für Nebentext nutzt.
 }{
 The following example slides deliberately use identical content. This makes
 differences in text area, navigation, title placement, and semantic colours
-directly comparable. For the colour-only themes \code{anchovy} and
-\code{carp}, \code{magpie} provides the layout: its large coloured header and
-footer areas and the alert inside the content make each palette particularly
-visible.
+directly comparable. Each colour-only theme is shown over a layout that
+surfaces its palette: \code{carp} repaints \code{primary} and reads most
+clearly under \code{magpie} with its large header and footer fills;
+\code{anchovy} places its gold in the accent slots and needs a layout such as
+\code{sparrow} that colours secondary text from \code{secondary}.
 }
 
 \begin{example}[
@@ -455,9 +458,9 @@ visible.
   \subsection{Its detail}
   \useltxtalktheme{goose}
   \ThemeExampleFrame{goose}
-  \useltxtalktheme{magpie}
+  \useltxtalktheme{sparrow}
   \addltxtalktheme{anchovy}
-  \ThemeExampleFrame{magpie + anchovy}
+  \ThemeExampleFrame{sparrow + anchovy}
   \useltxtalktheme{magpie}
   \addltxtalktheme{carp}
   \ThemeExampleFrame{magpie + carp}
@@ -1533,16 +1536,19 @@ and page style.
     Standard-Schnittstelle umfasst \code{background}, \code{rule-color},
     \code{rule-thickness}, \code{padding}, \code{corner-radius},
     \code{shadow}, \code{shadow-offset}, \code{before} und \code{after}.
-    Fertige Optiken liegen als \pkg*{osgstyler}-Traits vor: \code{soft}
+    Fertige Optiken liegen als \pkg*{osgstyler}-Traits vor: \code{card}
+    (leicht gerahmte, zart getönte Box mit fettem Titel), \code{soft}
     (dezent getönter Kopf mit dünner Linie, voll fließend), \code{titlebar}
-    (farbiger Kopfstreifen wie Beamers Madrid, voll fließend -- beide
-    lassen das Tagging der Klasse unangetastet) sowie \code{plain}
-    (rahmenlos) und \code{framed}/\code{filled} (echter Kasten, erzeugt in
-    getaggtem PDF ein \code{Div}). Ohne Aufruf verwendet lttheme den
-    Trait \code{soft}, sodass ein Block stets erkennbar ist; \code{magpie},
-    \code{hawk}, \code{sparrow}, \code{bluebird} und \code{goose} setzen
-    \code{titlebar} in ihrer jeweiligen Farbe. Ein Blockstil wird beim
-    Theme-Wechsel auf den \code{soft}-Standard zurückgesetzt.
+    (farbiger Kopfstreifen wie Beamers Madrid, voll fließend -- \code{soft}
+    und \code{titlebar} lassen das Tagging der Klasse unangetastet) sowie
+    \code{plain} (rahmenlos) und \code{framed}/\code{filled} (echter
+    Kasten). \code{card}, \code{framed} und \code{filled} fügen im
+    getaggten PDF genau ein \code{Div} je Block hinzu. Ohne Aufruf
+    verwendet lttheme den Trait \code{card}, sodass ein Block stets
+    erkennbar ist; \code{magpie}, \code{hawk}, \code{sparrow},
+    \code{bluebird} und \code{goose} setzen \code{titlebar} in ihrer
+    jeweiligen Farbe. Ein Blockstil wird beim Theme-Wechsel auf den
+    \code{card}-Standard zurückgesetzt.
   }{
     Edits the \code{block}, \code{alertblock}, or \code{exampleblock}
     instance of the \code{osgstyler-block} template type provided by
@@ -1550,15 +1556,18 @@ and page style.
     \code{rule-color}, \code{rule-thickness}, \code{padding},
     \code{corner-radius}, \code{shadow}, \code{shadow-offset},
     \code{before}, and \code{after}. Ready-made looks are available as
-    \pkg*{osgstyler} traits: \code{soft} (a lightly tinted head with a thin
+    \pkg*{osgstyler} traits: \code{card} (a lightly framed, faintly tinted
+    box with a bold title), \code{soft} (a lightly tinted head with a thin
     rule, fully flowing), \code{titlebar} (a coloured head strip like
-    beamer's Madrid, fully flowing -- both leave the class's tagging
-    untouched), and \code{plain} (frameless) and \code{framed}/\code{filled}
-    (a real box, which yields a \code{Div} in tagged PDF). Without a call
-    lttheme uses the \code{soft} trait, so a block is always recognisable;
-    \code{magpie}, \code{hawk}, \code{sparrow}, \code{bluebird}, and
-    \code{goose} use \code{titlebar} in their respective colour. A block
-    style is reset to the \code{soft} default on a theme switch.
+    beamer's Madrid, fully flowing -- \code{soft} and \code{titlebar} leave
+    the class's tagging untouched), and \code{plain} (frameless) and
+    \code{framed}/\code{filled} (a real box). \code{card}, \code{framed},
+    and \code{filled} add exactly one \code{Div} per block in tagged PDF.
+    Without a call lttheme uses the \code{card} trait, so a block is always
+    recognisable; \code{magpie}, \code{hawk}, \code{sparrow},
+    \code{bluebird}, and \code{goose} use \code{titlebar} in their
+    respective colour. A block style is reset to the \code{card} default on
+    a theme switch.
   }
 
   \command{setltxtalkitemize}[\marg{Optionen}]
@@ -3667,20 +3676,18 @@ theme.
     % clears above; a theme that styles its blocks would otherwise leak that
     % style into the next theme.  Restore the lttheme default -- through
     % \DeclareOsgBlockInstance (not raw \DeclareInstance) so the titled-layout
-    % record is cleared with it.  The default is the subtle \enquote{soft}
-    % look (light tinted head plus a thin rule), so a block is always at
-    % least recognisable even under a theme that does not style its blocks.
+    % record is cleared with it.  The default is the \enquote{card} look (a
+    % lightly framed, faintly tinted box), so a block is always clearly
+    % marked even under a theme that does not style its blocks.
     % Not looped: the \code{traits} key nests a \cs{clist_map_inline:nn} of
     % its own, which must not run inside another one.
-    \DeclareOsgBlockInstance { block }        { traits = soft }
-    \DeclareOsgBlockInstance { alertblock }   { traits = soft }
-    \DeclareOsgBlockInstance { exampleblock } { traits = soft }
+    \DeclareOsgBlockInstance { block }        { traits = card }
+    \DeclareOsgBlockInstance { alertblock }   { traits = card }
+    \DeclareOsgBlockInstance { exampleblock } { traits = card }
     \StyleOsgBlockInstance { alertblock }
-      { head-color = alert, head-rule-color = alert,
-        foot-rule-color = alert!45 }
+      { head-color = alert, rule-color = alert!55, background = alert!6 }
     \StyleOsgBlockInstance { exampleblock }
-      { head-color = example, head-rule-color = example,
-        foot-rule-color = example!45 }
+      { head-color = example, rule-color = example!55, background = example!6 }
   }
 
 \cs_new_protected:Npn \__ltxtalk_update_text_area:
@@ -4692,12 +4699,24 @@ theme.
 {v0.5.0}
 {Anchovy colour theme for ltx-talk, inspired by Beamer AnnArbor}
 \RequirePackage{ltxtalk-theme}
+% \ldeen{Blau-Gold nach dem Vorbild der University of Michigan: das Marineblau
+%   trägt die Flächen (\code{primary}, \code{structure}), das Gold sitzt in den
+%   Akzentslots. Layout-Themes, die \code{secondary} für Nebentext nutzen
+%   (\code{minimal}, \code{sparrow}, \code{hawk}), zeigen das Gold sofort;
+%   \code{magpie} färbt alle Flächen ausschließlich mit \code{primary} und
+%   bleibt daher rein blau.}
+%  {Blue and gold after the University of Michigan: the navy carries the filled
+%   areas (\code{primary}, \code{structure}), the gold sits in the accent slots.
+%   Layout themes that colour secondary text with \code{secondary}
+%   (\code{minimal}, \code{sparrow}, \code{hawk}) surface the gold at once;
+%   \code{magpie} fills every area from \code{primary} alone and therefore stays
+%   all blue.}
 \cs_new_protected:Npn \__ltxtalk_anchovy_theme_setup:
-  {\setltxtalkcolors{primary={model=rgb,value={0,0,0.8}},
-    secondary={model=HTML,value=65500A},
-    accent={model=HTML,value=B45309},text={model=HTML,value=111827},
+  {\setltxtalkcolors{primary={model=HTML,value=00274C},
+    secondary={model=HTML,value=B8860B},
+    accent={model=HTML,value=F2C230},text={model=HTML,value=111827},
     background={model=HTML,value=FFF7D6},
-    structure={model=HTML,value=2B3A67},alert={model=HTML,value=B00020},
+    structure={model=HTML,value=00274C},alert={model=HTML,value=B00020},
     example={model=HTML,value=166534}}}
 \RegisterLTXTalkTheme{anchovy}{\__ltxtalk_anchovy_theme_setup:}
 %</anchovy>
