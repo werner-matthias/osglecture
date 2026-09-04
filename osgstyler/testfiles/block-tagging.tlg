@@ -139,18 +139,79 @@
     <text xmlns="https://www.latex-project.org/ns/dflt"
        id="ID.00027"
        xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+       Layout:TextAlign="Justify"
+       rolemaps-to="P"
+      >
+    </text>
+    <Div xmlns="http://iso.org/pdf2/ssn"
+       id="ID.00028"
+      >
+     <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+        id="ID.00029"
+        rolemaps-to="Part"
+       >
+      <text xmlns="https://www.latex-project.org/ns/dflt"
+         id="ID.00030"
+         xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+         Layout:TextAlign="Justify"
+         rolemaps-to="P"
+        >
+       <?MarkedContent page="1" ?>
+       <?MarkedContent page="1" ?>A rounded block
+      </text>
+     </text-unit>
+     <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+        id="ID.00031"
+        rolemaps-to="Part"
+       >
+      <text xmlns="https://www.latex-project.org/ns/dflt"
+         id="ID.00032"
+         xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+         Layout:TextAlign="Justify"
+         rolemaps-to="P"
+        >
+       <?MarkedContent page="1" ?>The pgf-drawn rounded frame and drop shadow are one artifact behind the box; the structure must stay exactly as for the square title-bar block.
+      </text>
+     </text-unit>
+    </Div>
+    <text xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.00033"
+       rolemaps-to="P"
+      >
+    </text>
+   </text-unit>
+   <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+      id="ID.00034"
+      rolemaps-to="Part"
+     >
+    <text xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.00035"
+       xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+       Layout:TextAlign="Justify"
+       rolemaps-to="P"
+      >
+     <?MarkedContent page="1" ?>A paragraph after the rounded block.
+    </text>
+   </text-unit>
+   <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+      id="ID.00036"
+      rolemaps-to="Part"
+     >
+    <text xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.00037"
+       xmlns:Layout="http://iso.org/pdf/ssn/Layout"
        Layout:TextAlign="Center"
        rolemaps-to="P"
       >
     </text>
     <text xmlns="https://www.latex-project.org/ns/dflt"
-       id="ID.00028"
+       id="ID.00038"
        xmlns:Layout="http://iso.org/pdf/ssn/Layout"
        Layout:TextAlign="Justify"
        rolemaps-to="P"
       >
      <Span xmlns="http://iso.org/pdf2/ssn"
-        id="ID.00029"
+        id="ID.00039"
         actualtext="LaTeX"
         phoneme="[ˈlaːtɛx]"
        >
@@ -158,17 +219,17 @@
     </text>
    </text-unit>
    <text-unit xmlns="https://www.latex-project.org/ns/dflt"
-      id="ID.00030"
+      id="ID.00040"
       rolemaps-to="Part"
      >
     <text xmlns="https://www.latex-project.org/ns/dflt"
-       id="ID.00031"
+       id="ID.00041"
        xmlns:Layout="http://iso.org/pdf/ssn/Layout"
        Layout:TextAlign="Justify"
        rolemaps-to="P"
       >
      <Span xmlns="http://iso.org/pdf2/ssn"
-        id="ID.00032"
+        id="ID.00042"
         actualtext="LaTeX"
         phoneme="[ˈlaːtɛx]"
        >

@@ -1,6 +1,7 @@
 \input regression-test.tex
 \DocumentMetadata{tagging=on,lang=en-US}
 \documentclass{article}
+\usepackage{pgfcore}
 \usepackage{osgstyler}
 
 \DeclareOsgColorPalette{p}{
@@ -14,6 +15,9 @@
 
 \DeclareOsgBlockInstance{softb}{traits={soft}}
 \NewOsgStyledEnvironment{softb}{softb}{none}[1]{#1}
+
+\DeclareOsgBlockInstance{roundb}{traits={titlebar},corner-radius=3pt,shadow=true}
+\NewOsgStyledEnvironment{roundb}{roundb}{none}[1]{#1}
 
 \begin{document}
 \UseOsgColorPalette{p}
@@ -36,6 +40,13 @@ A paragraph after the block.
 \end{softb}
 
 A paragraph after the soft block.
+
+\begin{roundb}{A rounded block}
+  The pgf-drawn rounded frame and drop shadow are one artifact behind the
+  box; the structure must stay exactly as for the square title-bar block.
+\end{roundb}
+
+A paragraph after the rounded block.
 
 % The title-bar block carries a tinted body area, so it is a box
 % (fcolorbox+minipage): exactly one Div per block, holding clean

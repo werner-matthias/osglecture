@@ -166,7 +166,6 @@
          Layout:TextAlign="Start"
          rolemaps-to="P"
         >
-       <?MarkedContent page="2" ?>
       </text>
       <Div xmlns="http://iso.org/pdf2/ssn"
          id="ID.032"
@@ -203,8 +202,6 @@
          id="ID.037"
          rolemaps-to="P"
         >
-       <?MarkedContent page="2" ?>
-       <?MarkedContent page="2" ?>
       </text>
      </text-unit>
     </frame>

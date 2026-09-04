@@ -4292,6 +4292,19 @@ theme.
 {v0.5.0}
 {Magpie theme for ltx-talk, inspired by Beamer Madrid}
 \RequirePackage{ltxtalk-theme}
+% Madrid blocks have rounded corners; \pkg{pgfcore} draws them (and the
+% optional drop shadow).  Only this theme pulls it in.
+\RequirePackage{pgfcore}
+% \ldeen{Ladeoption \option{shadow}: legt einen weichen Schlagschatten
+%   unter die Blöcke.}{Load option \option{shadow}: puts a soft drop shadow
+%   under the blocks.}
+\bool_new:N \g__ltxtalk_magpie_shadow_bool
+\DeclareKeys [ ltxtalk-theme-magpie ]
+  {
+    shadow .bool_gset:N = \g__ltxtalk_magpie_shadow_bool,
+    shadow .initial:n = false,
+  }
+\ProcessKeyOptions [ ltxtalk-theme-magpie ]
 \cs_new_protected:Npn \__ltxtalk_magpie_theme_setup:
   {
     \ltxtalksetup{header=true,header-height=1.35cm,footer=true,footer-height=0.48cm}
@@ -4353,13 +4366,21 @@ theme.
       accent={model=rgb,value={0.2,0.2,0.7}},
       text={model=HTML,value=000000},background={model=HTML,value=FFFFFF},
       structure={model=HTML,value=2B3A67},alert={model=HTML,value=B00020},example={model=HTML,value=166534}}
-    % Madrid signature: a coloured title bar over a tinted body box.
+    % Madrid signature: a rounded coloured title bar over a tinted body box,
+    % with an optional drop shadow (load option "shadow").
     \__ltxtalk_theme_block:nnn {titlebar}
       {head-background=primary,body-background=primary!10}{block}
     \__ltxtalk_theme_block:nnn {titlebar}
       {head-background=alert,body-background=alert!10}{alertblock}
     \__ltxtalk_theme_block:nnn {titlebar}
       {head-background=example,body-background=example!10}{exampleblock}
+    \clist_map_inline:nn { block, alertblock, exampleblock }
+      {
+        \styleltxtalkblock {##1} { corner-radius = 3pt }
+        \bool_if:NT \g__ltxtalk_magpie_shadow_bool
+          { \styleltxtalkblock {##1}
+              { shadow = true, shadow-color = structure!35 } }
+      }
   }
 \RegisterLTXTalkTheme{magpie}{\__ltxtalk_magpie_theme_setup:}
 %</magpie>
