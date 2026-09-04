@@ -4358,11 +4358,13 @@ load babel
             \dim_set:Nn \leftskip  { \l__osgstyler_block_body_padding_dim }
             \dim_set:Nn \rightskip { \l__osgstyler_block_body_padding_dim }
             \tl_if_empty:NT \l__osgstyler_block_title_tl
-              { \vspace* { \l__osgstyler_block_body_padding_dim } }
+              { \tex_kern:D \l__osgstyler_block_body_padding_dim }
             \setlength \parskip { 0.5 \baselineskip }
             \noindent \ignorespaces #1
             \par
-            \skip_vertical:n { \l__osgstyler_block_body_padding_dim }
+            % A kern, not \skip_vertical: \endminipage's \unskip would drop
+            % trailing glue and leave the body sitting on the bottom edge.
+            \tex_kern:D \l__osgstyler_block_body_padding_dim
           \end { minipage }
         }%
     \group_end:
@@ -4396,14 +4398,10 @@ load babel
             \l__osgstyler_block_title_tl
           }%
           \par
-          % \ldeen{Der Streifen ist \cs{smash}ed, der normale Zeilenabstand
-          %   rechnet also nur mit der Textzeile -- ohne diesen Abstand
-          %   stiesse die erste Body-Zeile fast an ihn.}{The strip is
-          %   \cs{smash}ed, so ordinary interline spacing only counts the text
-          %   line -- without this gap the first body line would nearly touch
-          %   it.}
-          \nointerlineskip
-          \skip_vertical:n { 0.5 \baselineskip }
+          % Normal interline spacing to the body -- one line apart, like
+          % beamer's default block.  The head strip is \cs{smash}ed and
+          % reaches only ~0.3\baselineskip below the title baseline, so it
+          % does not touch the body at this distance.
         }
       \group_begin:
         \dim_set:Nn \leftskip  { \l__osgstyler_block_body_padding_dim }
