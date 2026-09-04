@@ -18,8 +18,8 @@ installfiles = {
     "ltxtalk-theme-magpie.sty",
     "ltxtalk-theme-hawk.sty",
     "ltxtalk-theme-sparrow.sty",
-    "ltxtalk-theme-swift.sty",
-    "ltxtalk-theme-wren.sty",
+    "ltxtalk-theme-bluebird.sty",
+    "ltxtalk-theme-goose.sty",
     "ltxtalk-theme-anchovy.sty",
     "ltxtalk-theme-carp.sty",
 }

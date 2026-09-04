@@ -4,10 +4,10 @@
 \ExplSyntaxOff
 \documentclass{ltx-talk}
 
-\usepackage{ltxtalk-theme-wren}
-\useltxtalktheme{wren}
+\usepackage{ltxtalk-theme-goose}
+\useltxtalktheme{goose}
 
-\title[Wren]{Wren theme visual reference}
+\title[Goose]{Goose theme visual reference}
 \subtitle{A running table of contents}
 \author[A. Beispiel]{Ada Beispiel}
 \institute{Beispiel-Institut}
@@ -41,11 +41,11 @@
 \end{frame}
 
 \section{Zweiter Abschnitt}
-\UseLTXTalkLayout{wren/wide}
+\UseLTXTalkLayout{goose/wide}
 \begin{frame}
   \frametitle{Volle Breite}
   Ohne die rechte Leiste.
 \end{frame}
-\UseLTXTalkLayout{wren/standard}
+\UseLTXTalkLayout{goose/standard}
 
 \end{document}

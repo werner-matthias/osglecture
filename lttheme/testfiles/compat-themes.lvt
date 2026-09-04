@@ -5,8 +5,8 @@
 \usepackage{ltxtalk-theme-minimal}
 \usepackage{ltxtalk-theme-hawk}
 \usepackage{ltxtalk-theme-sparrow}
-\usepackage{ltxtalk-theme-swift}
-\usepackage{ltxtalk-theme-wren}
+\usepackage{ltxtalk-theme-bluebird}
+\usepackage{ltxtalk-theme-goose}
 \usepackage{ltxtalk-theme-anchovy}
 \usepackage{ltxtalk-theme-carp}
 \useltxtalktheme{magpie}
@@ -15,7 +15,7 @@
 \date{2026-07-21}
 \begin{document}
 \ExplSyntaxOn
-\clist_map_inline:nn { magpie, minimal, hawk, sparrow, swift, wren }
+\clist_map_inline:nn { magpie, minimal, hawk, sparrow, bluebird, goose }
   {
     \useltxtalktheme{#1}
     \section{Section for #1}
@@ -34,8 +34,8 @@
 \TYPE{compat-minimal:passed}
 \TYPE{compat-hawk:passed}
 \TYPE{compat-sparrow:passed}
-\TYPE{compat-swift:passed}
-\TYPE{compat-wren:passed}
+\TYPE{compat-bluebird:passed}
+\TYPE{compat-goose:passed}
 \ExplSyntaxOff
 \END
 \end{document}
