@@ -1130,17 +1130,20 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
         artifact-type=layout
       }
 
-    % \ldeen{Blöcke bekommen ein durchgehendes Kopfband in der
-    %   Funktionsfarbe -- ein Echo des Seitenkopfs -- über einem
-    %   eingerückten, im Textfluss gesetzten Körper. Der \code{titlebar}-Trait
-    %   baut keine Box, das PDF-Tagging bleibt also wie bei \cls{ltx-talk}.}{
-    %   Blocks get a solid header band in the functional colour -- an echo of
-    %   the page header -- above an indented body set in the text stream. The
-    %   \code{titlebar} trait builds no box, so PDF tagging stays as in
-    %   \cls{ltx-talk}.}
-    \styleltxtalkblock{block}{traits=titlebar,head-background=structure}
-    \styleltxtalkblock{alertblock}{traits=titlebar,head-background=alert}
-    \styleltxtalkblock{exampleblock}{traits=titlebar,head-background=example}
+    % \ldeen{Blöcke wie in \file{tucbeamer2019}: durchgehendes Kopfband in
+    %   der Funktionsfarbe -- ein Echo des Seitenkopfs -- über einer sehr
+    %   hell getönten, eckigen Körperfläche. Der \code{titlebar}-Kasten ist
+    %   im getaggten PDF genau ein \code{Div} pro Block.}{
+    %   Blocks as in \file{tucbeamer2019}: a solid header band in the
+    %   functional colour -- an echo of the page header -- above a very
+    %   lightly tinted, square body area. The \code{titlebar} box is exactly
+    %   one \code{Div} per block in tagged PDF.}
+    \__ltxtalk_theme_block:nnn {titlebar}
+      {head-background=structure,body-background=structure!8}{block}
+    \__ltxtalk_theme_block:nnn {titlebar}
+      {head-background=alert,body-background=alert!8}{alertblock}
+    \__ltxtalk_theme_block:nnn {titlebar}
+      {head-background=example,body-background=example!8}{exampleblock}
   }
 
 % \ldeen{Der Abstand vor dem Textblock wird aus der Kopfzeilengeometrie

@@ -1347,6 +1347,10 @@ and page style.
     \code{footer-columns} erwarten kommagetrennte Anteile. Die beiden letzten
     Spaltenangaben gehören zur älteren Layoutschnittstelle und beeinflussen
     die frei positionierten Slots derzeit nicht.
+    \code{block-hairlines} (boolesch) ist keine Geometrie, sondern eine
+    Voreinstellung: gesetzt, bevor ein Theme mit \cs*{useltxtalktheme}
+    aktiviert wird, ergänzt es dessen Blöcke um dünne Trennlinien. Auch als
+    Ladeoption von \pkg{ltxtalk-theme} verfügbar.
   }{
     Changes the geometry of the theme areas. The Boolean keys \code{header},
     \code{left-margin}, \code{right-margin}, and \code{footer} enable areas;
@@ -1358,6 +1362,10 @@ and page style.
     \code{header-columns} and \code{footer-columns} take comma-separated
     proportions. The latter two belong to the older layout interface and do
     not currently affect freely positioned slots.
+    \code{block-hairlines} (Boolean) is not geometry but a preference: set
+    before a theme is activated with \cs*{useltxtalktheme}, it adds thin
+    dividing rules to that theme's blocks. Also available as a load option
+    of \pkg{ltxtalk-theme}.
   }
 
   \command{DeclareLTXTalkLayout}[\marg{Name}\marg{Optionen}\oarg{Aufbau-Code}]
@@ -1539,17 +1547,19 @@ and page style.
     Fertige Optiken liegen als \pkg*{osgstyler}-Traits vor: \code{card}
     (leicht gerahmte, zart getönte Box mit fettem Titel), \code{titlebar}
     (Beamers Madrid: voller Farbbalken über getönter Body-Fläche mit
-    Unterkante), \code{soft} (dezent getönter Kopf mit dünner Linie, voll
-    fließend, lässt das Tagging der Klasse unangetastet), \code{plain}
+    Unterkante), \code{heading} (nur farbiger Titel, fließend),
+    \code{soft} (Titel mit dünnen Linien, fließend), \code{plain}
     (rahmenlos) sowie \code{framed}/\code{filled} (Rahmen ohne bzw.\ mit
-    Tönung). Alle außer \code{soft} und \code{plain} sind echte Kästen und
-    fügen im getaggten PDF genau ein \code{Div} je Block hinzu. Ohne Aufruf
+    Tönung). \code{heading}, \code{soft} und \code{plain} lassen das Tagging
+    der Klasse unangetastet; die übrigen sind echte Kästen und fügen im
+    getaggten PDF genau ein \code{Div} je Block hinzu. Ohne Aufruf
     verwendet lttheme den Trait \code{card}, sodass ein Block stets
-    erkennbar ist; \code{magpie}, \code{hawk}, \code{sparrow} und
-    \code{bluebird} setzen \code{titlebar} in ihrer jeweiligen Farbe,
-    \code{goose} bleibt bei \code{framed} (nur dünner Rahmen). Ein
-    Blockstil wird beim Theme-Wechsel auf den \code{card}-Standard
-    zurückgesetzt.
+    erkennbar ist; \code{magpie} und \code{bluebird} setzen \code{titlebar},
+    \code{hawk}, \code{sparrow} und \code{goose} \code{heading} -- jeweils
+    in der Themefarbe. Die Ladeoption \option{block-hairlines} (oder
+    \cs*{ltxtalksetup}) schaltet bei allen Themes dünne Trennlinien dazu
+    (Rahmen beim Kasten, Kopf-/Fußlinie beim reinen Titel). Ein Blockstil
+    wird beim Theme-Wechsel auf den \code{card}-Standard zurückgesetzt.
   }{
     Edits the \code{block}, \code{alertblock}, or \code{exampleblock}
     instance of the \code{osgstyler-block} template type provided by
@@ -1559,16 +1569,19 @@ and page style.
     \code{before}, and \code{after}. Ready-made looks are available as
     \pkg*{osgstyler} traits: \code{card} (a lightly framed, faintly tinted
     box with a bold title), \code{titlebar} (beamer's Madrid: a full colour
-    bar over a tinted body area with a bottom edge), \code{soft} (a lightly
-    tinted head with a thin rule, fully flowing, leaves the class's tagging
-    untouched), \code{plain} (frameless), and \code{framed}/\code{filled}
-    (a frame without / with a tint). All but \code{soft} and \code{plain}
-    are real boxes and add exactly one \code{Div} per block in tagged PDF.
-    Without a call lttheme uses the \code{card} trait, so a block is always
-    recognisable; \code{magpie}, \code{hawk}, \code{sparrow}, and
-    \code{bluebird} use \code{titlebar} in their respective colour,
-    \code{goose} stays with \code{framed} (a thin frame only). A block
-    style is reset to the \code{card} default on a theme switch.
+    bar over a tinted body area with a bottom edge), \code{heading}
+    (a coloured title only, flowing), \code{soft} (a title with thin rules,
+    flowing), \code{plain} (frameless), and \code{framed}/\code{filled}
+    (a frame without / with a tint). \code{heading}, \code{soft} and
+    \code{plain} leave the class's tagging untouched; the rest are real
+    boxes and add exactly one \code{Div} per block in tagged PDF. Without a
+    call lttheme uses the \code{card} trait, so a block is always
+    recognisable; \code{magpie} and \code{bluebird} use \code{titlebar},
+    \code{hawk}, \code{sparrow} and \code{goose} use \code{heading} -- each
+    in the theme colour. The load option \option{block-hairlines} (or
+    \cs*{ltxtalksetup}) adds thin dividing rules for every theme (a border
+    on the box, head/foot rules on the plain title). A block style is reset
+    to the \code{card} default on a theme switch.
   }
 
   \command{setltxtalkitemize}[\marg{Optionen}]
@@ -2052,11 +2065,21 @@ theme.
 % @1, full osgstyler font management is available.}
 % {\option{outer-only}}{\pkg*{fontspec}}{\cs{setltxtalkcolors}}
 \bool_new:N \g__ltxtalk_outeronly_bool
+% \ldeen{Setzt bei allen mitgelieferten Themes die dünnen Trennlinien am
+%   Block wieder ein (Rahmen beim Kasten-Look, Kopf-/Fußlinie beim reinen
+%   Titel). Als Ladeoption oder über \cs{ltxtalksetup}; wird bei
+%   \cs*{useltxtalktheme} ausgewertet.}{Restores the thin dividing rules on
+%   blocks for all bundled themes (a border on the boxed look, head/foot
+%   rules on the plain-title look). As a load option or via
+%   \cs{ltxtalksetup}; read at \cs*{useltxtalktheme} time.}
+\bool_new:N \g__ltxtalk_block_hairlines_bool
 \DeclareKeys
   {
     outer-only .bool_gset:N = \g__ltxtalk_outeronly_bool,
     outer-only .initial:n = false,
     outer-only .usage:n = load,
+    block-hairlines .bool_gset:N = \g__ltxtalk_block_hairlines_bool,
+    block-hairlines .initial:n = false,
   }
 \ProcessKeyOptions\relax
 % \ldeen*{@1 signalisiert osgstyler, dass lttheme seine Themefarben
@@ -2241,6 +2264,10 @@ theme.
     header-columns .initial:n = { 0.2, 0.6, 0.2 },
     footer-columns .clist_set:N = \l__ltxtalk_footer_columns_clist,
     footer-columns .initial:n = { 0.33, 0.34, 0.33 },
+
+    % Preference, not a layout dimension: read by the theme setup on the
+    % next \useltxtalktheme, so a document can set it once up front.
+    block-hairlines .bool_gset:N = \g__ltxtalk_block_hairlines_bool,
   }
 
 \NewDocumentCommand \ltxtalksetup { m }
@@ -2483,6 +2510,31 @@ theme.
 
 \NewDocumentCommand \styleltxtalkblock { m m }
   { \StyleOsgBlockInstance {#1} {#2} }
+
+% \ldeen{Wendet den Theme-Trait plus Farbschlüssel auf eine Blockinstanz
+%   an und ergänzt bei aktivem \option{block-hairlines} die passende dünne
+%   Linie: einen Rahmen beim Kasten-Trait (\code{titlebar}), Kopf-/Fußlinie
+%   beim reinen Titel (\code{heading}). \code{#1} Trait, \code{#2}
+%   Farbschlüssel, \code{#3} Instanz.}{Applies the theme trait plus colour
+%   keys to a block instance and, when \option{block-hairlines} is on, adds
+%   the matching thin rule: a border for the boxed trait (\code{titlebar}),
+%   head/foot rules for the plain-title trait (\code{heading}). \code{#1}
+%   trait, \code{#2} colour keys, \code{#3} instance.}
+\cs_new_protected:Npn \__ltxtalk_theme_block:nnn #1#2#3
+  {
+    \StyleOsgBlockInstance {#3} { traits = {#1} , #2 }
+    \bool_if:NT \g__ltxtalk_block_hairlines_bool
+      {
+        \str_case:nn {#1}
+          {
+            { titlebar }
+              { \StyleOsgBlockInstance {#3} { rule-thickness = 0.4pt } }
+            { heading }
+              { \StyleOsgBlockInstance {#3}
+                  { head-rule-thickness = 0.8pt , foot-rule-thickness = 0.6pt } }
+          }
+      }
+  }
 
 \cs_new_protected:Npn \__ltxtalk_use_original_block:nnn #1#2#3
   {
@@ -4302,12 +4354,12 @@ theme.
       text={model=HTML,value=000000},background={model=HTML,value=FFFFFF},
       structure={model=HTML,value=2B3A67},alert={model=HTML,value=B00020},example={model=HTML,value=166534}}
     % Madrid signature: a coloured title bar over a tinted body box.
-    \styleltxtalkblock{block}
-      {traits=titlebar,head-background=primary,body-background=primary!10}
-    \styleltxtalkblock{alertblock}
-      {traits=titlebar,head-background=alert,body-background=alert!10}
-    \styleltxtalkblock{exampleblock}
-      {traits=titlebar,head-background=example,body-background=example!10}
+    \__ltxtalk_theme_block:nnn {titlebar}
+      {head-background=primary,body-background=primary!10}{block}
+    \__ltxtalk_theme_block:nnn {titlebar}
+      {head-background=alert,body-background=alert!10}{alertblock}
+    \__ltxtalk_theme_block:nnn {titlebar}
+      {head-background=example,body-background=example!10}{exampleblock}
   }
 \RegisterLTXTalkTheme{magpie}{\__ltxtalk_magpie_theme_setup:}
 %</magpie>
@@ -4363,12 +4415,13 @@ theme.
       accent={model=rgb,value={0.2,0.2,0.7}},
       text={model=HTML,value=000000},background={model=HTML,value=FFFFFF},
       structure={model=HTML,value=2B3A67},alert={model=HTML,value=B00020},example={model=HTML,value=166534}}
-    \styleltxtalkblock{block}
-      {traits=titlebar,head-background=primary,body-background=primary!10}
-    \styleltxtalkblock{alertblock}
-      {traits=titlebar,head-background=alert,body-background=alert!10}
-    \styleltxtalkblock{exampleblock}
-      {traits=titlebar,head-background=example,body-background=example!10}
+    % Hannover uses beamer's plain default block: a coloured heading, the
+    % body flush below it, no bar or fill.
+    \__ltxtalk_theme_block:nnn {heading}{head-color=primary}{block}
+    \__ltxtalk_theme_block:nnn {heading}
+      {head-color=alert,head-rule-color=alert,foot-rule-color=alert!45}{alertblock}
+    \__ltxtalk_theme_block:nnn {heading}
+      {head-color=example,head-rule-color=example,foot-rule-color=example!45}{exampleblock}
   }
 \RegisterLTXTalkTheme{hawk}{\__ltxtalk_hawk_theme_setup:}
 %</hawk>
@@ -4431,12 +4484,12 @@ theme.
       accent={model=rgb,value={0.2,0.2,0.7}},
       text={model=HTML,value=000000},background={model=HTML,value=FFFFFF},
       structure={model=HTML,value=2B3A67},alert={model=HTML,value=B00020},example={model=HTML,value=166534}}
-    \styleltxtalkblock{block}
-      {traits=titlebar,head-background=primary,body-background=primary!10}
-    \styleltxtalkblock{alertblock}
-      {traits=titlebar,head-background=alert,body-background=alert!10}
-    \styleltxtalkblock{exampleblock}
-      {traits=titlebar,head-background=example,body-background=example!10}
+    % Szeged uses beamer's plain default block: a coloured heading only.
+    \__ltxtalk_theme_block:nnn {heading}{head-color=primary}{block}
+    \__ltxtalk_theme_block:nnn {heading}
+      {head-color=alert,head-rule-color=alert,foot-rule-color=alert!45}{alertblock}
+    \__ltxtalk_theme_block:nnn {heading}
+      {head-color=example,head-rule-color=example,foot-rule-color=example!45}{exampleblock}
   }
 \RegisterLTXTalkTheme{sparrow}{\__ltxtalk_sparrow_theme_setup:}
 %</sparrow>
@@ -4588,12 +4641,13 @@ theme.
       text={model=HTML,value=1A2733},background={model=HTML,value=FFFFFF},
       structure={model=HTML,value=1F5C8A},alert={model=HTML,value=B00020},
       example={model=HTML,value=166534}}
-    \styleltxtalkblock{block}
-      {traits=titlebar,head-background=structure,body-background=structure!12}
-    \styleltxtalkblock{alertblock}
-      {traits=titlebar,head-background=alert,body-background=alert!10}
-    \styleltxtalkblock{exampleblock}
-      {traits=titlebar,head-background=example,body-background=example!10}
+    % Berlin: a coloured title bar over a tinted body, square corners.
+    \__ltxtalk_theme_block:nnn {titlebar}
+      {head-background=structure,body-background=structure!12}{block}
+    \__ltxtalk_theme_block:nnn {titlebar}
+      {head-background=alert,body-background=alert!10}{alertblock}
+    \__ltxtalk_theme_block:nnn {titlebar}
+      {head-background=example,body-background=example!10}{exampleblock}
   }
 \RegisterLTXTalkTheme{bluebird}{\__ltxtalk_bluebird_theme_setup:}
 %</bluebird>
@@ -4695,11 +4749,12 @@ theme.
       text={model=HTML,value=20281A},background={model=HTML,value=FFFFFF},
       structure={model=HTML,value=4A6B2E},alert={model=HTML,value=B00020},
       example={model=HTML,value=166534}}
-    % Goettingen keeps blocks plain: no bar, no fill, just a thin frame
-    % so the extent still reads.
-    \styleltxtalkblock{block}{traits=framed}
-    \styleltxtalkblock{alertblock}{traits=framed,rule-color=alert}
-    \styleltxtalkblock{exampleblock}{traits=framed,rule-color=example}
+    % Goettingen keeps blocks plain: a coloured heading only, no bar or fill.
+    \__ltxtalk_theme_block:nnn {heading}{head-color=structure}{block}
+    \__ltxtalk_theme_block:nnn {heading}
+      {head-color=alert,head-rule-color=alert,foot-rule-color=alert!45}{alertblock}
+    \__ltxtalk_theme_block:nnn {heading}
+      {head-color=example,head-rule-color=example,foot-rule-color=example!45}{exampleblock}
 
     \UseLTXTalkLayout{goose/standard}
   }

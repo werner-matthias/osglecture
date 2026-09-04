@@ -1988,15 +1988,15 @@ load babel
   \env{block}, \env{alertblock}, \env{exampleblock}. Presets:
   \code{osl-standard}, \code{osl-modern}. Traits: \code{osl-modern-rules},
   \code{plain}, \code{framed}, \code{filled}, \code{titlebar}, \code{soft},
-  \code{card}. Der Test
+  \code{heading}, \code{card}. Der Test
   \cs{OsgIfBlockTitledTF}\marg{Name}\marg{ja}\marg{nein} meldet, ob eine
   Instanz \code{layout=titled} verwendet -- umhüllende Pakete brauchen das,
   weil ein Kopf-Titel anders zugeführt werden muss.}
   {Always-declared instances: \env{quote}, \env{quotation}, \env{block},
   \env{alertblock}, \env{exampleblock}. Presets: \code{osl-standard},
   \code{osl-modern}. Traits: \code{osl-modern-rules}, \code{plain},
-  \code{framed}, \code{filled}, \code{titlebar}, \code{soft}, \code{card}.
-  The test
+  \code{framed}, \code{filled}, \code{titlebar}, \code{soft},
+  \code{heading}, \code{card}. The test
   \cs{OsgIfBlockTitledTF}\marg{name}\marg{yes}\marg{no} reports whether an
   instance uses \code{layout=titled} -- wrapping packages need this because
   a head title has to be fed in differently.}
@@ -4258,6 +4258,7 @@ load babel
       \group_begin:
         \dim_set:Nn \leftskip  { \l__osgstyler_block_body_padding_dim }
         \dim_set:Nn \rightskip { \l__osgstyler_block_body_padding_dim }
+        \setlength \parskip { 0.5 \baselineskip }
         \noindent \ignorespaces #1 \par
       \group_end:
       % Optional rule below the body (bracket bottom).
@@ -4934,9 +4935,9 @@ load babel
 % dem Theme folgen; \code{alertblock}/\code{exampleblock} überschreiben
 % danach nur den Slot.
 %
-% \code{soft} (ein dezenter, hell getönter Kopf mit dünner Linie) und
-% \code{plain} fließen vollständig und belassen das Tagging der Klasse
-% unangetastet -- die richtige Wahl, wenn jede \code{Div}-Ebene im
+% \code{heading} (nur farbiger Titel), \code{soft} (Titel mit dünnen
+% Linien) und \code{plain} fließen vollständig und belassen das Tagging der
+% Klasse unangetastet -- die richtige Wahl, wenn jede \code{Div}-Ebene im
 % getaggten PDF zählt. \code{card} (die Vorgabe), \code{titlebar} (Beamers
 % Madrid: Farbbalken über getönter Body-Fläche), \code{framed} und
 % \code{filled} setzen einen echten Kasten (\cs{fcolorbox} um eine
@@ -4946,13 +4947,13 @@ load babel
 % (\code{structure} etc.) so they follow the loaded palette or theme;
 % \code{alertblock}/\code{exampleblock} then only override the slot.
 %
-% \code{soft} (a restrained, lightly tinted head with a thin rule) and
-% \code{plain} are fully flowing and leave the class's tagging untouched --
-% the right choice when every \code{Div} level in tagged PDF counts.
-% \code{card} (the default), \code{titlebar} (beamer's Madrid: a colour bar
-% over a tinted body area), \code{framed} and \code{filled} put a real box
-% (\cs{fcolorbox} around a \env{minipage}); that adds exactly one
-% \code{Div} per block -- title and body stay clean \code{text-unit}s
+% \code{heading} (a coloured title only), \code{soft} (a title with thin
+% rules) and \code{plain} are fully flowing and leave the class's tagging
+% untouched -- the right choice when every \code{Div} level in tagged PDF
+% counts. \code{card} (the default), \code{titlebar} (beamer's Madrid: a
+% colour bar over a tinted body area), \code{framed} and \code{filled} put
+% a real box (\cs{fcolorbox} around a \env{minipage}); that adds exactly
+% one \code{Div} per block -- title and body stay clean \code{text-unit}s
 % inside it, with no nesting.}
 \DeclareOsgBlockTrait { plain }
   { layout = plain, rule-thickness = 0pt, background = none }
@@ -4985,6 +4986,22 @@ load babel
     head-rule-color = structure, head-rule-thickness = 1pt,
     foot-rule-color = structure!45, foot-rule-thickness = 0.6pt,
     head-padding = 0pt, body-padding = 0.9em
+  }
+% \ldeen{\code{heading}: nur der farbige, fette Titel, darunter der bündige
+%   Body -- fließend, ohne Balken, Fläche oder Linien. Wie Beamers
+%   Default-Block (Hannover, Szeged). \code{head-rule}/\code{foot-rule} auf
+%   einen positiven Wert setzen bringt die \code{soft}-Linien zurück.}{
+%   \code{heading}: just the coloured bold title with the body flush below
+%   it -- flowing, no bar, no fill, no rules. Like beamer's default block
+%   (Hannover, Szeged). Setting \code{head-rule}/\code{foot-rule} to a
+%   positive value brings the \code{soft} rules back.}
+\DeclareOsgBlockTrait { heading }
+  {
+    layout = titled,
+    head-background = none, head-color = structure,
+    head-rule-color = structure, head-rule-thickness = 0pt,
+    foot-rule-color = structure!45, foot-rule-thickness = 0pt,
+    head-padding = 0pt, body-padding = 0pt
   }
 % \ldeen{\code{card}: eine leicht gerahmte, zart getönte Box mit farbig
 %   fettem Titel -- die Vorgabe. Als echter Kasten (\cs{fcolorbox} um eine
