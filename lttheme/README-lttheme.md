@@ -37,7 +37,12 @@ each bundled theme. Their normalized PDF references are stored in the matching
 with `l3build save visual-magpie`.
 
 The bundled layout themes are `minimal`, `magpie` (inspired by Beamer
-Madrid), `hawk` (Hannover), and `sparrow` (Szeged). The colour-only themes
+Madrid), `hawk` (Hannover), `sparrow` (Szeged), `swift` (Berlin), and `wren`
+(Goettingen). `swift` and `wren` exercise the navigation renderers
+(`\LTXTalkNavigation`): `swift` runs `section-list`, `section-dots`, and
+`section-progress` in the header and adds the `swift/band` title layout and
+the chrome-free `swift/plain` layout; `wren` puts the `toc` renderer in a
+right sidebar and offers `wren/wide` to drop it. The colour-only themes
 `anchovy` (AnnArbor colours) and `carp` (CambridgeUS colours) are layered on
 top of a layout theme with `\addltxtalktheme{anchovy}` or
 `\addltxtalktheme{carp}`. They change semantic colours only and leave the

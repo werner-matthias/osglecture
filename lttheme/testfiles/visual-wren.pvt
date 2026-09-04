@@ -1,0 +1,51 @@
+\DocumentMetadata{}
+\ExplSyntaxOn
+\pdfmeta_set_regression_data:
+\ExplSyntaxOff
+\documentclass{ltx-talk}
+
+\usepackage{ltxtalk-theme-wren}
+\useltxtalktheme{wren}
+
+\title[Wren]{Wren theme visual reference}
+\subtitle{A running table of contents}
+\author[A. Beispiel]{Ada Beispiel}
+\institute{Beispiel-Institut}
+\date{3. Juli 2026}
+
+\begin{document}
+
+\begin{frame}
+  \maketitle
+\end{frame}
+
+\section{Erster Abschnitt}
+\subsection{Ein Aspekt}
+\begin{frame}
+  \frametitle{Typografie und Flaechen}
+  \framesubtitle{Eine feste visuelle Referenz}
+  Ein kurzer Absatz prüft Schrift, Textfarbe und Satzspiegel.
+  \begin{itemize}
+    \item erster Listenpunkt
+    \item zweiter Listenpunkt mit \alert{Hervorhebung}
+  \end{itemize}
+  \begin{block}{Beispielblock}
+    Inhalt des Blocks mit der Formel $a^2+b^2=c^2$.
+  \end{block}
+\end{frame}
+
+\subsection{Weiterer Aspekt}
+\begin{frame}
+  \frametitle{Zweite Folie}
+  Das Inhaltsverzeichnis rechts hebt jetzt den zweiten Unterabschnitt hervor.
+\end{frame}
+
+\section{Zweiter Abschnitt}
+\UseLTXTalkLayout{wren/wide}
+\begin{frame}
+  \frametitle{Volle Breite}
+  Ohne die rechte Leiste.
+\end{frame}
+\UseLTXTalkLayout{wren/standard}
+
+\end{document}
