@@ -4137,40 +4137,82 @@ load babel
         } }%
       }
   }
+% \ldeen{Der Kopfbalken des Kastenzweigs: eine \code{artifact}-\cs{rule},
+%   die genau die Höhe der (durch einen unsichtbaren Strut aufgepolsterten)
+%   Titelzeile hat -- so schliesst der Balken bündig mit der Kastenoberkante
+%   ab, ohne dass die getönte Body-Fläche darüber hinausragt. \code{#1} ist
+%   seine Breite.}{The boxed branch's head bar: an \code{artifact} \cs{rule}
+%   exactly as tall as the title line (padded by an invisible strut), so the
+%   bar meets the box's top edge flush and no tinted body area shows above
+%   it. \code{#1} is its width.}
+\dim_new:N \l__osgstyler_block_bar_pad_dim
+\cs_new_protected:Npn \__osgstyler_block_headbar:n #1
+  {
+    \str_if_eq:VnF \l__osgstyler_block_head_bg_tl { none }
+      {
+        \rlap { \smash {
+          \tag_mc_end_push: \tag_mc_begin:n { artifact }
+            \color { \OsgColorName{ \l__osgstyler_block_head_bg_tl } }
+            \rule
+              [ \dim_eval:n { -\dp\strutbox
+                              - \l__osgstyler_block_bar_pad_dim } ]
+              { \dim_eval:n { #1 } }
+              { \dim_eval:n { \ht\strutbox + \dp\strutbox
+                              + 2 \l__osgstyler_block_bar_pad_dim } }
+          \tag_mc_end: \tag_mc_begin_pop:n { }
+        } }%
+      }
+  }
 % \ldeen{\code{titled} mit getönter Body-Fläche: ein Kasten
-%   (\cs{fcolorbox}+\env{minipage}, ein \code{Div}) mit randlosem
-%   Kopfstreifen und Unterkante als Blockende.}{\code{titled} with a tinted
-%   body area: a box (\cs{fcolorbox}+\env{minipage}, one \code{Div}) with a
-%   full-bleed head strip and a bottom edge marking where the block ends.}
+%   (\cs{fcolorbox}+\env{minipage}, ein \code{Div}). Innenabstand von Hand
+%   (\cs{fboxsep} ist Null), damit der Kopfbalken randlos an die Kanten
+%   läuft und bündig mit der Oberkante abschliesst.}{\code{titled} with a
+%   tinted body area: a box (\cs{fcolorbox}+\env{minipage}, one \code{Div}).
+%   Padding done by hand (\cs{fboxsep} is zero) so the head bar bleeds to
+%   the edges and meets the top edge flush.}
 \cs_new_protected:Npn \__osgstyler_block_typeset_titled_box:n #1
   {
     \par
     \addvspace { \medskipamount }
     \group_begin:
-      \setlength \fboxsep { \l__osgstyler_block_body_padding_dim }
+      \dim_set_eq:NN \l__osgstyler_block_bar_pad_dim
+        \l__osgstyler_block_head_padding_dim
+      \setlength \fboxsep { 0pt }
       \setlength \fboxrule { \l__osgstyler_block_rule_dim }
       \noindent
       \fcolorbox
         { \OsgColorName { \l__osgstyler_block_rule_color_tl } }
         { \__osgstyler_block_bg:V \l__osgstyler_block_body_bg_tl }
         {
-          \begin { minipage } { \dim_eval:n { \linewidth - 2\fboxsep - 2\fboxrule } }
+          \begin { minipage } { \dim_eval:n { \linewidth - 2\fboxrule } }
             \tl_if_empty:NF \l__osgstyler_block_title_tl
               {
                 \noindent
-                \__osgstyler_block_headstrip:nn
-                  { -\l__osgstyler_block_body_padding_dim }
-                  { \linewidth + 2\l__osgstyler_block_body_padding_dim }
+                % invisible strut sets the title line's metrics; the bar
+                % (smashed) is drawn to the same extent.
+                \rule
+                  [ \dim_eval:n { -\dp\strutbox
+                                  - \l__osgstyler_block_bar_pad_dim } ]
+                  { 0pt }
+                  { \dim_eval:n { \ht\strutbox + \dp\strutbox
+                                  + 2 \l__osgstyler_block_bar_pad_dim } }%
+                \__osgstyler_block_headbar:n { \linewidth }
+                \skip_horizontal:n { \l__osgstyler_block_head_padding_dim }
+                \dim_set:Nn \rightskip { \l__osgstyler_block_head_padding_dim }
                 { \color { \OsgColorName{ \l__osgstyler_block_head_fg_tl } }
                   \l__osgstyler_block_head_font_tl
-                  \l__osgstyler_block_title_tl }%
-                \par
+                  \l__osgstyler_block_title_tl \par }
                 \nobreak
-                \skip_vertical:n { 0.5 \baselineskip }
+                \skip_vertical:n { \l__osgstyler_block_body_padding_dim }
               }
+            \dim_set:Nn \leftskip  { \l__osgstyler_block_body_padding_dim }
+            \dim_set:Nn \rightskip { \l__osgstyler_block_body_padding_dim }
+            \tl_if_empty:NT \l__osgstyler_block_title_tl
+              { \vspace* { \l__osgstyler_block_body_padding_dim } }
             \setlength \parskip { 0.5 \baselineskip }
             \noindent \ignorespaces #1
             \par
+            \skip_vertical:n { \l__osgstyler_block_body_padding_dim }
           \end { minipage }
         }%
     \group_end:
