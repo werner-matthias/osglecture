@@ -1754,7 +1754,9 @@ and page style.
     quer geteilten Hintergrund, optional gewichtet
     (\code{farbe*2}) -- etwa \code{background-split=\{primary!60!black*3,
     primary!80!black*2, primary*2\}} für einen dreigeteilten Fuß im
-    Madrid-Stil. Die Segmente werden als Artefakt getaggt.
+    Madrid-Stil. \code{background-gradient=\{oben, unten\}} legt einen
+    senkrechten Verlauf (als Band-Stapel, ohne \pkg{pgf}) an. Beide werden
+    als Artefakt getaggt.
   }{
     Edits an area's template instance. The stable keys are \code{background},
     \code{background-split}, \code{frame}, \code{rule-color},
@@ -1763,7 +1765,8 @@ and page style.
     a colour list for a horizontally divided background, optionally weighted
     (\code{colour*2}) -- e.g.\ \code{background-split=\{primary!60!black*3,
     primary!80!black*2, primary*2\}} for a Madrid-style three-part footer.
-    The segments are tagged as an artifact.
+    \code{background-gradient=\{top, bottom\}} lays down a vertical gradient
+    (as a stack of bands, no \pkg{pgf}). Both are tagged as an artifact.
   }
 \end{commands}
 
@@ -2773,6 +2776,7 @@ theme.
 \tl_new:N \l__ltxtalk_area_rule_color_tl
 \tl_new:N \l__ltxtalk_area_background_tl
 \tl_new:N \l__ltxtalk_area_bg_split_tl
+\tl_new:N \l__ltxtalk_area_bg_gradient_tl
 \tl_new:N \l__ltxtalk_area_bg_opacity_tl
 \tl_new:N \l__ltxtalk_area_shadow_color_tl
 \clist_new:N \l__ltxtalk_area_bg_split_clist
@@ -3439,6 +3443,7 @@ theme.
   {
     background     : tokenlist = none,
     background-split : tokenlist = ,
+    background-gradient : tokenlist = ,
     frame          : choice { none, box, top, bottom, left, right, topbottom } = none,
     rule-color     : tokenlist = ltxtalk-primary,
     rule-thickness : length = 0.4pt,
@@ -3455,6 +3460,7 @@ theme.
   {
     background = \l__ltxtalk_area_background_tl,
     background-split = \l__ltxtalk_area_bg_split_tl,
+    background-gradient = \l__ltxtalk_area_bg_gradient_tl,
     frame =
       {
         none      = \tl_set:Nn \l__ltxtalk_area_frame_tl { none },
@@ -3491,9 +3497,12 @@ theme.
           \rule{\l__ltxtalk_current_area_width_dim}
             {\l__ltxtalk_area_rule_thickness_dim}\par\nointerlineskip
         }
-      \bool_lazy_or:nnTF
-        { \str_if_eq_p:Vn \l__ltxtalk_area_background_tl { none } }
-        { ! \tl_if_blank_p:V \l__ltxtalk_area_bg_split_tl }
+      \bool_lazy_any:nTF
+        {
+          { \str_if_eq_p:Vn \l__ltxtalk_area_background_tl { none } }
+          { ! \tl_if_blank_p:V \l__ltxtalk_area_bg_split_tl }
+          { ! \tl_if_blank_p:V \l__ltxtalk_area_bg_gradient_tl }
+        }
         {\parbox[c][\l__ltxtalk_current_area_height_dim][c]
            {\l__ltxtalk_current_area_width_dim}
            {\__ltxtalk_typeset_area_sides:n {#1}}}
@@ -3513,6 +3522,8 @@ theme.
   {
     \tl_if_blank:VF \l__ltxtalk_area_bg_split_tl
       { \__ltxtalk_area_bg_split_draw: }
+    \tl_if_blank:VF \l__ltxtalk_area_bg_gradient_tl
+      { \__ltxtalk_area_bg_gradient_draw: }
     \str_if_eq:VnT \l__ltxtalk_area_frame_tl {left}
       {
         \color{\l__ltxtalk_area_rule_color_tl}
@@ -3592,6 +3603,55 @@ theme.
       \rule
         { \l__ltxtalk_area_bg_split_seg_dim }
         { \l__ltxtalk_current_area_height_dim } }
+  }
+% \ldeen{Ein senkrechter Farbverlauf als Bereichshintergrund:
+%   \code{background-gradient=\{oben, unten\}}. Als Stapel von
+%   \cs{rule}"=Bändern gezeichnet (mischt \code{oben!\meta{p}!unten}), wie
+%   \code{background-split} als Artefakt hinter die Slots gelegt; danach
+%   wird die vertikale Position zurückgesetzt. Keine
+%   \pkg{pgf}"=Abhängigkeit; auf Projektionsdistanz stufenlos.}{A vertical
+%   colour gradient as the area background:
+%   \code{background-gradient=\{top, bottom\}}. Drawn as a stack of
+%   \cs{rule} bands (mixing \code{top!\meta{p}!bottom}), placed behind the
+%   slots as an artifact like \code{background-split}, with the vertical
+%   position reset afterwards. No \pkg{pgf} dependency; smooth at
+%   projection distance.}
+\int_const:Nn \c__ltxtalk_area_gradient_steps_int { 24 }
+\cs_new_protected:Npn \__ltxtalk_area_bg_gradient_draw:
+  {
+    \clist_set:NV \l__ltxtalk_area_bg_split_clist \l__ltxtalk_area_bg_gradient_tl
+    % Pre-mix the endpoints into flat names so the band colour
+    % "from!p!to" is a simple two-way mix, not a left-folded chain.
+    \exp_args:Nne \colorlet { ltxtalk@grad@from }
+      { \clist_item:Nn \l__ltxtalk_area_bg_split_clist { 1 } }
+    \exp_args:Nne \colorlet { ltxtalk@grad@to }
+      { \clist_item:Nn \l__ltxtalk_area_bg_split_clist { 2 } }
+    \dim_set:Nn \l__ltxtalk_area_bg_split_seg_dim
+      { \l__ltxtalk_current_area_height_dim
+        / \c__ltxtalk_area_gradient_steps_int }
+    \tag_mc_begin:n { artifact }
+    \int_step_inline:nn { \c__ltxtalk_area_gradient_steps_int }
+      {
+        \noindent
+        \exp_args:Ne \__ltxtalk_area_grad_band:n
+          {
+            \fp_eval:n
+              {
+                round ( 100 *
+                  ( \c__ltxtalk_area_gradient_steps_int - ##1 + 0.5 )
+                  / \c__ltxtalk_area_gradient_steps_int )
+              }
+          }
+        \par \nointerlineskip
+      }
+    \tag_mc_end:
+    \skip_vertical:n { -\l__ltxtalk_current_area_height_dim }
+  }
+\cs_new_protected:Npn \__ltxtalk_area_grad_band:n #1
+  {
+    \color { ltxtalk@grad@from ! #1 ! ltxtalk@grad@to }
+    \rule { \l__ltxtalk_current_area_width_dim }
+          { \l__ltxtalk_area_bg_split_seg_dim }
   }
 % \ldeen{Über Sockets können die einzelnen Bereichebehandlungen gezielt ersetzt werden.
 % }{
@@ -4743,7 +4803,8 @@ theme.
       {font=\normalsize\itshape,color=ltxtalk-secondary,align=left}
 
     % --- areas ---
-    \decorateltxtalkarea{right}{background=ltxtalk-primary!10,frame=left,
+    \decorateltxtalkarea{right}{
+      background-gradient={ltxtalk-primary!22,ltxtalk-primary!2},frame=left,
       rule-color=ltxtalk-primary!40,rule-thickness=0.6pt,artifact-type=layout}
     \decorateltxtalkarea{header}{frame=bottom,rule-color=ltxtalk-primary!30,
       rule-thickness=0.4pt,artifact-type=decorative}
