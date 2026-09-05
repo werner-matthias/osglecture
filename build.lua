@@ -33,8 +33,14 @@ typesetexe = "lualatex"
 typesetopts = "-interaction=nonstopmode -shell-escape --synctex=10"
 maxruns    = 3
 
-sourcefiles  = sourcefiles  or { "*.dtx"}
-typesetfiles = typesetfiles or { "*.dtx"}
+local is_module = type(module) == "string" and module ~= ""
+
+sourcefiles = sourcefiles or { "*.dtx" }
+typesetfiles = typesetfiles or (
+  is_module
+  and { module .. ".dtx" }
+  or { "*.dtx" }
+)
 
 cleanfiles={
     "*-cnltx*", -- artefacts from cnltx tools
@@ -54,18 +60,67 @@ local with_distributed_docs =
   or target == "bundlectan"
   or target == "install"
 
-docfiles = docfiles or (
-  with_distributed_docs
-  and { "*.pdf" }
-  or {}
-)
+if is_module then
+  docfiles = docfiles or { }
+  if with_distributed_docs then
+    table.insert(docfiles, module .. "-en.pdf")
+    table.insert(docfiles, module .. "-de.pdf")
+  end
+else
+  docfiles = docfiles or (
+    with_distributed_docs
+    and { "*.pdf" }
+    or {}
+  )
+end
+
+-- A full installation from the bundle root has two phases.  Modules install
+-- their run-time files without documentation; afterwards the root installs
+-- the shared documentation collection in doc/<tdsroot>/<bundle>.  Direct
+-- module installations retain l3build's normal per-module directory and see
+-- only the module-specific PDF names added above.
+if not is_module and target_list and target_list.install then
+  target_list.install.bundle_func = function(names)
+    if names then
+      print("Bundle installation does not accept file names")
+      return 1
+    end
+
+    local module_options = { }
+    for key, value in pairs(options) do
+      module_options[key] = value
+    end
+    module_options["full"] = nil
+
+    local errorlevel = call(modules, "install", module_options)
+    if errorlevel ~= 0 or not options["full"] then
+      return errorlevel
+    end
+
+    local doc_options = { }
+    for key, value in pairs(options) do
+      doc_options[key] = value
+    end
+    doc_options["full"] = nil
+    doc_options["dry-run"] = nil
+    doc_options["texmfhome"] = nil
+
+    errorlevel = call(modules, "doc", doc_options)
+    if errorlevel ~= 0 then
+      return errorlevel
+    end
+
+    moduledir = tdsroot .. "/" .. bundle
+    return install()
+  end
+end
 
 -- All documented sources use osgdoc for their driver and langselect for the
 -- German/English variants.  Declare those as typesetting dependencies so a
 -- documentation build also works with an empty build/local tree.  l3build
 -- installs dependencies with its unpack target, which deliberately breaks the
 -- apparent documentation cycle between osgdoc and langselect.
-if module and module ~= "" then
+if is_module then
   typesetdeps = typesetdeps or { }
 
   local function add_typeset_dependency(dependency)
