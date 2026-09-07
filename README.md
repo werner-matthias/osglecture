@@ -57,9 +57,9 @@ The `TL ...` columns are read from the expectations in the workflow above;
 | ltx-talk support (osglecture + osglecture-modes) | n/a | n/a | n/a | :full_moon: | :red_circle: | :red_circle: | :green_circle: |
 | ollm | v0.13.0-dev | n/a | 1 | :white_circle: | :white_circle: | :green_circle: | :green_circle: |
 | tagpax | v0.8.5-dev | 2026/07/23 | 2 | :full_moon: | :green_circle: | :green_circle: | :green_circle: |
-| langselect | v1.0.3 | 2026/08/05 | 1 | :full_moon: | :green_circle: | :green_circle: | :green_circle: |
+| langselect | v1.1.2 | 2026/09/07 | 1 | :full_moon: | :green_circle: | :green_circle: | :green_circle: |
 | osgstyler | v0.2.0 | 2026/08/24 | 2 | :first_quarter_moon: | :red_circle: | :red_circle: | :green_circle: |
-| lttheme | v0.5.0 | 2026/08/24 | 7 | :new_moon: | :red_circle: | :red_circle: | :green_circle: |
+| lttheme | v0.5.1 | 2026/09/07 | 9 | :new_moon: | :red_circle: | :red_circle: | :green_circle: |
 | lttheme-tuc-2019 | v0.5.1 | 2026/08/24 | 1 | :new_moon: | :red_circle: | :red_circle: | :green_circle: |
 | ansiterm[^1] | v0.2.1 | 2026-08-26 | 1 | :full_moon: | :red_circle: | :red_circle: | :green_circle: |
 | osglistings | v0.1.0 | 2026-08-28 | 1 | :full_moon: | :green_circle: | :green_circle: | :green_circle: |

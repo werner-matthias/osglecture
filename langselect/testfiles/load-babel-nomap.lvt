@@ -1,0 +1,18 @@
+\input regression-test.tex
+\documentclass{article}
+% "load babel" without a "map": langselect resolves each selectable ISO code to
+% a babel language name from babel-<code>.ini (de -> ngerman, en -> english),
+% loads babel with those names, and selects the target.  csquotes autostyle
+% must see a real babel name, not the bare code.
+\usepackage[
+  languages={en,de},
+  targetlang=de,
+  load babel
+]{langselect}
+\begin{document}
+\START
+\TYPE{target=\olsTargetLanguage}
+\TYPE{active=\languagename}
+\lende{English \enquote{q}}{Deutsch \enquote{q}}
+\END
+\end{document}

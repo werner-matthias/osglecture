@@ -39,7 +39,7 @@ This work is "maintained" (as per LPPL maintenance status) by
 \def\packagename{langselect}
 \ProvidesExplPackage{langselect}
 {2026/09/07}
-{v1.1.0}
+{v1.1.2}
 {support for different languages versions from a common source}
 \ExplSyntaxOff
 %</pkg>
@@ -467,33 +467,19 @@ Section~@1.%
   \ldeen{Lädt entweder Babel oder Polyglossia so, dass die Zielsprache von
     \thepkg\ als Hauptsprache gesetzt wird. Die hier übergebenen Optionen werden
     an das jeweilige Sprachpaket weitergeleitet.
-    Wenn eine dieser Option genutzt wird, darf
-    nicht \keyis*-{targetlang}{babel} oder \keyis*-{targetlang}{polyglossia}
-    gesetzt sein und \thepkg\ muss vor dem jeweiligen Sprachpaket geladen
-    werden.
-
-    Babel erwartet als Hauptsprache einen Sprachnamen, keinen ISO-Code. Für
-    Zielsprachen, deren Code nicht selbst ein gültiger Babel-Sprachname ist
-    (also praktisch alle), muss daher ein \option{map}-Eintrag den Code auf
-    einen Namen abbilden; andernfalls bricht \thepkg\ mit einer Fehlermeldung
-    ab.
+    Wenn hier Optionen angegeben werden, darf kein Sprachpaket von \thepkg\ geladen 
+    sein.
   }{%
     Loads either Babel or Polyglossia so that the target language of \thepkg is
     set as the main language. The options passed here are forwarded to the
     respective language package.
-    If one of these options is used, \keyis*-{targetlang}{babel} or
-    \keyis*-{targetlang}{polyglossia} must not be set, and \thepkg\ must be
-    loaded before the respective language package.
-
-    Babel expects a language name as its main language, not an ISO code. For a
-    target language whose code is not itself a valid Babel language name (in
-    practice all of them) a \option{map} entry must therefore map the code to a
-    name; otherwise \thepkg\ aborts with an error.}
+    If any option is provided, no language package must be loaded before \thepkg.
+  }
   \keychoice{map}{\Marg{\meta{\ldeen{Sprache}{language}}=\meta{\ldeen{Variante}{variant}},\ldots}}
   \ldeen{Legt ein Mapping von Sprachen zu einer Sprachvariante fest. Wenn
     \thepkg\ mit anderen Paketen interagiert, wird dann die spezifische
     Sprachvariante statt des ISO-Codes weitergegeben.
-   
+
     Falls Sie beispielsweise Babel von \thepkg\ aus laden und Ihr Dokument explizit
     \emph{Britisches} Englisch und \emph{Schweizerdeutsch} nutzt, sichern Sie
     mit folgendem Code ab, dass Babel korrekte Optionen erhält.
@@ -501,7 +487,7 @@ Section~@1.%
     Defines a mapping of languages to a language variant. When
     \thepkg\ interacts with other packages, the specific
     language variant is passed instead of the ISO code.
-   
+
     For example, if you load Babel from \thepkg\ and your document explicitly
     uses  \emph{British} English and \emph{Swiss} German, use the following
     code to ensure that Babel receives the correct options.}
@@ -930,6 +916,42 @@ Section~@1.%
 \cs_new:Npn \ols_use_map:n #1 {
   \cs_if_exist_use:cF { olslangmap / #1 }{ #1 }
 }
+% \ldeen{\cs{ols\_babel\_name\_from\_ini:nN} liest den letzten Eintrag des
+% Feldes \code{name.babel} aus \file{babel-\meta{Code}.ini}. Da \thepkg\ nur
+% ISO-639-1-Codes zulässt, ist dieses Feld praktisch immer eindeutig.}{%
+% \cs{ols\_babel\_name\_from\_ini:nN} reads the last entry of the
+% \code{name.babel} field from \file{babel-\meta{code}.ini}. As \thepkg\ only
+% accepts ISO~639-1 codes, that field is in practice always unambiguous.}
+\ior_new:N \g_ols_ini_ior
+\seq_new:N \ols_ini_seq
+\seq_new:N \ols_ini_names_seq
+\cs_new_protected:Npn \ols_babel_name_from_ini:nN #1 #2
+  {
+    \tl_clear:N #2
+    \ior_open:NnT \g_ols_ini_ior { babel- #1 .ini }
+      {
+        \ior_str_map_inline:Nn \g_ols_ini_ior
+          {
+            \str_if_eq:eeT { \str_range:nnn {##1} {1} {10} } { name.babel }
+              {
+                \seq_set_split:Nnn \ols_ini_seq { = } { ##1 }
+                \seq_set_split:Nne \ols_ini_names_seq { ~ }
+                  { \tl_trim_spaces:e { \seq_item:Nn \ols_ini_seq {2} } }
+                \seq_if_empty:NF \ols_ini_names_seq
+                  { \tl_set:Ne #2 { \seq_item:Nn \ols_ini_names_seq {-1} } }
+                \ior_map_break:
+              }
+          }
+        \ior_close:N \g_ols_ini_ior
+      }
+% \ldeen{Zeilen aus \cs*{ior\_str\_map\_inline} haben Catcode~12. Babel
+% vergleicht Sprachoptionen mit \cs{ifx} (catcode-empfindlich), daher machen wir
+% aus dem Namen wieder Buchstaben mit Standard-Catcodes.}{Lines from
+% \cs*{ior\_str\_map\_inline} have catcode~12. Babel compares language options
+% with \cs{ifx} (catcode sensitive), so we turn the name back into letters with
+% standard catcodes.}
+    \tl_if_empty:NF #2 { \tl_set_rescan:NnV #2 { } #2 }
+  }
 % \ldeen{Wir definieren einige Optionen. Alle außer \option{languages} sind
 % optional. Einige Ergebnisse werden wir in Variablen spreichern, die wir zuerst
 % anlegen.}{We define some options. All except \option{languages} are
@@ -1016,15 +1038,17 @@ Section~@1.%
     \prop_map_inline:Nn \ols_lang_pl
       { \cs_gset:cpn { olslangmap / \tl_to_str:n {##1} } {##2} }
     },
-% \ldeen*{Laden von @1 oder @2 mit Optionen}{Load @1 or
-% @2 with options}{\pkg{babel}}{\pkg{polyglossia}}.
+% \ldeen*{Laden von @1 oder @2 mit Optionen. Ein leerer Wert (\code{load~babel}
+% ohne \code{=}) \textbf{darf nicht} als leere Option weitergereicht werden.}{Load @1 or
+% @2 with options. An empty value (\code{load~babel} without \code{=}) \textbf{must not}
+% be forwarded as an empty option.}{\pkg{babel}}{\pkg{polyglossia}}
   load~babel .code:n = {
     \bool_set_true:N \ols_load_babel
-    \PassOptionsToPackage{#1}{babel}
+    \tl_if_empty:nF {#1} { \PassOptionsToPackage{#1}{babel} }
   },
   load~polyglossia .code:n = {
     \bool_set_true:N \ols_load_polyglossia
-    \PassOptionsToPackage{#1}{polyglossia}
+    \tl_if_empty:nF {#1} { \PassOptionsToPackage{#1}{polyglossia} }
   },
   load.usage = load,
   unified~shorthands.bool_set:N=\ols_shorthands,
@@ -1332,13 +1356,13 @@ Section~@1.%
 % \#1: prefix, \#2...\#4: selectable languages, \#5: base name
 \NewDocumentCommand{\olsMakeTrilangualMacro}{O{\ols_sprefix} m m m o}{
   \str_if_eq:eeT{\olsTargetLanguage}{#2} {
-    \IfValueTF{#4}{
+    \IfValueTF{#5}{
       \ExpandArgs{c}\NewExpandableDocumentCommand{#1#5}{s +m +m +m}{
         \UseHook{langselect/language/before}{\ols_mapped_target_lang}
         \IfBooleanTF{##1}{
-          \ols_trim:{\olsProcessArgs{##2}}
+          \ols_trim:n{\olsProcessArgs{##2}}
         }{
-          \ols_trim:{##2}
+          \ols_trim:n{##2}
           \UseHook{langselect/language/after}
         }
       }
@@ -1346,55 +1370,55 @@ Section~@1.%
       \ExpandArgs{c}\NewExpandableDocumentCommand{#1#2#3#4}{s +m +m +m}{
         \UseHook{langselect/language/before}{\ols_mapped_target_lang}
         \IfBooleanTF{##1}{
-          \ols_trim:{\olsProcessArgs{##2}}
+          \ols_trim:n{\olsProcessArgs{##2}}
         }{
-          \ols_trim:{##2}
+          \ols_trim:n{##2}
           \UseHook{langselect/language/after}
         }
       }
     }
   }
   \str_if_eq:eeT{\olsTargetLanguage}{#3} {
-    \IfValueTF{#4}{
+    \IfValueTF{#5}{
       \ExpandArgs{c}\NewExpandableDocumentCommand{#1#5}{s +m +m +m}{
         \UseHook{langselect/language/before}{\ols_mapped_target_lang}
         \IfBooleanTF{##1}{
-          \ols_trim:{\olsProcessArgs{##2}}
+          \ols_trim:n{\olsProcessArgs{##3}}
         }{
-          \ols_trim:{##3}
+          \ols_trim:n{##3}
           \UseHook{langselect/language/after}
         }
       }
     }{
       \ExpandArgs{c}\NewExpandableDocumentCommand{#1#2#3#4}{s +m +m +m}{
-        \UseHook{langselect/language}{\ols_mapped_target_lang}
+        \UseHook{langselect/language/before}{\ols_mapped_target_lang}
         \IfBooleanTF{##1}{
-          \ols_trim:{\olsProcessArgs{##2}}
+          \ols_trim:n{\olsProcessArgs{##3}}
         }{
-          \ols_trim:{##3}
+          \ols_trim:n{##3}
           \UseHook{langselect/language/after}
         }
       }
     }
   }
   \str_if_eq:eeT{\olsTargetLanguage}{#4} {
-    \IfValueTF{#4}{
+    \IfValueTF{#5}{
       \ExpandArgs{c}\NewExpandableDocumentCommand{#1#5}{s +m +m +m}{
-        \UseHook{langselect/language}{\ols_mapped_target_lang}
+        \UseHook{langselect/language/before}{\ols_mapped_target_lang}
         \IfBooleanTF{##1}{
-          \ols_trim:{\olsProcessArgs{##2}}
+          \ols_trim:n{\olsProcessArgs{##4}}
         }{
-          \ols_trim:{##4}
+          \ols_trim:n{##4}
           \UseHook{langselect/language/after}
         }
       }
     }{
       \ExpandArgs{c}\NewExpandableDocumentCommand{#1#2#3#4}{s +m +m +m}{
-        \UseHook{langselect/language}{\ols_mapped_target_lang}
+        \UseHook{langselect/language/before}{\ols_mapped_target_lang}
         \IfBooleanTF{##1}{
-          \ols_trim:{\olsProcessArgs{##2}}
+          \ols_trim:n{\olsProcessArgs{##4}}
         }{
-          \ols_trim:{##4}
+          \ols_trim:n{##4}
           \UseHook{langselect/language/after}
         }
       }
@@ -1508,30 +1532,48 @@ Section~@1.%
     \ols_collect_replace:n { \int_eval:n { #1 - 1 } }
   }
 }
-% \ldeen{Wenn gewünscht, wird Babel oder Polyglossia geladen und die Zielsprache
-% als Hauptsprache gesetzt.}{If desired, Babel or Polyglossia is loaded and the
-% target language is set as the main language.}
-% \ldeen*{Babel akzeptiert als @1-Option nur einen Sprachnamen, keinen ISO-Code.
-% Ohne passenden \option{map}-Eintrag lässt sich die Zielsprache deshalb nicht an
-% Babel übergeben, und wir brechen mit einer verständlichen Meldung ab statt mit
-% einem Folgefehler aus Babel.}{Babel only accepts a language name as its @1
-% option, not an ISO code. Without a matching \option{map} entry the target
-% language therefore cannot be handed to Babel, and we stop with a clear message
-% rather than a downstream error from Babel.}{\option{main}}
+% \ldeen*{Wenn gewünscht, lädt \thepkg\ Babel und setzt die Zielsprache als
+% Hauptsprache. Babel erwartet dafür Sprachnamen, keine ISO-Codes. Für jede
+% Auswahlsprache ohne \option{map}-Eintrag wird der Name deshalb aus
+% \file{babel-\meta{Code}.ini} nachgeschlagen und als impliziter Map-Eintrag
+% hinterlegt. Wenn kein Name ermittelt werden kann, gibt es einen Fehler.
+% }{If requested, \thepkg\ loads Babel and sets the target language as the
+% main language. Babel expects language names, not ISO codes. For every 
+% selectable language without a \option{map} entry the name is therefore 
+% looked up from \file{babel-\meta{code}.ini} and stored as an
+% implicit map entry. Only if no name can be determined do raise an error.}
+\tl_new:N \ols_babel_name_tl
+\tl_new:N \ols_babel_opts_tl
 \bool_if:NT \ols_load_babel{
-  \cs_if_exist:cTF{ olslangmap / \olsTargetLanguage }{
-    \RequirePackage[main=\ols_mapped_target_lang, provide*=*]{babel}
-    \bool_if:nT{
-      \ols_shorthands && !\str_if_eq_p:ee{\olsTargetLanguage}{de}}
-    {
-      \languageshorthands{ngerman}
+  \clist_map_inline:Nn \ols_langs {
+    \cs_if_exist:cF{ olslangmap / \tl_to_str:n {#1} }{
+      \ols_babel_name_from_ini:nN {#1} \ols_babel_name_tl
+      \tl_if_empty:NTF \ols_babel_name_tl {
+        \PackageError{\packagename}{Can't~find~a~babel~name~for~language~'#1'}{
+          Add~a~'map'~entry~such~as~map={#1=...}~to~the~package~options,
+          \MessageBreak or~load~babel~yourself~before~\packagename.}
+      }{
+        \cs_gset:cpe { olslangmap / \tl_to_str:n {#1} } { \ols_babel_name_tl }
+      }
     }
-  }{
-    \PackageError{\packagename}{Option~'load~babel'~needs~a~'map'~entry
-      \MessageBreak for~language~'\olsTargetLanguage'}{
-      Babel~expects~a~language~name~(such~as~'english'),~not~an~ISO~code.
-      \MessageBreak Add~e.g.~map={\olsTargetLanguage=...}~to~the~package~options,
-      \MessageBreak or~load~Babel~yourself~before~\packagename.}
+  }
+% \ldeen{\cs{ols\_mapped\_target\_lang} nach den neuen Map-Einträgen neu
+% berechnen.}{Recompute \cs{ols\_mapped\_target\_lang} after the new map
+% entries.}
+  \edef\ols_mapped_target_lang{\ols_use_map:n{\olsTargetLanguage}}
+% \ldeen{Alle Auswahlsprachen unter ihren Babel-Namen laden, die Zielsprache als
+% Hauptsprache.}{Load all selectable languages under their Babel names, the
+% target as the main language.}
+  \tl_clear:N \ols_babel_opts_tl
+  \clist_map_inline:Nn \ols_langs
+    { \tl_put_right:Ne \ols_babel_opts_tl { \ols_use_map:n {#1} , } }
+  \tl_put_right:Ne \ols_babel_opts_tl { main = \ols_mapped_target_lang }
+  \exp_args:NV \PassOptionsToPackage \ols_babel_opts_tl { babel }
+  \RequirePackage { babel }
+  \bool_if:nT{
+    \ols_shorthands && !\str_if_eq_p:ee{\olsTargetLanguage}{de}}
+  {
+    \languageshorthands{ngerman}
   }
 }
 \bool_if:NT\ols_load_polyglossia{

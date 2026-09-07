@@ -1,0 +1,15 @@
+\input regression-test.tex
+\documentclass{article}
+% Automatic generation of a trilingual language command: languages={de,en,fr}
+% with no explicit base name must define \ldeenfr and select the branch for the
+% target language, in both the plain and the starred (@n) form.
+\usepackage[
+  languages={de,en,fr},
+  targetlang=en
+]{langselect}
+\begin{document}
+\START
+\TYPE{plain=[\ldeenfr{DE}{EN}{FR}]}
+\TYPE{star=[\ldeenfr*{d-@1}{e-@1}{f-@1}{X}]}
+\END
+\end{document}
