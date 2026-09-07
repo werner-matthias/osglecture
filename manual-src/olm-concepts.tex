@@ -202,6 +202,143 @@ a lot. At the OSG, there are a number of typical teaching scenarios
 \ldeen{Dagegen sollten private \File{.sty}-Dateien oder andere Materialien, die in \emph{allen} Lehreinheiten benötigt werden, im \path{Include}-Verzeichnis stehen.}{By contrast, private \File{.sty} files or other material needed by \emph{all} course units should be placed in the \path{Include} directory.}
 
 \subsection{Modi}
+\ldeen{Wer schon einmal mit \cls{beamer} oder \cls{ltx-talk} gearbeitet hat, kennt Modi 
+und Overlayspezifikationen. Man kann beides auch wieder als Ansätze zur Polymorphie
+betrachten.
+}{}
+
+\ldeen{Für alle, die noch nicht damit gearbeitet haben: Beides wird (auch gemischt) in spitzen Klammern
+als erstes Argument eines Befehls angegeben.
+Ein \emph{Modus} entscheidet beim der Übersetzung, ob der Befehl und damit 
+sein Inhalt mit übersetzt wird. So kann Textmaterial, das nur auf den Folien aber 
+z.\,B.\ nicht auf den Handouts stehen solle, entsprechend gekennzeichnet
+werden.}{}
+\ldeen{Bei Overlays können aus einer gestalteten Folie mehrere Seiten im PDF erzeugt
+werden, die alle leicht unterschiedlich aussehen, aber die gleiche Foliennummer
+haben. Damit können z.\,B.\ Animationen wie das zeilenweise Ausdacken oder
+Markieren von Inhalt erreicht werden. 
+}{}
+\ldeen{Angenommen, eine Folie zeigt zunächst nur eine Frage und nach dem
+nächsten Klick auch die Antwort. Das ist ein Overlay: Beide Ansichten gehören
+zum selben PDF, Target und Sprachbuild. Soll die ausführliche Begründung dagegen
+nur im Skript stehen und auf Folien ganz fehlen, ist das eine Modusentscheidung.
+Sie führt zu unterschiedlichem Inhalt verschiedener Dokumentinstanzen.}{Suppose
+a slide initially shows only a question and reveals the answer after the next
+click. That is an overlay: both views belong to the same PDF, target, and
+language build. If the detailed reasoning should instead appear only in the
+lecture notes and be absent from slides altogether, that is a mode decision.
+It produces different content in different document instances.}
+
+\ldeen{Modi und Overlays werden mitunter verwechselt, was auch daran liegt, dass sie 
+bei \cls{beamer}/\cls{ltx-talk} häufig gemischt eingesetzt werden und eine gemeinsame
+Syntax hat.
+Tabelle~\ref{tbl:overlay-modus} stellt die Unterschiede noch einmal kompakt dar.}{}
+
+\begin{center}
+\caption{Overlay und Modus\label{tbl:overlay-modus}}
+  \begin{tabular}{lll}
+\textbf{\ldeen{Frage}{Question}} & \textbf{\ldeen{Mechanismus}{Mechanism}} &
+\textbf{\ldeen{Beispiel}{Example}}\\
+\ldeen{Gehört der Inhalt in dieses Ergebnis?}{Does the content belong in this output?} &
+\ldeen{Modus}{mode} & \code{longform}, \code{presentation}\\
+\ldeen{Wann erscheint er innerhalb der Präsentation?}{When does it appear within the presentation?} &
+Overlay & \code{<2->}
+\end{tabular}
+\end{center}
+
+\ldeen{Die Klasse \cls{beamer} kennt die folgenden Modi:}{}
+\begin{itemize}
+  \item \code{beamer}~-- \ldeen{Modus für Dokumente für einen Beamer}{} 
+  \item \code{trans}~-- \ldeen{Modus für Dokumente für einen Overheadprojektor}{} 
+  \item \code{second}~-- \ldeen{Modus für Dokument(teile), die auf einem zweiten Schirm angezeigt werden sollen}{}
+  \item \code{handout}~-- \ldeen{Modus für Handout der Folien}{}
+  \item \code{presentation}~-- \ldeen{Modus, der alle vier vorgenannten Modi umfasst}{}
+  \item \code{article}~-- \ldeen{Modus für Skripte}{}
+  \item \code{all}~-- \ldeen{Modus, der alle vorgenannten Modi umfasst}{}
+\end{itemize}
+
+Das Paket \pkg{osglecture-modus} stellt ebenfalls ein Modussystem zur Verfügung, das unabhängig
+von \cls{beamer} und \cls{ltx-talk} genutzt werden kann.
+
+Bei \cs{lecturemode}\code{<longform>} ist es ein Modus. Bei einem von
+der Basisklasse bereitgestellten \cs{item}\code{<2->} ist es ein Overlay. Ein
+Overlayausdruck ist keine portable Modusbedingung.}{The confusion is reinforced
+by syntax: presentation classes often write overlay specifications in angle
+brackets, and \osglecture\ also uses angle brackets for mode arguments. The
+command determines which concept is meant. With
+\cs{lecturemode}\code{<longform>} it is a mode. With an
+\cs{item}\code{<2->} supplied by the base class it is an overlay. An overlay
+specification is not a portable mode condition.}
+
+\ldeen{Modi bilden in \osglecture\ keinen flachen Schaltervorrat, sondern einen
+gerichteten Graphen vom Speziellen zum Allgemeinen. Der konkrete Modus
+\code{handout} hat beispielsweise die Eltern \code{presentation} und
+\code{print}; \code{script} führt über \code{article} zu \code{longform} und
+\code{print}. Eine Abfrage nach einem Elternmodus trifft damit alle passenden
+Spezialisierungen. Das ist der Grund, warum Autoren meist ihre Absicht als
+\code{presentation}, \code{longform}, \code{slides} oder \code{print}
+formulieren sollten, statt eine Basisklasse abzufragen.}{Modes in
+\osglecture\ are not a flat collection of switches but a directed graph from
+specific to general. For example, the concrete \code{handout} mode has the
+parents \code{presentation} and \code{print}; \code{script} leads through
+\code{article} to \code{longform} and \code{print}. Querying a parent mode
+therefore matches all appropriate specializations. This is why authors should
+normally express their intent as \code{presentation}, \code{longform},
+\code{slides}, or \code{print} instead of testing for a base class.}
+
+\ldeen{Target, Dokumenttyp und Profil wirken dabei nacheinander. Das Target
+wählt die gewünschte Ausgabe, der Dokumenttyp aktiviert deren fachlichen
+Blattmodus, und das Profil ergänzt technische Modi der Satzumgebung. Das
+\cls{beamer}-Profil ergänzt beispielsweise \code{beamer}; ein anderes
+Präsentationsprofil muss diesen technischen Modus nicht besitzen. Der
+Elterngraph sorgt dennoch dafür, dass beide Profile dieselbe portable Abfrage
+\code{presentation} erfüllen. Profile dürfen außerdem zusätzliche Modi und
+eine Modus-Setup-Datei mitbringen. Sie erweitern damit die Fähigkeiten einer
+Satzumgebung, ohne die Bedeutung des Dokumenttyps zu ersetzen.}{Target,
+document type, and profile act in sequence. The target selects the requested
+output, the document type activates its semantic leaf mode, and the profile
+adds technical modes belonging to the typesetting environment. For example,
+the \cls{beamer} profile adds \code{beamer}; another presentation profile need
+not have that technical mode. The parent graph nevertheless ensures that both
+profiles satisfy the same portable \code{presentation} query. Profiles may
+also supply additional modes and a mode setup file. They can thus extend the
+capabilities of a typesetting environment without replacing the meaning of the
+document type.}
+
+\ldeen{Overlays bleiben dagegen Aufgabe der gewählten Präsentationsklasse und
+ihres Adapters. \osglecture\ kann gebräuchliche Overlaybefehle anbinden, aber
+es verspricht nicht, dass jede klassen- oder themespezifische Animation einen
+Profilwechsel überlebt. Wer Portabilität zwischen \cls{beamer} und
+\cls{ltx-talk} benötigt, sollte den gemeinsamen Strukturwortschatz verwenden
+und Overlays auf die von beiden Profilen unterstützte Teilmenge begrenzen. Die
+konkrete Inhaltsauswahl wird in Abschnitt~\ref{sec:content-osglecture-modes}
+fortgesetzt.}{Overlays, by contrast, remain the responsibility of the selected
+presentation class and its adapter. \osglecture\ can integrate common overlay
+commands, but it does not promise that every class- or theme-specific animation
+survives a profile switch. Authors requiring portability between \cls{beamer}
+and \cls{ltx-talk} should use the common structural vocabulary and restrict
+overlays to the subset supported by both profiles. Concrete content selection
+continues in Section~\ref{sec:content-osglecture-modes}.}
+
+\ldeen{Erweiterbarkeit ist dann sinnvoll, wenn ein Projekt eine semantisch neue
+Ausgabe benötigt, nicht bloß ein anderes Layout. Ein betreutes Selbststudium
+könnte beispielsweise den Typ \code{studyguide} mit eigenen aktiven Modi und
+einem Langformprofil einführen. Ein bloßer Wechsel von \cls{book} zu
+\cls{scrbook} benötigt dagegen nur ein anderes Profil für den vorhandenen Typ
+\code{script}. Diese Unterscheidung verhindert, dass technische
+Satzentscheidungen die Buildmatrix unnötig vergrößern. Das vollständige
+Profilbeispiel steht in Abschnitt~\ref{sec:project-configuration}; neue
+OLLM-Targets werden über die dort beschriebenen Targetdefinitionen
+registriert.}{Extensibility is useful when a project needs a semantically new
+output, not merely a different layout. For example, supervised self-study
+might introduce a \code{studyguide} type with its own active modes and a
+long-form profile. Merely switching from \cls{book} to \cls{scrbook}, by
+contrast, only requires another profile for the existing \code{script} type.
+This distinction prevents technical typesetting decisions from needlessly
+expanding the build matrix. The complete profile example is in
+Section~\ref{sec:project-configuration}; new OLLM targets are registered using
+the target definitions described there.}
+
 \subsection{\ldeen{Dokumententypen und Profile}{Document Types and Profiles}}
 \label{sec:types-profiles}
 \ldeen{Ein \emph{Dokumenttyp} (\emph{doctype}) bezeichnet die
@@ -367,120 +504,3 @@ starting out, however, use the supplied types: they are already registered with
   \label{tab:profiles}
 \end{table}
 
-\subsection{\ldeen{Modi und Overlays}{Modes and Overlays}}
-\label{sec:concept-modes-overlays}
-
-\ldeen{Wer nicht mit Präsentationsklassen wie \cls{beamer} gearbeitet hat,
-trifft hier leicht zwei ähnlich aussehende, aber grundverschiedene Konzepte.
-Ein \emph{Modus} entscheidet beim Build, ob Inhalt zu einer Dokumentinstanz
-gehört. Ein \emph{Overlay} erzeugt innerhalb derselben Präsentationsinstanz
-mehrere aufeinanderfolgende Ansichten eines Frames.}{Readers who have not
-worked with presentation classes such as \cls{beamer} can easily confuse two
-concepts that look similar but serve fundamentally different purposes. A
-\emph{mode} decides at build time whether content belongs to a document
-instance. An \emph{overlay} creates several successive views of a frame within
-the same presentation instance.}
-
-\ldeen{Angenommen, eine Folie zeigt zunächst nur eine Frage und nach dem
-nächsten Klick auch die Antwort. Das ist ein Overlay: Beide Ansichten gehören
-zum selben PDF, Target und Sprachbuild. Soll die ausführliche Begründung dagegen
-nur im Skript stehen und auf Folien ganz fehlen, ist das eine Modusentscheidung.
-Sie führt zu unterschiedlichem Inhalt verschiedener Dokumentinstanzen.}{Suppose
-a slide initially shows only a question and reveals the answer after the next
-click. That is an overlay: both views belong to the same PDF, target, and
-language build. If the detailed reasoning should instead appear only in the
-lecture notes and be absent from slides altogether, that is a mode decision.
-It produces different content in different document instances.}
-
-\begin{center}
-\begin{tabular}{lll}
-\textbf{\ldeen{Frage}{Question}} & \textbf{\ldeen{Mechanismus}{Mechanism}} &
-\textbf{\ldeen{Beispiel}{Example}}\\
-\ldeen{Gehört der Inhalt in dieses Ergebnis?}{Does the content belong in this output?} &
-\ldeen{Modus}{mode} & \code{longform}, \code{presentation}\\
-\ldeen{Wann erscheint er innerhalb der Präsentation?}{When does it appear within the presentation?} &
-Overlay & \code{<2->}
-\end{tabular}
-\end{center}
-
-\ldeen{Die Verwechslung liegt auch an der Syntax: Präsentationsklassen
-schreiben Overlays häufig in spitzen Klammern; \osglecture\ verwendet spitze
-Klammern außerdem für Modusargumente. Welches Konzept gemeint ist, bestimmt der
-Befehl. Bei \cs{lecturemode}\code{<longform>} ist es ein Modus. Bei einem von
-der Basisklasse bereitgestellten \cs{item}\code{<2->} ist es ein Overlay. Ein
-Overlayausdruck ist keine portable Modusbedingung.}{The confusion is reinforced
-by syntax: presentation classes often write overlay specifications in angle
-brackets, and \osglecture\ also uses angle brackets for mode arguments. The
-command determines which concept is meant. With
-\cs{lecturemode}\code{<longform>} it is a mode. With an
-\cs{item}\code{<2->} supplied by the base class it is an overlay. An overlay
-specification is not a portable mode condition.}
-
-\ldeen{Modi bilden in \osglecture\ keinen flachen Schaltervorrat, sondern einen
-gerichteten Graphen vom Speziellen zum Allgemeinen. Der konkrete Modus
-\code{handout} hat beispielsweise die Eltern \code{presentation} und
-\code{print}; \code{script} führt über \code{article} zu \code{longform} und
-\code{print}. Eine Abfrage nach einem Elternmodus trifft damit alle passenden
-Spezialisierungen. Das ist der Grund, warum Autoren meist ihre Absicht als
-\code{presentation}, \code{longform}, \code{slides} oder \code{print}
-formulieren sollten, statt eine Basisklasse abzufragen.}{Modes in
-\osglecture\ are not a flat collection of switches but a directed graph from
-specific to general. For example, the concrete \code{handout} mode has the
-parents \code{presentation} and \code{print}; \code{script} leads through
-\code{article} to \code{longform} and \code{print}. Querying a parent mode
-therefore matches all appropriate specializations. This is why authors should
-normally express their intent as \code{presentation}, \code{longform},
-\code{slides}, or \code{print} instead of testing for a base class.}
-
-\ldeen{Target, Dokumenttyp und Profil wirken dabei nacheinander. Das Target
-wählt die gewünschte Ausgabe, der Dokumenttyp aktiviert deren fachlichen
-Blattmodus, und das Profil ergänzt technische Modi der Satzumgebung. Das
-\cls{beamer}-Profil ergänzt beispielsweise \code{beamer}; ein anderes
-Präsentationsprofil muss diesen technischen Modus nicht besitzen. Der
-Elterngraph sorgt dennoch dafür, dass beide Profile dieselbe portable Abfrage
-\code{presentation} erfüllen. Profile dürfen außerdem zusätzliche Modi und
-eine Modus-Setup-Datei mitbringen. Sie erweitern damit die Fähigkeiten einer
-Satzumgebung, ohne die Bedeutung des Dokumenttyps zu ersetzen.}{Target,
-document type, and profile act in sequence. The target selects the requested
-output, the document type activates its semantic leaf mode, and the profile
-adds technical modes belonging to the typesetting environment. For example,
-the \cls{beamer} profile adds \code{beamer}; another presentation profile need
-not have that technical mode. The parent graph nevertheless ensures that both
-profiles satisfy the same portable \code{presentation} query. Profiles may
-also supply additional modes and a mode setup file. They can thus extend the
-capabilities of a typesetting environment without replacing the meaning of the
-document type.}
-
-\ldeen{Overlays bleiben dagegen Aufgabe der gewählten Präsentationsklasse und
-ihres Adapters. \osglecture\ kann gebräuchliche Overlaybefehle anbinden, aber
-es verspricht nicht, dass jede klassen- oder themespezifische Animation einen
-Profilwechsel überlebt. Wer Portabilität zwischen \cls{beamer} und
-\cls{ltx-talk} benötigt, sollte den gemeinsamen Strukturwortschatz verwenden
-und Overlays auf die von beiden Profilen unterstützte Teilmenge begrenzen. Die
-konkrete Inhaltsauswahl wird in Abschnitt~\ref{sec:content-osglecture-modes}
-fortgesetzt.}{Overlays, by contrast, remain the responsibility of the selected
-presentation class and its adapter. \osglecture\ can integrate common overlay
-commands, but it does not promise that every class- or theme-specific animation
-survives a profile switch. Authors requiring portability between \cls{beamer}
-and \cls{ltx-talk} should use the common structural vocabulary and restrict
-overlays to the subset supported by both profiles. Concrete content selection
-continues in Section~\ref{sec:content-osglecture-modes}.}
-
-\ldeen{Erweiterbarkeit ist dann sinnvoll, wenn ein Projekt eine semantisch neue
-Ausgabe benötigt, nicht bloß ein anderes Layout. Ein betreutes Selbststudium
-könnte beispielsweise den Typ \code{studyguide} mit eigenen aktiven Modi und
-einem Langformprofil einführen. Ein bloßer Wechsel von \cls{book} zu
-\cls{scrbook} benötigt dagegen nur ein anderes Profil für den vorhandenen Typ
-\code{script}. Diese Unterscheidung verhindert, dass technische
-Satzentscheidungen die Buildmatrix unnötig vergrößern. Das vollständige
-Profilbeispiel steht in Abschnitt~\ref{sec:project-configuration}; neue
-OLLM-Targets werden über die dort beschriebenen Targetdefinitionen
-registriert.}{Extensibility is useful when a project needs a semantically new
-output, not merely a different layout. For example, supervised self-study
-might introduce a \code{studyguide} type with its own active modes and a
-long-form profile. Merely switching from \cls{book} to \cls{scrbook}, by
-contrast, only requires another profile for the existing \code{script} type.
-This distinction prevents technical typesetting decisions from needlessly
-expanding the build matrix. The complete profile example is in
-Section~\ref{sec:project-configuration}; new OLLM targets are registered using
-the target definitions described there.}
