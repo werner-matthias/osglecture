@@ -1,0 +1,18 @@
+\input regression-test.tex
+\documentclass{article}
+% "bcp47=false" turns off babel's tag mapping; selection then relies on a
+% "map" entry giving the babel language name.  This must keep working.
+\usepackage[ngerman,english]{babel}
+\usepackage[
+  languages={en,de},
+  targetlang=de,
+  map={de=ngerman,en=english},
+  bcp47=false
+]{langselect}
+\begin{document}
+\START
+\TYPE{target=\olsTargetLanguage}
+\TYPE{active=\languagename}
+\lende{English}{Deutsch}
+\END
+\end{document}

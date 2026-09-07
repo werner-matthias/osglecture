@@ -1,0 +1,14 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage[ngerman,english]{babel}
+\usepackage[
+  languages={en,de},
+  targetlang=babel
+]{langselect}
+\begin{document}
+\START
+\TYPE{target=\olsTargetLanguage}
+\TYPE{branch=\lende{EN}{DE}}
+\lende{English text}{deutscher Text}
+\END
+\end{document}

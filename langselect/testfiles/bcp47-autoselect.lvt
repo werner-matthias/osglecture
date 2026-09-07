@@ -1,0 +1,17 @@
+\input regression-test.tex
+\documentclass{article}
+% Selectable languages are loaded into babel by their babel names, but no
+% "map" is given.  With option "bcp47" (default true) langselect enables
+% babel's tag-as-selector mapping, so \selectlanguage{de} resolves to ngerman.
+\usepackage[ngerman,english]{babel}
+\usepackage[
+  languages={en,de},
+  targetlang=de
+]{langselect}
+\begin{document}
+\START
+\TYPE{target=\olsTargetLanguage}
+\TYPE{active=\languagename}
+\lende{English}{Deutsch}
+\END
+\end{document}

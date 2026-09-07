@@ -38,8 +38,8 @@ This work is "maintained" (as per LPPL maintenance status) by
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
 \def\packagename{langselect}
 \ProvidesExplPackage{langselect}
-{2026/08/05}
-{v1.0.3}
+{2026/09/07}
+{v1.1.0}
 {support for different languages versions from a common source}
 \ExplSyntaxOff
 %</pkg>
@@ -462,7 +462,7 @@ Section~@1.%
   \keybool{trim}\Default{true}\ldeen{Enfernt Whitespaces am Anfang und Ende der
     Argumente der Sprachmakros.}{Removes whitespace at the beginning and end of
     language macro arguments.}
-  \keyval{load babel}{Babel \ldeen{Optionen}{options}}\gobble
+  \keyval{load babel}{Babel \ldeen{Optionen}{options}}\default{}
   \keyval{load polyglossia}{Polyglossia \ldeen{Optionen}{options}}
   \ldeen{Lädt entweder Babel oder Polyglossia so, dass die Zielsprache von
     \thepkg\ als Hauptsprache gesetzt wird. Die hier übergebenen Optionen werden
@@ -471,29 +471,40 @@ Section~@1.%
     nicht \keyis*-{targetlang}{babel} oder \keyis*-{targetlang}{polyglossia}
     gesetzt sein und \thepkg\ muss vor dem jeweiligen Sprachpaket geladen
     werden.
+
+    Babel erwartet als Hauptsprache einen Sprachnamen, keinen ISO-Code. Für
+    Zielsprachen, deren Code nicht selbst ein gültiger Babel-Sprachname ist
+    (also praktisch alle), muss daher ein \option{map}-Eintrag den Code auf
+    einen Namen abbilden; andernfalls bricht \thepkg\ mit einer Fehlermeldung
+    ab.
   }{%
     Loads either Babel or Polyglossia so that the target language of \thepkg is
     set as the main language. The options passed here are forwarded to the
-    respective language package. 
+    respective language package.
     If one of these options is used, \keyis*-{targetlang}{babel} or
     \keyis*-{targetlang}{polyglossia} must not be set, and \thepkg\ must be
-    loaded before the respective language package.}  
+    loaded before the respective language package.
+
+    Babel expects a language name as its main language, not an ISO code. For a
+    target language whose code is not itself a valid Babel language name (in
+    practice all of them) a \option{map} entry must therefore map the code to a
+    name; otherwise \thepkg\ aborts with an error.}
   \keychoice{map}{\Marg{\meta{\ldeen{Sprache}{language}}=\meta{\ldeen{Variante}{variant}},\ldots}}
   \ldeen{Legt ein Mapping von Sprachen zu einer Sprachvariante fest. Wenn
     \thepkg\ mit anderen Paketen interagiert, wird dann die spezifische
-    Sprachvariante statt des ISO-Codes weitergegeben.%
-
+    Sprachvariante statt des ISO-Codes weitergegeben.
+   
     Falls Sie beispielsweise Babel von \thepkg\ aus laden und Ihr Dokument explizit
     \emph{Britisches} Englisch und \emph{Schweizerdeutsch} nutzt, sichern Sie
-    mit folgendem Code ab, dass Babel korrekte Optionen erhält. 
+    mit folgendem Code ab, dass Babel korrekte Optionen erhält.
   }{%
     Defines a mapping of languages to a language variant. When
     \thepkg\ interacts with other packages, the specific
     language variant is passed instead of the ISO code.
-
-     For example, if you load Babel from \thepkg\ and your document explicitly
-     uses  \emph{British} English and \emph{Swiss} German, use the following
-     code to ensure that Babel receives the correct options.}
+   
+    For example, if you load Babel from \thepkg\ and your document explicitly
+    uses  \emph{British} English and \emph{Swiss} German, use the following
+    code to ensure that Babel receives the correct options.}
    \begin{example}[code-only]
        \documentclass{article}
        \usepackage[
@@ -507,6 +518,16 @@ Section~@1.%
     \keybool{unified shorthands}\Default{true}\ldeen{Definiert
       sprachenübergreifende Shorthands zur Unterstützung von \pkg{csquotes}.}{Defines
       cross-language shorthands to support \pkg{csquotes}}
+
+    \keybool{bcp47}\Default{true}\ldeen{Wenn Babel aktiv ist, aktiviert
+      \thepkg\ dessen BCP-47-Zuordnung, so dass die von \thepkg\ genutzten ISO-Codes als
+      Selektornamen für \cs{selectlanguage} genutzt werden können. Mit \keyis-{bcp47}{false} 
+      muss die Babelzielsprache über \option{map} oder von Hand ausgewählt werden.
+      }{
+      When Babel is active,
+      \thepkg\ enables its BCP~47 mapping ISO codes used by \thepkg\ work as
+      selector names for \cs{selectlanguage}. In case of  \keyis-{bcp47}{false}, babel's
+      target language must be selected through \option{map} or by hand.}
 \end{options}
    
 \section{\ldeen{Nutzermakros}{User Commands}}
@@ -531,7 +552,7 @@ Section~@1.%
       \marg{\ldeen{Text}{text}$_{1}$}\marg{\ldeen{Text}{text}$_{2}$}\marg{\ldeen{Text}{text}$_{3}$}
     }
 \end{itemize}
-\ldeen{Beispielsweise für für diese Dokumentation das Paket mit folgenden
+\ldeen{Beispielsweise wurde für diese Dokumentation das Paket mit folgenden
   Optionen geladen:}{For example, for this documentation, the package was loaded with the following
   options:}
 \begin{example}[code-only]
@@ -570,7 +591,7 @@ Section~@1.%
 \label{sec:start-var}
 \ldeen{Ein häufiges Problem bei mehreren Sprachversionen ist die Konsistenz
   nichtsprachabhängiger Daten, insbesondere wenn diese Daten sich öfter
-  ändern. (Denken Sie \zB an Stundenpläne.)
+  ändern. (Denken Sie \zB\ an Stundenpläne.)
   
   Für solche Fälle stellt \thepkg\ eine Sternvariante der Sprachmakros bereit.
   In dieser Sternvariante können die Textargumente Platzhalter der Form
@@ -622,7 +643,7 @@ Section~@1.%
   Dort wählt \pkg{langselect} zwar die aktive Sprachfassung aus, Platzhalter wie 
   "`@\meta{n}"' werden jedoch nicht ersetzt, und die zugehörigen Ersetzungsargumente 
   bleiben im Eingabestrom erhalten. 
-  Verwenden Sie in PDF-Strings daher nur die ungesternte Form.
+  Verwenden Sie in PDF-Strings daher nur die sternlose Form.
 }{The starred variant of the language macros is not fully expandable and should
   therefore not be used in contexts where full expandability
   is required.
@@ -635,7 +656,7 @@ Section~@1.%
 \subsection{\ldeen{Individuelle Sprachmakros}{Individual Language Commands}}
 \label{sec:own-names}
 \ldeen{Wenn Ihnen die generierten Namen der Sprachmakros nicht gefallen oder
-  diese sogar zu Kollisionen führen, können Sie diese ändern. Am einfachsten ist
+  diese sogar zu Kollisionen führen, können Sie sie ändern. Am einfachsten ist
   es, die Paketoption \option{prefix} zu ändern, so dass beispielsweise mit
   \keyis-{prefix}{mv} das Sprachmakro für die Deutsch/Englisch-Kombination
   \cs*{mvdeen} heisst.}{If you do not like the generated names of the language
@@ -685,26 +706,39 @@ Section~@1.%
 \ldeen{Bitte beachten Sie, dass, solange Sie nicht \emph{innerhalb} eines Textes
   eine andere Sprache (vielleicht ja die Sprache der anderen Sprachversion)
   nutzen, ihr Dokument aus der Sicht von Babel ein
-  \emph{einsprachiges} Dokument ist. Es besteht die Gefahr, dass Sie Babel auf die
-  gewohnte Weise mit den verschiedenen Sprachen ihrer Sprachversion aufrufen,
-  aber zur Bestimmung der Zielsprache nicht die Option
-  \keyis*-{targetlang}{babel} nutzen. Als Ergebnis stimmt u.U. die Zielsprache
-  nicht mit Babels aktiver Sprache überein, und können Sie inkorrekte
-  Trennungen und ähnliche Fehler erhalten.
+  \emph{einsprachiges} Dokument ist. Wenn Sie Babel auf die gewohnte Weise mit
+  allen Sprachen ihrer Sprachversion laden, würde Babel als aktive Sprache aber
+  die zuletzt genannte (oder die per \option{main} gesetzte) wählen, was nicht
+  unbedingt die Zielsprache von \thepkg\ ist. Ohne spezielle Maßnahmen könnten Sie
+  so falsche Trennungen und ähnliche Fehler erhalten.
 }{%
   Please note that as long as you do not use a different language \emph{within} a text
   (perhaps the language of the other language version), your document is, from
-  the perspective of Babel, a \emph{monolingual} document. There is a risk
-  that you will invoke Babel in the usual way with the various languages of your
-  language version but, for determining the target language, do not use the
-  option \keyis*-{targetlang}{babel}. As a result, the target language may not
-  match Babel’s active language, and you may end up with incorrect hyphenation
-  and similar errors.  
+  the perspective of Babel, a \emph{monolingual} document. If you load Babel in
+  the usual way with all the languages of your language version, Babel would
+  pick the last one listed (or the one set via \option{main}) as its active
+  language -- not necessarily the target language of \thepkg. Without a
+  countermeasure you could end up with incorrect hyphenation and similar
+  errors.
 }
 
-\ldeen{Um solche Probleme zu vermeiden, bieten \thepkg\ verschiedene
-  Möglichkeiten}{To avoid such problems, \thepkg\ offers some options}:
+\ldeen{Um dies zu vermeiden, bieten \thepkg\ verschiedene
+  Möglichkeiten}{To avoid this, \thepkg\ offers several options}:
 \begin{enumerate}
+  \item \ldeen{Sofern die Zielsprache nicht ohnehin aus Babel abgeleitet wird,
+      wählt \thepkg\ sie zu Dokumentbeginn selbst als aktive Sprache aus. Bei
+      aktivem Babel wird dafür dessen BCP-47-Zuordnung eingeschaltet (Option
+      \option{bcp47}), so dass die von \thepkg\ genutzten ISO-Codes als
+      Selektornamen genügen und die Auswahlsprachen einfach mit ihren
+      Babel-Namen geladen werden können. 
+      Wenn sie spezielle Sprachvarianten möchten, können sie diese über die \option{map}-Option 
+      wählen, die aber für den Standardfall nicht notwendig ist.}{Unless the target language is derived from
+      Babel anyway, \thepkg\ selects it as the active language itself at the
+      start of the document. When Babel is active it enables Babel's BCP~47
+      mapping for this (option \option{bcp47}), so that the ISO codes used by
+      \thepkg\ suffice as selector names and the selectable languages can simply
+      be loaded under their Babel names. 
+      A \option{map} entry is then only needed for named variants.}
   \item \ldeen{Wie oben erwähnt, kann man die Paketoption
       \keyis-{targetlang}{babel} nutzen. Dann wird die Zielsprache durch die
       Hauptsprache von Babel bestimmt. Allerdings muss man dann auf die
@@ -717,21 +751,19 @@ Section~@1.%
       "`from outside"' (i.e., via the job
       name or with \cs{olsTargetLanguage}).} 
   \item \ldeen{Umgekehrt lädt \thepkg\ Babel oder Polyglossia mit Hilfe der
-      Optionen \option{load babel}"/\option{load polyglossia} landen und setzt
+      Optionen \option{load babel}"/\option{load polyglossia} und setzt
       die Zielsprache als Hauptsprache. Weitere Optionen an die Sprachpakete
       werden als Optionsargument übergeben.}{In turn, \thepkg\ loads Babel or
-      Polyglossia using the 
-      options \option{load babel}"/\option{load polyglossia} and sets
+      Polyglossia using the options \option{load babel}"/\option{load polyglossia} and sets
       the target language as the main language. Additional options for the
       language packages are passed as option arguments.}
-  \item \ldeen{Mit den beiden Hooks \code{langselect/language/before}
-      und \code{langselect/language/after}  kann schließlich beliebiger Code
+  \item \ldeen{Schließlich kann mit den beiden Hooks \code{langselect}/"\code{language}/"\code{before}
+      und \code{langselect}"/\code{language}"/\code{after} beliebiger Code
     vor bzw.\ nach Ausgabe der Argumente des Sprachmakros eingefügt werden. 
     Hier kann z.\,B.\ \cs{foreignlanguage} genutzt werden.
     Der \code{before}-Hook hat als Parameter die Zielsprachenvariante.}{Finally, the hooks
-    \code{langselect/language/before} and \code{langselect/language/after} can
-    be used to insert any code  
-    before or after the arguments of the language macro are output. E.g.,
+    \code{langselect}"/\code{language}"/\code{before} and \code{langselect}"/\code{language}"/\code{after}
+    can be used to insert any code before or after the arguments of the language macro. E.g.,
     \cs{foreignlanguage} may be used here.
     The \code{before} hook has the (mapped) target language as a parameter.}
 \end{enumerate}
@@ -747,7 +779,7 @@ Section~@1.%
   Zur Erhöhung der Bequemlichkeit unterstützt \thepkg\ die Nutzung korrekter
   Anführungszeichen mit sprachunabhängigen Shorthands:
   Wenn die Option \option{unified shorthands} wahr ist, wird \pkg{csquotes}
-  geladen und die Shorthands \code{"{}`!} und \code{"{}'} auf \cs{openautoquote}
+  geladen und die Shorthands \code{"{}`} und \code{"{}'} auf \cs{openautoquote}
   bzw.\ \cs{closeautoquote} gesetzt.
 
   Damit werden diese Shorthands in Sprachen wie Deutsch, wo sie bereits definiert
@@ -799,17 +831,17 @@ Section~@1.%
         Argumentersetzung stattfinden sollte.}{I have an @1 in the output where an
         argument substitution should take place.}}
 
-    \ldeen{Das hat in der Regel eine der beiden folgenden Ursache:
+    \ldeen*{Das hat in der Regel eine der beiden folgenden Ursache:
       \begin{enumerate}[nosep]
-        \item Sie nutzen alte Version von \pkg{langselect}. 
+        \item Sie nutzen alte Version (@1) von \pkg{langselect}. 
         Dort konnten unterschiedliche Catcodes z.\;B.\ durch \cs{makeatletter} zu Problemen führen.
         \item Sie haben den Stern im Sprachmakro vergessen.
       \end{enumerate}
     }{This usually has one of the following two causes:
       \begin{enumerate}[nosep]
-        \item You are using an old version of \pkg{langselect}. In that version, different catcodes-—for example, those generated by \cs{makeatletter}-—could cause problems.
+        \item You are using an old version (@1) of \pkg{langselect}. In that version, different catcodes-—for example, those generated by \cs{makeatletter}-—could cause problems.
         \item You forgot the asterisk in the language macro.
-      \end{enumerate}}
+      \end{enumerate}}{$\leq$ v0.6.0}
     
   \item \textbf{\ldeen{Kann ich in der Sternversion einen @$n$-Parameter in
         einer Sprachversion
@@ -826,7 +858,7 @@ Section~@1.%
     \ldeen{Ja}{Yes}.
 
   \item \textbf{\ldeen{Ich möchte @ in einer Sternvariante des Sprachmacros
-        nicht als Parameter verwenden.}{I want to use @ not as a prameter in a
+        verwenden, aber nicht als Parameter.}{I want to use @, but not as a parameter, in a
         star variant of the language macro.}} 
 
     \ldeen{Dann machen Sie es.}{Just do it.}
@@ -904,6 +936,13 @@ Section~@1.%
 % optional. We will store some results in variables that we first create.}
 \bool_new:N\ols_load_babel
 \bool_new:N\ols_load_polyglossia
+% \ldeen{Wahr, wenn die Zielsprache aus dem aktiven Sprachpaket abgeleitet
+% wurde. Dann ist dessen Hauptsprache bereits die Zielsprache und darf nicht
+% erneut (womöglich mit einem Code statt eines Sprachnamens) ausgewählt
+% werden.}{True when the target language was derived from the active language
+% package. Its main language then already is the target language and must not be
+% selected again (possibly with a code instead of a language name).}
+\bool_new:N\ols_target_from_langpkg
 \DeclareKeys{
   languages.clist_gset:N = \ols_langs,
   languages.usage=load,
@@ -925,8 +964,9 @@ Section~@1.%
       \bool_if:nT{
         \str_if_eq_p:nn{#1}{babel} || \str_if_eq_p:nn{#1}{polyglossia}
       }{
-        \str_if_empty:eF{\BCPdata{main.language}}{
+        \str_if_eq:eeF{\BCPdata{main.language}}{}{
           \edef\olsTargetLanguage{\BCPdata{main.language}}
+          \bool_set_true:N\ols_target_from_langpkg
         }
       }
 % \ldeen{Soll die Sprache aus dem Metadaten genutzt werden}{Should the language
@@ -989,7 +1029,14 @@ Section~@1.%
   load.usage = load,
   unified~shorthands.bool_set:N=\ols_shorthands,
   unified~shorthands.initial:n=true,
-  unified~shorthands.usage=load
+  unified~shorthands.usage=load,
+% \ldeen{Sollen die von \thepkg\ genutzten ISO-Codes bei einem aktiven
+% \pkg{babel} als BCP-47-Selektornamen zugelassen werden}{Should the ISO codes
+% used by \thepkg\ be accepted as BCP~47 selector names by an active
+% \pkg{babel}}?
+  bcp47.bool_set:N=\ols_bcptags,
+  bcp47.initial:n=true,
+  bcp47.usage=load
 }%
 \ProcessKeyOptions\relax
 % \ldeen{Wenn über \cs{olsTargetLanguage} oder die \option{targetlang} keine
@@ -999,7 +1046,10 @@ Section~@1.%
 % we check again whether a language can be identified via
 % language packages or \cs{DocumentMetadata}.}
 \cs_if_exist:NF \olsTargetLanguage {
-  \str_if_eq:eeF{\BCPdata{main.language}}{}{\edef\olsTargetLanguage{\BCPdata{main.language}}}
+  \str_if_eq:eeF{\BCPdata{main.language}}{}{
+    \edef\olsTargetLanguage{\BCPdata{main.language}}
+    \bool_set_true:N\ols_target_from_langpkg
+  }
 }
 \cs_if_exist:NF \olsTargetLanguage {
   \IfDocumentMetadataT{
@@ -1460,13 +1510,28 @@ Section~@1.%
 }
 % \ldeen{Wenn gewünscht, wird Babel oder Polyglossia geladen und die Zielsprache
 % als Hauptsprache gesetzt.}{If desired, Babel or Polyglossia is loaded and the
-% target language is set as the main language.} 
+% target language is set as the main language.}
+% \ldeen*{Babel akzeptiert als @1-Option nur einen Sprachnamen, keinen ISO-Code.
+% Ohne passenden \option{map}-Eintrag lässt sich die Zielsprache deshalb nicht an
+% Babel übergeben, und wir brechen mit einer verständlichen Meldung ab statt mit
+% einem Folgefehler aus Babel.}{Babel only accepts a language name as its @1
+% option, not an ISO code. Without a matching \option{map} entry the target
+% language therefore cannot be handed to Babel, and we stop with a clear message
+% rather than a downstream error from Babel.}{\option{main}}
 \bool_if:NT \ols_load_babel{
-  \RequirePackage[main=\ols_mapped_target_lang, provide*=*]{babel}
-  \bool_if:nT{
-    \ols_shorthands && !\str_if_eq_p:nn{olsTargetLanguage}{de}}
-  {
-    \languageshorthands{ngerman}
+  \cs_if_exist:cTF{ olslangmap / \olsTargetLanguage }{
+    \RequirePackage[main=\ols_mapped_target_lang, provide*=*]{babel}
+    \bool_if:nT{
+      \ols_shorthands && !\str_if_eq_p:ee{\olsTargetLanguage}{de}}
+    {
+      \languageshorthands{ngerman}
+    }
+  }{
+    \PackageError{\packagename}{Option~'load~babel'~needs~a~'map'~entry
+      \MessageBreak for~language~'\olsTargetLanguage'}{
+      Babel~expects~a~language~name~(such~as~'english'),~not~an~ISO~code.
+      \MessageBreak Add~e.g.~map={\olsTargetLanguage=...}~to~the~package~options,
+      \MessageBreak or~load~Babel~yourself~before~\packagename.}
   }
 }
 \bool_if:NT\ols_load_polyglossia{
@@ -1476,23 +1541,20 @@ Section~@1.%
 \bool_if:NT\ols_shorthands {
   \RequirePackage[autostyle=true]{csquotes}
 }
-% \ldeen*{Unabhängig davon, wann ein Sprachpaket geladen wurde, wird versucht,
-%   die Zielsprache zu aktivieren. Diese kann erst geschehen wenn
-%   feststeht, welches Sprachpaket (falls überhaupt eines) letztlich aktiv ist.
-%   Da auch die Shorthand-Initialisierung davon abhängt und andere Pakete oder 
-%   Klassen Sprachentscheidungen typischerweise nach hinten verschieben,  
-%   wird alles mit @1 verschoben.}{Regardless of when a language pack was loaded, an attempt is made to
-%   activate the target language. This can only happen once
-%   it is determined which language pack (if any) is ultimately active.
-%   Since the Shorthand initialization also depends on this, and other packages or
-%   classes typically defer language decisions,
-%   everything is deferred using @1.}{\cs*{AddToHook}[begindocument/before]}
+% \ldeen*{Die folgende Initialisierung kann erst geschehen, wenn feststeht,
+%   welches Sprachpaket (falls überhaupt eines) letztlich aktiv ist. Da andere
+%   Pakete oder Klassen Sprachentscheidungen typischerweise nach hinten
+%   verschieben, wird alles mit @1 bzw.\ @2 verschoben.}{The initialization
+%   below can only happen once it is determined which language package (if any)
+%   is ultimately active. Since other packages or classes typically defer
+%   language decisions, everything is deferred using @1 and @2,
+%   respectively.}{\cs*{AddToHook}[begindocument/before]}{\cs*{AddToHook}[begindocument]}
 \AddToHook{begindocument/before}{%
-  \cs_if_exist:cT{ver@babel.sty}{
-    \selectlanguage{\ols_mapped_target_lang}
-  }
-  \cs_if_exist:cT{ver@polyglossia.sty}{
-    \setdefaultlanguage{\ols_mapped_target_lang}
+% \ldeen{Aktiviere ISO-Codes vor der Sprachauswahl, damit \cs{selectlanguage} den
+%   Code auflösen kann.}{Activate BCP~47 before language selection so
+%   that \cs{selectlanguage} can resolve the code.}
+  \bool_lazy_and:nnT{\ols_bcptags}{\cs_if_exist_p:N\babeladjust}{
+    \babeladjust{ bcp47.toname = on , autoload.bcp47 = on }
   }
   \bool_if:NT\ols_shorthands {
 % \ldeen{Die Shorthand-Befehle benötigen ein aktives \code{@}.}{The shorthand macros
@@ -1517,6 +1579,21 @@ Section~@1.%
     \defineshorthand{"/}{\textormath{\bbl@allowhyphens
         \discretionary{/}{}{/}\bbl@allowhyphens}{}}
     \makeatother
+  }
+}
+% \ldeen{Die Sprachauswahl erfolgt im \code{begindocument}-Hook, also
+%   \emph{nach} der Aktivierung der Hauptsprache durch das Sprachpaket.}{
+%   Language selection happens in the
+%   \code{begindocument} hook, i.e.\ \emph{after} the language package has
+%   activated its main language.}
+\AddToHook{begindocument}{%
+  \bool_if:NF\ols_target_from_langpkg{
+    \cs_if_exist:cT{ver@babel.sty}{
+      \selectlanguage{\ols_mapped_target_lang}
+    }
+    \cs_if_exist:cT{ver@polyglossia.sty}{
+      \setdefaultlanguage{\ols_mapped_target_lang}
+    }
   }
 }
 %</pkg>
