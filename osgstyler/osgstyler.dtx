@@ -1624,6 +1624,40 @@ load babel
 \code{primary}, \code{secondary}, \code{accent}, \code{text},
 \code{background}, \code{structure}, \code{alert}, \code{example}.
 
+\subsection{\ldeen{Farbserien}{Color Series}}
+\label{sec:color-series:ref}
+\ldeen{Farbserien sind geordnete Folgen ohne semantische Slotnamen. Sie
+  eignen sich etwa für Diagrammreihen oder Annotationskategorien und können
+  beliebig viele Einträge enthalten. Jeder Eintrag verwendet dieselbe
+  \code{model}/\code{value}-Syntax wie eine Palettenressource.}
+  {Color series are ordered sequences without semantic slot names. They suit
+  chart data or annotation categories and may contain any number of entries.
+  Every entry uses the same \code{model}/\code{value} syntax as a palette
+  resource.}
+\begin{commands}
+  \command{DeclareOsgColorSeries}[\marg{name}\marg{items}]
+    \ldeen{Deklariert oder ersetzt eine Farbserie.}{Declares or replaces a
+    color series.}
+  \expandable\command{OsgColorSeriesCount}[\marg{name}]
+    \ldeen{Liefert die Anzahl der Einträge.}{Returns the number of entries.}
+  \expandable\command{OsgColorSeriesColorName}[\marg{name}\marg{index}]
+    \ldeen{Liefert den stabilen \pkg*{xcolor}-Namen des Eintrags mit dem
+    einsbasierten \meta{index}.}{Returns the stable \pkg*{xcolor} name of the
+    entry at the one-based \meta{index}.}
+\end{commands}
+\begin{example}[code-only]
+  \DeclareOsgColorSeries{categories}{
+    {model=HTML, value=1B9E77},
+    {model=HTML, value=D95F02},
+    {model=HTML, value=7570B3}
+  }
+  \textcolor{\OsgColorSeriesColorName{categories}{2}}{Second category}
+\end{example}
+\ldeen{Farbserien werden nicht aktiviert und unterstützen keine Aliase;
+  ihre Einträge sind ausschließlich durch ihre Position bestimmt.}
+  {Color series are not activated and do not support aliases; their entries
+  are identified solely by position.}
+
 \subsection{\ldeen{Schriftpaletten}{Font Palettes}}
 \label{sec:fonts:ref}
 \begin{commands}
@@ -2606,6 +2640,69 @@ load babel
 
 \NewDocumentCommand \DeclareOsgColorPalette { m m }
   { \__osgstyler_color_palette_declare:nn {#1}{#2} }
+
+% Ordered color series complement semantic palettes where position, rather
+% than a portable role name, identifies a color.  They deliberately reuse
+% the color-resource syntax, but do not support aliases: an integer alias
+% would make reordering surprisingly change its meaning.
+\prop_new:N \g__osgstyler_color_series_prop
+\int_new:N \l__osgstyler_color_series_index_int
+
+\msg_new:nnnn { osgstyler } { invalid-color-series-resource }
+  { Color~series~'#1',~item~#2~is~not~a~complete~color~resource. }
+  { Each~item~must~specify~model=...~and~value=...;~aliases~are~not~supported. }
+
+\cs_new:Npn \__osgstyler_color_series_name:nn #1#2
+  { osgstyler-series-#1-#2 }
+
+\cs_new_protected:Npn \__osgstyler_color_series_item_store:nnn #1#2#3
+  {
+    \tl_clear:N \l__osgstyler_color_model_tl
+    \tl_clear:N \l__osgstyler_color_value_tl
+    \tl_clear:N \l__osgstyler_color_alias_tl
+    \keys_set:nn { osgstyler / color-resource } {#3}
+    \bool_lazy_all:nTF
+      {
+        { ! \tl_if_empty_p:N \l__osgstyler_color_model_tl }
+        { ! \tl_if_empty_p:N \l__osgstyler_color_value_tl }
+        { \tl_if_empty_p:N \l__osgstyler_color_alias_tl }
+      }
+      {
+        \prop_gput:NnV \g__osgstyler_color_series_prop
+          { #1 / #2 / model } \l__osgstyler_color_model_tl
+        \prop_gput:NnV \g__osgstyler_color_series_prop
+          { #1 / #2 / value } \l__osgstyler_color_value_tl
+        \tl_set:Ne \l__osgstyler_color_name_tl
+          { \__osgstyler_color_series_name:nn {#1}{#2} }
+        \exp_args:NVVV \color_set:nnn \l__osgstyler_color_name_tl
+          \l__osgstyler_color_model_tl \l__osgstyler_color_value_tl
+        \exp_args:Nooo \definecolor { \l__osgstyler_color_name_tl }
+          { \l__osgstyler_color_model_tl } { \l__osgstyler_color_value_tl }
+      }
+      { \msg_error:nnnn { osgstyler } { invalid-color-series-resource } {#1}{#2} }
+  }
+
+\cs_new_protected:Npn \__osgstyler_color_series_declare:nn #1#2
+  {
+    \int_zero:N \l__osgstyler_color_series_index_int
+    \clist_map_inline:nn {#2}
+      {
+        \int_incr:N \l__osgstyler_color_series_index_int
+        \exp_args:NnV \__osgstyler_color_series_item_store:nnn {#1}
+          \l__osgstyler_color_series_index_int {##1}
+      }
+    \prop_gput:Nnx \g__osgstyler_color_series_prop { #1 / count }
+      { \int_use:N \l__osgstyler_color_series_index_int }
+  }
+
+\NewDocumentCommand \DeclareOsgColorSeries { m m }
+  { \__osgstyler_color_series_declare:nn {#1}{#2} }
+
+\NewExpandableDocumentCommand \OsgColorSeriesCount { m }
+  { \prop_item:Nn \g__osgstyler_color_series_prop { #1 / count } }
+
+\NewExpandableDocumentCommand \OsgColorSeriesColorName { m m }
+  { \__osgstyler_color_series_name:nn {#1}{#2} }
 
 \cs_new:Npn \__osgstyler_color_fallback:n #1
   {

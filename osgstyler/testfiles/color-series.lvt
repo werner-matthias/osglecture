@@ -1,0 +1,24 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osgstyler}
+
+\DeclareOsgColorSeries{test}{
+  {model=HTML, value=1B9E77},
+  {model=RGB, value={217,95,2}},
+  {model=gray, value=.5},
+  {model=HTML, value=E7298A},
+  {model=HTML, value=66A61E},
+  {model=HTML, value=E6AB02},
+  {model=HTML, value=A6761D}
+}
+
+\begin{document}
+\START
+\TYPE{count=\OsgColorSeriesCount{test}}
+\TYPE{name-seven=\OsgColorSeriesColorName{test}{7}}
+\extractcolorspec{\OsgColorSeriesColorName{test}{1}}\TestColorOne
+\TYPE{color-one=\TestColorOne}
+\extractcolorspec{\OsgColorSeriesColorName{test}{7}}\TestColorSeven
+\TYPE{color-seven=\TestColorSeven}
+\END
+\end{document}

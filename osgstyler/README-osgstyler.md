@@ -60,6 +60,24 @@ a color re-copies it, but nothing updates automatically in between. Active
 colors have stable `xcolor` names such as `osgstyler-primary`; the expandable
 `\OsgColorName{<slot>}` returns the corresponding name.
 
+Ordered color series are available where colors have no semantic roles, for
+example chart data or annotation categories. They use the same `model`/`value`
+resource syntax, may contain any number of entries, and give every entry a
+stable color name:
+
+```latex
+\DeclareOsgColorSeries{categories}{
+  {model=HTML, value=1B9E77},
+  {model=HTML, value=D95F02},
+  {model=HTML, value=7570B3}
+}
+\textcolor{\OsgColorSeriesColorName{categories}{2}}{Second category}
+```
+
+The expandable `\OsgColorSeriesCount{<name>}` returns the number of entries.
+Series are not activated and do not support aliases; their entries are
+identified only by their one-based position.
+
 `osgstyler` deliberately does not depend on `lttheme`. A later adapter can make
 `lttheme` consume an active `osgstyler` palette, while the palette package
 remains independently usable. Conversely, when `ltxtalk-theme` is loaded,
