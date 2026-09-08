@@ -59,27 +59,27 @@
 | Z         | Zebrafish   | Zebrabärbling      |
 
 # Vögel
-| Buchstabe | Englisch     | Deutsch              |
-| --------- | ------------ | -------------------- |
+| Buchstabe | Englisch     | Deutsch              | Beamer     |
+| --------- | ------------ | -------------------- |------------
 | A         | Albatross    | Albatros             |
-| B         | Bluebird     | Blauvogel            |
+| B         | Bluebird     | Blauvogel            | Berlin 
 | C         | Crow         | Krähe                |
 | D         | Dove         | Taube                |
 | E         | Eagle        | Adler                |
 | F         | Falcon       | Falke                |
-| G         | Goose        | Gans                 |
-| H         | Hawk         | Habicht/Bussard      |
+| G         | Goose        | Gans                 | Göttingen
+| H         | Hawk         | Habicht/Bussard      | Hannover
 | I         | Ibis         | Ibis                 |
 | J         | Jay          | Eichelhäher          |
 | K         | Kingfisher   | Eisvogel             |
 | L         | Lark         | Lerche               |
-| M         | Magpie       | Elster               |
+| M         | Magpie       | Elster               | Madrid
 | N         | Nightingale  | Nachtigall           |
 | O         | Owl          | Eule                 |
 | P         | Puffin       | Papageitaucher       |
 | Q         | Quail        | Wachtel              |
 | R         | Robin        | Rotkehlchen          |
-| S         | Sparrow      | Spatz                |
+| S         | Sparrow      | Spatz                | Szeged
 | T         | Toucan       | Tukan                |
 | U         | Umbrellabird | Schirmvogel          |
 | V         | Vulture      | Geier                |
