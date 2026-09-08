@@ -29,14 +29,15 @@
 }
   \expandafter\endbatchfile
 \fi
+
 \iffalse
 %</driver>
 %<*cls>
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
 \ProvidesExplClass
 {osgdoc}
-{2026/09/02}
-{v0.4.1}
+{2026/09/08}
+{v0.5.0}
 {A thin wrapper around cnltx-doc}
 \ExplSyntaxOff
 %</cls>
@@ -104,10 +105,25 @@ load babel
 \cs*{documentclass}\oarg{options}\Marg{osgdoc}
 
 \ldeen*{Die Optionen und zur Verfügung gestellten Befehle der Basisklasse @1 entnehmen Sie bitte der Dokumentation des @2-Pakets.}{
-  For a documentation of options and provided commands of the base class @1, please see the @2 package documentation.}{\cnltx}{\needpackage{cnltx}}
-\ldeen*{Die eigentliche Klasse @1 macht nichts, außer einige Befehle zu patchen und einige Standardeinstellungen wie das Farbschema zu ändern. }{The @1 class itself doesn't do anything except patch a few commands and setzt some default settings, such as the color scheme. }{\osgdoc}
+  For documentation of the options and commands provided by the base class @1, please see the @2 package documentation.}{\cnltx}{\needpackage{cnltx}}
+\ldeen*{Die eigentliche Klasse @1 macht nichts, außer einige Befehle zu patchen und einige Standardeinstellungen wie das Farbschema zu ändern. }{The @1 class itself does nothing except patch a few commands and set some defaults, such as the color scheme. }{\osgdoc}
 \ldeen*{Zusätzlich stehen noch die im Abschnitt~@1 beschriebenen Befehle zur Verfügung.}{%
   In addition, the commands described in Section @1 are available.}{\ref{sec:usage:sty}}
+
+\ldeen{Die folgende Option wird sowohl von der Klasse als auch vom Paket verstanden.}{%
+  The following option is understood by both the class and the package.}
+\begin{options}
+  \keybool{readprov}\Default{false}
+  \ldeen{
+    Verwendet \pkg{readprov} als Backend für \cs{UseVersionOf} und
+    \cs{UseDateOf}. Die gewünschten Dateien müssen zuvor mit einem der
+    \pkg{readprov}-Befehle wie \cs{ReadFileInfos} eingelesen werden.
+  }{
+    Uses \pkg{readprov} as the backend for \cs{UseVersionOf} and
+    \cs{UseDateOf}. The requested files must first be read with one of
+    \pkg{readprov}'s commands, such as \cs{ReadFileInfos}.
+  }
+\end{options}
 
 \subsection{osgdoc.sty}
 \label{sec:usage:sty}
@@ -119,47 +135,117 @@ load babel
       A lightweight option for including documented source code,  similar to the @1 mechanism. 
       }{\needpackage[pkg]{doc}/\needpackage[pkg]{docstrip}}
   \ldeen*{
-    Im Unterschied zu diesem sind jedoch (wie in @1) keine @2 notwendig, und es 
-    kann auch Lua-Code dokumentiert werden.}{
-    Unlike the latter, however (as in @1), @2 is not required, and Lua code can also be documented.
+    Im Unterschied zu diesem sind jedoch (wie in @1) keine @2 notwendig. Außerdem
+    kann Lua-Code dokumentiert und zur Textauszeichnung statt \LaTeX\ eine Art
+    Mini-Markdown verwendet werden.}{
+    Unlike the latter, however (as in @1), @2 is not required. In addition,
+    Lua code can be documented, and a kind of Mini-Markdown can be used for text
+    markup instead of \LaTeX.
   }{\pkg{gmdoc}}{\cs*{begin}\Marg{macrocode}\ldots \cs*{end}\Marg{macrocode}}
 
     \begin{quote}
     \begin{options}
       \opt*{mode}\Default{tex}
       \ldeen{
-        Dies bestimmt, welcher Art von Guards und Kommentaren genutzt werden können, siehe folgende Tabelle.
+        Der Modus hat die Form
+        \meta{Guard-Syntax}/\meta{Kommentar-Syntax}/\meta{Markup-Format}.
+        Eine fehlende oder leere Kommentar-Syntax übernimmt die Guard-Syntax;
+        ein fehlendes oder leeres Markup-Format ist \code{tex}.
+        Damit bestimmt beispielsweise \code{lua//ascii} Lua für Guards und
+        Kommentare sowie ASCII-Auszeichnung für den Dokumentationstext.
       }{
-        This determines what types of guards and comments can be used; see the table below. 
+        The mode has the form
+        \meta{guard syntax}/\meta{comment syntax}/\meta{markup format}.
+        A missing or empty comment syntax inherits the guard syntax; a missing
+        or empty markup format is \code{tex}. Thus, for example,
+        \code{lua//ascii} selects Lua for guards and comments and ASCII markup
+        for documentation text.
       }
 
-      \begin{tabular}{lll}
-        \textbf{Mode}&\textbf{Guard\ldeen{stil}{ style}}&\textbf{\ldeen{Kommentarstil}{Comment style}}\\\hline
-        \code{tex}&\code{\%<*\meta{Guard}>} / \code{\%</\meta{Guard}>} &\code{\% \meta{\ldeen{Kommentar}{comment}}}\\
-        \code{lua}&\code{--<*\meta{Guard}>} / \code{--</\meta{Guard}>} &\code{-- \meta{\ldeen{Kommentar}{comment}}} / \code{--[[ \meta{\ldeen{Kommentar}{comment}} ]]}\\
-        \code{tex/lua}&\code{\%<*\meta{Guard}>} / \code{\%</\meta{Guard}>} &\code{-- \meta{\ldeen{Kommentar}{comment}}} / \code{--[[ \meta{\ldeen{Kommentar}{comment}} ]]}\\\hline
+      \begin{center}
+      \begin{tabular}{llll}
+        \textbf{\ldeen{Feld}{Field}}&\textbf{\ldeen{Bedeutung}{Meaning}}&
+        \textbf{\ldeen{Werte}{Values}}&\textbf{\ldeen{Vorgabe}{Default}}\\\hline
+        1&\ldeen{Guard-Syntax}{Guard syntax}&\code{tex}, \code{lua}&\code{tex}\\
+        2&\ldeen{Kommentar-Syntax}{Comment syntax}&\code{tex}, \code{lua}&\ldeen{Feld 1}{field 1}\\
+        3&\ldeen{Markup-Format}{Markup format}&\code{tex}, \code{ascii}&\code{tex}\\\hline
       \end{tabular}
+      \end{center}
+
+      \begin{center}
+      \begin{tabular}{ll}
+        \textbf{\ldeen{Eingabe}{Input}}&\textbf{\ldeen{Vollständiger Modus}{Expanded mode}}\\\hline
+        \code{tex}&\code{tex/tex/tex}\\
+        \code{lua}&\code{lua/lua/tex}\\
+        \code{tex/lua}&\code{tex/lua/tex}\\
+        \code{tex//ascii}&\code{tex/tex/ascii}\\
+        \code{lua//ascii}&\code{lua/lua/ascii}\\
+        \code{lua/tex/ascii}&\code{lua/tex/ascii}\\\hline
+      \end{tabular}
+      \end{center}
+      \ldeen{
+        Da das zweite Feld die Kommentar-Syntax bezeichnet, ist beispielsweise
+        \code{tex/ascii} kein Kürzel für ASCII-Text; hierfür ist
+        \code{tex//ascii} zu verwenden.
+      }{
+        Because the second field denotes the comment syntax, \code{tex/ascii}
+        is not shorthand for ASCII text; use \code{tex//ascii} instead.
+      }
+      \ldeen{Für die einzelnen Elemente gilt folgende Syntax:}{The following syntax applies to
+       the individual elements:}
+
+      %\begin{quote}
+        \textbf{Guards}
+        \begin{itemize}[nosep]
+          \item[\option{tex}]: \code{\%<*\meta{Guard}>}~/~\code{\%</\meta{Guard}>}
+          \item[\option{lua}]: \code{--<*\meta{Guard}>}~/~\code{--</\meta{Guard}>}
+        \end{itemize}
+        \textbf{\ldeen{Kommentare}{Comments}}
+        \begin{itemize}[nosep]
+          \item[\option{tex}]: \ldeen{genau eine \code{\%}-Marke, optional
+            gefolgt von einem Leerzeichen. Zeilen mit \code{\%\%} oder mehr
+            Prozentzeichen werden als Quelltext dargestellt}{exactly one
+            \code{\%} character, optionally followed by a space. Lines with
+            \code{\%\%} or more percent characters are rendered as source code}
+          \item[\option{lua}]: \ldeen{mindestens zwei \code{-}-Marken,
+            optional gefolgt von einem Leerzeichen, oder ein Lua-Langkommentar}{
+            at least two \code{-} characters, optionally followed by a space,
+            or a Lua long comment}
+        \end{itemize}
+      \textbf{\ldeen{Auszeichnung}{Markup}}
+      \begin{itemize}[nosep]
+        \item[\option{tex}]: \ldeen{\LaTeX, wobei für eine  bessere Kompatibilität mit \LaTeX3 nicht maskierte Unterstriche innerhalb der Argumente von \cs{cs} und \cs{cs*} maskiert werden.
+        Dadurch können beispielsweise \cs{keys\_set:nn} und
+        \cs*{\_\_module\_function:N} direkt geschrieben werden.
+        Der Makroname muss vollständig in einer Zeile stehen.}{\LaTeX, where, for better
+        compatibility with \LaTeX3, unmasked underscores within the arguments of \cs{cs} and
+        \cs{cs*} are masked.
+        This allows, for example, \cs{keys\_set:nn} and
+        \cs*{\_\_module\_function:N} to be written directly.
+        The macro name must appear entirely on a single line.}
+        \item[\option{ascii}]: \ldeen{Formatierung in einer kleinen, zeilenorientierten
+        Auszeichnungssprache.}{Formatting in a small, line-oriented
+        markup language.}
+        \begin{description}[nosep]
+        \item \code{*text*}: \textbf{text}
+        \item \code{\_text\_}:  \emph{text}
+        \item \code{`code`}: \code{code}
+        \item \code{\textbackslash macro} \ldeen{oder}{or}
+          \code{`\textbackslash macro`}:
+          \cs{macro}
+        \item \code{===\ldots}: \rule{2cm}{1pt} (\ldeen{Trennlinie}{rule})
+        \item \code{\#}/\code{\#\#}: (\ldeen{am Zeilenanfang mit folgendem Leerzeichen}{
+          at the beginning of the line, followed by a space}): \textbf{\ldeen{Überschriften}{headings}}
+        \item \code{-} (\ldeen{am Zeilenanfang mit folgendem Leerzeichen}{at the beginning
+        of the line, followed by a space}): \textbullet~\ldeen{Listenpunkte}{list items}
+        \end{description}
+      \end{itemize}
       \opt*{file}\ldeen{Name der Datei, die eingebunden werden soll.}{Name of file to include.}
       \opt*{guard}\ldeen{
         Name des Guards. Es sind nur einfache Namen zulässig, keine komplexen Guardausdrücke.}{
         Name of the guard. Only simple names are allowed here, no complex guard expressions.}
     \end{options}
   \end{quote}
-  \ldeen{
-    Für eine bessere Kompatibilität mit \LaTeX3 maskiert \cs{AutoDocInput} 
-    in Quelltextkommentaren nicht maskierte Unterstriche innerhalb der Argumente
-    von \cs{cs} und \cs{cs*}.
-    Dadurch können beispielsweise \cs{keys\_set:nn} und
-    \cs*{\_\_module\_function:N} direkt geschrieben werden.
-    Der Makroname muss vollständig in einer Zeile stehen.
-  }{
-    To improve compatibility with \LaTeX3, \cs{AutoDocInput}
-    masks unmasked underscores within the arguments
-    of \cs{cs} and \cs{cs*} in source code comments.
-    This allows, for example, \cs{keys\_set:nn} and
-    \cs*{\_\_module\_function:N} to be written directly.
-    The macro name must appear entirely on a single line.
-  }
   \command{OnlyDescription}\default{}
   \command{MaybeStop}[\marg{text}]
     \ldeen{Die beiden Makros erfüllen die gleiche Funktion wie die gleichnamigen Makros aus dem \pkg{doc}-Paket}{These macros perform the same functions as the macros of the same name from the \pkg{doc} package}.
@@ -202,13 +288,13 @@ load babel
     Die Dateiinformation bei den klassischen (nicht \LaTeX{}3)
     \cs*{Provide\ldots}-Befehlen beruhen auf einen einfachen Lua-Musterabgleich über dem
     optionalen Argument. Wenn sicher ist, dass Dateien \emph{nicht} im \LaTeX{}3-Syntax
-    geschrieben sind, sollte besser @1 benutzt werden.
+    geschrieben sind, kann mit der Option @1 stattdessen @2 benutzt werden.
   }{
     The file information for the classic (non-LaTeX3)
     \cs*{Provide\ldots} commands is based on a simple Lua pattern match using the
     optional argument. If you are certain that files are \emph{not} written in LaTeX3 syntax,
-    it is better to use @1.
-  }{\needpackage*[tex-archive/macros/latex/contrib/fileinfo]{readprov}}
+    option @1 can be used to select @2 instead.
+  }{\code{readprov}}{\needpackage*[tex-archive/macros/latex/contrib/fileinfo]{readprov}}
 
   \item \ldeen{Obwohl das \bnd*{osglecture}-Bundle bemüht ist, die Barrierefreiheit mittels Tagging zu
     unterstützen, erzeugt \osgdoc\ \emph{keine} korrekt getaggten PDFs.}{Although the \bnd*{osglecture} bundle
@@ -290,6 +376,7 @@ load babel
 %   by the user (such as @3, @4, @5).
 % }{\cls*{cnltx-doc}}{\code{load-preamble+}}{\code{load-fonts=false}}{\code{add-index}}{\code{babel-options}}
 \PassOptionsToClass{load-preamble+}{cnltx-doc}
+\DeclareOption{readprov}{\PassOptionsToPackage{readprov}{osgdoc}}
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{cnltx-doc}}
 \ProcessOptions\relax
 \LoadClass{cnltx-doc}
@@ -386,9 +473,15 @@ load babel
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
 \ProvidesExplPackage
 {osgdoc}
-{2026/09/02}
-{v0.4.1}
+{2026/09/08}
+{v0.5.0}
 {small tools for documentation}
+\newif\ifosgdoc@readprov
+\DeclareOption{readprov}{\osgdoc@readprovtrue}
+\ProcessOptions\relax
+\ifosgdoc@readprov
+  \RequirePackage{readprov}
+\fi
 % \ldeen{Wir beginnen mit den Funktionalitäten, die nicht Lua braucht.}{
 % We'll start with the features that doesn't require Lua.}
 % \subsection*{\ldeen{Farbboxen}{Color Boxes}}
@@ -477,20 +570,22 @@ load babel
   \NewDocumentCommand{\AutoDocInput}{O{tex} m m}{
     \textcolor{red}{For use \string\AutoDocInput, you have to translate this document with Lua\LaTeX.}
   }
-  \NewDocumentCommand{\UseVersionOf}{m}{
-    \textcolor{red}{For use \string\UseVersionOf, you have to translate this document with Lua\LaTeX.}
-  }
-  \NewDocumentCommand{\UseDateOf}{m}{
-    \textcolor{red}{For use \string\UseDateOf, you have to translate this document with Lua\LaTeX.}
-  }
+  \ifosgdoc@readprov\else
+    \NewDocumentCommand{\UseVersionOf}{m}{
+      \textcolor{red}{For use \string\UseVersionOf, you have to translate this document with Lua\LaTeX.}
+    }
+    \NewDocumentCommand{\UseDateOf}{m}{
+      \textcolor{red}{For use \string\UseDateOf, you have to translate this document with Lua\LaTeX.}
+    }
+  \fi
   \let\odnext\endinput
 }
 \odnext
 
 % \subsection*{AutoDocInput}
-% \ldeen{Für \cs{AutoDocInput} brauchen wir \pkg{luacode} für das Parsing und \pkg{fancyverb}/\pkg{fvextra} für die 
-% Darstellung}{For \cs{AutoDocInput}, we need \pkg{luacode} for parsing and \pkg{fancyverb}/\pkg{fvextra} for rendering}.
-\RequirePackage{luacode}
+% \ldeen{Für \cs{AutoDocInput} brauchen wir neben \pkg{luacode} für das Parsing noch
+% \pkg{fancyverb}/\pkg{fvextra} für die Darstellung}{For \cs{AutoDocInput}, we need beside \pkg{luacode}
+% for parsing in addition \pkg{fancyverb}/\pkg{fvextra} for rendering}.
 \RequirePackage{fvextra}
 \fvset{formatcom=\color{blue},numbers=left, breaklines, breakafter=~\{\ }
 \begin{luacode*}
@@ -517,45 +612,72 @@ load babel
 autodoc = autodoc or {}
 
 local verbtempfiles = {}
-% \ldeen{Syntaxmodi}{Syntax modes}\\
-% TODO: mode auto?
-local syntaxes = {
-  ["tex"] = {
-    guard_prefix = "%%",
-    comment_kind = "tex",
-  },
-
-  ["lua"] = {
-    guard_prefix = "%-%-",
-    comment_kind = "lua",
-  },
-
-  ["tex/lua"] = {
-    guard_prefix = "%%",
-    comment_kind = "lua",
-  },
-}
-
+% \ldeen{Syntaxmodi}{Syntax modes}
+-- TODO: mode auto?
 local function get_syntax(mode)
   mode = mode or "tex"
+  local fields = {}
 
-  local syntax = syntaxes[mode]
-
-  if syntax then
-    return syntax
+  for field in (mode .. "/"):gmatch("(.-)/") do
+    fields[#fields + 1] = field
   end
 
-  tex.error(
-    "AutoDocInput: unknown syntax mode `" .. tostring(mode) .. "'",
-    {
-      "Supported syntax modes are:",
-      "  tex",
-      "  lua",
-      "  tex/lua",
-    }
-  )
+  local function invalid(message)
+    tex.error(
+      "AutoDocInput: invalid syntax mode `" .. tostring(mode) .. "'",
+      {
+        message,
+        "Expected: guard/comment/format",
+        "Guard and comment syntax: tex or lua",
+        "Text format: tex or ascii",
+      }
+    )
 
-  return syntaxes.tex
+    return {
+      guard_prefix = "%%",
+      comment_kind = "tex",
+      documentation_format = "tex",
+    }
+  end
+
+  if #fields > 3 then
+    return invalid("A syntax mode has at most three fields.")
+  end
+
+  local guard_kind = fields[1]
+  if guard_kind == nil or guard_kind == "" then
+    guard_kind = "tex"
+  end
+
+  local comment_kind = fields[2]
+  if comment_kind == nil or comment_kind == "" then
+    comment_kind = guard_kind
+  end
+
+  local documentation_format = fields[3]
+  if documentation_format == nil or documentation_format == "" then
+    documentation_format = "tex"
+  end
+
+  if guard_kind ~= "tex" and guard_kind ~= "lua" then
+    return invalid("Unknown guard syntax `" .. guard_kind .. "'.")
+  end
+
+  if comment_kind ~= "tex" and comment_kind ~= "lua" then
+    return invalid("Unknown comment syntax `" .. comment_kind .. "'.")
+  end
+
+  if documentation_format ~= "tex" and documentation_format ~= "ascii" then
+    return invalid(
+      "Unknown documentation text format `" .. documentation_format .. "'."
+    )
+  end
+
+  return {
+    guard_prefix = guard_kind == "tex" and "%%" or "%-%-",
+    comment_kind = comment_kind,
+    documentation_format = documentation_format,
+  }
 end
 
 % \ldeen{Helper für Lua-Patterns}{Lua-pattern helpers}
@@ -617,8 +739,16 @@ local function tex_comment_text(line)
     return nil
   end
 
-  return line:match("^%s*%%+%s?(.*)$")
+  local markers, text = line:match("^%s*(%%+)%s?(.*)$")
+
+  if markers == "%" then
+    return text
+  end
+
+  return nil
 end
+
+autodoc.tex_comment_text = tex_comment_text
 
 local function lua_line_comment_text(line)
   -- Again: a Lua guard is not a documentation comment.
@@ -819,6 +949,161 @@ local function escape_cs_underscores(text)
   return table.concat(result)
 end
 
+% \ldeen{Kleine ASCII-Auszeichnungssprache für Dokumentationskommentare.}
+%   {Small ASCII markup language for documentation comments.}
+local function ascii_escape_text(text)
+  local replacements = {
+    ["#"] = "\\#",
+    ["$"] = "\\$",
+    ["%"] = "\\%",
+    ["&"] = "\\&",
+    ["{"] = "\\{",
+    ["}"] = "\\}",
+    ["~"] = "\\textasciitilde{}",
+    ["^"] = "\\textasciicircum{}",
+    ["_"] = "\\_",
+  }
+
+  return (text:gsub("[#%$%%&{}~^_]", replacements))
+end
+
+local function ascii_escape_code(text)
+  local replacements = {
+    ["\\"] = "\\textbackslash{}",
+    ["#"] = "\\#",
+    ["$"] = "\\$",
+    ["%"] = "\\%",
+    ["&"] = "\\&",
+    ["{"] = "\\{",
+    ["}"] = "\\}",
+    ["~"] = "\\textasciitilde{}",
+    ["^"] = "\\textasciicircum{}",
+    ["_"] = "\\_",
+  }
+
+  return (text:gsub("[\\#%$%%&{}~^_]", replacements))
+end
+
+local function ascii_delimiter_can_open(text, position, marker)
+  if marker == "`" then
+    return true
+  end
+
+  local before = text:sub(position - 1, position - 1)
+  local after = text:sub(position + 1, position + 1)
+  return not before:match("[%w_]") and not after:match("%s")
+end
+
+local function ascii_delimiter_can_close(text, position, marker)
+  if marker == "`" then
+    return true
+  end
+
+  local before = text:sub(position - 1, position - 1)
+  local after = text:sub(position + 1, position + 1)
+  return not before:match("%s") and not after:match("[%w_]")
+end
+
+local function ascii_find_closing(text, marker, start)
+  local position = start
+
+  while true do
+    position = text:find(marker, position, true)
+
+    if position == nil then
+      return nil
+    end
+
+    if not is_escaped(text, position)
+      and ascii_delimiter_can_close(text, position, marker)
+    then
+      return position
+    end
+
+    position = position + 1
+  end
+end
+
+local function ascii_inline_to_tex(text)
+  local result = {}
+  local plain = {}
+  local position = 1
+
+  local function flush_plain()
+    if #plain > 0 then
+      result[#result + 1] = ascii_escape_text(table.concat(plain))
+      plain = {}
+    end
+  end
+
+  while position <= #text do
+    local character = text:sub(position, position)
+
+    if character == "\\" then
+      local following = text:sub(position + 1, position + 1)
+      local name = text:sub(position + 1):match("^([%a@_:][%w@_:]*)")
+
+      if name ~= nil then
+        flush_plain()
+        result[#result + 1] = "\\cs{" .. name .. "}"
+        position = position + #name + 1
+      elseif following == "`" or following == "*" or following == "_" then
+        flush_plain()
+        if following == "_" then
+          result[#result + 1] = "\\_"
+        elseif following == "`" then
+          result[#result + 1] = "\\textasciigrave{}"
+        else
+          result[#result + 1] = following
+        end
+        position = position + 2
+      else
+        flush_plain()
+        result[#result + 1] = "\\textbackslash{}"
+        position = position + 1
+      end
+
+    elseif (character == "`" or character == "*" or character == "_")
+      and ascii_delimiter_can_open(text, position, character)
+    then
+      local closing = ascii_find_closing(text, character, position + 1)
+
+      if closing ~= nil and closing > position + 1 then
+        local contents = text:sub(position + 1, closing - 1)
+        flush_plain()
+
+        if character == "`" then
+          local cs_name = contents:match("^\\([%a@_:][%w@_:]*)$")
+
+          if cs_name ~= nil then
+            result[#result + 1] = "\\cs{" .. cs_name .. "}"
+          else
+            result[#result + 1] = "\\code{" .. ascii_escape_code(contents) .. "}"
+          end
+        elseif character == "*" then
+          result[#result + 1] = "\\textbf{" .. ascii_inline_to_tex(contents) .. "}"
+        else
+          result[#result + 1] = "\\emph{" .. ascii_inline_to_tex(contents) .. "}"
+        end
+
+        position = closing + 1
+      else
+        plain[#plain + 1] = character
+        position = position + 1
+      end
+
+    else
+      plain[#plain + 1] = character
+      position = position + 1
+    end
+  end
+
+  flush_plain()
+  return table.concat(result)
+end
+
+autodoc.ascii_inline_to_tex = ascii_inline_to_tex
+
 % \ldeen{Temporäre Verbatim-Dateien}{Temporary verbatim files}
 local function unique_temp_name()
   local name = string.format(
@@ -910,6 +1195,7 @@ function autodoc.autodoc_process(filename, guard, mode)
   local verbatim_filename = nil
 
   local line_number = 0
+  local documentation_list_open = false
 
   local function warn(message)
     tex.warning(
@@ -922,8 +1208,53 @@ function autodoc.autodoc_process(filename, guard, mode)
     )
   end
 
+  local function close_documentation_list()
+    if documentation_list_open then
+      tex.print("\\end{itemize}")
+      documentation_list_open = false
+    end
+  end
+
   local function print_documentation(text)
-    tex.print(escape_cs_underscores(text or ""))
+    text = text or ""
+
+    if syntax.documentation_format ~= "ascii" then
+      tex.print(escape_cs_underscores(text))
+      return
+    end
+
+    local heading_marks, heading = text:match("^%s*(##?)%s+(.+)%s*$")
+
+    if heading ~= nil then
+      close_documentation_list()
+      local command = heading_marks == "#" and "section" or "subsection"
+      tex.print(
+        "\\" .. command .. "{"
+          .. escape_cs_underscores(ascii_inline_to_tex(heading))
+          .. "}"
+      )
+      return
+    end
+
+    local item = text:match("^%s*%-%s+(.+)$")
+
+    if item ~= nil then
+      if not documentation_list_open then
+        tex.print("\\begin{itemize}")
+        documentation_list_open = true
+      end
+
+      tex.print("\\item " .. escape_cs_underscores(ascii_inline_to_tex(item)))
+      return
+    end
+
+    close_documentation_list()
+
+    if text:match("^%s*===+%s*$") then
+      tex.print("\\par\\smallskip\\noindent\\hrule\\smallskip")
+    else
+      tex.print(escape_cs_underscores(ascii_inline_to_tex(text)))
+    end
   end
 
   local function open_verbatim(first_line)
@@ -1088,6 +1419,7 @@ function autodoc.autodoc_process(filename, guard, mode)
 
       elseif state == START then
         if closing then
+          close_documentation_list()
           -- Leerer Guard-Bereich; es wurde keine Datei geöffnet.
           state = OUTSIDE
 
@@ -1102,6 +1434,7 @@ function autodoc.autodoc_process(filename, guard, mode)
           state = COMMENT
 
         else
+          close_documentation_list()
           if open_verbatim(line) then
             state = VERBATIM
           else
@@ -1131,6 +1464,7 @@ function autodoc.autodoc_process(filename, guard, mode)
 
       elseif state == COMMENT then
         if closing then
+          close_documentation_list()
           state = OUTSIDE
 
         elseif opening then
@@ -1143,6 +1477,7 @@ function autodoc.autodoc_process(filename, guard, mode)
           print_documentation(documentation)
 
         else
+          close_documentation_list()
           if open_verbatim(line) then
             state = VERBATIM
           else
@@ -1171,6 +1506,8 @@ function autodoc.autodoc_process(filename, guard, mode)
     warn("unterminated Lua long comment")
   end
 
+  close_documentation_list()
+
   -- A file can be open in both, VERBATIM or OUTSIDE_VERBATIM
   if verbatim_file ~= nil then
     close_verbatim()
@@ -1198,13 +1535,15 @@ luatexbase.add_to_callback(
 % }{
 % Both, @1 and @2 use the lua function @3.
 % }{\cs{UseVersionOf}}{\cs{UseDateOf}}{\code{useversion}}
-\NewExpandableDocumentCommand{\UseVersionOf}{m}{%
-  \directlua{fileinfo.useversion(\luastring{#1})}%
-}
+\ifosgdoc@readprov\else
+  \NewExpandableDocumentCommand{\UseVersionOf}{m}{%
+    \directlua{fileinfo.useversion(\luastring{#1})}%
+  }
 
-\NewExpandableDocumentCommand{\UseDateOf}{m}{%
-  \directlua{fileinfo.usedate(\luastring{#1})}%
-}
+  \NewExpandableDocumentCommand{\UseDateOf}{m}{%
+    \directlua{fileinfo.usedate(\luastring{#1})}%
+  }
+\fi
 
 \begin{luacode*}
 fileinfo = fileinfo or {}

@@ -1,0 +1,18 @@
+\input regression-test
+\documentclass{article}
+\usepackage[readprov]{osgdoc}
+\ReadFileInfos{fixture-classic.sty}
+\begin{document}
+\START
+\makeatletter
+\@ifpackageloaded{readprov}
+  {\TYPE{readprov-loaded=true}}
+  {\TYPE{readprov-loaded=false}}
+\makeatother
+\edef\ReadprovVersion{\UseVersionOf{fixture-classic.sty}}
+\edef\ReadprovDate{\UseDateOf{fixture-classic.sty}}
+\TYPE{readprov-version=\ReadprovVersion}
+\TYPE{readprov-date=\ReadprovDate}
+\END
+\end{document}
+

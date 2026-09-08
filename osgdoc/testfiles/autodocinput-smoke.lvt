@@ -14,7 +14,46 @@
 \hfuzz=\maxdimen
 \AutoDocInput{fixture-guarded.tex}{demo}
 \AutoDocInput[lua]{fixture-guarded.lua}{demo}
+\AutoDocInput[tex//ascii]{fixture-ascii.tex}{demo}
+\AutoDocInput[lua//ascii]{fixture-ascii.lua}{demo}
+\AutoDocInput[tex/lua/ascii]{fixture-ascii-mixed.tex}{lua-comments}
+\AutoDocInput[lua/tex/ascii]{fixture-ascii-mixed.tex}{tex-comments}
 \endgroup
+\begin{luacode*}
+local cases = {
+  { "*bold*", "\\textbf{bold}" },
+  { "_italic_", "\\emph{italic}" },
+  { "`code_value`", "\\code{code\\_value}" },
+  { "\\keys_set:nn", "\\cs{keys_set:nn}" },
+  { "plain_name", "plain\\_name" },
+  { "*Use \\foo.*", "\\textbf{Use \\cs{foo}.}" },
+  { "\\*literal\\*", "*literal*" },
+  { "`\\foo_bar`", "\\cs{foo_bar}" },
+}
+
+for number, case in ipairs(cases) do
+  texio.write_nl(
+    "log",
+    "autodocinput-ascii-" .. number .. "="
+      .. tostring(autodoc.ascii_inline_to_tex(case[1]) == case[2])
+  )
+end
+texio.write_nl(
+  "log",
+  "autodocinput-single-percent="
+    .. tostring(autodoc.tex_comment_text("% documentation") == "documentation")
+)
+texio.write_nl(
+  "log",
+  "autodocinput-double-percent="
+    .. tostring(autodoc.tex_comment_text("%% source comment") == nil)
+)
+texio.write_nl(
+  "log",
+  "autodocinput-triple-percent="
+    .. tostring(autodoc.tex_comment_text("%%% source comment") == nil)
+)
+\end{luacode*}
 \directlua{texio.write_nl("log", "autodocinput-completed=true")}
 \END
 \end{document}
