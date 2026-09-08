@@ -6,16 +6,16 @@
 \START
 \TYPE{default=\SemCatDefaultCategory}
 \TYPE{color-name-A=\SemCatColor{A}}
-\TYPE{label-B=\SemCatLabel{B}}
+\TYPE{title-B=\SemCatTitle{B}}
 \extractcolorspec{semcat-A}\TestColorA
 \TYPE{color-A=\TestColorA}
 \extractcolorspec{semcat-D}\TestColorD
 \TYPE{color-D=\TestColorD}
-\SemCatDefine{E}[label={Extra}]
-\TYPE{label-E=\SemCatLabel{E}}
+\SemCatDefine{E}[title={Extra}]
+\TYPE{title-E=\SemCatTitle{E}}
 \extractcolorspec{semcat-E}\TestColorE
 \TYPE{color-E=\TestColorE}
-\SemCatDefine{F}[label={Explicit}, color=teal]
+\SemCatDefine{F}[title={Explicit}, color=teal]
 \extractcolorspec{semcat-F}\TestColorF
 \TYPE{color-F=\TestColorF}
 \ExplSyntaxOn

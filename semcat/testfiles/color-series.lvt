@@ -1,0 +1,22 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osgstyler}
+\usepackage{semcat}
+
+\SemCatDefine{E}
+\SemCatDefine{F}
+\SemCatDefine{G}
+\SemCatDefine{H}
+\SemCatDefine{I}
+
+\begin{document}
+\START
+\TYPE{series-count=\OsgColorSeriesCount{semcat-categories}}
+\extractcolorspec{semcat-G}\TestColorG
+\TYPE{color-seven=\TestColorG}
+\extractcolorspec{semcat-H}\TestColorH
+\TYPE{color-eight=\TestColorH}
+\extractcolorspec{semcat-I}\TestColorI
+\TYPE{color-wrap=\TestColorI}
+\END
+\end{document}

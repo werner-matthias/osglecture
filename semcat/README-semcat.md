@@ -27,18 +27,18 @@ Categories `A` (the default), `B`, `C`, and `D` are predefined; further
 categories are declared with `\SemCatDefine`:
 
 ```tex
-\SemCatDefine{E}[label={Historical background}, color=teal]
-\SemCatDefine*{F}[label={Core material}, slot=primary]
+\SemCatDefine{E}[title={Historical background}, color=teal]
+\SemCatDefine*{F}[title={Core material}, slot=primary]
 ```
 
 Without an explicit `color` or `slot`, colors are assigned round-robin from a
-dedicated `semcat-categories` palette while `osgstyler` is loaded, otherwise
-from a built-in color sequence; `slot` only takes effect while `osgstyler` is
-actually loaded. This palette is kept separate from the document's generic
-theme slots on purpose -- switching themes shouldn't also change category
-colors -- and defaults to ColorBrewer "Dark2"; redeclare `semcat-categories`
-via `\DeclareOsgColorPalette` (after loading `semcat`) for different category
-colors.
+dedicated `semcat-categories` color series while `osgstyler` is loaded,
+otherwise from a built-in color sequence; `slot` only takes effect while
+`osgstyler` is actually loaded. This series is kept separate from the
+document's generic theme slots on purpose -- switching themes shouldn't also
+change category colors -- and defaults to all eight colors of ColorBrewer
+"Dark2". Redeclare it via `\DeclareOsgColorSeries` (after loading `semcat`) to
+use any desired number of category colors.
 
 A category can also specify *how* its block-level marking renders: as a box
 (the default) or a continuous margin bar. While `osgstyler` is loaded, a
@@ -49,12 +49,12 @@ depending on the active `osglecture-modes` mode, on top of the unqualified
 default:
 
 ```tex
-\SemCatDefine{G}[label={Aside}, style=bar]
+\SemCatDefine{G}[title={Aside}, style=bar]
 \DeclareOsgDecoration{marked-caution}{
   enclosure = { border-color=accent, fill-color=secondary }
 }
 \SemCatDefine{H}[
-  label={Caution}, decoration=marked-caution,
+  title={Caution}, decoration=marked-caution,
   variants={ slides = {style=box} }
 ]
 ```
@@ -65,7 +65,7 @@ start of the margin bar or in the box header:
 
 ```tex
 \SemCatDeclareSymbol{pin}{\ding{43}}
-\SemCatDefine{J}[label={Caution}, symbol=warning]
+\SemCatDefine{J}[title={Caution}, symbol=warning]
 ```
 
 `symbol` names a registered symbol; `\SemCatDeclareSymbol` registers further

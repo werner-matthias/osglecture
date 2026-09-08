@@ -9,8 +9,8 @@
 \DeclareOsgDecoration{semcat-test-enclosure}{
   enclosure = { border-color = primary, fill-color = secondary, thickness = 1pt, radius = 6pt }
 }
-\SemCatDefine{G}[label={Via margin decoration}, decoration=semcat-test-margin]
-\SemCatDefine{H}[label={Via enclosure decoration}, decoration=semcat-test-enclosure]
+\SemCatDefine{G}[title={Via margin decoration}, decoration=semcat-test-margin]
+\SemCatDefine{H}[title={Via enclosure decoration}, decoration=semcat-test-enclosure]
 
 \begin{document}
 \START

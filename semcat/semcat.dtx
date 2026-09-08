@@ -7,7 +7,7 @@
 \preamble
 
 ========================================================================
- semcat - generalized semantic-category markup with optional QR codes.
+ semcat - generalized semantic-category markup.
 
  (C) 2026 Matthias Werner
  E-mail: matthias.werner@informatik.tu-chemnitz.de
@@ -31,7 +31,7 @@
 %<*package>
 \NeedsTeXFormat{LaTeX2e}[2022-06-01]
 \ProvidesExplPackage{semcat}{2026-08-31}{v0.3.0}
-  {Generalized semantic-category markup with optional QR annotations}
+  {Generalized semantic-category markup}
 \ExplSyntaxOff
 %</package>
 %<*driver>
@@ -56,41 +56,25 @@ load babel
   version  = \UseVersionOf{semcat.sty},
   date     = \UseDateOf{semcat.sty},
   title    = {\ldeen{Das \semcat\ Paket}{The \semcat\ Package}},
-  info     = {\ldeen{Semantische Kategorienmarkierung mit optionalen QR-Codes}{
-      Semantic category markup with optional QR codes}},
+  info     = {\ldeen{Semantische Kategorienmarkierung}{
+      Semantic category markup}},
   authors  = {Matthias Werner[matthias.werner@informatik.tu-chemnitz.de]},
   abstract={
     \ldeen*{
       Das Paket ordnet Textabschnitte benannten, farblich unterschiedenen
-      Kategorien zu -- etwa "`Pflichtstoff"', "`Vertiefung"' oder
-      "`Hintergrund"' -- und stellt dafür Inline-Markierung, eine über
-      mehrere Absätze und Seitenumbrüche hinweg tragfähige Block-Markierung
-      (Box oder durchgehender Randbalken), eine schwebende Erklärbox sowie
-      QR-Code-Annotationen bereit. Kategorien sind frei definierbar; ist
-      @1 geladen, können Farbe und Darstellung aus dessen Paletten und
-      Dekorationen stammen. Sind @2 aktiv, folgen Sichtbarkeit und
-      Darstellung den Modi; bei aktivem @3 erzeugen die Markierungen
+      Kategorien zu, im Kontext von \bnd{osglecture} etwa Kategorien wie 
+      \enquote{Pflichtstoff}, \enquote{Vertiefung} oder \enquote{Hintergrund}.
+      Dafür stellt es verschiedene Möglichkeiten bereit: Inline-Markierungen, 
+      Randbalken oder Boxen, sowie gleitenden Erklärboxen und
+      QR-Code-Annotationen bereit. Kategorien sind frei definierbar.
+      Ist @2 aus @1 aktiv, folgen Sichtbarkeit und
+      Darstellung den Modi. Bei aktivem @3 erzeugen die Markierungen
       eigene PDF-Tag-Strukturen.
 
-      Das Paket ist Teil des \pkg*{osglecture}-Bundles, hängt aber -- bis
-      auf diese beiden optionalen Integrationen -- von keinem anderen
-      Paket des Bundles ab und ist eigenständig nutzbar.
+      Das Paket ist Teil des @1-Bundles, ist aber eigenständig nutzbar.
     }{
-      This package assigns passages of text to named, color-distinguished
-      categories -- for instance "required", "supplementary", or
-      "background" -- and provides inline marking, a block-level marking
-      that survives multiple paragraphs and page breaks (a box or a
-      continuous margin bar), a floating explanation box, and QR-code
-      annotations for them. Categories are freely definable; when @1 is
-      loaded, color and rendering may come from its palettes and
-      decorations. When @2 is active, visibility and rendering follow
-      the active modes; when @3 is active, the markup produces its own
-      PDF tag structures.
-
-      This package is part of the \pkg*{osglecture} bundle, but -- apart
-      from those two optional integrations -- depends on none of the
-      bundle's other packages and can be used on its own.
-    }{\pkg{osgstyler}}{\pkg{osglecture-modes}}{\cs{DocumentMetadata}\Marg{tagging=on}}
+      % TODO: englisch
+    }{\bnd{osglecture}}{\pkg{osglecture-modes}}{\cs{DocumentMetadata}\Marg{tagging=on}}
   },
   url      =https://github.com/werner-matthias/osglecture,
   build-title
@@ -99,49 +83,52 @@ load babel
 % --------------------------------------------------------------------------
 % Documentation
 % --------------------------------------------------------------------------
+\section{\ldeen{Einführung}{Introduction}}
+% TODO: Warum sollte man semcat nutzen? Was sind Kategorien bzw. was wird hier
+% darunter verstanden?
+
 \section{\ldeen{Nutzung}{Usage}}
+
 
 \subsection{\ldeen{Kategorien}{Categories}}
 
-\ldeen{
-  Vier Kategorien -- \code{A} (Standardkategorie), \code{B}, \code{C} und
-  \code{D} -- sind vordefiniert. Eigene Kategorien legt \cs{SemCatDefine}
-  an:
-}{
-  Four categories -- \code{A} (the default), \code{B}, \code{C} and
-  \code{D} -- are predefined. \cs{SemCatDefine} declares further
-  categories:
-}
+\begin{commands}
+  \command{SemCatDefine}[\marg{}]
+\end{commands}
+
+\begin{options}
+  
+\end{options}
 
 \begin{verbatim}
-\SemCatDefine{E}[label={Historical background}, color=teal]
-\SemCatDefine*{F}[label={Core material}, slot=primary]
+\SemCatDefine{A}[title={Historical background}, color=teal]
+\SemCatDefine*{B}[title={Core material}, slot=primary]
 \end{verbatim}
 
 \ldeen*{
   Die Sternform macht die Kategorie zur neuen Standardkategorie. Ohne
   @1-Schlüssel wird die Farbe reihum aus der eigens dafür vorgesehenen
-  Palette \code{semcat-categories} vergeben, sofern \pkg{osgstyler}
-  geladen ist, sonst aus einer eingebauten Farbfolge. Diese Palette ist
+  Farbserie \code{semcat-categories} vergeben, sofern \pkg{osgstyler}
+  geladen ist, sonst aus einer eingebauten Farbfolge. Diese Serie ist
   bewusst von den generischen Theme-Slots getrennt: Ein Themenwechsel
   im Dokument soll die Kategoriefarben nicht mitverändern. Ihre
-  Vorgabewerte stammen aus ColorBrewer~"`Dark2"'; wer andere
+  Vorgabewerte sind alle acht Farben von ColorBrewer~"`Dark2"'; wer andere
   Kategoriefarben möchte, deklariert \code{semcat-categories} nach dem
-  Laden von semcat einfach erneut mit \cs{DeclareOsgColorPalette}. Der
-  @2-Schlüssel wählt gezielt einen Slot dieser Palette -- wirkt aber
+  Laden von\pkg{semcat}einfach erneut mit \cs{DeclareOsgColorSeries}. Der
+  @2-Schlüssel wählt gezielt einen Slot der aktiven Theme-Palette -- wirkt aber
   nur, solange \pkg{osgstyler} geladen ist; ohne das Paket greift
   wieder die eingebaute Rotation.
 }{
   The star form makes the category the new default. Without a @1 key,
   the color is assigned round-robin from the dedicated
-  \code{semcat-categories} palette while \pkg{osgstyler} is loaded,
-  otherwise from a built-in color sequence. This palette is
+  \code{semcat-categories} color series while \pkg{osgstyler} is loaded,
+  otherwise from a built-in color sequence. This series is
   deliberately kept separate from the generic theme slots: switching
   the document's theme should not also change category colors. Its
-  defaults come from ColorBrewer "Dark2"; anyone wanting different
+  defaults are all eight colors of ColorBrewer "Dark2"; anyone wanting different
   category colors simply declares \code{semcat-categories} again
-  after loading semcat, via \cs{DeclareOsgColorPalette}. The @2 key
-  picks a slot of this palette explicitly -- but only while
+  after loading semcat, via \cs{DeclareOsgColorSeries}. The @2 key
+  picks a slot of the active theme palette explicitly -- but only while
   \pkg{osgstyler} is loaded; without it, the built-in rotation applies
   instead.
 }{\code{color}}{\code{slot}}
@@ -164,11 +151,11 @@ load babel
 }
 
 \begin{verbatim}
-\SemCatDefine{G}[label={Aside}, style=bar]
+\SemCatDefine{G}[title={Aside}, style=bar]
 \DeclareOsgDecoration{marked-caution}{
   enclosure = { border-color=accent, fill-color=secondary }
 }
-\SemCatDefine{H}[label={Caution}, decoration=marked-caution]
+\SemCatDefine{H}[title={Caution}, decoration=marked-caution]
 \end{verbatim}
 
 \ldeen*{
@@ -184,7 +171,7 @@ load babel
 
 \begin{verbatim}
 \SemCatDefine{I}[
-  label={Aside}, style=box,
+  title={Aside}, style=box,
   variants={ slides = {style=bar} }
 ]
 \end{verbatim}
@@ -219,7 +206,7 @@ load babel
 
 \begin{verbatim}
 \SemCatDeclareSymbol{pin}{\ding{43}}
-\SemCatDefine{J}[label={Caution}, symbol=warning]
+\SemCatDefine{J}[title={Caution}, symbol=warning]
 \end{verbatim}
 
 \subsection{\ldeen{Markierung}{Marking}}
@@ -395,7 +382,7 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
 }
 
 \section{Implementation}
-\MaybeStop{\ldeen*{Um die Implementationsbeschreibung zu erhalten, kommentieren Sie bitte \cs{OnlyDescription} in @1 aus.}{To view the implementation description, please uncomment @1 in \code{osgdoc.dtx}.}{\file{semcat.dtx}}}
+\MaybeStop{\ldeen*{Um die Implementationsbeschreibung zu erhalten, kommentieren Sie bitte \cs{OnlyDescription} in @1 aus.}{To view the implementation description, please uncomment @1 in \code{osgdoc.dtx}.}{\File{semcat.dtx}}}
 
 \subsection{\emph{semcat.sty}}
 \AutoDocInput{semcat.dtx}{package}
@@ -406,7 +393,7 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
 %</driver>
 
 %<*package>
-\RequirePackage[dvipsnames]{xcolor}
+\RequirePackage{xcolor}
 \RequirePackage{luacolor}
 \RequirePackage{qrcode}
 \RequirePackage{marginnote}
@@ -424,37 +411,41 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
 % Category registry
 % ---------------------------------------------------------------------
 \seq_new:N \g__semcat_categories_seq
-\prop_new:N \g__semcat_category_label_prop
+\prop_new:N \g__semcat_category_title_prop
 \tl_new:N \g__semcat_default_category_tl
 \tl_new:N \l__semcat_tmp_tl
 \tl_new:N \l__semcat_tmp_color_tl
 
 \int_new:N \g__semcat_fallback_slot_int
 \clist_new:N \c__semcat_fallback_colors_clist
+\definecolor{semcat-fallback-1}{cmyk}{.94,.54,0,0}
+\definecolor{semcat-fallback-2}{cmyk}{0,.51,1,0}
+\definecolor{semcat-fallback-3}{cmyk}{.64,0,.95,.40}
+\definecolor{semcat-fallback-4}{cmyk}{.07,.90,0,.34}
+\definecolor{semcat-fallback-5}{cmyk}{.85,0,.20,0}
+\definecolor{semcat-fallback-6}{cmyk}{.50,1,0,0}
+\definecolor{semcat-fallback-7}{cmyk}{0,.81,1,.60}
+\definecolor{semcat-fallback-8}{cmyk}{0,0,0,.50}
 \clist_set:Nn \c__semcat_fallback_colors_clist
-  { NavyBlue, BurntOrange, OliveGreen, RedViolet, Turquoise, Plum }
+  {
+    semcat-fallback-1, semcat-fallback-2, semcat-fallback-3,
+    semcat-fallback-4, semcat-fallback-5, semcat-fallback-6,
+    semcat-fallback-7, semcat-fallback-8
+  }
 
-% \ldeen{Statt die reihum vergebenen Kategoriefarben aus dem
-% Aktiv-Theme zu ziehen (\cs{OsgColorName}, an das jeweils
-% \emph{aktive} \cs{UseOsgColorPalette} gebunden), deklariert semcat
-% eine eigene, feste Palette \code{semcat-categories}: Ein
-% Themenwechsel im Dokument soll die Kategoriefarben nicht
-% mitverändern, und die Slots eines gewöhnlichen Themes (\code{primary}
-% etc.) sind auf Harmonie \emph{innerhalb} eines Themes ausgelegt, nicht
-% auf gegenseitige Unterscheidbarkeit als Kategoriensatz. Die
+% \ldeen{semcat deklariert eine eigene Farbserie \code{semcat-categories}
+% Die
 % Vorgabewerte stammen aus ColorBrewer~"`Dark2"' (eine verbreitete,
 % für gute Unterscheidbarkeit ausgelegte qualitative Palette). Wer
 % andere Kategoriefarben möchte, deklariert \code{semcat-categories}
-% nach dem Laden von semcat einfach erneut mit
-% \cs{DeclareOsgColorPalette} -- eine erneute Deklaration desselben
-% Namens ist in osgstyler ausdrücklich vorgesehen. \code{text} und
-% \code{background} bleiben absichtlich unbelegt: sie sind für
-% Fließtext-/Seitenfarbe reserviert und ungeeignet als
-% Kategorieakzent, und diese Palette ist ohnehin nicht dazu gedacht,
-% selbst per \cs{UseOsgColorPalette} aktiviert zu werden.}{Rather than
+% nach dem Laden von\pkg{semcat}einfach erneut mit
+% \cs{DeclareOsgColorSeries} -- eine erneute Deklaration desselben
+% Namens ist in osgstyler ausdrücklich vorgesehen. Farbserien haben keine
+% Rollen wie \code{primary} oder \code{accent}; die Position eines Eintrags
+% ist seine einzige Identität.}{Rather than
 % drawing the round-robin category colors from the active theme
 % (\cs{OsgColorName}, tied to whichever \cs{UseOsgColorPalette} is
-% \emph{active}), semcat declares its own, fixed palette
+% \emph{active}),\pkg{semcat}declares its own, fixed color series
 % \code{semcat-categories}: switching the document's theme should not
 % also change category colors, and an ordinary theme's slots
 % (\code{primary} etc.) are tuned for harmony \emph{within} one theme,
@@ -462,27 +453,24 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
 % come from ColorBrewer "Dark2" (a widely used qualitative palette
 % chosen for distinguishability). Anyone wanting different category
 % colors simply declares \code{semcat-categories} again after loading
-% semcat, via \cs{DeclareOsgColorPalette} -- redeclaring the same name
-% is explicitly supported by osgstyler. \code{text} and
-% \code{background} are deliberately left unset: they are reserved for
-% body-text/page color and unsuited as a category accent, and this
-% palette is not meant to ever be activated itself via
-% \cs{UseOsgColorPalette} anyway.}
-\clist_new:N \c__semcat_palette_slots_clist
-\clist_set:Nn \c__semcat_palette_slots_clist
-  { primary, secondary, accent, structure, alert, example }
+% semcat, via \cs{DeclareOsgColorSeries} -- redeclaring the same name
+% is explicitly supported by osgstyler. Color-series entries have no roles
+% such as \code{primary} or \code{accent}; their position is their only
+% identity.}
 \tl_const:Nn \c__semcat_palette_name_tl { semcat-categories }
 
 \cs_new_protected:Npn \__semcat_declare_default_palette:
   {
-    \exp_args:No \DeclareOsgColorPalette { \c__semcat_palette_name_tl }
+    \exp_args:No \DeclareOsgColorSeries { \c__semcat_palette_name_tl }
       {
-        primary   = { model = HTML, value = 1B9E77 },
-        secondary = { model = HTML, value = D95F02 },
-        accent    = { model = HTML, value = 7570B3 },
-        structure = { model = HTML, value = E7298A },
-        alert     = { model = HTML, value = 66A61E },
-        example   = { model = HTML, value = E6AB02 }
+        { model = HTML, value = 1B9E77 },
+        { model = HTML, value = D95F02 },
+        { model = HTML, value = 7570B3 },
+        { model = HTML, value = E7298A },
+        { model = HTML, value = 66A61E },
+        { model = HTML, value = E6AB02 },
+        { model = HTML, value = A6761D },
+        { model = HTML, value = 666666 }
       }
   }
 \IfPackageLoadedTF { osgstyler }
@@ -490,27 +478,6 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
   {
     \AddToHook { package/osgstyler/after } [ semcat/palette ]
       { \__semcat_declare_default_palette: }
-  }
-
-% \ldeen{Definiert (bzw. redefiniert, falls schon vorhanden) unter
-% einem fest aus #1/#2 gebildeten Namen eine xcolor-Farbe mit dem
-% aktuellen Wert des Slots #2 der Palette #1 -- absichtlich bei jedem
-% Aufruf frisch aus \cs{OsgColorPaletteValue} gelesen, statt einmalig
-% zwischengespeichert, damit eine spätere Neudeklaration von #1
-% (z.\,B. durch den Nutzer) auch rückwirkend wirkt, solange sie vor
-% dem jeweiligen \cs{SemCatDefine}-Aufruf erfolgt.}{Defines (or
-% redefines, if already existing) an xcolor color, under a name built
-% deterministically from #1/#2, holding the current value of palette
-% #1's slot #2 -- deliberately read fresh from \cs{OsgColorPaletteValue}
-% on every call rather than cached once, so that a later redeclaration
-% of #1 (e.g. by the user) still takes effect, as long as it happens
-% before the relevant \cs{SemCatDefine} call.}
-\cs_new_protected:Npn \__semcat_palette_color:nnN #1#2#3
-  {
-    \tl_set:Nx \l__semcat_tmp_tl { \OsgColorPaletteValue {#1} {#2} {model} }
-    \tl_set:Nx \l__semcat_tmp_color_tl { \OsgColorPaletteValue {#1} {#2} {value} }
-    \tl_set:Nx #3 { semcat-palettecolor-#2 }
-    \exp_args:Nooo \definecolor #3 { \l__semcat_tmp_tl } { \l__semcat_tmp_color_tl }
   }
 
 \msg_new:nnn { semcat } { unknown-category }
@@ -533,7 +500,7 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
 % "`Symbol-Backend"'-Mechanismus, der \code{symbol}-Referenzen in
 % tatsächliche Glyphen übersetzt (osgstylers eigene Dokumentation weist
 % ausdrücklich darauf hin, dass aktuell kein Backend dafür existiert).
-% semcat übernimmt diese Rolle selbst, mit \pkg{pifont} als Backend --
+%\pkg{semcat}übernimmt diese Rolle selbst, mit \pkg{pifont} als Backend --
 % universell verfügbar, ohne Font-Abdeckungsrisiko, im Gegensatz zu
 % Unicode-Symbolen, die in Fließtextschriften oft fehlen.}{A small,
 % self-contained symbol registry: when no color is available
@@ -544,7 +511,7 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
 % does not itself ship a "symbol backend" mechanism that resolves
 % \code{symbol} references into actual glyphs (osgstyler's own
 % documentation explicitly notes that no such backend currently
-% exists). semcat takes on that role itself, using \pkg{pifont} as the
+% exists).\pkg{semcat}takes on that role itself, using \pkg{pifont} as the
 % backend -- universally available, with no font-coverage risk, unlike
 % Unicode symbols, which are often missing from body-text fonts.}
 \prop_new:N \g__semcat_symbol_prop
@@ -597,8 +564,8 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
 
 \cs_new:Npn \__semcat_color_name:n #1 { semcat-#1 }
 \NewExpandableDocumentCommand \SemCatColor { m } { \__semcat_color_name:n {#1} }
-\NewExpandableDocumentCommand \SemCatLabel { m }
-  { \prop_item:Nn \g__semcat_category_label_prop {#1} }
+\NewExpandableDocumentCommand \SemCatTitle { m }
+  { \prop_item:Nn \g__semcat_category_title_prop {#1} }
 \NewExpandableDocumentCommand \SemCatDefaultCategory { }
   { \g__semcat_default_category_tl }
 
@@ -657,12 +624,12 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
 % \cs{UseStructureName}\Marg{semcat/<Schlüssel>} (einen konkreten,
 % bereits expandierten Strukturnamen, nie eine Variablenreferenz) und
 % übergibt ihn unausgewertet an \cs{__semcat_tag_begin:n}, analog dazu,
-% wie \file{ansiterm.dtx} \cs{UseStructureName}-Aufrufe an den
+% wie \File{ansiterm.dtx} \cs{UseStructureName}-Aufrufe an den
 % @1-Schlüssel von \cs{tagstructbegin} übergibt.}{Builds a
 % fully-resolved \cs{UseStructureName}\Marg{semcat/<key>} call (a
 % concrete, already-expanded structure name, never a variable
 % reference) and hands it unevaluated to \cs{__semcat_tag_begin:n},
-% mirroring how \file{ansiterm.dtx} feeds \cs{UseStructureName} calls to
+% mirroring how \File{ansiterm.dtx} feeds \cs{UseStructureName} calls to
 % \cs{tagstructbegin}'s @1 key.}{\code{tag=}}
 \cs_new_protected:Npn \__semcat_tag_begin_named:n #1
   { \__semcat_tag_begin:n { \UseStructureName{#1} } }
@@ -677,29 +644,31 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
     \exp_args:No \__semcat_tag_begin_named:n \l__semcat_tmp_tl
   }
 
-% \ldeen*{Ohne @1/@2 wird die Farbe reihum aus der Palette
+% \ldeen*{Ohne @1/@2 wird die Farbe reihum aus der Farbserie
 % \code{semcat-categories} vergeben, wenn osgstyler geladen ist, sonst
 % aus @3. Ein Slotname wird nur verwendet, wenn osgstyler tatsächlich
 % geladen ist; andernfalls fällt die Zuordnung auf die eingebaute
 % Rotation zurück.}{Without @1/@2, the color is assigned round-robin
-% from the \code{semcat-categories} palette when osgstyler is loaded,
+% from the \code{semcat-categories} color series when osgstyler is loaded,
 % otherwise from @3. A slot name is only honored while osgstyler is
 % actually loaded; otherwise assignment falls back to the built-in
-% rotation.}{color}{slot}{\cs{clist}\Arg{NavyBlue,...}}
+% rotation.}{color}{slot}{\cs{clist}\Arg{semcat-fallback-1,...}}
 \cs_new_protected:Npn \__semcat_next_color:N #1
   {
     \int_gincr:N \g__semcat_fallback_slot_int
     \IfPackageLoadedTF { osgstyler }
       {
-        \exp_args:Nxx \__semcat_palette_color:nnN { \c__semcat_palette_name_tl }
+        \int_set:Nn \l_tmpa_int
+          { \OsgColorSeriesCount { semcat-categories } }
+        \int_compare:nNnT
+          { \g__semcat_fallback_slot_int } >
+          { \l_tmpa_int }
+          { \int_gset:Nn \g__semcat_fallback_slot_int { 1 } }
+        \tl_set:Nx #1
           {
-            \clist_item:Nn \c__semcat_palette_slots_clist
-              {
-                \int_mod:nn { \g__semcat_fallback_slot_int - 1 }
-                  { \clist_count:N \c__semcat_palette_slots_clist } + 1
-              }
+            \OsgColorSeriesColorName { \c__semcat_palette_name_tl }
+              { \int_use:N \g__semcat_fallback_slot_int }
           }
-          #1
       }
       {
         \tl_set:Nx #1
@@ -732,8 +701,8 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
     color      .initial:n = { },
     slot       .tl_set:N  = \l__semcat_category_slot_tl,
     slot       .initial:n = { },
-    label      .tl_set:N  = \l__semcat_category_label_tl,
-    label      .initial:n = { },
+    title      .tl_set:N  = \l__semcat_category_title_tl,
+    title      .initial:n = { },
     style      .tl_set:N  = \l__semcat_category_style_tl,
     style      .initial:n = { },
     decoration .tl_set:N  = \l__semcat_category_decoration_tl,
@@ -754,7 +723,7 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
     \tl_set:Nn \l__semcat_category_being_defined_tl {#2}
     \tl_clear:N \l__semcat_category_color_tl
     \tl_clear:N \l__semcat_category_slot_tl
-    \tl_clear:N \l__semcat_category_label_tl
+    \tl_clear:N \l__semcat_category_title_tl
     \tl_clear:N \l__semcat_category_style_tl
     \tl_clear:N \l__semcat_category_decoration_tl
     \tl_clear:N \l__semcat_category_symbol_tl
@@ -765,9 +734,9 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
       { \prop_gput:Nee \g__semcat_decoration_variant_prop { #2 / default } \l__semcat_category_decoration_tl }
     \tl_if_empty:NF \l__semcat_category_symbol_tl
       { \prop_gput:Nee \g__semcat_symbol_variant_prop { #2 / default } \l__semcat_category_symbol_tl }
-    \tl_if_empty:NTF \l__semcat_category_label_tl
-      { \prop_gput:Nnn \g__semcat_category_label_prop {#2} {#2} }
-      { \prop_gput:NnV \g__semcat_category_label_prop {#2} \l__semcat_category_label_tl }
+    \tl_if_empty:NTF \l__semcat_category_title_tl
+      { \prop_gput:Nnn \g__semcat_category_title_prop {#2} {#2} }
+      { \prop_gput:NnV \g__semcat_category_title_prop {#2} \l__semcat_category_title_tl }
     \tl_if_empty:NT \l__semcat_category_color_tl
       {
         \tl_if_empty:NTF \l__semcat_category_slot_tl
@@ -786,10 +755,10 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
 % \ldeen{Berücksichtigt eine Modusspezifikation nur, solange
 % osglecture-modes (oder ein kompatibles Backend) tatsächlich
 % \cs{IfLectureModeTF} bereitstellt; sonst ist die Einschränkung
-% wirkungslos, sodass semcat nie hart davon abhängt.}{Honors a
+% wirkungslos, sodass\pkg{semcat}nie hart davon abhängt.}{Honors a
 % mode-spec only while osglecture-modes (or a compatible backend)
 % actually provides \cs{IfLectureModeTF}; otherwise the restriction is
-% a no-op, so semcat never hard-depends on it.}
+% a no-op, so\pkg{semcat}never hard-depends on it.}
 \cs_new_protected:Npn \__semcat_if_mode:nn #1#2
   {
     \tl_if_empty:nTF {#1}
@@ -1044,12 +1013,12 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
 \cs_new_protected:Npn \__semcat_compose_title:
   {
     \tl_if_empty:NTF \l__semcat_affix_content_tl
-      { \tl_set:Nx \l__semcat_box_title_tl { \exp_args:No \SemCatLabel \l__semcat_box_category_tl } }
+      { \tl_set:Nx \l__semcat_box_title_tl { \exp_args:No \SemCatTitle \l__semcat_box_category_tl } }
       {
         \tl_set:Nn \l__semcat_box_title_tl
           {
             \textcolor { \l__semcat_affix_color_tl } { \l__semcat_affix_content_tl } ~
-            \exp_args:No \SemCatLabel \l__semcat_box_category_tl
+            \exp_args:No \SemCatTitle \l__semcat_box_category_tl
           }
       }
   }
@@ -1410,8 +1379,8 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
 % ---------------------------------------------------------------------
 % Built-in default categories (mirrors the legacy A/B/C/D scheme)
 % ---------------------------------------------------------------------
-\SemCatDefine*{A}[label={Required}]
-\SemCatDefine{B}[label={Supplementary}]
-\SemCatDefine{C}[label={Background}]
-\SemCatDefine{D}[label={Comparison}]
+\SemCatDefine*{A}[title={Required}]
+\SemCatDefine{B}[title={Supplementary}]
+\SemCatDefine{C}[title={Background}]
+\SemCatDefine{D}[title={Comparison}]
 %</package>

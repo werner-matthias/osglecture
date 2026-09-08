@@ -24,7 +24,7 @@ unconditional
 \end{SemCatMark}
 \TYPE{after-unconditional-box=reached}
 
-\SemCatDefine{E}[label={Bar style}, style=bar]
+\SemCatDefine{E}[title={Bar style}, style=bar]
 \begin{SemCatMark}[category=E]
 first paragraph of a bar-styled block, spanning several lines of
 repeated text repeated text repeated text repeated text repeated text.
@@ -34,7 +34,7 @@ second paragraph, still inside the same barred block.
 \TYPE{after-bar-box=reached}
 
 \SemCatDefine{F}[
-  label={Mode-varied}, style=box,
+  title={Mode-varied}, style=box,
   variants={ slides = {style=bar} }
 ]
 \begin{SemCatMark}[category=F]

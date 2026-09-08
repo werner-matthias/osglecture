@@ -5,29 +5,29 @@
 \usepackage{semcat}
 \FinalizeLectureModes
 
-\extractcolorspec{semcat-palettecolor-primary}\TestPalettePrimary
-\extractcolorspec{semcat-palettecolor-secondary}\TestPaletteSecondary
-\extractcolorspec{semcat-palettecolor-accent}\TestPaletteAccent
+\extractcolorspec{\OsgColorSeriesColorName{semcat-categories}{1}}\TestPalettePrimary
+\extractcolorspec{\OsgColorSeriesColorName{semcat-categories}{2}}\TestPaletteSecondary
+\extractcolorspec{\OsgColorSeriesColorName{semcat-categories}{3}}\TestPaletteAccent
 
 \SemCatDeclareSymbol{plain}{PLAINMARK}
-\SemCatDefine{E}[label={Plain symbol}, symbol=plain]
-\SemCatDefine{F}[label={No symbol}]
+\SemCatDefine{E}[title={Plain symbol}, symbol=plain]
+\SemCatDefine{F}[title={No symbol}]
 
 \DeclareOsgDecoration{semcat-test-affix}{
   margin = { color = accent },
   affix  = { symbol = plain, color = alert }
 }
-\SemCatDefine{G}[label={Decoration affix}, decoration=semcat-test-affix]
+\SemCatDefine{G}[title={Decoration affix}, decoration=semcat-test-affix]
 
 \DeclareOsgDecoration{semcat-test-affix-content}{
   enclosure = { border-color = primary },
   affix     = { content = DIRECTMARK }
 }
-\SemCatDefine{H}[label={Decoration affix content}, decoration=semcat-test-affix-content]
+\SemCatDefine{H}[title={Decoration affix content}, decoration=semcat-test-affix-content]
 
 \SemCatDeclareSymbol{plain-slides}{SLIDESMARK}
 \SemCatDefine{I}[
-  label={Mode-varied symbol}, symbol=plain,
+  title={Mode-varied symbol}, symbol=plain,
   variants={ slides = {symbol=plain-slides} }
 ]
 
