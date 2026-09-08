@@ -236,7 +236,7 @@ load babel
         \item \code{===\ldots}: \rule{2cm}{1pt} (\ldeen{Trennlinie}{rule})
         \item \code{\#}/\code{\#\#}: (\ldeen{am Zeilenanfang mit folgendem Leerzeichen}{
           at the beginning of the line, followed by a space}): \textbf{\ldeen{Überschriften}{headings}}
-        \item \code{-} (\ldeen{am Zeilenanfang mit folgendem Leerzeichen}{at the beginning
+        \item \code{-}/\code{*} (\ldeen{am Zeilenanfang mit folgendem Leerzeichen}{at the beginning
         of the line, followed by a space}): \textbullet~\ldeen{Listenpunkte}{list items}
         \end{description}
       \end{itemize}
@@ -460,7 +460,7 @@ load babel
 }
 
 % \ldeen{
-%   Da die Titellei symbolische Fußnotenzeichen nutzt, wird die Nummer zurück gesetzt.
+%   Da die Titellei symbolische Fußnotenzeichen nutzt, wird die Nummer zurückgesetzt.
 % }{
 %   Since the title uses symbolic footnote signs, we reset the number.
 % }
@@ -1236,7 +1236,7 @@ function autodoc.autodoc_process(filename, guard, mode)
       return
     end
 
-    local item = text:match("^%s*%-%s+(.+)$")
+    local item = text:match("^%s*[%-%*]%s+(.+)$")
 
     if item ~= nil then
       if not documentation_list_open then

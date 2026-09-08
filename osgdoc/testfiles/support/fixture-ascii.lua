@@ -5,7 +5,7 @@
 -- *Bold*, _italic_, `code_value`, `\raw_name`, and \keys_set:nn.
 -- ====
 -- - First item mentions \foo.
--- - Second item contains `x_y`.
+-- * Second item contains `x_y`.
 -- Text after the list.
 local ascii_demo_value = "demo"
 --</demo>
