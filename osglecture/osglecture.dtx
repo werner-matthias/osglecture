@@ -87,12 +87,12 @@
   abstract = {
     \ldeen*{
       Die Klasse @1 ist die \LuaLaTeX-Kernklasse des \bnd*{osglecture}-Bundles. Sie
-      projiziert ein gemeinsame Lehrquellendokument auf 
-      auf Präsentationen und Langformen (Skript, Buch).
+      projiziert ein gemeinsames Lehrquellendokument auf
+      Präsentationen und Langformen (Skript, Buch).
     }{
       The class @1 is the \LuaLaTeX\ core class of the \bnd*{osglecture} bundle. It
       projects a shared teaching source onto
-      presentations and long-form documents (script or book)
+      presentations and long-form documents (lecture notes or books).
     }{\cls*{osglecture}}
   },
   url = https://github.com/werner-matthias/osglecture,
@@ -103,103 +103,227 @@
 
 \begin{document}
 \ldeen{
-  Diese Dokumentation beschreibt die Klassenoptionen, die Umgebungen
-  \env{presitemize} und \env{twocolumns} sowie die Implementation.
-  Für die Nutzung von \pkg*{osglecture} siehe \code{osglecture-manual-de.pdf}.}{
-  This documentation describes the class options, the \env{presitemize} and
-  \env{twocolumns} environments, and the implementation.
-  For information on using \pkg*{osglecture}, see \code{osglecture-manual-en.pdf}.
+  Diese Dokumentation beschreibt die Klassenoptionen, die von der Klasse zur
+  Verfügung gestellten Befehle und Umgebungen sowie deren Implementation.
+  Für ihre Nutzung ist außerdem das Verständnis der grundlegenden Konzepte
+  und des Zusammenspiels mit anderen Komponenten (insbesondere \code{ollm})
+  notwendig. Diese Themen behandelt \code{osglecture-manual-de.pdf}.}{
+  This documentation describes the class options, the commands and environments
+  provided by the class, and their implementation.
+  Using the class also requires an understanding of its basic concepts and its
+  interaction with other components (especially \code{ollm}). These topics are
+  covered in \code{osglecture-manual-en.pdf}.
 }
 \section{\ldeen{Klassenoptionen}{Class options}}
 
 \begin{options}
   \keybool{standalone}\Default{false}
-  \ldeen{Nutzung der Klasse außerhalb einer (Veranstaltungs-)Serie.}{Using the class outside of a (course) series}.
+  \ldeen{Verwendet die Klasse außerhalb einer Veranstaltungsserie.}{Uses the class outside a course series.}
   \keyval{doctype}{\ldeen{Typ}{type}}
   \ldeen{Setzt den Zieltyp des Dokuments, wodurch u.\,a.\ die tatsächliche Basisklasse bestimmt wird.}{Sets the document's target type, which, among other things, determines its actual base class.}
   (\ldeen{Dies ist in der Regel nur bei \option{standalone} nötig, sonst sollte es über \code{ollm} gesteuert werden.}{This is usually only necessary with \option{standalone}; otherwise, it should be controlled using \code{ollm}.})
   \keyval{profile}{\ldeen{Profil}{profile}}
   \ldeen{Überschreibt das zum Doctype gehörende Dokumentprofil (legt u.\,a.\ Basisklasse und Backend fest); wird sonst über Konfiguration geregelt.}{Overrides the document profile tied to the doctype (sets, among other things, the base class and backend); otherwise controlled via configuration.}
   \keyval{class-options}{\ldeen{Ausdrücke}{expressions}}
-  \ldeen{Setzt Optionen in der Basisklasse}{Sets options of the base class}.
+  \ldeen{Reicht Optionen an die Basisklasse weiter.}{Passes options to the base class.}
   \keyval{lang}{\ldeen{Sprachcode}{language code}}
   \ldeen{Wählt die Sprache des Zieldokuments aus.}{Selects the language of the target document.}
   (\ldeen{Dies ist in der Regel nur bei \option{standalone} nötig, sonst sollte es über \code{ollm} gesteuert werden.}{This is usually only necessary with \option{standalone}; otherwise, it should be controlled using \code{ollm}.})
   \keybool{patch-overlays}\Default{true}
   \ldeen{Erweitert die Overlay-Syntax von \pkg*{ltx-talk} oder \pkg*{beamer} um portable Modusausdrücke.}{Extends the overlay syntax of \pkg*{ltx-talk} or \pkg*{beamer} to include portable mode expressions.}
+  \keybool{osgbeamer}
+  \ldeen{Akzeptierte, wirkungslose Kompatibilitätsoption für ältere
+  Dokumente.}{Accepted no-op compatibility option for older documents.}
 \end{options}
 
-\section{\ldeen{Die Umgebung \code{presitemize}}{The \code{presitemize} environment}}
+\section{\ldeen{Konfigurationsbefehle}{Configuration commands}}
+
+\begin{commands}
+  \command{LectureProjectSetup}[\marg{Einstellungen}]
+  \ldeen{setzt gemeinsame Projekteinstellungen. Ihre Einordnung in die
+  Konfigurationshierarchie beschreibt das Manual.}{sets shared project
+  settings. See the manual for their place in the configuration hierarchy.}
+  \begin{quote}
+    \begin{options}
+      \keyval{class-options}{Optionen}
+      \ldeen{setzt gemeinsame Optionen der Basisklasse.}{sets shared base-class
+      options.}
+      \keyval{presentation-profile}{Profil}
+      \ldeen{wählt das Präsentationsprofil.}{selects the presentation profile.}
+      \keyval{longform-profile}{Profil}
+      \ldeen{wählt das Langformprofil.}{selects the long-form profile.}
+      \keyval{identity-profile}{Profil}
+      \ldeen{wählt das Identitätsprofil.}{selects the identity profile.}
+      \keyval{theme}{Name}
+      \ldeen{wählt das Theme.}{selects the theme.}
+      \keyval{numbering}{Name}
+      \ldeen{wählt das Nummerierungsschema.}{selects the numbering scheme.}
+      \keyval{references}{Einstellung}
+      \ldeen{setzt die Referenz-Policy.}{sets the reference policy.}
+      \keyval{languages}{Einstellungen}
+      \ldeen{konfiguriert \pkg*{langselect}; siehe dessen
+      Paketdokumentation.}{configures \pkg*{langselect}; see its package
+      documentation.}
+      \keyval{languages/selectable}{Sprachliste}\default{}
+      \keyval{languages/targetlang}{Sprachauswahl}\default{}
+      \keyval{languages/prefix}{Präfixzuordnung}\default{}
+      \keyval{languages/auto}{Wert}\default{}
+      \keyval{languages/trim}{Wert}\default{}
+      \keyval{languages/map}{Sprachzuordnung}\default{}
+      \keybool{languages/load babel}\default{}
+      \keybool{languages/load polyglossia}\default{}
+      \keybool{languages/unified shorthands}
+      \ldeen{Diese Unterschlüssel werden an \pkg*{langselect}
+      weitergereicht; \option{selectable} entspricht dort
+      \option{languages}.}{These subkeys are passed to \pkg*{langselect};
+      \option{selectable} corresponds to its \option{languages} key.}
+    \end{options}
+  \end{quote}
+
+  \command{LectureTargetSetup}[\marg{Target}\marg{Einstellungen}]
+  \ldeen{setzt targetspezifische Einstellungen.}{sets target-specific settings.}
+  \begin{quote}
+    \begin{options}
+      \keyval{profile}{Profil}
+      \ldeen{wählt das Dokumentprofil.}{selects the document profile.}
+      \keyval{filecolor}{Farbe}
+      \ldeen{setzt die Farbe dokumentübergreifender Links.}{sets the colour of
+      cross-document links.}
+    \end{options}
+  \end{quote}
+
+  \command{OsgLectureSetup}[\marg{Einstellungen}]
+  \ldeen{registriert klassen- und modusspezifische Einstellungen.}{registers
+  class- and mode-specific settings.}
+  \begin{quote}
+    \begin{options}
+      \keyval{class/\meta{Klasse}}{Optionen}
+      \ldeen{reicht Optionen an die angegebene Basisklasse weiter.}{passes
+      options to the specified base class.}
+      \keyval{mode/\meta{Modus}}{Einstellungen}
+      \ldeen{setzt Einstellungen für den angegebenen Modus.}{sets settings
+      for the specified mode.}
+      \keyval{mode/\meta{Modus}/continuation}{Einstellungen}
+      \ldeen{konfiguriert die Fortsetzung aus der vorherigen Unit;
+      \code{none} hebt eine allgemeinere Vorgabe auf.}{configures continuation
+      from the preceding unit; \code{none} cancels a less specific setting.}
+      \keyval{mode/\meta{Modus}/continuation/counters}{Zählerliste}
+      \ldeen{gibt die fortzusetzenden Zähler an.}{specifies the counters to
+      continue.}
+    \end{options}
+  \end{quote}
+
+  \command{IncludeOsgLecturePreamble}[\sarg\code{<}\meta{Modusausdruck}\code{>}
+    \oarg{Einstellungen}\marg{Name}]
+  \ldeen{registriert das Präambelfragment \meta{Name}. Die unsternierte Form
+  lädt es später, falls Modus- und Klassenbedingung erfüllt sind. Die
+  Sternform lädt es sofort und erlaubt keine Bedingungen. Gesucht werden
+  zunächst \meta{Name}\code{.tex} im gemeinsamen \TeX-Verzeichnis und danach
+  \code{osglecture-preamble-}\meta{Name}\code{.tex} im \TeX-Suchpfad.}{registers
+  the preamble fragment \meta{name}. The unstarred form loads it later if its
+  mode and class conditions match. The starred form loads it immediately and
+  does not permit conditions. The class first looks for
+  \meta{name}\code{.tex} in the shared \TeX\ directory and then for
+  \code{osglecture-preamble-}\meta{name}\code{.tex} on the \TeX\ search path.}
+  \begin{quote}
+    \begin{options}
+      \keyval{class}{Klassenliste}
+      \ldeen{beschränkt die unsternierte Form auf die angegebenen
+      Basisklassen.}{restricts the unstarred form to the specified base
+      classes.}
+    \end{options}
+  \end{quote}
+
+  \command{DeclareOsgLectureMetadataField}[\marg{Name}]
+  \ldeen{deklariert einen gleichnamigen Metadatenbefehl mit der Signatur
+  \code{<}\meta{Modusausdruck}\code{>}\oarg{Kurzform}\marg{Wert} sowie die Abfragen
+  \cs{OsgLectureMetadataValue}\marg{Name} und
+  \cs{OsgLectureMetadataShortValue}\marg{Name}. Vordefiniert sind
+  \cs{title}, \cs{subtitle}, \cs{author}, \cs{institute}, \cs{date},
+  \cs{course} und \cs{event}.}{declares a metadata command of the same name
+  with the signature \cs{<}\meta{mode expression}\code{>}
+  \oarg{short form}\marg{value} and the
+  accessors \cs{OsgLectureMetadataValue}\marg{name} and
+  \cs{OsgLectureMetadataShortValue}\marg{name}. The predefined fields are
+  \cs{title}, \cs{subtitle}, \cs{author}, \cs{institute}, \cs{date},
+  \cs{course}, and \cs{event}.}
+
+  \command{EnforceLectureProjectConfiguration}[\marg{Konfigurationsbefehle}]
+  \command{LectureProjectEnforce}[\marg{Einstellungen}]
+  \ldeen{wendet verbindliche Projektvorgaben an. Widersprechende Einstellungen
+  niedrigerer Priorität führen zu einem Fehler.}{applies mandatory project
+  settings. Conflicting lower-priority settings produce an error.}
+
+  \command{OsgLectureReferencesSetup}[\marg{Einstellungen}]
+  \ldeen{konfiguriert dokumentübergreifende Verweise.}{configures
+  cross-document references.}
+  \begin{quote}
+    \begin{options}
+      \keybool{legacy}\Default{false}
+      \ldeen{aktiviert die alten \cs{xref}-Befehle.}{enables the legacy
+      \cs{xref} commands.}
+      \keyval{replace}{Liste}
+      \ldeen{ersetzt die angegebenen Standardbefehle. Die Liste akzeptiert
+      \code{ref}, \code{pageref}, \code{nameref}, \code{autoref} und
+      \code{all}.}{replaces the specified standard commands. The list accepts
+      \code{ref}, \code{pageref}, \code{nameref}, \code{autoref}, and
+      \code{all}.}
+    \end{options}
+  \end{quote}
+\end{commands}
+
+\section{\ldeen{Dokumentbefehle}{Document commands}}
+
+\begin{commands}
+  \command{lecture}[\oarg{Kurztitel}\marg{Titel}\marg{Unit-ID}]
+  \ldeen{deklariert die einzige Lehreinheit des Dokuments und erzeugt ihre
+  profilabhängige Gliederung.}{declares the document's single course unit and
+  creates its profile-dependent structural heading.}
+
+  \command{includeunit}[\marg{Unit-ID}]
+  \ldeen{fügt die gebaute Projektion einer Unit in ein Integrationsdokument
+  ein. Einzelheiten zu Integrationsunits stehen im Manual.}{includes a built
+  projection of a unit in an integration document. See the manual for details
+  about integration units.}
+
+  \command{olref}[\sarg\oarg{Unit-ID,Optionen}\marg{Label}]\default{}
+  \command{olpageref}[\sarg\oarg{Unit-ID,Optionen}\marg{Label}]\default{}
+  \command{olnameref}[\sarg\oarg{Unit-ID,Optionen}\marg{Label}]\default{}
+  \command{olautoref}[\sarg\oarg{Unit-ID,Optionen}\marg{Label}]
+  \ldeen{entsprechen den gleichnamigen Standardbefehlen ohne das Präfix
+  \code{ol}. Eine nicht angegebene Unit-ID verweist in das aktuelle Dokument. Zusätzlich
+  können \code{type=} und \code{lang=} angegeben werden.
+  Die Sternform unterdrückt den Link.}{correspond to the standard commands of
+  the same name without the \code{ol} prefix. An omitted unit ID refers to the
+  current document. The options \code{type=} and \code{lang=} may also be
+  specified. The starred form suppresses the link.}
+  \begin{quote}
+    \begin{options}
+      \keyval{type}{Dokumenttyp}
+      \ldeen{wählt den Dokumenttyp der Ziel-Unit; Vorgabe ist der aktuelle
+      Dokumenttyp.}{selects the target unit's document type; the current
+      document type is the default.}
+      \keyval{lang}{Sprachcode}
+      \ldeen{wählt die Sprache der Ziel-Unit; Vorgabe ist die aktuelle
+      Dokumentsprache.}{selects the target unit's language; the current
+      document language is the default.}
+    \end{options}
+  \end{quote}
+\end{commands}
+
+\section{\ldeen{Umgebungen zur Textgestaltung}{Text-formatting environments}}
 
 \begin{environments}
-\environment{presitemize}[\oarg{\ldeen{Optionen}{options}}]
-\ldeen{setzt eine flache Folge kurzer Aussagen in Präsentationen als
-\env{itemize}-Liste und verbindet sie in Langformen zu Fließtext. Die Klasse
-lädt das bereitstellende Paket \pkg*{osglecture-presitemize} automatisch.}{
-typesets a flat sequence of short statements as an \env{itemize} list in
-presentations and joins them into prose in long-form documents. The class
-loads the providing package \pkg*{osglecture-presitemize} automatically.}
-\end{environments}
 
-\cs{item}, \cs{anditem}, \cs{butitem}, \cs{thereforeitem}, \cs{commaitem}
-\ldeen{und}{and} \cs{colonitem} \ldeen{sind delimiterartige Befehle: Der
-Inhalt reicht jeweils bis zum nächsten Eintrag. Sie akzeptieren die
-Beamer-Overlay-Syntax und ein optionales Item-Label. Die ausführliche Form}{
-are delimiter-like commands: their content extends up to the next item. They
-accept Beamer overlay syntax and an optional item label. The explicit form}
-\cs{presitem}\oarg{\ldeen{Optionen}{options}}
-\ldeen{erlaubt für \code{relation}}{accepts for \code{relation}}
-\code{sentence}, \code{and},
-\code{but}, \code{therefore}, \code{comma} \ldeen{und}{and} \code{colon}
-\ldeen{als Relationen sowie}{as relations and} \code{auto}
-\ldeen{oder}{or} \code{keep} \ldeen{für}{for} \code{initial}.
-
-\begin{options}
-  \keychoice{language}{de,en,fr}
-  \ldeen{Überschreibt die automatisch aus der Dokument- oder
-  Sprachkonfiguration bestimmte Sprache.}{Overrides the language determined
-  automatically from the document or language configuration.}
-  \keychoice{punctuation}{auto,manual}\Default{auto}
-  \ldeen{Steuert, ob Konnektoren und abschließende Satzzeichen in der
-  Langform automatisch erzeugt werden. Bereits gesetzte Satzzeichen bleiben
-  dabei erhalten und werden nicht ergänzt.}{Controls whether connectors and
-  final punctuation are generated automatically in long-form output. Existing
-  punctuation is preserved and not supplemented.}
-  \keychoice{whitespace}{normalize,preserve}\Default{normalize}
-  \ldeen{Ignoriert führende Leerzeichen nach Eintragsbefehlen und behandelt
-  Leerzeilen in der Langform wie einfachen Wortabstand. \code{preserve}
-  behält stattdessen das gewöhnliche \TeX-Verhalten bei.}{Ignores leading
-  spaces after item commands and treats blank lines in long-form output as a
-  single interword space. \code{preserve} retains the usual \TeX\ behaviour.}
-\end{options}
-
-\cs{finite}\marg{Text} \ldeen{markiert das finite Verb. Bei der deutschen
-Relation \code{therefore} wird es in der Langform ans Satzende verschoben.}{
-marks the finite verb. For the German \code{therefore} relation it is moved
-to the end of the clause in long-form output.}
-\cs{preskeepcase}\marg{Text} \ldeen{verhindert die automatische Anpassung
-des Anfangsbuchstabens.}{prevents automatic adjustment of the initial letter.}
-\cs{prescase}\marg{Präsentation}\marg{Langform}
-\ldeen{wählt eine Formulierung passend zur Projektion.}{selects wording for
-the current projection.}
-\cs{longslides}\marg{Langform}\marg{Präsentation},
-\cs{longform}\marg{Text} \ldeen{und}{and} \cs{slides}\marg{Text}
-\ldeen{bieten weitere projektionabhängige Auswahlmöglichkeiten innerhalb der
-Einträge.}{provide further projection-dependent selections within items.}
-
-\section{\ldeen{Die Umgebung \code{twocolumns}}{The \code{twocolumns} environment}}
-
-\begin{environments}
 \environment{twocolumns}[\code{<}\meta{Modusausdruck}\code{>}
   \oarg{Ausrichtung,Anteil}]
-\ldeen{setzt zwei durch \cs{nextcolumn} getrennte Inhalte nebeneinander,
-wenn der Modusausdruck erfüllt ist, andernfalls untereinander. Der
-Modusausdruck steht in spitzen Klammern und ist standardmäßig
-\code{presentation}.}{typesets two parts separated by \cs{nextcolumn} side by
-side when the mode expression matches, and one after the other otherwise.
-The mode expression is enclosed in angle brackets and defaults to
-\code{presentation}.}
-\end{environments}
+  \ldeen{setzt zwei durch \cs{nextcolumn} getrennte Inhalte nebeneinander,
+  wenn der Modusausdruck erfüllt ist, andernfalls untereinander. Der
+  Modusausdruck steht in spitzen Klammern und ist standardmäßig
+  \code{presentation}.}{typesets two parts separated by \cs{nextcolumn} side by
+  side by side when the mode expression matches, and consecutively otherwise.
+  The mode expression is enclosed in angle brackets and defaults to
+  \code{presentation}.}
 
 \ldeen{Eine Zahl zwischen null und eins bestimmt den Anteil der ersten
 Spalte an der verfügbaren Breite (Vorgabe \code{.5}). Ein Wert
@@ -213,6 +337,65 @@ both columns at the top, centre, or bottom; two such values align the columns
 individually. \code{<all>} forces columns in every mode, while, for example,
 \code{<longform>} selects only long-form documents and
 \code{<presentation|longform>} selects both behaviour classes.}
+  \environment{presitemize}[\oarg{\ldeen{Optionen}{options}}]
+    \ldeen{setzt eine flache Folge kurzer Aussagen in Präsentationen als
+    \env{itemize}-Liste und verbindet sie in Langformen zu Fließtext. Die Klasse
+    lädt das bereitstellende Paket \pkg*{osglecture-presitemize} automatisch.}{
+    typesets a flat sequence of short statements as an \env{itemize} list in
+    presentations and joins them into prose in long-form documents. The class
+    automatically loads the package \pkg*{osglecture-presitemize}, which
+    provides this environment.}
+
+  \begin{quote}
+    \begin{options}
+      \keychoice{language}{de,en,fr}
+      \ldeen{Überschreibt die automatisch aus der Dokument- oder
+      Sprachkonfiguration bestimmte Sprache.}{Overrides the language determined
+      automatically from the document or language configuration.}
+      \keychoice{punctuation}{auto,manual}\Default{auto}
+      \ldeen{Steuert, ob Konnektoren und abschließende Satzzeichen in der
+      Langform automatisch erzeugt werden. Bereits gesetzte Satzzeichen bleiben
+      dabei erhalten und werden nicht ergänzt.}{Controls whether connectors and
+      final punctuation are generated automatically in long-form output. Existing
+      punctuation is preserved and not supplemented.}
+      \keychoice{whitespace}{normalize,preserve}\Default{normalize}
+      \ldeen{Ignoriert führende Leerzeichen nach Eintragsbefehlen und behandelt
+      Leerzeilen in der Langform wie einfachen Wortabstand. \code{preserve}
+      behält stattdessen das gewöhnliche \TeX-Verhalten bei.}{Ignores leading
+      spaces after item commands and treats blank lines in long-form output as a
+      single interword space. \code{preserve} retains the usual \TeX\ behaviour.}
+    \end{options}
+    \cs{item}, \cs{anditem}, \cs{butitem}, \cs{thereforeitem}, \cs{commaitem}
+    \ldeen{und}{and} \cs{colonitem} \ldeen{sind delimiterartige Befehle: Der
+    Inhalt reicht jeweils bis zum nächsten Eintrag. Sie akzeptieren die
+    Beamer-Overlay-Syntax und ein optionales Item-Label. Die ausführliche Form}{
+    are delimiter-like commands: their content extends up to the next item. They
+    accept Beamer overlay syntax and an optional item label. The explicit form}
+    \cs{presitem}\oarg{\ldeen{Optionen}{options}}
+    \ldeen{erlaubt für \code{relation}}{accepts the following values for
+    \code{relation}:}
+    \code{sentence}, \code{and},
+    \code{but}, \code{therefore}, \code{comma} \ldeen{und}{and} \code{colon}
+    \ldeen{als Relationen sowie}{as relations and} \code{auto}
+    \ldeen{oder}{or} \code{keep} \ldeen{für}{for} \code{initial}.
+
+    \cs{finite}\marg{Text} \ldeen{markiert das finite Verb. Bei der deutschen
+    Relation \code{therefore} wird es in der Langform ans Satzende verschoben.}{
+    marks the finite verb. For the German \code{therefore} relation it is moved
+    to the end of the clause in long-form output.}
+    \cs{preskeepcase}\marg{Text} \ldeen{verhindert die automatische Anpassung
+    des Anfangsbuchstabens.}{prevents automatic adjustment of the initial letter.}
+    \cs{prescase}\marg{Präsentation}\marg{Langform}
+    \ldeen{wählt eine Formulierung passend zur Projektion.}{selects wording for
+    the current projection.}
+    \cs{longslides}\marg{Langform}\marg{Präsentation},
+    \cs{longform}\marg{Text} \ldeen{und}{and} \cs{slides}\marg{Text}
+    \ldeen{bieten weitere projektionsabhängige Auswahlmöglichkeiten innerhalb der
+    Einträge.}{provide further projection-dependent selections within items.}
+  \end{quote}
+
+\end{environments}
+
 
 \section{Implementation}
 \MaybeStop{\ldeen*{Um die Implementationsbeschreibung zu erhalten, kommentieren Sie bitte \cs{OnlyDescription} in \code{osglecture.dtx} aus.}{To view the implementation description, please uncomment \cs{OnlyDescription} in \code{osglecture.dtx}.}}
