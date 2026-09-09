@@ -5,19 +5,22 @@ bundle. It selects document and language variants and delegates individual
 LaTeX builds to `latexmk`.
 
 ## For Users of OSGBeamer
-There are a few conceptual differences of the user's perception of the build model
-of OSGLecture in comparision to OSGBeamer:
 
-- The configuration format has changed, from Perl to TOML. Accordingly, the configuration file
-  not ollmconfig.pl anymore, but ollmconfig.toml. In addition, there are more places to configure
-  things. 
-  Old Perl-based  configuration can be converted by `ollm convertproject`. However, a follow-up check
-  is recommended.
-- Resulting artifacts (pdfs) can not be found in the unit directories, but in subdirectories
-  of `.osglecture/build`, which can be found in the project root. This has two advantages:
-  - input materials are clearly sperated from output materials, which improves the overall clarity
-  - in case of an invalid state, deleting whole output directories is a last resort that can be applied without 
-    the danger of removing 
+There are a few conceptual differences between the OSGLecture and OSGBeamer
+build models from a user's perspective:
+
+- The configuration format has changed from Perl to TOML. Accordingly, the
+  configuration file is no longer `ollmconfig.pl`, but `ollmconfig.toml`. In
+  addition, settings can be configured in more places. Old Perl-based
+  configurations can be converted with `ollm convertproject`; however, a
+  follow-up check is recommended.
+- Resulting artifacts (PDFs) are no longer stored in the unit directories, but
+  in subdirectories of `.osglecture/build` in the project root. This has two
+  advantages:
+  - Input materials are clearly separated from output materials, improving
+    overall clarity.
+  - If the build reaches an invalid state, entire output directories can be
+    deleted as a last resort without risking the removal of input files.
 
 ## Installation
 
@@ -29,23 +32,31 @@ l3build -full install
 ```
 
 ## Documentation
+
 Please read `ollm-en.pdf` or `ollm-de.pdf` for documentation in English or German.
 
-## TL;DR: Few Examples
+## TL;DR: A Few Examples
 
-### Build Script Chapter in English
+### Build the Script Chapter in English
+
 ```sh
-ollm build script --language=en 
-````
+ollm build script --language=en
+```
+
 or
+
 ```sh
 ollm script lang=en
 ```
+
 ### Check Installation and Environment
+
 ```sh
 ollm doctor
 ```
+
 ### Getting Help
+
 ```sh
 ollm --help
 ```

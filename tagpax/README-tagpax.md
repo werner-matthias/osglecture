@@ -1,7 +1,7 @@
 # tagpax
 
-`tagpax` extracts, reconstructs and reimports the logical structure of fully tagged
-PDFs to allow assembled tagged pdf documents.
+`tagpax` extracts, reconstructs, and reimports the logical structure of fully
+tagged PDFs to allow the assembly of tagged PDF documents.
 It is LuaLaTeX-only.
 
 The public commands are:

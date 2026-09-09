@@ -2,7 +2,7 @@
 
 This example is a small end-to-end case study for the current OLLM and
 `osglecture` contracts, built entirely on document types that do not use
-`\DocumentMetadata`. It contains two logical units, no integration unit. Each
+`\DocumentMetadata`. It contains two logical units and no integration unit. Each
 logical unit builds as a Beamer presentation (`slides`) and a KOMA-Script
 long-form report (`script`, using `scrbook`). The second unit refers to a
 labelled section in the first one.

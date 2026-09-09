@@ -69,7 +69,7 @@ key on `\osglistinginput` does the same for external sources, addressing
 positions either by `name at line:col` or by a literal text search
 (`name after/before "text" [occurrence=n]`) — no manual `escapeinside`
 needed there. `link-display=qrcode` renders the link as a QR code below
-the box instead of a titlebar icon or text label.
+the box instead of a title-bar icon or text label.
 
 ## Build
 
