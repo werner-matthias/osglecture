@@ -92,8 +92,7 @@ The bundle contains two end-to-end examples:
   integration.
 
 See `osglecture-manual-en.pdf` for the English user manual and
-`osglecture-manual-de.pdf` for the German version. The previous detailed
-German README has been retained as [`README-cls-de.md`](README-cls-de.md).
+`osglecture-manual-de.pdf` for the German version. 
 
 ## Building the package
 
@@ -101,7 +100,7 @@ From this directory, run:
 
 ```sh
 l3build check
-l3build install
+l3build install --full
 ```
 
 `osglecture` requires LuaLaTeX. Some profiles and tagged-PDF features also
