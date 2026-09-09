@@ -235,16 +235,23 @@ local function update_lua_tag(content, tagname, tagdate)
 end
 
 function update_tag(file, content, tagname, tagdate)
+  local inferred_tagname = not tagname
   if not tagname then
     local handle = io.popen("git describe --tags --abbrev=0")
     tagname = handle:read("*a"):match("[^\n]+")
     handle:close()
+  end
+
+  if not tagname:match("^v") then
+    tagname = "v" .. tagname
+  end
+  if inferred_tagname then
     print("Set tagname to '" .. tagname .. "'")
   end
 
   --[[
     l3build passes --date through without validation or normalisation.
-    We accept both common input forms and derive the format required by each target.
+    We accept both common input forms and use ISO 8601 for every target.
   ]]
   local iso_date = tagdate:gsub("/", "-")
 
@@ -253,12 +260,11 @@ function update_tag(file, content, tagname, tagdate)
   end
 
   if file:match("%.dtx$") then
-    local package_date = iso_date:gsub("-", "/")
     local updated = content:gsub(
       "(\\ProvidesExpl%a*%s*{[^}]+}%s*\n?%s*{)"
         .. "%d%d%d%d[/-]%d%d[/-]%d%d"
         .. "(}%s*%s*{)[^}%s]+(})",
-      "%1" .. package_date .. "%2" .. tagname .. "%3"
+      "%1" .. iso_date .. "%2" .. tagname .. "%3"
     )
 
 --[[
