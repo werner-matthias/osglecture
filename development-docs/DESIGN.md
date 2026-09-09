@@ -571,7 +571,11 @@ Serien-ID. Auch überschreibbare und verbindliche TeX-Policy liegt in
 Projektweit gemeinsam genutztes TeX-Material liegt nicht lose im
 Projektroot, sondern standardmäßig in `Include`. `[project.tex]` kann sowohl
 dieses projekt-root-relative Verzeichnis als auch den darin liegenden Namen
-der Projektkonfiguration ändern. OLLM setzt das aufgelöste Verzeichnis hinter
+der Projektkonfiguration ändern. Der Verzeichnisname muss ein einfacher
+relativer Pfad ohne Leerzeichen, Anführungszeichen, Backslash oder
+Windows-Sonderzeichen sein; solche Namen überstehen die TeX-Dateisuche und
+Windows-Pfadkomponenten nicht zuverlässig. `convertproject` verwirft einen
+nicht portablen `shared_source_dir` zugunsten von `Include` (mit Warnung). OLLM setzt das aufgelöste Verzeichnis hinter
 dem isolierten Buildverzeichnis an den Anfang von `TEXINPUTS`; damit gilt es
 für `projectconfig.tex` ebenso wie für projektlokale Pakete. Eine vorhandene
 Projektkonfiguration wird in die Konfigurationssignatur einbezogen.
@@ -2122,16 +2126,26 @@ Projektwurzeln gelten ausschließlich `--config` beziehungsweise
 `ollm convertproject` erzeugt neben einer gefundenen `ollmconfig.pl` eine
 `ollmconfig.toml`, ohne die Perl-Datei auszuführen, und legt bei Bedarf
 `Include/projectconfig.tex` an. Statisch erkennbare, semantisch abbildbare
-Werte und Metadaten aus `Include/lectdates.tex` werden übernommen. Frei programmierte Logik sowie
-alte Deployment-, Pfad- und Kapitelnummerierungswerte werden nicht geraten;
-die Konvertierung nennt sie als nachzuarbeitende Punkte. Ein vorhandenes TOML
-wird niemals überschrieben.
+Werte werden übernommen, ebenso die von `osglecture` unterstützten
+Metadatenbefehle aus `Include/lectdates.tex`. Dabei gilt: `\ldeenr` wird zu
+`\ldeen` normalisiert (seit `langselect` ist `\ldeen` selbst robust); ein
+`\input`-Fragment wird zu `\IncludeOsgLecturePreamble` mit erläuterndem Hinweis
+auf das geänderte Zeitverhalten; die Sprachreihenfolge des Manifests wird als
+`\LectureProjectSetup{languages={selectable=…}}` gespiegelt. Altbefehle ohne
+`osglecture`-Entsprechung (`\tucurl`, `\logo`) werden auskommentiert
+übernommen, nicht aktiv. Frei programmierte Logik sowie alte Deployment-,
+Pfad- und Kapitelnummerierungswerte werden nicht geraten; die Konvertierung
+nennt alle diese Punkte als nachzuarbeitende Warnungen. Eine vollständige,
+lesbare `ollmconfig.toml` wird niemals überschrieben — nur eine erkennbar
+unvollständige Datei aus einem abgebrochenen Lauf wird ersetzt (mit Warnung).
 
 `ollm newproject` erzeugt bei fehlender Konfiguration ein generisches Manifest,
-das Include-Verzeichnis und eine `projectconfig.tex` mit Dummy-Metadaten und
-dokumentierten Profilalternativen.
+das Include-Verzeichnis und eine `projectconfig.tex` mit Dummy-Metadaten,
+Sprachauswahl passend zum Manifest und dokumentierten Profilalternativen.
 Findet es beim Aufwärtssuchen eine alte Perl-Konfiguration, verhält es sich wie
-`convertproject`. Ein bereits vorhandenes TOML führt ebenfalls zum Abbruch.
+`convertproject`. Sind Manifest und `projectconfig.tex` bereits vorhanden,
+bricht es ab; fehlt nur die `projectconfig.tex`, wird diese passend zum
+bestehenden Manifest ergänzt, das Manifest selbst bleibt unangetastet.
 Die aus dem Verzeichnisnamen abgeleitete Projekt-ID ist nur ein Bootstrapwert
 im neu erzeugten Manifest und keine Unit- oder Referenzidentität.
 

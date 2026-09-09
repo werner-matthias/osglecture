@@ -38,32 +38,79 @@ sub execute {
     : File::Spec->catfile($root, 'ollmconfig.pl');
   $root = dirname(abs_path($perl)) if defined $arg{config} && -f $perl;
   $toml = File::Spec->catfile($root, 'ollmconfig.toml');
-  die "ollmconfig.toml already exists: $toml" if -e $toml;
 
-  my ($source, @warnings);
-  if (-f $perl) {
-    ($source, @warnings) = $class->convert_source($perl, $root);
-  } elsif ($action eq 'convertproject') {
-    die "legacy configuration not found: $perl";
-  } else {
-    $source = $class->generic_source($root);
+  my @warnings;
+  my ($source, $manifest_kept);
+  if (-e $toml) {
+    # A readable, structurally complete manifest may have been written by an
+    # earlier run or edited by hand; never overwrite it. Only an unusable
+    # leftover (truncated write, missing core sections) is replaced.
+    if (_toml_looks_complete($toml)) {
+      $source = _read_file($toml);
+      $manifest_kept = 1;
+    }
+    else {
+      push @warnings, "replaced an incomplete ollmconfig.toml left by an "
+        . "earlier migration; review it and re-run if it held manual edits";
+    }
   }
 
-  open my $handle, '>:raw', $toml
-    or die "cannot create '$toml': $!";
-  print {$handle} $source or die "cannot write '$toml': $!";
-  close $handle or die "cannot close '$toml': $!";
+  if (!$manifest_kept) {
+    if (-f $perl) {
+      ($source, my @convert_warnings) = $class->convert_source($perl, $root);
+      push @warnings, @convert_warnings;
+    }
+    elsif ($action eq 'convertproject') {
+      die "legacy configuration not found: $perl";
+    }
+    else {
+      $source = $class->generic_source($root);
+    }
+  }
 
   my $tex_directory = _manifest_tex_directory($source);
   my $include = File::Spec->catdir($root, $tex_directory);
-  make_path($include) if !-d $include;
   my $project_config = File::Spec->catfile($include, 'projectconfig.tex');
+
+  # A kept manifest can name any directory; warn rather than silently write
+  # projectconfig.tex somewhere TeX or Windows cannot reliably read back.
+  push @warnings, "the shared TeX directory in ollmconfig.toml is '$1'; spaces "
+    . "and quotes are unreliable in TeX file lookups and invalid on Windows -- "
+    . "prefer a plain relative name"
+    if $manifest_kept
+    && $source =~ /^\s*directory\s*=\s*["']([^\n]*?[\s"][^\n]*?)["']\s*(?:#.*)?$/m;
+
+  die "ollmconfig.toml already exists: $toml"
+    if $manifest_kept && -e $project_config;
+
+  make_path($include) if !-d $include;
+  if (!$manifest_kept) {
+    open my $handle, '>:raw', $toml
+      or die "cannot create '$toml': $!";
+    print {$handle} $source or die "cannot write '$toml': $!";
+    close $handle or die "cannot close '$toml': $!";
+  }
+  else {
+    push @warnings, "kept the existing ollmconfig.toml; created only "
+      . "Include/projectconfig.tex to match it";
+  }
+
+  my $languages = _manifest_languages($source);
   my $project_config_created = !-e $project_config;
-  if (!-e $project_config) {
+  if ($project_config_created) {
     my $lectdates = File::Spec->catfile($include, 'lectdates.tex');
-    my ($tex_source, @tex_warnings) = -f $lectdates
-      ? $class->convert_lectdates($lectdates)
-      : ($class->generic_project_config(), ());
+    my ($tex_source, @tex_warnings);
+    if (-f $lectdates) {
+      ($tex_source, @tex_warnings) =
+        $class->convert_lectdates($lectdates, $languages);
+    }
+    else {
+      $tex_source = $class->generic_project_config($languages);
+      push @tex_warnings, "no lectdates.tex found at '$lectdates'; wrote "
+        . "placeholder metadata -- copy it from the legacy file manually if it "
+        . "lives elsewhere"
+        if -f $perl;
+    }
     push @warnings, @tex_warnings;
     open my $tex_handle, '>:raw', $project_config
       or die "cannot create '$project_config': $!";
@@ -71,62 +118,194 @@ sub execute {
       or die "cannot write '$project_config': $!";
     close $tex_handle or die "cannot close '$project_config': $!";
   }
+
   return {
     path => $toml, project_config_path => $project_config,
     project_config_created => $project_config_created,
-    converted => -f $perl ? 1 : 0, warnings => \@warnings,
+    manifest_kept => $manifest_kept ? 1 : 0,
+    converted => (!$manifest_kept && -f $perl) ? 1 : 0,
+    warnings => \@warnings,
   };
 }
 
-sub generic_project_config {
-  return <<'TEX';
-% Shared metadata for the lecture project. Replace these dummy values.
-\title{Course title}
-\author{First name Last name}
-\date{Term and year}
-\institute{Institution}
+sub _read_file {
+  my ($path) = @_;
+  open my $fh, '<:raw', $path or die "cannot read '$path': $!";
+  local $/;
+  my $content = <$fh>;
+  close $fh or die "cannot close '$path': $!";
+  return $content;
+}
 
+# A manifest is worth preserving when it parses and carries the sections the
+# generator always emits. A truncated write drops trailing tables and fails one
+# of these checks; if no TOML parser is available the file is kept untouched.
+sub _toml_looks_complete {
+  my ($path) = @_;
+  my $source = eval { _read_file($path) };
+  return 0 if !defined $source || $source !~ /\S/;
+  return 1 if !eval { require TOML::Tiny::Parser; 1 };
+  my $parsed = eval { TOML::Tiny::Parser->new(strict => 1)->parse($source) };
+  return 0 if ref $parsed ne 'HASH';
+  return (exists $parsed->{schema}
+    && ref $parsed->{project} eq 'HASH'
+    && ref $parsed->{languages} eq 'HASH') ? 1 : 0;
+}
+
+sub _manifest_languages {
+  my ($source) = @_;
+  return [] if $source !~ /^available\s*=\s*\[([^\]]*)\]/m;
+  return [ $1 =~ /['"]([^'"]*)['"]/g ];
+}
+
+# The profile block shared by generated and converted project configurations.
+# Every value line ends with a comma so that commenting any single line in or
+# out stays valid l3keys input.
+sub _project_config_profiles {
+  return <<'TEX';
 \LectureProjectSetup{
   presentation-profile=beamer,
-  longform-profile=scrbook
-  % If you want class ltx-talk as the presentation backend, uncomment the
-  % following line and comment out presentation-profile=beamer above.
+  longform-profile=scrbook,
+  % To use class ltx-talk as the presentation backend instead, comment out
+  % presentation-profile=beamer above and uncomment the next line.
   % presentation-profile=ltx-talk,
-  % If you want class book as the long-form backend, uncomment the following
-  % line and comment out longform-profile=scrbook above.
-  % longform-profile=book
+  % To use class book as the long-form backend instead, comment out
+  % longform-profile=scrbook above and uncomment the next line.
+  % longform-profile=book,
 }
 TEX
 }
 
+# langselect derives the bilingual helper macro name from the selectable-language
+# order: de,en -> \ldeen ; en,de -> \lende. Only two-language projects get one;
+# other counts fall through to a plain (or trilingual) configuration.
+sub _bilingual_macro {
+  my ($languages) = @_;
+  return undef if !$languages || @$languages != 2;
+  return 'l' . $languages->[0] . $languages->[1];
+}
+
+sub _language_setup_line {
+  my ($languages) = @_;
+  return '' if !$languages || @$languages < 2;
+  return '\LectureProjectSetup{languages={selectable={'
+    . join(',', @$languages) . "}}}\n";
+}
+
+sub generic_project_config {
+  my ($class, $languages) = @_;
+  my $macro = _bilingual_macro($languages);
+  my $setup = _language_setup_line($languages);
+
+  my $body = "% Shared metadata for the lecture project. Replace these dummy "
+    . "values.\n";
+  if (defined $macro) {
+    $body .= "% This project builds in several languages; wrap language-"
+      . "specific metadata\n% as \\$macro" . '{...}{...} (first argument '
+      . "$languages->[0], second $languages->[1]).\n";
+  }
+  elsif ($setup ne '') {
+    $body .= "% This project builds in several languages; wrap language-"
+      . "specific metadata\n% in the langselect macro generated for the "
+      . "languages below.\n";
+  }
+  $body .= $setup;
+  $body .= defined $macro
+    ? "\\title{\\$macro" . '{Kurstitel}{Course title}}' . "\n"
+    : "\\title{Course title}\n";
+  $body .= "\\author{First name Last name}\n"
+    . "\\date{Term and year}\n"
+    . "\\institute{Institution}\n\n"
+    . _project_config_profiles();
+  return $body;
+}
+
 sub convert_lectdates {
-  my ($class, $path) = @_;
+  my ($class, $path, $languages) = @_;
   open my $handle, '<:raw', $path or die "cannot read '$path': $!";
   local $/;
   my $legacy = <$handle>;
   close $handle or die "cannot close '$path': $!";
 
-  my @commands;
-  for my $name (qw(title subtitle author date course event lehrveranstaltung institute tucurl logo)) {
-    push @commands, _extract_tex_commands($legacy, $name);
-  }
-  @commands = sort { $a->[0] <=> $b->[0] } @commands;
-  my $metadata = join("\n", map { $_->[1] } @commands);
-  my @warnings;
-  push @warnings, "no recognizable metadata found in '$path'"
-    if !@commands;
-  push @warnings, "legacy class options in '$path' require manual conversion"
-    if $legacy =~ /\\(?:SetGlobalClassOptions|EnforceGlobalClassOptions)\b/;
-  return ("% Converted from lectdates.tex; review the copied metadata.\n"
-    . ($metadata ne '' ? "$metadata\n\n" : "")
-    . $class->generic_project_config_profiles(), @warnings);
-}
+  # osglecture provides these directly or as a documented legacy alias.
+  my @copy = qw(
+    title subtitle author date course event lehrveranstaltung conference institute
+  );
+  # Accepted by the legacy TUC beamer theme but undefined under osglecture:
+  # keep the text, commented out, so nothing vanishes and nothing breaks.
+  my @comment = qw(tucurl logo);
 
-sub generic_project_config_profiles {
-  my ($class) = @_;
-  my $source = $class->generic_project_config();
-  $source =~ s/\A.*?(?=\\LectureProjectSetup)//s;
-  return $source;
+  my @found;
+  push @found, map { [@$_, 0] } _extract_tex_commands($legacy, $_) for @copy;
+  push @found, map { [@$_, 1] } _extract_tex_commands($legacy, $_) for @comment;
+  @found = sort { $a->[0] <=> $b->[0] } @found;
+
+  my ($normalized, @lines);
+  for my $entry (@found) {
+    my (undef, $text, $commented) = @$entry;
+    if ($commented) {
+      push @lines, "% $text";
+      next;
+    }
+    # \ldeenr was the pre-langselect robust spelling of \ldeen; langselect's
+    # \ldeen is robust on its own, so normalize to it.
+    $normalized = 1 if $text =~ s/\\ldeenr(?![a-zA-Z])/\\ldeen/g;
+    push @lines, $text;
+  }
+  my $metadata = join("\n", @lines);
+
+  # Comments never carry an active command; strip them before scanning.
+  my $active = $legacy =~ s/(?<!\\)%.*//rg;
+  my @warnings;
+  push @warnings, "no recognizable metadata found in '$path'" if !@found;
+
+  my @present = grep { $active =~ /\\\Q$_\E(?![a-zA-Z])/ } @comment;
+  push @warnings, "commands with no osglecture equivalent were commented out in "
+    . "the converted configuration: " . join(', ', map { "\\$_" } @present)
+    if @present;
+
+  push @warnings, "'\\ldeenr' in '$path' was rewritten to '\\ldeen'"
+    if $normalized;
+
+  my $de_en = $languages && @$languages == 2
+    && $languages->[0] eq 'de' && $languages->[1] eq 'en';
+  push @warnings, "copied metadata in '$path' uses '\\ldeen', but this project's "
+    . "language order does not generate that macro; check the argument order "
+    . "against '\\" . (_bilingual_macro($languages) // 'lende') . "' or set the "
+    . "languages to de, en"
+    if $metadata =~ /\\ldeen(?![a-zA-Z])/ && !$de_en;
+
+  my $includes = '';
+  for my $name ($active =~ /\\input\s*\{\s*([^}]+?)\s*\}/g) {
+    (my $bare = $name) =~ s/\.tex\z//;
+    if ($bare =~ m{[\\/]}) {
+      $includes .= "% \\IncludeOsgLecturePreamble{$bare} "
+        . "% path outside the shared TeX directory -- convert manually\n";
+      push @warnings, "'\\input{$name}' in '$path' points outside the shared "
+        . "TeX directory; convert it manually";
+    }
+    else {
+      $includes .= "\\IncludeOsgLecturePreamble{$bare}\n";
+      push @warnings, "'\\input{$name}' in '$path' became "
+        . "'\\IncludeOsgLecturePreamble{$bare}'; the fragment now runs after "
+        . "\\LoadClass -- use the starred form if it must run earlier";
+    }
+  }
+  $includes = "\n% '\\input' fragments from the legacy lectdates.tex. Unlike "
+    . "\\input, these\n% are replayed only after the document class has loaded; "
+    . "use\n% \\IncludeOsgLecturePreamble* for a fragment that must run "
+    . "earlier.\n" . $includes
+    if $includes ne '';
+
+  push @warnings, "legacy class options in '$path' require manual conversion"
+    if $active =~ /\\(?:SetGlobalClassOptions|EnforceGlobalClassOptions)(?![a-zA-Z])/;
+
+  my $body = "% Converted from lectdates.tex; review the copied metadata.\n";
+  $body .= _language_setup_line($languages);
+  $body .= "$metadata\n" if $metadata ne '';
+  $body .= $includes;
+  $body .= "\n" . _project_config_profiles();
+  return ($body, @warnings);
 }
 
 sub _extract_tex_commands {
@@ -171,9 +350,14 @@ sub _balanced_end {
   return;
 }
 
+# Reads the [project.tex] directory back from a manifest -- the freshly
+# generated one, or an existing file that is kept as-is. Accepts either quote
+# style; a value with an embedded quote (or none at all) is left to the
+# caller's fallback rather than parsed into a broken path.
 sub _manifest_tex_directory {
   my ($source) = @_;
-  return $1 if $source =~ /^directory\s*=\s*"([^"]+)"/m;
+  return $1 if $source =~ /^\s*directory\s*=\s*"([^"]+)"\s*(?:#.*)?$/m;
+  return $1 if $source =~ /^\s*directory\s*=\s*'([^']+)'\s*(?:#.*)?$/m;
   return 'Include';
 }
 
@@ -201,10 +385,15 @@ sub convert_source {
   my @warnings;
   my $tex_directory = $scalar{shared_source_dir} // 'Include';
   $tex_directory =~ s{\A\.\.[\\/]}{};
+  # Spaces, quotes, backslashes and the Windows-reserved characters do not
+  # survive TeX file lookups (\IncludeOsgLecturePreamble, the class locating
+  # projectconfig.tex) reliably and are invalid in Windows path components.
   if (File::Spec->file_name_is_absolute($tex_directory)
-      || $tex_directory =~ m{\A\.\.(?:[\\/]|\z)}) {
+      || $tex_directory =~ m{\A\.\.(?:[\\/]|\z)}
+      || $tex_directory =~ /["\s\\<>:|?*]/) {
     push @warnings,
-      "shared_source_dir could not be converted portably; using 'Include'";
+      "shared_source_dir '$tex_directory' is not a portable relative path; "
+      . "using 'Include'";
     $tex_directory = 'Include';
   }
   my $source = _manifest(

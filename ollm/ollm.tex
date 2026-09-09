@@ -785,10 +785,21 @@ verhält sich bei gefundenen Legacy-Dateien wie \texttt{convertproject}.
 Bestehende Konfigurationsdateien werden nicht überschrieben.
 
 Statisch erkennbare Sprachen, Shell-Escape-Einstellung, gemeinsames
-TeX-Verzeichnis und einfache Deploymentzuweisungen werden übernommen.
-Dynamische Perl-Ausdrücke, Passwörter, Deploymentrestriktionen, gemeinsam
-genutzte Datenpfade und alte Kapitelnummernlogik müssen anhand der ausgegebenen
-Warnungen manuell übertragen werden.
+TeX-Verzeichnis, einfache Deploymentzuweisungen und die von \texttt{osglecture}
+unterstützten Metadatenbefehle aus \texttt{lectdates.tex} werden übernommen.
+Dabei wird \texttt{\textbackslash ldeenr} zu \texttt{\textbackslash ldeen}
+vereinheitlicht, ein \texttt{\textbackslash input} zu
+\texttt{\textbackslash IncludeOsgLecturePreamble} (das Fragment läuft dann
+\emph{nach} \texttt{\textbackslash LoadClass}), und die Sprachreihenfolge des
+Manifests wird als \texttt{\textbackslash LectureProjectSetup} mit
+\texttt{selectable}-Liste in \texttt{projectconfig.tex} gespiegelt.
+Altbefehle ohne \texttt{osglecture}-Entsprechung
+(\texttt{\textbackslash tucurl}, \texttt{\textbackslash logo}) werden
+auskommentiert übernommen. Dynamische Perl-Ausdrücke, Passwörter,
+Deploymentrestriktionen, gemeinsam genutzte Datenpfade und alte
+Kapitelnummernlogik müssen anhand der ausgegebenen Warnungen manuell übertragen
+werden. Eine automatisch erzeugte \texttt{projectconfig.tex} sollte früh
+einmal testweise übersetzt werden.
 
 Während der Migration dürfen beide Konfigurationsdateien nebeneinander liegen.
 Normale Aufrufe verwenden TOML. Nur \texttt{--legacy} aktiviert die alte

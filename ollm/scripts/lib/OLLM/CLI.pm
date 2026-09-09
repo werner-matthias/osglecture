@@ -452,8 +452,13 @@ sub _migration {
     print STDERR "ollm: $error\n";
     return 2;
   }
-  print "Created $result->{path}",
-    $result->{converted} ? " from legacy configuration\n" : "\n";
+  if ($result->{manifest_kept}) {
+    print "Kept $result->{path}\n";
+  }
+  else {
+    print "Created $result->{path}",
+      $result->{converted} ? " from legacy configuration\n" : "\n";
+  }
   print(($result->{project_config_created} ? 'Created ' : 'Kept '),
     "$result->{project_config_path}\n");
   print STDERR "ollm: conversion warning: $_\n" for @{ $result->{warnings} };

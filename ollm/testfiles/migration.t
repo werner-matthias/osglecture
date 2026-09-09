@@ -22,8 +22,10 @@ print {$dates} <<'TEX';
 \title{Operating {Systems}}
 % \author{Commented Example}
 \author [Example] {Nora Example}
-\date{Winter term}
+\date{\ldeenr{Wintersemester}{Winter term}}
+\tucurl[https://example.org]{https://example.org}
 \SetGlobalClassOptions{aspectratio=169}
+\input{lectspecial}
 TEX
 close $dates;
 open my $old, '>:raw', $legacy or die $!;
@@ -54,8 +56,27 @@ unlike $converted_source, qr/Commented Example/,
   'convertproject does not activate commented legacy metadata';
 unlike $converted_source, qr/SetGlobalClassOptions/,
   'convertproject omits unsupported legacy class settings';
-like join("\n", @{ $result->{warnings} }), qr/require manual conversion/,
+unlike $converted_source, qr/^\\tucurl/m,
+  'convertproject does not emit \tucurl as an active command';
+like $converted_source, qr/^% \\tucurl\[https:/m,
+  'convertproject keeps the \tucurl text, commented out';
+like $converted_source, qr/\\date\{\\ldeen\{Wintersemester\}\{Winter term\}\}/,
+  'convertproject normalizes \ldeenr to \ldeen';
+like $converted_source, qr/^\\IncludeOsgLecturePreamble\{lectspecial\}$/m,
+  'convertproject converts \input fragments to \IncludeOsgLecturePreamble';
+like $converted_source, qr/selectable=\{en,de\}/,
+  'convertproject mirrors the manifest language order into projectconfig.tex';
+my $converted_warnings = join "\n", @{ $result->{warnings} };
+like $converted_warnings, qr/require manual conversion/,
   'convertproject warns about unsupported legacy class settings';
+like $converted_warnings, qr/commented out in the converted configuration: \\tucurl/,
+  'convertproject reports the commented-out legacy metadata commands';
+like $converted_warnings, qr/'\\ldeenr' in .* was rewritten to '\\ldeen'/,
+  'convertproject reports the \ldeenr rewrite';
+like $converted_warnings, qr/language order does not generate that macro/,
+  'convertproject warns that \ldeen is undefined without a de,en language order';
+like $converted_warnings, qr/became '\\IncludeOsgLecturePreamble\{lectspecial\}'/,
+  'convertproject reports the \input conversion and its timing change';
 like $converted_source, qr/presentation-profile=beamer/,
   'converted project configuration selects the default presentation profile';
 like $converted_source, qr/% presentation-profile=ltx-talk/,
@@ -89,8 +110,10 @@ ok -f $result->{project_config_path},
 open my $generic_tex, '<:raw', $result->{project_config_path} or die $!;
 my $generic_source = do { local $/; <$generic_tex> };
 close $generic_tex;
-like $generic_source, qr/\\title\{Course title\}/,
-  'newproject supplies dummy project metadata';
+like $generic_source, qr/\\title\{\\ldeen\{Kurstitel\}\{Course title\}\}/,
+  'newproject supplies bilingual dummy metadata for a de,en manifest';
+like $generic_source, qr/\\LectureProjectSetup\{languages=\{selectable=\{de,en\}\}\}/,
+  'newproject declares the selectable languages from the manifest';
 like $generic_source, qr/longform-profile=scrbook/,
   'newproject selects the default long-form profile';
 like $generic_source, qr/% longform-profile=book/,
@@ -105,5 +128,74 @@ mkdir $unit or die $!;
 $result = OLLM::Migration->execute(action => 'newproject', start_dir => $unit);
 is $result->{path}, File::Spec->catfile(Cwd::abs_path($nested), 'ollmconfig.toml'),
   'newproject discovers a legacy project from a unit directory';
+
+# A shared_source_dir that TeX/Windows cannot handle falls back to Include.
+my $awkward = tempdir(CLEANUP => 1);
+open $old, '>:raw', File::Spec->catfile($awkward, 'ollmconfig.pl') or die $!;
+print {$old} "\$shared_source_dir = 'My Includes';\n";
+close $old;
+$result = OLLM::Migration->execute(action => 'convertproject', start_dir => $awkward);
+my $awkward_manifest = OLLM::Config->load_manifest($result->{path});
+is $awkward_manifest->{project}{tex}{directory}, 'Include',
+  'a non-portable shared_source_dir becomes Include';
+like join("\n", @{ $result->{warnings} }), qr/not a portable relative path/,
+  'convertproject warns when the legacy source directory is dropped';
+
+# A complete manifest without a projectconfig.tex: keep the manifest, add only
+# the missing project configuration.
+my $resume = tempdir(CLEANUP => 1);
+open my $kept, '>:raw', File::Spec->catfile($resume, 'ollmconfig.toml') or die $!;
+print {$kept} <<'TOML';
+schema = 1
+
+[project]
+id = "resume-me"
+
+[project.tex]
+directory = "Include"
+config = "projectconfig.tex"
+
+[languages]
+available = ["en", "de"]
+default = "en"
+TOML
+close $kept;
+my $before = do {
+  open my $fh, '<:raw', File::Spec->catfile($resume, 'ollmconfig.toml') or die $!;
+  local $/; <$fh>;
+};
+$result = OLLM::Migration->execute(action => 'newproject', start_dir => $resume);
+ok $result->{manifest_kept}, 'an intact manifest is reported as kept';
+ok !$result->{converted}, 'a kept manifest is not a conversion';
+is do {
+  open my $fh, '<:raw', $result->{path} or die $!;
+  local $/; <$fh>;
+}, $before, 'newproject leaves an intact manifest byte-for-byte unchanged';
+ok -f $result->{project_config_path},
+  'newproject creates the missing projectconfig.tex next to a kept manifest';
+open my $resume_tex, '<:raw', $result->{project_config_path} or die $!;
+my $resume_source = do { local $/; <$resume_tex> };
+close $resume_tex;
+like $resume_source, qr/selectable=\{en,de\}/,
+  'the added projectconfig.tex mirrors the kept manifest language order';
+like join("\n", @{ $result->{warnings} }), qr/kept the existing ollmconfig\.toml/,
+  'newproject warns that the manifest was kept';
+
+eval { OLLM::Migration->execute(action => 'newproject', start_dir => $resume) };
+like $@, qr/already exists/,
+  'newproject still refuses when both files are present';
+
+# A truncated manifest left by an aborted run is replaced.
+my $broken = tempdir(CLEANUP => 1);
+open my $stub, '>:raw', File::Spec->catfile($broken, 'ollmconfig.toml') or die $!;
+print {$stub} "schema = 1\n[project]\nid = \"x\"\n[unterminated\n";
+close $stub;
+$result = OLLM::Migration->execute(action => 'newproject', start_dir => $broken);
+ok !$result->{manifest_kept}, 'a truncated manifest is not kept';
+my $repaired = OLLM::Config->load_manifest($result->{path});
+is $repaired->{languages}{default}, 'de',
+  'the replacement manifest is a valid generic one';
+like join("\n", @{ $result->{warnings} }), qr/replaced an incomplete ollmconfig\.toml/,
+  'newproject warns that an incomplete manifest was replaced';
 
 done_testing;
