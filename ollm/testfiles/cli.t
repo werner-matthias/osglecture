@@ -92,8 +92,8 @@ $plan = OLLM::CLI->parse(qw(+enforce+ +script slides));
 is $plan->{target}, 'script', '+enforce+ enables the same mode';
 is $plan->{source}, 'slides', 'bare target word becomes a source under enforcement';
 
-$plan = OLLM::CLI->parse(qw(+convertconfig));
-is $plan->{action}, 'convertconfig', 'migration command accepts a plus prefix';
+$plan = OLLM::CLI->parse(qw(+convertproject));
+is $plan->{action}, 'convertproject', 'migration command accepts a plus prefix';
 
 eval { OLLM::CLI->parse(qw(clean --level=unknown)) };
 like $@, qr/invalid --level/, 'unknown clean level is rejected';

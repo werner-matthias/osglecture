@@ -207,14 +207,18 @@ different existing file requires \option{--overwrite} is controlled by
 
 \subsection{\ldeen{Projekt anlegen und allgemeine Optionen}{Creating a Project and General Options}}
 
-\ldeen{\code{ollm newtoml} erzeugt ein neues
-\File{ollmconfig.toml}, überschreibt aber kein bestehendes Manifest. Für die
+\ldeen{\code{ollm newproject} erzeugt ein neues
+\File{ollmconfig.toml} sowie, falls noch nicht vorhanden,
+\File{Include/projectconfig.tex} mit Dummy-Metadaten und dokumentierten
+Profilalternativen. Es überschreibt keine bestehende Datei. Für die
 genaue Syntax einer installierten Version sind \code{ollm --help} und
 \code{ollm --version} maßgeblich. Häufige globale Optionen sind
 \keyis*{--config}{DATEI}, \keyis*{--project-root}{VERZEICHNIS},
 \keyis*{--format}{text|json}, \keyis*{--color}{auto|always|never} und
-\option{--non-interactive}.}{\code{ollm newtoml} creates a new
-\File{ollmconfig.toml} but never overwrites an existing manifest. For the
+\option{--non-interactive}.}{\code{ollm newproject} creates a new
+\File{ollmconfig.toml} and, unless it already exists,
+\File{Include/projectconfig.tex} with dummy metadata and documented profile
+alternatives. It never overwrites an existing file. For the
 exact syntax of an installed version, \code{ollm --help} and
 \code{ollm --version} are authoritative. Common global options are
 \keyis*{--config}{FILE}, \keyis*{--project-root}{DIRECTORY},
@@ -261,12 +265,15 @@ rejects options that would bypass the controlled build contract.}
   \item[\code{deploy}] \ldeen{kopiert bereits promovierte PDFs nach den
     Deploymentregeln}{copies already promoted PDFs according to the deployment
     rules}.
-  \item[\code{convertconfig}] \ldeen{konvertiert ein altes
-    \File{ollmconfig.pl} soweit möglich nach TOML}{converts a legacy
-    \File{ollmconfig.pl} to TOML where possible}.
-  \item[\code{newtoml}] \ldeen{legt ein Manifest an und verwendet dabei eine
-    vorhandene Legacy-Konfiguration als Konvertierungsquelle}{creates a
-    manifest, using an existing legacy configuration as a conversion source}.
+  \item[\code{convertproject}] \ldeen{konvertiert ein altes
+    \File{ollmconfig.pl} nach TOML und übernimmt erkennbare Metadaten aus
+    \File{Include/lectdates.tex}}{converts a legacy \File{ollmconfig.pl} to
+    TOML and imports recognizable metadata from
+    \File{Include/lectdates.tex}}.
+  \item[\code{newproject}] \ldeen{legt Manifest und TeX-Projektkonfiguration
+    an und verwendet vorhandene Legacy-Dateien als Konvertierungsquelle}{creates
+    the manifest and TeX project configuration, using existing legacy files as
+    conversion sources}.
 \end{description}
 
 \paragraph{\ldeen{Targets und Aliase}{Targets and aliases}.}

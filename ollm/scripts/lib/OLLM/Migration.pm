@@ -6,6 +6,7 @@ use warnings;
 
 use Cwd qw(abs_path);
 use File::Basename qw(basename dirname);
+use File::Path qw(make_path);
 use File::Spec;
 
 sub execute {
@@ -42,7 +43,7 @@ sub execute {
   my ($source, @warnings);
   if (-f $perl) {
     ($source, @warnings) = $class->convert_source($perl, $root);
-  } elsif ($action eq 'convertconfig') {
+  } elsif ($action eq 'convertproject') {
     die "legacy configuration not found: $perl";
   } else {
     $source = $class->generic_source($root);
@@ -52,7 +53,128 @@ sub execute {
     or die "cannot create '$toml': $!";
   print {$handle} $source or die "cannot write '$toml': $!";
   close $handle or die "cannot close '$toml': $!";
-  return { path => $toml, converted => -f $perl ? 1 : 0, warnings => \@warnings };
+
+  my $tex_directory = _manifest_tex_directory($source);
+  my $include = File::Spec->catdir($root, $tex_directory);
+  make_path($include) if !-d $include;
+  my $project_config = File::Spec->catfile($include, 'projectconfig.tex');
+  my $project_config_created = !-e $project_config;
+  if (!-e $project_config) {
+    my $lectdates = File::Spec->catfile($include, 'lectdates.tex');
+    my ($tex_source, @tex_warnings) = -f $lectdates
+      ? $class->convert_lectdates($lectdates)
+      : ($class->generic_project_config(), ());
+    push @warnings, @tex_warnings;
+    open my $tex_handle, '>:raw', $project_config
+      or die "cannot create '$project_config': $!";
+    print {$tex_handle} $tex_source
+      or die "cannot write '$project_config': $!";
+    close $tex_handle or die "cannot close '$project_config': $!";
+  }
+  return {
+    path => $toml, project_config_path => $project_config,
+    project_config_created => $project_config_created,
+    converted => -f $perl ? 1 : 0, warnings => \@warnings,
+  };
+}
+
+sub generic_project_config {
+  return <<'TEX';
+% Shared metadata for the lecture project. Replace these dummy values.
+\title{Course title}
+\author{First name Last name}
+\date{Term and year}
+\institute{Institution}
+
+\LectureProjectSetup{
+  presentation-profile=beamer,
+  longform-profile=scrbook
+  % If you want class ltx-talk as the presentation backend, uncomment the
+  % following line and comment out presentation-profile=beamer above.
+  % presentation-profile=ltx-talk,
+  % If you want class book as the long-form backend, uncomment the following
+  % line and comment out longform-profile=scrbook above.
+  % longform-profile=book
+}
+TEX
+}
+
+sub convert_lectdates {
+  my ($class, $path) = @_;
+  open my $handle, '<:raw', $path or die "cannot read '$path': $!";
+  local $/;
+  my $legacy = <$handle>;
+  close $handle or die "cannot close '$path': $!";
+
+  my @commands;
+  for my $name (qw(title subtitle author date course event lehrveranstaltung institute tucurl logo)) {
+    push @commands, _extract_tex_commands($legacy, $name);
+  }
+  @commands = sort { $a->[0] <=> $b->[0] } @commands;
+  my $metadata = join("\n", map { $_->[1] } @commands);
+  my @warnings;
+  push @warnings, "no recognizable metadata found in '$path'"
+    if !@commands;
+  push @warnings, "legacy class options in '$path' require manual conversion"
+    if $legacy =~ /\\(?:SetGlobalClassOptions|EnforceGlobalClassOptions)\b/;
+  return ("% Converted from lectdates.tex; review the copied metadata.\n"
+    . ($metadata ne '' ? "$metadata\n\n" : "")
+    . $class->generic_project_config_profiles(), @warnings);
+}
+
+sub generic_project_config_profiles {
+  my ($class) = @_;
+  my $source = $class->generic_project_config();
+  $source =~ s/\A.*?(?=\\LectureProjectSetup)//s;
+  return $source;
+}
+
+sub _extract_tex_commands {
+  my ($source, $name) = @_;
+  my @found;
+  while ($source =~ /\\\Q$name\E(?=\s*[<\[{])/g) {
+    my $start = $-[0];
+    my $pos = pos($source);
+    my $line_start = rindex($source, "\n", $start - 1) + 1;
+    my $prefix = substr($source, $line_start, $start - $line_start);
+    $prefix =~ s/\\%//g;
+    next if $prefix =~ /%/;
+    $pos++ while substr($source, $pos, 1) =~ /\s/;
+    for my $pair (['<', '>'], ['[', ']']) {
+      while (substr($source, $pos, 1) eq $pair->[0]) {
+        $pos = _balanced_end($source, $pos, @$pair);
+        return @found if !defined $pos;
+        $pos++ while substr($source, $pos, 1) =~ /\s/;
+      }
+    }
+    next if substr($source, $pos, 1) ne '{';
+    my $end = _balanced_end($source, $pos, '{', '}');
+    next if !defined $end;
+    push @found, [$start, substr($source, $start, $end - $start)];
+    pos($source) = $end;
+  }
+  return @found;
+}
+
+sub _balanced_end {
+  my ($source, $start, $open, $close) = @_;
+  my $depth = 0;
+  for (my $i = $start; $i < length($source); ++$i) {
+    my $char = substr($source, $i, 1);
+    next if $i > 0 && substr($source, $i - 1, 1) eq '\\';
+    ++$depth if $char eq $open;
+    if ($char eq $close) {
+      --$depth;
+      return $i + 1 if $depth == 0;
+    }
+  }
+  return;
+}
+
+sub _manifest_tex_directory {
+  my ($source) = @_;
+  return $1 if $source =~ /^directory\s*=\s*"([^"]+)"/m;
+  return 'Include';
 }
 
 sub convert_source {

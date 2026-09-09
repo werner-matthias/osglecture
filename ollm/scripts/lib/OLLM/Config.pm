@@ -43,7 +43,7 @@ sub resolve_request {
   die "--legacy was requested, but no ollmconfig.pl was found"
     if $plan->{legacy} && !$standalone && $located->{kind} eq 'none';
   die "legacy manifest found at $located->{path}; use --legacy to build it "
-    . "or run 'ollm convertconfig' to create ollmconfig.toml"
+    . "or run 'ollm convertproject' to create the project configuration"
     if $located->{kind} eq 'legacy-unselected';
 
   return $class->_resolve_none_request($request, $standalone, $start)

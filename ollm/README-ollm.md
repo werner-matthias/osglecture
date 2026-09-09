@@ -11,7 +11,7 @@ of OSGLecture in comparision to OSGBeamer:
 - The configuration format has changed, from Perl to TOML. Accordingly, the configuration file
   not ollmconfig.pl anymore, but ollmconfig.toml. In addition, there are more places to configure
   things. 
-  Old Perl-based  configuration can be converted by `ollm convertconfig`. However, a follow-up check
+  Old Perl-based  configuration can be converted by `ollm convertproject`. However, a follow-up check
   is recommended.
 - Resulting artifacts (pdfs) can not be found in the unit directories, but in subdirectories
   of `.osglecture/build`, which can be found in the project root. This has two advantages:

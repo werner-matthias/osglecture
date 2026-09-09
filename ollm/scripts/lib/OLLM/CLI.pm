@@ -15,7 +15,7 @@ use OLLM::Path;
 use OLLM::Version qw($VERSION);
 
 my %ACTION = map { $_ => 1 }
-  qw(build report check clean prune doctor convertconfig newtoml);
+  qw(build report check clean prune doctor convertproject newproject);
   $ACTION{deploy} = 1;
 my %TARGET_ALIAS = (
   article      => 'script',
@@ -62,7 +62,7 @@ sub run {
     return 2;
   }
 
-  if ($plan->{action} eq 'convertconfig' || $plan->{action} eq 'newtoml') {
+  if ($plan->{action} eq 'convertproject' || $plan->{action} eq 'newproject') {
     return $class->_migration($plan);
   }
 
@@ -454,6 +454,8 @@ sub _migration {
   }
   print "Created $result->{path}",
     $result->{converted} ? " from legacy configuration\n" : "\n";
+  print(($result->{project_config_created} ? 'Created ' : 'Kept '),
+    "$result->{project_config_path}\n");
   print STDERR "ollm: conversion warning: $_\n" for @{ $result->{warnings} };
   return 0;
 }
@@ -1156,7 +1158,7 @@ sub _help {
   return <<'HELP';
 Usage:
   ollm [global options] [[+]build] [[+]target| | --target=<target>] [build options] [latexmk options]
-  ollm [global options] [+]<report|check|clean|prune|doctor|deploy|convertconfig|newtoml>
+  ollm [global options] [+]<report|check|clean|prune|doctor|deploy|convertproject|newproject>
 
 Targets:
   slides (aliases: beamer, presentation)
@@ -1173,8 +1175,8 @@ Implemented commands:
   prune                 remove superseded OLLM state generations
   doctor                inspect the local Perl and TeX toolchain
   deploy                copy promoted PDF artifacts to configured targets
-  convertconfig         convert a legacy ollmconfig.pl to TOML where possible
-  newtoml               create TOML, converting ollmconfig.pl when present
+  convertproject        convert a legacy project configuration where possible
+  newproject            create project configuration, converting legacy files when present
 
 General options:
   --help                show this help

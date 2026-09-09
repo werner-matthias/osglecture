@@ -137,7 +137,7 @@ Wechseln Sie zum Anlegen eines Projekts in dessen künftige Wurzel und führen
 Sie aus:
 
 \begin{verbatim}
-ollm newtoml
+ollm newproject
 \end{verbatim}
 
 Der Befehl erzeugt \texttt{ollmconfig.toml}. Existiert dort bereits eine alte
@@ -772,15 +772,17 @@ das Target mit \texttt{--target=studyguide}.
 \section{Migration aus \texttt{ollmconfig.pl}}
 
 \begin{verbatim}
-ollm convertconfig
-ollm newtoml
+ollm convertproject
+ollm newproject
 \end{verbatim}
 
-\texttt{convertconfig} sucht eine alte \texttt{ollmconfig.pl} und erzeugt
-eine konservative \texttt{ollmconfig.toml}, ohne den Perl-Code auszuführen.
-\texttt{newtoml} erzeugt eine generische Datei oder verhält sich bei gefundener
-Perl-Datei wie \texttt{convertconfig}. Beide Befehle brechen ab, wenn TOML
-bereits existiert.
+\texttt{convertproject} sucht eine alte \texttt{ollmconfig.pl}, erzeugt
+eine konservative \texttt{ollmconfig.toml}, ohne den Perl-Code auszuführen,
+und übernimmt erkennbare Metadaten aus \texttt{Include/lectdates.tex} nach
+\texttt{Include/projectconfig.tex}. \texttt{newproject} erzeugt Manifest,
+Include-Verzeichnis und eine Projektkonfiguration mit Dummy-Metadaten oder
+verhält sich bei gefundenen Legacy-Dateien wie \texttt{convertproject}.
+Bestehende Konfigurationsdateien werden nicht überschrieben.
 
 Statisch erkennbare Sprachen, Shell-Escape-Einstellung, gemeinsames
 TeX-Verzeichnis und einfache Deploymentzuweisungen werden übernommen.
@@ -920,10 +922,12 @@ Nutzerdokumentation:
 
 % For migration, `ollmconfig.pl` may coexist with the TOML manifest. Normal
 % commands select TOML; `ollm --legacy ...` explicitly selects Perl. If only the
-% Perl file exists, `ollm convertconfig` creates a conservative TOML translation
-% without executing arbitrary Perl. `ollm newtoml` creates a generic manifest,
-% or performs that conversion when it discovers a Perl file. Neither command
-% overwrites an existing TOML file. Statically recognizable legacy deployment
+% Perl file exists, `ollm convertproject` creates a conservative TOML translation
+% without executing arbitrary Perl and imports recognizable metadata from
+% `Include/lectdates.tex` into `Include/projectconfig.tex`. `ollm newproject`
+% creates a generic manifest and project configuration, or performs that
+% conversion when it discovers legacy files. Neither command overwrites an
+% existing configuration file. Statically recognizable legacy deployment
 % rules are translated; unsupported dynamic, restriction, path, or computed
 % settings are reported for manual review.
 
@@ -958,7 +962,7 @@ Nutzerdokumentation:
 % `lang`, and mapped `role` placeholders. Decimal values accept a minimum width,
 % for example `{ordinal:02}`. LaTeX reports the actual chapter representation;
 % `\OsgLectureDeploymentChapter{...}` overrides it explicitly. A generic
-% `newtoml` file contains commented deployment examples. `convertconfig`
+% `newproject` file contains commented deployment examples. `convertproject`
 % translates statically recognizable legacy `deploy_path` and `deploy_file`
 % assignments and reports unsupported dynamic or restriction settings.
 

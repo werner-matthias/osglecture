@@ -464,7 +464,7 @@ Projektwurzel liegen. Im normalen Betrieb wird ausschließlich TOML gewählt.
 Die Perl-Konfiguration wird nur mit `--legacy` wirksam; dann wählt auch
 `--config` ausdrücklich eine `.pl`-Datei. Eine allein gefundene Perl-Datei
 wird ohne `--legacy` niemals ausgeführt, sondern führt zu einer Diagnose mit
-Hinweis auf `convertconfig`.
+Hinweis auf `convertproject`.
 
 ### 7.2 Konfigurationsstufen
 
@@ -1482,8 +1482,8 @@ clean      implementiert
 prune      implementiert
 doctor     globale und projektbezogene Grundprüfung implementiert;
            Backendwerkzeuge und Mindestversionen TODO
-convertconfig  konservative Migration von ollmconfig.pl nach TOML
-newtoml    neues generisches TOML oder Migration einer gefundenen Perl-Datei
+convertproject  konservative Migration von ollmconfig.pl und lectdates.tex
+newproject      neues Manifest plus projectconfig.tex oder Legacy-Migration
 ```
 
 Ein eigener `plan`-Befehl ist nicht vorgesehen. Stattdessen:
@@ -1970,10 +1970,10 @@ sie bevorzugt atomar durch Umbenennen. Unterstützt das Zielsystem kein
 atomares Ersetzen, darf OLLM zugunsten eines erfolgreichen Deployments auf
 ein nichtatomares Ersetzen zurückfallen.
 
-`convertconfig` übernimmt statisch erkennbare Legacylisten aus
+`convertproject` übernimmt statisch erkennbare Legacylisten aus
 `deploy_path` und Namensschablonen aus `deploy_file`; nicht sicher abbildbare
 dynamische Regeln, PDF-Restriktionen und Kennwörter werden gemeldet.
-`newtoml` schreibt nur kommentierte Deploymentbeispiele, weil ein generisches
+`newproject` schreibt nur kommentierte Deploymentbeispiele, weil ein generisches
 Werkzeug keinen gültigen externen Zielpfad annehmen kann.
 
 ## 21. Implementierung und Portabilität
@@ -2119,16 +2119,19 @@ Die häufige CLI bleibt kompatibel. Für alternative Konfigurationsorte und
 Projektwurzeln gelten ausschließlich `--config` beziehungsweise
 `--project-root`.
 
-`ollm convertconfig` erzeugt neben einer gefundenen `ollmconfig.pl` eine
-`ollmconfig.toml`, ohne die Perl-Datei auszuführen. Statisch erkennbare,
-semantisch abbildbare Werte werden übernommen. Frei programmierte Logik sowie
+`ollm convertproject` erzeugt neben einer gefundenen `ollmconfig.pl` eine
+`ollmconfig.toml`, ohne die Perl-Datei auszuführen, und legt bei Bedarf
+`Include/projectconfig.tex` an. Statisch erkennbare, semantisch abbildbare
+Werte und Metadaten aus `Include/lectdates.tex` werden übernommen. Frei programmierte Logik sowie
 alte Deployment-, Pfad- und Kapitelnummerierungswerte werden nicht geraten;
 die Konvertierung nennt sie als nachzuarbeitende Punkte. Ein vorhandenes TOML
 wird niemals überschrieben.
 
-`ollm newtoml` erzeugt bei fehlender Konfiguration ein generisches Manifest.
+`ollm newproject` erzeugt bei fehlender Konfiguration ein generisches Manifest,
+das Include-Verzeichnis und eine `projectconfig.tex` mit Dummy-Metadaten und
+dokumentierten Profilalternativen.
 Findet es beim Aufwärtssuchen eine alte Perl-Konfiguration, verhält es sich wie
-`convertconfig`. Ein bereits vorhandenes TOML führt ebenfalls zum Abbruch.
+`convertproject`. Ein bereits vorhandenes TOML führt ebenfalls zum Abbruch.
 Die aus dem Verzeichnisnamen abgeleitete Projekt-ID ist nur ein Bootstrapwert
 im neu erzeugten Manifest und keine Unit- oder Referenzidentität.
 
