@@ -21,6 +21,13 @@ Currently, the following packages are included:
 * **semcat**: generalized semantic-category markup (inline, margin, box) with optional QR-code annotations (`./semcat`)
 * **osgdoc** is a small wrapper for cnltx and provides some further support for documentation (`./osgdoc`) 
 
+> [!WARNING]
+> Although the bundle is currently in active use (or perhaps precisely because
+> it is—we're dealing with a kind of DevOps scenario here), it is explicitly under active 
+> development and is not stable.
+> 
+> In other words: APIs are subject to change.
+
 ## Modules' version and compatibility
 Each module keeps its own version and may has its own compatibility dependency.
 Whilst in general an up-to-date TeX installation is required, few modules are
