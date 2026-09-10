@@ -810,6 +810,47 @@ individually. \code{<all>} forces columns in every mode, while, for example,
   { \bool_if:NT \l_tmpa_bool
       { \msg_fatal:nnV {osglecture}{metadata-forbidden}
           \l__osglecture_document_profile_tl } }
+
+% The mode graph is configuration, not runtime state, and is built and
+% finalized here -- before \LoadClass -- so that class options keyed by mode
+% (class/<mode> in \OsgLectureSetup) can be resolved against the full graph.
+% The overlay-backend patching in osglecture-modes does need the loaded base
+% class, so that half is deferred to \LectureModesActivateOverlays below.
+\bool_if:NF \l__osglecture_patch_overlays_bool
+  { \PassOptionsToPackage{patch-overlays=false}{osglecture-modes} }
+\PassOptionsToPackage{deferred=true}{osglecture-modes}
+\RequirePackage{osglecture-modes}
+\DeclareModeBehaviorClass{presentation-dynamic}
+\DeclareModeBehaviorClass{presentation-static}
+\DeclareModeBehaviorClass{longform}
+\AssignLectureModeBehavior{slides}{presentation-dynamic}
+\AssignLectureModeBehavior{handout}{presentation-static}
+\AssignLectureModeBehavior{script,article}{longform}
+\tl_set:Ne \l__osglecture_mode_setup_file_tl
+  {
+    \osglecture_profile_value:Vn
+      \l__osglecture_document_profile_tl {mode-setup-file}
+  }
+\tl_if_empty:NF \l__osglecture_mode_setup_file_tl
+  { \exp_args:NV \file_input:n \l__osglecture_mode_setup_file_tl }
+\str_case:VnF \l__osglecture_doctype_tl
+  {
+    {script}  { \SetLectureModes{script,article} }
+    {article} { \SetLectureModes{article,script} }
+  }
+  { \exp_args:NV \SetLectureModes \l__osglecture_doctype_tl }
+\str_if_eq:VnT \l__osglecture_backend_tl {beamer}
+  { \AddLectureModes{beamer} }
+\tl_set:Ne \l_tmpa_tl
+  {
+    \osglecture_profile_value:Vn
+      \l__osglecture_document_profile_tl {modes}
+  }
+\tl_if_empty:NF \l_tmpa_tl { \exp_args:NV \AddLectureModes \l_tmpa_tl }
+\tl_if_empty:NF \l__osglecture_additional_modes_tl
+  { \exp_args:NV \AddLectureModes \l__osglecture_additional_modes_tl }
+\FinalizeLectureModes
+
 \tl_set:Ne \l__osglecture_selected_options_tl
   {
     \osglecture_profile_class_options:VV
@@ -877,39 +918,10 @@ individually. \code{<all>} forces columns in every mode, while, for example,
 \char_set_catcode:nn {32}{10}
 \exp_args:NV \LoadClass \l__osglecture_base_class_tl
 
-\bool_if:NF \l__osglecture_patch_overlays_bool
-  { \PassOptionsToPackage{patch-overlays=false}{osglecture-modes} }
-\RequirePackage{osglecture-modes}
-\DeclareModeBehaviorClass{presentation-dynamic}
-\DeclareModeBehaviorClass{presentation-static}
-\DeclareModeBehaviorClass{longform}
-\AssignLectureModeBehavior{slides}{presentation-dynamic}
-\AssignLectureModeBehavior{handout}{presentation-static}
-\AssignLectureModeBehavior{script,article}{longform}
-\tl_set:Ne \l__osglecture_mode_setup_file_tl
-  {
-    \osglecture_profile_value:Vn
-      \l__osglecture_document_profile_tl {mode-setup-file}
-  }
-\tl_if_empty:NF \l__osglecture_mode_setup_file_tl
-  { \exp_args:NV \file_input:n \l__osglecture_mode_setup_file_tl }
-\str_case:VnF \l__osglecture_doctype_tl
-  {
-    {script}  { \SetLectureModes{script,article} }
-    {article} { \SetLectureModes{article,script} }
-  }
-  { \exp_args:NV \SetLectureModes \l__osglecture_doctype_tl }
-\str_if_eq:VnT \l__osglecture_backend_tl {beamer}
-  { \AddLectureModes{beamer} }
-\tl_set:Ne \l_tmpa_tl
-  {
-    \osglecture_profile_value:Vn
-      \l__osglecture_document_profile_tl {modes}
-  }
-\tl_if_empty:NF \l_tmpa_tl { \exp_args:NV \AddLectureModes \l_tmpa_tl }
-\tl_if_empty:NF \l__osglecture_additional_modes_tl
-  { \exp_args:NV \AddLectureModes \l__osglecture_additional_modes_tl }
-\FinalizeLectureModes
+% The base class is now present: let osglecture-modes wire portable mode
+% expressions into its overlay backend (the graph itself was finalized
+% before \LoadClass above).
+\LectureModesActivateOverlays
 
 \NewExpandableDocumentCommand \OsgLectureDocumentType { }
   { \tl_use:N \l__osglecture_doctype_tl }
