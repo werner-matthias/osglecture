@@ -55,67 +55,89 @@ no teaching content. A compact project with two languages and three targets
 might begin as follows}:
 
 \begin{verbatim}
-schema = 1
+schema = 2
 bundle_preset = "OSG lecture/1"
 
 [project]
 id = "operating-systems"
 
-[languages]
-available = ["de", "en"]
-default = "de"
+[targets.defaults]
+languages = ["de", "en"]
+default_language = "de"
 
 [targets.slides]
-languages = ["de", "en"]
-document_metadata = "disabled"
-
 [targets.handout]
-languages = ["de", "en"]
-
 [targets.script]
-languages = ["de", "en"]
 \end{verbatim}
 
 \ldeen{\option{schema} bezeichnet das Dateischema, nicht die Version des
 Bundles. \option{project.id} ist die dauerhafte technische Serien-ID und geht
 in Jobnamen und Dokumentidentitäten ein. Ändern Sie sie nach dem ersten Build
-nur bewusst. \option{languages.available} enthält alle Projektsprachen;
-jedes Target wählt daraus eine nichtleere Teilmenge. Die Zuordnung von
-\code{de} zu \code{ngerman} oder von \code{en} zu \code{british}
-ist dagegen eine \LaTeX-Angelegenheit und gehört in
-\File{projectconfig.tex}.}{\option{schema} identifies the file schema, not
-the bundle version. \option{project.id} is the persistent technical series ID
-and contributes to job names and document identities. Change it after the
-first build only deliberately. \option{languages.available} contains all
-project languages; each target selects a non-empty subset. Mapping
-\code{de} to \code{ngerman} or \code{en} to \code{british}, however,
-is a \LaTeX\ concern and belongs in \File{projectconfig.tex}.}
+nur bewusst.}{\option{schema} identifies the file schema, not the bundle
+version. \option{project.id} is the persistent technical series ID and
+contributes to job names and document identities. Change it after the first
+build only deliberately.}
 
-\ldeen{Unter \code{[project.tex]} können das gemeinsame Verzeichnis und die
-Konfigurationsdatei geändert werden. Relative Verzeichnisse müssen innerhalb
-der Projektwurzel bleiben; \option{config} ist nur ein Dateiname}{The shared
-directory and configuration file can be changed under
-\code{[project.tex]}. Relative directories must remain inside the project
-root; \option{config} is a file name only}:
+\ldeen{\code{[targets.defaults]} sammelt, was jedes Target erbt, solange es
+nichts Eigenes setzt: \option{languages} listet in fester Reihenfolge alle
+Projektsprachen und ist zugleich der Prüfanker (die \option{languages} eines
+Targets müssen eine Teilmenge sein); \option{default\_language} wird gebaut,
+wenn die CLI keine Sprache nennt. Ein leeres \code{[targets.slides]} erbt
+alles; ein weggelassenes Target existiert schlicht nicht. Die Zuordnung von
+\code{de} zu \code{ngerman} oder von \code{en} zu \code{british} ist dagegen
+eine \LaTeX-Angelegenheit und gehört als \option{map} von \pkg{langselect} in
+\File{projectconfig.tex} -- die Sprachliste selbst muss dort nicht wiederholt
+werden.}{\code{[targets.defaults]} holds what every target inherits unless it
+sets its own: \option{languages} lists all project languages in a fixed order
+and is also the validation anchor (a target's \option{languages} must be a
+subset); \option{default\_language} is built when the CLI names none. An empty
+\code{[targets.slides]} inherits everything; an omitted target simply does not
+exist. Mapping \code{de} to \code{ngerman} or \code{en} to \code{british},
+however, is a \LaTeX\ concern and belongs in \File{projectconfig.tex} as the
+\option{map} option of \pkg{langselect} -- the language list itself need not be
+repeated there.}
+
+\ldeen{Ein Target darf \option{languages}, \option{default\_language},
+\option{profile} und \option{document\_metadata} überschreiben.
+\option{profile} wählt das Dokumentprofil für genau dieses Target;
+\code{[targets.defaults]} kann stattdessen \option{presentation\_profile} und
+\option{longform\_profile} setzen, die je nach Profilklasse des Targets
+greifen. Fehlt beides, gelten die Profil-Defaults des Bundle-Presets.
+\option{document\_metadata} (\keyval{enabled}{}/\keyval{disabled}{}) ist eine
+bewusste Ausgabeentscheidung und wirkt nur dort, wo das aufgelöste Profil den
+Metadatenvertrag offen lässt (\code{supported}); widerspricht sie einem Profil
+mit erzwungenem Vertrag, weist \OLLM\ den Build vor dem Lauf ab.}{A target may
+override \option{languages}, \option{default\_language}, \option{profile}, and
+\option{document\_metadata}. \option{profile} selects the document profile for
+that one target; \code{[targets.defaults]} may instead set
+\option{presentation\_profile} and \option{longform\_profile}, which apply
+according to the target's profile class. If neither is set, the bundle
+preset's profile defaults apply. \option{document\_metadata}
+(\keyval{enabled}{}/\keyval{disabled}{}) is a deliberate output choice and
+takes effect only where the resolved profile leaves the metadata contract
+open (\code{supported}); if it contradicts a profile with a forced contract,
+\OLLM\ rejects the build before the run.}
+
+\ldeen{\code{[project]} kann zusätzlich \option{tex\_directory} und
+\option{tex\_config} setzen (Standard \code{Include} bzw.
+\code{projectconfig.tex}). Der Verzeichnisname bleibt projektwurzel-relativ,
+\option{tex\_config} ist nur ein Dateiname}{\code{[project]} may additionally
+set \option{tex\_directory} and \option{tex\_config} (default \code{Include}
+and \code{projectconfig.tex}). The directory name stays project-root-relative,
+\option{tex\_config} is a file name only}:
 
 \begin{verbatim}
-[project.tex]
-directory = "Include"
-config = "projectconfig.tex"
+[project]
+id = "operating-systems"
+tex_directory = "Include"
+tex_config = "projectconfig.tex"
 \end{verbatim}
 
-\ldeen{Weitere Manifestbereiche steuern \option{security.shell\_escape}, die
-maximale Rundenzahl von \code{build --resolve} sowie das Deployment.
-\keyis{document\_metadata}{required} oder
-\keyis{document\_metadata}{disabled} an einem
-Target überschreibt dessen Definitionsdefault. Ein widersprüchlicher Vertrag
-zwischen Target und gewähltem Dokumentprofil wird als Fehler abgewiesen.}{Other
-manifest areas control \option{security.shell\_escape}, the maximum number of
-\code{build --resolve} rounds, and deployment. Setting
-\keyis{document\_metadata}{required} or
-\keyis{document\_metadata}{disabled} on a target
-overrides its definition default. A contradictory contract between target and
-selected document profile is rejected as an error.}
+\ldeen{Weitere Manifestbereiche steuern \code{[security]}
+(\option{shell\_escape}, \option{overwrite}), die maximale Rundenzahl von
+\code{build --resolve} und das Deployment.}{Other manifest areas control
+\code{[security]} (\option{shell\_escape}, \option{overwrite}), the maximum
+number of \code{build --resolve} rounds, and deployment.}
 
 \subsection{Bundle\ldeen{-}{ }Preset}
 
@@ -133,16 +155,21 @@ the concrete \LaTeX\ class and rendering.}
 
 \ldeen{Die mitgelieferten Targetdefinitionen registrieren
 \code{slides}, \code{handout} und \code{script}. Eine Definition legt
-unter anderem \option{doctype}, \option{profile\_class},
-\option{document\_metadata} und \option{unit\_scopes} fest. Projektlokale
-Definitionen können über \File{.ollmconfig.local.toml} ergänzt werden; sie
-ersetzen gleichnamige eingebaute Definitionen nicht stillschweigend.}{The
-supplied target definitions register \code{slides}, \code{handout}, and
-\code{script}. Among other things, a definition specifies
-\option{doctype}, \option{profile\_class}, \option{document\_metadata}, and
-\option{unit\_scopes}. Project-local definitions can be added through
-\File{.ollmconfig.local.toml}; they do not silently replace built-in
-definitions with the same name.}
+\option{doctype}, \option{profile\_class} und \option{unit\_scopes} fest. Das
+Preset bringt außerdem die Profil-Defaults \option{presentation\_profile} und
+\option{longform\_profile} mit. Profildefinitionen (\option{document-metadata},
+\option{doctypes} und mehr) liefert eine mitgelieferte Projektion unter
+\code{definitions/profiles/}; projektlokale Definitionen können über
+\File{.ollmconfig.local.toml} ergänzt werden und ersetzen gleichnamige
+eingebaute nicht stillschweigend.}{The supplied target definitions register
+\code{slides}, \code{handout}, and \code{script}. A definition specifies
+\option{doctype}, \option{profile\_class}, and \option{unit\_scopes}. The
+preset also carries the profile defaults \option{presentation\_profile} and
+\option{longform\_profile}. Profile definitions (\option{document-metadata},
+\option{doctypes}, and more) come from a supplied projection under
+\code{definitions/profiles/}; project-local definitions can be added through
+\File{.ollmconfig.local.toml} and do not silently replace built-in ones with
+the same name.}
 
 \ldeen{Ein eigenes Target ist beispielsweise sinnvoll, wenn Studierende neben
 dem normalen Skript einen didaktisch anders aufgebauten Studienleitfaden
@@ -168,22 +195,22 @@ name = "studyguide"
 version = "1.0"
 doctype = "studyguide"
 profile_class = "longform"
-document_metadata = "required"
 unit_scopes = ["a", "as"]
 \end{verbatim}
 
 \ldeen{Erst diese Definition gibt dem Namen \code{studyguide} eine Bedeutung:
-Er ist eine Langform, benötigt frühe PDF-Metadaten und gilt für die angegebenen
-Unit-Scopes. Danach kann das Manifest \code{[targets.studyguide]} mit den
-gewünschten Sprachen aufnehmen. Zusätzlich benötigt \LaTeX\ ein Profil, das den
-neuen Dokumenttyp unterstützt. Ein neuer Name allein genügt also absichtlich
-nicht; Buildauswahl und Satz müssen denselben Vertrag verstehen.}{Only this
-definition gives the name \code{studyguide} a meaning: it is a long form,
-requires early PDF metadata, and applies to the listed unit scopes. The
-manifest may then add \code{[targets.studyguide]} with the desired languages.
-\LaTeX\ also needs a profile supporting the new document type. A new name alone
-is deliberately insufficient; build selection and typesetting must understand
-the same contract.}
+Er ist eine Langform und gilt für die angegebenen Unit-Scopes. Danach kann das
+Manifest \code{[targets.studyguide]} aufnehmen. Zusätzlich benötigt \LaTeX\ ein
+Profil, das den neuen Dokumenttyp unterstützt; dessen Fähigkeitsprojektion legt
+Nora als \File{Definitions/profiles/\meta{name}.toml} neben die \code{.def}.
+Ein neuer Name allein genügt also absichtlich nicht; Buildauswahl und Satz
+müssen denselben Vertrag verstehen.}{Only this definition gives the name
+\code{studyguide} a meaning: it is a long form and applies to the listed unit
+scopes. The manifest may then add \code{[targets.studyguide]}. \LaTeX\ also
+needs a profile supporting the new document type; Nora places its capability
+projection as \File{Definitions/profiles/\meta{name}.toml} next to the
+\code{.def}. A new name alone is deliberately insufficient; build selection and
+typesetting must understand the same contract.}
 
 \subsection{\ldeen{Standardeinstellungen für Nutzer}{User Defaults}}
 
@@ -214,25 +241,23 @@ configuration unnoticed.}
 \subsection{\LaTeX\ldeen{-Konfiguration}{ Configuration}}
 
 \ldeen{Die gemeinsame \LaTeX-Konfiguration liegt standardmäßig in
-\File{Include/projectconfig.tex}. Sie wird früh genug gelesen, um Profile
-und Basisklassenoptionen festzulegen. Ein typischer Kern ist}{The shared
-\LaTeX\ configuration is stored in \File{Include/projectconfig.tex} by
-default. It is read early enough to select profiles and base-class options. A
-typical core is}:
+\File{Include/projectconfig.tex}. Sie beschreibt die fachliche und
+gestalterische Semantik des Projekts -- Profilwahl und Sprachliste stehen
+dagegen im Manifest. Ein typischer Kern ist}{The shared \LaTeX\ configuration
+is stored in \File{Include/projectconfig.tex} by default. It describes the
+project's subject-matter and design semantics -- profile selection and the
+language list live in the manifest instead. A typical core is}:
 
 \begin{verbatim}
 \LectureProjectSetup{
-  presentation-profile=beamer,
-  longform-profile=scrbook,
   languages={
-    selectable={de,en},
     map={de=ngerman,en=british},
     load babel
   }
 }
 
 \OsgLectureSetup{
-  class/beamer={aspectratio=169},
+  class/<slides>={aspectratio=169},
   class/scrbook={twoside,open=right},
   mode/longform={continuation={counters={page,chapter,section}}}
 }
@@ -241,18 +266,28 @@ typical core is}:
 \author{Nora Example}
 \end{verbatim}
 
+\ldeen{Die auswählbaren Sprachen kommen für einen \OLLM-Build aus dem Manifest;
+\code{languages} nennt hier nur noch das \pkg{langselect}-Mapping. \OsgLecture\
+reicht die Sprachliste (in Manifestreihenfolge) aus der Buildauftragsdatei an
+\pkg{langselect} weiter.}{For an \OLLM\ build the selectable languages come
+from the manifest; \code{languages} here only carries the \pkg{langselect}
+mapping. \OsgLecture\ hands the language list (in manifest order) from the
+build file to \pkg{langselect}.}
+
 \ldeen{\option{class/NAME} enthält unveränderte Optionen für die wirkliche
-Basisklasse und wird vor deren Laden ausgewertet. \option{mode/NAME} enthält
-dagegen Einstellungen für eine Ausgabeeigenschaft und wird nach Finalisierung
-des Modusgraphen von allgemein nach spezifisch angewandt. Eine
-targetspezifische Profilwahl erfolgt mit
-\cs{LectureTargetSetup}\Marg{slides}\Marg{profile=\meta{profile}}.}{
-\option{class/NAME} contains unchanged options for the actual base class and
-is evaluated before that class is loaded. \option{mode/NAME}, in contrast,
-contains settings for an output property and is applied from general to
-specific after the mode graph has been finalized. A target-specific profile is
-selected with
-\cs{LectureTargetSetup}\Marg{slides}\Marg{profile=\meta{profile}}.}
+Basisklasse und wird vor deren Laden ausgewertet: \option{class/beamer}
+adressiert die Basisklasse namentlich, \option{class/<slides>} den Modus (der
+\emph{fertige} Modusgraph steht schon vor \cs{LoadClass} bereit, ein einzelner
+Modusname wird gegen die aktiven Modi geprüft). \option{mode/NAME} enthält
+dagegen Einstellungen für eine osglecture-eigene Ausgabeeigenschaft und wird
+nach Finalisierung des Modusgraphen von allgemein nach spezifisch angewandt.}{
+\option{class/NAME} contains unchanged options for the actual base class and is
+evaluated before that class is loaded: \option{class/beamer} addresses the base
+class by name, \option{class/<slides>} addresses the mode (the \emph{finalized}
+mode graph is ready before \cs{LoadClass}; a single mode name is checked
+against the active modes). \option{mode/NAME}, in contrast, contains settings
+for an osglecture output property and is applied from general to specific after
+the mode graph has been finalized.}
 
 \ldeen{Frei programmierter Präambelcode gehört vorzugsweise in getrennte
 Fragmente, die mit \cs{IncludeOsgLecturePreamble}\marg{name}
@@ -287,13 +322,17 @@ binding so that a unit cannot override it.}
 
 \ldeen{\File{documentmetadata.tex} hat eine andere Aufgabe: Sein
 \cs{DocumentMetadata}-Aufruf muss vor der Dokumentklasse erfolgen
-und steuert PDF-Eigenschaften, nicht die sichtbaren fachlichen Metadaten. \OLLM\ 
-bindet die Datei nur ein, wenn der Targetvertrag sie verlangt. Dabei stehen
-Symbole wie \cs{OsgLectureRequestedLanguage} zur Verfügung.}{
-\File{documentmetadata.tex} has a different role: its
-\cs{DocumentMetadata} call must precede the document class and
-controls PDF properties rather than visible subject metadata. \OLLM\  includes the
-file only when required by the target contract. Symbols such as
+und steuert PDF-Eigenschaften, nicht die sichtbaren fachlichen Metadaten. \OLLM\
+bindet die Datei ein, wenn die aus dem Profil abgeleitete Metadatenpolicy
+\code{enabled} ergibt -- also bei einem \code{required}-Profil immer, bei einem
+\code{supported}-Profil, wenn \keyval{document\_metadata}{enabled} im Manifest
+steht. Dabei stehen Symbole wie \cs{OsgLectureRequestedLanguage} zur
+Verfügung.}{\File{documentmetadata.tex} has a different role: its
+\cs{DocumentMetadata} call must precede the document class and controls PDF
+properties rather than visible subject metadata. \OLLM\  includes the file when
+the metadata policy derived from the profile resolves to \code{enabled} --
+always for a \code{required} profile, and for a \code{supported} profile when
+the manifest sets \keyval{document\_metadata}{enabled}. Symbols such as
 \cs{OsgLectureRequestedLanguage} are available there.}
 
 \subsection{\ldeen{Dokumentenprofile}{Document Profiles}}

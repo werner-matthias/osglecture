@@ -48,19 +48,19 @@ if (!$latexmk) {
 my $root = tempdir(CLEANUP => 1);
 my $texinputs = File::Spec->catdir($root, 'texinputs');
 make_path($texinputs);
-my $modes_dtx = abs_path(
-  File::Spec->catfile('..', 'osglecture-modes', 'osglecture-modes.dtx')
-);
-copy($modes_dtx, File::Spec->catfile($texinputs, 'osglecture-modes.dtx'))
-  or die $!;
-my $old_directory = getcwd();
-chdir $texinputs or die $!;
-my $unpack_status = system(
-  'tex', '-interaction=batchmode', 'osglecture-modes.dtx',
-);
-chdir $old_directory or die $!;
-if ($unpack_status != 0) {
-  BAIL_OUT('cannot unpack osglecture-modes for the lifecycle test');
+# osglecture loads langselect for a multi-language project (the class wires
+# the manifest's language set into it), so the lifecycle build needs it on
+# the search path just like osglecture-modes.
+for my $sibling (qw(osglecture-modes langselect)) {
+  my $dtx = abs_path(
+    File::Spec->catfile('..', $sibling, "$sibling.dtx")
+  );
+  copy($dtx, File::Spec->catfile($texinputs, "$sibling.dtx")) or die $!;
+  my $directory = getcwd();
+  chdir $texinputs or die $!;
+  my $status = system('tex', '-interaction=batchmode', "$sibling.dtx");
+  chdir $directory or die $!;
+  BAIL_OUT("cannot unpack $sibling for the lifecycle test") if $status != 0;
 }
 # osglecture.cls/-*.sty are generated from osglecture.dtx (docstripped
 # together with its sibling adapters/profiles dtx, which must sit next to
@@ -72,9 +72,9 @@ for my $name (qw(
   my $src = abs_path(File::Spec->catfile('..', 'osglecture', $name));
   copy($src, File::Spec->catfile($texinputs, $name)) or die $!;
 }
-$old_directory = getcwd();
+my $old_directory = getcwd();
 chdir $texinputs or die $!;
-$unpack_status = system(
+my $unpack_status = system(
   'tex', '-interaction=batchmode', 'osglecture.dtx',
 );
 chdir $old_directory or die $!;
