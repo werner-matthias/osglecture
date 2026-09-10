@@ -1,13 +1,14 @@
-schema = 1
+schema = 2
 bundle_preset = "OSG lecture/1"
 
 [project]
 id = "manifest-fixture"
+tex_directory = "Include"
+tex_config = "projectconfig.tex"
 
-[project.tex]
-directory = "Include"
-config = "projectconfig.tex"
+[targets.defaults]
+languages = ["de", "en"]
+default_language = "de"
 
-[languages]
-available = ["de", "en"]
-default = "de"
+[targets.slides]
+[targets.script]

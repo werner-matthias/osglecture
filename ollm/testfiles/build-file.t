@@ -54,8 +54,9 @@ is $spec->{profile_class}, 'longform',
   'target profile class reaches the build specification';
 is_deeply $spec->{applicable_unit_scopes}, ['a', 'as'],
   'target unit scopes reach the build specification';
-is $spec->{document_metadata_policy}, 'required',
-  'project target overrides the definition metadata policy';
+is $spec->{document_metadata_policy}, 'enabled',
+  'a supported profile plus the project document_metadata choice enables it';
+is $spec->{profile}, 'scrbook', 'the resolved document profile reaches the spec';
 is $spec->{shared_tex_directory},
   abs_path(File::Spec->catdir($fixture, 'Include')),
   'shared TeX directory is resolved from the project manifest';
@@ -112,7 +113,7 @@ my $slides_resolved = OLLM::Config->resolve_request(
   },
 );
 is $slides_resolved->{build_spec}{document_metadata_policy}, 'disabled',
-  'target-definition metadata policy applies without a project override';
+  'a forbidden-metadata profile keeps the policy disabled';
 ok !defined($slides_resolved->{build_spec}{document_metadata}),
   'disabled policy does not preload an existing project metadata file';
 
@@ -165,11 +166,15 @@ my $content = OLLM::BuildFile->render($spec);
 like $content, qr/job-id=\{bs-020-script-de-processes\}/,
   'rendered build file binds itself to the job id';
 like $content, qr/profile-class=\{longform\}/,
-  'rendered build file contains only the target profile class';
+  'rendered build file contains the target profile class';
+like $content, qr/profile=\{scrbook\}/,
+  'rendered build file names the resolved document profile';
 like $content, qr/applicable-unit-scopes=\{a,as\}/,
   'rendered build file contains the doctype-specific unit scopes';
-like $content, qr/document-metadata-policy=\{required\}/,
+like $content, qr/document-metadata-policy=\{enabled\}/,
   'rendered build file contains the effective early metadata policy';
+like $content, qr/selectable-languages=\{de,en\}/,
+  'rendered build file carries the resolved selectable-language order';
 # Per osglecture/ARCHITECTURE.md section 12, source-directory,
 # shared-tex-directory, project-config-file and bundle-preset are project
 # content the class now reads itself via the shared Lua module -- they stay

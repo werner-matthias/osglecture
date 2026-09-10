@@ -11,7 +11,7 @@ use File::Find qw(find);
 use File::Spec;
 use JSON::PP;
 use OLLM::Version qw($VERSION);
-our $MANIFEST_SCHEMA = 1;
+our $MANIFEST_SCHEMA = 2;
 our $DEFINITION_SCHEMA = 1;
 our $LOCAL_SCHEMA = 1;
 our $USER_SCHEMA = 1;
@@ -303,7 +303,8 @@ sub _select_builds {
       } elsif ($scope eq 'unit' || $request->{all}) {
         @languages = @configured;
       } else {
-        my $default = $manifest->{languages}{default};
+        my $default = $targets->{$target}{default_language}
+          // $manifest->{languages}{default};
         @languages = ($configured{$default} ? $default : $configured[0]);
       }
       push @builds, map {
@@ -421,15 +422,14 @@ sub validate_manifest {
   $lines //= {};
   die "$path: manifest root must be a table" if ref $manifest ne 'HASH';
   _known_keys($manifest,
-    [qw(schema bundle_preset project languages targets security deployment build)],
+    [qw(schema bundle_preset project targets security deployment build)],
     $path, $lines, '');
   _validate_schema($manifest, $path, $lines);
   _require_string($manifest, 'bundle_preset', $path)
     if exists $manifest->{bundle_preset};
 
   _validate_project_section($manifest, $path, $lines);
-  my %available = _validate_languages_section($manifest, $path, $lines);
-  _validate_targets_section($manifest, $path, $lines, \%available);
+  _validate_targets_section($manifest, $path, $lines);
 
   _validate_security_section($manifest, $path, $lines)
     if exists $manifest->{security};
@@ -437,6 +437,7 @@ sub validate_manifest {
     if exists $manifest->{deployment};
   _validate_build_section($manifest, $path, $lines)
     if exists $manifest->{build};
+  _normalize_manifest($manifest);
   return 1;
 }
 
@@ -454,90 +455,152 @@ sub _validate_schema {
 sub _validate_project_section {
   my ($manifest, $path, $lines) = @_;
   _require_table($manifest, 'project', $path);
-  _known_keys($manifest->{project}, [qw(id tex)], $path, $lines, 'project');
+  _known_keys($manifest->{project}, [qw(id tex_directory tex_config)],
+    $path, $lines, 'project');
   _require_string($manifest->{project}, 'id', "$path: project");
-  return if !exists $manifest->{project}{tex};
-  my $tex = $manifest->{project}{tex};
-  die "$path: project.tex must be a table" if ref $tex ne 'HASH';
-  _known_keys($tex, [qw(directory config)], $path, $lines, 'project.tex');
-  _require_string($tex, $_, "$path: project.tex") for keys %$tex;
-  if (exists $tex->{directory}) {
-    _fail_at($path, $lines, 'project.tex.directory',
-      'project.tex.directory must be project-root-relative')
-      if File::Spec->file_name_is_absolute($tex->{directory});
-    _fail_at($path, $lines, 'project.tex.directory',
-      'project.tex.directory must not be empty')
-      if $tex->{directory} eq '';
+  my $project = $manifest->{project};
+  if (exists $project->{tex_directory}) {
+    my $directory = _require_string($project, 'tex_directory', "$path: project");
+    _fail_at($path, $lines, 'project.tex_directory',
+      'project.tex_directory must be a non-empty project-root-relative path')
+      if $directory eq '' || File::Spec->file_name_is_absolute($directory);
   }
-  if (exists $tex->{config}) {
-    _fail_at($path, $lines, 'project.tex.config',
-      'project.tex.config must be a filename without directory components')
-      if $tex->{config} eq ''
-        || File::Spec->file_name_is_absolute($tex->{config})
-        || $tex->{config} =~ m{[\\/]};
+  if (exists $project->{tex_config}) {
+    my $config = _require_string($project, 'tex_config', "$path: project");
+    _fail_at($path, $lines, 'project.tex_config',
+      'project.tex_config must be a filename without directory components')
+      if $config eq '' || File::Spec->file_name_is_absolute($config)
+        || $config =~ m{[\\/]};
   }
 }
 
-sub _validate_languages_section {
-  my ($manifest, $path, $lines) = @_;
-  _require_table($manifest, 'languages', $path);
-  _known_keys($manifest->{languages}, [qw(available default)],
-    $path, $lines, 'languages');
-  my $available = _require_string_array(
-    $manifest->{languages}, 'available', "$path: languages",
-  );
-  die "$path: languages.available must not be empty" if !@$available;
-  my %available = map { $_ => 1 } @$available;
-  die "$path: languages.available contains duplicates"
-    if keys(%available) != @$available;
-  my %available_folded = map { lc($_) => 1 } @$available;
-  die "$path: languages.available contains values that collide on "
-    . "case-insensitive filesystems"
-    if keys(%available_folded) != @$available;
-  my $default = _require_string(
-    $manifest->{languages}, 'default', "$path: languages",
-  );
-  die "$path: default language '$default' is not listed in languages.available"
-    if !$available{$default};
-  return %available;
+# Values a target may draw from [targets.defaults] when it does not set its
+# own. document_metadata acts only where the resolved profile leaves the
+# metadata contract open ('supported'); resolve_definitions rejects it against
+# a profile that forces the contract.
+sub _validate_document_metadata_key {
+  my ($table, $where, $path, $lines) = @_;
+  return if !exists $table->{document_metadata};
+  my $value = _require_string($table, 'document_metadata', "$path: $where");
+  _fail_at($path, $lines, "$where.document_metadata",
+    "invalid $where.document_metadata '$value'; expected 'enabled' or 'disabled'")
+    if $value !~ /\A(?:enabled|disabled)\z/;
 }
 
 sub _validate_targets_section {
-  my ($manifest, $path, $lines, $available) = @_;
+  my ($manifest, $path, $lines) = @_;
   _require_table($manifest, 'targets', $path);
-  die "$path: targets must not be empty" if !keys %{ $manifest->{targets} };
-  my %target_folded;
-  for my $target (sort keys %{ $manifest->{targets} }) {
-    my $folded = lc $target;
-    die "$path: target names '$target_folded{$folded}' and '$target' "
-      . "collide on case-insensitive filesystems"
-      if exists $target_folded{$folded};
-    $target_folded{$folded} = $target;
+  my $targets = $manifest->{targets};
+
+  my $defaults = $targets->{defaults};
+  _fail_at($path, $lines, 'targets.defaults',
+    'targets.defaults is required and must declare languages and '
+    . 'default_language')
+    if ref $defaults ne 'HASH';
+  _known_keys($defaults,
+    [qw(languages default_language presentation_profile longform_profile
+        document_metadata)],
+    $path, $lines, 'targets.defaults');
+  my $available = _require_string_array($defaults, 'languages',
+    "$path: targets.defaults");
+  _fail_at($path, $lines, 'targets.defaults.languages',
+    'targets.defaults.languages must not be empty') if !@$available;
+  my %available = map { $_ => 1 } @$available;
+  _fail_at($path, $lines, 'targets.defaults.languages',
+    'targets.defaults.languages contains duplicates')
+    if keys(%available) != @$available;
+  _fail_at($path, $lines, 'targets.defaults.languages',
+    'targets.defaults.languages contains values that collide on '
+    . 'case-insensitive filesystems')
+    if (grep { 1 } keys %{{ map { lc($_) => 1 } @$available }}) != @$available;
+  my $default_language = _require_string($defaults, 'default_language',
+    "$path: targets.defaults");
+  _fail_at($path, $lines, 'targets.defaults.default_language',
+    "default_language '$default_language' is not listed in "
+    . 'targets.defaults.languages')
+    if !$available{$default_language};
+  _require_string($defaults, $_, "$path: targets.defaults")
+    for grep { exists $defaults->{$_} } qw(presentation_profile longform_profile);
+  _validate_document_metadata_key($defaults, 'targets.defaults', $path, $lines);
+
+  my @names = grep { $_ ne 'defaults' } keys %$targets;
+  _fail_at($path, $lines, 'targets',
+    'no build targets are configured (only targets.defaults)')
+    if !@names;
+  my %folded;
+  for my $name (sort @names) {
+    my $lc = lc $name;
+    _fail_at($path, $lines, "targets.$name",
+      "target names '$folded{$lc}' and '$name' collide on "
+      . 'case-insensitive filesystems') if exists $folded{$lc};
+    $folded{$lc} = $name;
   }
-  for my $target (sort keys %{ $manifest->{targets} }) {
-    my $definition = $manifest->{targets}{$target};
-    die "$path: targets.$target must be a table"
-      if ref $definition ne 'HASH';
-    _known_keys($definition, [qw(languages document_metadata)],
-      $path, $lines, "targets.$target");
-    my $languages = _require_string_array(
-      $definition, 'languages', "$path: targets.$target",
-    );
-    die "$path: targets.$target.languages must not be empty" if !@$languages;
-    my %target_languages = map { $_ => 1 } @$languages;
-    die "$path: targets.$target.languages contains duplicates"
-      if keys(%target_languages) != @$languages;
-    if (exists $definition->{document_metadata}) {
-      my $policy = _require_string(
-        $definition, 'document_metadata', "$path: targets.$target",
-      );
-      die "$path: invalid targets.$target.document_metadata '$policy'; "
-        . "expected 'required' or 'disabled'"
-        if $policy !~ /\A(?:required|disabled)\z/;
+  for my $name (sort @names) {
+    my $target = $targets->{$name};
+    _fail_at($path, $lines, "targets.$name", "targets.$name must be a table")
+      if ref $target ne 'HASH';
+    _known_keys($target,
+      [qw(languages default_language profile document_metadata)],
+      $path, $lines, "targets.$name");
+    if (exists $target->{languages}) {
+      my $langs = _require_string_array($target, 'languages',
+        "$path: targets.$name");
+      _fail_at($path, $lines, "targets.$name.languages",
+        "targets.$name.languages must not be empty") if !@$langs;
+      my %seen;
+      for my $lang (@$langs) {
+        _fail_at($path, $lines, "targets.$name.languages",
+          "targets.$name.languages contains duplicates") if $seen{$lang}++;
+        _fail_at($path, $lines, "targets.$name.languages",
+          "target '$name' uses language '$lang' not listed in "
+          . 'targets.defaults.languages') if !$available{$lang};
+      }
     }
-    for my $language (@$languages) {
-      die "$path: target '$target' uses unavailable language '$language'"
-        if !$available->{$language};
+    if (exists $target->{default_language}) {
+      my $dl = _require_string($target, 'default_language',
+        "$path: targets.$name");
+      my %effective = map { $_ => 1 } @{ $target->{languages} // $available };
+      _fail_at($path, $lines, "targets.$name.default_language",
+        "target '$name' default_language '$dl' is not one of its languages")
+        if !$effective{$dl};
+    }
+    _require_string($target, 'profile', "$path: targets.$name")
+      if exists $target->{profile};
+    _validate_document_metadata_key($target, "targets.$name", $path, $lines);
+  }
+}
+
+# Schema 2 keeps language and profile declarations in one place -- in
+# [targets.defaults] and the individual [targets.<name>] tables. The rest of
+# OLLM (build planning, deployment, the build-file writer) expects each target
+# to carry its own effective language set and a project-wide [languages]
+# block, so both are filled in once here; targets.defaults is lifted out of
+# the iterable target set into a private key.
+sub _normalize_manifest {
+  my ($manifest) = @_;
+  return if exists $manifest->{target_defaults};
+  my $defaults = delete $manifest->{targets}{defaults};
+  $manifest->{target_defaults} = $defaults;
+  $manifest->{languages} = {
+    available => [ @{ $defaults->{languages} } ],
+    default   => $defaults->{default_language},
+  };
+  for my $name (keys %{ $manifest->{targets} }) {
+    my $target = $manifest->{targets}{$name};
+    $target->{languages} //= [ @{ $defaults->{languages} } ];
+    $target->{default_language} //= $defaults->{default_language};
+  }
+
+  my $deployment = $manifest->{deployment};
+  if (ref $deployment eq 'HASH' && ref $deployment->{types} eq 'HASH') {
+    for my $rule (values %{ $deployment->{types} }) {
+      next if ref $rule ne 'HASH';
+      $rule->{paths} //= [ @{ $deployment->{paths} } ]
+        if ref $deployment->{paths} eq 'ARRAY';
+      $rule->{filename} //= $deployment->{filename}
+        if defined $deployment->{filename};
+      $rule->{collection_filename} //= $deployment->{collection_filename}
+        if defined $deployment->{collection_filename};
     }
   }
 }
@@ -546,7 +609,7 @@ sub _validate_security_section {
   my ($manifest, $path, $lines) = @_;
   die "$path: security must be a table"
     if ref $manifest->{security} ne 'HASH';
-  _known_keys($manifest->{security}, [qw(shell_escape deployment)],
+  _known_keys($manifest->{security}, [qw(shell_escape overwrite)],
     $path, $lines, 'security');
   if (exists $manifest->{security}{shell_escape}) {
     my $policy = _require_string(
@@ -555,17 +618,13 @@ sub _validate_security_section {
     die "$path: invalid security.shell_escape '$policy'"
       if $policy !~ /\A(?:off|restricted|full)\z/;
   }
-  return if !exists $manifest->{security}{deployment};
-  my $security = $manifest->{security}{deployment};
-  die "$path: security.deployment must be a table"
-    if ref $security ne 'HASH';
-  _known_keys($security, [qw(overwrite)], $path, $lines,
-    'security.deployment');
-  my $overwrite = _require_string(
-    $security, 'overwrite', "$path: security.deployment",
-  );
-  die "$path: invalid security.deployment.overwrite '$overwrite'"
-    if $overwrite !~ /\A(?:explicit|automatic)\z/;
+  if (exists $manifest->{security}{overwrite}) {
+    my $overwrite = _require_string(
+      $manifest->{security}, 'overwrite', "$path: security",
+    );
+    die "$path: invalid security.overwrite '$overwrite'"
+      if $overwrite !~ /\A(?:explicit|automatic)\z/;
+  }
 }
 
 sub _validate_build_section {
@@ -586,7 +645,9 @@ sub _validate_deployment {
   my ($manifest, $path, $lines) = @_;
   my $deployment = $manifest->{deployment};
   die "$path: deployment must be a table" if ref $deployment ne 'HASH';
-  _known_keys($deployment, [qw(series roles types)], $path, $lines, 'deployment');
+  _known_keys($deployment,
+    [qw(series roles types paths filename collection_filename)],
+    $path, $lines, 'deployment');
   if (exists $deployment->{series}) {
     my $series = _require_string($deployment, 'series', "$path: deployment");
     die "$path: invalid deployment.series '$series'"
@@ -600,6 +661,18 @@ sub _validate_deployment {
         if !defined($roles->{$role}) || ref($roles->{$role});
     }
   }
+  # Default routing every type inherits when it does not set its own; a type
+  # override with no paths/filename of its own is only valid with these.
+  my $default_paths;
+  if (exists $deployment->{paths}) {
+    $default_paths = _require_string_array($deployment, 'paths',
+      "$path: deployment");
+    die "$path: deployment.paths must not be empty" if !@$default_paths;
+  }
+  _require_string($deployment, 'filename', "$path: deployment")
+    if exists $deployment->{filename};
+  _require_string($deployment, 'collection_filename', "$path: deployment")
+    if exists $deployment->{collection_filename};
   my $types = _require_table($deployment, 'types', "$path: deployment");
   for my $doctype (sort keys %$types) {
     die "$path: invalid deployment document type '$doctype'"
@@ -609,11 +682,22 @@ sub _validate_deployment {
       if ref $rule ne 'HASH';
     _known_keys($rule, [qw(paths filename collection_filename series units)], $path, $lines,
       "deployment.types.$doctype");
-    my $paths = _require_string_array(
-      $rule, 'paths', "$path: deployment.types.$doctype",
-    );
-    die "$path: deployment.types.$doctype.paths must not be empty" if !@$paths;
-    _require_string($rule, 'filename', "$path: deployment.types.$doctype");
+    if (exists $rule->{paths}) {
+      my $paths = _require_string_array(
+        $rule, 'paths', "$path: deployment.types.$doctype",
+      );
+      die "$path: deployment.types.$doctype.paths must not be empty"
+        if !@$paths;
+    }
+    elsif (!$default_paths) {
+      die "$path: deployment.types.$doctype has no paths and deployment.paths "
+        . "is not set";
+    }
+    _require_string($rule, 'filename', "$path: deployment.types.$doctype")
+      if exists $rule->{filename};
+    die "$path: deployment.types.$doctype has no filename and "
+      . "deployment.filename is not set"
+      if !exists $rule->{filename} && !exists $deployment->{filename};
     _require_string($rule, 'collection_filename',
       "$path: deployment.types.$doctype")
       if exists $rule->{collection_filename};
@@ -733,27 +817,6 @@ sub resolve_definitions {
       . "available bundle presets: $available; searched: " . join(', ', @paths));
   }
 
-  my %selected_targets;
-  my %selected_target_data;
-  for my $name (sort keys %{ $manifest->{targets} }) {
-    _fail_at($manifest_path, $manifest_lines, "targets.$name",
-      "target '$name' was not found; searched: " . join(', ', @paths))
-      if !exists $target{$name};
-    $selected_targets{$name} = {
-      doctype       => $target{$name}{data}{doctype},
-      profile_class => $target{$name}{data}{profile_class},
-      document_metadata =>
-           $manifest->{targets}{$name}{document_metadata}
-        // $target{$name}{data}{document_metadata},
-      path    => $target{$name}{path},
-      signature => sha256_hex(
-        JSON::PP->new->canonical->encode($target{$name}{data}),
-      ),
-      version => $target{$name}{data}{version},
-      unit_scopes => $target{$name}{data}{unit_scopes} // [],
-    };
-    $selected_target_data{$name} = $target{$name}{data};
-  }
   my %profiles;
   for my $name (sort keys %profile) {
     $profiles{$name} = {
@@ -766,6 +829,60 @@ sub resolve_definitions {
         JSON::PP->new->canonical->encode($profile{$name}{data}),
       ),
     };
+  }
+
+  my $target_defaults = $manifest->{target_defaults} // {};
+  my %selected_targets;
+  my %selected_target_data;
+  for my $name (sort keys %{ $manifest->{targets} }) {
+    _fail_at($manifest_path, $manifest_lines, "targets.$name",
+      "target '$name' was not found; searched: " . join(', ', @paths))
+      if !exists $target{$name};
+    my $definition = $target{$name}{data};
+    my $profile_class = $definition->{profile_class};
+    my $profile_name =
+         $manifest->{targets}{$name}{profile}
+      // $target_defaults->{"${profile_class}_profile"}
+      // $preset{$preset_name}{data}{"${profile_class}_profile"};
+    _fail_at($manifest_path, $manifest_lines, "targets.$name",
+      "target '$name' has no ${profile_class} profile; set profile in "
+      . "targets.$name or ${profile_class}_profile in targets.defaults")
+      if !defined $profile_name;
+    _fail_at($manifest_path, $manifest_lines, "targets.$name",
+      "target '$name' selects profile '$profile_name', which was not found; "
+      . 'searched: ' . join(', ', @paths))
+      if !exists $profile{$profile_name};
+    my $profile_data = $profile{$profile_name}{data};
+    _fail_at($manifest_path, $manifest_lines, "targets.$name",
+      "target '$name' is a $profile_class target but profile '$profile_name' "
+      . "is a $profile_data->{profile_class} profile")
+      if $profile_data->{profile_class} ne $profile_class;
+    _fail_at($manifest_path, $manifest_lines, "targets.$name",
+      "profile '$profile_name' does not support document type "
+      . "'$definition->{doctype}'")
+      if !grep { $_ eq $definition->{doctype} } @{ $profile_data->{doctypes} };
+
+    my $metadata_choice = $manifest->{targets}{$name}{document_metadata}
+      // $target_defaults->{document_metadata};
+    my $metadata_policy = _resolve_metadata_policy(
+      $profile_data->{document_metadata}, $metadata_choice,
+      $manifest_path, $manifest_lines, "targets.$name", $profile_name,
+    );
+
+    $selected_targets{$name} = {
+      doctype       => $definition->{doctype},
+      profile_class => $profile_class,
+      profile       => $profile_name,
+      profile_signature => $profiles{$profile_name}{signature},
+      document_metadata => $metadata_policy,
+      path    => $target{$name}{path},
+      signature => sha256_hex(
+        JSON::PP->new->canonical->encode($definition),
+      ),
+      version => $definition->{version},
+      unit_scopes => $definition->{unit_scopes} // [],
+    };
+    $selected_target_data{$name} = $definition;
   }
   my $signature = sha256_hex(
     JSON::PP->new->canonical->encode({
@@ -792,6 +909,29 @@ sub resolve_definitions {
   };
 }
 
+# Turns the profile's metadata capability plus the project's optional
+# document_metadata choice into the single build-file policy the class reads.
+# 'required'/'forbidden' profiles fix the policy and reject a contradicting
+# choice; only a 'supported' profile lets the project decide, defaulting off.
+sub _resolve_metadata_policy {
+  my ($capability, $choice, $manifest_path, $lines, $where, $profile_name) = @_;
+  if ($capability eq 'required') {
+    _fail_at($manifest_path, $lines, "$where.document_metadata",
+      "$where sets document_metadata = 'disabled', but profile "
+      . "'$profile_name' requires document metadata")
+      if defined $choice && $choice eq 'disabled';
+    return 'enabled';
+  }
+  if ($capability eq 'forbidden') {
+    _fail_at($manifest_path, $lines, "$where.document_metadata",
+      "$where sets document_metadata = 'enabled', but profile "
+      . "'$profile_name' forbids document metadata")
+      if defined $choice && $choice eq 'enabled';
+    return 'disabled';
+  }
+  return defined $choice ? $choice : 'disabled';
+}
+
 sub _load_local_config {
   my ($class, $path) = @_;
   my ($data, $lines) = $class->_load_toml($path);
@@ -815,7 +955,7 @@ sub _load_definition {
   my ($data, $lines) = $class->_load_toml($path);
   _known_keys($data,
     [qw(schema kind name version doctype doctypes profile_class unit_scopes
-        document_metadata)],
+        document_metadata presentation_profile longform_profile)],
     $path, $lines, '');
   if (!defined $data->{schema} || ref $data->{schema}
       || $data->{schema} != $DEFINITION_SCHEMA) {
@@ -831,24 +971,21 @@ sub _load_definition {
   _require_string($data, 'name', $path);
   _require_string($data, 'version', $path);
   if ($kind eq 'bundle-preset') {
-    _fail_at($path, $lines, 'doctype',
-      "bundle preset must not define 'doctype'")
-      if exists $data->{doctype};
-    _fail_at($path, $lines, 'profile_class',
-      "bundle preset must not define 'profile_class'")
-      if exists $data->{profile_class};
-    _fail_at($path, $lines, 'unit_scopes',
-      "bundle preset must not define 'unit_scopes'")
-      if exists $data->{unit_scopes};
-    _fail_at($path, $lines, 'document_metadata',
-      "bundle preset must not define 'document_metadata'")
-      if exists $data->{document_metadata};
+    for my $reject (qw(doctype doctypes profile_class unit_scopes
+        document_metadata)) {
+      _fail_at($path, $lines, $reject,
+        "bundle preset must not define '$reject'")
+        if exists $data->{$reject};
+    }
+    _require_string($data, $_, $path)
+      for grep { exists $data->{$_} } qw(presentation_profile longform_profile);
   } elsif ($kind eq 'profile') {
     # The profile capability projection mirrors, for OLLM's pre-class use,
     # exactly the \DeclareOsgLectureProfile fields that decide the build
     # (metadata contract, supported doctypes, profile class). Anything about
     # rendering -- backend, adapter, class options -- stays TeX-only.
-    for my $reject (qw(doctype unit_scopes)) {
+    for my $reject (qw(doctype unit_scopes presentation_profile
+        longform_profile)) {
       _fail_at($path, $lines, $reject,
         "profile definition must not define '$reject'")
         if exists $data->{$reject};
@@ -867,19 +1004,18 @@ sub _load_definition {
     _fail_at($path, $lines, 'doctypes', 'profile doctypes must not be empty')
       if !@$doctypes;
   } else {
-    _fail_at($path, $lines, 'doctypes',
-      "target must not define 'doctypes'; a target has one 'doctype'")
-      if exists $data->{doctypes};
+    for my $reject (qw(doctypes document_metadata presentation_profile
+        longform_profile)) {
+      _fail_at($path, $lines, $reject,
+        "target definition must not define '$reject'")
+        if exists $data->{$reject};
+    }
     _require_string($data, 'doctype', $path);
     my $profile_class = _require_string($data, 'profile_class', $path);
     _fail_at($path, $lines, 'profile_class',
       "invalid target profile_class '$profile_class'; "
       . "expected 'presentation' or 'longform'")
       if $profile_class !~ /\A(?:presentation|longform)\z/;
-    my $metadata = _require_string($data, 'document_metadata', $path);
-    _fail_at($path, $lines, 'document_metadata',
-      "invalid document_metadata '$metadata'; expected 'required' or 'disabled'")
-      if $metadata !~ /\A(?:required|disabled)\z/;
     _fail_at($path, $lines, 'doctype',
       "target name '$data->{name}' and doctype '$data->{doctype}' differ; "
       . "schema 1 has no versioned target/doctype adapter contract")

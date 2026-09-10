@@ -22,7 +22,7 @@ my $missing = File::Spec->catdir($root, 'not-mounted');
 my $manifest = {
   project => { id => 'course' },
   languages => { default => 'de' },
-  security => { deployment => { overwrite => 'explicit' } },
+  security => { overwrite => 'explicit' },
   deployment => {
     series => 'both', roles => { content => '', integration => '' },
     types => { script => {

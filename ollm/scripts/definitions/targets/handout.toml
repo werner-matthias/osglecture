@@ -4,5 +4,4 @@ name = "handout"
 version = "1.0"
 doctype = "handout"
 profile_class = "presentation"
-document_metadata = "disabled"
 unit_scopes = ["b", "bh"]

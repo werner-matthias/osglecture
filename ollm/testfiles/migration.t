@@ -86,7 +86,7 @@ is $manifest->{languages}{default}, 'en', 'legacy default language is converted'
 ok !exists $manifest->{languages}{map},
   'conversion leaves language-variant mapping to TeX';
 is $manifest->{security}{shell_escape}, 'full', 'legacy shell escape is converted';
-is $manifest->{project}{tex}{directory}, 'Include',
+is $manifest->{project}{tex_directory}, 'Include',
   'legacy shared source directory becomes the shared TeX directory';
 is_deeply $manifest->{deployment}{types}{handout}{paths},
   ['Deployment/', 'Archive/'], 'legacy destination lists are converted';
@@ -101,7 +101,7 @@ $result = OLLM::Migration->execute(action => 'newproject', start_dir => $generic
 ok !$result->{converted}, 'newproject reports generic generation';
 $manifest = OLLM::Config->load_manifest($result->{path});
 is $manifest->{languages}{default}, 'de', 'generic manifest has portable defaults';
-is $manifest->{project}{tex}{config}, 'projectconfig.tex',
+is $manifest->{project}{tex_config}, 'projectconfig.tex',
   'generic manifest declares the standard project configuration';
 ok -d File::Spec->catdir($generic, 'Include'),
   'newproject creates the shared Include directory';
@@ -136,7 +136,7 @@ print {$old} "\$shared_source_dir = 'My Includes';\n";
 close $old;
 $result = OLLM::Migration->execute(action => 'convertproject', start_dir => $awkward);
 my $awkward_manifest = OLLM::Config->load_manifest($result->{path});
-is $awkward_manifest->{project}{tex}{directory}, 'Include',
+is $awkward_manifest->{project}{tex_directory}, 'Include',
   'a non-portable shared_source_dir becomes Include';
 like join("\n", @{ $result->{warnings} }), qr/not a portable relative path/,
   'convertproject warns when the legacy source directory is dropped';
@@ -146,18 +146,20 @@ like join("\n", @{ $result->{warnings} }), qr/not a portable relative path/,
 my $resume = tempdir(CLEANUP => 1);
 open my $kept, '>:raw', File::Spec->catfile($resume, 'ollmconfig.toml') or die $!;
 print {$kept} <<'TOML';
-schema = 1
+schema = 2
 
 [project]
 id = "resume-me"
+tex_directory = "Include"
+tex_config = "projectconfig.tex"
 
-[project.tex]
-directory = "Include"
-config = "projectconfig.tex"
+[targets.defaults]
+languages = ["en", "de"]
+default_language = "en"
 
-[languages]
-available = ["en", "de"]
-default = "en"
+[targets.slides]
+[targets.handout]
+[targets.script]
 TOML
 close $kept;
 my $before = do {

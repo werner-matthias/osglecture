@@ -97,7 +97,7 @@ my $lifecycle_manifest = File::Spec->catfile($root, 'ollmconfig.toml');
 open my $manifest_in, '<:raw', $lifecycle_manifest or die $!;
 my $manifest_text = do { local $/; <$manifest_in> };
 close $manifest_in;
-$manifest_text =~ s/document_metadata = "required"/document_metadata = "disabled"/;
+$manifest_text =~ s/document_metadata = "enabled"/document_metadata = "disabled"/;
 open my $manifest_out, '>:raw', $lifecycle_manifest or die $!;
 print {$manifest_out} $manifest_text;
 close $manifest_out;

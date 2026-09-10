@@ -78,7 +78,7 @@ sub execute {
     . "and quotes are unreliable in TeX file lookups and invalid on Windows -- "
     . "prefer a plain relative name"
     if $manifest_kept
-    && $source =~ /^\s*directory\s*=\s*["']([^\n]*?[\s"][^\n]*?)["']\s*(?:#.*)?$/m;
+    && $source =~ /^\s*tex_directory\s*=\s*["']([^\n]*?[\s"][^\n]*?)["']\s*(?:#.*)?$/m;
 
   die "ollmconfig.toml already exists: $toml"
     if $manifest_kept && -e $project_config;
@@ -149,12 +149,13 @@ sub _toml_looks_complete {
   return 0 if ref $parsed ne 'HASH';
   return (exists $parsed->{schema}
     && ref $parsed->{project} eq 'HASH'
-    && ref $parsed->{languages} eq 'HASH') ? 1 : 0;
+    && ref $parsed->{targets} eq 'HASH'
+    && ref $parsed->{targets}{defaults} eq 'HASH') ? 1 : 0;
 }
 
 sub _manifest_languages {
   my ($source) = @_;
-  return [] if $source !~ /^available\s*=\s*\[([^\]]*)\]/m;
+  return [] if $source !~ /^languages\s*=\s*\[([^\]]*)\]/m;
   return [ $1 =~ /['"]([^'"]*)['"]/g ];
 }
 
@@ -350,14 +351,14 @@ sub _balanced_end {
   return;
 }
 
-# Reads the [project.tex] directory back from a manifest -- the freshly
-# generated one, or an existing file that is kept as-is. Accepts either quote
-# style; a value with an embedded quote (or none at all) is left to the
-# caller's fallback rather than parsed into a broken path.
+# Reads the shared TeX directory ([project].tex_directory) back from a manifest
+# -- the freshly generated one, or an existing file that is kept as-is. Accepts
+# either quote style; a value with an embedded quote (or none at all) is left
+# to the caller's fallback rather than parsed into a broken path.
 sub _manifest_tex_directory {
   my ($source) = @_;
-  return $1 if $source =~ /^\s*directory\s*=\s*"([^"]+)"\s*(?:#.*)?$/m;
-  return $1 if $source =~ /^\s*directory\s*=\s*'([^']+)'\s*(?:#.*)?$/m;
+  return $1 if $source =~ /^\s*tex_directory\s*=\s*"([^"]+)"\s*(?:#.*)?$/m;
+  return $1 if $source =~ /^\s*tex_directory\s*=\s*'([^']+)'\s*(?:#.*)?$/m;
   return 'Include';
 }
 
@@ -396,10 +397,12 @@ sub convert_source {
       . "using 'Include'";
     $tex_directory = 'Include';
   }
+  my $deployment = _legacy_deployment($perl);
   my $source = _manifest(
     root => $root, default => $default, languages => \@languages,
     shell_escape => $shell, tex_directory => $tex_directory,
-    deployment => _legacy_deployment($perl),
+    deployment => $deployment,
+    overwrite => ($deployment ne '' ? 'explicit' : undef),
   );
 
   push @warnings, "defaultlanguage could not be read; using 'de'"
@@ -431,12 +434,13 @@ sub generic_source {
 # OLLM never creates missing destination directories.
 # [deployment]
 # series = "both" # units | collection | both
+# paths = ["deployment"]
+# filename = "{role}{chapter:02}-{unit}-{lang}.pdf"
 #
 # [deployment.types.handout]
 # paths = ["deployment/handouts"]
-# filename = "{role}{chapter:02}-{unit}-{lang}.pdf"
 #
-# [security.deployment]
+# [security]
 # overwrite = "explicit" # explicit | automatic
 TOML
 }
@@ -450,14 +454,17 @@ sub _manifest {
   my $languages = join(', ', map { _quote($_) } @{ $arg{languages} });
   my $default = _quote($arg{default});
   my $tex_directory = _quote($arg{tex_directory} // 'Include');
-  return "schema = 1\nbundle_preset = \"OSG lecture/1\"\n\n"
-    . "[project]\nid = " . _quote($id) . "\n\n"
-    . "[project.tex]\ndirectory = $tex_directory\n"
-    . "config = \"projectconfig.tex\"\n\n"
-    . "[languages]\navailable = [$languages]\ndefault = $default\n\n"
-    . join('', map { "[targets.$_]\nlanguages = [$languages]\n\n" }
-        qw(slides handout script))
-    . "[security]\nshell_escape = " . _quote($arg{shell_escape}) . "\n\n"
+  my $security = "[security]\nshell_escape = " . _quote($arg{shell_escape}) . "\n";
+  $security .= "overwrite = " . _quote($arg{overwrite}) . "\n"
+    if defined $arg{overwrite};
+  return "schema = 2\nbundle_preset = \"OSG lecture/1\"\n\n"
+    . "[project]\nid = " . _quote($id) . "\n"
+    . "tex_directory = $tex_directory\n"
+    . "tex_config = \"projectconfig.tex\"\n\n"
+    . "[targets.defaults]\nlanguages = [$languages]\n"
+    . "default_language = $default\n\n"
+    . join('', map { "[targets.$_]\n\n" } qw(slides handout script))
+    . "$security\n"
     . ($arg{deployment} // '');
 }
 
@@ -494,7 +501,6 @@ sub _legacy_deployment {
       . join(', ', map { _quote($_) } @converted) . "]\n"
       . "filename = " . _quote($template) . "\n\n";
   }
-  $output .= "[security.deployment]\noverwrite = \"explicit\"\n\n";
   return $output;
 }
 

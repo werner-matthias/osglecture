@@ -1,0 +1,9 @@
+# Capability projection of the project-local series-ltx-talk profile
+# (Include/osglecture-profile-series-ltx-talk.def).
+schema = 1
+kind = "profile"
+name = "series-ltx-talk"
+version = "1.0"
+profile_class = "presentation"
+document_metadata = "required"
+doctypes = ["talk"]

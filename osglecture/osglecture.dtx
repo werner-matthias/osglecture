@@ -723,39 +723,30 @@ individually. \code{<all>} forces columns in every mode, while, for example,
   { }
 \osglecture_project_suspend_metadata_commands:
 
-\str_if_eq:VnTF \l__osglecture_target_profile_class_tl {presentation}
-  { \tl_set:Nn \l_tmpa_tl {presentation-profile} }
-  { \tl_set:Nn \l_tmpa_tl {longform-profile} }
-\exp_args:NNV \prop_get:NnN
-  \g__osglecture_project_policy_prop \l_tmpa_tl \l_tmpb_tl
-\bool_set_false:N \l_tmpa_bool
-\exp_args:NNV \prop_get:NnNT
-  \g__osglecture_project_policy_enforced_prop \l_tmpa_tl \l_tmpd_tl
-  { \str_if_eq:VnT \l_tmpd_tl {true} {\bool_set_true:N \l_tmpa_bool} }
+% For an OLLM build the document profile is chosen in the project manifest
+% and travels in the build file; it has to be known before \LoadClass, which
+% projectconfig.tex (read here, but only consumed afterwards) cannot promise.
+% A standalone document has no build file and picks the profile through the
+% class option or, failing that, the project policy in projectconfig.tex.
 \OsgLectureBuildLoadedTF
+  { \tl_set:Ne \l__osglecture_document_profile_tl {\OsgLectureBuildValue{profile}} }
   {
-    \tl_set:Ne \l_tmpc_tl {\OsgLectureBuildValue{target}}
-    \exp_args:NNV \prop_get:NnNT
-      \g__osglecture_project_target_profile_prop \l_tmpc_tl \l_tmpd_tl
+    \str_if_eq:VnTF \l__osglecture_target_profile_class_tl {presentation}
+      { \tl_set:Nn \l_tmpa_tl {presentation-profile} }
+      { \tl_set:Nn \l_tmpa_tl {longform-profile} }
+    \exp_args:NNV \prop_get:NnN
+      \g__osglecture_project_policy_prop \l_tmpa_tl \l_tmpb_tl
+    \bool_if:NTF \l__osglecture_profile_explicit_bool
       {
-        \bool_if:NTF \l_tmpa_bool
-          { \str_if_eq:VVF \l_tmpb_tl \l_tmpd_tl
-              { \msg_fatal:nnxxx {osglecture-project}{enforced-conflict}
-                  {\l_tmpa_tl}{\l_tmpb_tl}{\l_tmpd_tl} } }
-          { \tl_set_eq:NN \l_tmpb_tl \l_tmpd_tl }
+        \exp_args:NNV \prop_get:NnNT
+          \g__osglecture_project_policy_enforced_prop \l_tmpa_tl \l_tmpc_tl
+          { \str_if_eq:VnT \l_tmpc_tl {true}
+              { \str_if_eq:VVF \l__osglecture_document_profile_tl \l_tmpb_tl
+                  { \msg_fatal:nnxx {osglecture}{profile-conflict}
+                      {\l__osglecture_document_profile_tl}{\l_tmpb_tl} } } }
       }
+      { \tl_set_eq:NN \l__osglecture_document_profile_tl \l_tmpb_tl }
   }
-  { }
-\bool_if:NTF \l__osglecture_profile_explicit_bool
-  {
-    \exp_args:NNV \prop_get:NnNT
-      \g__osglecture_project_policy_enforced_prop \l_tmpa_tl \l_tmpc_tl
-      { \str_if_eq:VnT \l_tmpc_tl {true}
-          { \str_if_eq:VVF \l__osglecture_document_profile_tl \l_tmpb_tl
-              { \msg_fatal:nnxx {osglecture}{profile-conflict}
-                  {\l__osglecture_document_profile_tl}{\l_tmpb_tl} } } }
-  }
-  { \tl_set_eq:NN \l__osglecture_document_profile_tl \l_tmpb_tl }
 \tl_if_empty:NT \l__osglecture_document_profile_tl
   { \msg_fatal:nnV {osglecture}{profile-required}\l__osglecture_doctype_tl }
 
@@ -798,7 +789,7 @@ individually. \code{<all>} forces columns in every mode, while, for example,
           {\str_if_eq_p:Vn \l_tmpb_tl {disabled}} }
       { \bool_lazy_and_p:nn
           {\str_if_eq_p:Vn \l_tmpa_tl {forbidden}}
-          {\str_if_eq_p:Vn \l_tmpb_tl {required}} }
+          {\str_if_eq_p:Vn \l_tmpb_tl {enabled}} }
       { \msg_fatal:nnxxxx {osglecture}{metadata-policy-conflict}
           {\l_tmpb_tl}{\l__osglecture_document_profile_tl}{\l_tmpa_tl}
           {\OsgLectureBuildValue{target}} }
@@ -1086,9 +1077,12 @@ individually. \code{<all>} forces columns in every mode, while, for example,
       \__osglecture_build_put:nn {generation-id} {#1},
     target              .code:n = \__osglecture_build_put:nn {target} {#1},
     profile-class       .code:n = \__osglecture_build_put:nn {profile-class} {#1},
-    document-metadata-policy .choices:nn = { required, disabled }
+    profile             .code:n = \__osglecture_build_put:nn {profile} {#1},
+    document-metadata-policy .choices:nn = { enabled, disabled }
       { \__osglecture_build_put:nn {document-metadata-policy} {#1} },
     doctype             .code:n = \__osglecture_build_put:nn {doctype} {#1},
+    selectable-languages .code:n =
+      \__osglecture_build_put:nn {selectable-languages} {#1},
     applicable-unit-scopes .code:n =
       \__osglecture_build_put:nn {applicable-unit-scopes} {#1},
     language            .code:n = \__osglecture_build_put:nn {language} {#1},
@@ -1114,7 +1108,7 @@ individually. \code{<all>} forces columns in every mode, while, for example,
 \cs_new_protected:Npn \__osglecture_build_validate:
   {
     \clist_map_inline:nn
-      {schema,job-id,context,series-id,target,profile-class,
+      {schema,job-id,context,series-id,target,profile-class,profile,
        document-metadata-policy,
        doctype,applicable-unit-scopes,language,
        structure-signature,

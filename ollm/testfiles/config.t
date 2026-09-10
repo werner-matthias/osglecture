@@ -24,27 +24,26 @@ is $located->{kind}, 'toml', 'manifest found by upward search';
 is $located->{path}, $manifest_path, 'manifest path is canonical';
 
 my $manifest = OLLM::Config->load_manifest($manifest_path);
-is $manifest->{schema}, 1, 'schema parsed';
+is $manifest->{schema}, 2, 'schema parsed';
 is $manifest->{project}{id}, 'bs', 'project id parsed';
-is $manifest->{project}{tex}{directory}, 'Include',
+is $manifest->{project}{tex_directory}, 'Include',
   'shared TeX directory parsed';
-is $manifest->{project}{tex}{config}, 'projectconfig.tex',
+is $manifest->{project}{tex_config}, 'projectconfig.tex',
   'project configuration filename parsed';
 is_deeply $manifest->{languages}{available}, ['de', 'en'],
-  'language list parsed';
+  'language list synthesised from targets.defaults';
 
 my $obsolete_title = File::Spec->catfile(tempdir(CLEANUP => 1), 'ollmconfig.toml');
 open my $obsolete_title_handle, '>:raw', $obsolete_title or die $!;
 print {$obsolete_title_handle} <<'TOML';
-schema = 1
+schema = 2
 [project]
 id = "test"
 title = "TeX metadata"
-[languages]
-available = ["de"]
-default = "de"
-[targets.slides]
+[targets.defaults]
 languages = ["de"]
+default_language = "de"
+[targets.slides]
 TOML
 close $obsolete_title_handle;
 eval { OLLM::Config->load_manifest($obsolete_title) };
@@ -54,20 +53,19 @@ like $@, qr/unknown key 'project\.title'/,
 my $obsolete_map = File::Spec->catfile(tempdir(CLEANUP => 1), 'ollmconfig.toml');
 open my $obsolete_map_handle, '>:raw', $obsolete_map or die $!;
 print {$obsolete_map_handle} <<'TOML';
-schema = 1
+schema = 2
 [project]
 id = "test"
-[languages]
-available = ["de"]
-default = "de"
-[languages.map]
+[targets.defaults]
+languages = ["de"]
+default_language = "de"
+[targets.defaults.map]
 de = "ngerman"
 [targets.slides]
-languages = ["de"]
 TOML
 close $obsolete_map_handle;
 eval { OLLM::Config->load_manifest($obsolete_map) };
-like $@, qr/unknown key 'languages\.map'/,
+like $@, qr/unknown key 'targets\.defaults\.map'/,
   'language mapping is rejected as a langselect-side property';
 
 my $resolved = OLLM::Config->resolve_request(
@@ -382,19 +380,18 @@ my $invalid = tempdir(CLEANUP => 1);
 my $invalid_manifest = File::Spec->catfile($invalid, 'ollmconfig.toml');
 open my $invalid_handle, '>', $invalid_manifest or die $!;
 print {$invalid_handle} <<'TOML';
-schema = 1
+schema = 2
 bundle_presett = "OSG lecture/1"
 bundle_preset = "OSG lecture/1"
 
 [project]
 id = "bad"
 
-[languages]
-available = ["de"]
-default = "de"
+[targets.defaults]
+languages = ["de"]
+default_language = "de"
 
 [targets.slides]
-languages = ["de"]
 TOML
 close $invalid_handle;
 eval { OLLM::Config->load_manifest($invalid_manifest) };
@@ -405,67 +402,62 @@ open my $schema_handle, '>', $invalid_manifest or die $!;
 print {$schema_handle} "schema = 9\n";
 close $schema_handle;
 eval { OLLM::Config->load_manifest($invalid_manifest) };
-like $@, qr/:1: unsupported project-manifest schema 9; .* schema 1/,
+like $@, qr/:1: unsupported project-manifest schema 9; .* schema 2/,
   'schema mismatch states actual and supported schema';
 
 open my $tex_path_handle, '>', $invalid_manifest or die $!;
 print {$tex_path_handle} <<'TOML';
-schema = 1
+schema = 2
 bundle_preset = "OSG lecture/1"
 
 [project]
 id = "bad-tex-path"
+tex_directory = "Include"
+tex_config = "../projectconfig.tex"
 
-[project.tex]
-directory = "Include"
-config = "../projectconfig.tex"
-
-[languages]
-available = ["de"]
-default = "de"
+[targets.defaults]
+languages = ["de"]
+default_language = "de"
 
 [targets.slides]
-languages = ["de"]
 TOML
 close $tex_path_handle;
 eval { OLLM::Config->load_manifest($invalid_manifest) };
-like $@, qr/project[.]tex[.]config must be a filename/,
+like $@, qr/project[.]tex_config must be a filename/,
   'project configuration filename cannot escape the shared TeX directory';
 
 open my $case_handle, '>', $invalid_manifest or die $!;
 print {$case_handle} <<'TOML';
-schema = 1
+schema = 2
 bundle_preset = "OSG lecture/1"
 
 [project]
 id = "case"
 
-[languages]
-available = ["de", "DE"]
-default = "de"
+[targets.defaults]
+languages = ["de", "DE"]
+default_language = "de"
 
 [targets.slides]
-languages = ["de"]
 TOML
 close $case_handle;
 eval { OLLM::Config->load_manifest($invalid_manifest) };
-like $@, qr/languages\.available contains values that collide on case-insensitive/,
+like $@, qr/targets\.defaults\.languages contains values that collide on case-insensitive/,
   'language identities are portable to case-insensitive filesystems';
 
 open my $missing_handle, '>', $invalid_manifest or die $!;
 print {$missing_handle} <<'TOML';
-schema = 1
+schema = 2
 bundle_preset = "OSG lecture/1"
 
 [project]
 id = "missing"
 
-[languages]
-available = ["de"]
-default = "de"
+[targets.defaults]
+languages = ["de"]
+default_language = "de"
 
 [targets.ghost]
-languages = ["de"]
 TOML
 close $missing_handle;
 my $missing_data = OLLM::Config->load_manifest($invalid_manifest);
@@ -491,6 +483,8 @@ schema = 1
 kind = "bundle-preset"
 name = "Descriptive bundle preset"
 version = "1"
+presentation_profile = "beamer"
+longform_profile = "scrbook"
 TOML
 close $preset_handle;
 open my $local_handle, '>',
@@ -519,8 +513,9 @@ is $local_resolution->{bundle_preset}{reference},
 my $extended_root = tempdir(CLEANUP => 1);
 my $extended_definitions = File::Spec->catdir($extended_root, 'definitions');
 my $extended_targets = File::Spec->catdir($extended_definitions, 'targets');
+my $extended_profiles = File::Spec->catdir($extended_definitions, 'profiles');
 my $extended_unit = File::Spec->catdir($extended_root, '010-opening');
-make_path($extended_targets, $extended_unit);
+make_path($extended_targets, $extended_profiles, $extended_unit);
 open my $extended_target, '>',
   File::Spec->catfile($extended_targets, 'keynote.toml') or die $!;
 print {$extended_target} <<'TOML';
@@ -530,9 +525,20 @@ name = "keynote"
 version = "1.0"
 doctype = "keynote"
 profile_class = "presentation"
-document_metadata = "disabled"
 TOML
 close $extended_target;
+open my $extended_profile, '>',
+  File::Spec->catfile($extended_profiles, 'keynote-beamer.toml') or die $!;
+print {$extended_profile} <<'TOML';
+schema = 1
+kind = "profile"
+name = "keynote-beamer"
+version = "1.0"
+profile_class = "presentation"
+document_metadata = "forbidden"
+doctypes = ["keynote"]
+TOML
+close $extended_profile;
 open my $extended_local, '>',
   File::Spec->catfile($extended_root, '.ollmconfig.local.toml') or die $!;
 print {$extended_local} <<'TOML';
@@ -545,18 +551,18 @@ close $extended_local;
 open my $extended_manifest, '>',
   File::Spec->catfile($extended_root, 'ollmconfig.toml') or die $!;
 print {$extended_manifest} <<'TOML';
-schema = 1
+schema = 2
 bundle_preset = "OSG lecture/1"
 
 [project]
 id = "ext"
 
-[languages]
-available = ["en"]
-default = "en"
+[targets.defaults]
+languages = ["en"]
+default_language = "en"
 
 [targets.keynote]
-languages = ["en"]
+profile = "keynote-beamer"
 TOML
 close $extended_manifest;
 open my $extended_source, '>',
@@ -588,7 +594,6 @@ name = "mismatch"
 version = "1.0"
 doctype = "different"
 profile_class = "longform"
-document_metadata = "disabled"
 TOML
 close $mismatched_target;
 eval {
@@ -614,17 +619,35 @@ my $bundle_definitions = OLLM::Config->resolve_definitions(
 );
 is $bundle_definitions->{bundle_preset}{reference}, 'OSG lecture/1',
   'bundle-level example resolves its bundled preset';
-is $bundle_definitions->{targets}{talk}{document_metadata}, 'required',
-  'example resolves its custom ltx-talk target metadata default';
-is $bundle_definitions->{targets}{script}{document_metadata}, 'required',
-  'example overrides metadata policy for its script target';
-my %resolve_manifest = (%$bundle_data,
-  build => { resolve => { max_rounds => 3 } },
-);
-ok(OLLM::Config->validate_manifest(\%resolve_manifest, '<resolve-test>', {}),
+is $bundle_definitions->{targets}{talk}{profile}, 'series-ltx-talk',
+  'example resolves its project-local presentation profile';
+is $bundle_definitions->{targets}{talk}{document_metadata}, 'enabled',
+  'an ltx-talk target resolves to an enabled metadata policy';
+is $bundle_definitions->{targets}{script}{document_metadata}, 'enabled',
+  'the example enables document metadata for its script target';
+
+my $resolve_manifest = File::Spec->catfile(tempdir(CLEANUP => 1), 'ollmconfig.toml');
+my $write_resolve = sub {
+  open my $fh, '>', $resolve_manifest or die $!;
+  print {$fh} <<"TOML";
+schema = 2
+bundle_preset = "OSG lecture/1"
+[project]
+id = "resolve"
+[targets.defaults]
+languages = ["de"]
+default_language = "de"
+[targets.slides]
+[build.resolve]
+max_rounds = $_[0]
+TOML
+  close $fh;
+};
+$write_resolve->(3);
+ok(OLLM::Config->load_manifest($resolve_manifest),
   'a positive reference-resolution round limit is accepted');
-$resolve_manifest{build}{resolve}{max_rounds} = 0;
-eval { OLLM::Config->validate_manifest(\%resolve_manifest, '<resolve-test>', {}) };
+$write_resolve->(0);
+eval { OLLM::Config->load_manifest($resolve_manifest) };
 like $@, qr/max_rounds must be a positive integer/,
   'a non-positive reference-resolution round limit is rejected';
 
