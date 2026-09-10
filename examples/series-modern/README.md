@@ -24,7 +24,9 @@ no tagged integration), see the sibling example `../series-classic`.
 series-modern/
 ├── .ollmconfig.local.toml
 ├── ollmconfig.toml
-├── Definitions/targets/talk.toml
+├── Definitions/
+│   ├── profiles/series-ltx-talk.toml
+│   └── targets/talk.toml
 ├── Include/
 │   ├── documentmetadata.tex
 │   ├── osglecture-profile-series-ltx-talk.def
@@ -50,16 +52,19 @@ this work:
 - `.ollmconfig.local.toml` registers `Definitions` as a search path for
   project-local OLLM definitions.
 - `Definitions/targets/talk.toml` declares `talk` as a new target kind:
-  `doctype = "talk"`, `profile_class = "presentation"`,
-  `document_metadata = "required"`.
+  `doctype = "talk"`, `profile_class = "presentation"`.
 - `Include/osglecture-profile-series-ltx-talk.def` declares a project-local
   osglecture profile `series-ltx-talk` that reuses the built-in `ltx-talk`
   backend/adapter/class, but additionally loads
   `seriesexample-talk-modes.tex` as an early `mode-setup-file`, which
   declares `talk` as a presentation mode derived from `presentation`.
+- `Definitions/profiles/series-ltx-talk.toml` is the capability projection
+  OLLM reads before the run: `document_metadata = "required"`,
+  `doctypes = ["talk"]`. It mirrors the `.def` for the fields OLLM needs
+  before LaTeX starts.
 
-`projectconfig.tex` then selects this profile for the `talk` target with
-`\LectureTargetSetup{talk}{profile=series-ltx-talk}`. Everything else about
+The manifest then selects this profile for the `talk` target with
+`profile = "series-ltx-talk"` in `[targets.talk]`. Everything else about
 `talk` -- its `frame`/`frametitle` handling, its column and list behaviour --
 comes for free from the `presentation` mode it derives from. A project that
 only needs a differently named target with the same behaviour as an existing
@@ -67,21 +72,25 @@ one can stop here; deeper customization (new layout primitives, a different
 title page, additional mode-specific behavior) would extend
 `seriesexample-talk-modes.tex` instead of touching the bundle.
 
-The long-form `script` target uses the built-in standard `book` profile, with
-no project-local override needed.
+The long-form `script` target uses the built-in standard `book` profile,
+selected with `longform_profile = "book"` in `[targets.defaults]` (the bundle
+preset would otherwise default to `scrbook`). No project-local profile is
+needed for it.
 
 ## Multilingual content with langselect
 
 Every unit in this example is written once and builds in German and English,
 using the independent `langselect` module (also part of this bundle, but not
-otherwise coupled to `osglecture`). `projectconfig.tex` wires the two
-together in four lines:
+otherwise coupled to `osglecture`). The selectable languages -- and their
+order, which decides `langselect`'s bilingual macro name -- come from the
+manifest (`[targets.defaults].languages = ["en", "de"]`). `osglecture` hands
+that list to `langselect` from the build file and configures it automatically;
+`projectconfig.tex` only supplies the target language and the visible title:
 
 ```tex
 \OsgLectureBuildLoadedTF
   { \edef\olsTargetLanguage{\OsgLectureBuildValue{language}} }
   { }
-\LectureProjectSetup{languages={selectable={en,de}}}
 \title{\lende{One source, multiple documents}{Eine Quelle, mehrere Dokumente}}
 ```
 
@@ -91,48 +100,19 @@ before the latter's accessor command is defined; the build-spec value it is
 built from is already available. Setting `\olsTargetLanguage` before loading
 `langselect` takes priority over all of `langselect`'s own target-language
 detection (job name, `\DocumentMetadata`, ...), so OLLM's per-language build
-directly determines which half of each `\lende{English}{German}` call ends
-up in the PDF, with no per-target duplication needed.
+directly determines which half of each `\lende{English}{German}` call ends up
+in the PDF, with no per-target duplication needed.
 
-`\LectureProjectSetup{languages={selectable={en,de}}}` is `osglecture`'s own
-project-setup vocabulary (the same one used elsewhere for `theme`,
-`numbering`, and the profile keys); it hides that multilingual support is
-technically implemented by `langselect` at all. `languages` takes its own
-small keyval, `selectable` being the one most projects need (it maps to
-`langselect`'s own `languages` option, just named after what it actually
-is -- `langselect` itself calls these "selectable languages" in its
-documentation); the rest of `langselect`'s options (`map`, `load babel`,
-`load polyglossia`, `prefix`, `targetlang`, `auto`, `trim`, `unified
-shorthands`) are reachable the same way, e.g. `languages={selectable={en,
-de}, map={de=ngerman,en=british}}` for old/new German spelling or British/
-American English. All given sub-keys are collected first and issued in a
-single `\usepackage[...]{langselect}` call once `languages` has been fully
-processed -- not one call per sub-key -- because `langselect`, once loaded,
-silently ignores extra options given on a later, separate load rather than
-erroring, so collecting before triggering avoids configuration that looks
-accepted but silently never applies. It is not just cosmetic sugar either
-way: `osglecture.cls` defers any `\usepackage`/`\RequirePackage` written
-directly in `projectconfig.tex` until right after the target's base class
-(here `ltx-talk`) has loaded, the same way it already defers `\title` and
-the other metadata fields (see `README-cls.md`), and `\LectureProjectSetup`'s
-`languages` key rides the very same queue since it is only ever evaluated
-from within that reading window. This matters for a reason independent of
-`langselect` itself: `projectconfig.tex` is read *before* `osglecture.cls`'s
-own `\LoadClass` for the target's base class has run, and a package that
-probes "does the base class already define X" at that point can get a false
-negative. `langselect`'s default `unified shorthands` option (babel/
-polyglossia quote-shorthand integration, harmless to leave on even though
-this example loads neither) pulls in `csquotes`, which defines a classic
-fallback `quote` environment if it finds none yet -- true before the base
-class has loaded. `ltx-talk` then defines its own `quote` via
-`\NewDocumentEnvironment`, whose built-in check is unconditional -- it
-errors on *any* pre-existing `quote` -- so csquotes' fallback and
-`ltx-talk`'s own definition would collide (`Environment 'quote' already
-defined`) if both ran before `\LoadClass`. Since the `languages` key's
-`\usepackage` call is deferred to right after `\LoadClass` and replayed in
-the same queue and order as `\title`, `langselect`/`csquotes` see the base
-class's `quote` already in place, and `\lende` is already defined by the
-time `\title` runs.
+A project that also needs the Babel/Polyglossia name mapping still uses
+`osglecture`'s own project-setup vocabulary, but only for the sub-keys that
+are genuinely LaTeX concerns:
+`\LectureProjectSetup{languages={map={de=ngerman,en=british}, load babel}}`.
+The `selectable` sub-key is manifest-owned for an OLLM build and is ignored
+(with a warning) if written here. `osglecture.cls` issues the resulting
+`\usepackage{langselect}` from within its intercept-and-replay queue, so it
+lands right after the target's base class -- avoiding a collision between
+`langselect`'s `csquotes` integration and `ltx-talk`'s own `quote`
+environment, both of which would otherwise define `quote` before `\LoadClass`.
 
 The unit sources then use `\lende{English text}{German text}` wherever the
 two versions differ -- titles, headings, list items, running prose -- and
@@ -149,13 +129,16 @@ automatically.
 
 ## Document metadata
 
-Both targets in this example require `\DocumentMetadata` (see
-`document_metadata = "required"` in `ollmconfig.toml` and in `talk.toml`).
-OLLM therefore inputs the user-owned `Include/documentmetadata.tex` early,
-which enables tagging. osglecture validates the resulting kernel state
-against the selected profile's `required`, `supported`, or `forbidden`
-document-metadata capability -- `ltx-talk` declares it `required`, `book`
-merely `supported`. Active tagging is also what makes the `tagpax`-based
+Both targets in this example end up with `\DocumentMetadata` active. For
+`talk` it is forced: the `series-ltx-talk` profile declares
+`document_metadata = "required"`. For `script` it is a choice: the `book`
+profile only `supports` metadata, and `[targets.defaults].document_metadata =
+"enabled"` in the manifest turns it on. OLLM inputs the user-owned
+`Include/documentmetadata.tex` early whenever the derived policy is `enabled`,
+which enables tagging. osglecture validates the resulting kernel state against
+the profile's capability -- setting `document_metadata = "disabled"` against a
+`required` profile, or `"enabled"` against a `forbidden` one, is rejected by
+OLLM before the run. Active tagging is also what makes the `tagpax`-based
 `\includeunit` integration below possible: `tagpax`'s tagging bridge needs a
 document with tagging turned on and fails outright otherwise, which is why
 the integration unit builds only under `script`, and only in this
@@ -204,8 +187,9 @@ ollm build script
 `talk` needs the `--target=` form (not the bare `ollm build talk` used for
 `script`/`slides` above): it is a project-registered target, not one of
 OLLM's built-in target aliases, which are the only ones resolvable
-positionally. This builds the default language (German, per `[languages]
-default` in `ollmconfig.toml`). Add `--language=en` to any of the unit
+positionally. This builds the default language (German, per
+`[targets.defaults].default_language` in `ollmconfig.toml`). Add
+`--language=en` to any of the unit
 builds above to get the English versions, e.g.
 `ollm build --target=talk --language=en`; both
 languages can coexist since OLLM keys promoted projections by language along
@@ -251,8 +235,12 @@ To inspect the BuildSpecs without invoking LaTeX, run `ollm build --all
 | `talk` | `presentation` | `series-ltx-talk` → `ltx-talk` | extended presentation mode with required document metadata |
 | `script` | `longform` | `book` | sections, connected prose, column contents in sequence |
 
-The target-specific selection is expressed in `projectconfig.tex` as:
+The profile selection lives in the manifest:
 
-```tex
-\LectureTargetSetup{talk}{profile=series-ltx-talk}
+```toml
+[targets.defaults]
+longform_profile = "book"
+
+[targets.talk]
+profile = "series-ltx-talk"
 ```

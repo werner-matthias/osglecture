@@ -9,7 +9,7 @@ tex_config = "projectconfig.tex"
 [targets.defaults]
 languages = ["en", "de"]
 default_language = "de"
-longform_profile = "scrbook"
+longform_profile = "book"
 document_metadata = "enabled"
 
 [targets.talk]

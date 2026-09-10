@@ -56,14 +56,14 @@ OLLM-Regeln) bleibt bewusst so -- das ist Zieldesign, keine Lücke.
 
 Der Lua-Modul-Umbau ist damit deckungsgleich mit den Entwicklungsdokumenten.
 
-Vorausgelaufen ist seit dem 10. September 2026 `DESIGN.md` Abschnitt 25: die
-Dokumentprofilwahl soll vom TeX-seitigen `\LectureProjectSetup` ins
-Projektmanifest wandern, damit der `\DocumentMetadata`-Vertrag eines Profils
-nur noch an einer Stelle steht; im selben Zug erhält `ollmconfig.toml` eine
-nutzersichtzentrierte Schema-2-Struktur (`[targets.defaults]` mit Vererbung,
-gebündeltes `[security]`) und Klassenoptionen werden doctype-adressierbar.
-Umgesetzt ist bisher nur der vorgezogene Diagnosefix (Abschnitt 25.2 Punkt 6):
-`osglecture` meldet einen Widerspruch zwischen Buildpolicy und Profil jetzt als
-`metadata-policy-conflict` mit Targetnamen, statt zum unspezifischen
-`metadata-required` durchzufallen. Der Rest steht aus; die Abschnitte 5.3, 7.2,
-7.6 und 18 beschreiben bis dahin den Ist-Stand.
+`DESIGN.md` Abschnitt 25 (Dokumentprofilwahl im Manifest, Schema 2) ist seit
+dem 10. September 2026 umgesetzt: `ollmconfig.toml` verwendet Schema 2 mit
+`[targets.defaults]`-Vererbung, gefalteten Sprachen (`languages` +
+`default_language`), flachem `[project]` und gebündeltem `[security]`; das
+Dokumentprofil wird im Manifest gewählt und über die Buildauftragsdatei
+durchgereicht; die Metadatenpolicy leitet OLLM aus der Profilfähigkeit ab; der
+Modusgraph wird vor `\LoadClass` finalisiert, und `\OsgLectureSetup` kennt
+`class/<mode>` (einzelner Modusname). Schema 1 wird abgewiesen, `convertproject`
+erzeugt Schema 2. Zwei Abweichungen vom ursprünglichen Wortlaut sind in
+Abschnitt 25 vermerkt. Die Abschnitte 5.3, 7.2, 7.6 und 18 sind angepasst.
+Diese Liste ist damit wieder leer.

@@ -159,21 +159,16 @@ sub _manifest_languages {
   return [ $1 =~ /['"]([^'"]*)['"]/g ];
 }
 
-# The profile block shared by generated and converted project configurations.
-# Every value line ends with a comma so that commenting any single line in or
-# out stays valid l3keys input.
+# A pointer, not a setting: the document profiles are chosen in
+# ollmconfig.toml ([targets.defaults].presentation_profile / longform_profile,
+# or profile on a single target), because the class needs the metadata
+# contract before it runs. projectconfig.tex keeps only LaTeX-side semantics.
 sub _project_config_profiles {
   return <<'TEX';
-\LectureProjectSetup{
-  presentation-profile=beamer,
-  longform-profile=scrbook,
-  % To use class ltx-talk as the presentation backend instead, comment out
-  % presentation-profile=beamer above and uncomment the next line.
-  % presentation-profile=ltx-talk,
-  % To use class book as the long-form backend instead, comment out
-  % longform-profile=scrbook above and uncomment the next line.
-  % longform-profile=book,
-}
+% Document profiles (beamer/ltx-talk, book/scrbook) are chosen in
+% ollmconfig.toml, not here. The bundle preset defaults to beamer + scrbook;
+% to change one, set presentation_profile / longform_profile in
+% [targets.defaults], or profile on a single [targets.<name>].
 TEX
 }
 
@@ -186,11 +181,16 @@ sub _bilingual_macro {
   return 'l' . $languages->[0] . $languages->[1];
 }
 
+# The selectable languages come from the manifest for an OLLM build; the class
+# wires them into langselect from the build file. projectconfig.tex only keeps
+# the LaTeX-variant map, so the converter emits a stub, not a selectable list.
 sub _language_setup_line {
   my ($languages) = @_;
   return '' if !$languages || @$languages < 2;
-  return '\LectureProjectSetup{languages={selectable={'
-    . join(',', @$languages) . "}}}\n";
+  return "% Language selection comes from ollmconfig.toml. Add the langselect\n"
+    . "% variant mapping here if needed, e.g.:\n"
+    . "% \\LectureProjectSetup{languages={map={"
+    . join(',', map { "$_=..." } @$languages) . "}}}\n";
 }
 
 sub generic_project_config {

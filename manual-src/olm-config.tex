@@ -103,7 +103,7 @@ repeated there.}
 \code{[targets.defaults]} kann stattdessen \option{presentation\_profile} und
 \option{longform\_profile} setzen, die je nach Profilklasse des Targets
 greifen. Fehlt beides, gelten die Profil-Defaults des Bundle-Presets.
-\option{document\_metadata} (\keyval{enabled}{}/\keyval{disabled}{}) ist eine
+\option{document\_metadata} (\key{enabled}{}/\key{disabled}{}) ist eine
 bewusste Ausgabeentscheidung und wirkt nur dort, wo das aufgelöste Profil den
 Metadatenvertrag offen lässt (\code{supported}); widerspricht sie einem Profil
 mit erzwungenem Vertrag, weist \OLLM\ den Build vor dem Lauf ab.}{A target may
@@ -113,7 +113,7 @@ that one target; \code{[targets.defaults]} may instead set
 \option{presentation\_profile} and \option{longform\_profile}, which apply
 according to the target's profile class. If neither is set, the bundle
 preset's profile defaults apply. \option{document\_metadata}
-(\keyval{enabled}{}/\keyval{disabled}{}) is a deliberate output choice and
+(\key{enabled}{}/\key{disabled}{}) is a deliberate output choice and
 takes effect only where the resolved profile leaves the metadata contract
 open (\code{supported}); if it contradicts a profile with a forced contract,
 \OLLM\ rejects the build before the run.}
@@ -267,11 +267,11 @@ language list live in the manifest instead. A typical core is}:
 \end{verbatim}
 
 \ldeen{Die auswählbaren Sprachen kommen für einen \OLLM-Build aus dem Manifest;
-\code{languages} nennt hier nur noch das \pkg{langselect}-Mapping. \OsgLecture\
+\code{languages} nennt hier nur noch das \pkg{langselect}-Mapping. \osglecture\
 reicht die Sprachliste (in Manifestreihenfolge) aus der Buildauftragsdatei an
 \pkg{langselect} weiter.}{For an \OLLM\ build the selectable languages come
 from the manifest; \code{languages} here only carries the \pkg{langselect}
-mapping. \OsgLecture\ hands the language list (in manifest order) from the
+mapping. \osglecture\ hands the language list (in manifest order) from the
 build file to \pkg{langselect}.}
 
 \ldeen{\option{class/NAME} enthält unveränderte Optionen für die wirkliche
@@ -325,14 +325,14 @@ binding so that a unit cannot override it.}
 und steuert PDF-Eigenschaften, nicht die sichtbaren fachlichen Metadaten. \OLLM\
 bindet die Datei ein, wenn die aus dem Profil abgeleitete Metadatenpolicy
 \code{enabled} ergibt -- also bei einem \code{required}-Profil immer, bei einem
-\code{supported}-Profil, wenn \keyval{document\_metadata}{enabled} im Manifest
+\code{supported}-Profil, wenn \key{document\_metadata}{enabled} im Manifest
 steht. Dabei stehen Symbole wie \cs{OsgLectureRequestedLanguage} zur
 Verfügung.}{\File{documentmetadata.tex} has a different role: its
 \cs{DocumentMetadata} call must precede the document class and controls PDF
 properties rather than visible subject metadata. \OLLM\  includes the file when
 the metadata policy derived from the profile resolves to \code{enabled} --
 always for a \code{required} profile, and for a \code{supported} profile when
-the manifest sets \keyval{document\_metadata}{enabled}. Symbols such as
+the manifest sets \key{document\_metadata}{enabled}. Symbols such as
 \cs{OsgLectureRequestedLanguage} are available there.}
 
 \subsection{\ldeen{Dokumentenprofile}{Document Profiles}}
@@ -348,8 +348,10 @@ profiles are}:
 
 \begin{description}
   \item[\cls{beamer}] \ldeen{für \code{slides} und \code{handout};
-    Metadaten vor der Klasse sind verboten}{for \code{slides} and
-    \code{handout}; metadata before the class is forbidden}.
+    Metadaten vor der Klasse sind verboten (Preset-Default für
+    \option{presentation\_profile})}{for \code{slides} and
+    \code{handout}; metadata before the class is forbidden (preset default for
+    \option{presentation\_profile})}.
   \item[\cls{ltx-talk}] \ldeen{für \code{slides} und \code{handout};
     \cs{DocumentMetadata} ist erforderlich}{for \code{slides} and
     \code{handout}; \cs{DocumentMetadata} is required}.
@@ -357,9 +359,23 @@ profiles are}:
     Basis der Standardklasse \cls{book}}{for \code{script} and
     \code{article}, based on the standard \cls{book} class}.
   \item[\cls{scrbook}] \ldeen{für \code{script} und \code{article}
-    auf Basis von KOMA-Script}{for \code{script} and \code{article}, based
-    on KOMA-Script}.
+    auf Basis von KOMA-Script (Preset-Default für
+    \option{longform\_profile})}{for \code{script} and \code{article}, based
+    on KOMA-Script (preset default for \option{longform\_profile})}.
 \end{description}
+
+\ldeen{Das Profil wird im Manifest gewählt (\option{profile} am Target oder
+\option{presentation\_profile}/\option{longform\_profile} in
+\code{[targets.defaults]}), nicht in \File{projectconfig.tex} -- denn sein
+\cs{DocumentMetadata}-Vertrag muss feststehen, bevor die Klasse überhaupt
+läuft. Für ein Standalone-Dokument ohne Manifest wählt die Klassenoption
+\keyis{profile}{\meta{name}}.}{The profile is chosen in the manifest
+(\option{profile} on the target, or
+\option{presentation\_profile}/\option{longform\_profile} in
+\code{[targets.defaults]}), not in \File{projectconfig.tex} -- its
+\cs{DocumentMetadata} contract has to be fixed before the class runs at all.
+For a standalone document without a manifest the class option
+\keyis{profile}{\meta{name}} selects it.}
 
 \ldeen{Ein eigenes Profil liegt üblicherweise als
 \File{osglecture-profile-NAME.def} im TeX-Suchpfad. Es kann ein vorhandenes
@@ -388,14 +404,35 @@ requires a suitable adapter. The three required entries are \option{backend},
 \DeclareOsgLectureProfileClassOptions{mybook}{script}{open=right}
 \end{verbatim}
 
+\ldeen{Damit \OLLM\ den \cs{DocumentMetadata}-Vertrag schon vor dem Lauf kennt,
+liegt neben der \code{.def} eine Fähigkeitsprojektion
+\File{osglecture-profile-mybook.toml} (bzw. unter
+\code{Definitions/profiles/})}{So that \OLLM\ knows the \cs{DocumentMetadata}
+contract before the run, a capability projection
+\File{osglecture-profile-mybook.toml} sits next to the \code{.def} (or under
+\code{Definitions/profiles/})}:
+
+\begin{verbatim}
+schema = 1
+kind = "profile"
+name = "mybook"
+version = "1.0"
+profile_class = "longform"
+document_metadata = "supported"
+doctypes = ["script", "article"]
+\end{verbatim}
+
 \ldeen{Nach Installation oder Aufnahme des gemeinsamen Verzeichnisses in den
-TeX-Suchpfad genügt
-\keyis{longform-profile}{mybook}. \osglecture\ lädt die Datei bei der ersten
+TeX-Suchpfad genügt \keyis{longform\_profile}{mybook} in
+\code{[targets.defaults]}. \osglecture\ lädt die \code{.def} bei der ersten
 Auswahl automatisch und prüft, ob der angeforderte Dokumenttyp unterstützt
-wird.}{After installation or adding the shared directory to the TeX search
-path, \keyis{longform-profile}{mybook} is sufficient. \osglecture\ loads the
-file automatically when first selected and checks whether the requested
-document type is supported.}
+wird. \File{ollm/testfiles} bzw. \code{definitions/profiles.t} bewacht, dass
+\code{.def} und \code{.toml} nicht auseinanderlaufen.}{After installation or
+adding the shared directory to the TeX search path,
+\keyis{longform\_profile}{mybook} in \code{[targets.defaults]} is sufficient.
+\osglecture\ loads the \code{.def} automatically on first selection and checks
+whether the requested document type is supported. \code{definitions/profiles.t}
+guards that the \code{.def} and the \code{.toml} do not drift apart.}
 
 \subsection{\ldeen{Den Modusgraphen erweitern}{Extending the Mode Graph}}
 \label{sec:configuration-mode-extensions}
@@ -494,8 +531,10 @@ should not pre-empt them.}
   \item[\keyis{doctype}{name}] \ldeen{Dokumenttyp wählen; im Standalone-Betrieb
     standardmäßig \code{slides}}{select the document type; defaults to
     \code{slides} in standalone mode}.
-  \item[\keyis{profile}{name}] \ldeen{Dokumentprofil ausdrücklich wählen}{select
-    a document profile explicitly}.
+  \item[\keyis{profile}{name}] \ldeen{Dokumentprofil ausdrücklich wählen
+    (Standalone; für \OLLM-Builds kommt es aus dem Manifest)}{select a document
+    profile explicitly (standalone; for \OLLM\ builds it comes from the
+    manifest)}.
   \item[\keyis{lang}{tag}] \ldeen{Dokumentsprache wählen}{select the document
     language}.
   \item[\keyis{class-options}{list}] \ldeen{Optionen an die Basisklasse
@@ -512,22 +551,25 @@ should not pre-empt them.}
   \item[\option{class-options}] \ldeen{gemeinsame Basisklassenoptionen}{shared
     base-class options}.
   \item[\option{presentation-profile}, \option{longform-profile},
-    \option{identity-profile}] \ldeen{Profile für Präsentationen, Langformen
-    und identitätsorientierte Dokumente}{profiles for presentations, long
-    forms, and identity-oriented documents}.
+    \option{identity-profile}] \ldeen{Profile für Standalone-Dokumente ohne
+    Manifest; für \OLLM-Builds ist die Profilwahl abgekündigt und kommt aus dem
+    Manifest}{profiles for standalone documents without a manifest; for \OLLM\
+    builds profile selection here is deprecated and comes from the manifest}.
   \item[\option{theme}, \option{numbering}, \option{references}]
     \ldeen{projektweite semantische Policies}{project-wide semantic policies}.
   \item[\option{languages}] \ldeen{eingebettete Konfiguration von
     \pkg{langselect}}{embedded \pkg{langselect} configuration}.
 \end{description}
-\ldeen{Unter \option{languages} sind vollständig die Schlüssel
-\option{selectable}, \option{targetlang}, \option{prefix}, \option{auto},
-\option{trim}, \option{map}, \option{load babel},
-\option{load polyglossia} und \option{unified shorthands} zulässig.}{Under
-\option{languages}, the complete set of permitted keys is
-\option{selectable}, \option{targetlang}, \option{prefix}, \option{auto},
-\option{trim}, \option{map}, \option{load babel},
-\option{load polyglossia}, and \option{unified shorthands}.}
+\ldeen{Unter \option{languages} sind die Schlüssel \option{targetlang},
+\option{prefix}, \option{auto}, \option{trim}, \option{map},
+\option{load babel}, \option{load polyglossia} und \option{unified shorthands}
+zulässig. \option{selectable} kommt für einen \OLLM-Build aus dem Manifest
+(ein Wert hier wird mit Warnung verworfen) und ist nur für Standalone
+gedacht.}{Under \option{languages}, the permitted keys are \option{targetlang},
+\option{prefix}, \option{auto}, \option{trim}, \option{map},
+\option{load babel}, \option{load polyglossia}, and \option{unified
+shorthands}. \option{selectable} comes from the manifest for an \OLLM\ build (a
+value here is dropped with a warning) and is meant for standalone only.}
 \ldeen{Wird \option{targetlang} ausgelassen, setzt \osglecture\ dafür
 automatisch \cs{OsgLectureLanguage} ein. Ein expliziter Wert überschreibt
 diese Konvention.}{If \option{targetlang} is omitted, \osglecture
@@ -537,12 +579,17 @@ this convention.}
 \paragraph{\ldeen{Weitere Projektbefehle}{Other project commands}.}
 \begin{description}
   \item[\cs{OsgLectureSetup}\marg{areas}] \ldeen{weist mit
-    \code{class/NAME} Basisklassenoptionen und mit \code{mode/NAME}
-    modusabhängige Einstellungen zu}{assigns base-class options with
-    \code{class/NAME} and mode-dependent settings with \code{mode/NAME}}.
+    \code{class/\meta{class}} bzw. \code{class/<\meta{mode}>}
+    Basisklassenoptionen (nach Klassenname oder aktivem Modus) und mit
+    \code{mode/\meta{mode}} osglecture-eigene modusabhängige Einstellungen
+    zu}{assigns base-class options by class name (\code{class/\meta{class}}) or
+    active mode (\code{class/<\meta{mode}>}), and osglecture mode-dependent
+    settings with \code{mode/\meta{mode}}}.
   \item[\cs{LectureTargetSetup}\marg{target}\marg{settings}]
-    \ldeen{akzeptiert \option{profile} und \option{filecolor}}{accepts
-    \option{profile} and \option{filecolor}}.
+    \ldeen{akzeptiert \option{filecolor}; \option{profile} wird für
+    \OLLM-Builds ignoriert (Profilwahl im Manifest)}{accepts \option{filecolor};
+    \option{profile} is ignored for \OLLM\ builds (profile selection in the
+    manifest)}.
   \item[\cs{IncludeOsgLecturePreamble}\sarg\aarg{modes}\oarg{class=list}
     \marg{name}] \ldeen{registriert ein bedingtes Präambelfragment; die
     Sternform lädt sofort und erlaubt deshalb keine Bedingungen}{registers a

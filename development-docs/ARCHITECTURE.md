@@ -37,10 +37,13 @@ belasten.
 
 `bundle_preset` in der OLLM-Konfiguration bezeichnet das versionierte
 Bundle-Preset, beispielsweise `OSG lecture/1`. Davon getrennt bezeichnet ein
-Dokumentprofil die konkrete TeX-Integration. Die Targetdefinition liefert nur
-`profile-class`; die Klasse wählt damit in `projectconfig.tex`
-`presentation-profile` oder `longform-profile`. Eine Auswahl durch
-`\LectureTargetSetup{<target>}{profile=...}` ist spezifischer. Für
+Dokumentprofil die konkrete TeX-Integration. Das Profil wird im Manifest
+gewählt (`[targets.<name>].profile` oder
+`presentation_profile`/`longform_profile` in `[targets.defaults]`, sonst der
+Preset-Default) und über die Auftragsdatei (`profile`) an die Klasse
+gereicht -- sein `\DocumentMetadata`-Vertrag muss vor dem Klassenlauf
+feststehen. `\LectureProjectSetup{presentation-profile=…}` in
+`projectconfig.tex` gilt nur noch für Standalone. Für die übrige
 TeX-Konfiguration gilt:
 
 ```text
@@ -1202,10 +1205,12 @@ Deployment.
 | `generation-id` | OLLM | reine Build-Zustandsführung |
 | `target` | OLLM | Kern der Auftragsentscheidung |
 | `profile-class` | Grenzfall | folgt aus der Zielregistrierung von `target`; siehe unten |
-| `document-metadata-policy` | Grenzfall | folgt ebenso aus der Zielregistrierung |
+| `profile` | Grenzfall | von OLLM aus Manifest und Profil-Fähigkeitstabelle aufgelöst; muss vor dem Klassenlauf feststehen |
+| `document-metadata-policy` | Grenzfall | von OLLM aus der Profilfähigkeit plus optionalem Manifestschlüssel abgeleitet |
 | `doctype` | OLLM | Kern der Auftragsentscheidung |
 | `applicable-unit-scopes` | Grenzfall | Wert aus der Zielregistrierung, konsumiert von der Serienlogik im gemeinsamen Modul |
 | `language` | OLLM | Kern der Auftragsentscheidung |
+| `selectable-languages` | Grenzfall | von OLLM aufgelöste Sprachliste des Targets (Manifestreihenfolge), an `langselect` gereicht |
 | `available-languages` | gemeinsames Modul | Projektinhalt, keine Auftragsentscheidung |
 | `bundle-preset` | gemeinsames Modul | Projektinhalt (Feature-/Theme-Vorgabe) |
 | `shared-tex-directory` | gemeinsames Modul | konventionsbasiert relativ zum Manifest auflösbar |

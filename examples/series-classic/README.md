@@ -27,16 +27,17 @@ live in `Include`; there is deliberately no TeX material in the project root.
 The manifest uses the default directory and configuration filenames
 explicitly, so the relevant build contract remains visible in this example.
 
-`projectconfig.tex` selects a concrete profile per target:
-`\LectureTargetSetup{slides}{profile=beamer}` and
-`\LectureTargetSetup{script}{profile=scrbook}`. Both `beamer` and `scrbook`
-are built-in osglecture profiles, so no project-local profile or target
-definition is needed here -- that is the point of this variant: it is the
-plain, unextended path through osglecture. Beamer's `document-metadata`
-capability is `forbidden`, so `\DocumentMetadata` must stay off for `slides`;
-`scrbook` merely `supports` it, and this example simply leaves it off there
-too, for a document type pairing that predates the `\DocumentMetadata`
-kernel feature entirely.
+The manifest selects the document profiles in `[targets.defaults]`:
+`presentation_profile = "beamer"` and `longform_profile = "scrbook"`. Both are
+built-in osglecture profiles, so no project-local profile or target definition
+is needed here -- that is the point of this variant: it is the plain,
+unextended path through osglecture. (These two are also the bundle preset's
+defaults, so the lines could be omitted; they are spelled out here to keep the
+contract visible.) Beamer's `document-metadata` capability is `forbidden`, so
+`\DocumentMetadata` stays off for `slides`; `scrbook` merely `supports` it,
+and this example leaves `document_metadata` unset, so the derived policy is
+`disabled` there too -- a document type pairing that predates the
+`\DocumentMetadata` kernel feature entirely.
 
 ## Cross-unit references
 
@@ -97,9 +98,10 @@ To inspect the BuildSpecs without invoking LaTeX, run `ollm build --all
 | `slides` | `presentation` | `beamer` | frames, itemized presentation lists, real columns |
 | `script` | `longform` | `scrbook` | sections, connected prose, column contents in sequence |
 
-The target-specific selection is expressed in `projectconfig.tex` as:
+The profile selection lives in the manifest:
 
-```tex
-\LectureTargetSetup{slides}{profile=beamer}
-\LectureTargetSetup{script}{profile=scrbook}
+```toml
+[targets.defaults]
+presentation_profile = "beamer"
+longform_profile = "scrbook"
 ```

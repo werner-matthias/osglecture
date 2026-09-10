@@ -48,7 +48,7 @@ festlegen, wählt aber keinen einzelnen Buildauftrag.
 **Nutzerdefaults** sind persönliche, projektübergreifende Vorgaben. Sie werden
 nach den eingebauten Defaults und dem Bundle-Preset, aber vor dem
 Projektmanifest angewendet. Sie dürfen insbesondere das Standard-Bundle-Preset
-und die Dokumentprofile für Präsentation und Skript festlegen.
+festlegen; die Dokumentprofile bestimmt das Bundle-Preset bzw. das Manifest.
 
 - Datei: plattformabhängige OLLM-Nutzerkonfiguration
 - Zuständig: OLLM
@@ -57,14 +57,15 @@ und die Dokumentprofile für Präsentation und Skript festlegen.
 
 ### Projektmanifest
 
-Das **Projektmanifest** ist `ollmconfig.toml` an der Projektwurzel. Es beschreibt
-Projektidentität, Sprachen, Targets, Sicherheitsrichtlinie und gezielte
-Projekt-Overrides. Es markiert zugleich die Projektwurzel.
+Das **Projektmanifest** ist `ollmconfig.toml` (Schema 2) an der Projektwurzel.
+Es beschreibt Projektidentität, Targets samt geerbten `[targets.defaults]`
+(Sprachen in fester Reihenfolge, Default-Sprache, Profilwahl, Metadatenwahl),
+`[security]` und `[deployment]`. Es markiert zugleich die Projektwurzel.
 
 OLLM und das gemeinsame Modul lesen unterschiedliche Ausschnitte desselben
-Manifests: OLLM den zur Auftragsentscheidung gehörenden (Targets,
-Sicherheitsrichtlinie), das gemeinsame Modul den übrigen Projektinhalt
-(Sprachen, Bundle-Preset, Serienstruktur).
+Manifests: OLLM den zur Auftragsentscheidung gehörenden (Targets, Profile,
+`[security]`), das gemeinsame Modul den übrigen Projektinhalt (Sprachliste aus
+`[targets.defaults]`, Bundle-Preset, Serienstruktur).
 
 ### Projektpolicy
 
@@ -101,19 +102,22 @@ Ein **Dokumentprofil** beschreibt die konkrete TeX-Integration eines oder
 mehrerer Doctypes: Backend, Basisklasse, dokumenttypspezifische
 Basisklassenoptionen, Metadatenvoraussetzungen und optionales Setup.
 
-Die präklassische Targetpolicy `document_metadata=required|disabled` ist davon
-getrennt. Das Profil beschreibt seine tatsächliche Fähigkeit mit
-`document-metadata=required|supported|forbidden`; osglecture validiert beide.
+Das Profil beschreibt seine `\DocumentMetadata`-Fähigkeit mit
+`document-metadata=required|supported|forbidden`. OLLM leitet daraus (plus dem
+optionalen Manifestschlüssel `document_metadata=enabled|disabled` an einem
+`supported`-Profil) die effektive `document-metadata-policy=enabled|disabled`
+ab und weist einen Widerspruch vor dem Build ab.
 
-- TeX-Projektkonfiguration:
-  `presentation-profile`, `longform-profile`
-- BuildSpec und Auftragsdatei transportieren die abstrakte `profile_class`
-  beziehungsweise `profile-class` sowie getrennt die effektive
-  `document-metadata-policy`
+- Profilwahl: Manifest -- `[targets.<name>].profile` bzw.
+  `presentation_profile`/`longform_profile` in `[targets.defaults]`, sonst der
+  Bundle-Preset-Default
+- BuildSpec und Auftragsdatei transportieren `profile_class`/`profile-class`,
+  den aufgelösten `profile` sowie die `document-metadata-policy`
 - Standalone-Klassenoption: `profile`
-- Profildatei: `osglecture-profile-<name>.def`
-- Zuständig: osglecture wählt, validiert und lädt; OLLM übermittelt nur die
-  Profilklasse des Targets
+- Profildatei: `osglecture-profile-<name>.def`; Fähigkeitsprojektion für OLLM:
+  gleichnamige `.toml` bzw. unter `definitions/profiles/`
+- Zuständig: OLLM löst das Profil auf und prüft Profilklasse und Doctype;
+  osglecture lädt die `.def` und validiert den Kernel-Zustand
 
 Ein Dokumentprofil ist weder ein Bundle-Preset noch ein Unit-Scope.
 
