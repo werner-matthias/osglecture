@@ -78,6 +78,19 @@ The expandable `\OsgColorSeriesCount{<name>}` returns the number of entries.
 Series are not activated and do not support aliases; their entries are
 identified only by their one-based position.
 
+With LuaLaTeX, a qualitative series can also be derived from the active theme:
+
+```latex
+\GenerateOsgColorSeries{categories}[count=8]
+```
+
+By default, the active `primary` and `accent` colors form the anchors and the
+active `background` supplies the contrast reference. These inputs can be
+overridden with the `primary`, `accent`, and `background` keys (using any
+`xcolor` color name). The generator distributes further candidates in OKLCH,
+maps them into the RGB gamut, checks their contrast, and selects colors for
+large perceptual separation. `count` is limited to 2–32.
+
 `osgstyler` deliberately does not depend on `lttheme`. A later adapter can make
 `lttheme` consume an active `osgstyler` palette, while the palette package
 remains independently usable. Conversely, when `ltxtalk-theme` is loaded,

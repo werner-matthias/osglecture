@@ -1,0 +1,34 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osgstyler}
+
+\DeclareOsgColorPalette{generator-test}{
+  primary={model=HTML,value=204070},
+  accent={model=HTML,value=D07020},
+  background={model=HTML,value=FFFFFF}
+}
+\UseOsgColorPalette{generator-test}
+\GenerateOsgColorSeries{generated}[count=7]
+
+\begin{document}
+\START
+\TYPE{count=\OsgColorSeriesCount{generated}}
+\extractcolorspec{\OsgColorSeriesColorName{generated}{1}}\TestGeneratedOne
+\TYPE{one=\TestGeneratedOne}
+\extractcolorspec{\OsgColorSeriesColorName{generated}{2}}\TestGeneratedTwo
+\TYPE{two=\TestGeneratedTwo}
+\extractcolorspec{\OsgColorSeriesColorName{generated}{7}}\TestGeneratedSeven
+\TYPE{seven=\TestGeneratedSeven}
+\DeclareOsgColorPalette{generator-monochrome}{
+  primary={model=HTML,value=285080},
+  accent={alias=primary},
+  background={model=HTML,value=FFFFFF}
+}
+\UseOsgColorPalette{generator-monochrome}
+\GenerateOsgColorSeries{generated}[count=4]
+\extractcolorspec{\OsgColorSeriesColorName{generated}{1}}\TestMonoOne
+\TYPE{mono-one=\TestMonoOne}
+\extractcolorspec{\OsgColorSeriesColorName{generated}{2}}\TestMonoTwo
+\TYPE{mono-two=\TestMonoTwo}
+\END
+\end{document}

@@ -11,10 +11,12 @@ textfiles = {
 installfiles = {
     "osgstyler.sty",
     "osgstyler-lua.sty",
+    "osgstyler.lua",
 }
 
 sourcefiles = {
     "osgstyler.dtx",
+    "osgstyler.lua",
 }
 
 unpackfiles = {

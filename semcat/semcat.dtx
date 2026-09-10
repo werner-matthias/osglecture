@@ -91,18 +91,22 @@ load babel
 
 
 \subsection{\ldeen{Kategorien}{Categories}}
-% TODO: Zustand nicht konsistent
+
 \begin{commands}
-  \command{SemCatDefine}[\marg{}]
+  \command{SemCatDefine}[\marg{label}\oarg{options}]\default{}
+  \command{SemCatDefine}[\sarg\marg{label}\oarg{options}]
+  \begin{options}
+    \keyval*{title}{\ldeen{Beschreibung}{description}}
+    \keyval*{slot}{\ldeen{Index}{index}}
+    \keyval*{color}{\ldeen{Farbe}{color}}
+  \end{options}
 \end{commands}
 
-%\begin{options}
-%  
-%\end{options}
 
 \begin{verbatim}
 \SemCatDefine{A}[title={Historical background}, color=teal]
 \SemCatDefine*{B}[title={Core material}, slot=primary]
+\SemCatDefine{C}[title={Comparison}, index=7]
 \end{verbatim}
 
 \ldeen*{
@@ -117,7 +121,9 @@ load babel
   Laden von\pkg{semcat}einfach erneut mit \cs{DeclareOsgColorSeries}. Der
   @2-Schlüssel wählt gezielt einen Slot der aktiven Theme-Palette -- wirkt aber
   nur, solange \pkg{osgstyler} geladen ist; ohne das Paket greift
-  wieder die eingebaute Rotation.
+  wieder die eingebaute Rotation. Mit \code{index=} wird dagegen ein
+  bestimmter, einsbasierter Eintrag aus \code{semcat-categories} gewählt;
+  ohne \pkg{osgstyler} stammt derselbe Index aus der eingebauten Farbfolge.
 }{
   The star form makes the category the new default. Without a @1 key,
   the color is assigned round-robin from the dedicated
@@ -130,8 +136,30 @@ load babel
   after loading semcat, via \cs{DeclareOsgColorSeries}. The @2 key
   picks a slot of the active theme palette explicitly -- but only while
   \pkg{osgstyler} is loaded; without it, the built-in rotation applies
-  instead.
+  instead. \code{index=} selects a particular one-based entry from
+  \code{semcat-categories}; without \pkg{osgstyler}, the same index is read
+  from the built-in color sequence.
 }{\code{color}}{\code{slot}}
+
+\ldeen*{Aus der aktiven \pkg{osgstyler}-Theme-Palette kann mit @1
+  ausdrücklich eine neue qualitative Farbserie erzeugt werden. @2 legt ihre
+  Länge im Bereich 2--32 fest. Der Befehl ist eine Komfortschnittstelle für
+  \cs{GenerateOsgColorSeries} aus \pkg{osgstyler} und verwendet dessen
+  aktive Primär-, Akzent- und Hintergrundfarbe. Der Aufruf ersetzt
+  \code{semcat-categories} und färbt bereits definierte Kategorien neu, die
+  die automatische Rotation oder \code{index=} verwenden. Explizites
+  \code{color=} und \code{slot=} bleiben unverändert.}{A new qualitative color series can explicitly be generated
+  from the active \pkg{osgstyler} theme palette with @1. @2 determines its
+  length in the range 2--32. The command is a convenience wrapper around
+  \cs{GenerateOsgColorSeries} from \pkg{osgstyler} and uses its active
+  primary, accent, and background colors. The call replaces
+  \code{semcat-categories} and recolors already
+  defined categories using its automatic rotation or \code{index=}. Explicit
+  \code{color=} and \code{slot=} assignments remain unchanged.}
+  {\cs{GenerateSemCatColorSeries}}{\code{count}}
+\begin{verbatim}
+\GenerateSemCatColorSeries[count=8]
+\end{verbatim}
 
 \ldeen*{
   Zusätzlich zu Farbe/Slot kann eine Kategorie festlegen, \emph{wie}
@@ -412,6 +440,7 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
 % ---------------------------------------------------------------------
 \seq_new:N \g__semcat_categories_seq
 \prop_new:N \g__semcat_category_title_prop
+\prop_new:N \g__semcat_category_series_index_prop
 \tl_new:N \g__semcat_default_category_tl
 \tl_new:N \l__semcat_tmp_tl
 \tl_new:N \l__semcat_tmp_color_tl
@@ -484,6 +513,9 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
   { Unknown~semantic~category~'#1'. }
 \msg_new:nnn { semcat } { category-redefined }
   { Semantic~category~'#1'~is~already~defined;~redefining~it. }
+\msg_new:nnnn { semcat } { invalid-series-index }
+  { Color~series~index~'#1'~is~out~of~range. }
+  { Choose~an~index~between~1~and~#2. }
 \msg_new:nnn { semcat } { redirect-base-missing }
   { No~QR~redirect~base~URL~is~configured;~call~SemCatSetRedirectBase~first. }
 \msg_new:nnn { semcat } { luatex-required-for-redirect }
@@ -682,6 +714,32 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
       }
   }
 
+\cs_new_protected:Npn \__semcat_index_color:nN #1#2
+  {
+    \IfPackageLoadedTF { osgstyler }
+      { \int_set:Nn \l_tmpa_int { \OsgColorSeriesCount { semcat-categories } } }
+      { \int_set:Nn \l_tmpa_int { \clist_count:N \c__semcat_fallback_colors_clist } }
+    \bool_lazy_or:nnTF
+      { \int_compare_p:nNn {#1} < { 1 } }
+      { \int_compare_p:nNn {#1} > { \l_tmpa_int } }
+      {
+        \msg_error:nnnn { semcat } { invalid-series-index } {#1}
+          { \int_use:N \l_tmpa_int }
+        \__semcat_next_color:N #2
+      }
+      {
+        \IfPackageLoadedTF { osgstyler }
+          {
+            \tl_set:Nx #2
+              { \OsgColorSeriesColorName { \c__semcat_palette_name_tl } {#1} }
+          }
+          {
+            \tl_set:Nx #2
+              { \clist_item:Nn \c__semcat_fallback_colors_clist {#1} }
+          }
+      }
+  }
+
 \cs_if_exist:NT \NewStructureName
   {
     \cs_new_protected:Npn \__semcat_register_tags:n #1
@@ -701,6 +759,8 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
     color      .initial:n = { },
     slot       .tl_set:N  = \l__semcat_category_slot_tl,
     slot       .initial:n = { },
+    index      .tl_set:N  = \l__semcat_category_index_tl,
+    index      .initial:n = { },
     title      .tl_set:N  = \l__semcat_category_title_tl,
     title      .initial:n = { },
     style      .tl_set:N  = \l__semcat_category_style_tl,
@@ -723,10 +783,12 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
     \tl_set:Nn \l__semcat_category_being_defined_tl {#2}
     \tl_clear:N \l__semcat_category_color_tl
     \tl_clear:N \l__semcat_category_slot_tl
+    \tl_clear:N \l__semcat_category_index_tl
     \tl_clear:N \l__semcat_category_title_tl
     \tl_clear:N \l__semcat_category_style_tl
     \tl_clear:N \l__semcat_category_decoration_tl
     \tl_clear:N \l__semcat_category_symbol_tl
+    \prop_gremove:Nn \g__semcat_category_series_index_prop {#2}
     \keys_set:nn { semcat / category } {#3}
     \tl_if_empty:NF \l__semcat_category_style_tl
       { \prop_gput:Nee \g__semcat_style_variant_prop { #2 / default } \l__semcat_category_style_tl }
@@ -739,13 +801,26 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
       { \prop_gput:NnV \g__semcat_category_title_prop {#2} \l__semcat_category_title_tl }
     \tl_if_empty:NT \l__semcat_category_color_tl
       {
-        \tl_if_empty:NTF \l__semcat_category_slot_tl
-          { \__semcat_next_color:N \l__semcat_category_color_tl }
+        \tl_if_empty:NTF \l__semcat_category_index_tl
           {
-            \IfPackageLoadedTF { osgstyler }
-              { \tl_set:Nx \l__semcat_category_color_tl
-                  { \OsgColorName { \l__semcat_category_slot_tl } } }
-              { \__semcat_next_color:N \l__semcat_category_color_tl }
+            \tl_if_empty:NTF \l__semcat_category_slot_tl
+              {
+                \__semcat_next_color:N \l__semcat_category_color_tl
+                \prop_gput:Nnx \g__semcat_category_series_index_prop {#2}
+                  { \int_use:N \g__semcat_fallback_slot_int }
+              }
+              {
+                \IfPackageLoadedTF { osgstyler }
+                  { \tl_set:Nx \l__semcat_category_color_tl
+                      { \OsgColorName { \l__semcat_category_slot_tl } } }
+                  { \__semcat_next_color:N \l__semcat_category_color_tl }
+              }
+          }
+          {
+            \exp_args:NV \__semcat_index_color:nN
+              \l__semcat_category_index_tl \l__semcat_category_color_tl
+            \prop_gput:NnV \g__semcat_category_series_index_prop {#2}
+              \l__semcat_category_index_tl
           }
       }
     \colorlet { \__semcat_color_name:n {#2} } { \l__semcat_category_color_tl }
@@ -1317,6 +1392,43 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
               {#5} {#6} }
       }
   }
+
+% ---------------------------------------------------------------------
+% Theme-derived qualitative color series
+% ---------------------------------------------------------------------
+\tl_new:N \l__semcat_refresh_index_tl
+
+\msg_new:nnn { semcat } { osgstyler-required-for-generation }
+  { GenerateSemCatColorSeries~requires~osgstyler. }
+
+\cs_new_protected:Npn \__semcat_generate_color_series:n #1
+  {
+    \IfPackageLoadedTF { osgstyler }
+      {
+        \GenerateOsgColorSeries { semcat-categories } [#1]
+        \int_set:Nn \l_tmpb_int
+          { \OsgColorSeriesCount { semcat-categories } }
+        \seq_map_inline:Nn \g__semcat_categories_seq
+          {
+            \prop_get:NnNT \g__semcat_category_series_index_prop {##1}
+              \l__semcat_refresh_index_tl
+              {
+                \int_set:Nn \l_tmpa_int
+                  {
+                    \int_mod:nn { \l__semcat_refresh_index_tl - 1 }
+                      { \l_tmpb_int } + 1
+                  }
+                \colorlet { \__semcat_color_name:n {##1} }
+                  { \OsgColorSeriesColorName { semcat-categories }
+                      { \int_use:N \l_tmpa_int } }
+              }
+          }
+      }
+      { \msg_error:nn { semcat } { osgstyler-required-for-generation } }
+  }
+
+\NewDocumentCommand \GenerateSemCatColorSeries { O{} }
+  { \__semcat_generate_color_series:n {#1} }
 
 % ---------------------------------------------------------------------
 % Floating explanation box: always a box (never a bar), and always a

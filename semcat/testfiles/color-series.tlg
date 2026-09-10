@@ -4,3 +4,4 @@ series-count=8
 color-seven={rgb}{0.65099,0.46275,0.11374}
 color-eight={rgb}{0.4,0.4,0.4}
 color-wrap={rgb}{0.10588,0.61961,0.46667}
+color-indexed={rgb}{0.65099,0.46275,0.11374}

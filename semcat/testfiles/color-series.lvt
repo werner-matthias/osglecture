@@ -8,6 +8,7 @@
 \SemCatDefine{G}
 \SemCatDefine{H}
 \SemCatDefine{I}
+\SemCatDefine{Indexed}[index=7]
 
 \begin{document}
 \START
@@ -18,5 +19,7 @@
 \TYPE{color-eight=\TestColorH}
 \extractcolorspec{semcat-I}\TestColorI
 \TYPE{color-wrap=\TestColorI}
+\extractcolorspec{semcat-Indexed}\TestColorIndexed
+\TYPE{color-indexed=\TestColorIndexed}
 \END
 \end{document}

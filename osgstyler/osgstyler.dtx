@@ -1638,6 +1638,10 @@ load babel
   \command{DeclareOsgColorSeries}[\marg{name}\marg{items}]
     \ldeen{Deklariert oder ersetzt eine Farbserie.}{Declares or replaces a
     color series.}
+  \command{GenerateOsgColorSeries}[\marg{name}\oarg{keys}]
+    \ldeen{Erzeugt unter Lua\LaTeX{} eine qualitative Farbserie aus Farben
+    der aktiven Palette.}{Under Lua\LaTeX{}, generates a qualitative color
+    series from colors of the active palette.}
   \expandable\command{OsgColorSeriesCount}[\marg{name}]
     \ldeen{Liefert die Anzahl der Einträge.}{Returns the number of entries.}
   \expandable\command{OsgColorSeriesColorName}[\marg{name}\marg{index}]
@@ -1653,6 +1657,28 @@ load babel
   }
   \textcolor{\OsgColorSeriesColorName{categories}{2}}{Second category}
 \end{example}
+\begin{example}[code-only]
+  \GenerateOsgColorSeries{categories}[count=8]
+\end{example}
+\begin{options}
+  \keyval{count}{integer}[8]
+    \ldeen{Anzahl der Farben (2--32).}{Number of colors (2--32).}
+  \keyval{primary}{color}[\cs{OsgColorName}\{primary\}]
+    \ldeen{Erste Ankerfarbe.}{First anchor color.}
+  \keyval{accent}{color}[\cs{OsgColorName}\{accent\}]
+    \ldeen{Zweite Ankerfarbe, sofern wahrnehmbar verschieden.}
+    {Second anchor color, if perceptibly different.}
+  \keyval{background}{color}[\cs{OsgColorName}\{background\}]
+    \ldeen{Hintergrund für die Kontrastprüfung.}
+    {Background used for the contrast check.}
+\end{options}
+\ldeen{Weitere Kandidaten werden in OKLCH verteilt, in den RGB-Farbraum
+  eingepasst, gegen den Hintergrund geprüft und auf möglichst großen
+  wahrnehmbaren Abstand ausgewählt. Die Farboptionen akzeptieren beliebige
+  \pkg*{xcolor}-Farbnamen.}{Further candidates are distributed in OKLCH,
+  mapped into the RGB gamut, checked against the background, and selected for
+  large perceptual separation. The color options accept arbitrary
+  \pkg*{xcolor} color names.}
 \ldeen{Farbserien werden nicht aktiviert und unterstützen keine Aliase;
   ihre Einträge sind ausschließlich durch ihre Position bestimmt.}
   {Color series are not activated and do not support aliases; their entries
@@ -2703,6 +2729,82 @@ load babel
 
 \NewExpandableDocumentCommand \OsgColorSeriesColorName { m m }
   { \__osgstyler_color_series_name:nn {#1}{#2} }
+
+\int_new:N \l__osgstyler_color_series_generate_count_int
+\tl_new:N \l__osgstyler_color_series_generate_primary_tl
+\tl_new:N \l__osgstyler_color_series_generate_accent_tl
+\tl_new:N \l__osgstyler_color_series_generate_background_tl
+\tl_new:N \l__osgstyler_color_series_generated_tl
+\tl_new:N \l__osgstyler_color_series_colorspec_tl
+
+\keys_define:nn { osgstyler / generate-color-series }
+  {
+    count      .int_set:N = \l__osgstyler_color_series_generate_count_int,
+    primary    .tl_set:N  = \l__osgstyler_color_series_generate_primary_tl,
+    accent     .tl_set:N  = \l__osgstyler_color_series_generate_accent_tl,
+    background .tl_set:N  = \l__osgstyler_color_series_generate_background_tl,
+  }
+
+\msg_new:nnn { osgstyler } { luatex-required-for-series-generation }
+  { GenerateOsgColorSeries~requires~LuaLaTeX. }
+
+\cs_new_protected:Npn \__osgstyler_colorspec_to_html:nnN #1#2#3
+  { \convertcolorspec{#1}{#2}{HTML}#3 }
+\cs_new_protected:Npn \__osgstyler_color_to_html:nN #1#2
+  {
+    \extractcolorspec{#1}\l__osgstyler_color_series_colorspec_tl
+    \exp_after:wN \__osgstyler_colorspec_to_html:nnN
+      \l__osgstyler_color_series_colorspec_tl #2
+  }
+
+\sys_if_engine_luatex:T
+  { \directlua{ osgstyler = require("osgstyler") } }
+
+\cs_new_protected:Npn \__osgstyler_color_series_generate:nn #1#2
+  {
+    \keys_set:nn { osgstyler / generate-color-series }
+      {
+        count=8,
+        primary=\OsgColorName{primary},
+        accent=\OsgColorName{accent},
+        background=\OsgColorName{background},
+        #2
+      }
+    \int_set:Nn \l__osgstyler_color_series_generate_count_int
+      {
+        \int_max:nn { 2 }
+          { \int_min:nn { 32 } { \l__osgstyler_color_series_generate_count_int } }
+      }
+    \sys_if_engine_luatex:TF
+      {
+        \exp_args:NV \__osgstyler_color_to_html:nN
+          \l__osgstyler_color_series_generate_primary_tl
+          \l__osgstyler_color_series_generate_primary_tl
+        \exp_args:NV \__osgstyler_color_to_html:nN
+          \l__osgstyler_color_series_generate_accent_tl
+          \l__osgstyler_color_series_generate_accent_tl
+        \exp_args:NV \__osgstyler_color_to_html:nN
+          \l__osgstyler_color_series_generate_background_tl
+          \l__osgstyler_color_series_generate_background_tl
+        \tl_set:Nx \l__osgstyler_color_series_generated_tl
+          {
+            \directlua
+              {
+                tex.sprint(osgstyler.generate_color_series(
+                  "\luaescapestring{\l__osgstyler_color_series_generate_primary_tl}",
+                  "\luaescapestring{\l__osgstyler_color_series_generate_accent_tl}",
+                  "\luaescapestring{\l__osgstyler_color_series_generate_background_tl}",
+                  \int_use:N \l__osgstyler_color_series_generate_count_int))
+              }
+          }
+        \exp_args:NnV \DeclareOsgColorSeries {#1}
+          \l__osgstyler_color_series_generated_tl
+      }
+      { \msg_error:nn { osgstyler } { luatex-required-for-series-generation } }
+  }
+
+\NewDocumentCommand \GenerateOsgColorSeries { m O{} }
+  { \__osgstyler_color_series_generate:nn {#1}{#2} }
 
 \cs_new:Npn \__osgstyler_color_fallback:n #1
   {

@@ -29,6 +29,7 @@ categories are declared with `\SemCatDefine`:
 ```tex
 \SemCatDefine{E}[title={Historical background}, color=teal]
 \SemCatDefine*{F}[title={Core material}, slot=primary]
+\SemCatDefine{G}[title={Comparison}, index=7]
 ```
 
 Without an explicit `color` or `slot`, colors are assigned round-robin from a
@@ -39,6 +40,26 @@ document's generic theme slots on purpose -- switching themes shouldn't also
 change category colors -- and defaults to all eight colors of ColorBrewer
 "Dark2". Redeclare it via `\DeclareOsgColorSeries` (after loading `semcat`) to
 use any desired number of category colors.
+
+`index=<n>` selects a particular one-based entry from `semcat-categories`.
+Without `osgstyler`, it selects the corresponding entry from the built-in
+fallback series. By contrast, `slot=<name>` continues to select a semantic
+slot such as `primary` from the active document theme.
+
+With `osgstyler` loaded, a qualitative series matching the active theme can
+be generated explicitly:
+
+```latex
+\GenerateSemCatColorSeries[count=8]
+```
+
+`count` is limited to the range 2–32.
+
+This is a convenience wrapper around osgstyler's generic
+`\GenerateOsgColorSeries`: it uses the active `primary`, `accent`, and
+`background` colors and replaces `semcat-categories`. It then recolors
+categories using its automatic rotation or `index=`. Explicit `color=` and
+`slot=` assignments remain unchanged.
 
 A category can also specify *how* its block-level marking renders: as a box
 (the default) or a continuous margin bar. While `osgstyler` is loaded, a

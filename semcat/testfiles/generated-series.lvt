@@ -1,0 +1,44 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{osgstyler}
+\usepackage{semcat}
+
+\DeclareOsgColorPalette{generator-test}{
+  primary={model=HTML,value=204070},
+  accent={model=HTML,value=D07020},
+  alert={model=HTML,value=702090},
+  background={model=HTML,value=FFFFFF}
+}
+\UseOsgColorPalette{generator-test}
+\SemCatDefine{ExplicitSlot}[slot=alert]
+\SemCatDefine{ExplicitColor}[color=teal]
+\GenerateSemCatColorSeries[count=7]
+
+\begin{document}
+\START
+\TYPE{count=\OsgColorSeriesCount{semcat-categories}}
+\extractcolorspec{\OsgColorSeriesColorName{semcat-categories}{1}}\TestGeneratedOne
+\TYPE{one=\TestGeneratedOne}
+\extractcolorspec{semcat-A}\TestGeneratedCategoryA
+\TYPE{category-A=\TestGeneratedCategoryA}
+\extractcolorspec{semcat-ExplicitSlot}\TestExplicitSlot
+\TYPE{explicit-slot=\TestExplicitSlot}
+\extractcolorspec{semcat-ExplicitColor}\TestExplicitColor
+\TYPE{explicit-color=\TestExplicitColor}
+\extractcolorspec{\OsgColorSeriesColorName{semcat-categories}{2}}\TestGeneratedTwo
+\TYPE{two=\TestGeneratedTwo}
+\extractcolorspec{\OsgColorSeriesColorName{semcat-categories}{7}}\TestGeneratedSeven
+\TYPE{seven=\TestGeneratedSeven}
+\DeclareOsgColorPalette{generator-monochrome}{
+  primary={model=HTML,value=285080},
+  accent={alias=primary},
+  background={model=HTML,value=FFFFFF}
+}
+\UseOsgColorPalette{generator-monochrome}
+\GenerateSemCatColorSeries[count=4]
+\extractcolorspec{\OsgColorSeriesColorName{semcat-categories}{1}}\TestMonoOne
+\TYPE{mono-one=\TestMonoOne}
+\extractcolorspec{\OsgColorSeriesColorName{semcat-categories}{2}}\TestMonoTwo
+\TYPE{mono-two=\TestMonoTwo}
+\END
+\end{document}
