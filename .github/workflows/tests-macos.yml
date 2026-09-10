@@ -17,6 +17,11 @@ jobs:
     name: macOS · Current TeX Live
     runs-on: macos-latest
     timeout-minutes: 60
+    # l3build invokes show-pdf-tags through a subshell.  The macOS runner does
+    # not always provide TERM, which makes the runner's tput setup abort that
+    # subshell and leaves the extracted tag tree empty.
+    env:
+      TERM: xterm-256color
 
     steps:
       - name: Check out repository

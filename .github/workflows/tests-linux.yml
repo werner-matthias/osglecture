@@ -58,6 +58,7 @@ jobs:
       fail-fast: false
       matrix:
         module:
+          - ansiterm
           - ollm
           - osgdoc
           - langselect
