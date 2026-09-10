@@ -33,6 +33,9 @@
   \file{ltxtalk-theme-goose.sty}{\from{lttheme.dtx}{goose}}
   \file{ltxtalk-theme-anchovy.sty}{\from{lttheme.dtx}{anchovy}}
   \file{ltxtalk-theme-carp.sty}{\from{lttheme.dtx}{carp}}
+  \file{ltxtalk-theme-font-sans.sty}{\from{lttheme.dtx}{font-sans}}
+  \file{ltxtalk-theme-font-serif.sty}{\from{lttheme.dtx}{font-serif}}
+  \file{ltxtalk-theme-font-mixed.sty}{\from{lttheme.dtx}{font-mixed}}
   }
   \expandafter\endbatchfile
 \fi
@@ -368,6 +371,27 @@ selected layout remains intact.
   \usepackage{ltxtalk-theme-anchovy}
   \useltxtalktheme{minimal}
   \addltxtalktheme{anchovy}
+\end{sourcecode}
+
+\ldeen{
+Die drei Font-Themes \code{font-sans}, \code{font-serif} und
+\code{font-mixed} werden ebenso additiv über ein Layout-Theme gelegt.
+Sie verwenden ausschließlich mit \TeX\ Live gelieferte Schriften:
+TeX Gyre Heros, TeX Gyre Pagella und Latin Modern Mono. \code{font-mixed}
+setzt hervorgehobene und strukturelle Slot-Schriften in Pagella, Titel und
+Begleittext dagegen in Heros.
+}{
+The three font themes \code{font-sans}, \code{font-serif}, and
+\code{font-mixed} are likewise layered over a layout theme. They use only
+fonts distributed with \TeX\ Live: TeX Gyre Heros, TeX Gyre Pagella, and
+Latin Modern Mono. \code{font-mixed} uses Pagella for accent slots and Heros
+for display and companion slots.
+}
+
+\begin{sourcecode}
+  \usepackage{ltxtalk-theme-font-mixed}
+  \useltxtalktheme{sparrow}
+  \addltxtalktheme{font-mixed}
 \end{sourcecode}
 
 \subsubsection{\ldeen{Vergleich der mitgelieferten Themes}{Comparison of the bundled themes}}
@@ -1533,6 +1557,29 @@ and page style.
   }
 \end{commands}
 
+\subsection{\ldeen{Schriftkonfiguration}{Font configuration}}
+
+\begin{commands}
+  \command{DeclareLTXTalkFontPalette}[\marg{Name}\marg{Schriften}]
+  \command{UseLTXTalkFontPalette}[\marg{Name}]
+  \ldeen{
+    Deklariert beziehungsweise aktiviert eine Schriftpalette. Die portablen
+    Slots heißen \code{main}, \code{companion}, \code{display},
+    \code{accent}, \code{mono}, \code{math} und \code{symbol}. Eine Ressource
+    hat die Form \code{font=\{...\}} mit optionalen \code{features}; alternativ
+    verweist \code{alias=...} auf einen anderen Slot. \code{main} ist Pflicht.
+    Die mitgelieferte Palette \code{ltxtalk-default} verwendet New Computer
+    Modern Sans und Latin Modern Mono.
+  }{
+    Declares or activates a font palette. Its portable slots are \code{main},
+    \code{companion}, \code{display}, \code{accent}, \code{mono}, \code{math},
+    and \code{symbol}. A resource has the form \code{font=\{...\}}, optionally
+    with \code{features}; alternatively, \code{alias=...} refers to another
+    slot. \code{main} is required. The bundled \code{ltxtalk-default} palette
+    uses New Computer Modern Sans with Latin Modern Mono.
+  }
+\end{commands}
+
 \subsection{\ldeen{Inneres Theme}{Inner theme}}
 
 \begin{commands}
@@ -1710,7 +1757,7 @@ and page style.
   \command{styleltxtalkslot}[\marg{Name}\marg{Optionen}]
   \ldeen{
     Bearbeitet die Template-Instanz eines Slots. Stabil umgesetzt sind
-    \code{font}, \code{color}, \code{background}, \code{align}, \code{frame},
+    \code{font-slot}, \code{font}, \code{color}, \code{background}, \code{align}, \code{frame},
     \code{padding}, \code{rule-color}, \code{rule-thick} und
     \code{space-after}. \code{align} akzeptiert \code{left}, \code{center}
     und \code{right}; \code{frame} akzeptiert \code{none}, \code{box},
@@ -1724,7 +1771,7 @@ and page style.
     Slot als Farbfeld in Kopf, Fuß oder Randspalte dienen kann;
     \code{padding} rückt den Text darin ein.
   }{
-    Edits a slot's template instance. The stable keys are \code{font},
+    Edits a slot's template instance. The stable keys are \code{font-slot}, \code{font},
     \code{color}, \code{background}, \code{background-fill}, \code{align},
     \code{frame}, \code{padding}, \code{rule-color}, \code{rule-thick}, and
     \code{space-after}. \code{align} accepts \code{left}, \code{center}, and
@@ -1737,6 +1784,8 @@ and page style.
     declared width and height (rather than only behind the text), so a slot
     can serve as a colour field in a header, footer, or margin column;
     \code{padding} then insets the text.
+    \code{font-slot} selects one of the active palette's semantic font slots;
+    \code{font} adds size, series, and shape without fixing a family.
   }
 \end{commands}
 
@@ -2167,6 +2216,8 @@ theme.
     current-section,~current-subsection,~section-list. }
 \msg_new:nnn { ltxtalk } { rerun-navigation }
   { The~document~structure~changed;~rerun~to~get~the~navigation~right. }
+\msg_new:nnn { ltxtalk } { font-theme-outer-only }
+  { Font~palettes~are~unavailable~with~the~outer-only~option;~keeping~the~NFSS~fallback. }
 
 % ==========================================
 % INTERNE COFFINS (VERSTECKT VOR NUTZER)
@@ -2497,6 +2548,50 @@ theme.
   }
 
 % ==========================================
+% SCHRIFTSCHEMA
+% ==========================================
+
+\NewDocumentCommand \DeclareLTXTalkFontPalette { m m }
+  { \DeclareOsgFontPalette {#1} {#2} }
+
+\NewDocumentCommand \UseLTXTalkFontPalette { m }
+  {
+    \bool_if:NTF \g__ltxtalk_outeronly_bool
+      { \msg_warning:nn { ltxtalk } { font-theme-outer-only } }
+      { \UseOsgFontPalette {#1} }
+  }
+
+\cs_new_protected:Npn \__ltxtalk_font_select:n #1
+  {
+    \bool_if:NTF \g__ltxtalk_outeronly_bool
+      {
+        \str_case:nnF {#1}
+          {
+            { main }      { \rmfamily }
+            { mono }      { \ttfamily }
+            { companion } { \sffamily }
+            { display }   { \sffamily }
+            { accent }    { \sffamily }
+            { symbol }    { \rmfamily }
+          }
+          { \normalfont }
+      }
+      { \UseOsgFont {#1} }
+  }
+
+\DeclareLTXTalkFontPalette { ltxtalk-default }
+  {
+    main      = { font = { NewComputerModern Sans } },
+    companion = { alias = main },
+    display   = { alias = companion },
+    accent    = { alias = companion },
+    mono      = { font = { Latin Modern Mono } },
+    symbol    = { alias = main }
+  }
+\bool_if:NF \g__ltxtalk_outeronly_bool
+  { \UseOsgFontPalette { ltxtalk-default } }
+
+% ==========================================
 % INNER THEME: BLOCKS AND LIST MARKERS
 % ==========================================
 
@@ -2726,6 +2821,7 @@ theme.
 % ==========================================
 
 \tl_new:N \l__ltxtalk_slot_font_tl
+\tl_new:N \l__ltxtalk_slot_font_slot_tl
 \tl_new:N \l__ltxtalk_slot_color_tl
 \tl_new:N \l__ltxtalk_slot_bg_tl
 \tl_new:N \l__ltxtalk_slot_align_tl
@@ -3296,7 +3392,8 @@ theme.
 \NewTemplateType { lttheme-slot } { 1 }
 \DeclareTemplateInterface { lttheme-slot } { standard } { 1 }
   {
-    font        : tokenlist = \normalfont,
+    font        : tokenlist = {},
+    font-slot   : tokenlist = companion,
     color       : tokenlist = ltxtalk-text,
     background  : tokenlist = none,
     background-fill : boolean = false,
@@ -3315,6 +3412,7 @@ theme.
 \DeclareTemplateCode { lttheme-slot } { standard } { 1 }
   {
     font       = \l__ltxtalk_slot_font_tl,
+    font-slot  = \l__ltxtalk_slot_font_slot_tl,
     color      = \l__ltxtalk_slot_color_tl,
     background = \l__ltxtalk_slot_bg_tl,
     background-fill = \l__ltxtalk_slot_bg_fill_bool,
@@ -3390,6 +3488,7 @@ theme.
       \setlength\fboxsep{\l__ltxtalk_slot_padding_dim}
       \setlength\fboxrule{\l__ltxtalk_slot_rule_thick_dim}
       \color{\l__ltxtalk_slot_color_tl}
+      \exp_args:NV \__ltxtalk_font_select:n \l__ltxtalk_slot_font_slot_tl
       \l__ltxtalk_slot_font_tl
       \str_case:Vn \l__ltxtalk_slot_align_tl
         {
@@ -3761,6 +3860,8 @@ theme.
 \cs_new_protected:Npn \__ltxtalk_clear_theme_state:
   {
     \__ltxtalk_reset_layout_state:
+    \bool_if:NF \g__ltxtalk_outeronly_bool
+      { \UseOsgFontPalette { ltxtalk-default } }
     \AssignSocketPlug { lttheme/page/background } { standard }
     \AssignSocketPlug { lttheme/area/header } { standard }
     \AssignSocketPlug { lttheme/area/left } { standard }
@@ -4278,20 +4379,21 @@ theme.
     
     % === FORMATIERUNG ===
     \styleltxtalkslot{min-title}{
-      font = \small\sffamily,
+      font = \small,
       color = ltxtalk-secondary,
       align = left,
     }
     \styleltxtalkslot{min-section}{
-      font = \small\sffamily,
+      font = \small,
       color = ltxtalk-secondary!70,
     }
     \styleltxtalkslot{min-page}{
-      font = \tiny\sffamily,
+      font = \tiny,
       color = ltxtalk-secondary!50,
       align = right,
     }
     \styleltxtalkslot{min-ftitle}{
+      font-slot = display,
       font = \LARGE\bfseries,
       color = ltxtalk-primary,
       align = left,
@@ -4307,7 +4409,7 @@ theme.
       align = left,
     }
     \styleltxtalkslot{min-footer-page}{
-      font = \tiny\sffamily,
+      font = \tiny,
       color = ltxtalk-secondary!50,
       align = right,
     }
@@ -4389,13 +4491,13 @@ theme.
     \positionltxtalkslot{magpie-title}{0.46\paperwidth}{center}{0.30\paperwidth}{0.48cm}
     \positionltxtalkslot{magpie-page}
       {\dim_eval:n{0.78\paperwidth}}{center}{\dim_eval:n{0.22\paperwidth-0.28cm}}{0.48cm}
-    \styleltxtalkslot{magpie-frametitle}{font=\Large\bfseries\sffamily,color=white,
+    \styleltxtalkslot{magpie-frametitle}{font-slot=display,font=\Large\bfseries,color=white,
       align=left,padding=3pt}
     \styleltxtalkslot{magpie-framesubtitle}
-      {font=\small\sffamily,color=white,align=left}
-    \styleltxtalkslot{magpie-author}{font=\tiny\sffamily,color=white,align=left}
-    \styleltxtalkslot{magpie-title}{font=\tiny\sffamily,color=white,align=center}
-    \styleltxtalkslot{magpie-page}{font=\tiny\sffamily,color=white,align=right}
+      {font=\small,color=white,align=left}
+    \styleltxtalkslot{magpie-author}{font=\tiny,color=white,align=left}
+    \styleltxtalkslot{magpie-title}{font=\tiny,color=white,align=center}
+    \styleltxtalkslot{magpie-page}{font=\tiny,color=white,align=right}
     \decorateltxtalkarea{header}{background=ltxtalk-primary,artifact-type=layout}
     % Madrid-style three-part footer.  The cell shades are all tints of
     % ltxtalk-primary, so a colour-only overlay (anchovy, carp) that repaints
@@ -4413,9 +4515,9 @@ theme.
     \EditTemplateDefaults {titlepage}{talk}
       {framestyle=lttheme,vertical-alignment=top}
     \EditInstance {titlepage-element}{title}
-      {color=white,font=\Large\sffamily,before-skip=1.35cm,after-skip=0.1em}
+      {color=white,font=\Large,before-skip=1.35cm,after-skip=0.1em}
     \EditInstance {titlepage-element}{subtitle}
-      {color=white,font=\small\sffamily,before-skip=0pt,after-skip=0.8em}
+      {color=white,font=\small,before-skip=0pt,after-skip=0.8em}
     \EditInstance {titlepage-element}{author}
       {color=ltxtalk-text,before-skip=0.8em,after-skip=0.7em}
     \EditInstance {titlepage-element}{institute}
@@ -4474,20 +4576,20 @@ theme.
       {\dim_eval:n{0.58\paperwidth-2cm}}{0.10cm}{0.42\paperwidth}{0.60cm}
     \positionltxtalkslot{hawk-framesubtitle}
       {\dim_eval:n{0.58\paperwidth-2cm}}{0.76cm}{0.42\paperwidth}{0.40cm}
-    \styleltxtalkslot{hawk-title}{font=\fontsize{5}{6}\selectfont\sffamily,
+    \styleltxtalkslot{hawk-title}{font-slot=display,font=\fontsize{5}{6}\selectfont,
       color=ltxtalk-text,align=center}
-    \styleltxtalkslot{hawk-author}{font=\tiny\sffamily,color=ltxtalk-secondary,align=center}
-    \styleltxtalkslot{hawk-section}{font=\small\bfseries\sffamily,color=ltxtalk-primary,align=left}
-    \styleltxtalkslot{hawk-subsection}{font=\scriptsize\sffamily,color=ltxtalk-secondary,align=left}
-    \styleltxtalkslot{hawk-frametitle}{font=\Large\sffamily,color=ltxtalk-primary,align=right}
-    \styleltxtalkslot{hawk-framesubtitle}{font=\small\sffamily,color=ltxtalk-secondary,align=right}
+    \styleltxtalkslot{hawk-author}{font=\tiny,color=ltxtalk-secondary,align=center}
+    \styleltxtalkslot{hawk-section}{font-slot=accent,font=\small\bfseries,color=ltxtalk-primary,align=left}
+    \styleltxtalkslot{hawk-subsection}{font=\scriptsize,color=ltxtalk-secondary,align=left}
+    \styleltxtalkslot{hawk-frametitle}{font-slot=display,font=\Large,color=ltxtalk-primary,align=right}
+    \styleltxtalkslot{hawk-framesubtitle}{font=\small,color=ltxtalk-secondary,align=right}
     \decorateltxtalkarea{left}{background=ltxtalk-primary!20,artifact-type=layout}
     \AssignSocketPlug { lttheme/area/left } { hawk }
     \EditTemplateDefaults {titlepage}{talk}{framestyle=lttheme,vertical-alignment=center}
     \EditInstance {titlepage-element}{title}
-      {color=ltxtalk-primary,font=\Large\sffamily,after-skip=0.15em}
+      {color=ltxtalk-primary,font=\Large,after-skip=0.15em}
     \EditInstance {titlepage-element}{subtitle}
-      {color=ltxtalk-primary,font=\small\sffamily,before-skip=0pt,after-skip=0.9em}
+      {color=ltxtalk-primary,font=\small,before-skip=0pt,after-skip=0.9em}
     \EditInstance {titlepage-element}{author}{color=ltxtalk-text,before-skip=0.8em}
     \EditInstance {titlepage-element}{institute}{color=ltxtalk-text,font=\scriptsize}
     \EditInstance {titlepage-element}{date}{color=ltxtalk-text}
@@ -4539,24 +4641,24 @@ theme.
     \positionltxtalkslot{sparrow-title}{center}{center}{0.4\paperwidth}{0.45cm}
     \positionltxtalkslot{sparrow-page}
       {\dim_eval:n{0.88\paperwidth-0.18cm}}{center}{0.12\paperwidth}{0.45cm}
-    \styleltxtalkslot{sparrow-section}{font=\scriptsize\bfseries\sffamily,color=ltxtalk-primary,align=left}
-    \styleltxtalkslot{sparrow-subsection}{font=\scriptsize\sffamily,color=ltxtalk-secondary,align=right}
+    \styleltxtalkslot{sparrow-section}{font-slot=accent,font=\scriptsize\bfseries,color=ltxtalk-primary,align=left}
+    \styleltxtalkslot{sparrow-subsection}{font=\scriptsize,color=ltxtalk-secondary,align=right}
     \styleltxtalkslot{sparrow-frametitle}
-      {font=\Large\sffamily,color=ltxtalk-primary,align=left}
+      {font-slot=display,font=\Large,color=ltxtalk-primary,align=left}
     \styleltxtalkslot{sparrow-framesubtitle}
-      {font=\small\sffamily,color=ltxtalk-secondary,align=left}
-    \styleltxtalkslot{sparrow-institute}{font=\tiny\sffamily,color=ltxtalk-secondary,align=left}
-    \styleltxtalkslot{sparrow-title}{font=\tiny\sffamily,color=ltxtalk-primary,align=center}
-    \styleltxtalkslot{sparrow-page}{font=\tiny\sffamily,color=ltxtalk-secondary,align=right}
+      {font=\small,color=ltxtalk-secondary,align=left}
+    \styleltxtalkslot{sparrow-institute}{font=\tiny,color=ltxtalk-secondary,align=left}
+    \styleltxtalkslot{sparrow-title}{font=\tiny,color=ltxtalk-primary,align=center}
+    \styleltxtalkslot{sparrow-page}{font=\tiny,color=ltxtalk-secondary,align=right}
     \decorateltxtalkarea{header}{background=white,artifact-type=layout}
     \decorateltxtalkarea{footer}{frame=top,rule-color=ltxtalk-primary!50,
       rule-thickness=1pt,background=ltxtalk-primary!5,artifact-type=layout}
     \AssignSocketPlug { lttheme/page/foreground } { sparrow-bars }
     \EditTemplateDefaults {titlepage}{talk}{framestyle=lttheme,vertical-alignment=center}
     \EditInstance {titlepage-element}{title}
-      {color=ltxtalk-primary,font=\Large\sffamily,after-skip=0.15em}
+      {color=ltxtalk-primary,font=\Large,after-skip=0.15em}
     \EditInstance {titlepage-element}{subtitle}
-      {color=ltxtalk-primary,font=\small\sffamily,before-skip=0pt,after-skip=0.9em}
+      {color=ltxtalk-primary,font=\small,before-skip=0pt,after-skip=0.9em}
     \EditInstance {titlepage-element}{author}{color=ltxtalk-text,before-skip=0.8em}
     \EditInstance {titlepage-element}{institute}{color=ltxtalk-text,font=\scriptsize}
     \EditInstance {titlepage-element}{date}{color=ltxtalk-text}
@@ -4638,7 +4740,7 @@ theme.
     \defineltxtalkslot{bluebird-seclist}{header}{custom}{role=navigation}
     \setltxtalkslotcontent{bluebird-seclist}{\LTXTalkNavigation{section-list}}
     \positionltxtalkslot{bluebird-seclist}{center}{0.1cm}{0.7\paperwidth}{0.5cm}
-    \styleltxtalkslot{bluebird-seclist}{font=\footnotesize\sffamily,align=center}
+    \styleltxtalkslot{bluebird-seclist}{font=\footnotesize,align=center}
     \defineltxtalkslot{bluebird-dots}{header}{custom}{role=navigation}
     \setltxtalkslotcontent{bluebird-dots}{\LTXTalkNavigation{section-dots}}
     \positionltxtalkslot{bluebird-dots}{0.3cm}{0.18cm}{0.14\paperwidth}{0.4cm}
@@ -4649,7 +4751,7 @@ theme.
     \positionltxtalkslot{bluebird-progress}
       {\dim_eval:n{0.83\paperwidth}}{0.2cm}{0.14\paperwidth}{0.4cm}
     \styleltxtalkslot{bluebird-progress}
-      {font=\scriptsize\sffamily,align=right,color=ltxtalk-primary!55}
+      {font=\scriptsize,align=right,color=ltxtalk-primary!55}
 
     % --- frame title / subtitle on the solid band ---
     \defineltxtalkslot{bluebird-ftitle}{header}{frametitle}{role=heading,heading-level=2}
@@ -4657,9 +4759,9 @@ theme.
     \positionltxtalkslot{bluebird-ftitle}{0.3cm}{0.82cm}{0.75\paperwidth}{0.55cm}
     \positionltxtalkslot{bluebird-fsub}{0.3cm}{1.34cm}{0.75\paperwidth}{0.3cm}
     \styleltxtalkslot{bluebird-ftitle}
-      {font=\Large\bfseries\sffamily,color=white,align=left}
+      {font-slot=display,font=\Large\bfseries,color=white,align=left}
     \styleltxtalkslot{bluebird-fsub}
-      {font=\footnotesize\sffamily,color=ltxtalk-primary!20,align=left}
+      {font=\footnotesize,color=ltxtalk-primary!20,align=left}
 
     % --- footer: two coloured lines (Berlin infolines) ---
     \defineltxtalkslot{bluebird-footline1}{footer}{custom}{role=artifact}
@@ -4677,22 +4779,22 @@ theme.
     \setltxtalkslotcontent{bluebird-fauthor}
       {\LTXTalkMetadata{short-author}}
     \positionltxtalkslot{bluebird-fauthor}{0.3cm}{0cm}{0.6\paperwidth}{0.36cm}
-    \styleltxtalkslot{bluebird-fauthor}{font=\tiny\sffamily,color=white,align=left}
+    \styleltxtalkslot{bluebird-fauthor}{font=\tiny,color=white,align=left}
     \defineltxtalkslot{bluebird-finst}{footer}{custom}{role=note}
     \setltxtalkslotcontent{bluebird-finst}{\LTXTalkMetadata{short-institute}}
     \positionltxtalkslot{bluebird-finst}
       {\dim_eval:n{0.55\paperwidth}}{0cm}{\dim_eval:n{0.45\paperwidth-0.3cm}}{0.36cm}
-    \styleltxtalkslot{bluebird-finst}{font=\tiny\sffamily,color=white,align=right}
+    \styleltxtalkslot{bluebird-finst}{font=\tiny,color=white,align=right}
     \defineltxtalkslot{bluebird-ftitle-foot}{footer}{custom}{role=note}
     \setltxtalkslotcontent{bluebird-ftitle-foot}{\LTXTalkMetadata{short-title}}
     \positionltxtalkslot{bluebird-ftitle-foot}{0.3cm}{0.36cm}{0.6\paperwidth}{0.34cm}
-    \styleltxtalkslot{bluebird-ftitle-foot}{font=\tiny\sffamily,color=white,align=left}
+    \styleltxtalkslot{bluebird-ftitle-foot}{font=\tiny,color=white,align=left}
     \defineltxtalkslot{bluebird-fpage}{footer}{pagenumber}{role=navigation}
     \setltxtalkslotcontent{bluebird-fpage}
       {\LTXTalkNavigation{section-progress}}
     \positionltxtalkslot{bluebird-fpage}
       {\dim_eval:n{0.7\paperwidth}}{0.36cm}{\dim_eval:n{0.3\paperwidth-0.3cm}}{0.34cm}
-    \styleltxtalkslot{bluebird-fpage}{font=\tiny\sffamily,color=white,align=right}
+    \styleltxtalkslot{bluebird-fpage}{font=\tiny,color=white,align=right}
 
     % --- areas ---
     \decorateltxtalkarea{header}{artifact-type=layout}
@@ -4701,9 +4803,9 @@ theme.
     % --- native title page ---
     \EditTemplateDefaults{titlepage}{talk}{framestyle=lttheme,vertical-alignment=center}
     \EditInstance{titlepage-element}{title}
-      {color=ltxtalk-primary,font=\LARGE\bfseries\sffamily,after-skip=0.15em}
+      {color=ltxtalk-primary,font=\LARGE\bfseries,after-skip=0.15em}
     \EditInstance{titlepage-element}{subtitle}
-      {color=ltxtalk-secondary,font=\large\sffamily,before-skip=0pt,after-skip=0.9em}
+      {color=ltxtalk-secondary,font=\large,before-skip=0pt,after-skip=0.9em}
     \EditInstance{titlepage-element}{author}{color=ltxtalk-text,before-skip=0.8em}
     \EditInstance{titlepage-element}{institute}{color=ltxtalk-text,font=\scriptsize}
     \EditInstance{titlepage-element}{date}{color=ltxtalk-text}
@@ -4769,13 +4871,13 @@ theme.
       }
     \positionltxtalkslot{goose-sidemeta}{0.25cm}{0.55cm}{2.4cm}{1.5cm}
     \styleltxtalkslot{goose-sidemeta}
-      {font=\scriptsize\sffamily,color=ltxtalk-secondary,align=left}
+      {font=\scriptsize,color=ltxtalk-secondary,align=left}
 
     \defineltxtalkslot{goose-toc}{right}{custom}{role=navigation}
     \setltxtalkslotcontent{goose-toc}{\LTXTalkNavigation{toc}}
     \positionltxtalkslot{goose-toc}
       {0.25cm}{2.2cm}{2.4cm}{0.6\paperheight}
-    \styleltxtalkslot{goose-toc}{font=\scriptsize\sffamily,align=left}
+    \styleltxtalkslot{goose-toc}{font=\scriptsize,align=left}
 
     \defineltxtalkslot{goose-progress}{right}{custom}{role=navigation}
     \setltxtalkslotcontent{goose-progress}
@@ -4783,14 +4885,14 @@ theme.
     \positionltxtalkslot{goose-progress}
       {0.25cm}{\dim_eval:n{\paperheight-1cm}}{2.4cm}{0.5cm}
     \styleltxtalkslot{goose-progress}
-      {font=\scriptsize\sffamily,color=ltxtalk-primary,align=left}
+      {font=\scriptsize,color=ltxtalk-primary,align=left}
 
     % --- header: subsections of the current section ---
     \defineltxtalkslot{goose-subs}{header}{custom}{role=navigation}
     \setltxtalkslotcontent{goose-subs}{\LTXTalkNavigation{subsection-list}}
     \positionltxtalkslot{goose-subs}{0.3cm}{0.16cm}{0.86\paperwidth}{0.5cm}
     \styleltxtalkslot{goose-subs}
-      {font=\scriptsize\sffamily,align=left,color=ltxtalk-secondary}
+      {font=\scriptsize,align=left,color=ltxtalk-secondary}
 
     % --- content: frame title and subtitle (header slots -> absolute) ---
     \defineltxtalkslot{goose-ftitle}{header}{frametitle}{role=heading,heading-level=2}
@@ -4798,7 +4900,7 @@ theme.
     \positionltxtalkslot{goose-ftitle}{0.3cm}{0.85cm}{0.7\paperwidth}{0.75cm}
     \positionltxtalkslot{goose-fsub}{0.3cm}{1.55cm}{0.7\paperwidth}{0.45cm}
     \styleltxtalkslot{goose-ftitle}
-      {font=\Large\bfseries\sffamily,color=ltxtalk-primary,align=left}
+      {font-slot=display,font=\Large\bfseries,color=ltxtalk-primary,align=left}
     \styleltxtalkslot{goose-fsub}
       {font=\normalsize\itshape,color=ltxtalk-secondary,align=left}
 
@@ -4819,9 +4921,9 @@ theme.
     % --- native title page ---
     \EditTemplateDefaults{titlepage}{talk}{framestyle=lttheme,vertical-alignment=center}
     \EditInstance{titlepage-element}{title}
-      {color=ltxtalk-primary,font=\LARGE\bfseries\sffamily,after-skip=0.15em}
+      {color=ltxtalk-primary,font=\LARGE\bfseries,after-skip=0.15em}
     \EditInstance{titlepage-element}{subtitle}
-      {color=ltxtalk-secondary,font=\large\sffamily,before-skip=0pt,after-skip=0.9em}
+      {color=ltxtalk-secondary,font=\large,before-skip=0pt,after-skip=0.9em}
     \EditInstance{titlepage-element}{author}{color=ltxtalk-text,before-skip=0.8em}
     \EditInstance{titlepage-element}{institute}{color=ltxtalk-text,font=\scriptsize}
     \EditInstance{titlepage-element}{date}{color=ltxtalk-text}
@@ -4890,3 +4992,66 @@ theme.
 \RegisterLTXTalkTheme{carp}{\__ltxtalk_carp_theme_setup:}
 %</carp>
 %<carp>\endinput
+%<*font-sans>
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage{ltxtalk-theme-font-sans}
+{2026-09-10}
+{v0.5.1}
+{Sans font theme for ltx-talk}
+\RequirePackage{ltxtalk-theme}
+\DeclareLTXTalkFontPalette { ltxtalk-font-sans }
+  {
+    main      = { font = { TeX Gyre Heros } },
+    companion = { alias = main },
+    display   = { alias = main },
+    accent    = { alias = main },
+    mono      = { font = { Latin Modern Mono } },
+    symbol    = { alias = main }
+  }
+\cs_new_protected:Npn \__ltxtalk_font_sans_theme_setup:
+  { \UseLTXTalkFontPalette { ltxtalk-font-sans } }
+\RegisterLTXTalkTheme{font-sans}{\__ltxtalk_font_sans_theme_setup:}
+%</font-sans>
+%<font-sans>\endinput
+%<*font-serif>
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage{ltxtalk-theme-font-serif}
+{2026-09-10}
+{v0.5.1}
+{Serif font theme for ltx-talk}
+\RequirePackage{ltxtalk-theme}
+\DeclareLTXTalkFontPalette { ltxtalk-font-serif }
+  {
+    main      = { font = { TeX Gyre Pagella } },
+    companion = { alias = main },
+    display   = { alias = main },
+    accent    = { alias = main },
+    mono      = { font = { Latin Modern Mono } },
+    symbol    = { alias = main }
+  }
+\cs_new_protected:Npn \__ltxtalk_font_serif_theme_setup:
+  { \UseLTXTalkFontPalette { ltxtalk-font-serif } }
+\RegisterLTXTalkTheme{font-serif}{\__ltxtalk_font_serif_theme_setup:}
+%</font-serif>
+%<font-serif>\endinput
+%<*font-mixed>
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage{ltxtalk-theme-font-mixed}
+{2026-09-10}
+{v0.5.1}
+{Mixed serif and sans font theme for ltx-talk}
+\RequirePackage{ltxtalk-theme}
+\DeclareLTXTalkFontPalette { ltxtalk-font-mixed }
+  {
+    main      = { font = { TeX Gyre Pagella } },
+    companion = { font = { TeX Gyre Heros } },
+    display   = { alias = companion },
+    accent    = { alias = main },
+    mono      = { font = { Latin Modern Mono } },
+    symbol    = { alias = main }
+  }
+\cs_new_protected:Npn \__ltxtalk_font_mixed_theme_setup:
+  { \UseLTXTalkFontPalette { ltxtalk-font-mixed } }
+\RegisterLTXTalkTheme{font-mixed}{\__ltxtalk_font_mixed_theme_setup:}
+%</font-mixed>
+%<font-mixed>\endinput

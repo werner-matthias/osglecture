@@ -9,6 +9,9 @@
 \usepackage{ltxtalk-theme-goose}
 \usepackage{ltxtalk-theme-anchovy}
 \usepackage{ltxtalk-theme-carp}
+\usepackage{ltxtalk-theme-font-sans}
+\usepackage{ltxtalk-theme-font-serif}
+\usepackage{ltxtalk-theme-font-mixed}
 \useltxtalktheme{magpie}
 \title{Compatibility test}
 \author{Test author}
@@ -27,6 +30,9 @@
 \useltxtalktheme{magpie}
 \addltxtalktheme{anchovy}
 \addltxtalktheme{carp}
+\addltxtalktheme{font-sans}
+\addltxtalktheme{font-serif}
+\addltxtalktheme{font-mixed}
 \START
 \TYPE{compat-anchovy:passed}
 \TYPE{compat-carp:passed}
@@ -36,6 +42,7 @@
 \TYPE{compat-sparrow:passed}
 \TYPE{compat-bluebird:passed}
 \TYPE{compat-goose:passed}
+\TYPE{compat-font-themes:passed}
 \ExplSyntaxOff
 \END
 \end{document}

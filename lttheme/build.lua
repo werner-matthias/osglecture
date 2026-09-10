@@ -22,6 +22,9 @@ installfiles = {
     "ltxtalk-theme-goose.sty",
     "ltxtalk-theme-anchovy.sty",
     "ltxtalk-theme-carp.sty",
+    "ltxtalk-theme-font-sans.sty",
+    "ltxtalk-theme-font-serif.sty",
+    "ltxtalk-theme-font-mixed.sty",
 }
 
 dofile("../build.lua")

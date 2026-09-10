@@ -8,3 +8,4 @@ compat-hawk:passed
 compat-sparrow:passed
 compat-bluebird:passed
 compat-goose:passed
+compat-font-themes:passed
