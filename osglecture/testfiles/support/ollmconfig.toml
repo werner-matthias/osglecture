@@ -7,5 +7,5 @@ tex_directory = "."
 tex_config = "projectconfig-test.tex"
 
 [targets.defaults]
-languages = ["de"]
+languages = ["en", "de"]
 default_language = "de"

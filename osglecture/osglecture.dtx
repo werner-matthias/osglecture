@@ -608,6 +608,9 @@ individually. \code{<all>} forces columns in every mode, while, for example,
   { Build~metadata~policy~'#1'~conflicts~with~profile~'#2'~('#3'). }
   { Set~document_metadata~for~target~'#4'~in~the~project~manifest~to~match~
     profile~'#2',~or~select~a~profile~whose~contract~is~'#1'. }
+\msg_new:nnn { osglecture } { selectable-from-manifest }
+  { The~selectable~languages~come~from~the~project~manifest~for~an~OLLM~
+    build;~the~'selectable'~value~in~projectconfig.tex~is~ignored. }
 \msg_new:nnnn { osglecture } { standalone-job-conflict }
   { Standalone~mode~cannot~be~combined~with~an~OLLM~job. }
   { Remove~the~standalone~class~option~or~build~without~OLLM. }
@@ -711,13 +714,15 @@ individually. \code{<all>} forces columns in every mode, while, for example,
       {
         \tl_set:Ne \l__osglecture_project_config_tl
           { \OsgLectureManifestProjectConfigPath }
-        \file_if_exist:VTF \l__osglecture_project_config_tl
-          {
-            \osglecture_project_intercept_package_commands:
-            \exp_args:NV \file_input:n \l__osglecture_project_config_tl
-            \osglecture_project_restore_package_commands:
-          }
-          { }
+        % The package-command intercept must also cover the langselect load
+        % triggered by \__osglecture_language_autoconfigure: -- that call
+        % happens outside projectconfig.tex but the same "loaded before the
+        % base class" hazard applies.
+        \osglecture_project_intercept_package_commands:
+        \file_if_exist:VT \l__osglecture_project_config_tl
+          { \exp_args:NV \file_input:n \l__osglecture_project_config_tl }
+        \__osglecture_language_autoconfigure:
+        \osglecture_project_restore_package_commands:
       }
   }
   { }
@@ -1345,6 +1350,8 @@ individually. \code{<all>} forces columns in every mode, while, for example,
 % {\cs{RequirePackage}}{\code{osglecture/project/languages}}
 \tl_new:N \g__osglecture_language_setup_tl
 \bool_new:N \g__osglecture_language_target_explicit_bool
+\bool_new:N \g__osglecture_language_configured_bool
+\cs_generate_variant:Nn \clist_count:n { V }
 \cs_new_protected:Npn \__osglecture_language_setup_append:nn #1#2
   {
     \tl_if_empty:NF \g__osglecture_language_setup_tl
@@ -1364,8 +1371,16 @@ individually. \code{<all>} forces columns in every mode, while, for example,
 % {\option{languages}}{\option{selectable}}{\option{languages}}
 \keys_define:nn { osglecture/project/languages }
   {
+% For an OLLM build the selectable-language set (and its order, which decides
+% langselect's bilingual macro name) is the manifest's; a 'selectable' value
+% written in projectconfig.tex would be a second, competing source and is
+% dropped with a warning. A standalone document has no manifest and keeps it.
     selectable .code:n =
-      { \__osglecture_language_setup_append:nn {languages}{#1} },
+      {
+        \OsgLectureBuildLoadedTF
+          { \msg_warning:nn {osglecture}{selectable-from-manifest} }
+          { \__osglecture_language_setup_append:nn {languages}{#1} }
+      },
     targetlang .code:n =
       {
         \bool_gset_true:N \g__osglecture_language_target_explicit_bool
@@ -1421,13 +1436,28 @@ individually. \code{<all>} forces columns in every mode, while, for example,
       {
         \tl_gclear:N \g__osglecture_language_setup_tl
         \bool_gset_false:N \g__osglecture_language_target_explicit_bool
+        \tl_set:Nn \l_tmpb_tl {#1}
+        \OsgLectureBuildLoadedTF
+          {
+            \tl_set:Ne \l_tmpa_tl
+              {\OsgLectureBuildValue{selectable-languages}}
+            \tl_if_empty:NF \l_tmpa_tl
+              {
+                \__osglecture_language_setup_append:nn
+                  {languages}{\l_tmpa_tl}
+                \tl_put_left:Nx \l_tmpb_tl
+                  { selectable = { \l_tmpa_tl } , }
+              }
+          }
+          { }
         \keys_set:nn { osglecture/project/languages } {#1}
         \bool_if:NF \g__osglecture_language_target_explicit_bool
           {
             \__osglecture_language_setup_append:nn
               {targetlang}{\l__osglecture_language_tl}
           }
-        \__osglecture_policy_set:nn {languages}{#1}
+        \exp_args:NnV \__osglecture_policy_set:nn {languages} \l_tmpb_tl
+        \bool_gset_true:N \g__osglecture_language_configured_bool
         \tl_set:Nx \l_tmpa_tl
           {
             \exp_not:N \RequirePackage
@@ -1435,6 +1465,25 @@ individually. \code{<all>} forces columns in every mode, while, for example,
           }
         \l_tmpa_tl
       },
+  }
+
+% An OLLM build with two or more selectable languages needs langselect
+% configured even when projectconfig.tex never calls \LectureProjectSetup
+% with a languages key: the manifest is the single source, and a
+% single-language build needs no langselect at all.
+\cs_new_protected:Npn \__osglecture_language_autoconfigure:
+  {
+    \OsgLectureBuildLoadedTF
+      {
+        \bool_if:NF \g__osglecture_language_configured_bool
+          {
+            \tl_set:Ne \l_tmpa_tl
+              {\OsgLectureBuildValue{selectable-languages}}
+            \int_compare:nNnT { \clist_count:V \l_tmpa_tl } > { 1 }
+              { \keys_set:nn { osglecture/project } { languages = {} } }
+          }
+      }
+      { }
   }
 
 \NewDocumentCommand \LectureProjectSetup { m }
