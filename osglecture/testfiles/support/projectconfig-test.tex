@@ -5,8 +5,10 @@
   languages={prefix=mv}
 }
 \OsgLectureSetup{
-  class/scrbook = {oneside},
+  class/scrbook = {DIV=10},
   class/beamer = {framefootnotes},
+  class/<longform> = {oneside},
+  class/<presentation> = {landscape},
   mode/longform = {
     continuation = {counters={chapter,section}}
   },

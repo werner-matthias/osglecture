@@ -580,6 +580,7 @@ individually. \code{<all>} forces columns in every mode, while, for example,
 \tl_new:N \l__osglecture_language_tl
 \tl_new:N \l__osglecture_base_options_tl
 \tl_new:N \l__osglecture_selected_options_tl
+\clist_new:N \l__osglecture_active_modes_clist
 \tl_new:N \l__osglecture_setup_file_tl
 \tl_new:N \l__osglecture_mode_setup_file_tl
 \tl_new:N \l__osglecture_additional_modes_tl
@@ -855,6 +856,21 @@ individually. \code{<all>} forces columns in every mode, while, for example,
   {
     \osglecture_profile_class_options:VV
       \l__osglecture_document_profile_tl \l__osglecture_doctype_tl
+  }
+% Base-class options from \OsgLectureSetup{class/<mode>={...}}: iterate the
+% modes active in the now-finalized graph and append the options keyed by
+% each. Broad and semantic, so ahead of the explicit project class-options
+% and the class-name-addressed ones, which override on collision. A key
+% naming an inactive or misspelled mode is simply never looked up.
+\clist_set:Ne \l__osglecture_active_modes_clist { \ActiveLectureModes }
+\clist_map_inline:Nn \l__osglecture_active_modes_clist
+  {
+    \prop_get:NnNT \g__osglecture_setup_class_mode_prop {#1} \l_tmpa_tl
+      {
+        \tl_if_empty:NF \l__osglecture_selected_options_tl
+          { \tl_put_right:Nn \l__osglecture_selected_options_tl {,} }
+        \tl_put_right:NV \l__osglecture_selected_options_tl \l_tmpa_tl
+      }
   }
 \tl_set:Ne \l_tmpa_tl { \OsgLectureProjectClassOptions }
 \tl_if_empty:NF \l_tmpa_tl
@@ -1212,6 +1228,7 @@ individually. \code{<all>} forces columns in every mode, while, for example,
 \prop_new:N \g__osglecture_project_target_profile_prop
 \prop_new:N \g__osglecture_project_target_filecolor_prop
 \prop_new:N \g__osglecture_setup_class_prop
+\prop_new:N \g__osglecture_setup_class_mode_prop
 \prop_new:N \g__osglecture_setup_mode_prop
 \seq_new:N \g__osglecture_project_preamble_seq
 \tl_new:N \l__osglecture_project_target_tl
@@ -1504,9 +1521,17 @@ individually. \code{<all>} forces columns in every mode, while, for example,
 % \ldeen*{Der äußere Setup-Namensraum ist absichtlich explizit:
 % @1 und @2 bleiben eindeutig unterscheidbar, selbst wenn
 % \LaTeX-Ökosysteme denselben Namen für Basisklasse und Modus
-% wiederverwenden.}{The outer setup namespace is deliberately explicit:
-% @1 and @2 stay unambiguous even when \LaTeX\ ecosystems reuse the same
-% name for a base class and a mode.}{\code{class/article}}{\code{mode/article}}
+% wiederverwenden. Innerhalb von @1 unterscheidet die Winkelschreibweise
+% (\code{class/<slides>}) modus-adressierte Basisklassenoptionen vom
+% Klassennamen (\code{class/beamer}); beide erreichen die Basisklasse vor
+% \cs{LoadClass}, ein Modusausdruck wird gegen den fertigen Modusgraphen
+% ausgewertet.}{The outer setup namespace is deliberately explicit: @1 and
+% @2 stay unambiguous even when \LaTeX\ ecosystems reuse the same name for a
+% base class and a mode. Inside @1 the angle form (\code{class/<slides>})
+% distinguishes mode-addressed base-class options from the class name
+% (\code{class/beamer}); both reach the base class before \cs{LoadClass}, a
+% mode expression is evaluated against the finalized mode graph.}
+% {\code{class/article}}{\code{mode/article}}
 \cs_new_protected:Npn \__osglecture_setup_append:Nnn #1#2#3
   {
     \prop_get:NnNTF #1 {#2} \l_tmpa_tl
@@ -1525,11 +1550,21 @@ individually. \code{<all>} forces columns in every mode, while, for example,
           {
             {class}
               {
-                \exp_args:NV \OsgLectureProfileClassKnownTF \l_tmpb_tl
-                  { \exp_args:NNV \__osglecture_setup_append:Nnn
-                      \g__osglecture_setup_class_prop \l_tmpb_tl {#2} }
-                  { \msg_error:nnV {osglecture-project}{unknown-setup-class}
-                      \l_tmpb_tl }
+                \bool_lazy_and:nnTF
+                  { \str_if_eq_p:ee { \tl_range:Nnn \l_tmpb_tl {1} {1} } { < } }
+                  { \str_if_eq_p:ee { \tl_range:Nnn \l_tmpb_tl {-1} {-1} } { > } }
+                  {
+                    \tl_set:Ne \l_tmpc_tl { \tl_range:Nnn \l_tmpb_tl {2} {-2} }
+                    \exp_args:NNV \__osglecture_setup_append:Nnn
+                      \g__osglecture_setup_class_mode_prop \l_tmpc_tl {#2}
+                  }
+                  {
+                    \exp_args:NV \OsgLectureProfileClassKnownTF \l_tmpb_tl
+                      { \exp_args:NNV \__osglecture_setup_append:Nnn
+                          \g__osglecture_setup_class_prop \l_tmpb_tl {#2} }
+                      { \msg_error:nnV {osglecture-project}{unknown-setup-class}
+                          \l_tmpb_tl }
+                  }
               }
             {mode}
               { \exp_args:NNV \__osglecture_setup_append:Nnn
