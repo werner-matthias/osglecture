@@ -108,6 +108,38 @@ the next frame.}
   \end{document}
 \end{sourcecode}
 
+\subsection{\ldeen{Roboto-Schriftbündel}{Roboto font bundle}}
+
+\ldeen{
+Das optionale Bündel hält das Corporate Design bewusst vollständig in Roboto:
+Fließtext, Begleittext, Überschriften und Hervorhebungen unterscheiden sich
+durch Größe, Schnitt und Farbe, nicht durch eine zusätzliche Slab-Serif.
+Inconsolata ergänzt Roboto als platzsparende Codeschrift. Ihre schmaleren
+Glyphen bringen auf einer typischen Codezeile merklich mehr Zeichen unter als
+Roboto Mono, ohne die offene Formensprache zu verlassen. Fira Math ist eine
+vollständige serifenlose Unicode-Mathematikschrift mit ähnlich sachlichem,
+humanistischem Duktus. Die Option lädt dafür \pkg*{unicode-math} und setzt die
+Mathematikschrift beim Aktivieren des Themes.
+}{
+The optional bundle deliberately keeps the corporate design entirely in
+Roboto: body copy, supporting text, headings, and emphasis are distinguished
+by size, weight, and colour rather than by an additional slab serif.
+Inconsolata complements Roboto as a space-efficient code face. Its narrower
+glyphs fit noticeably more characters on a typical source line than Roboto
+Mono without abandoning the open shapes. Fira Math is a complete sans-serif
+Unicode mathematics face with a similarly matter-of-fact, humanist character.
+The option therefore loads \pkg*{unicode-math} and selects the mathematics
+face when the theme is activated.
+}
+
+\begin{sourcecode}
+  \usepackage[fonts=roboto]{ltxtalk-theme-tuc-2019}
+  \useltxtalktheme{tuc-2019}
+
+  % Für eigene Slots stehen semantische Rollen zur Verfügung:
+  \styleltxtalkslot{mein-code}{font-slot=code,font=\small}
+\end{sourcecode}
+
 \subsection{\ldeen{Paketoptionen}{Package options}}
 
 \begin{description}[style=nextline,leftmargin=3.5cm]
@@ -118,6 +150,9 @@ the next frame.}
     \code{uniq}; Vorgabe ist \code{adapted}.
   \item[\code{chemnitz2025}] Verwendet das Jubiläumslogo. Bei englischer
     Dokumentsprache wird automatisch \code{tuckhseng\_white} gewählt.
+  \item[\code{fonts=...}] \code{default} belässt die Schriften der Klasse;
+    \code{roboto} aktiviert das TUC-Schriftbündel aus Roboto für Text und
+    Überschriften, Inconsolata für Code und Fira Math für Mathematik.
 \end{description}
 
 \begin{sourcecode}
@@ -125,6 +160,7 @@ the next frame.}
   \usepackage[
     fakcolor=if,
     funccolor=adapted,
+    fonts=roboto,
     chemnitz2025
   ]{ltxtalk-theme-tuc-2019}
 \end{sourcecode}
@@ -539,6 +575,7 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
 \tl_new:N \g_ltxtalk_tuc_fak_color
 \tl_new:N \g_ltxtalk_tuc_func_color
 \bool_new:N \g_ltxtalk_chemnitz_bool
+\tl_new:N \g__ltxtalk_tuc_fonts_tl
 
 \DeclareKeys{
   fakcolor .choices:nn = {
@@ -576,12 +613,36 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
   funccolor .initial:n = adapted,
   chemnitz2025 .bool_gset:N = \g_ltxtalk_chemnitz_bool,
   chemnitz2025 .default:n = true,
-  chemnitz2025 .initial:n = false
+  chemnitz2025 .initial:n = false,
+  fonts .choices:nn = { default, roboto }
+    { \tl_gset:Ne \g__ltxtalk_tuc_fonts_tl \l_keys_choice_str },
+  fonts / unknown .code:n =
+    \msg_error:nneee { tuc-2019 } { unknown-choice }
+      { fonts } { default, roboto } { \exp_not:n {#1} },
+  fonts .initial:n = default
 }
 \ProcessKeyOptions\relax
 
 \RequirePackage{ltxtalk-theme}
 \RequirePackage{tikz}
+
+\str_if_eq:VnT \g__ltxtalk_tuc_fonts_tl { roboto }
+  {
+    \RequirePackage{unicode-math}
+    \DeclareLTXTalkFontPalette { ltxtalk-tuc-roboto }
+      {
+        main =
+          { font = { Roboto }, description = { TUC corporate text } },
+        companion = { alias = main },
+        display = { alias = main },
+        accent = { alias = main },
+        mono =
+          { font = { InconsolataN }, description = { compact source code } },
+        math =
+          { font = { Fira Math }, description = { sans mathematics } },
+        symbol = { alias = main }
+      }
+  }
 
 \tl_new:N \g__ltxtalk_tuc_logo_tl
 \tl_new:N \g__ltxtalk_tuc_title_logo_tl
@@ -598,6 +659,7 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
 \dim_new:N \l__ltxtalk_tuc_crop_x_dim
 \dim_new:N \l__ltxtalk_tuc_crop_bottom_dim
 \dim_new:N \l__ltxtalk_tuc_crop_top_dim
+
 % \ldeen{Geometrische Grundmaße der Kopfzeile: die Zeilenhöhe von
 %   \cs{footnotesize}\cs{sffamily} in dieser Klasse (gemessen als
 %   \cs{baselineskip}), der horizontale Randabstand (Seitenrand zu Logo,
@@ -913,6 +975,13 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
 
 \cs_new_protected:Npn \__ltxtalk_tuc_theme_setup:
   {
+    \str_if_eq:VnT \g__ltxtalk_tuc_fonts_tl { roboto }
+      {
+        \UseLTXTalkFontPalette { ltxtalk-tuc-roboto }
+        \setsansfont { Roboto }
+        \setmonofont { InconsolataN }
+        \setmathfont { Fira Math }
+      }
     \DeclareLTXTalkLayout{tuc-2019-wide}
       {left-margin=false}
     % \ldeen{Breite und Content-Einzug der schmalen Spalte folgen der
@@ -1144,6 +1213,7 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
       {head-background=alert,body-background=alert!8}{alertblock}
     \__ltxtalk_theme_block:nnn {titlebar}
       {head-background=example,body-background=example!8}{exampleblock}
+
   }
 
 % \ldeen{Der Abstand vor dem Textblock wird aus der Kopfzeilengeometrie

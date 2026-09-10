@@ -1,0 +1,17 @@
+\DocumentMetadata{}
+\input regression-test.tex
+\documentclass{ltx-talk}
+\usepackage[fonts=roboto]{ltxtalk-theme-tuc-2019}
+\useltxtalktheme{tuc-2019}
+\title{Roboto font bundle}
+\begin{document}
+\begin{frame}
+  \frametitle{Heading 0123456789}
+  Body text: \UseLTXTalkFont{emphasis}emphasis.
+  \par\UseLTXTalkFont{code}compact\_code := value + 42;
+  \par\UseLTXTalkFont{body}\(\int_0^1 x^2\,dx = \frac13\)
+\end{frame}
+\START
+\TYPE{font-roboto:passed}
+\END
+\end{document}
