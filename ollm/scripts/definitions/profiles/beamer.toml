@@ -1,0 +1,11 @@
+# Capability projection of the osglecture "beamer" document profile.
+# The authoritative definition is \DeclareOsgLectureProfile in
+# osglecture-profiles.dtx; only the fields OLLM needs before the class runs
+# are mirrored here. definitions/profiles.t cross-checks the two.
+schema = 1
+kind = "profile"
+name = "beamer"
+version = "1.0"
+profile_class = "presentation"
+document_metadata = "forbidden"
+doctypes = ["slides", "handout"]

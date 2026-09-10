@@ -693,7 +693,12 @@ sub resolve_definitions {
   }
   push @paths, $arg{bundle_path} if defined $arg{bundle_path};
 
-  my (%preset, %target);
+  my (%preset, %target, %profile);
+  my %index_for = (
+    'bundle-preset' => \%preset,
+    'target'        => \%target,
+    'profile'       => \%profile,
+  );
   for my $path (@paths) {
     die "definition search path not found: $path" if !-d $path;
     my @files;
@@ -703,7 +708,7 @@ sub resolve_definitions {
     );
     for my $file (sort @files) {
       my $definition = $class->_load_definition($file);
-      my $index = $definition->{kind} eq 'bundle-preset' ? \%preset : \%target;
+      my $index = $index_for{ $definition->{kind} };
       my $reference = $definition->{kind} eq 'bundle-preset'
         ? "$definition->{name}/$definition->{version}"
         : $definition->{name};
@@ -749,6 +754,19 @@ sub resolve_definitions {
     };
     $selected_target_data{$name} = $target{$name}{data};
   }
+  my %profiles;
+  for my $name (sort keys %profile) {
+    $profiles{$name} = {
+      document_metadata => $profile{$name}{data}{document_metadata},
+      doctypes          => $profile{$name}{data}{doctypes},
+      profile_class     => $profile{$name}{data}{profile_class},
+      path              => $profile{$name}{path},
+      version           => $profile{$name}{data}{version},
+      signature => sha256_hex(
+        JSON::PP->new->canonical->encode($profile{$name}{data}),
+      ),
+    };
+  }
   my $signature = sha256_hex(
     JSON::PP->new->canonical->encode({
       manifest => $manifest,
@@ -770,6 +788,7 @@ sub resolve_definitions {
     },
     search_paths => [map { abs_path($_) // $_ } @paths],
     targets      => \%selected_targets,
+    profiles     => \%profiles,
   };
 }
 
@@ -795,7 +814,7 @@ sub _load_definition {
   my ($class, $path) = @_;
   my ($data, $lines) = $class->_load_toml($path);
   _known_keys($data,
-    [qw(schema kind name version doctype profile_class unit_scopes
+    [qw(schema kind name version doctype doctypes profile_class unit_scopes
         document_metadata)],
     $path, $lines, '');
   if (!defined $data->{schema} || ref $data->{schema}
@@ -808,7 +827,7 @@ sub _load_definition {
   }
   my $kind = _require_string($data, 'kind', $path);
   _fail_at($path, $lines, 'kind', "unknown definition kind '$kind'")
-    if $kind !~ /\A(?:bundle-preset|target)\z/;
+    if $kind !~ /\A(?:bundle-preset|target|profile)\z/;
   _require_string($data, 'name', $path);
   _require_string($data, 'version', $path);
   if ($kind eq 'bundle-preset') {
@@ -824,7 +843,33 @@ sub _load_definition {
     _fail_at($path, $lines, 'document_metadata',
       "bundle preset must not define 'document_metadata'")
       if exists $data->{document_metadata};
+  } elsif ($kind eq 'profile') {
+    # The profile capability projection mirrors, for OLLM's pre-class use,
+    # exactly the \DeclareOsgLectureProfile fields that decide the build
+    # (metadata contract, supported doctypes, profile class). Anything about
+    # rendering -- backend, adapter, class options -- stays TeX-only.
+    for my $reject (qw(doctype unit_scopes)) {
+      _fail_at($path, $lines, $reject,
+        "profile definition must not define '$reject'")
+        if exists $data->{$reject};
+    }
+    my $metadata = _require_string($data, 'document_metadata', $path);
+    _fail_at($path, $lines, 'document_metadata',
+      "invalid profile document_metadata '$metadata'; "
+      . "expected 'required', 'supported' or 'forbidden'")
+      if $metadata !~ /\A(?:required|supported|forbidden)\z/;
+    my $profile_class = _require_string($data, 'profile_class', $path);
+    _fail_at($path, $lines, 'profile_class',
+      "invalid profile profile_class '$profile_class'; "
+      . "expected 'presentation' or 'longform'")
+      if $profile_class !~ /\A(?:presentation|longform)\z/;
+    my $doctypes = _require_string_array($data, 'doctypes', $path);
+    _fail_at($path, $lines, 'doctypes', 'profile doctypes must not be empty')
+      if !@$doctypes;
   } else {
+    _fail_at($path, $lines, 'doctypes',
+      "target must not define 'doctypes'; a target has one 'doctype'")
+      if exists $data->{doctypes};
     _require_string($data, 'doctype', $path);
     my $profile_class = _require_string($data, 'profile_class', $path);
     _fail_at($path, $lines, 'profile_class',

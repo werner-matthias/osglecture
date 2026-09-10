@@ -606,7 +606,8 @@ individually. \code{<all>} forces columns in every mode, while, for example,
   { Disable~document~metadata~for~this~target~or~select~another~profile. }
 \msg_new:nnnn { osglecture } { metadata-policy-conflict }
   { Build~metadata~policy~'#1'~conflicts~with~profile~'#2'~('#3'). }
-  { Change~the~target-specific~document_metadata~policy~or~the~target~profile. }
+  { Set~document_metadata~for~target~'#4'~in~the~project~manifest~to~match~
+    profile~'#2',~or~select~a~profile~whose~contract~is~'#1'. }
 \msg_new:nnnn { osglecture } { standalone-job-conflict }
   { Standalone~mode~cannot~be~combined~with~an~OLLM~job. }
   { Remove~the~standalone~class~option~or~build~without~OLLM. }
@@ -783,16 +784,10 @@ individually. \code{<all>} forces columns in every mode, while, for example,
 \bool_set_false:N \l_tmpa_bool
 \cs_if_exist:NT \IfDocumentMetadataTF
   { \IfDocumentMetadataTF {\bool_set_true:N \l_tmpa_bool} { } }
-\str_if_eq:VnT \l_tmpa_tl {required}
-  {
-    \bool_if:NF \l_tmpa_bool
-      { \msg_fatal:nnV {osglecture}{metadata-required}
-          \l__osglecture_document_profile_tl }
-  }
-\str_if_eq:VnT \l_tmpa_tl {forbidden}
-  { \bool_if:NT \l_tmpa_bool
-      { \msg_fatal:nnV {osglecture}{metadata-forbidden}
-          \l__osglecture_document_profile_tl } }
+% An OLLM build fixes the metadata policy before the class runs; a policy
+% that contradicts the selected profile is the root cause and must be
+% reported before the generic required/forbidden checks below, which would
+% otherwise only tell the author to place \DocumentMetadata somewhere.
 \OsgLectureBuildLoadedTF
   {
     \tl_set:Ne \l_tmpb_tl
@@ -804,10 +799,21 @@ individually. \code{<all>} forces columns in every mode, while, for example,
       { \bool_lazy_and_p:nn
           {\str_if_eq_p:Vn \l_tmpa_tl {forbidden}}
           {\str_if_eq_p:Vn \l_tmpb_tl {required}} }
-      { \msg_fatal:nnxxx {osglecture}{metadata-policy-conflict}
-          {\l_tmpb_tl}{\l__osglecture_document_profile_tl}{\l_tmpa_tl} }
+      { \msg_fatal:nnxxxx {osglecture}{metadata-policy-conflict}
+          {\l_tmpb_tl}{\l__osglecture_document_profile_tl}{\l_tmpa_tl}
+          {\OsgLectureBuildValue{target}} }
   }
   { }
+\str_if_eq:VnT \l_tmpa_tl {required}
+  {
+    \bool_if:NF \l_tmpa_bool
+      { \msg_fatal:nnV {osglecture}{metadata-required}
+          \l__osglecture_document_profile_tl }
+  }
+\str_if_eq:VnT \l_tmpa_tl {forbidden}
+  { \bool_if:NT \l_tmpa_bool
+      { \msg_fatal:nnV {osglecture}{metadata-forbidden}
+          \l__osglecture_document_profile_tl } }
 \tl_set:Ne \l__osglecture_selected_options_tl
   {
     \osglecture_profile_class_options:VV

@@ -61,6 +61,10 @@ promotierten Referenzexports sowie deren Auswertung durch `check`, `report`
 und Fixpunktrunden. TODO bleiben die vollständigen projekt- und
 backendabhängigen `doctor`-Prüfungen.
 
+Abschnitt 25 legt die Verlagerung der Dokumentprofilwahl ins Manifest,
+doctype-adressierte Klassenoptionen und die Schema-2-Restrukturierung von
+`ollmconfig.toml` fest; umgesetzt ist davon noch nichts.
+
 ## 3. Nichtziele
 
 OLLM soll nicht:
@@ -2157,14 +2161,124 @@ NNNa-slug
 NNNb-slug
 ```
 
-## 25. Offene Entscheidungen
+## 25. Architekturentscheidung: Dokumentprofil im Manifest, Doctype-Optionen, Schema 2
+
+Diese Entscheidung ersetzt Teile der Abschnitte 5.3, 7.2, 7.6 und 18. Bis zur
+Umsetzung beschreiben jene Abschnitte den Ist-Stand, dieser Abschnitt das Ziel.
+
+### 25.1 Problem
+
+Die Dokumentprofilwahl (`presentation-profile`, `longform-profile`) liegt in
+`projectconfig.tex` und wird von der Schicht `osglecture-project` vor
+`\LoadClass` gelesen. Der `\DocumentMetadata`-Vertrag eines Profils
+(`forbidden`/`supported`/`required`) muss dagegen schon vor
+`\documentclass{osglecture}` feststehen, also bevor irgendein Projektcode läuft.
+Daher wird der Vertrag heute doppelt geführt: das Profil in TeX und
+`document_metadata` je Target im Manifest. Das ist kein Single Point of Truth;
+ein Widerspruch fällt erst spät auf und meldet sich mit der unspezifischen
+`metadata-required` statt mit `metadata-policy-conflict`.
+
+Beim Öffnen des Schemas werden weitere nutzerseitige Redundanzen sichtbar:
+`[languages].available` neben einem `languages =` in jedem Target; die über
+`[security]` und `[security.deployment]` verstreute Guardrail-Konfiguration.
+
+### 25.2 Entscheidung
+
+1. **Profilwahl wandert ins Manifest.** `[targets.<name>].profile` wählt das
+   Dokumentprofil, `[targets.defaults]` liefert den Erbwert. Die
+   Profildefinitionen (`backend`, `adapter`, `class`, `class-options`,
+   `doctypes`, `document-metadata`) bleiben LaTeX-Bibliothek. OLLM konsumiert
+   nur eine mitgelieferte Fähigkeitsprojektion unter
+   `definitions/profiles/*.toml`; projektlokale Profile deklarieren ihr Snippet
+   in `.ollmconfig.local.toml` neben der `.def`-Datei.
+
+2. **OLLM leitet den `document-metadata`-Vertrag aus dem aufgelösten Profil
+   ab.** Der Schlüssel `document_metadata` je Target bleibt nur als Override.
+   Der BuildSpec und die Buildauftragsdatei tragen künftig `profile` zusätzlich
+   zu `profile-class`; die Klasse liest das Profil von dort statt aus
+   `projectconfig.tex`.
+
+3. **TeX-seitige Profilwahl wird eingeschränkt.**
+   `\LectureProjectSetup{presentation-profile=…}` ist für OLLM-Builds
+   abgekündigt. Für Standalone überlebt die Wahl als Klassenoption
+   `\documentclass[profile=…]{osglecture}`. `\LectureTargetSetup{…}{profile=…}`
+   bleibt ausschließlich Diagnose-Override und kann `\DocumentMetadata` nicht
+   mehr beeinflussen; dieser Vorbehalt wird dokumentiert.
+
+4. **Doctype-adressierte Klassenoptionen als Nutzerkanal.** Zwei Formen:
+   - `class/<klassenname>={…}` wird unverändert nur an genau diese Basisklasse
+     weitergereicht und greift nur, wenn sie geladen wird — der
+     profilabhängige Escape-Hatch.
+   - `<doctype>{…}` wird an die vom aktiven Profil für diesen Doctype
+     verantwortliche Klasse weitergereicht — der profil-agnostische
+     Standardweg. Zwei Auflösungszeitpunkte: Optionen für die Basisklasse
+     werden vor `\LoadClass` aufgelöst (Profil und Doctype sind dann bekannt),
+     modusabhängige Optionen nach Finalisierung des Modusgraphen.
+
+5. **Dreiwertiger `\DocumentMetadata`-Vertrag.** `required` / `forbidden` /
+   `tolerated`. Führt `beamer` künftig `tolerated` (abhängig von der aktuellen
+   Verträglichkeit von beamer mit dem L3-PDF-Management), schaltet OLLM
+   `documentmetadata.tex` bedingungslos vor, sofern vorhanden, und jede
+   Vertragsspiegelung entfällt. Bis dahin bleibt `beamer = forbidden`; die
+   Per-Target-Profilwahl macht den Vertrag ohne Zusatzschlüssel korrekt.
+
+6. **Sofortfix unabhängig vom Schema-Bump.** In `osglecture.dtx` werden die
+   Metadatenprüfungen so geordnet, dass bei geladener Buildauftragsdatei
+   `metadata-policy-conflict` vor `metadata-required` greift; die Meldung nennt
+   den Targetschlüssel und das Profil.
+
+7. **Manifest Schema 2, nutzersichtzentriert.**
+   - `[languages]` bleibt der Projektsprach-Vertrag (`available`, `default`)
+     und dient als Validierungsanker gegen Tippfehler in Target-Sprachlisten.
+   - `[targets.defaults]` plus `[targets.<name>]` mit Vererbung; `languages`,
+     `profile` und `document_metadata` sind erbbar und überschreibbar.
+   - `[security]` fasst alle Guardrails flach zusammen: `shell_escape` und
+     `overwrite`. `[security.deployment]` entfällt; die Deploymentziele
+     bleiben in `[deployment]`.
+   - Der Serialisierer gibt Abschnitte in stabiler, gruppierter Reihenfolge
+     aus.
+   - Migrationspfad 1 → 2 durch Erweiterung von `convertproject` bzw. eine
+     eigene `migrate`-Aktion.
+
+8. **Sprachauswahl über die Buildauftragsdatei.** OLLM schreibt die
+   selectable-Menge des Targets in die Datei; die Klasse übergibt sie an
+   `langselect`. `\LectureProjectSetup{languages={selectable=…}}` entfällt in
+   der Nutzerkonfiguration.
+
+### 25.3 Konsequenzen
+
+- Profil und Metadatenvertrag haben einen Single Point of Truth; Widersprüche
+  werden von OLLM ohne TeX-Lauf erkannt.
+- `projectconfig.tex` wird rein semantisch: Sprachvarianten-Mapping,
+  Metadatenfelder, Doctype-Optionen, Präambelfragmente, Enforcement.
+- OLLM erhält eine schmale Datenabhängigkeit von einer Profil-Fähigkeitstabelle,
+  aber keine Kenntnis von TeX-Profilcode.
+- Das Manifest und Teile der TeX-Schnittstelle brechen: Schema 2,
+  Doku-Überarbeitung (u. a. entfallende explizite Sprachauswahl, neues
+  `[security]`), Anpassung von `convertproject`.
+- Standalone behält einen expliziten Profil- und `\DocumentMetadata`-Weg; für
+  den dort üblichen Ein-Doctype-Fall genügt Handarbeit.
+
+### 25.4 Betroffene Abschnitte
+
+- 5.3: `backend = adapter(doctype, document-profile, project-policy)` bleibt;
+  das Dokumentprofil stammt aus dem Manifest/BuildSpec statt aus TeX-Policy.
+- 7.2: die TeX-Prioritätskette bleibt, `Profil-Setup (10)` speist sich aus dem
+  Manifestwert; der BuildSpec trägt zusätzlich `profile`.
+- 7.6: der `document_metadata`-Default wandert von der Targetdefinition zur
+  Profilfähigkeit; der Targetschlüssel wird zum Override.
+- 8.2 und 10: neues Feld `profile`, selectable-Sprachmenge in der
+  Buildauftragsdatei.
+- 18: `overwrite` unter `[security]`.
+
+## 26. Offene Entscheidungen
 
 Vor der Implementierung sind noch festzulegen:
 
 1. konkrete zweiten Profilzeichen und eventuelle weitere Standardrollen;
 2. genaue Profilfundorte;
-3. vollständiges Schema von `ollmconfig.toml` über den implementierten Kern
-   hinaus;
+3. restliches Schema von `ollmconfig.toml` über den implementierten Kern und
+   die in Abschnitt 25 festgelegte Schema-2-Struktur hinaus;
 4. Behandlung weiterer direkt durch Lua gelesener Dateien;
 5. JSON- und Aux-Schemata einschließlich Generationsmodell;
 6. genaue Clean-Levelnamen;
