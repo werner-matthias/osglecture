@@ -2640,7 +2640,10 @@ theme.
 
 \DeclareLTXTalkFontPalette { ltxtalk-default }
   {
-    main      = { font = { NewComputerModern Sans } },
+    % Match ltx-talk's file-based font selection.  Looking the family up by
+    % name is platform-dependent (and bypasses NewCM's .fontspec file on
+    % some systems), which makes otherwise identical PDFs differ in CI.
+    main      = { font = { NewCMSans10-Regular.otf } },
     companion = { alias = main },
     display   = { alias = companion },
     accent    = { alias = companion },
