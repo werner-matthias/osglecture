@@ -25,6 +25,9 @@ installfiles = {
     "ltxtalk-theme-font-sans.sty",
     "ltxtalk-theme-font-serif.sty",
     "ltxtalk-theme-font-mixed.sty",
+    "ltxtalk-theme-font-libertinus.sty",
+    "ltxtalk-theme-font-newcm.sty",
+    "ltxtalk-theme-font-texgyre.sty",
 }
 
 dofile("../build.lua")

@@ -36,6 +36,9 @@
   \file{ltxtalk-theme-font-sans.sty}{\from{lttheme.dtx}{font-sans}}
   \file{ltxtalk-theme-font-serif.sty}{\from{lttheme.dtx}{font-serif}}
   \file{ltxtalk-theme-font-mixed.sty}{\from{lttheme.dtx}{font-mixed}}
+  \file{ltxtalk-theme-font-libertinus.sty}{\from{lttheme.dtx}{font-libertinus}}
+  \file{ltxtalk-theme-font-newcm.sty}{\from{lttheme.dtx}{font-newcm}}
+  \file{ltxtalk-theme-font-texgyre.sty}{\from{lttheme.dtx}{font-texgyre}}
   }
   \expandafter\endbatchfile
 \fi
@@ -374,25 +377,48 @@ selected layout remains intact.
 \end{sourcecode}
 
 \ldeen{
-Die drei Font-Themes \code{font-sans}, \code{font-serif} und
-\code{font-mixed} werden ebenso additiv über ein Layout-Theme gelegt.
-Sie verwenden ausschließlich mit \TeX\ Live gelieferte Schriften:
-TeX Gyre Heros, TeX Gyre Pagella und Latin Modern Mono. \code{font-mixed}
-setzt hervorgehobene und strukturelle Slot-Schriften in Pagella, Titel und
-Begleittext dagegen in Heros.
+Font-Themes werden ebenso additiv über ein Layout-Theme gelegt. Neben den
+einfachen Varianten \code{font-sans}, \code{font-serif} und
+\code{font-mixed} gibt es echte Schrift-Sippen: \code{font-libertinus},
+\code{font-newcm} und \code{font-texgyre}. Jede Sippe besetzt semantische
+Rollen für Fließtext, Begleittext, Überschriften, Hervorhebungen, Code,
+Mathematik und Symbole mit aufeinander abgestimmten Familien. Alle
+verwendeten Schriften sind Bestandteil von \TeX\ Live.
 }{
-The three font themes \code{font-sans}, \code{font-serif}, and
-\code{font-mixed} are likewise layered over a layout theme. They use only
-fonts distributed with \TeX\ Live: TeX Gyre Heros, TeX Gyre Pagella, and
-Latin Modern Mono. \code{font-mixed} uses Pagella for accent slots and Heros
-for display and companion slots.
+Font themes are likewise layered over a layout theme. In addition to the
+simple \code{font-sans}, \code{font-serif}, and \code{font-mixed} variants,
+proper typeface families are provided: \code{font-libertinus},
+\code{font-newcm}, and \code{font-texgyre}. Each family assigns coordinated
+faces to semantic roles for body copy, supporting text, headings, emphasis,
+code, mathematics, and symbols. All fonts used are distributed with
+\TeX\ Live.
 }
 
 \begin{sourcecode}
-  \usepackage{ltxtalk-theme-font-mixed}
+  \usepackage{ltxtalk-theme-font-libertinus}
   \useltxtalktheme{sparrow}
-  \addltxtalktheme{font-mixed}
+  \addltxtalktheme{font-libertinus}
 \end{sourcecode}
+
+\ldeen{
+Die Rollen heißen \code{body}, \code{support}, \code{heading},
+\code{emphasis}, \code{code}, \code{math} und \code{symbol}. Sie können bei
+Slots mit \code{font-slot=heading} oder direkt mit
+\cs*{UseLTXTalkFont}\Marg{heading} gewählt werden. Die bisherigen portablen
+Namen \code{main}, \code{companion}, \code{display}, \code{accent} und
+\code{mono} bleiben als kompatible Synonyme erhalten. Der Mathematik-Slot
+wird nur als Ressource für eine spätere \pkg*{unicode-math}-Anbindung
+registriert und nicht als Textschrift aktiviert.
+}{
+The roles are named \code{body}, \code{support}, \code{heading},
+\code{emphasis}, \code{code}, \code{math}, and \code{symbol}. Select them on
+a slot with \code{font-slot=heading}, or directly with
+\cs*{UseLTXTalkFont}\Marg{heading}. The existing portable names
+\code{main}, \code{companion}, \code{display}, \code{accent}, and
+\code{mono} remain available as compatible synonyms. The mathematics slot
+is registered only as a resource for a later \pkg*{unicode-math} adapter and
+is not activated as a text font.
+}
 
 \subsubsection{\ldeen{Vergleich der mitgelieferten Themes}{Comparison of the bundled themes}}
 
@@ -1578,6 +1604,22 @@ and page style.
     slot. \code{main} is required. The bundled \code{ltxtalk-default} palette
     uses New Computer Modern Sans with Latin Modern Mono.
   }
+  \command{UseLTXTalkFont}[\marg{Rolle}]
+  \ldeen{
+    Wählt eine Textschrift über ihre semantische Rolle. Verfügbar sind
+    \code{body}, \code{support}, \code{heading}, \code{emphasis},
+    \code{code} und \code{symbol}. Die technischen Palettennamen
+    \code{main}, \code{companion}, \code{display}, \code{accent} und
+    \code{mono} werden ebenfalls akzeptiert. \code{math} bezeichnet nur
+    eine Ressource und kann nicht als Textschrift gewählt werden.
+  }{
+    Selects a text face by semantic role. The roles are \code{body},
+    \code{support}, \code{heading}, \code{emphasis}, \code{code}, and
+    \code{symbol}. The technical palette names \code{main},
+    \code{companion}, \code{display}, \code{accent}, and \code{mono} are
+    accepted as well. \code{math} names a resource only and cannot be
+    selected as a text face.
+  }
 \end{commands}
 
 \subsection{\ldeen{Inneres Theme}{Inner theme}}
@@ -2561,11 +2603,25 @@ theme.
       { \UseOsgFontPalette {#1} }
   }
 
+\cs_new:Npn \__ltxtalk_font_role_to_slot:n #1
+  {
+    \str_case:nnF {#1}
+      {
+        { body }     { main }
+        { support }  { companion }
+        { heading }  { display }
+        { emphasis } { accent }
+        { code }     { mono }
+      }
+      {#1}
+  }
+
 \cs_new_protected:Npn \__ltxtalk_font_select:n #1
   {
+    \tl_set:Nx \l_tmpa_tl { \__ltxtalk_font_role_to_slot:n {#1} }
     \bool_if:NTF \g__ltxtalk_outeronly_bool
       {
-        \str_case:nnF {#1}
+        \str_case:VnF \l_tmpa_tl
           {
             { main }      { \rmfamily }
             { mono }      { \ttfamily }
@@ -2576,8 +2632,11 @@ theme.
           }
           { \normalfont }
       }
-      { \UseOsgFont {#1} }
+      { \exp_args:NV \UseOsgFont \l_tmpa_tl }
   }
+
+\NewDocumentCommand \UseLTXTalkFont { m }
+  { \__ltxtalk_font_select:n {#1} }
 
 \DeclareLTXTalkFontPalette { ltxtalk-default }
   {
@@ -5055,3 +5114,69 @@ theme.
 \RegisterLTXTalkTheme{font-mixed}{\__ltxtalk_font_mixed_theme_setup:}
 %</font-mixed>
 %<font-mixed>\endinput
+%<*font-libertinus>
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage{ltxtalk-theme-font-libertinus}
+{2026-09-10}
+{v0.5.1}
+{Libertinus font-family theme for ltx-talk}
+\RequirePackage{ltxtalk-theme}
+\DeclareLTXTalkFontPalette { ltxtalk-font-libertinus }
+  {
+    main      = { font = { Libertinus Serif } },
+    companion = { font = { Libertinus Sans } },
+    display   = { alias = companion },
+    accent    = { alias = main },
+    mono      = { font = { Libertinus Mono } },
+    math      = { font = { Libertinus Math } },
+    symbol    = { alias = main }
+  }
+\cs_new_protected:Npn \__ltxtalk_font_libertinus_theme_setup:
+  { \UseLTXTalkFontPalette { ltxtalk-font-libertinus } }
+\RegisterLTXTalkTheme{font-libertinus}{\__ltxtalk_font_libertinus_theme_setup:}
+%</font-libertinus>
+%<font-libertinus>\endinput
+%<*font-newcm>
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage{ltxtalk-theme-font-newcm}
+{2026-09-10}
+{v0.5.1}
+{New Computer Modern font-family theme for ltx-talk}
+\RequirePackage{ltxtalk-theme}
+\DeclareLTXTalkFontPalette { ltxtalk-font-newcm }
+  {
+    main      = { font = { NewComputerModern Serif } },
+    companion = { font = { NewComputerModern Sans } },
+    display   = { alias = companion },
+    accent    = { alias = main },
+    mono      = { font = { NewComputerModern Mono } },
+    math      = { font = { NewComputerModern Math } },
+    symbol    = { alias = main }
+  }
+\cs_new_protected:Npn \__ltxtalk_font_newcm_theme_setup:
+  { \UseLTXTalkFontPalette { ltxtalk-font-newcm } }
+\RegisterLTXTalkTheme{font-newcm}{\__ltxtalk_font_newcm_theme_setup:}
+%</font-newcm>
+%<font-newcm>\endinput
+%<*font-texgyre>
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage{ltxtalk-theme-font-texgyre}
+{2026-09-10}
+{v0.5.1}
+{TeX Gyre font-family theme for ltx-talk}
+\RequirePackage{ltxtalk-theme}
+\DeclareLTXTalkFontPalette { ltxtalk-font-texgyre }
+  {
+    main      = { font = { TeX Gyre Pagella } },
+    companion = { font = { TeX Gyre Heros } },
+    display   = { alias = companion },
+    accent    = { alias = main },
+    mono      = { font = { TeX Gyre Cursor } },
+    math      = { font = { TeX Gyre Pagella Math } },
+    symbol    = { alias = main }
+  }
+\cs_new_protected:Npn \__ltxtalk_font_texgyre_theme_setup:
+  { \UseLTXTalkFontPalette { ltxtalk-font-texgyre } }
+\RegisterLTXTalkTheme{font-texgyre}{\__ltxtalk_font_texgyre_theme_setup:}
+%</font-texgyre>
+%<font-texgyre>\endinput

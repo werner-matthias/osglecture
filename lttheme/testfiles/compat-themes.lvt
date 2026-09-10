@@ -12,6 +12,9 @@
 \usepackage{ltxtalk-theme-font-sans}
 \usepackage{ltxtalk-theme-font-serif}
 \usepackage{ltxtalk-theme-font-mixed}
+\usepackage{ltxtalk-theme-font-libertinus}
+\usepackage{ltxtalk-theme-font-newcm}
+\usepackage{ltxtalk-theme-font-texgyre}
 \useltxtalktheme{magpie}
 \title{Compatibility test}
 \author{Test author}
@@ -33,6 +36,14 @@
 \addltxtalktheme{font-sans}
 \addltxtalktheme{font-serif}
 \addltxtalktheme{font-mixed}
+\addltxtalktheme{font-libertinus}
+\addltxtalktheme{font-newcm}
+\addltxtalktheme{font-texgyre}
+\UseLTXTalkFont{body}
+\UseLTXTalkFont{support}
+\UseLTXTalkFont{heading}
+\UseLTXTalkFont{emphasis}
+\UseLTXTalkFont{code}
 \START
 \TYPE{compat-anchovy:passed}
 \TYPE{compat-carp:passed}
@@ -43,6 +54,7 @@
 \TYPE{compat-bluebird:passed}
 \TYPE{compat-goose:passed}
 \TYPE{compat-font-themes:passed}
+\TYPE{compat-font-families:passed}
 \ExplSyntaxOff
 \END
 \end{document}

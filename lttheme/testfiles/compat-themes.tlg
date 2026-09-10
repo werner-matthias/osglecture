@@ -9,3 +9,4 @@ compat-sparrow:passed
 compat-bluebird:passed
 compat-goose:passed
 compat-font-themes:passed
+compat-font-families:passed

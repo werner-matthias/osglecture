@@ -48,11 +48,18 @@ top of a layout theme with `\addltxtalktheme{anchovy}` or
 `\addltxtalktheme{carp}`. They change semantic colours only and leave the
 layout and tagged reading order untouched.
 
-The font-only themes `font-sans`, `font-serif`, and `font-mixed` are layered
-the same way. Load, for example, `ltxtalk-theme-font-mixed` and call
-`\addltxtalktheme{font-mixed}` after the layout theme. Slot styles select the
-portable `main`, `companion`, `display`, or `accent` font-palette slots, so a
-font theme can change families without changing layout, size, or emphasis.
+Font-only themes are layered the same way. In addition to the simple
+`font-sans`, `font-serif`, and `font-mixed` choices, `font-libertinus`,
+`font-newcm`, and `font-texgyre` provide coordinated families for body copy,
+supporting text, headings, emphasis, code, mathematics, and symbols. Load,
+for example, `ltxtalk-theme-font-libertinus` and call
+`\addltxtalktheme{font-libertinus}` after the layout theme.
+
+Slot styles can use the semantic roles `body`, `support`, `heading`,
+`emphasis`, `code`, `math`, and `symbol`. The portable palette names `main`,
+`companion`, `display`, `accent`, and `mono` remain supported. Select a role
+with `font-slot=heading` or `\UseLTXTalkFont{heading}`; a font theme can thus
+change families without changing layout, size, or emphasis.
 
 The engine also controls the inner theme. `\setltxtalkcolors` accepts the
 semantic colours `structure`, `alert`, and `example`; `\styleltxtalkblock`
