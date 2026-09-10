@@ -264,11 +264,11 @@ long form.}
 
 \ldeen{Die Klassen \cls{beamer} und \cls{scrbook} sind bereits die Vorgaben des
 Bundle-Presets; wollte Nora stattdessen \cls{ltx-talk}, käme
-\key*{presentation\_profile}{ltx-talk} in \code{[targets.defaults]} des
+\keyis{presentation\_profile}{ltx-talk} in \code{[targets.defaults]} des
 Manifests, nicht hierher. Denn die Klassenwahl muss feststehen, bevor die
 Klasse überhaupt startet.}{The classes \cls{beamer} and \cls{scrbook} are
 already the bundle preset's defaults; if Nora wanted \cls{ltx-talk} instead,
-\key*l{presentation\_profile}{ltx-talk} would go into the manifest's
+\keyis{presentation\_profile}{ltx-talk} would go into the manifest's
 \code{[targets.defaults]}, not here -- the class choice has to be fixed before
 the class even starts.}
 
@@ -276,17 +276,16 @@ the class even starts.}
 Namen. \OLLM\ arbeitet mit den kurzen, portablen Kennungen \code{de} und
 \code{en}, wie sie in der Norm ISO 639-1 definiert sind. Das verbreitete
 Sprachpaket \pkg{babel} benötigt dagegen die konkreteren Namen \code{ngerman}
-und \code{british}. Der Schlüssel \option{languages} reicht dieses
-\option{map} an \pkg{langselect} weiter und lädt \pkg{babel}. Welche Sprachen
-das Projekt überhaupt anbietet, steht bereits im Manifest -- \osglecture\
-reicht die Liste von dort an \pkg{langselect}.}{The remaining language
-configuration contains two different kinds of names. \OLLM\ uses the short,
-portable identifiers \code{de} and \code{en}. The popular language package
-\pkg{babel}, by contrast, needs the more specific names \code{ngerman} and
-\code{british}. The \option{languages} option passes this \option{map} on to
-\pkg{langselect} and loads \pkg{babel}. Which languages the project offers at
-all is already in the manifest -- \osglecture\ hands that list from there to
-\pkg{langselect}.}
+und \code{british}. Der Schlüssel \option{languages} reicht dieses Mapping an
+\pkg{langselect} weiter und lädt \pkg{babel}. Welche Sprachen das Projekt
+überhaupt anbietet, steht bereits im Manifest -- \osglecture\ reicht die Liste
+von dort an \pkg{langselect}.}{The remaining language configuration contains
+two different kinds of names. \OLLM\ uses the short, portable identifiers
+\code{de} and \code{en}. The popular language package \pkg{babel}, by
+contrast, needs the more specific names \code{ngerman} and \code{british}. The
+\option{languages} key passes this mapping on to \pkg{langselect} and loads
+\pkg{babel}. Which languages the project offers at all is already in the
+manifest -- \osglecture\ hands that list from there to \pkg{langselect}.}
 
 \paragraph{\ldeen{Endlich etwas Fachliches}{At Last, Some Subject Matter}.}
 \ldeen{Nun schreibt Nora \File{010-Memory/main.tex}. Sie beginnt bewusst mit

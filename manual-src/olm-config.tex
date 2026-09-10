@@ -103,7 +103,7 @@ repeated there.}
 \code{[targets.defaults]} kann stattdessen \option{presentation\_profile} und
 \option{longform\_profile} setzen, die je nach Profilklasse des Targets
 greifen. Fehlt beides, gelten die Profil-Defaults des Bundle-Presets.
-\option{document\_metadata} (\key{enabled}{}/\key{disabled}{}) ist eine
+\option{document\_metadata} mit \code{enabled} oder \code{disabled} ist eine
 bewusste Ausgabeentscheidung und wirkt nur dort, wo das aufgelöste Profil den
 Metadatenvertrag offen lässt (\code{supported}); widerspricht sie einem Profil
 mit erzwungenem Vertrag, weist \OLLM\ den Build vor dem Lauf ab.}{A target may
@@ -112,10 +112,10 @@ override \option{languages}, \option{default\_language}, \option{profile}, and
 that one target; \code{[targets.defaults]} may instead set
 \option{presentation\_profile} and \option{longform\_profile}, which apply
 according to the target's profile class. If neither is set, the bundle
-preset's profile defaults apply. \option{document\_metadata}
-(\key{enabled}{}/\key{disabled}{}) is a deliberate output choice and
-takes effect only where the resolved profile leaves the metadata contract
-open (\code{supported}); if it contradicts a profile with a forced contract,
+preset's profile defaults apply. \option{document\_metadata} with
+\code{enabled} or \code{disabled} is a deliberate output choice and takes
+effect only where the resolved profile leaves the metadata contract open
+(\code{supported}); if it contradicts a profile with a forced contract,
 \OLLM\ rejects the build before the run.}
 
 \ldeen{\code{[project]} kann zusätzlich \option{tex\_directory} und
@@ -325,14 +325,14 @@ binding so that a unit cannot override it.}
 und steuert PDF-Eigenschaften, nicht die sichtbaren fachlichen Metadaten. \OLLM\
 bindet die Datei ein, wenn die aus dem Profil abgeleitete Metadatenpolicy
 \code{enabled} ergibt -- also bei einem \code{required}-Profil immer, bei einem
-\code{supported}-Profil, wenn \key{document\_metadata}{enabled} im Manifest
+\code{supported}-Profil, wenn \keyis{document\_metadata}{enabled} im Manifest
 steht. Dabei stehen Symbole wie \cs{OsgLectureRequestedLanguage} zur
 Verfügung.}{\File{documentmetadata.tex} has a different role: its
 \cs{DocumentMetadata} call must precede the document class and controls PDF
 properties rather than visible subject metadata. \OLLM\  includes the file when
 the metadata policy derived from the profile resolves to \code{enabled} --
 always for a \code{required} profile, and for a \code{supported} profile when
-the manifest sets \key{document\_metadata}{enabled}. Symbols such as
+the manifest sets \keyis{document\_metadata}{enabled}. Symbols such as
 \cs{OsgLectureRequestedLanguage} are available there.}
 
 \subsection{\ldeen{Dokumentenprofile}{Document Profiles}}
@@ -578,13 +578,12 @@ this convention.}
 
 \paragraph{\ldeen{Weitere Projektbefehle}{Other project commands}.}
 \begin{description}
-  \item[\cs{OsgLectureSetup}\marg{areas}] \ldeen{weist mit
-    \code{class/\meta{class}} bzw. \code{class/<\meta{mode}>}
-    Basisklassenoptionen (nach Klassenname oder aktivem Modus) und mit
-    \code{mode/\meta{mode}} osglecture-eigene modusabhängige Einstellungen
-    zu}{assigns base-class options by class name (\code{class/\meta{class}}) or
-    active mode (\code{class/<\meta{mode}>}), and osglecture mode-dependent
-    settings with \code{mode/\meta{mode}}}.
+  \item[\cs{OsgLectureSetup}\marg{areas}] \ldeen{weist Basisklassenoptionen zu,
+    adressiert nach Klassenname (\code{class/NAME}) oder aktivem Modus
+    (\code{class/<MODE>}), und mit \code{mode/NAME} osglecture-eigene
+    modusabhängige Einstellungen}{assigns base-class options addressed by class
+    name (\code{class/NAME}) or active mode (\code{class/<MODE>}), and
+    osglecture mode-dependent settings with \code{mode/NAME}}.
   \item[\cs{LectureTargetSetup}\marg{target}\marg{settings}]
     \ldeen{akzeptiert \option{filecolor}; \option{profile} wird für
     \OLLM-Builds ignoriert (Profilwahl im Manifest)}{accepts \option{filecolor};
