@@ -30,6 +30,12 @@ Matthias Werner.
     {\from{osglecture-modes.dtx}{overlays}}
   \file{osglecture-modes-ltxtalk.sty}
     {\from{osglecture-modes.dtx}{ltxtalk}}
+}
+% Lua cannot parse the TeX-style %% lines emitted by docstrip's default
+% preamble and postamble.  Generate the helper separately without either.
+\nopreamble
+\nopostamble
+\generate{
   \file{osglecture-modes-ltxtalk.lua}
     {\from{osglecture-modes.dtx}{lua}}
 }
@@ -1768,6 +1774,7 @@ Text\\<slides>[3ex]
 \ExplSyntaxOn
 
 \bool_new:N  \g_osglecture_modes_ltxtalk_ignore_bool
+\bool_new:N  \g_osglecture_modes_ltxtalk_scanner_active_bool
 \bool_new:N  \g_osglecture_modes_ltxtalk_after_structure_bool
 \clist_new:N \g_osglecture_modes_ltxtalk_raw_skip_envs_clist
 
@@ -1830,12 +1837,9 @@ Text\\<slides>[3ex]
   {
     \bool_if:NT \g_osglecture_modes_ltxtalk_ignore_bool
     {
-      \typeout{>>> Ignore~mode~on}
-        \osglecture_modes_if_active:nT { presentation }
-        {
-          \typeout{>>> Start scan}
-          \osglecture_modes_ltxtalk_scan:
-        }
+      \bool_if:NT \g_osglecture_modes_ltxtalk_scanner_active_bool
+        { \osglecture_modes_if_active:nT { presentation }
+            { \osglecture_modes_ltxtalk_scan: } }
       }
   }
 
@@ -1905,7 +1909,6 @@ Text\\<slides>[3ex]
   }
 
 \prop_new:N \g_osglecture_modes_ltxtalk_dispatch_prop
-\bool_new:N \l_osglecture_modes_ltxtalk_dispatch_hit_bool
 
 \cs_new_protected:Npn \osglecture_modes_ltxtalk_declare_allowed_command:nn #1#2
   {
@@ -1914,27 +1917,24 @@ Text\\<slides>[3ex]
 
 \cs_new_protected:Npn \osglecture_modes_ltxtalk_scan_token:
   {
-    \bool_set_false:N \l_osglecture_modes_ltxtalk_dispatch_hit_bool
-
-    \prop_map_inline:Nn \g_osglecture_modes_ltxtalk_dispatch_prop
-      {
-        \bool_if:NF \l_osglecture_modes_ltxtalk_dispatch_hit_bool
-          {
-            \cs_if_exist:cT {##1}
-              {
-                \exp_args:Nc \peek_meaning_remove:NTF {##1}
-                  {
-                    \bool_set_true:N \l_osglecture_modes_ltxtalk_dispatch_hit_bool
-                    \use:c {##2}
-                  }
-                  { }
-              }
-          }
-      }
-
-    \bool_if:NF \l_osglecture_modes_ltxtalk_dispatch_hit_bool
+    \peek_N_type:TF
+      { \osglecture_modes_ltxtalk_scan_control_sequence:N }
       { \osglecture_modes_ltxtalk_discard_one: }
-   }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_scan_control_sequence:N #1
+  {
+    % Document commands created by xparse often share the same dispatcher
+    % meaning.  Dispatch by control-sequence name, not by \ifx-like meaning.
+    \exp_args:NNx \prop_get:NnNTF
+      \g_osglecture_modes_ltxtalk_dispatch_prop
+      { \cs_to_str:N #1 }
+      \l_tmpa_tl
+      {
+        \use:c { \l_tmpa_tl }
+      }
+      { \osglecture_modes_ltxtalk_scan: }
+  }
 
 % handler
 \cs_new_protected:Npn \osglecture_modes_ltxtalk_keep_part:
@@ -1983,6 +1983,20 @@ Text\\<slides>[3ex]
     \osglecture_modes_ltxtalk_scan:
   }
 
+\NewDocumentCommand \osglecture_modes_ltxtalk_keep_lecture: { O{} m m }
+  {
+    \lecture[#1]{#2}{#3}
+    \bool_gset_false:N \g_osglecture_modes_ltxtalk_after_structure_bool
+    \osglecture_modes_ltxtalk_scan:
+  }
+
+\NewDocumentCommand \osglecture_modes_ltxtalk_keep_maketitle: { O{} }
+  {
+    \tl_if_blank:nTF {#1} { \maketitle } { \maketitle[#1] }
+    \bool_gset_false:N \g_osglecture_modes_ltxtalk_after_structure_bool
+    \osglecture_modes_ltxtalk_scan:
+  }
+
 \osglecture_modes_ltxtalk_declare_allowed_command:nn { part }          { osglecture_modes_ltxtalk_keep_part: }
 \osglecture_modes_ltxtalk_declare_allowed_command:nn { section }       { osglecture_modes_ltxtalk_keep_section: }
 \osglecture_modes_ltxtalk_declare_allowed_command:nn { subsection }    { osglecture_modes_ltxtalk_keep_subsection: }
@@ -1992,7 +2006,8 @@ Text\\<slides>[3ex]
 \osglecture_modes_ltxtalk_declare_allowed_command:nn { input }         { osglecture_modes_ltxtalk_keep_input: }
 \osglecture_modes_ltxtalk_declare_allowed_command:nn { include }       { osglecture_modes_ltxtalk_keep_include: }
 \osglecture_modes_ltxtalk_declare_allowed_command:nn { lecturemode }   { osglecture_modes_ltxtalk_keep_lecturemode: }
-\osglecture_modes_ltxtalk_declare_allowed_command:nn { mode }          { osglecture_modes_ltxtalk_keep_mode: } 
+\osglecture_modes_ltxtalk_declare_allowed_command:nn { mode }          { osglecture_modes_ltxtalk_keep_mode: }
+\osglecture_modes_ltxtalk_declare_allowed_command:nn { maketitle }     { osglecture_modes_ltxtalk_keep_maketitle: }
 
 \NewDocumentCommand \osglecture_modes_ltxtalk_keep_structure:N { m s o m }
   {
@@ -2045,8 +2060,14 @@ Text\\<slides>[3ex]
     \osglecture_modes_ltxtalk_scan:
   }
 
-\AddToHook{begindocument}
-  { \osglecture_modes_ltxtalk_start_scan: }
+% Arm the scanner only after the title command has completely finished.  In
+% particular, its internal title frame must not trigger env/frame/after while
+% maketitle is still executing.
+\AddToHook{cmd/maketitle/after}
+  {
+    \bool_gset_true:N \g_osglecture_modes_ltxtalk_scanner_active_bool
+    \osglecture_modes_ltxtalk_start_scan:
+  }
 
 \AddToHook{env/frame/after}
   { \osglecture_modes_ltxtalk_start_scan: }
