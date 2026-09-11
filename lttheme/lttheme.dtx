@@ -1448,8 +1448,12 @@ and page style.
 
   \command{LTXTalkBaseLeftMargin}
   \command{LTXTalkBaseRightMargin}
+  \command{LTXTalkBaseTopMargin}
+  \command{LTXTalkBaseBottomMargin}
   \command{LTXTalkCurrentLeftMargin}
   \command{LTXTalkCurrentRightMargin}
+  \command{LTXTalkCurrentTopMargin}
+  \command{LTXTalkCurrentBottomMargin}
   \ldeen{
     Expandierbare Längen für die ursprünglichen beziehungsweise aktuell
     wirksamen Seitenränder. Theme-Code kann damit ohne Zugriff auf interne
@@ -3437,19 +3441,33 @@ theme.
 \int_new:N \l__ltxtalk_grid_star_count_int
 \dim_new:N \g__ltxtalk_base_left_margin_dim
 \dim_new:N \g__ltxtalk_base_right_margin_dim
+\dim_new:N \g__ltxtalk_base_top_margin_dim
+\dim_new:N \g__ltxtalk_base_bottom_margin_dim
 \dim_new:N \g__ltxtalk_current_left_margin_dim
 \dim_new:N \g__ltxtalk_current_right_margin_dim
+\dim_new:N \g__ltxtalk_current_top_margin_dim
+\dim_new:N \g__ltxtalk_current_bottom_margin_dim
 \dim_gset:Nn \g__ltxtalk_base_left_margin_dim {\Gm@lmargin}
 \dim_gset:Nn \g__ltxtalk_base_right_margin_dim {\Gm@rmargin}
+\dim_gset:Nn \g__ltxtalk_base_top_margin_dim {\Gm@tmargin}
+\dim_gset:Nn \g__ltxtalk_base_bottom_margin_dim {\Gm@bmargin}
 
 \NewExpandableDocumentCommand \LTXTalkBaseLeftMargin {}
   {\dim_use:N \g__ltxtalk_base_left_margin_dim}
 \NewExpandableDocumentCommand \LTXTalkBaseRightMargin {}
   {\dim_use:N \g__ltxtalk_base_right_margin_dim}
+\NewExpandableDocumentCommand \LTXTalkBaseTopMargin {}
+  {\dim_use:N \g__ltxtalk_base_top_margin_dim}
+\NewExpandableDocumentCommand \LTXTalkBaseBottomMargin {}
+  {\dim_use:N \g__ltxtalk_base_bottom_margin_dim}
 \NewExpandableDocumentCommand \LTXTalkCurrentLeftMargin {}
   {\dim_use:N \g__ltxtalk_current_left_margin_dim}
 \NewExpandableDocumentCommand \LTXTalkCurrentRightMargin {}
   {\dim_use:N \g__ltxtalk_current_right_margin_dim}
+\NewExpandableDocumentCommand \LTXTalkCurrentTopMargin {}
+  {\dim_use:N \g__ltxtalk_current_top_margin_dim}
+\NewExpandableDocumentCommand \LTXTalkCurrentBottomMargin {}
+  {\dim_use:N \g__ltxtalk_current_bottom_margin_dim}
 
 \NewTemplateType { lttheme-slot } { 1 }
 \DeclareTemplateInterface { lttheme-slot } { standard } { 1 }
@@ -3972,6 +3990,10 @@ theme.
       \g__ltxtalk_base_left_margin_dim
     \dim_gset_eq:NN \g__ltxtalk_current_right_margin_dim
       \g__ltxtalk_base_right_margin_dim
+    \dim_gset_eq:NN \g__ltxtalk_current_top_margin_dim
+      \g__ltxtalk_base_top_margin_dim
+    \dim_gset_eq:NN \g__ltxtalk_current_bottom_margin_dim
+      \g__ltxtalk_base_bottom_margin_dim
     \bool_if:NT \l__ltxtalk_show_left_margin_bool
       {
         \dim_gadd:Nn \g__ltxtalk_current_left_margin_dim
@@ -3982,10 +4004,36 @@ theme.
         \dim_gadd:Nn \g__ltxtalk_current_right_margin_dim
           {\l__ltxtalk_content_inset_right_dim}
       }
+    % The header and footer are page overlays, whereas the frame contents
+    % occupy LaTeX's text area. Keep the latter outside every visible theme
+    % area. Retaining the class margin when it is larger preserves the
+    % whitespace of themes with a shallow header or footer.
+    \bool_if:NT \l__ltxtalk_show_header_bool
+      {
+        \dim_gset:Nn \g__ltxtalk_current_top_margin_dim
+          {
+            \dim_max:nn
+              {\g__ltxtalk_base_top_margin_dim}
+              {\l__ltxtalk_header_height_dim}
+          }
+      }
+    \bool_if:NT \l__ltxtalk_show_footer_bool
+      {
+        \dim_gset:Nn \g__ltxtalk_current_bottom_margin_dim
+          {
+            \dim_max:nn
+              {\g__ltxtalk_base_bottom_margin_dim}
+              {\l__ltxtalk_footer_height_dim}
+          }
+      }
     \cs_gset:Npx \Gm@lmargin
       {\dim_use:N \g__ltxtalk_current_left_margin_dim}
     \cs_gset:Npx \Gm@rmargin
       {\dim_use:N \g__ltxtalk_current_right_margin_dim}
+    \cs_gset:Npx \Gm@tmargin
+      {\dim_use:N \g__ltxtalk_current_top_margin_dim}
+    \cs_gset:Npx \Gm@bmargin
+      {\dim_use:N \g__ltxtalk_current_bottom_margin_dim}
     \dim_gset:Nn \textwidth
       {
         \paperwidth-\g__ltxtalk_current_left_margin_dim
@@ -3997,6 +4045,24 @@ theme.
     \dim_gset_eq:NN \columnwidth \textwidth
     \dim_gset_eq:NN \linewidth \textwidth
     \dim_gset_eq:NN \hsize \textwidth
+    \dim_gset:Nn \textheight
+      {
+        \paperheight-\g__ltxtalk_current_top_margin_dim
+        -\g__ltxtalk_current_bottom_margin_dim
+      }
+    % geometry is loaded without includehead: its top margin denotes the
+    % beginning of the text body, while \topmargin is measured to the header
+    % baseline machinery. Mirror geometry's conversion and refresh the
+    % output routine dimensions, as \newgeometry would do, without forcing a
+    % page break during an lttheme layout switch.
+    \dim_gset:Nn \topmargin
+      {
+        \g__ltxtalk_current_top_margin_dim
+        -1in-\headheight-\headsep
+      }
+    \dim_gset_eq:NN \@colht \textheight
+    \dim_gset_eq:NN \@colroom \textheight
+    \dim_gset_eq:NN \vsize \textheight
   }
 
 \NewDocumentCommand \setltxtalkslotcontent { m m } {

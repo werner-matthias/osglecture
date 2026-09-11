@@ -1,0 +1,55 @@
+\DocumentMetadata{}
+\input regression-test.tex
+\documentclass{ltx-talk}
+\usepackage{ltxtalk-theme}
+
+\begin{document}
+\START
+\ExplSyntaxOn
+
+\dim_set:Nn \l_tmpa_dim {\textheight}
+
+\ltxtalksetup
+  {header=true,header-height=14mm,footer=true,footer-height=12mm}
+
+\dim_compare:nNnTF {\use:c{Gm@tmargin}} = {14mm}
+  {\TYPE{header-margin:passed}}
+  {\TYPE{header-margin:FAILED}}
+\dim_compare:nNnTF {\use:c{Gm@bmargin}} = {12mm}
+  {\TYPE{footer-margin:passed}}
+  {\TYPE{footer-margin:FAILED}}
+\dim_compare:nNnTF {\textheight} = {\paperheight-14mm-12mm}
+  {\TYPE{textheight:passed}}
+  {\TYPE{textheight:FAILED}}
+\dim_compare:nNnTF {\topmargin} = {14mm-1in-\headheight-\headsep}
+  {\TYPE{topmargin:passed}}
+  {\TYPE{topmargin:FAILED}}
+\dim_compare:nNnTF {\use:c{@colht}} = {\textheight}
+  {\TYPE{colht:passed}}
+  {\TYPE{colht:FAILED}}
+
+% Shallow theme areas must not reduce the class's original whitespace.
+\ltxtalksetup
+  {header=true,header-height=1mm,footer=true,footer-height=1mm}
+\dim_compare:nNnTF {\use:c{Gm@tmargin}} = {\LTXTalkBaseTopMargin}
+  {\TYPE{shallow-header:passed}}
+  {\TYPE{shallow-header:FAILED}}
+\dim_compare:nNnTF {\use:c{Gm@bmargin}} = {\LTXTalkBaseBottomMargin}
+  {\TYPE{shallow-footer:passed}}
+  {\TYPE{shallow-footer:FAILED}}
+
+% Disabling both areas restores the complete original vertical geometry.
+\ltxtalksetup{header=false,footer=false}
+\dim_compare:nNnTF {\use:c{Gm@tmargin}} = {\LTXTalkBaseTopMargin}
+  {\TYPE{restore-top:passed}}
+  {\TYPE{restore-top:FAILED}}
+\dim_compare:nNnTF {\use:c{Gm@bmargin}} = {\LTXTalkBaseBottomMargin}
+  {\TYPE{restore-bottom:passed}}
+  {\TYPE{restore-bottom:FAILED}}
+\dim_compare:nNnTF {\textheight} = {\l_tmpa_dim}
+  {\TYPE{restore-height:passed}}
+  {\TYPE{restore-height:FAILED}}
+
+\ExplSyntaxOff
+\END
+\end{document}
