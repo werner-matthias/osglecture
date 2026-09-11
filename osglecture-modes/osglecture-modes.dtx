@@ -26,6 +26,8 @@ Matthias Werner.
 \generate{
   \file{osglecture-modes.sty}
     {\from{osglecture-modes.dtx}{package}}
+  \file{osglecture-modes-overlays.code.tex}
+    {\from{osglecture-modes.dtx}{overlays}}
   \file{osglecture-modes-ltxtalk.sty}
     {\from{osglecture-modes.dtx}{ltxtalk}}
   \file{osglecture-modes-ltxtalk.lua}
@@ -694,6 +696,8 @@ Text\\<slides>[3ex]
 \msg_new:nnn { osglecture_modes } { graph-cycle }
   { Mode~parent~cycle~detected~at~'#1'. }
 
+\bool_new:N \g_osglecture_modes_deferred_bool
+
 \keys_define:nn { osglecture_modes }
   {
     mode .tl_gset:N = \g_osglecture_modes_option_mode_tl,
@@ -703,6 +707,12 @@ Text\\<slides>[3ex]
     patch-overlays .initial:n = true,
     full .meta:n = { patch-overlays = #1 },
     full .default:n = true,
+    % A class that loads this package before its own \LoadClass (osglecture
+    % does, so the mode graph is finalized in time for class options keyed by
+    % mode) sets this: leaf-mode resolution and overlay patching then wait for
+    % \LectureModesActivateOverlays, called once the base class is present.
+    deferred .bool_gset:N = \g_osglecture_modes_deferred_bool,
+    deferred .initial:n = false,
   }
 \ProcessKeyOptions [ osglecture_modes ]
 
@@ -1479,8 +1489,11 @@ Text\\<slides>[3ex]
 \DeclareLectureMode[parents=longform]{web}
 \DeclareLectureModeAlias{slides}{projector}
 
-% Resolve the compatibility option immediately, so metadata in the preamble
-% sees the selected mode. osglecture should pass an explicit leaf mode.
+% Resolve the compatibility option, so metadata in the preamble sees the
+% selected mode. osglecture should pass an explicit leaf mode. Deferred: a
+% class doing its own leaf resolution before \LoadClass skips this entirely.
+\cs_new_protected:Npn \__osglecture_modes_resolve_leaf:
+  {
 \tl_if_eq:NnTF \g_osglecture_modes_option_mode_tl {auto}
   {
     \@ifclassloaded{beamer}
@@ -1514,7 +1527,34 @@ Text\\<slides>[3ex]
       }
   }
   { \exp_args:NV \SetLectureModes \g_osglecture_modes_option_mode_tl }
+  }
 
+% Wire portable mode expressions into the loaded overlay backend. Needs the
+% base class present, so a deferred load runs this from
+% \LectureModesActivateOverlays after \LoadClass rather than now. The body is
+% kept in a separate file so its command-parameter tokens are not reparsed
+% one nesting level too deep inside a wrapper definition.
+\cs_new_protected:Npn \__osglecture_modes_patch_overlays:
+  { \file_input:n { osglecture-modes-overlays.code.tex } }
+\NewDocumentCommand \LectureModesActivateOverlays { }
+  { \__osglecture_modes_patch_overlays: }
+
+% A normal \usepackage load happens after \documentclass, so the base class
+% is already present: resolve and patch straight away. A deferred load waits
+% for the class to call \LectureModesActivateOverlays.
+\bool_if:NF \g_osglecture_modes_deferred_bool
+  {
+    \__osglecture_modes_resolve_leaf:
+    \__osglecture_modes_patch_overlays:
+  }
+
+\AddToHook{begindocument/before}{\osglecture_modes_finalize_commands:}
+%</package>
+
+%<*overlays>
+% Wired into the loaded overlay backend by
+% \__osglecture_modes_patch_overlays:; runs in expl3 syntax provided by its
+% caller.
 % Let the native overlay decoders recognize a pure portable mode expression.
 % Everything else, especially mixed mode/overlay syntax, remains untouched.
 \bool_if:NT \g_osglecture_modes_patch_overlays_bool
@@ -1715,9 +1755,7 @@ Text\\<slides>[3ex]
   { \NewDocumentCommand \pause { O{} } { } }
 \cs_if_exist:NF \temporal
   { \NewDocumentCommand \temporal { d<> +m +m +m } {#3} }
-
-\AddToHook{begindocument/before}{\osglecture_modes_finalize_commands:}
-%</package>
+%</overlays>
 
 %<*ltxtalk>
 \ProvidesExplPackage{osglecture-modes-ltxtalk}

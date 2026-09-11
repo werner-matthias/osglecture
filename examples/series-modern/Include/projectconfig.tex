@@ -1,27 +1,16 @@
-% langselect's target language is bridged from OLLM's own per-language
-% build value (\OsgLectureLanguage is not yet defined this early in class
-% loading, but the build-spec accessor it is built from already is), so a
-% single langselect-aware source produces the correct language without any
-% further per-target configuration.
+% The selectable languages and their order come from the project manifest
+% ([targets.defaults].languages); the class hands them to langselect from the
+% build file, so a single langselect-aware source needs no languages setup
+% here. \olsTargetLanguage is likewise bridged from the per-build language
+% before langselect loads. \title is deferred through osglecture's metadata
+% queue and replayed after \LoadClass, so \lende is defined by the time it
+% runs.
 \OsgLectureBuildLoadedTF
   { \edef\olsTargetLanguage{\OsgLectureBuildValue{language}} }
   { }
-% \LectureProjectSetup{languages=...} hides that multilingual support is
-% technically implemented by langselect and benefits from the same
-% intercept-and-replay queue that a direct \usepackage{langselect} in
-% projectconfig.tex would get -- packages that themselves probe "does the
-% base class already define X", as langselect's default 'unified
-% shorthands' does via csquotes, would otherwise see a false negative
-% this early and could collide with the base class's (here ltx-talk's)
-% own later definition. \title below is deferred the same way
-% (osglecture's existing metadata-field queue), replayed in the same
-% order right after \LoadClass, so \lende is already available by the
-% time it runs -- no special handling needed here.
-\LectureProjectSetup{languages={selectable={en,de}}}
 \title{\lende{One source, multiple documents}{Eine Quelle, mehrere Dokumente}}
 \author<presentation>[M.~Mustermann]{Max Mustermann}
 \author<longform>[Mustermann]{Max Mustermann}
-\LectureTargetSetup{talk}{profile=series-ltx-talk}
 \OsgLectureSetup{
   mode/longform = {
     continuation = {counters={page,section}}

@@ -580,6 +580,7 @@ individually. \code{<all>} forces columns in every mode, while, for example,
 \tl_new:N \l__osglecture_language_tl
 \tl_new:N \l__osglecture_base_options_tl
 \tl_new:N \l__osglecture_selected_options_tl
+\clist_new:N \l__osglecture_active_modes_clist
 \tl_new:N \l__osglecture_setup_file_tl
 \tl_new:N \l__osglecture_mode_setup_file_tl
 \tl_new:N \l__osglecture_additional_modes_tl
@@ -606,7 +607,11 @@ individually. \code{<all>} forces columns in every mode, while, for example,
   { Disable~document~metadata~for~this~target~or~select~another~profile. }
 \msg_new:nnnn { osglecture } { metadata-policy-conflict }
   { Build~metadata~policy~'#1'~conflicts~with~profile~'#2'~('#3'). }
-  { Change~the~target-specific~document_metadata~policy~or~the~target~profile. }
+  { Set~document_metadata~for~target~'#4'~in~the~project~manifest~to~match~
+    profile~'#2',~or~select~a~profile~whose~contract~is~'#1'. }
+\msg_new:nnn { osglecture } { selectable-from-manifest }
+  { The~selectable~languages~come~from~the~project~manifest~for~an~OLLM~
+    build;~the~'selectable'~value~in~projectconfig.tex~is~ignored. }
 \msg_new:nnnn { osglecture } { standalone-job-conflict }
   { Standalone~mode~cannot~be~combined~with~an~OLLM~job. }
   { Remove~the~standalone~class~option~or~build~without~OLLM. }
@@ -710,51 +715,44 @@ individually. \code{<all>} forces columns in every mode, while, for example,
       {
         \tl_set:Ne \l__osglecture_project_config_tl
           { \OsgLectureManifestProjectConfigPath }
-        \file_if_exist:VTF \l__osglecture_project_config_tl
-          {
-            \osglecture_project_intercept_package_commands:
-            \exp_args:NV \file_input:n \l__osglecture_project_config_tl
-            \osglecture_project_restore_package_commands:
-          }
-          { }
+        % The package-command intercept must also cover the langselect load
+        % triggered by \__osglecture_language_autoconfigure: -- that call
+        % happens outside projectconfig.tex but the same "loaded before the
+        % base class" hazard applies.
+        \osglecture_project_intercept_package_commands:
+        \file_if_exist:VT \l__osglecture_project_config_tl
+          { \exp_args:NV \file_input:n \l__osglecture_project_config_tl }
+        \__osglecture_language_autoconfigure:
+        \osglecture_project_restore_package_commands:
       }
   }
   { }
 \osglecture_project_suspend_metadata_commands:
 
-\str_if_eq:VnTF \l__osglecture_target_profile_class_tl {presentation}
-  { \tl_set:Nn \l_tmpa_tl {presentation-profile} }
-  { \tl_set:Nn \l_tmpa_tl {longform-profile} }
-\exp_args:NNV \prop_get:NnN
-  \g__osglecture_project_policy_prop \l_tmpa_tl \l_tmpb_tl
-\bool_set_false:N \l_tmpa_bool
-\exp_args:NNV \prop_get:NnNT
-  \g__osglecture_project_policy_enforced_prop \l_tmpa_tl \l_tmpd_tl
-  { \str_if_eq:VnT \l_tmpd_tl {true} {\bool_set_true:N \l_tmpa_bool} }
+% For an OLLM build the document profile is chosen in the project manifest
+% and travels in the build file; it has to be known before \LoadClass, which
+% projectconfig.tex (read here, but only consumed afterwards) cannot promise.
+% A standalone document has no build file and picks the profile through the
+% class option or, failing that, the project policy in projectconfig.tex.
 \OsgLectureBuildLoadedTF
+  { \tl_set:Ne \l__osglecture_document_profile_tl {\OsgLectureBuildValue{profile}} }
   {
-    \tl_set:Ne \l_tmpc_tl {\OsgLectureBuildValue{target}}
-    \exp_args:NNV \prop_get:NnNT
-      \g__osglecture_project_target_profile_prop \l_tmpc_tl \l_tmpd_tl
+    \str_if_eq:VnTF \l__osglecture_target_profile_class_tl {presentation}
+      { \tl_set:Nn \l_tmpa_tl {presentation-profile} }
+      { \tl_set:Nn \l_tmpa_tl {longform-profile} }
+    \exp_args:NNV \prop_get:NnN
+      \g__osglecture_project_policy_prop \l_tmpa_tl \l_tmpb_tl
+    \bool_if:NTF \l__osglecture_profile_explicit_bool
       {
-        \bool_if:NTF \l_tmpa_bool
-          { \str_if_eq:VVF \l_tmpb_tl \l_tmpd_tl
-              { \msg_fatal:nnxxx {osglecture-project}{enforced-conflict}
-                  {\l_tmpa_tl}{\l_tmpb_tl}{\l_tmpd_tl} } }
-          { \tl_set_eq:NN \l_tmpb_tl \l_tmpd_tl }
+        \exp_args:NNV \prop_get:NnNT
+          \g__osglecture_project_policy_enforced_prop \l_tmpa_tl \l_tmpc_tl
+          { \str_if_eq:VnT \l_tmpc_tl {true}
+              { \str_if_eq:VVF \l__osglecture_document_profile_tl \l_tmpb_tl
+                  { \msg_fatal:nnxx {osglecture}{profile-conflict}
+                      {\l__osglecture_document_profile_tl}{\l_tmpb_tl} } } }
       }
+      { \tl_set_eq:NN \l__osglecture_document_profile_tl \l_tmpb_tl }
   }
-  { }
-\bool_if:NTF \l__osglecture_profile_explicit_bool
-  {
-    \exp_args:NNV \prop_get:NnNT
-      \g__osglecture_project_policy_enforced_prop \l_tmpa_tl \l_tmpc_tl
-      { \str_if_eq:VnT \l_tmpc_tl {true}
-          { \str_if_eq:VVF \l__osglecture_document_profile_tl \l_tmpb_tl
-              { \msg_fatal:nnxx {osglecture}{profile-conflict}
-                  {\l__osglecture_document_profile_tl}{\l_tmpb_tl} } } }
-  }
-  { \tl_set_eq:NN \l__osglecture_document_profile_tl \l_tmpb_tl }
 \tl_if_empty:NT \l__osglecture_document_profile_tl
   { \msg_fatal:nnV {osglecture}{profile-required}\l__osglecture_doctype_tl }
 
@@ -783,16 +781,10 @@ individually. \code{<all>} forces columns in every mode, while, for example,
 \bool_set_false:N \l_tmpa_bool
 \cs_if_exist:NT \IfDocumentMetadataTF
   { \IfDocumentMetadataTF {\bool_set_true:N \l_tmpa_bool} { } }
-\str_if_eq:VnT \l_tmpa_tl {required}
-  {
-    \bool_if:NF \l_tmpa_bool
-      { \msg_fatal:nnV {osglecture}{metadata-required}
-          \l__osglecture_document_profile_tl }
-  }
-\str_if_eq:VnT \l_tmpa_tl {forbidden}
-  { \bool_if:NT \l_tmpa_bool
-      { \msg_fatal:nnV {osglecture}{metadata-forbidden}
-          \l__osglecture_document_profile_tl } }
+% An OLLM build fixes the metadata policy before the class runs; a policy
+% that contradicts the selected profile is the root cause and must be
+% reported before the generic required/forbidden checks below, which would
+% otherwise only tell the author to place \DocumentMetadata somewhere.
 \OsgLectureBuildLoadedTF
   {
     \tl_set:Ne \l_tmpb_tl
@@ -803,15 +795,82 @@ individually. \code{<all>} forces columns in every mode, while, for example,
           {\str_if_eq_p:Vn \l_tmpb_tl {disabled}} }
       { \bool_lazy_and_p:nn
           {\str_if_eq_p:Vn \l_tmpa_tl {forbidden}}
-          {\str_if_eq_p:Vn \l_tmpb_tl {required}} }
-      { \msg_fatal:nnxxx {osglecture}{metadata-policy-conflict}
-          {\l_tmpb_tl}{\l__osglecture_document_profile_tl}{\l_tmpa_tl} }
+          {\str_if_eq_p:Vn \l_tmpb_tl {enabled}} }
+      { \msg_fatal:nnxxxx {osglecture}{metadata-policy-conflict}
+          {\l_tmpb_tl}{\l__osglecture_document_profile_tl}{\l_tmpa_tl}
+          {\OsgLectureBuildValue{target}} }
   }
   { }
+\str_if_eq:VnT \l_tmpa_tl {required}
+  {
+    \bool_if:NF \l_tmpa_bool
+      { \msg_fatal:nnV {osglecture}{metadata-required}
+          \l__osglecture_document_profile_tl }
+  }
+\str_if_eq:VnT \l_tmpa_tl {forbidden}
+  { \bool_if:NT \l_tmpa_bool
+      { \msg_fatal:nnV {osglecture}{metadata-forbidden}
+          \l__osglecture_document_profile_tl } }
+
+% The mode graph is configuration, not runtime state, and is built and
+% finalized here -- before \LoadClass -- so that class options keyed by mode
+% (class/<mode> in \OsgLectureSetup) can be resolved against the full graph.
+% The overlay-backend patching in osglecture-modes does need the loaded base
+% class, so that half is deferred to \LectureModesActivateOverlays below.
+\bool_if:NF \l__osglecture_patch_overlays_bool
+  { \PassOptionsToPackage{patch-overlays=false}{osglecture-modes} }
+\PassOptionsToPackage{deferred=true}{osglecture-modes}
+\RequirePackage{osglecture-modes}
+\DeclareModeBehaviorClass{presentation-dynamic}
+\DeclareModeBehaviorClass{presentation-static}
+\DeclareModeBehaviorClass{longform}
+\AssignLectureModeBehavior{slides}{presentation-dynamic}
+\AssignLectureModeBehavior{handout}{presentation-static}
+\AssignLectureModeBehavior{script,article}{longform}
+\tl_set:Ne \l__osglecture_mode_setup_file_tl
+  {
+    \osglecture_profile_value:Vn
+      \l__osglecture_document_profile_tl {mode-setup-file}
+  }
+\tl_if_empty:NF \l__osglecture_mode_setup_file_tl
+  { \exp_args:NV \file_input:n \l__osglecture_mode_setup_file_tl }
+\str_case:VnF \l__osglecture_doctype_tl
+  {
+    {script}  { \SetLectureModes{script,article} }
+    {article} { \SetLectureModes{article,script} }
+  }
+  { \exp_args:NV \SetLectureModes \l__osglecture_doctype_tl }
+\str_if_eq:VnT \l__osglecture_backend_tl {beamer}
+  { \AddLectureModes{beamer} }
+\tl_set:Ne \l_tmpa_tl
+  {
+    \osglecture_profile_value:Vn
+      \l__osglecture_document_profile_tl {modes}
+  }
+\tl_if_empty:NF \l_tmpa_tl { \exp_args:NV \AddLectureModes \l_tmpa_tl }
+\tl_if_empty:NF \l__osglecture_additional_modes_tl
+  { \exp_args:NV \AddLectureModes \l__osglecture_additional_modes_tl }
+\FinalizeLectureModes
+
 \tl_set:Ne \l__osglecture_selected_options_tl
   {
     \osglecture_profile_class_options:VV
       \l__osglecture_document_profile_tl \l__osglecture_doctype_tl
+  }
+% Base-class options from \OsgLectureSetup{class/<mode>={...}}: iterate the
+% modes active in the now-finalized graph and append the options keyed by
+% each. Broad and semantic, so ahead of the explicit project class-options
+% and the class-name-addressed ones, which override on collision. A key
+% naming an inactive or misspelled mode is simply never looked up.
+\clist_set:Ne \l__osglecture_active_modes_clist { \ActiveLectureModes }
+\clist_map_inline:Nn \l__osglecture_active_modes_clist
+  {
+    \prop_get:NnNT \g__osglecture_setup_class_mode_prop {#1} \l_tmpa_tl
+      {
+        \tl_if_empty:NF \l__osglecture_selected_options_tl
+          { \tl_put_right:Nn \l__osglecture_selected_options_tl {,} }
+        \tl_put_right:NV \l__osglecture_selected_options_tl \l_tmpa_tl
+      }
   }
 \tl_set:Ne \l_tmpa_tl { \OsgLectureProjectClassOptions }
 \tl_if_empty:NF \l_tmpa_tl
@@ -875,39 +934,10 @@ individually. \code{<all>} forces columns in every mode, while, for example,
 \char_set_catcode:nn {32}{10}
 \exp_args:NV \LoadClass \l__osglecture_base_class_tl
 
-\bool_if:NF \l__osglecture_patch_overlays_bool
-  { \PassOptionsToPackage{patch-overlays=false}{osglecture-modes} }
-\RequirePackage{osglecture-modes}
-\DeclareModeBehaviorClass{presentation-dynamic}
-\DeclareModeBehaviorClass{presentation-static}
-\DeclareModeBehaviorClass{longform}
-\AssignLectureModeBehavior{slides}{presentation-dynamic}
-\AssignLectureModeBehavior{handout}{presentation-static}
-\AssignLectureModeBehavior{script,article}{longform}
-\tl_set:Ne \l__osglecture_mode_setup_file_tl
-  {
-    \osglecture_profile_value:Vn
-      \l__osglecture_document_profile_tl {mode-setup-file}
-  }
-\tl_if_empty:NF \l__osglecture_mode_setup_file_tl
-  { \exp_args:NV \file_input:n \l__osglecture_mode_setup_file_tl }
-\str_case:VnF \l__osglecture_doctype_tl
-  {
-    {script}  { \SetLectureModes{script,article} }
-    {article} { \SetLectureModes{article,script} }
-  }
-  { \exp_args:NV \SetLectureModes \l__osglecture_doctype_tl }
-\str_if_eq:VnT \l__osglecture_backend_tl {beamer}
-  { \AddLectureModes{beamer} }
-\tl_set:Ne \l_tmpa_tl
-  {
-    \osglecture_profile_value:Vn
-      \l__osglecture_document_profile_tl {modes}
-  }
-\tl_if_empty:NF \l_tmpa_tl { \exp_args:NV \AddLectureModes \l_tmpa_tl }
-\tl_if_empty:NF \l__osglecture_additional_modes_tl
-  { \exp_args:NV \AddLectureModes \l__osglecture_additional_modes_tl }
-\FinalizeLectureModes
+% The base class is now present: let osglecture-modes wire portable mode
+% expressions into its overlay backend (the graph itself was finalized
+% before \LoadClass above).
+\LectureModesActivateOverlays
 
 \NewExpandableDocumentCommand \OsgLectureDocumentType { }
   { \tl_use:N \l__osglecture_doctype_tl }
@@ -1080,9 +1110,12 @@ individually. \code{<all>} forces columns in every mode, while, for example,
       \__osglecture_build_put:nn {generation-id} {#1},
     target              .code:n = \__osglecture_build_put:nn {target} {#1},
     profile-class       .code:n = \__osglecture_build_put:nn {profile-class} {#1},
-    document-metadata-policy .choices:nn = { required, disabled }
+    profile             .code:n = \__osglecture_build_put:nn {profile} {#1},
+    document-metadata-policy .choices:nn = { enabled, disabled }
       { \__osglecture_build_put:nn {document-metadata-policy} {#1} },
     doctype             .code:n = \__osglecture_build_put:nn {doctype} {#1},
+    selectable-languages .code:n =
+      \__osglecture_build_put:nn {selectable-languages} {#1},
     applicable-unit-scopes .code:n =
       \__osglecture_build_put:nn {applicable-unit-scopes} {#1},
     language            .code:n = \__osglecture_build_put:nn {language} {#1},
@@ -1108,7 +1141,7 @@ individually. \code{<all>} forces columns in every mode, while, for example,
 \cs_new_protected:Npn \__osglecture_build_validate:
   {
     \clist_map_inline:nn
-      {schema,job-id,context,series-id,target,profile-class,
+      {schema,job-id,context,series-id,target,profile-class,profile,
        document-metadata-policy,
        doctype,applicable-unit-scopes,language,
        structure-signature,
@@ -1195,6 +1228,7 @@ individually. \code{<all>} forces columns in every mode, while, for example,
 \prop_new:N \g__osglecture_project_target_profile_prop
 \prop_new:N \g__osglecture_project_target_filecolor_prop
 \prop_new:N \g__osglecture_setup_class_prop
+\prop_new:N \g__osglecture_setup_class_mode_prop
 \prop_new:N \g__osglecture_setup_mode_prop
 \seq_new:N \g__osglecture_project_preamble_seq
 \tl_new:N \l__osglecture_project_target_tl
@@ -1345,6 +1379,8 @@ individually. \code{<all>} forces columns in every mode, while, for example,
 % {\cs{RequirePackage}}{\code{osglecture/project/languages}}
 \tl_new:N \g__osglecture_language_setup_tl
 \bool_new:N \g__osglecture_language_target_explicit_bool
+\bool_new:N \g__osglecture_language_configured_bool
+\cs_generate_variant:Nn \clist_count:n { V }
 \cs_new_protected:Npn \__osglecture_language_setup_append:nn #1#2
   {
     \tl_if_empty:NF \g__osglecture_language_setup_tl
@@ -1364,8 +1400,16 @@ individually. \code{<all>} forces columns in every mode, while, for example,
 % {\option{languages}}{\option{selectable}}{\option{languages}}
 \keys_define:nn { osglecture/project/languages }
   {
+% For an OLLM build the selectable-language set (and its order, which decides
+% langselect's bilingual macro name) is the manifest's; a 'selectable' value
+% written in projectconfig.tex would be a second, competing source and is
+% dropped with a warning. A standalone document has no manifest and keeps it.
     selectable .code:n =
-      { \__osglecture_language_setup_append:nn {languages}{#1} },
+      {
+        \OsgLectureBuildLoadedTF
+          { \msg_warning:nn {osglecture}{selectable-from-manifest} }
+          { \__osglecture_language_setup_append:nn {languages}{#1} }
+      },
     targetlang .code:n =
       {
         \bool_gset_true:N \g__osglecture_language_target_explicit_bool
@@ -1421,13 +1465,28 @@ individually. \code{<all>} forces columns in every mode, while, for example,
       {
         \tl_gclear:N \g__osglecture_language_setup_tl
         \bool_gset_false:N \g__osglecture_language_target_explicit_bool
+        \tl_set:Nn \l_tmpb_tl {#1}
+        \OsgLectureBuildLoadedTF
+          {
+            \tl_set:Ne \l_tmpa_tl
+              {\OsgLectureBuildValue{selectable-languages}}
+            \tl_if_empty:NF \l_tmpa_tl
+              {
+                \__osglecture_language_setup_append:nn
+                  {languages}{\l_tmpa_tl}
+                \tl_put_left:Nx \l_tmpb_tl
+                  { selectable = { \l_tmpa_tl } , }
+              }
+          }
+          { }
         \keys_set:nn { osglecture/project/languages } {#1}
         \bool_if:NF \g__osglecture_language_target_explicit_bool
           {
             \__osglecture_language_setup_append:nn
               {targetlang}{\l__osglecture_language_tl}
           }
-        \__osglecture_policy_set:nn {languages}{#1}
+        \exp_args:NnV \__osglecture_policy_set:nn {languages} \l_tmpb_tl
+        \bool_gset_true:N \g__osglecture_language_configured_bool
         \tl_set:Nx \l_tmpa_tl
           {
             \exp_not:N \RequirePackage
@@ -1437,15 +1496,42 @@ individually. \code{<all>} forces columns in every mode, while, for example,
       },
   }
 
+% An OLLM build with two or more selectable languages needs langselect
+% configured even when projectconfig.tex never calls \LectureProjectSetup
+% with a languages key: the manifest is the single source, and a
+% single-language build needs no langselect at all.
+\cs_new_protected:Npn \__osglecture_language_autoconfigure:
+  {
+    \OsgLectureBuildLoadedTF
+      {
+        \bool_if:NF \g__osglecture_language_configured_bool
+          {
+            \tl_set:Ne \l_tmpa_tl
+              {\OsgLectureBuildValue{selectable-languages}}
+            \int_compare:nNnT { \clist_count:V \l_tmpa_tl } > { 1 }
+              { \keys_set:nn { osglecture/project } { languages = {} } }
+          }
+      }
+      { }
+  }
+
 \NewDocumentCommand \LectureProjectSetup { m }
   { \keys_set:nn { osglecture/project } {#1} }
 
 % \ldeen*{Der äußere Setup-Namensraum ist absichtlich explizit:
 % @1 und @2 bleiben eindeutig unterscheidbar, selbst wenn
 % \LaTeX-Ökosysteme denselben Namen für Basisklasse und Modus
-% wiederverwenden.}{The outer setup namespace is deliberately explicit:
-% @1 and @2 stay unambiguous even when \LaTeX\ ecosystems reuse the same
-% name for a base class and a mode.}{\code{class/article}}{\code{mode/article}}
+% wiederverwenden. Innerhalb von @1 unterscheidet die Winkelschreibweise
+% (\code{class/<slides>}) modus-adressierte Basisklassenoptionen vom
+% Klassennamen (\code{class/beamer}); beide erreichen die Basisklasse vor
+% \cs{LoadClass}, ein Modusausdruck wird gegen den fertigen Modusgraphen
+% ausgewertet.}{The outer setup namespace is deliberately explicit: @1 and
+% @2 stay unambiguous even when \LaTeX\ ecosystems reuse the same name for a
+% base class and a mode. Inside @1 the angle form (\code{class/<slides>})
+% distinguishes mode-addressed base-class options from the class name
+% (\code{class/beamer}); both reach the base class before \cs{LoadClass}, a
+% mode expression is evaluated against the finalized mode graph.}
+% {\code{class/article}}{\code{mode/article}}
 \cs_new_protected:Npn \__osglecture_setup_append:Nnn #1#2#3
   {
     \prop_get:NnNTF #1 {#2} \l_tmpa_tl
@@ -1464,11 +1550,21 @@ individually. \code{<all>} forces columns in every mode, while, for example,
           {
             {class}
               {
-                \exp_args:NV \OsgLectureProfileClassKnownTF \l_tmpb_tl
-                  { \exp_args:NNV \__osglecture_setup_append:Nnn
-                      \g__osglecture_setup_class_prop \l_tmpb_tl {#2} }
-                  { \msg_error:nnV {osglecture-project}{unknown-setup-class}
-                      \l_tmpb_tl }
+                \bool_lazy_and:nnTF
+                  { \str_if_eq_p:ee { \tl_range:Nnn \l_tmpb_tl {1} {1} } { < } }
+                  { \str_if_eq_p:ee { \tl_range:Nnn \l_tmpb_tl {-1} {-1} } { > } }
+                  {
+                    \tl_set:Ne \l_tmpc_tl { \tl_range:Nnn \l_tmpb_tl {2} {-2} }
+                    \exp_args:NNV \__osglecture_setup_append:Nnn
+                      \g__osglecture_setup_class_mode_prop \l_tmpc_tl {#2}
+                  }
+                  {
+                    \exp_args:NV \OsgLectureProfileClassKnownTF \l_tmpb_tl
+                      { \exp_args:NNV \__osglecture_setup_append:Nnn
+                          \g__osglecture_setup_class_prop \l_tmpb_tl {#2} }
+                      { \msg_error:nnV {osglecture-project}{unknown-setup-class}
+                          \l_tmpb_tl }
+                  }
               }
             {mode}
               { \exp_args:NNV \__osglecture_setup_append:Nnn

@@ -26,4 +26,5 @@ series-logical=processes
 series-physical=020-processes
 series-unit-known=true
 project-theme-enforced=true
-project-class-options=early
+class-mode-option=applied
+class-mode-inactive=no

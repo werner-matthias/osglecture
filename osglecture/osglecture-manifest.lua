@@ -101,14 +101,15 @@ function manifest.load(start_path, options)
   }
 end
 
--- \ldeen{Projektweite Sprachliste aus \code{[languages]}. Ein fehlender
--- Abschnitt ergibt eine leere Liste, kein Fehler: Nicht jedes Manifest muss
--- Sprachvarianten deklarieren.}{Project-wide language list from
--- \code{[languages]}. A missing section yields an empty list, not an
--- error: not every manifest has to declare language variants.}
+-- \ldeen{Projektweite Sprachliste aus \code{[targets.defaults].languages}.
+-- Ein fehlender Abschnitt ergibt eine leere Liste, kein Fehler: Nicht jedes
+-- Manifest muss Sprachvarianten deklarieren.}{Project-wide language list from
+-- \code{[targets.defaults].languages}. A missing section yields an empty
+-- list, not an error: not every manifest has to declare language variants.}
 function manifest.available_languages(project_manifest)
-  local languages = project_manifest.languages
-  return (languages and languages.available) or {}
+  local targets = project_manifest.targets
+  local defaults = targets and targets.defaults
+  return (defaults and defaults.languages) or {}
 end
 
 -- \ldeen{Der rohe Bundle-Preset-Name, etwa \code{"OSG lecture/1"}. Die
@@ -128,9 +129,9 @@ end
 -- relative to the project root. @2 is absolute so the result is
 -- independent of the TeX run's current working directory.}{\code{[project.tex]}}{\code{project\_root}}
 function manifest.shared_tex(project_manifest, project_root)
-  local tex_config = project_manifest.project and project_manifest.project.tex
-  local directory = (tex_config and tex_config.directory) or DEFAULT_TEX_DIRECTORY
-  local config = (tex_config and tex_config.config) or DEFAULT_TEX_CONFIG
+  local project = project_manifest.project
+  local directory = (project and project.tex_directory) or DEFAULT_TEX_DIRECTORY
+  local config = (project and project.tex_config) or DEFAULT_TEX_CONFIG
   local shared_tex_directory = series_index.join(project_root, directory)
   return {
     shared_tex_directory = shared_tex_directory,

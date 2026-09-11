@@ -2,3 +2,9 @@ schema = 1
 kind = "bundle-preset"
 name = "OSG lecture"
 version = "1"
+
+# Fallback document profiles when a project sets neither a per-target profile
+# nor a *_profile in [targets.defaults]. These match the classes the legacy
+# osgbeamer world produced.
+presentation_profile = "beamer"
+longform_profile = "scrbook"

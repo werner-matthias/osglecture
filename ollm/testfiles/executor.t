@@ -106,10 +106,10 @@ ok grep(
   $_ =~ /\\def\\OsgLectureRequestedLanguage\{de\}/
     && /\\def\\OsgLectureRequestedTarget\{script\}/
     && /\\def\\OsgLectureRequestedProfileClass\{longform\}/
-    && /\\def\\OsgLectureRequestedDocumentMetadataPolicy\{required\}/
+    && /\\def\\OsgLectureRequestedDocumentMetadataPolicy\{enabled\}/
     && index($_, '\\input{"') >= 0,
   @metadata_command,
-), 'required metadata receives normalized target context in controlled pre-TeX';
+), 'enabled metadata receives normalized target context in controlled pre-TeX';
 for my $policy (
   [off  => '--no-shell-escape'],
   [full => '--shell-escape'],

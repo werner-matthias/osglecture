@@ -71,15 +71,22 @@ standalone example to `doctype=script` turns the same entries into connected
 prose. Frames likewise remain native presentation frames or become ordinary
 content containers, depending on the selected profile.
 
-For a complete project, OLLM selects the target, language, and profile from a
-TOML manifest. Project-wide TeX configuration can then choose concrete
-profiles without changing the shared source:
+For a complete project, OLLM selects the target, language, and document profile
+from a TOML manifest (`ollmconfig.toml`). The profile is chosen there rather
+than in the shared source, because the class needs its `\DocumentMetadata`
+contract before it runs:
 
-```latex
-\LectureTargetSetup{slides}{profile=beamer}
-\LectureTargetSetup{talk}{profile=ltx-talk}
-\LectureTargetSetup{script}{profile=scrbook}
+```toml
+[targets.defaults]
+presentation_profile = "beamer"
+longform_profile = "scrbook"
+
+[targets.talk]
+profile = "ltx-talk"
 ```
+
+`projectconfig.tex` then only carries LaTeX-side semantics -- language mapping,
+metadata fields, mode- and class-scoped options.
 
 ## Examples and documentation
 

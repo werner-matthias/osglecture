@@ -96,6 +96,8 @@ sub build_spec {
   my $artifact = File::Spec->catfile($build_directory, "$job_id.pdf");
   my $profile_class = $target->{profile_class}
     // die "target '$target_name' has no profile class";
+  my $profile = $target->{profile}
+    // die "target '$target_name' has no resolved document profile";
   my $document_metadata_policy = $target->{document_metadata}
     // die "target '$target_name' has no document metadata policy";
   my $shell_escape = $arg{manifest}{security}{shell_escape} // 'restricted';
@@ -105,7 +107,7 @@ sub build_spec {
   my $candidate = File::Spec->catfile(
     $shared_tex_directory, $document_metadata_file,
   );
-  if ($document_metadata_policy eq 'required') {
+  if ($document_metadata_policy eq 'enabled') {
     die "document metadata file required for target '$target_name': $candidate"
       if !-e $candidate;
     my $canonical = abs_path($candidate)
@@ -149,6 +151,8 @@ sub build_spec {
       target_definition => $target->{signature},
       target      => $target_name,
       doctype     => $doctype,
+      profile     => $profile,
+      profile_definition => $target->{profile_signature},
       language    => $language,
       physical_unit => $physical_unit,
       structure_signature => $structure_signature,
@@ -178,9 +182,11 @@ sub build_spec {
     doctype             => $doctype,
     applicable_unit_scopes => $target->{unit_scopes} // [],
     profile_class       => $profile_class,
+    profile             => $profile,
     document_metadata_policy => $document_metadata_policy,
     language            => $language,
     available_languages => $arg{manifest}{languages}{available},
+    selectable_languages => $arg{manifest}{targets}{$target_name}{languages},
     bundle_preset       =>
       $configuration->{definitions}{bundle_preset}{reference},
     project_root        => $project_root,
@@ -230,12 +236,15 @@ sub render {
       : ()),
     "  target={" . _tex_atom($spec->{target}) . "},",
     "  profile-class={" . _tex_atom($spec->{profile_class}) . "},",
+    "  profile={" . _tex_atom($spec->{profile}) . "},",
     "  document-metadata-policy={"
       . _tex_atom($spec->{document_metadata_policy}) . "},",
     "  doctype={" . _tex_atom($spec->{doctype}) . "},",
     "  applicable-unit-scopes={" . join(',',
       map { _tex_atom($_) } @{ $spec->{applicable_unit_scopes} }) . "},",
     "  language={" . _tex_atom($spec->{language}) . "},",
+    "  selectable-languages={" . join(',',
+      map { _tex_atom($_) } @{ $spec->{selectable_languages} // [] }) . "},",
     "  shell-escape={" . _tex_atom($spec->{shell_escape}) . "},",
     "  structure-signature={" . _tex_atom($spec->{structure_signature}) . "},",
     "  config-signature={" . _tex_atom($spec->{config_signature}) . "}",

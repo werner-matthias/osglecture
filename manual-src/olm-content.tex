@@ -111,21 +111,27 @@ OLLM selects one of them; \pkg{langselect} typesets the matching wording in
 the source. This division of responsibility keeps build logic out of the subject
 matter.}
 
-\ldeen{Tragen Sie jede Projektsprache zuerst im Manifest ein und ordnen Sie sie
+\ldeen{Tragen Sie jede Projektsprache zuerst im Manifest ein
+(\code{[targets.defaults].languages}, in fester Reihenfolge) und ordnen Sie sie
 anschließend in \File{Include/projectconfig.tex} einem von \pkg{babel}
 verstandenen Namen zu. Für Deutsch und britisches Englisch sieht die praktische
-Konfiguration so aus}{First list every project language in the manifest, then map
-it in \File{Include/projectconfig.tex} to a name understood by \pkg{babel}.
-For German and British English, a practical configuration is}: 
+Konfiguration so aus}{First list every project language in the manifest
+(\code{[targets.defaults].languages}, in a fixed order), then map it in
+\File{Include/projectconfig.tex} to a name understood by \pkg{babel}.
+For German and British English, a practical configuration is}:
 \begin{verbatim}
 \LectureProjectSetup{
   languages={
-    selectable={de,en},
     map={de=ngerman,en=british},
     load babel
   }
 }
 \end{verbatim}
+
+\ldeen{Die auswählbaren Sprachen selbst werden hier nicht mehr wiederholt --
+\osglecture\ übernimmt sie aus dem Manifest.}{The selectable languages
+themselves are no longer repeated here -- \osglecture\ takes them from the
+manifest.}
 
 \ldeen{Ohne expliziten Unterschlüssel \option{targetlang} verwendet
 \osglecture\ automatisch \cs{OsgLectureLanguage}, also die vom Build gewählte

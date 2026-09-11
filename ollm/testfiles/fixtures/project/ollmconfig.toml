@@ -1,16 +1,16 @@
-schema = 1
+schema = 2
 bundle_preset = "OSG lecture/1"
 
 [project]
 id = "bs"
+tex_directory = "Include"
+tex_config = "projectconfig.tex"
 
-[project.tex]
-directory = "Include"
-config = "projectconfig.tex"
-
-[languages]
-available = ["de", "en"]
-default = "de"
+[targets.defaults]
+languages = ["de", "en"]
+default_language = "de"
+presentation_profile = "beamer"
+longform_profile = "scrbook"
 
 [targets.slides]
 languages = ["de"]
@@ -19,8 +19,7 @@ languages = ["de"]
 languages = ["de"]
 
 [targets.script]
-languages = ["de", "en"]
-document_metadata = "required"
+document_metadata = "enabled"
 
 [security]
 shell_escape = "restricted"

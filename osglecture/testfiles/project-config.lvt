@@ -45,11 +45,14 @@
   {\TYPE{project-theme-enforced=true}}
   {\TYPE{project-theme-enforced=false}}
 \makeatletter
+% class/<longform>={oneside} must have reached scrbook (a longform build);
+% class/<presentation>={landscape} must not (presentation is inactive here).
 \if@twoside
-  \TYPE{project-class-options=missing}
+  \TYPE{class-mode-option=missing}
 \else
-  \TYPE{project-class-options=early}
+  \TYPE{class-mode-option=applied}
 \fi
 \makeatother
+\TYPE{class-mode-inactive=\ifdim\paperwidth>\paperheight yes\else no\fi}
 \END
 \end{document}

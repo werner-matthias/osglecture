@@ -1,0 +1,11 @@
+# Capability projection of the osglecture "scrbook" document profile.
+# The authoritative definition is \DeclareOsgLectureProfile in
+# osglecture-profiles.dtx; only the fields OLLM needs before the class runs
+# are mirrored here. definitions/profiles.t cross-checks the two.
+schema = 1
+kind = "profile"
+name = "scrbook"
+version = "1.0"
+profile_class = "longform"
+document_metadata = "supported"
+doctypes = ["script", "article"]

@@ -86,8 +86,7 @@ sub prepare {
   return {
     project_root => $root, series_id => $manifest->{project}{id},
     scope => $scope, deployment => $deployment,
-    overwrite_policy => $manifest->{security}{deployment}{overwrite}
-      // 'explicit',
+    overwrite_policy => $manifest->{security}{overwrite} // 'explicit',
     overwrite => $plan->{overwrite} ? 1 : 0,
     results => [sort {
          $a->{physical_unit} cmp $b->{physical_unit}

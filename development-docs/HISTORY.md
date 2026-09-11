@@ -54,6 +54,16 @@ strukturell bei OLLM verbleibend beschrieben ist (Auftragsentscheidung,
 Zustandsführung, Deployment, sowie die eigene Manifestvalidierung mit
 OLLM-Regeln) bleibt bewusst so -- das ist Zieldesign, keine Lücke.
 
-Damit ist diese Liste leer: Code und Entwicklungsdokumente stimmen an
-diesem Punkt überein. Dieser Abschnitt bleibt für den nächsten Fall stehen,
-in dem eine neue Design-Entscheidung der Umsetzung vorausläuft.
+Der Lua-Modul-Umbau ist damit deckungsgleich mit den Entwicklungsdokumenten.
+
+`DESIGN.md` Abschnitt 25 (Dokumentprofilwahl im Manifest, Schema 2) ist seit
+dem 10. September 2026 umgesetzt: `ollmconfig.toml` verwendet Schema 2 mit
+`[targets.defaults]`-Vererbung, gefalteten Sprachen (`languages` +
+`default_language`), flachem `[project]` und gebündeltem `[security]`; das
+Dokumentprofil wird im Manifest gewählt und über die Buildauftragsdatei
+durchgereicht; die Metadatenpolicy leitet OLLM aus der Profilfähigkeit ab; der
+Modusgraph wird vor `\LoadClass` finalisiert, und `\OsgLectureSetup` kennt
+`class/<mode>` (einzelner Modusname). Schema 1 wird abgewiesen, `convertproject`
+erzeugt Schema 2. Zwei Abweichungen vom ursprünglichen Wortlaut sind in
+Abschnitt 25 vermerkt. Die Abschnitte 5.3, 7.2, 7.6 und 18 sind angepasst.
+Diese Liste ist damit wieder leer.

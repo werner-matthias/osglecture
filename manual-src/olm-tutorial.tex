@@ -171,22 +171,18 @@ an order form: Nora orders two language versions of the slides and two of the
 lecture notes.}
 
 \begin{verbatim}
-schema = 1
+schema = 2
 bundle_preset = "OSG lecture/1"
 
 [project]
 id = "os-in-60"
 
-[languages]
-available = ["de", "en"]
-default = "de"
+[targets.defaults]
+languages = ["de", "en"]
+default_language = "de"
 
 [targets.slides]
-languages = ["de", "en"]
-document_metadata = "disabled"
-
 [targets.script]
-languages = ["de", "en"]
 \end{verbatim}
 
 \ldeen{Nora ist versucht, hier auch Titel, Autorin und Übersetzungen einzutragen.
@@ -259,32 +255,37 @@ long form.}
 \author{Nora Example}
 
 \LectureProjectSetup{
-  presentation-profile=beamer,
-  longform-profile=scrbook,
   languages={
-    selectable={de,en},
     map={de=ngerman,en=british},
     load babel
   }
 }
 \end{verbatim}
 
-\ldeen{Die Sprachkonfiguration enthält zwei verschiedene Arten von Namen. \OLLM\
-arbeitet mit den kurzen, portablen Kennungen \code{de} und \code{en}, wie sie
-in der Norm ISO 639-1 definiert sind.
-Das verbreitete Sprachpaket \pkg{babel} benötigt dagegen die konkreteren Namen \code{ngerman} und
-\code{british}. Der Schlüssel \option{languages} reicht diese Konfiguration
-einerseits an \cls{osglecture} (genauer gesagt: an das zu \osglecture\ gehörende \pkg{langselect})
-weiter und lädt auch das Paket \pkg{babel}; Nora muss
-sich diese Arbeitsteilung nicht bei jedem Absatz neu überlegen; die Konfiguration
-gilt für das ganze Projekt.}{The language configuration contains two different
-kinds of names. \OLLM\ uses the short, portable identifiers \code{de} and
-\code{en}. The popular language package \pkg{babel}, by contrast, needs the more specific names
-\code{ngerman} and \code{british}. The \option{languages} option passes this configuration
-on to \cls{osglecture} (more precisely, to \pkg{langselect}, which is associated with \osglecture)
-and also loads the \pkg{babel} package; Nora doesn’t have to
-rethink this division of labor for every paragraph; the configuration
-applies to the entire project.}
+\ldeen{Die Klassen \cls{beamer} und \cls{scrbook} sind bereits die Vorgaben des
+Bundle-Presets; wollte Nora stattdessen \cls{ltx-talk}, käme
+\keyis{presentation\_profile}{ltx-talk} in \code{[targets.defaults]} des
+Manifests, nicht hierher. Denn die Klassenwahl muss feststehen, bevor die
+Klasse überhaupt startet.}{The classes \cls{beamer} and \cls{scrbook} are
+already the bundle preset's defaults; if Nora wanted \cls{ltx-talk} instead,
+\keyis{presentation\_profile}{ltx-talk} would go into the manifest's
+\code{[targets.defaults]}, not here -- the class choice has to be fixed before
+the class even starts.}
+
+\ldeen{Die verbleibende Sprachkonfiguration enthält zwei verschiedene Arten von
+Namen. \OLLM\ arbeitet mit den kurzen, portablen Kennungen \code{de} und
+\code{en}, wie sie in der Norm ISO 639-1 definiert sind. Das verbreitete
+Sprachpaket \pkg{babel} benötigt dagegen die konkreteren Namen \code{ngerman}
+und \code{british}. Der Schlüssel \option{languages} reicht dieses Mapping an
+\pkg{langselect} weiter und lädt \pkg{babel}. Welche Sprachen das Projekt
+überhaupt anbietet, steht bereits im Manifest -- \osglecture\ reicht die Liste
+von dort an \pkg{langselect}.}{The remaining language configuration contains
+two different kinds of names. \OLLM\ uses the short, portable identifiers
+\code{de} and \code{en}. The popular language package \pkg{babel}, by
+contrast, needs the more specific names \code{ngerman} and \code{british}. The
+\option{languages} key passes this mapping on to \pkg{langselect} and loads
+\pkg{babel}. Which languages the project offers at all is already in the
+manifest -- \osglecture\ hands that list from there to \pkg{langselect}.}
 
 \paragraph{\ldeen{Endlich etwas Fachliches}{At Last, Some Subject Matter}.}
 \ldeen{Nun schreibt Nora \File{010-Memory/main.tex}. Sie beginnt bewusst mit

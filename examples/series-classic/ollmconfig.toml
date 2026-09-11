@@ -1,24 +1,19 @@
-schema = 1
+schema = 2
 bundle_preset = "OSG lecture/1"
 
 [project]
 id = "classic"
+tex_directory = "Include"
+tex_config = "projectconfig.tex"
 
-[project.tex]
-directory = "Include"
-config = "projectconfig.tex"
-
-[languages]
-available = ["de"]
-default = "de"
+[targets.defaults]
+languages = ["de"]
+default_language = "de"
+presentation_profile = "beamer"
+longform_profile = "scrbook"
 
 [targets.slides]
-languages = ["de"]
-document_metadata = "disabled"
-
 [targets.script]
-languages = ["de"]
-document_metadata = "disabled"
 
 [security]
 shell_escape = "restricted"

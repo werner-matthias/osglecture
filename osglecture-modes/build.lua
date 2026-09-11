@@ -5,6 +5,7 @@ maindir = ".."
 
 installfiles = {
   "osglecture-modes.sty",
+  "osglecture-modes-overlays.code.tex",
   "osglecture-modes-ltxtalk.sty",
   "osglecture-modes-ltxtalk.lua",
 }
