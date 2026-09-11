@@ -12,21 +12,33 @@
 \ltxtalksetup
   {header=true,header-height=14mm,footer=true,footer-height=12mm}
 
-\dim_compare:nNnTF {\use:c{Gm@tmargin}} = {14mm}
+\dim_compare:nNnTF {\use:c{Gm@tmargin}} = {14mm+\headsep}
   {\TYPE{header-margin:passed}}
   {\TYPE{header-margin:FAILED}}
 \dim_compare:nNnTF {\use:c{Gm@bmargin}} = {12mm}
   {\TYPE{footer-margin:passed}}
   {\TYPE{footer-margin:FAILED}}
-\dim_compare:nNnTF {\textheight} = {\paperheight-14mm-12mm}
+\dim_compare:nNnTF {\textheight} = {\paperheight-14mm-\headsep-12mm}
   {\TYPE{textheight:passed}}
   {\TYPE{textheight:FAILED}}
-\dim_compare:nNnTF {\topmargin} = {14mm-1in-\headheight-\headsep}
+\dim_compare:nNnTF {\topmargin} = {14mm-1in-\headheight}
   {\TYPE{topmargin:passed}}
   {\TYPE{topmargin:FAILED}}
 \dim_compare:nNnTF {\use:c{@colht}} = {\textheight}
   {\TYPE{colht:passed}}
   {\TYPE{colht:FAILED}}
+
+% Title layouts carry their own spacing and retain the class text geometry.
+\bool_set_true:N \l__ltxtalk_title_page_bool
+\ltxtalksetup
+  {header=true,header-height=24mm,footer=true,footer-height=12mm}
+\dim_compare:nNnTF {\use:c{Gm@tmargin}} = {\LTXTalkBaseTopMargin}
+  {\TYPE{title-top:passed}}
+  {\TYPE{title-top:FAILED}}
+\dim_compare:nNnTF {\use:c{Gm@bmargin}} = {\LTXTalkBaseBottomMargin}
+  {\TYPE{title-bottom:passed}}
+  {\TYPE{title-bottom:FAILED}}
+\bool_set_false:N \l__ltxtalk_title_page_bool
 
 % Shallow theme areas must not reduce the class's original whitespace.
 \ltxtalksetup

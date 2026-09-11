@@ -5,6 +5,8 @@ footer-margin:passed
 textheight:passed
 topmargin:passed
 colht:passed
+title-top:passed
+title-bottom:passed
 shallow-header:passed
 shallow-footer:passed
 restore-top:passed

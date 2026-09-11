@@ -4004,26 +4004,30 @@ theme.
         \dim_gadd:Nn \g__ltxtalk_current_right_margin_dim
           {\l__ltxtalk_content_inset_right_dim}
       }
-    % The header and footer are page overlays, whereas the frame contents
-    % occupy LaTeX's text area. Keep the latter outside every visible theme
-    % area. Retaining the class margin when it is larger preserves the
-    % whitespace of themes with a shallow header or footer.
-    \bool_if:NT \l__ltxtalk_show_header_bool
+    % The header and footer are page overlays, whereas ordinary frame
+    % contents occupy LaTeX's text area. Keep that text outside every visible
+    % theme area and retain \headsep as the gap below the header. Title pages
+    % are deliberately exempt: their layouts already compose their contents
+    % against the decorative page areas and carry their own vertical spacing.
+    \bool_if:NF \l__ltxtalk_title_page_bool
       {
-        \dim_gset:Nn \g__ltxtalk_current_top_margin_dim
+        \bool_if:NT \l__ltxtalk_show_header_bool
           {
-            \dim_max:nn
-              {\g__ltxtalk_base_top_margin_dim}
-              {\l__ltxtalk_header_height_dim}
+            \dim_gset:Nn \g__ltxtalk_current_top_margin_dim
+              {
+                \dim_max:nn
+                  {\g__ltxtalk_base_top_margin_dim}
+                  {\l__ltxtalk_header_height_dim+\headsep}
+              }
           }
-      }
-    \bool_if:NT \l__ltxtalk_show_footer_bool
-      {
-        \dim_gset:Nn \g__ltxtalk_current_bottom_margin_dim
+        \bool_if:NT \l__ltxtalk_show_footer_bool
           {
-            \dim_max:nn
-              {\g__ltxtalk_base_bottom_margin_dim}
-              {\l__ltxtalk_footer_height_dim}
+            \dim_gset:Nn \g__ltxtalk_current_bottom_margin_dim
+              {
+                \dim_max:nn
+                  {\g__ltxtalk_base_bottom_margin_dim}
+                  {\l__ltxtalk_footer_height_dim}
+              }
           }
       }
     \cs_gset:Npx \Gm@lmargin
