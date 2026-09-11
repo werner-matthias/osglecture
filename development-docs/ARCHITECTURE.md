@@ -1150,6 +1150,16 @@ von OLLM. Dieses Modul ist:
 - über `texlua` eigenständig aufrufbar, ohne einen vollständigen LaTeX-Lauf
   zu benötigen.
 
+Der Rückweg nach TeX -- `token.set_macro` -- ist dabei nicht katcode-neutral:
+Der Wert wird mit den Katcodes tokenisiert, die im Aufrufmoment gelten. Für
+Dateisystempfade ist das eine Falle, denn ein Backslash wirkt dort als
+Escapezeichen und verschluckt die folgende Pfadkomponente, und ein Leerzeichen
+verschwindet unter `\ExplSyntaxOn` spurlos. Beide Seiten halten deshalb einen
+Vertrag ein: Das Lua-Modul normalisiert Pfade beim Eintritt auf Schrägstriche,
+und die aufrufende TeX-Seite schaltet für den Transfer auf
+Zeichenketten-Katcodes (`\c_str_cctab`) um. Ein verstümmelter Wert fällt sonst
+nicht an seiner Entstehungsstelle auf, sondern erst dort, wo er benutzt wird.
+
 OLLM ist Nutzer dieses Moduls, nicht Parallelimplementierer. Wo OLLM
 Projektinhalt für eigene Aufgaben braucht -- Serien-Discovery für
 `build --all`, eine schnelle Konsistenzprüfung in `ollm check`/`ollm doctor`

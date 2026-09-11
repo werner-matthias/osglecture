@@ -30,7 +30,7 @@ local DEFAULT_TEX_CONFIG = "projectconfig.tex"
 function manifest.find(start_path, options)
   options = options or {}
   local lfs = options.lfs or require("lfs")
-  local path = start_path or lfs.currentdir()
+  local path = series_index.normalize(start_path or lfs.currentdir())
   if lfs.attributes(path, "mode") == "file" then
     path = series_index.dirname(path)
   end
