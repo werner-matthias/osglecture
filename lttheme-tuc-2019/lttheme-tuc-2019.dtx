@@ -757,7 +757,8 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
           {
             \includegraphics
               [height=\__ltxtalk_tuc_header_content_height:,
-               keepaspectratio]
+               keepaspectratio,
+               alt={TU Chemnitz Logo}]
               {\l__ltxtalk_tuc_logo_file_tl}
           }
           {\sffamily\bfseries TU~CHEMNITZ}
@@ -790,7 +791,8 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
     \relax
   }
 \tl_gclear:N \g__ltxtalk_tuc_logo_tl
-\tl_gset:Nn \g__ltxtalk_tuc_title_logo_tl {osg.png}
+\tl_gset:Nn \g__ltxtalk_tuc_title_logo_tl {}
+\tl_gset:Nn \g__ltxtalk_tuc_title_logo_alt_tl {}
 \tl_gset:Nn \g__ltxtalk_tuc_url_tl {https://www.tu-chemnitz.de/}
 \tl_gset:Nn \g__ltxtalk_tuc_header_instance_tl {title}
 \tl_gset:Nn \g__ltxtalk_tuc_title_instance_tl {osg}
@@ -799,8 +801,10 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
 
 \NewDocumentCommand \settucthemelogo {m}
   {\tl_gset:Nn \g__ltxtalk_tuc_logo_tl {#1}}
-\NewDocumentCommand \settucthemetitlelogo {m}
-  {\tl_gset:Nn \g__ltxtalk_tuc_title_logo_tl {#1}}
+\NewDocumentCommand \settucthemetitlelogo {O{#2} m}
+  {\tl_gset:Nn \g__ltxtalk_tuc_title_logo_tl {#2}
+   \tl_gset:Nn \g__ltxtalk_tuc_title_logo_alt_tl {#1}
+  }
 \NewDocumentCommand \settucthemetitlelogoraise {m}
   {\dim_gset:Nn \g__ltxtalk_tuc_title_logo_raise_dim {#1}}
 \NewDocumentCommand \settucthemeurl {m}
@@ -897,9 +901,9 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
   {
     \file_if_exist:VTF \g__ltxtalk_tuc_title_logo_tl
       {
-        \includegraphics[width=2.485cm]{\g__ltxtalk_tuc_title_logo_tl}
-      }
-      {}
+        \includegraphics[width=2.485cm,
+          alt={\g__ltxtalk_tuc_title_logo_alt_tl}]{\g__ltxtalk_tuc_title_logo_tl}
+      }{}
   }
 % \ldeen{Wie bei \code{section} entscheidet \cs{LTXTalkHeaderRows} über
 %   zwei oder drei Zeilen; ohne diese Abfrage würde \code{title} bei
