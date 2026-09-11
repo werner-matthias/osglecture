@@ -653,6 +653,14 @@ individually. \code{<all>} forces columns in every mode, while, for example,
       { \msg_fatal:nn {osglecture}{standalone-job-conflict} }
   }
   { \OsgLectureLoadBuildFileForJob }
+% TEMPORARY Windows-CI diagnostics -- revert together with this marker.
+% Primitive assignments, so they still take effect if later lines end up
+% swallowed as part of an argument scan.
+\errorcontextlines=999\relax
+\tracingonline=0\relax
+\tracingmacros=2\relax
+\tracingcommands=2\relax
+% end TEMPORARY
 
 \OsgLectureBuildLoadedTF
   {
@@ -817,35 +825,9 @@ individually. \code{<all>} forces columns in every mode, while, for example,
 % (class/<mode> in \OsgLectureSetup) can be resolved against the full graph.
 % The overlay-backend patching in osglecture-modes does need the loaded base
 % class, so that half is deferred to \LectureModesActivateOverlays below.
-% TEMPORARY Windows-CI diagnostics -- revert together with this marker.
-\typeout{OSGDIAG~fmt=\fmtversion~expl=\ExplFileDate}
-\typeout{OSGDIAG~setcurr=\meaning\@expl@@@filehook@set@curr@file@@nNN}
-\typeout{OSGDIAG~resolve=\meaning\@expl@@@filehook@resolve@file@subst@@w}
-\typeout{OSGDIAG~clearflag=\meaning\@expl@@@filehook@clear@replacement@flag@@}
-\typeout{OSGDIAG~parsefull=\meaning\__filehook_file_parse_full_name:nN}
-\typeout{OSGDIAG~assign=\meaning\__filehook_set_curr_file_assign:nnnNN}
-\typeout{OSGDIAG~apply=\meaning\file_parse_full_name_apply:nN}
-\typeout{OSGDIAG~fullname=\meaning\file_full_name:n}
-\typeout{OSGDIAG~substbegin=\meaning\__filehook_file_subst_begin:nnn}
-\typeout{OSGDIAG~nameexpand=\meaning\__file_name_expand:n}
-\typeout{OSGDIAG~passptions=\meaning\@pass@ptions}
-\typeout{OSGDIAG~reserveda=\meaning\reserved@a}
-\typeout{OSGDIAG~pkgext=\meaning\@pkgextension}
-\typeout{OSGDIAG~cat32=\the\catcode32~cat126=\the\catcode126~%
-endline=\the\endlinechar~group=\the\currentgrouplevel}
-\typeout{OSGDIAG~fn=[\file_full_name:n {osglecture-modes.sty}]}
-\typeout{OSGDIAG~res=[\@expl@@@filehook@resolve@file@subst@@w
-  osglecture-modes.sty\@nil]}
-\typeout{OSGDIAG~searchpath=[\seq_use:Nn \l_file_search_path_seq {|}]}
-\typeout{OSGDIAG~inputpath=\meaning\input@path}
-\typeout{OSGDIAG~about-to-pass-options}
-% end TEMPORARY
 \bool_if:NF \l__osglecture_patch_overlays_bool
   { \PassOptionsToPackage{patch-overlays=false}{osglecture-modes} }
 \PassOptionsToPackage{deferred=true}{osglecture-modes}
-% TEMPORARY Windows-CI diagnostics -- revert together with this marker.
-\typeout{OSGDIAG~options-passed~currfile=[\CurrentFile]~reserveda=\meaning\reserved@a}
-% end TEMPORARY
 \RequirePackage{osglecture-modes}
 \DeclareModeBehaviorClass{presentation-dynamic}
 \DeclareModeBehaviorClass{presentation-static}
@@ -975,6 +957,8 @@ endline=\the\endlinechar~group=\the\currentgrouplevel}
     \ExplSyntaxOn
   }
 % TEMPORARY Windows-CI diagnostics -- revert together with this marker.
+\tracingmacros=0\relax
+\tracingcommands=0\relax
 \typeout{OSGDIAG~base=[\l__osglecture_base_class_tl]~%
 profile=[\l__osglecture_document_profile_tl]~%
 doctype=[\l__osglecture_doctype_tl]~%
