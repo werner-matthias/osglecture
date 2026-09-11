@@ -1992,9 +1992,8 @@ Text\\<slides>[3ex]
 
 \NewDocumentCommand \osglecture_modes_ltxtalk_keep_maketitle: { O{} }
   {
+    \bool_gset_false:N \g_osglecture_modes_ltxtalk_scanner_active_bool
     \tl_if_blank:nTF {#1} { \maketitle } { \maketitle[#1] }
-    \bool_gset_false:N \g_osglecture_modes_ltxtalk_after_structure_bool
-    \osglecture_modes_ltxtalk_scan:
   }
 
 \osglecture_modes_ltxtalk_declare_allowed_command:nn { part }          { osglecture_modes_ltxtalk_keep_part: }
@@ -2060,12 +2059,20 @@ Text\\<slides>[3ex]
     \osglecture_modes_ltxtalk_scan:
   }
 
-% Arm the scanner only after the title command has completely finished.  In
-% particular, its internal title frame must not trigger env/frame/after while
-% maketitle is still executing.
+% Arm the scanner after osglecture has completely processed its logical-unit
+% declaration.  This covers non-frame material before the title as well.  The
+% maketitle handler temporarily disarms it because the title implementation
+% uses an internal frame of its own.
+\AddToHook{cmd/lecture/after}
+  {
+    \bool_gset_true:N \g_osglecture_modes_ltxtalk_scanner_active_bool
+    \osglecture_modes_ltxtalk_start_scan:
+  }
+
 \AddToHook{cmd/maketitle/after}
   {
     \bool_gset_true:N \g_osglecture_modes_ltxtalk_scanner_active_bool
+    \bool_gset_false:N \g_osglecture_modes_ltxtalk_after_structure_bool
     \osglecture_modes_ltxtalk_start_scan:
   }
 

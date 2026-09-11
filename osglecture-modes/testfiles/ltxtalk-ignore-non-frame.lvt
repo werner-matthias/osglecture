@@ -1,11 +1,19 @@
 \input regression-test.tex
 \DocumentMetadata{}
 \documentclass{ltx-talk}
-% Loading the generated Lua helper is itself under test; keep the scanner off
-% here because the regression harness is supplied through an outer \input.
-\usepackage[ignorenonframetext=false]{osglecture-modes-ltxtalk}
+\NewDocumentCommand\lecture{O{}mm}{\TYPE{LECTURE KEPT}}
+\usepackage[ignorenonframetext]{osglecture-modes-ltxtalk}
+\ExplSyntaxOn
+\cs_new_protected:Npn \test_keep_end:
+  { \END \osglecture_modes_ltxtalk_scan: }
+\osglecture_modes_ltxtalk_declare_allowed_command:nn { END } { test_keep_end: }
+\ExplSyntaxOff
 \begin{document}
 \START
-\TYPE{LTXTALK LUA HELPER LOADED}
+\lecture{Introduction}{intro}
+\foobar
+\begin{frame}
+  \TYPE{FRAME KEPT}
+\end{frame}
 \END
 \end{document}
