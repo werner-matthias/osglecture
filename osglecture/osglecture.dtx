@@ -899,40 +899,64 @@ individually. \code{<all>} forces columns in every mode, while, for example,
     \exp_args:NVV \PassOptionsToClass
       \l__osglecture_selected_options_tl \l__osglecture_base_class_tl
   }
-% \ldeen*{@1 setzt Leerzeichen (Katcode~32) auf Katcode~9 (ignoriert), nicht
-% Katcode~10 wie normales \LaTeX. Legacy-Basisklassen wie KOMA-Skripts @2
-% verwenden intern eigene, nicht-@3-basierte Makros (etwa
-% \cs{@pr@videpackage}), deren Parametermuster ein Leerzeichen als
-% Trenntoken erwarten -- unter Katcode~9 verschwindet dieses Trenntoken beim
-% Tokenisieren spurlos, das Muster passt nicht mehr, und die Klasse bricht
-% mit einer Kaskade von Folgefehlern ab (dasselbe Symptombild wie bei einer
-% früheren \code{kvoptions.sty}-Korruption in dieser Datei). Dieselbe
-% \cs{@pr@videpackage}-Prüfung läuft nicht nur bei @4, sondern bei jedem
-% \cs{RequirePackage} weiterer legacy-artiger Pakete -- die
-% Katcode-10-Phase muss deshalb bis nach dem letzten solchen Aufruf
-% andauern; die Wiederherstellung auf Katcode~9 erfolgt daher erst kurz vor
-% der erneuten @1-Aktivierung, nicht unmittelbar nach @4. Die
-% Katcode-Änderung darf hier nicht in einer \TeX-Gruppe stehen: @4
-% verbietet das Laden einer Klasse innerhalb einer Gruppe explizit
-% ("Loading a class or package in a group").}
-% {@1 sets space (catcode~32) to catcode~9 (ignored), not catcode~10 as
-% normal \LaTeX\ does. Legacy base classes such as KOMA-Script's @2 use
-% their own, non-@3-based macros internally (e.g. \cs{@pr@videpackage}),
-% whose parameter patterns expect a space as a delimiter token -- under
-% catcode~9 that delimiter vanishes without a trace during tokenization,
-% the pattern no longer matches, and the class aborts with a cascade of
-% follow-on errors (the same symptom picture as an earlier
-% \code{kvoptions.sty} corruption in this file). The same
-% \cs{@pr@videpackage} check runs not only for @4 but for every
-% \cs{RequirePackage} of further legacy-style packages -- the catcode-10
-% window therefore has to last until after the last such call; restoring
-% catcode~9 happens only shortly before @1 is reactivated, not right after
-% @4. The catcode change must not be inside a \TeX\ group here: @4
-% explicitly forbids loading a class inside a group ("Loading a class or
-% package in a group").}
-% {\cs{ExplSyntaxOn}}{\code{scrbook}}{expl3}{\cs{LoadClass}}
-\char_set_catcode:nn {32}{10}
-\exp_args:NV \LoadClass \l__osglecture_base_class_tl
+% \ldeen*{@1 verschiebt Katcodes, mit denen fremde Dateien nicht rechnen:
+% Leerzeichen und Tabulator werden ignoriert (Katcode~9), die Tilde wird
+% zum Leerzeichen, Doppelpunkt und Unterstrich zu Buchstaben, und
+% \cs{endlinechar} ist~32 statt~13. Die Basisklasse ist aber für die
+% Standard-\LaTeX-Katcodes geschrieben; unter @1 tokenisiert sie anders als
+% beabsichtigt, ohne dass das an der Fehlerstelle erkennbar wäre. @3 läuft
+% deshalb in einem @2-Fenster. Der Rumpf dieses Makros ist bereits
+% tokenisiert, wenn @2 die Katcodes umstellt -- nur deshalb können
+% Umschaltung und Ladebefehl beieinanderstehen; im Klassenrumpf selbst
+% würde @2 die Folgezeilen unlesbar machen. @3 darf dabei nicht in einer
+% \TeX-Gruppe stehen: \LaTeX{} verbietet das Laden einer Klasse innerhalb
+% einer Gruppe ("Loading a class or package in a group"); ein Makroaufruf
+% ist keine Gruppe.}
+% {@1 shifts catcodes that foreign files do not expect: space and tab
+% become ignored (catcode~9), the tilde becomes a space, colon and
+% underscore become letters, and \cs{endlinechar} is~32 instead of~13. The
+% base class, however, is written for standard \LaTeX\ catcodes; under @1
+% it tokenizes differently than intended, in ways not visible at the point
+% of failure. @3 therefore runs inside an @2 window. This macro's body is
+% already tokenized by the time @2 shifts the catcodes -- that is the only
+% reason the switch and the load command can sit next to each other; in the
+% class body itself @2 would make the following lines unreadable. @3 must
+% not sit inside a \TeX\ group: \LaTeX\ forbids loading a class within a
+% group ("Loading a class or package in a group"), and a macro call is not
+% a group.}
+% {\cs{ExplSyntaxOn}}{\cs{ExplSyntaxOff}}{\cs{LoadClass}}
+\cs_new_protected:Npn \__osglecture_load_base_class:n #1
+  {
+    \ExplSyntaxOff
+    \LoadClass {#1}
+    \ExplSyntaxOn
+  }
+% \ldeen*{Dasselbe Fenster für die Paketdateien dieses Bündels, die aus
+% @1-Code heraus geladen werden: Jede von ihnen schaltet @2 selbst ein und
+% am Ende wieder aus, ihre einleitenden \cs{NeedsTeXFormat}- und
+% \cs{ProvidesPackage}-Zeilen liegen aber davor. Der abschließende @3
+% stellt zugleich den Zustand wieder her, den das schließende @4 der
+% geladenen Datei sonst hinterlässt.}{The same window for this bundle's
+% package files that are loaded from @1 code: each of them switches @2 on
+% itself and off again at the end, but its opening \cs{NeedsTeXFormat} and
+% \cs{ProvidesPackage} lines sit before that. The trailing @3 also restores
+% the state that the loaded file's closing @4 would otherwise leave
+% behind.}{expl3}{expl3}{\cs{ExplSyntaxOn}}{\cs{ExplSyntaxOff}}
+\cs_new_protected:Npn \__osglecture_require_package:n #1
+  {
+    \ExplSyntaxOff
+    \RequirePackage {#1}
+    \ExplSyntaxOn
+  }
+% TEMPORARY Windows-CI diagnostics -- revert together with this marker.
+\typeout{OSGDIAG~base=[\l__osglecture_base_class_tl]~%
+profile=[\l__osglecture_document_profile_tl]~%
+doctype=[\l__osglecture_doctype_tl]~%
+cat32=\the\catcode32~cat126=\the\catcode126~%
+endline=\the\endlinechar~group=\the\currentgrouplevel}
+\errorcontextlines=999\relax
+% end TEMPORARY
+\exp_args:NV \__osglecture_load_base_class:n \l__osglecture_base_class_tl
 
 % The base class is now present: let osglecture-modes wire portable mode
 % expressions into its overlay backend (the graph itself was finalized
@@ -978,10 +1002,8 @@ individually. \code{<all>} forces columns in every mode, while, for example,
 \cs_if_exist:NT \tagstructbegin
   { \tagpdfsetup{math/mathml/luamml/load=true} }
 
-\RequirePackage{osglecture-series}
-\RequirePackage{osglecture-metadata}
-\char_set_catcode:nn {32}{9}
-\ExplSyntaxOn
+\__osglecture_require_package:n {osglecture-series}
+\__osglecture_require_package:n {osglecture-metadata}
 \exp_args:Nx \OsgLectureConfigureMetadata
   {
     course-target =
@@ -992,23 +1014,24 @@ individually. \code{<all>} forces columns in every mode, while, for example,
         \l__osglecture_document_profile_tl {event-target}
   }
 
-\RequirePackage{osglecture-presitemize}
-\RequirePackage{osglecture-twocolumns}
-\ExplSyntaxOn
-\RequirePackage{osglecture-adapters}
+\__osglecture_require_package:n {osglecture-presitemize}
+\__osglecture_require_package:n {osglecture-twocolumns}
+\__osglecture_require_package:n {osglecture-adapters}
+% The adapter .def files are read with expl3 catcodes and switch expl3
+% syntax off on their way out, so it has to be switched back on here before
+% the next expl3 line is tokenized.
 \exp_args:NV \OsgLectureLoadAdapter \l__osglecture_adapter_tl
-\RequirePackage{osglecture-structure}
-\RequirePackage{osglecture-references}
-\RequirePackage{osglecture-continuation}
 \ExplSyntaxOn
+\__osglecture_require_package:n {osglecture-structure}
+\__osglecture_require_package:n {osglecture-references}
+\__osglecture_require_package:n {osglecture-continuation}
 \OsgLectureBuildLoadedTF
   {
     \directlua{ require("osglecture-series-index").current_unit_tex() }
     \str_if_eq:eeT { \OsgLectureUnitRole } { i }
-      { \RequirePackage{osglecture-integration} }
+      { \__osglecture_require_package:n {osglecture-integration} }
   }
   { }
-\ExplSyntaxOn
 
 \tl_set:Ne \l__osglecture_setup_file_tl
   {
