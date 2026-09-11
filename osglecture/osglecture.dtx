@@ -817,9 +817,35 @@ individually. \code{<all>} forces columns in every mode, while, for example,
 % (class/<mode> in \OsgLectureSetup) can be resolved against the full graph.
 % The overlay-backend patching in osglecture-modes does need the loaded base
 % class, so that half is deferred to \LectureModesActivateOverlays below.
+% TEMPORARY Windows-CI diagnostics -- revert together with this marker.
+\typeout{OSGDIAG~fmt=\fmtversion~expl=\ExplFileDate}
+\typeout{OSGDIAG~setcurr=\meaning\@expl@@@filehook@set@curr@file@@nNN}
+\typeout{OSGDIAG~resolve=\meaning\@expl@@@filehook@resolve@file@subst@@w}
+\typeout{OSGDIAG~clearflag=\meaning\@expl@@@filehook@clear@replacement@flag@@}
+\typeout{OSGDIAG~parsefull=\meaning\__filehook_file_parse_full_name:nN}
+\typeout{OSGDIAG~assign=\meaning\__filehook_set_curr_file_assign:nnnNN}
+\typeout{OSGDIAG~apply=\meaning\file_parse_full_name_apply:nN}
+\typeout{OSGDIAG~fullname=\meaning\file_full_name:n}
+\typeout{OSGDIAG~substbegin=\meaning\__filehook_file_subst_begin:nnn}
+\typeout{OSGDIAG~nameexpand=\meaning\__file_name_expand:n}
+\typeout{OSGDIAG~passptions=\meaning\@pass@ptions}
+\typeout{OSGDIAG~reserveda=\meaning\reserved@a}
+\typeout{OSGDIAG~pkgext=\meaning\@pkgextension}
+\typeout{OSGDIAG~cat32=\the\catcode32~cat126=\the\catcode126~%
+endline=\the\endlinechar~group=\the\currentgrouplevel}
+\typeout{OSGDIAG~fn=[\file_full_name:n {osglecture-modes.sty}]}
+\typeout{OSGDIAG~res=[\@expl@@@filehook@resolve@file@subst@@w
+  osglecture-modes.sty\@nil]}
+\typeout{OSGDIAG~searchpath=[\seq_use:Nn \l_file_search_path_seq {|}]}
+\typeout{OSGDIAG~inputpath=\meaning\input@path}
+\typeout{OSGDIAG~about-to-pass-options}
+% end TEMPORARY
 \bool_if:NF \l__osglecture_patch_overlays_bool
   { \PassOptionsToPackage{patch-overlays=false}{osglecture-modes} }
 \PassOptionsToPackage{deferred=true}{osglecture-modes}
+% TEMPORARY Windows-CI diagnostics -- revert together with this marker.
+\typeout{OSGDIAG~options-passed~currfile=[\CurrentFile]~reserveda=\meaning\reserved@a}
+% end TEMPORARY
 \RequirePackage{osglecture-modes}
 \DeclareModeBehaviorClass{presentation-dynamic}
 \DeclareModeBehaviorClass{presentation-static}
@@ -2331,10 +2357,27 @@ endline=\the\endlinechar~group=\the\currentgrouplevel}
         \__olref_identity:nnn
           {\l__olref_unit_tl}{\l__olref_type_tl}{\l__olref_lang_tl}
       }
+% \ldeen*{@1 und @2 sind Pfade, die aus der von OLLM geschriebenen Registry
+% stammen und dort mit den Dokumentkatcodes gelesen werden -- eine Tilde
+% darin ist also ein aktives Zeichen. Pfadkomponenten in Kurzform (etwa
+% \code{RUNNER~1} in Windows-Tempverzeichnissen) enthalten aber genau diese
+% Tilde, und sowohl @3 als auch \cs{csname}-basierte Namensauflösung
+% expandieren sie dann zu \cs{nobreakspace}, statt sie als Zeichen zu
+% behandeln. Beide Werte werden deshalb als Zeichenketten abgelegt; die
+% Identität und die Generationskennung bestehen dagegen aus
+% Bezeichnerzeichen und bleiben unverändert.}{@1 and @2 are paths taken
+% from the registry OLLM writes, which is read with the document catcodes
+% in force -- so a tilde in them is an active character. Short-form path
+% components (such as \code{RUNNER~1} in Windows temporary directories)
+% contain exactly that tilde, and both @3 and \cs{csname}-based name
+% resolution then expand it to \cs{nobreakspace} instead of treating it as
+% a character. Both values are therefore stored as strings; the identity
+% and the generation id consist of identifier characters and stay as they
+% are.}{\option{aux}}{\option{pdf}}{\cs{file\_input:n}}
     \prop_gput:NVx \g__olref_documents_prop \l__olref_identity_tl
       {
-        {\exp_not:V \l__olref_aux_tl}
-        {\exp_not:V \l__olref_pdf_tl}
+        {\tl_to_str:N \l__olref_aux_tl}
+        {\tl_to_str:N \l__olref_pdf_tl}
         {\exp_not:V \l__olref_generation_tl}
       }
     \tl_set:Ne \l__olref_prefix_tl
