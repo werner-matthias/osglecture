@@ -3,8 +3,13 @@
 \usepackage{osglecture-references}
 \providecommand\OsgLectureDocumentType{script}
 \providecommand\OsgLectureLanguage{de}
-% Short-form path components such as RUNNER~1 reach the registry with the
-% document catcodes in force, so the tilde arrives as an active character.
+% OLLM's registry is read with the document catcodes in force, where the
+% tilde is active -- and short-form path components such as RUNNER~1 in
+% Windows temporary directories contain one. regression-test makes the tilde
+% an ordinary character, so the document catcode has to be restored around
+% the declaration for this to exercise the real situation.
+\catcode`\~=13
+\let~\nobreakspace
 \OsgLectureReferenceDocument{
   unit=other,
   type=script,
@@ -13,6 +18,7 @@
   aux=RUNNER~1/reference-source.osgref,
   pdf=RUNNER~1/reference-source.pdf
 }
+\catcode`\~=12
 \begin{document}
 \START
 \ExplSyntaxOn
@@ -21,7 +27,8 @@
 \TYPE{aux=[\l_tmpa_tl]}
 \TYPE{pdf=[\l_tmpb_tl]}
 % The stored path has to survive a file lookup: an active tilde expands to
-% \nobreakspace inside the \csname-based name expansion and aborts the run.
+% \nobreakspace inside the \csname-based file-name expansion and aborts the
+% run before the lookup can report anything.
 \file_if_exist:VTF \l_tmpa_tl
   { \TYPE{aux-lookup=found} }
   { \TYPE{aux-lookup=absent} }
