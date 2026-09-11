@@ -653,14 +653,6 @@ individually. \code{<all>} forces columns in every mode, while, for example,
       { \msg_fatal:nn {osglecture}{standalone-job-conflict} }
   }
   { \OsgLectureLoadBuildFileForJob }
-% TEMPORARY Windows-CI diagnostics -- revert together with this marker.
-% Primitive assignments, so they still take effect if later lines end up
-% swallowed as part of an argument scan.
-\errorcontextlines=999\relax
-\tracingonline=0\relax
-\tracingmacros=2\relax
-\tracingcommands=2\relax
-% end TEMPORARY
 
 \OsgLectureBuildLoadedTF
   {
@@ -716,9 +708,35 @@ individually. \code{<all>} forces columns in every mode, while, for example,
 % which it finds itself starting from the working directory. A failed
 % load stays silent -- the class then simply loads no project
 % configuration.}
+% \ldeen*{@1 tokenisiert die von Lua gesetzten Werte mit den gerade
+% gültigen Katcodes. Die Werte sind hier Dateisystempfade, und die enthalten
+% Zeichen, die in jedem üblichen Katcode-Regime etwas anderes bedeuten: Ein
+% Windows-Backslash wirkt als Escapezeichen und frisst die folgende
+% Pfadkomponente, ein Leerzeichen im Pfad verschwindet unter @2 spurlos, und
+% eine Tilde wäre dort ein Leerzeichen. Der Transfer läuft deshalb unter @3,
+% wo jedes Zeichen für sich steht; @1 setzt global, der Wert übersteht das
+% Umschalten also. Der Rumpf dieses Makros ist bereits tokenisiert, wenn die
+% Katcodes wechseln -- im Dateirumpf selbst würde @3 die Folgezeilen
+% unlesbar machen.}{@1 tokenizes the values Lua sets with whatever catcodes
+% are in force. Here those values are filesystem paths, and paths contain
+% characters that mean something else in every usual catcode regime: a
+% Windows backslash acts as the escape character and swallows the following
+% path component, a space in the path vanishes without a trace under @2, and
+% a tilde would be a space there. The transfer therefore runs under @3,
+% where every character stands for itself; @1 assigns globally, so the value
+% survives the switch. This macro's body is already tokenized by the time
+% the catcodes change -- in the file body itself @3 would make the following
+% lines unreadable.}{\code{token.set\_macro}}{\cs{ExplSyntaxOn}}
+% {\cs{c\_str\_cctab}}
+\cs_new_protected:Npn \__osglecture_manifest_load_tex:
+  {
+    \cctab_begin:N \c_str_cctab
+      \directlua{ require("osglecture-manifest").load_tex() }
+    \cctab_end:
+  }
 \OsgLectureBuildLoadedTF
   {
-    \directlua{ require("osglecture-manifest").load_tex() }
+    \__osglecture_manifest_load_tex:
     \str_if_eq:eeT { \OsgLectureManifestAvailableFlag } { 1 }
       {
         \tl_set:Ne \l__osglecture_project_config_tl
@@ -956,16 +974,6 @@ individually. \code{<all>} forces columns in every mode, while, for example,
     \RequirePackage {#1}
     \ExplSyntaxOn
   }
-% TEMPORARY Windows-CI diagnostics -- revert together with this marker.
-\tracingmacros=0\relax
-\tracingcommands=0\relax
-\typeout{OSGDIAG~base=[\l__osglecture_base_class_tl]~%
-profile=[\l__osglecture_document_profile_tl]~%
-doctype=[\l__osglecture_doctype_tl]~%
-cat32=\the\catcode32~cat126=\the\catcode126~%
-endline=\the\endlinechar~group=\the\currentgrouplevel}
-\errorcontextlines=999\relax
-% end TEMPORARY
 \exp_args:NV \__osglecture_load_base_class:n \l__osglecture_base_class_tl
 
 % The base class is now present: let osglecture-modes wire portable mode

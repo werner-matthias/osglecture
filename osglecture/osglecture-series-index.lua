@@ -48,6 +48,22 @@ local function dirname(path)
   return parent
 end
 
+-- \ldeen*{Windows-Dateisystemaufrufe (etwa @1) liefern Pfade mit
+-- Backslashes. Diese Pfade wandern weiter nach \TeX{}, wo ein Backslash das
+-- Escapezeichen ist und die folgende Pfadkomponente verschluckt; @2
+-- akzeptiert umgekehrt auch unter Windows den Schrägstrich. Pfade werden
+-- deshalb beim Eintritt in dieses Modul auf Schrägstriche normalisiert, und
+-- nur die normalisierte Form verlässt es wieder.}{Windows filesystem calls
+-- (such as @1) return paths with backslashes. Those paths travel on into
+-- \TeX{}, where a backslash is the escape character and swallows the
+-- following path component; @2 in turn accepts the forward slash on Windows
+-- as well. Paths are therefore normalized to forward slashes on entry to
+-- this module, and only the normalized form leaves it
+-- again.}{\code{lfs.currentdir}}{\code{lfs}}
+local function normalize(path)
+  return (path:gsub("\\", separator))
+end
+
 local function join(left, right)
   if left == "." then return right end
   if left:match("[\\/]$") then return left .. right end
@@ -60,6 +76,7 @@ end
 -- Windows-hardened path primitives so other modules (such as the shared
 -- manifest module) can reuse them instead of maintaining their own,
 -- unverified copy.}
+series_index.normalize = normalize
 series_index.basename = basename
 series_index.dirname = dirname
 series_index.join = join
@@ -249,7 +266,7 @@ end
 -- root ancestor or a sibling scope error.}{path}
 function series_index.current_unit(path, lfs)
   lfs = lfs or require("lfs")
-  path = path or lfs.currentdir()
+  path = normalize(path or lfs.currentdir())
   if lfs.attributes(path, "mode") == "file" then
     path = dirname(path)
   end
@@ -266,7 +283,7 @@ end
 function series_index.locate_unit_ancestor(start_path, options)
   options = options or {}
   local lfs = options.lfs or require("lfs")
-  local path = start_path or lfs.currentdir()
+  local path = normalize(start_path or lfs.currentdir())
   if lfs.attributes(path, "mode") == "file" then
     path = dirname(path)
   end
