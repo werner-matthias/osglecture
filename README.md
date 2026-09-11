@@ -91,10 +91,5 @@ Beside, the most packages have their own documentation.
 ## Bugs and Limitations
 Even though the individual packages vary considerably in terms of maturity, 
 the bundle as a whole should definitely be considered experimental.
-As such, it certainly still has some bugs.
-
-> [!IMPORTANT]
-> One of these bugs is a stubborn osglecture/ollm bug that only occurs on Windows. 
-> This bug currently renders OSG Lecture almost unusable on Windows, at least for
-> the main case of a lecture series.
-> Sorry, Windows users.
+As such, it certainly still has lots of bugs.
+Please report any bug you find [here](https://github.com/werner-matthias/osglecture/issues).
