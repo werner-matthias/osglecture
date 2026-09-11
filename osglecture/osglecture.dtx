@@ -721,7 +721,15 @@ individually. \code{<all>} forces columns in every mode, while, for example,
         % base class" hazard applies.
         \osglecture_project_intercept_package_commands:
         \file_if_exist:VT \l__osglecture_project_config_tl
-          { \exp_args:NV \file_input:n \l__osglecture_project_config_tl }
+          {
+            % projectconfig.tex is a user-level LaTeX file.  The class is
+            % currently executing with expl3 catcodes, under which ordinary
+            % spaces are ignored; read the external file with document
+            % catcodes so its text is preserved exactly as users expect.
+            \cctab_begin:N \c_document_cctab
+              \exp_args:NV \file_input:n \l__osglecture_project_config_tl
+            \cctab_end:
+          }
         \__osglecture_language_autoconfigure:
         \osglecture_project_restore_package_commands:
       }
@@ -1855,8 +1863,34 @@ individually. \code{<all>} forces columns in every mode, while, for example,
     event-target .initial:n = none,
   }
 
+\cs_new_protected:Npn \__osglecture_metadata_reapply:n #1
+  {
+    \prop_get:NnNT \g__osglecture_metadata_value_prop {#1} \l_tmpa_tl
+      {
+        \prop_get:NnN \g__osglecture_metadata_short_prop {#1} \l_tmpb_tl
+        \exp_args:NnVV \__osglecture_metadata_apply:nnn
+          {#1} \l_tmpb_tl \l_tmpa_tl
+      }
+  }
+
 \NewDocumentCommand \OsgLectureConfigureMetadata { m }
-  { \keys_set:nn { osglecture/metadata } {#1} }
+  {
+    \keys_set:nn { osglecture/metadata } {#1}
+    % Project metadata is replayed as osglecture-metadata is loaded, while
+    % the profile mappings still have their neutral defaults.  Apply the two
+    % mapped fields once more after their actual targets are known.
+    \__osglecture_metadata_reapply:n {course}
+    \__osglecture_metadata_reapply:n {event}
+  }
+
+% Presentation backends may use \lecture to replace their native title and
+% subtitle.  Restore the profile-mapped project fields after the logical unit
+% has been passed to the backend so the course remains the title subtitle.
+\AddToHook { osglecture/lecture/after }
+  {
+    \__osglecture_metadata_reapply:n {course}
+    \__osglecture_metadata_reapply:n {event}
+  }
 
 % \ldeen*{Sichert die von der Basisklasse bereitgestellten
 % Metadatenbefehle (z.\,B. \cs{title}, \cs{author}) unter eigenem Namen,

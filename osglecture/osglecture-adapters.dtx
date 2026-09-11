@@ -74,8 +74,14 @@
 % \code{subsection}, \env{frame}, \env{frame*}, \cs{frametitle}, and
 % \cs{framesubtitle}; this adapter therefore deliberately leaves their
 % scanners untouched. @1's own teaching header consumes the unit
-% metadata recorded by @2.}{\cls*{ltx-talk}}{\pkg*{osglecture-structure}}
-\cs_new_protected:Npn \osglecture_adapter_lecture:nnn #1#2#3 { }
+% metadata recorded by @2.  The logical unit is also the presentation title;
+% the profile-mapped course metadata supplies its subtitle.}{\cls*{ltx-talk}}{\pkg*{osglecture-structure}}
+\cs_new_protected:Npn \osglecture_adapter_lecture:nnn #1#2#3
+  {
+    \tl_if_blank:nTF {#1}
+      { \__osglecture_metadata_native_title {#2} }
+      { \__osglecture_metadata_native_title [#1] {#2} }
+  }
 \ExplSyntaxOff
 %</ltx-talk>
 %<*scrbook>

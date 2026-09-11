@@ -955,16 +955,16 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
   {
     \int_compare:nNnTF {\LTXTalkHeaderRows} = {3}
       {\int_case:nn {#1}
-        {{1}{\cs_if_exist:NTF \g__osglecture_metadata_course_tl
-                {\tl_use:N \g__osglecture_metadata_course_tl}
+        {{1}{\cs_if_exist:NTF \OsgLectureShortCourse
+                {\OsgLectureShortCourse}
                 {\UseLTXTalkMetadata[lines=1]{short-title}}}
          {2}{\cs_if_exist:NTF \g__osglecture_unit_title_tl
                 {\tl_use:N \g__osglecture_unit_title_tl}
                 {\UseLTXTalkMetadata[lines=1]{section}}}
          {3}{\UseLTXTalkMetadata[lines=1]{subsection}}}}
       {\int_case:nn {#1}
-        {{1}{\cs_if_exist:NTF \g__osglecture_metadata_course_tl
-                {\tl_use:N \g__osglecture_metadata_course_tl}
+        {{1}{\cs_if_exist:NTF \OsgLectureShortCourse
+                {\OsgLectureShortCourse}
                 {\UseLTXTalkMetadata[lines=1]{short-title}}
               ~--~
               \cs_if_exist:NTF \g__osglecture_unit_title_tl
