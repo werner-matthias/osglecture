@@ -73,10 +73,10 @@
       >
      <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
         id="ID.035"
-        title="Überschrift der Inhaltsfolie"
+        title="^^dcberschrift der Inhaltsfolie"
         rolemaps-to="H4"
        >
-      <?MarkedContent page="2" ?>Überschrift der Inhaltsfolie
+      <?MarkedContent page="2" ?>^^dcberschrift der Inhaltsfolie
      </frametitle>
      <text-unit xmlns="https://www.latex-project.org/ns/dflt"
         id="ID.017"
@@ -193,10 +193,10 @@
       >
      <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
         id="ID.039"
-        title="Überschrift der Inhaltsfolie (Fortsetzung)"
+        title="^^dcberschrift der Inhaltsfolie (Fortsetzung)"
         rolemaps-to="H4"
        >
-      <?MarkedContent page="3" ?>Überschrift der Inhaltsfolie (Fortsetzung)
+      <?MarkedContent page="3" ?>^^dcberschrift der Inhaltsfolie (Fortsetzung)
      </frametitle>
      <text-unit xmlns="https://www.latex-project.org/ns/dflt"
         id="ID.037"
