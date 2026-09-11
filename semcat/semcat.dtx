@@ -1321,7 +1321,7 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
 \cs_new_protected:Npn \__semcat_qr_box:nnn #1#2#3
   { % #1 = url  #2 = caption  #3 = resolved color name
     {
-      \qrset{height=1.2cm}
+      \qrset{height=1.2cm,tag=artifact}
       \cs_if_exist:NT \hypersetup { \hypersetup{urlcolor=#3} }
       \parbox{1.5cm}{%
         \qrcode{#1}\\%
@@ -1338,18 +1338,18 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
         \__semcat_resolve_category:nN {#3} \l_tmpa_tl
         \__semcat_validate_category:N \l_tmpa_tl
         \exp_args:No \__semcat_resolve_color:nN \l_tmpa_tl \l__semcat_tmp_color_tl
-        % \ldeen{Hier findet keine Struktureinbettung statt: qrcode
-        % zeichnet den Code über eine eigene pgf-/tikz-Grafik, und das
-        % manuelle Öffnen einer Tag-Struktur um fremdes tikz-Ergebnis
-        % erzeugt ungültige Eltern-Kind-Beziehungen im Tag-Baum. Die
+        % \ldeen{Der QR-Code selbst wird als reines Artifact getaggt
+        % (\code{tag=artifact} in \cs{__semcat_qr_box:nnn}, über den
+        % zentralen \pkg{qrcode}-Tagging-Hook aus \File{osglecture.dtx}),
+        % bekommt also keine eigene Struktur im Tag-Baum. Die
         % Beschriftung trägt den eigentlichen semantischen Gehalt und
         % wird als Teil des umgebenden Fließtexts ganz normal
-        % getaggt.}{No structure wrapping happens here: qrcode draws
-        % the code via its own pgf/tikz picture, and manually opening a
-        % tag structure around third-party tikz output produces invalid
-        % Parent-Child relations in the tag tree. The caption carries
-        % the actual semantic content and is tagged normally as part of
-        % the surrounding flow.}
+        % getaggt.}{The QR code itself is tagged as a plain artifact
+        % (\code{tag=artifact} in \cs{__semcat_qr_box:nnn}, via the
+        % central \pkg{qrcode} tagging hook in \File{osglecture.dtx}), so
+        % it gets no structure of its own in the tag tree. The caption
+        % carries the actual semantic content and is tagged normally as
+        % part of the surrounding flow.}
         \str_if_eq:nnTF {#2} { true }
           { \__semcat_qr_box:nnn {#4} {#5} { \l__semcat_tmp_color_tl } }
           {

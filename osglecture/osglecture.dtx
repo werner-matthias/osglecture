@@ -1028,6 +1028,154 @@ individually. \code{<all>} forces columns in every mode, while, for example,
 \cs_if_exist:NT \tagstructbegin
   { \tagpdfsetup{math/mathml/luamml/load=true} }
 
+% \ldeen*{\pkg{qrcode} zeichnet jedes Modul des Codes einzeln über
+% \cs{rule}s statt über ein Bild-XObject. Bei aktivem \pkg{tagpdf} greift
+% dafür in der Lua-Variante der automatische
+% \code{activate/tagunmarked}-Mechanismus und wrappt jedes sonst
+% ungetaggte Modul separat als Artifact -- mit einer eigenen Warnung pro
+% Modul, bei einem mittelgroßen Code schnell mehrere hundert. Der Hook
+% patcht \cs{qr@printmatrix} und \cs{qr@printsavedbinarymatrix} (die
+% einzigen beiden Stellen, an denen \pkg{qrcode} tatsächlich zeichnet),
+% sodass der komplette Code in \emph{einer} eigenen Tag-Struktur steckt,
+% bevor der automatische Mechanismus je einzelne Module sieht. Der Hook
+% hängt an \code{package/qrcode/after} und greift daher unabhängig davon,
+% ob \pkg{qrcode} von \pkg{semcat}, \pkg{osglistings} oder direkt vom
+% Dokument geladen wird. Die neuen \pkg{qrcode}-Optionen \code{tag}
+% (Default \code{Figure}) und \code{alt} (Default: der codierte Text)
+% erlauben, das pro Aufruf oder via \cs{qrset} zu steuern;
+% \code{tag=artifact} markiert den Code als rein dekoratives Artifact
+% ohne eigene Struktur -- sinnvoll, wenn eine Beschriftung daneben den
+% Inhalt bereits als Fließtext trägt.}{\pkg{qrcode} draws every module of
+% the code individually via \cs{rule}s instead of an image XObject. With
+% \pkg{tagpdf} active, the Lua variant's automatic
+% \code{activate/tagunmarked} mechanism steps in and wraps each
+% otherwise-untagged module separately as an artifact -- with its own
+% warning per module, quickly reaching several hundred for a
+% medium-sized code. The hook patches \cs{qr@printmatrix} and
+% \cs{qr@printsavedbinarymatrix} (the only two places where \pkg{qrcode}
+% actually draws) so that the whole code sits inside \emph{one} tag
+% structure before the automatic mechanism ever sees an individual
+% module. The hook attaches to \code{package/qrcode/after} and therefore
+% fires regardless of whether \pkg{qrcode} is loaded by \pkg{semcat},
+% \pkg{osglistings}, or directly by the document. The new \pkg{qrcode}
+% options \code{tag} (default \code{Figure}) and \code{alt} (default: the
+% encoded text) let this be controlled per call or via \cs{qrset};
+% \code{tag=artifact} marks the code as a purely decorative artifact with
+% no structure of its own -- useful when a caption next to it already
+% carries the content as flow text.}{qrcode}
+% \ldeen*{\code{alt}-Default und Kritikprüfung: Ohne explizites
+% \code{alt} übernimmt \cs{__osglecture_qrcode_alt_text:} den codierten
+% Text sprachabhängig (über \cs{olsTargetLanguage}, denselben Schalter,
+% den \cs{ldeen} selbst auswertet -- \cs{ldeen} kann hier nicht direkt
+% verwendet werden, da sein Makrokörper \cs{UseHook}-Aufrufe enthält und
+% daher nicht garantiert vollständig~expandierbar ist, was der
+% \cs{exp_args:Ne}-Aufbau von \cs{tagstructbegin} aber braucht). Für
+% Inhalte, die mit einem der wenigen tatsächlich \emph{geheimnistragenden}
+% Protokollpräfixe beginnen (\code{WIFI:}, \code{otpauth://} -- WLAN-
+% Passwort bzw.\ TOTP-Seed), würde dieser Default das Geheimnis im
+% Klartext in den Tag-Baum des PDFs schreiben. Andere strukturierte
+% Inhalte wie \code{MECARD:}/\code{BEGIN:VCARD} tragen zwar persönliche,
+% aber keine Zugangsdaten und bleiben bewusst außen vor. Für die kritische
+% Teilmenge bricht \cs{__osglecture_qrcode_check_critical_content:} mit
+% einem Fehler ab, statt den Default stillschweigend zu verwenden --
+% explizites \code{alt=\{...\}} (das den Inhalt beschreibt, ohne ihn zu
+% wiederholen) oder \code{tag=artifact} ist dann erforderlich.}{Default
+% for \code{alt} and criticality check: without an explicit \code{alt},
+% \cs{__osglecture_qrcode_alt_text:} falls back to the encoded text,
+% language-dependent via \cs{olsTargetLanguage}, the same switch
+% \cs{ldeen} itself reads -- \cs{ldeen} cannot be used directly here since
+% its macro body contains \cs{UseHook} calls and is therefore not
+% guaranteed to be fully~expandable, which the \cs{exp_args:Ne}
+% construction feeding \cs{tagstructbegin} requires. For content starting
+% with one of the few protocol prefixes that actually carry a secret
+% (\code{WIFI:}, \code{otpauth://} -- Wi-Fi password resp.\ TOTP seed),
+% this default would write that secret in the clear into the PDF's tag
+% tree. Other structured content such as \code{MECARD:}/\code{BEGIN:VCARD}
+% carries personal but not credential data and is deliberately left out.
+% For the critical subset, \cs{__osglecture_qrcode_check_critical_content:}
+% aborts with an error instead of silently using the default -- an
+% explicit \code{alt=\{...\}} (describing the content without repeating
+% it) or \code{tag=artifact} is then required.}{qrcode}
+\cs_if_exist:NT \tagstructbegin
+  {
+    \tl_new:N \l__osglecture_qrcode_tag_tl
+    \tl_new:N \l__osglecture_qrcode_alt_tl
+    \tl_new:N \l__osglecture_qrcode_tmpa_tl
+    \msg_new:nnn { osglecture } { qrcode-critical-content }
+      {
+        This~QR~code's~content~starts~with~WIFI:~or~otpauth://~--~a~
+        format~that~typically~carries~a~credential~or~secret~(Wi-Fi~
+        password,~one-time-password~seed,~...).~Falling~back~to~the~
+        encoded~text~as~the~PDF~alt~text~would~leak~it~into~the~
+        document's~accessibility~tree,~where~it~is~trivially~
+        extractable.~Set~the~qrcode~option~alt=\{...\}~explicitly~
+        (describing~the~code~without~repeating~the~secret),~or~
+        tag=artifact~if~nothing~about~it~should~be~exposed~at~all.
+      }
+    \cs_new_protected:Npn \__osglecture_qrcode_check_critical_content:
+      {
+        \tl_if_empty:NT \l__osglecture_qrcode_alt_tl
+          {
+            \tl_if_eq:NnF \l__osglecture_qrcode_tag_tl { artifact }
+              {
+                \tl_set:Ne \l__osglecture_qrcode_tmpa_tl { \qr@texttoencode }
+                \regex_match:nVT { \A(WIFI:|otpauth://) }
+                  \l__osglecture_qrcode_tmpa_tl
+                  { \msg_error:nn { osglecture } { qrcode-critical-content } }
+              }
+          }
+      }
+    \cs_new:Npn \__osglecture_qrcode_alt_text:
+      {
+        \tl_if_empty:NTF \l__osglecture_qrcode_alt_tl
+          {
+            \str_if_eq:eeTF { \olsTargetLanguage } { de }
+              { QR-Code:~\qr@texttoencode }
+              { QR~code:~\qr@texttoencode }
+          }
+          { \l__osglecture_qrcode_alt_tl }
+      }
+    \cs_new_protected:Npn \__osglecture_qrcode_tag_begin:
+      {
+        \tagpdfparaOff
+        \__osglecture_qrcode_check_critical_content:
+        \tl_if_eq:NnTF \l__osglecture_qrcode_tag_tl { artifact }
+          { \tagmcbegin{artifact} }
+          {
+            \exp_args:Ne \tagstructbegin
+              {
+                tag=\l__osglecture_qrcode_tag_tl,
+                alt={\__osglecture_qrcode_alt_text:}
+              }
+            \exp_args:Ne \tagmcbegin { tag=\l__osglecture_qrcode_tag_tl }
+          }
+      }
+    \cs_new_protected:Npn \__osglecture_qrcode_tag_end:
+      {
+        \tl_if_eq:NnTF \l__osglecture_qrcode_tag_tl { artifact }
+          { \tagmcend }
+          { \tagmcend \tagstructend }
+      }
+    \AddToHook { package/qrcode/after } [ osglecture/qrcode-tagging ]
+      {
+        \define@key{qr}{tag}{\tl_set:Nn \l__osglecture_qrcode_tag_tl {#1}}
+        \define@key{qr}{alt}{\tl_set:Nn \l__osglecture_qrcode_alt_tl {#1}}
+        \qrset{tag=Figure}
+        \let\osg@qrcode@printmatrix@orig\qr@printmatrix
+        \let\osg@qrcode@printsavedmatrix@orig\qr@printsavedbinarymatrix
+        \def\qr@printmatrix#1{%
+          \__osglecture_qrcode_tag_begin:
+          \osg@qrcode@printmatrix@orig{#1}%
+          \__osglecture_qrcode_tag_end:
+        }%
+        \def\qr@printsavedbinarymatrix#1{%
+          \__osglecture_qrcode_tag_begin:
+          \osg@qrcode@printsavedmatrix@orig{#1}%
+          \__osglecture_qrcode_tag_end:
+        }%
+      }
+  }
+
 \__osglecture_require_package:n {osglecture-series}
 \__osglecture_require_package:n {osglecture-metadata}
 \exp_args:Nx \OsgLectureConfigureMetadata

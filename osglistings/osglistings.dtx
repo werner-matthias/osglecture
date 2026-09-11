@@ -884,6 +884,16 @@ let code = ExitCode::from(42§\osglistingsmark{here}§);
             \par\noindent\hfill
             {\scriptsize\href{\l__osglistings_link_tl}{\faLink~\ttfamily\l__osglistings_link_tl}}\par
           }
+        % \ldeen{Anders als \code{link-display=label} steht der Link hier
+        % nirgends als sichtbarer Text -- der QR-Code ist der einzige Weg
+        % dorthin. Kein lokales \cs{qrset}\Marg{tag=...} nötig: der
+        % zentrale \pkg{qrcode}-Tagging-Hook aus \File{osglecture.dtx}
+        % taggt ihn per Default als \code{Figure} mit der URL als
+        % Alt-Text.}{Unlike \code{link-display=label}, the link appears
+        % nowhere as visible text here -- the QR code is the only way to
+        % it. No local \cs{qrset}\Marg{tag=...} needed: the central
+        % \pkg{qrcode} tagging hook in \File{osglecture.dtx} tags it as a
+        % \code{Figure} by default, with the URL as alt text.}
         \tl_if_eq:NnT \l__osglistings_linkdisplay_tl { qrcode }
           {
             \par\noindent\hfill
