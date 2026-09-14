@@ -26,9 +26,7 @@
       <?MarkedContent page="1" ?>forwarded strong text
      </Strong>
      <?MarkedContent page="1" ?>, and 
-     <?MarkedContent page="1" ?>
      <?MarkedContent page="1" ?>semantically 
-     <?MarkedContent page="1" ?>
      <?MarkedContent page="1" ?>neutral highlighting.
     </text>
    </text-unit>

@@ -284,22 +284,22 @@ for straightforward production use:
 \usepackage{osgstyler-lua}
 ```
 
-It loads `osgstyler`, `luacolor`, and `lua-ul`, installs itself as the active
-decoration processor, and supplies a complete fallback metric palette if no
-metric palette is active yet. It currently renders:
+It loads `osgstyler`, `luacolor`, `lua-ul`, `pgfcore`, and `transparent` and
+installs itself as the active decoration processor. It currently renders:
 
-- any number of solid `line` instances at `below`, `above`, or `through`;
-- `background` highlighting with palette colors;
+- any number of `solid`, `dashed`, `dotted`, or `wavy` `line` instances at
+  `below`, `above`, or `through`;
+- `background` highlighting with palette colors, opacity from 0 to 1, and the
+  shapes `text` (glyph-height band) or `line` (line-height band);
 - `affix` instances containing literal material at `before` or `after`;
 - unbreakable inline `enclosure` frames with configurable colors, rule width,
-  and padding.
+  padding, corner radius, and `solid`, `dashed`, or `dotted` strokes.
 
 Dimension properties accept either literal dimensions or metric references
-such as `rule/thin`, `padding/compact`, and `spacing/xs`. Unsupported line
-patterns, opacity, background shapes, rounded corners, symbol references, and
-inline margin decorations produce explicit warnings and use a documented
-fallback where possible. Semantic processing remains a separate backend
-concern.
+such as `rule/thin`, `padding/compact`, and `spacing/xs`. Unknown patterns or
+background shapes, out-of-range opacity, symbol references, and inline margin
+decorations produce explicit warnings and use a documented fallback where
+possible. Semantic processing remains a separate backend concern.
 
 The regression suite includes tagged-PDF structure tests. One verifies that
 the standard command bindings and Lua-rendered underline, highlight, and frame

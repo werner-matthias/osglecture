@@ -1117,28 +1117,28 @@ load babel
     \textbf{\ldeen{Standardprozessor}{Default processor}} &
     \textbf{\code{osgstyler-lua}}\\\hline
   \code{line} & \ldeen{nicht gezeichnet (Fehler)}{not drawn (error)} &
-    \ldeen{gezeichnet (nur \code{solid}, unten/über/durch)}
-    {drawn (\code{solid} only, below/above/through)}\\
+    \ldeen{\code{solid}/\code{dashed}/\code{dotted}/\code{wavy},
+      unten/über/durch}{\code{solid}/\code{dashed}/\code{dotted}/\code{wavy},
+      below/above/through}\\
   \code{background} & \ldeen{nicht gezeichnet (Fehler)}{not drawn (error)} &
-    \ldeen{gezeichnet (\code{opacity}/\code{shape} nur als Vorgabe)}
-    {drawn (\code{opacity}/\code{shape} default only)}\\
-  \code{enclosure} & \ldeen{gezeichnet}{drawn} & \ldeen{gezeichnet
-    (dieselbe Logik)}{drawn (same logic)}\\
+    \ldeen{mit Opazität und \code{text}/\code{line}-Form}
+    {with opacity and \code{text}/\code{line} shape}\\
+  \code{enclosure} & \ldeen{eckig, \code{solid}}{square, \code{solid}} &
+    \ldeen{Radius; \code{solid}/\code{dashed}/\code{dotted}}
+      {radius; \code{solid}/\code{dashed}/\code{dotted}}\\
   \code{margin} & \ldeen{ignoriert}{ignored} &
     \ldeen{nicht gezeichnet (Warnung)}{not drawn (warning)}\\
   \code{affix} & \ldeen{gezeichnet}{drawn} & \ldeen{gezeichnet (dieselbe
     Logik)}{drawn (same logic)}\\\hline
 \end{tabular}
 \end{center}
-\ldeen*{Innerhalb von \code{enclosure} werden @1 gezeichnet, @2 und @3
-  dagegen von beiden Prozessoren gespeichert, aber ignoriert (@3 löst nur
-  dann eine Warnung aus, wenn er von \code{0pt} abweicht) -- eckige Boxen
-  mit optischem Rahmen und Füllung funktionieren also schon heute, echte
-  gemusterte oder abgerundete Rahmen noch nicht.}{Within \code{enclosure},
-  @1 are drawn, whereas @2 and @3 are stored by both processors but
-  ignored (@3 only triggers a warning when it differs from \code{0pt}) --
-  square boxes with a visible border and fill therefore already work
-  today; genuinely patterned or rounded borders do not yet.}
+\ldeen*{Innerhalb von \code{enclosure} zeichnet der Standardprozessor @1,
+  ignoriert aber @2 und @3 (@3 warnt bei Werten ungleich \code{0pt}). Das
+  Lua-Backend wertet dagegen Radius sowie solide, gestrichelte und gepunktete
+  Rahmen aus.}{Within \code{enclosure}, the default processor draws @1 but
+  ignores @2 and @3 (@3 warns for values other than \code{0pt}). The Lua
+  backend additionally honours the radius and solid, dashed, and dotted
+  strokes.}
   {\code{border-color}/\code{fill-color}/\code{thickness}/\code{padding}}
   {\code{pattern}}{\code{radius}}
 
@@ -1543,12 +1543,13 @@ load babel
     \usepackage{osgstyler-lua}
 \end{example}
 \ldeen*{Verlangt @1 (bricht sonst mit einer klaren Fehlermeldung ab).
-  Rendert zusätzlich @2 (nur \code{solid}, an \code{below}/\code{above}/\code{through})
-  über @3s @4 sowie @5 über dessen @6.}{Requires @1 (otherwise aborts with
-  a clear error message). Additionally renders @2 (only \code{solid}, at
-  \code{below}/\code{above}/\code{through}) via @3's @4, and @5 via its
-  @6.}{\LuaTeX{}}{\code{line}}{\pkg*{lua-ul}}{\cs*{underLine}}
-  {\code{background}}{\cs*{highLight}}
+  Rendert zusätzlich @2 an \code{below}/\code{above}/\code{through} und @3
+  über eigene, zeilenbruchfeste @4-Leader. @5 zeichnet abgerundete und
+  gemusterte Inline-Rahmen.}{Requires @1 (otherwise aborts with a clear error
+  message). Additionally renders @2 at \code{below}/\code{above}/\code{through}
+  and @3 through custom line-break-safe @4 leaders. @5 draws rounded and
+  patterned inline frames.}{\LuaTeX{}}{\code{line}}{\code{background}}
+  {\pkg*{lua-ul}}{\pkg*{pgfcore}}
 \ldeen{Das expandierbare \cs{OsgStylerLuaBackendActive} liefert stets den
   Text \code{true} und dient vor allem als Existenztest
   (\cs*{cs\_if\_exist:NTF}), um im Theme-Code gezielt das Lua-Backend --
@@ -1856,11 +1857,11 @@ load babel
     zusätzlich \code{through}); \code{affix}: \code{before}/\code{after}.}
     {\code{line}/\code{margin}: \code{above}/\code{below} (\code{line}
     additionally \code{through}); \code{affix}: \code{before}/\code{after}.}
-  \keyval{pattern}{\code{solid}, \ldots}
-    \ldeen{Aktuell rendert jeder Prozessor nur \code{solid}; andere Werte
-    werden gespeichert, siehe Abschnitt~\ref{sec:decorations:status}.}
-    {Currently every processor only renders \code{solid}; other values are
-    stored, see Section~\ref{sec:decorations:status}.}
+  \keyval{pattern}{\code{solid}, \code{dashed}, \code{dotted}, \code{wavy}}
+    \ldeen{Das Lua-Backend unterstützt alle vier Werte für Linien und die
+    ersten drei für Rahmen; siehe Abschnitt~\ref{sec:decorations:status}.}
+    {The Lua backend supports all four values for lines and the first three
+    for enclosures; see Section~\ref{sec:decorations:status}.}
   \keyval{color}{\ldeen{Farb-Slot}{color slot}}
     \ldeen{Siehe Abschnitt~\ref{sec:colors}.}{See Section~\ref{sec:colors}.}
   \keyval{thickness}{\ldeen{Länge oder Metrikreferenz}{length or metric
@@ -1870,19 +1871,18 @@ load babel
     reference}}
     \ldeen{Siehe Abschnitt~\ref{sec:metrics}.}{See Section~\ref{sec:metrics}.}
   \keyval{opacity}{\meta{\ldeen{Zahl}{number}}}
-    \ldeen{Nur \code{1} wird aktuell gerendert.}{Only \code{1} is currently
-    rendered.}
-  \keyval{shape}{\code{text}, \ldots}
-    \ldeen{Nur \code{text} wird aktuell gerendert.}{Only \code{text} is
-    currently rendered.}
+    \ldeen{Das Lua-Backend rendert Werte von \code{0} bis \code{1}.}
+      {The Lua backend renders values from \code{0} to \code{1}.}
+  \keyval{shape}{\code{text}, \code{line}}
+    \ldeen{Glyphen- bzw. zeilenhohes Hintergrundband im Lua-Backend.}
+      {Glyph-height or line-height background band in the Lua backend.}
   \keyval{border-color}{\ldeen{Farb-Slot}{color slot}}
     \ldeen{Siehe Abschnitt~\ref{sec:colors}.}{See Section~\ref{sec:colors}.}
   \keyval{fill-color}{\ldeen{Farb-Slot}{color slot}}
     \ldeen{Siehe Abschnitt~\ref{sec:colors}.}{See Section~\ref{sec:colors}.}
-  \keyval{radius}{\ldeen{Länge}{length}}
-    \ldeen{Gespeichert, aktuell nicht gerendert (siehe Abschnitt
-    \ref{sec:decorations:status}).}{Stored, currently not rendered (see
-    Section~\ref{sec:decorations:status}).}
+  \keyval{radius}{\ldeen{Länge oder Metrikreferenz}{length or metric reference}}
+    \ldeen{Vom Lua-Backend gerendert; der Standardprozessor bleibt eckig.}
+      {Rendered by the Lua backend; the default processor remains square.}
   \keyval{padding}{\ldeen{Länge oder Metrikreferenz}{length or metric
     reference}}
     \ldeen{Siehe Abschnitt~\ref{sec:metrics}.}{See Section~\ref{sec:metrics}.}
@@ -5657,6 +5657,8 @@ load babel
 \RequirePackage{osgstyler}
 \RequirePackage{luacolor}
 \RequirePackage{lua-ul}
+\RequirePackage{pgfcore}
+\RequirePackage{transparent}
 
 \ExplSyntaxOn
 
@@ -5670,11 +5672,11 @@ load babel
   { Line~position~'#1'~is~not~supported. }
   { The~reference~backend~uses~the~'below'~position~instead. }
 \msg_new:nnnn { osgstyler-lua } { unsupported-opacity }
-  { Background~opacity~'#1'~is~not~supported. }
-  { The~reference~backend~uses~the~opaque~palette~color. }
+  { Background~opacity~'#1'~is~outside~the~range~0--1. }
+  { The~reference~backend~clamps~the~value~to~that~range. }
 \msg_new:nnnn { osgstyler-lua } { unsupported-shape }
   { Background~shape~'#1'~is~not~supported. }
-  { The~reference~backend~uses~the~normal~text~shape. }
+  { Use~'text'~or~'line';~the~reference~backend~falls~back~to~'text'. }
 \msg_new:nnnn { osgstyler-lua } { unsupported-margin }
   { Margin~decoration~'#1'~cannot~be~rendered~inline. }
   { Use~a~block~backend~for~margin~decorations. }
@@ -5689,20 +5691,236 @@ load babel
 
 \tl_new:N \l__osgstyler_lua_pattern_tl
 \tl_new:N \l__osgstyler_lua_position_tl
+\tl_new:N \l__osgstyler_lua_opacity_tl
+\tl_new:N \l__osgstyler_lua_shape_tl
 \dim_new:N \l__osgstyler_lua_thickness_dim
 \dim_new:N \l__osgstyler_lua_offset_dim
 \dim_new:N \l__osgstyler_lua_top_dim
 \dim_new:N \l__osgstyler_lua_bottom_dim
 \dim_new:N \l__osgstyler_lua_cap_height_dim
+\dim_new:N \l__osgstyler_lua_period_dim
+\dim_new:N \l__osgstyler_lua_center_dim
+\dim_new:N \l__osgstyler_lua_radius_dim
+\dim_new:N \l__osgstyler_lua_padding_dim
+\box_new:N \l__osgstyler_lua_content_box
 
-% Enclosure rendering and the affix/value/metric helpers it and the
-% default decoration processor share now live in the core package (see
-% \cs{__osgstyler_decoration_enclosure_apply:nnn} there) -- they need no
-% engine support, so they are not specific to this backend. This alias
-% keeps \cs{__osgstyler_lua_family_wrap:nnN}'s naming convention working
-% unchanged for the 'enclosure' family.
-\cs_new_eq:cc { __osgstyler_lua_enclosure_apply:nnn }
-  { __osgstyler_decoration_enclosure_apply:nnn }
+% lua-ul deliberately accepts arbitrary leader material.  A context-dependent
+% underline type lets it retain responsibility for finding decorated runs and
+% splitting them at line boundaries, while pgfcore supplies the actual pattern.
+\newunderlinetype \__osgstyler_lua_pattern_line:
+  [
+    \l__osgstyler_lua_pattern_tl @
+    \dim_to_decimal_in_sp:n { \l__osgstyler_lua_top_dim } @
+    \dim_to_decimal_in_sp:n { \l__osgstyler_lua_bottom_dim } @
+    \dim_to_decimal_in_sp:n { \l__osgstyler_lua_thickness_dim } @
+    \luaul_context_color:
+  ]
+  {
+    \luaul_apply_color:
+    \str_case:Vn \l__osgstyler_lua_pattern_tl
+      {
+        { dashed }
+          {
+            \dim_set:Nn \l__osgstyler_lua_period_dim
+              { 6\l__osgstyler_lua_thickness_dim }
+            \leaders\hbox_to_wd:nn { \l__osgstyler_lua_period_dim }
+              {
+                \vrule width 3\l__osgstyler_lua_thickness_dim
+                  height \l__osgstyler_lua_top_dim
+                  depth -\l__osgstyler_lua_bottom_dim
+                \hss
+              }
+          }
+        { dotted }
+          {
+            \dim_set:Nn \l__osgstyler_lua_period_dim
+              { 3\l__osgstyler_lua_thickness_dim }
+            \dim_set:Nn \l__osgstyler_lua_center_dim
+              { (\l__osgstyler_lua_top_dim+\l__osgstyler_lua_bottom_dim) / 2 }
+            \leaders\hbox_to_wd:nn { \l__osgstyler_lua_period_dim }
+              {
+                \begin{pgfpicture}
+                  \pgfsetbaseline { 0pt }
+                  \pgfsetfillcolor { \l__osgstyler_decoration_color_tl }
+                  \pgfpathcircle
+                    { \pgfpoint { .5\l__osgstyler_lua_thickness_dim }
+                        { \l__osgstyler_lua_center_dim } }
+                    { .5\l__osgstyler_lua_thickness_dim }
+                  \pgfusepath { fill }
+                \end{pgfpicture}
+                \hss
+              }
+          }
+        { wavy }
+          {
+            \dim_set:Nn \l__osgstyler_lua_period_dim
+              { 6\l__osgstyler_lua_thickness_dim }
+            \dim_set:Nn \l__osgstyler_lua_center_dim
+              { (\l__osgstyler_lua_top_dim+\l__osgstyler_lua_bottom_dim) / 2 }
+            \leaders\hbox_to_wd:nn { \l__osgstyler_lua_period_dim }
+              {
+                \begin{pgfpicture}
+                  \pgfsetbaseline { 0pt }
+                  \pgfsetstrokecolor { \l__osgstyler_decoration_color_tl }
+                  \pgfsetlinewidth { \l__osgstyler_lua_thickness_dim }
+                  \pgfpathmoveto
+                    { \pgfpoint { 0pt } { \l__osgstyler_lua_center_dim } }
+                  \pgfpathcurveto
+                    { \pgfpoint { 1.5\l__osgstyler_lua_thickness_dim }
+                        { \l__osgstyler_lua_top_dim } }
+                    { \pgfpoint { 1.5\l__osgstyler_lua_thickness_dim }
+                        { \l__osgstyler_lua_top_dim } }
+                    { \pgfpoint { 3\l__osgstyler_lua_thickness_dim }
+                        { \l__osgstyler_lua_center_dim } }
+                  \pgfpathcurveto
+                    { \pgfpoint { 4.5\l__osgstyler_lua_thickness_dim }
+                        { \l__osgstyler_lua_bottom_dim } }
+                    { \pgfpoint { 4.5\l__osgstyler_lua_thickness_dim }
+                        { \l__osgstyler_lua_bottom_dim } }
+                    { \pgfpoint { 6\l__osgstyler_lua_thickness_dim }
+                        { \l__osgstyler_lua_center_dim } }
+                  \pgfusepath { stroke }
+                \end{pgfpicture}
+                \hss
+              }
+          }
+      }
+  }
+
+\newunderlinetype \__osgstyler_lua_background:
+  [
+    \l__osgstyler_lua_shape_tl @
+    \l__osgstyler_lua_opacity_tl @
+    \dim_to_decimal_in_sp:n { \l__osgstyler_lua_top_dim } @
+    \dim_to_decimal_in_sp:n { \l__osgstyler_lua_bottom_dim } @
+    \luaul_context_color:
+  ]
+  {
+    \leaders\hbox_to_wd:nn { 1em }
+      {
+        \transparent { \l__osgstyler_lua_opacity_tl }
+        \luaul_apply_color:
+        \vrule width 1em
+          height \l__osgstyler_lua_top_dim
+          depth \l__osgstyler_lua_bottom_dim
+        \hss
+      }
+  }
+
+\cs_new_protected:Npn \__osgstyler_lua_pgf_pattern:n #1
+  {
+    \str_case:nnF {#1}
+      {
+        { solid } { \pgfsetdash { } { 0pt } }
+        { dashed }
+          { \pgfsetdash
+              { { 3\l__osgstyler_lua_thickness_dim }
+                { 2\l__osgstyler_lua_thickness_dim } } { 0pt } }
+        { dotted }
+          {
+            \pgfsetroundcap
+            \pgfsetdash
+              { { 0pt } { 2.5\l__osgstyler_lua_thickness_dim } } { 0pt }
+          }
+      }
+      {
+        \msg_warning:nnnn { osgstyler-lua } { unsupported-pattern }
+          {#1} { enclosure }
+        \pgfsetdash { } { 0pt }
+      }
+  }
+
+% Unlike the portable \fcolorbox fallback, this renderer owns the path and can
+% therefore honour both corner radius and stroke pattern.  The content remains
+% a normal tagged box while pgfcore emits the painted rectangle behind it.
+\cs_new_protected:Npn \__osgstyler_lua_enclosure_apply:nnn #1#2#3
+  {
+    \group_begin:
+      \__osgstyler_decoration_value:nnnnN {#1}{enclosure}{#2}{border-color}
+        \l__osgstyler_decoration_color_tl
+      \__osgstyler_decoration_default:Nn
+        \l__osgstyler_decoration_color_tl { primary }
+      \tl_set:Nx \l__osgstyler_decoration_color_tl
+        { \OsgColorName { \l__osgstyler_decoration_color_tl } }
+      \__osgstyler_decoration_value:nnnnN {#1}{enclosure}{#2}{fill-color}
+        \l__osgstyler_decoration_value_tl
+      \__osgstyler_decoration_default:Nn
+        \l__osgstyler_decoration_value_tl { background }
+      \tl_set:Nx \l_tmpa_tl
+        { \OsgColorName { \l__osgstyler_decoration_value_tl } }
+      \__osgstyler_decoration_value:nnnnN {#1}{enclosure}{#2}{pattern}
+        \l__osgstyler_lua_pattern_tl
+      \__osgstyler_decoration_default:Nn \l__osgstyler_lua_pattern_tl { solid }
+      \__osgstyler_decoration_value:nnnnN {#1}{enclosure}{#2}{thickness}
+        \l__osgstyler_decoration_value_tl
+      \__osgstyler_decoration_default:Nn
+        \l__osgstyler_decoration_value_tl { rule/thin }
+      \exp_args:NV \__osgstyler_decoration_metric_resolve:nN
+        \l__osgstyler_decoration_value_tl \l__osgstyler_decoration_value_tl
+      \dim_set:Nn \l__osgstyler_lua_thickness_dim
+        { \l__osgstyler_decoration_value_tl }
+      \__osgstyler_decoration_value:nnnnN {#1}{enclosure}{#2}{padding}
+        \l__osgstyler_decoration_value_tl
+      \__osgstyler_decoration_default:Nn
+        \l__osgstyler_decoration_value_tl { padding/normal }
+      \exp_args:NV \__osgstyler_decoration_metric_resolve:nN
+        \l__osgstyler_decoration_value_tl \l__osgstyler_decoration_value_tl
+      \dim_set:Nn \l__osgstyler_lua_padding_dim
+        { \l__osgstyler_decoration_value_tl + .5\l__osgstyler_lua_thickness_dim }
+      \__osgstyler_decoration_value:nnnnN {#1}{enclosure}{#2}{radius}
+        \l__osgstyler_decoration_value_tl
+      \__osgstyler_decoration_default:Nn
+        \l__osgstyler_decoration_value_tl { radius/square }
+      \exp_args:NV \__osgstyler_decoration_metric_resolve:nN
+        \l__osgstyler_decoration_value_tl \l__osgstyler_decoration_value_tl
+      \dim_set:Nn \l__osgstyler_lua_radius_dim
+        { \l__osgstyler_decoration_value_tl }
+      \hbox_set:Nn \l__osgstyler_lua_content_box
+        { \kern\l__osgstyler_lua_padding_dim #3
+          \kern\l__osgstyler_lua_padding_dim }
+      \box_set_ht:Nn \l__osgstyler_lua_content_box
+        { \box_ht:N \l__osgstyler_lua_content_box
+          + \l__osgstyler_lua_padding_dim }
+      \box_set_dp:Nn \l__osgstyler_lua_content_box
+        { \box_dp:N \l__osgstyler_lua_content_box
+          + \l__osgstyler_lua_padding_dim }
+      \hbox:n
+        {
+          \rlap
+            {
+                \begin{pgfpicture}
+                  \pgfsetbaseline { 0pt }
+                  \pgfsetfillcolor { \l_tmpa_tl }
+                  \pgfsetstrokecolor { \l__osgstyler_decoration_color_tl }
+                  \pgfsetlinewidth { \l__osgstyler_lua_thickness_dim }
+                  \exp_args:NV \__osgstyler_lua_pgf_pattern:n
+                    \l__osgstyler_lua_pattern_tl
+                  \pgfsetcornersarced
+                    { \pgfpoint { \l__osgstyler_lua_radius_dim }
+                        { \l__osgstyler_lua_radius_dim } }
+                  \pgfpathrectanglecorners
+                    { \pgfpoint
+                        { \dim_eval:n { .5\l__osgstyler_lua_thickness_dim } }
+                        { \dim_eval:n
+                            { -\box_dp:N \l__osgstyler_lua_content_box
+                              + .5\l__osgstyler_lua_thickness_dim } } }
+                    { \pgfpoint
+                        { \dim_eval:n
+                            { \box_wd:N \l__osgstyler_lua_content_box
+                              - .5\l__osgstyler_lua_thickness_dim } }
+                        { \dim_eval:n
+                            { \box_ht:N \l__osgstyler_lua_content_box
+                              - .5\l__osgstyler_lua_thickness_dim } } }
+                  \dim_compare:nNnTF
+                    \l__osgstyler_lua_thickness_dim > \c_zero_dim
+                    { \pgfusepath { fill, stroke } }
+                    { \pgfusepath { fill } }
+                \end{pgfpicture}
+            }
+          \box_use_drop:N \l__osgstyler_lua_content_box
+        }
+    \group_end:
+  }
 
 \cs_new_protected:Npn \__osgstyler_lua_line_apply:nnn #1#2#3
   {
@@ -5713,9 +5931,13 @@ load babel
       \__osgstyler_decoration_value:nnnnN {#1}{line}{#2}{pattern}
         \l__osgstyler_lua_pattern_tl
       \__osgstyler_decoration_default:Nn \l__osgstyler_lua_pattern_tl { solid }
-      \str_if_eq:VnF \l__osgstyler_lua_pattern_tl { solid }
-        { \msg_warning:nnee { osgstyler-lua } { unsupported-pattern }
-            \l__osgstyler_lua_pattern_tl \l__osgstyler_lua_position_tl }
+      \clist_if_in:nVF { solid,dashed,dotted,wavy }
+        \l__osgstyler_lua_pattern_tl
+        {
+          \msg_warning:nnee { osgstyler-lua } { unsupported-pattern }
+            \l__osgstyler_lua_pattern_tl \l__osgstyler_lua_position_tl
+          \tl_set:Nn \l__osgstyler_lua_pattern_tl { solid }
+        }
       \__osgstyler_decoration_value:nnnnN {#1}{line}{#2}{color}
         \l__osgstyler_decoration_color_tl
       \__osgstyler_decoration_default:Nn \l__osgstyler_decoration_color_tl { text }
@@ -5776,11 +5998,18 @@ load babel
             { -\l__osgstyler_lua_offset_dim
               -\l__osgstyler_lua_thickness_dim }
         }
-      \underLine
-        [ color=\l__osgstyler_decoration_color_tl,
-          top=\l__osgstyler_lua_top_dim,
-          bottom=\l__osgstyler_lua_bottom_dim ]
-        {#3}
+      \str_if_eq:VnTF \l__osgstyler_lua_pattern_tl { solid }
+        {
+          \underLine
+            [ color=\l__osgstyler_decoration_color_tl,
+              top=\l__osgstyler_lua_top_dim,
+              bottom=\l__osgstyler_lua_bottom_dim ]
+            {#3}
+        }
+        {
+          \luaul_set_color:n { \l__osgstyler_decoration_color_tl }
+          \__osgstyler_lua_pattern_line: #3
+        }
     \group_end:
   }
 
@@ -5793,22 +6022,47 @@ load babel
       \tl_set:Nx \l__osgstyler_decoration_color_tl
         { \OsgColorName { \l__osgstyler_decoration_color_tl } }
       \__osgstyler_decoration_value:nnnnN {#1}{background}{#2}{opacity}
-        \l__osgstyler_decoration_value_tl
-      \tl_if_empty:NF \l__osgstyler_decoration_value_tl
+        \l__osgstyler_lua_opacity_tl
+      \__osgstyler_decoration_default:Nn \l__osgstyler_lua_opacity_tl { 1 }
+      \fp_compare:nNnTF { \l__osgstyler_lua_opacity_tl } < { 0 }
         {
-          \str_if_eq:VnF \l__osgstyler_decoration_value_tl { 1 }
-            { \msg_warning:nne { osgstyler-lua } { unsupported-opacity }
-                \l__osgstyler_decoration_value_tl }
+          \msg_warning:nne { osgstyler-lua } { unsupported-opacity }
+            \l__osgstyler_lua_opacity_tl
+          \tl_set:Nn \l__osgstyler_lua_opacity_tl { 0 }
+        }
+        {
+          \fp_compare:nNnT { \l__osgstyler_lua_opacity_tl } > { 1 }
+            {
+              \msg_warning:nne { osgstyler-lua } { unsupported-opacity }
+                \l__osgstyler_lua_opacity_tl
+              \tl_set:Nn \l__osgstyler_lua_opacity_tl { 1 }
+            }
         }
       \__osgstyler_decoration_value:nnnnN {#1}{background}{#2}{shape}
-        \l__osgstyler_decoration_value_tl
-      \tl_if_empty:NF \l__osgstyler_decoration_value_tl
+        \l__osgstyler_lua_shape_tl
+      \__osgstyler_decoration_default:Nn \l__osgstyler_lua_shape_tl { text }
+      \str_case:VnF \l__osgstyler_lua_shape_tl
         {
-          \str_if_eq:VnF \l__osgstyler_decoration_value_tl { text }
-            { \msg_warning:nne { osgstyler-lua } { unsupported-shape }
-                \l__osgstyler_decoration_value_tl }
+          { text }
+            {
+              \dim_set:Nn \l__osgstyler_lua_top_dim { 1.75ex }
+              \dim_set:Nn \l__osgstyler_lua_bottom_dim { .75ex }
+            }
+          { line }
+            {
+              \dim_set:Nn \l__osgstyler_lua_top_dim { .8\baselineskip }
+              \dim_set:Nn \l__osgstyler_lua_bottom_dim { .2\baselineskip }
+            }
         }
-      \highLight [\l__osgstyler_decoration_color_tl] {#3}
+        {
+          \msg_warning:nne { osgstyler-lua } { unsupported-shape }
+            \l__osgstyler_lua_shape_tl
+          \tl_set:Nn \l__osgstyler_lua_shape_tl { text }
+          \dim_set:Nn \l__osgstyler_lua_top_dim { 1.75ex }
+          \dim_set:Nn \l__osgstyler_lua_bottom_dim { .75ex }
+        }
+      \luaul_set_color:n { \l__osgstyler_decoration_color_tl }
+      \__osgstyler_lua_background: #3
     \group_end:
   }
 

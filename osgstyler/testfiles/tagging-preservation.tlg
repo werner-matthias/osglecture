@@ -22,15 +22,9 @@
      <?MarkedContent page="1" ?>, strong-looking text, 
      <?MarkedContent page="1" ?>
      <?MarkedContent page="1" ?>underlined text, 
-     <?MarkedContent page="1" ?>
      <?MarkedContent page="1" ?>high
      <?MarkedContent page="1" ?>
-     <?MarkedContent page="1" ?>
-     <?MarkedContent page="1" ?>lighted text, and 
-     <?MarkedContent page="1" ?>
-     <?MarkedContent page="1" ?>framed text
-     <?MarkedContent page="1" ?> 
-     <?MarkedContent page="1" ?>remain in one accessible paragraph.
+     <?MarkedContent page="1" ?>lighted text, and framed text remain in one accessible paragraph.
     </text>
    </text-unit>
    <text-unit xmlns="https://www.latex-project.org/ns/dflt"
