@@ -8,6 +8,7 @@ modules = {
    "ollm",
    "osgdoc",
    "langselect",
+   "tagbridge",
    "lttheme",
    "lttheme-tuc-2019",
    "osgstyler",
