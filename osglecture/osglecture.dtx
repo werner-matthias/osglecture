@@ -1176,6 +1176,38 @@ individually. \code{<all>} forces columns in every mode, while, for example,
       }
   }
 
+% \ldeen*{pgf/tikz reserviert die Schlüssel \code{alt}, \code{artifact}
+% und \code{actualtext} für \env{tikzpicture} ausdrücklich für
+% zukünftige Tagging-Unterstützung, wertet sie selbst aber nirgends
+% aus -- ein damit angegebener Alt-Text verschwindet kommentarlos, und
+% das ganze Bild landet als anonymes Artifact im Tag-Baum, ohne dass
+% \pkg{tagpdf} das meldet. Das \pkg{latex-lab}-Bundle bringt mit
+% \pkg{latex-lab-testphase-tikz} eine vom LaTeX-Projekt selbst
+% gepflegte Implementierung dieser Schlüssel über das
+% Tagging-Socket-System mit, die auch mehrzeiligen Node-Text korrekt
+% als echten Text taggt statt als Teil der Grafik; das Laden dieses
+% einen Pakets ist robuster als eine eigene Nachbildung. Die Schlüssel
+% gelten für die \env{tikzpicture}-Umgebung selbst
+% (\code{\textbackslash begin\{tikzpicture\}[alt=\{...\}]}), nicht für
+% einzelne \cs{node}s darin -- ein \code{alt} an einem einzelnen Knoten
+% bleibt wirkungslos.}{pgf/tikz reserves the keys \code{alt},
+% \code{artifact} and \code{actualtext} for \env{tikzpicture}
+% explicitly for future tagging support but never evaluates them
+% itself -- an \code{alt} text given this way vanishes without a
+% trace, and the whole picture ends up as an anonymous artifact in the
+% tag tree, with no diagnostic from \pkg{tagpdf}. The \pkg{latex-lab}
+% bundle ships \pkg{latex-lab-testphase-tikz}, a
+% LaTeX-Project-maintained implementation of these keys via the
+% tagging socket system that also tags multi-line node text correctly
+% as real text rather than as part of the graphic; loading that one
+% package is more robust than reimplementing it. The keys apply to the
+% \env{tikzpicture} environment itself
+% (\code{\textbackslash begin\{tikzpicture\}[alt=\{...\}]}), not to
+% individual \cs{node}s inside it -- an \code{alt} on a single node
+% remains ineffective.}{tikzpicture}
+\cs_if_exist:NT \tagstructbegin
+  { \RequirePackage{latex-lab-testphase-tikz} }
+
 \__osglecture_require_package:n {osglecture-series}
 \__osglecture_require_package:n {osglecture-metadata}
 \exp_args:Nx \OsgLectureConfigureMetadata
