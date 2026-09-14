@@ -1,0 +1,392 @@
+%<*driver>
+\def\nameofplainTeX{plain}
+\ifx\fmtname\nameofplainTeX
+\input l3docstrip.tex
+\keepsilent
+\askforoverwritefalse
+\preamble
+
+========================================================================
+ Package tagdirtree - Accessible directory-tree listings.
+
+ (C) 2026 Matthias Werner
+ E-mail: matthias.werner@informatik.tu-chemnitz.de
+
+ Released under the LaTeX Project Public License v1.3c or later
+ See http://www.latex-project.org/lppl.txt
+========================================================================
+
+\endpreamble
+\postamble
+
+ This work is "maintained" (as per LPPL maintenance status) by
+ Matthias Werner.
+\endpostamble
+\generate{\file{tagdirtree.sty}{\from{tagdirtree.dtx}{package}}}
+\expandafter\endbatchfile
+\fi
+
+\iffalse
+%</driver>
+%<*package>
+\NeedsTeXFormat{LaTeX2e}[2022-06-01]
+\ProvidesExplPackage{tagdirtree}{2026-09-14}{v0.1.0}
+  {Accessible directory-tree listings}
+%</package>
+%<*driver>
+\fi
+\documentclass[add-bib=false]{osgdoc}
+
+\OnlyDescription
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage[
+languages={de,en},
+map={de=german,en=english},
+targetlang={job=2},
+load babel
+]{langselect}
+\newpackagename{\tagdirtreepkg}{tagdirtree}
+\makeindex
+\setcnltx{
+  package  =  tagdirtree,
+  version  = \UseVersionOf{tagdirtree.sty},
+  date     = \UseDateOf{tagdirtree.sty},
+  title    = {\ldeen{Das \tagdirtreepkg\ Paket}{The \tagdirtreepkg\ Package}},
+  info     = {\ldeen{Verzeichnisbäume mit echter, nicht nur nachempfundener
+      Barrierefreiheit}{Directory-tree listings with real, not merely
+      simulated, accessibility}},
+  authors  = {Matthias Werner[matthias.werner@informatik.tu-chemnitz.de]},
+  abstract={
+    \ldeen*{
+      Anders als bestehende Verzeichnisbaum-Pakete (\pkg*{dirtree},
+      \pkg*{dirtreex}) zeichnet \tagdirtreepkg\ den Baum nicht als
+      eigenständige Grafik, die anschließend eine Alt-Text-Beschreibung
+      braucht, sondern setzt ihn von Anfang an als echte, verschachtelte
+      Liste: jeder Eintrag ist regulärer, lesbarer Text, die Verschachtelung
+      selbst trägt die Eltern-Kind-Hierarchie, und pro Eintrag wird
+      zusätzlich vermerkt, ob es sich um eine Datei, ein Verzeichnis oder
+      ein Archiv handelt. Ist \cs{DocumentMetadata}\Marg{tagging=on}
+      gesetzt, wird das über eine Alt-Beschreibung je Eintrag (Art, Name,
+      Anmerkung) zusätzlich für unterstützende Technologie verfügbar
+      gemacht; ohne Tagging bleibt es eine gewöhnliche verschachtelte
+      Liste.
+    }{
+      Unlike existing directory-tree packages (\pkg*{dirtree},
+      \pkg*{dirtreex}), \tagdirtreepkg\ does not draw the tree as a
+      self-contained graphic that subsequently needs an alt-text
+      description -- it sets it as a genuine nested list from the start:
+      every entry is ordinary, readable text, the nesting itself carries
+      the parent-child hierarchy, and each entry additionally records
+      whether it is a file, a directory, or an archive. When
+      \cs{DocumentMetadata}\Marg{tagging=on} is set, this is further
+      exposed to assistive technology via a per-entry alt description
+      (kind, name, note); without tagging it remains an ordinary nested
+      list.
+    }
+  },
+  url      =https://github.com/werner-matthias/osglecture,
+  build-title
+}
+\begin{document}
+
+\section{\ldeen{Zweck und Nutzung}{Purpose and usage}}
+
+\ldeen{Das Paket hat keine Paketoptionen. Die Umgebung
+\env{tagdirtree} rahmt einen Baum; \cs{dtdir}, \cs{dtfile} und
+\cs{dtarchive} tragen jeweils Verzeichnisse, Dateien und Archive ein.
+\cs{dtdir} nimmt als drittes Argument die Einträge des Verzeichnisses.}
+{The package has no package options. The \env{tagdirtree} environment
+frames a tree; \cs{dtdir}, \cs{dtfile}, and \cs{dtarchive} enter
+directories, files, and archives respectively. \cs{dtdir} takes the
+directory's entries as its third argument.}
+
+\begin{verbatim}
+\begin{tagdirtree}
+  \dtdir{project}{root directory}{
+    \dtdir{src}{source code}{
+      \dtfile{main.py}{entry point}
+      \dtfile{util.py}{}
+    }
+    \dtfile{README.md}{documentation}
+    \dtarchive{legacy.zip}{old sources}
+  }
+\end{tagdirtree}
+\end{verbatim}
+
+\ldeen{Die zweite (bei \cs{dtdir} die zweite) Klammer ist die Anmerkung
+zum Eintrag und darf leer sein. Sie erscheint im Text in Klammern und,
+sofern gesetzt, als Teil der Alt-Beschreibung.}{The second brace
+argument (also the second for \cs{dtdir}) is the entry's note and may
+be empty. It appears in the text in parentheses and, when set, as part
+of the alt description.}
+
+\ldeen{Verzeichnisse werden fett, Archive kursiv, Dateien in
+Grundschrift gesetzt; Einträge sind eine gewöhnliche (mit
+\pkg*{enumitem} eng gesetzte) verschachtelte Liste, keine eigene
+Zeichnung -- Optik lässt sich daher mit den üblichen
+\pkg*{enumitem}-Mitteln auf der \env{tagdirtree}-Umgebung selbst
+anpassen.}{Directories are set bold, archives italic, files in the
+body font; entries form an ordinary (via \pkg*{enumitem} tightly set)
+nested list, not a custom drawing -- appearance can therefore be
+adjusted with the usual \pkg*{enumitem} means on the \env{tagdirtree}
+environment itself.}
+
+\subsection{\ldeen{Icons}{Icons}}
+
+\ldeen{Jeder Eintrag setzt vor Name und Anmerkung ein kurzes,
+sprachunabhängiges Icon -- \cs{tagdirtreefileicon},
+\cs{tagdirtreedirectoryicon} bzw.\ \cs{tagdirtreearchiveicon}, je nach
+Art. Die Vorgabe ist ein reiner Platzhalter (\code{[D]}, \code{[F]},
+\code{[A]}) und zum Überschreiben gedacht; ist Tagging aktiv, wird das
+Icon als rein dekoratives \code{artifact} markiert, da die Art des
+Eintrags bereits vollständig im \code{alt}-Text steckt (siehe unten) --
+ein Screenreader soll sie nicht zusätzlich vorlesen.}{Every entry sets
+a short, language-independent icon before its name and note --
+\cs{tagdirtreefileicon}, \cs{tagdirtreedirectoryicon}, or
+\cs{tagdirtreearchiveicon}, depending on kind. The default is a plain
+placeholder (\code{[D]}, \code{[F]}, \code{[A]}) and meant to be
+overridden; while tagging is active, the icon is marked as a purely
+decorative \code{artifact}, since the entry's kind already lives
+entirely in its \code{alt} text (see below) -- a screen reader should
+not read it out a second time.}
+
+\begin{verbatim}
+\RenewDocumentCommand \tagdirtreedirectoryicon { } { \faFolder }
+\RenewDocumentCommand \tagdirtreefileicon { } { \faFile }
+\RenewDocumentCommand \tagdirtreearchiveicon { } { \faFileArchive }
+\end{verbatim}
+
+\ldeen{Mit \pkg*{osgstyler} lassen sich Icons stattdessen in einer
+Themefarbe statt einer festen Farbe setzen, über das öffentliche
+\cs{OsgColorName}. (\pkg*{osgstyler}s \code{affix}-Decoration selbst
+wurde geprüft und eignet sich \emph{nicht} als Anschlussstelle: Sie ist
+an \pkg*{osgstyler-block}s eigene Anwendungsstellen gebunden, hat kein
+öffentliches "`wende einen einzelnen Affix freistehend an"'-Kommando,
+und ihr \code{symbol=}-Schlüssel hat ohnehin kein auflösendes Backend --
+\code{content=} bliebe die einzig nutzbare Option, ohne echten
+Mehrwert gegenüber direktem \cs{OsgColorName}.)}{With
+\pkg*{osgstyler}, icons can instead be set in a theme color rather
+than a fixed one, via the public \cs{OsgColorName}. (\pkg*{osgstyler}'s
+own \code{affix} decoration was checked and does \emph{not} work as an
+attachment point: it is bound to \pkg*{osgstyler-block}'s own
+application sites, has no public "`apply a single affix
+standalone"' command, and its \code{symbol=} key has no resolving
+backend anyway -- \code{content=} would be the only usable option
+left, with no real benefit over \cs{OsgColorName} directly.)}
+
+\begin{verbatim}
+\RenewDocumentCommand \tagdirtreedirectoryicon { }
+  { \textcolor{\OsgColorName{accent}}{[D]} }
+\end{verbatim}
+
+\section{Implementation}
+\MaybeStop{\ldeen*{Um die Implementationsbeschreibung zu erhalten, kommentieren Sie bitte \cs{OnlyDescription} in @1 aus.}{To view the implementation description, please uncomment \cs{OnlyDescription} in @1.}{\File{tagdirtree.dtx}}}
+
+\AutoDocInput{tagdirtree.dtx}{package}
+\end{document}
+
+%</driver>
+
+%<*package>
+\RequirePackage{enumitem}
+\ExplSyntaxOn
+
+% \ldeen*{Anders als @1/@2, die den Baum als eigenständige Grafik
+% zeichnen (roh bzw.\ über \pkg{tikz}) und daher -- ungetaggt -- als
+% anonymes Artifact ohne jede Semantik im Tag-Baum landen, ist ein
+% Verzeichnisbaum bereits von Natur aus eine verschachtelte Liste. @3
+% baut ihn deshalb direkt als solche (\env{itemize} über \pkg*{enumitem})
+% -- die Eltern-Kind-Hierarchie steckt in der Verschachtelung selbst,
+% nicht in gezeichneten Verbindungslinien, und jeder Eintrag ist echter,
+% lesbarer Text statt Teil eines Bildes. Bei aktivem Tagging bekommt
+% jeder Eintrag zusätzlich eine Alt-Beschreibung (Art, Name, Anmerkung),
+% da die für den Nutzer tatsächlich hörbare Semantik in der Praxis über
+% diesen Kanal ankommt, nicht über eine eigene Strukturrolle (siehe
+% unten bei @4).}{Unlike @1/@2, which draw the tree as a self-contained
+% graphic (raw, resp.\ via \pkg{tikz}) and therefore -- once tagged --
+% land as an anonymous artifact with no semantics at all in the tag
+% tree, a directory tree already is a nested list by nature. @3
+% therefore builds it directly as one (\env{itemize} via
+% \pkg*{enumitem}) -- the parent-child hierarchy lives in the nesting
+% itself, not in drawn connector lines, and every entry is real,
+% readable text rather than part of a picture. While tagging is active,
+% every entry additionally gets an alt description (kind, name, note),
+% since that is the channel through which the semantics actually reach
+% the user in practice, not a custom structure role (see @4
+% below).}{\pkg*{dirtree}}{\pkg*{dirtreex}}{\tagdirtreepkg}{\cs{__tagdirtree_tag_begin:}}
+\cs_if_exist:NT \NewStructureName
+  {
+    \NewStructureName{tagdirtree/file}
+    \AssignStructureRole{tagdirtree/file}{Span}
+    \NewStructureName{tagdirtree/directory}
+    \AssignStructureRole{tagdirtree/directory}{Span}
+    \NewStructureName{tagdirtree/archive}
+    \AssignStructureRole{tagdirtree/archive}{Span}
+  }
+
+\tl_new:N \l__tagdirtree_tag_tl
+\tl_new:N \l__tagdirtree_alt_tl
+
+% \ldeen*{@1/@2 tragen die Rolle Span (nicht etwa LI): Der umgebende
+% \env{itemize}-Eintrag ist bereits vom Kernel selbst korrekt als
+% Listenpunkt getaggt (@3/@4), ein zweites, manuell geöffnetes @5 an
+% derselben Stelle wäre ein ungültiges Eltern-Kind-Verhältnis
+% (verifiziert: erzeugt \code{Relation is not allowed}-Fehler). @6
+% direkt nach \cs{item} ist ebenfalls notwendig, nicht kosmetisch --
+% ohne es öffnet die manuelle Tag-Struktur zu früh, bevor der Kernel
+% die Absatzstruktur des Eintrags selbst begonnen hat, und landet unter
+% dem falschen (noch nicht aktuellen) Elternknoten (verifiziert:
+% dieselbe \code{Relation is not allowed}-Fehlerklasse, unabhängig von
+% der gewählten Rolle).}{@1/@2 carry the role Span (not LI): the
+% surrounding \env{itemize} entry is already correctly tagged as a list
+% item by the kernel itself (@3/@4), a second, manually opened @5 at the
+% same spot would be an invalid parent-child relation (verified: produces
+% a \code{Relation is not allowed} error). @6 right after \cs{item} is
+% likewise necessary, not cosmetic -- without it the manual tag structure
+% opens too early, before the kernel has started the entry's own
+% paragraph structure, and ends up under the wrong (not-yet-current)
+% parent (verified: the same \code{Relation is not allowed} error class,
+% regardless of the chosen role).}{\cs{tagstructbegin}}{\cs{tagmcbegin}}
+% {\code{item}}{\code{itembody}}{LI}{\cs{leavevmode}}
+\cs_new_protected:Npn \__tagdirtree_tag_begin:
+  {
+    \cs_if_exist:NT \tagstructbegin
+      {
+        \exp_args:Ne \tagstructbegin
+          { tag=\l__tagdirtree_tag_tl, alt={\l__tagdirtree_alt_tl} }
+        \exp_args:Ne \tagmcbegin { tag=\l__tagdirtree_tag_tl }
+      }
+  }
+\cs_new_protected:Npn \__tagdirtree_tag_end:
+  {
+    \cs_if_exist:NT \tagstructend
+      { \tagmcend \tagstructend }
+  }
+
+% \ldeen*{Sprachwahl mit derselben Rückfallkette wie andernorts im
+% \pkg*{osglecture}-Bundle (@1, sonst @2, sonst @3) -- beide Integrationen
+% sind rein optional und existenzgeprüft, das Paket funktioniert
+% eigenständig auch ohne \pkg*{langselect} oder \pkg*{osglecture}, dann
+% stets auf @3.}{Language selection with the same fallback chain used
+% elsewhere in the \pkg*{osglecture} bundle (@1, else @2, else @3) --
+% both integrations are purely optional and existence-checked, the
+% package works standalone without \pkg*{langselect} or \pkg*{osglecture}
+% too, always falling back to @3 then.}
+% {\cs{olsTargetLanguage}}{\cs{OsgLectureLanguage}}{\code{en}}
+\cs_new:Npn \__tagdirtree_kind_word:n #1
+  {
+    \str_if_eq:eeTF
+      {
+        \cs_if_exist:NTF \olsTargetLanguage
+          { \olsTargetLanguage }
+          {
+            \cs_if_exist:NTF \OsgLectureLanguage
+              { \OsgLectureLanguage }
+              { en }
+          }
+      }
+      { de }
+      {
+        \str_case:nn {#1}
+          {
+            { file }      { Datei }
+            { directory } { Verzeichnis }
+            { archive }   { Archiv }
+          }
+      }
+      {
+        \str_case:nn {#1}
+          {
+            { file }      { File }
+            { directory } { Directory }
+            { archive }   { Archive }
+          }
+      }
+  }
+
+% \ldeen*{@1--@3 sind bewusst gewöhnliche, überschreibbare Befehle statt
+% eines Schlüssel-Wert-Optionssystems -- ihr Standardinhalt ist ein
+% reiner Platzhalter (\code{[D]} usw.), gedacht zum direkten
+% Überschreiben (\cs{renewcommand} oder \cs{RenewDocumentCommand}),
+% etwa mit \pkg*{osgstyler}-Decorations (\code{content=}, nicht
+% \code{symbol=} -- Letzteres hat noch keinen auflösenden Backend). Das
+% Icon selbst wird als \code{artifact} markiert, da die für das
+% Verständnis nötige Art-Angabe bereits vollständig im \code{alt}-Text
+% des Eintrags steckt (siehe oben); ohne diese Markierung würde ein
+% Screenreader Icon und Alt-Text redundant nacheinander
+% ankündigen.}{@1--@3 are deliberately ordinary, overridable commands
+% rather than a key-value option system -- their default content is a
+% plain placeholder (\code{[D]} etc.), meant to be overridden directly
+% (\cs{renewcommand} or \cs{RenewDocumentCommand}), e.g.\ with
+% \pkg*{osgstyler} decorations (\code{content=}, not \code{symbol=} --
+% the latter has no resolving backend yet). The icon itself is marked
+% as \code{artifact}, since the kind information needed for
+% understanding already lives entirely in the entry's \code{alt} text
+% (see above); without this marking a screen reader would announce icon
+% and alt text redundantly, one after the other.}
+% {\cs{tagdirtreefileicon}}{\cs{tagdirtreedirectoryicon}}
+% {\cs{tagdirtreearchiveicon}}
+\NewDocumentCommand \tagdirtreefileicon { } { [F] }
+\NewDocumentCommand \tagdirtreedirectoryicon { } { [D] }
+\NewDocumentCommand \tagdirtreearchiveicon { } { [A] }
+
+\cs_new:Npn \__tagdirtree_icon:n #1
+  {
+    \str_case:nn {#1}
+      {
+        { file }      { \tagdirtreefileicon }
+        { directory } { \tagdirtreedirectoryicon }
+        { archive }   { \tagdirtreearchiveicon }
+      }
+  }
+
+\cs_new_protected:Npn \__tagdirtree_render:nnn #1#2#3
+  {
+    \cs_if_exist:NT \tagmcbegin { \tagmcbegin{artifact} }
+    \__tagdirtree_icon:n {#1}
+    \cs_if_exist:NT \tagmcend { \tagmcend }
+    ~
+    \str_case:nnF {#1}
+      {
+        { directory } { \textbf{#2} }
+        { archive }   { \textit{#2} }
+      }
+      { #2 }
+    \tl_if_empty:nF {#3} { \space (#3) }
+  }
+
+\cs_new_protected:Npn \__tagdirtree_entry:nnnn #1#2#3#4
+  {
+    \item
+    \leavevmode
+    \tl_set:Ne \l__tagdirtree_tag_tl { \UseStructureName{#2} }
+    \tl_if_empty:nTF {#4}
+      { \tl_set:Ne \l__tagdirtree_alt_tl { \__tagdirtree_kind_word:n{#1}:~#3 } }
+      {
+        \tl_set:Ne \l__tagdirtree_alt_tl
+          { \__tagdirtree_kind_word:n{#1}:~#3~--~#4 }
+      }
+    \__tagdirtree_tag_begin:
+    \__tagdirtree_render:nnn {#1}{#3}{#4}
+    \__tagdirtree_tag_end:
+  }
+
+\NewDocumentCommand \dtfile { m m }
+  { \__tagdirtree_entry:nnnn {file} {tagdirtree/file} {#1}{#2} }
+\NewDocumentCommand \dtarchive { m m }
+  { \__tagdirtree_entry:nnnn {archive} {tagdirtree/archive} {#1}{#2} }
+\NewDocumentCommand \dtdir { m m +m }
+  {
+    \__tagdirtree_entry:nnnn {directory} {tagdirtree/directory} {#1}{#2}
+    \begin{itemize}
+      #3
+    \end{itemize}
+  }
+
+\NewDocumentEnvironment{tagdirtree}{}
+  { \begin{itemize}[nosep] }
+  { \end{itemize} }
+
+\ExplSyntaxOff
+%</package>
