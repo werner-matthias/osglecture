@@ -687,6 +687,33 @@ individually. \code{<all>} forces columns in every mode, while, for example,
   }
   { }
 
+% \ldeen*{@1 macht @2 zu einem einzigen Sprachschalter, unabhängig davon, ob
+% \pkg*{langselect} überhaupt geladen wird -- ein einsprachiges Dokument
+% braucht \pkg*{langselect} sonst nirgends und hätte ohne @1 keine Möglichkeit,
+% @2 auszulesen. Die Guard-Prüfung respektiert eine bereits vorhandene
+% Definition (etwa aus einem \code{\\pretex}-Aufruf oder einer expliziten
+% Zuweisung vor \cs{documentclass}), da @2 exakt diesen Vorrang schon
+% gegenüber \pkg*{langselect}s eigener Erkennung hat -- @1 reiht sich in
+% dieselbe Priorität ein, statt eine zweite, konkurrierende Quelle zu
+% eröffnen. Bleibt @3 leer (Standalone-Dokument ohne \option{lang}), bleibt @2
+% ebenfalls undefiniert; Aufrufer müssen also weiterhin auf @2s Existenz
+% prüfen, nicht auf ihre Nichtleere.}{@1 turns @2 into a single language
+% switch regardless of whether \pkg*{langselect} is loaded at all -- a
+% single-language document otherwise has no use for \pkg*{langselect} and,
+% without @1, no way to read @2. The guard respects an existing definition
+% (from a \code{\\pretex} call or an explicit assignment before
+% \cs{documentclass}), since @2 already takes that same precedence over
+% \pkg*{langselect}'s own detection -- @1 joins that priority instead of
+% opening a second, competing source. If @3 is empty (a standalone document
+% without \option{lang}), @2 stays undefined too; callers must therefore
+% still test for @2's existence, not just its non-emptiness.}
+% {\cs{olsTargetLanguage}}{\cs{olsTargetLanguage}}{\cs{l\_\_osglecture\_language\_tl}}
+\tl_if_empty:NF \l__osglecture_language_tl
+  {
+    \cs_if_exist:NF \olsTargetLanguage
+      { \xdef\olsTargetLanguage{\l__osglecture_language_tl} }
+  }
+
 \tl_if_empty:NT \l__osglecture_doctype_tl
   { \tl_set:Nn \l__osglecture_doctype_tl {slides} }
 \tl_if_empty:NT \l__osglecture_target_profile_class_tl
@@ -940,9 +967,8 @@ individually. \code{<all>} forces columns in every mode, while, for example,
 % Standard-\LaTeX-Katcodes geschrieben; unter @1 tokenisiert sie anders als
 % beabsichtigt, ohne dass das an der Fehlerstelle erkennbar wäre. @3 läuft
 % deshalb in einem @2-Fenster. Der Rumpf dieses Makros ist bereits
-% tokenisiert, wenn @2 die Katcodes umstellt -- nur deshalb können
-% Umschaltung und Ladebefehl beieinanderstehen; im Klassenrumpf selbst
-% würde @2 die Folgezeilen unlesbar machen. @3 darf dabei nicht in einer
+% tokenisiert, wenn @2 die Katcodes umstellt, nur deshalb können
+% Umschaltung und Ladebefehl beieinanderstehen. @3 darf dabei nicht in einer
 % \TeX-Gruppe stehen: \LaTeX{} verbietet das Laden einer Klasse innerhalb
 % einer Gruppe ("Loading a class or package in a group"); ein Makroaufruf
 % ist keine Gruppe.}
@@ -952,9 +978,8 @@ individually. \code{<all>} forces columns in every mode, while, for example,
 % base class, however, is written for standard \LaTeX\ catcodes; under @1
 % it tokenizes differently than intended, in ways not visible at the point
 % of failure. @3 therefore runs inside an @2 window. This macro's body is
-% already tokenized by the time @2 shifts the catcodes -- that is the only
-% reason the switch and the load command can sit next to each other; in the
-% class body itself @2 would make the following lines unreadable. @3 must
+% already tokenized by the time @2 shifts the catcodes; that is the only
+% reason the switch and the load command can sit next to each other. @3 must
 % not sit inside a \TeX\ group: \LaTeX\ forbids loading a class within a
 % group ("Loading a class or package in a group"), and a macro call is not
 % a group.}
@@ -984,9 +1009,11 @@ individually. \code{<all>} forces columns in every mode, while, for example,
   }
 \exp_args:NV \__osglecture_load_base_class:n \l__osglecture_base_class_tl
 
-% The base class is now present: let osglecture-modes wire portable mode
-% expressions into its overlay backend (the graph itself was finalized
-% before \LoadClass above).
+% \ldeen*{Die Basisklasse ist jetzt da: osglecture-modes soll nun die portablen
+% Modusausdrücke in sein Overlay-Backend einbinden. Der Graph wurde bereits
+% vor @2 finalisiert.}{The base class is now present: let osglecture-modes wire
+% portable mode expressions into its overlay backend. The graph itself was finalized
+% before @2 above)}{\pkg*{osglecture-modes}}{\cs{LoadClass}} .
 \LectureModesActivateOverlays
 
 \NewExpandableDocumentCommand \OsgLectureDocumentType { }
@@ -1006,6 +1033,7 @@ individually. \code{<all>} forces columns in every mode, while, for example,
       { \OsgLectureBuildLoadedTF {#2} {#1} }
   }
 
+  
 % \ldeen*{Ohne \pkg{unicode-math} oder \pkg{lua-unicode-math} überspringt
 % @1s eigene Auto-Erkennung (Default \code{auto} von
 % \code{math/mathml/luamml/load}) die MathML-Erzeugung für Mathe-Inhalt
@@ -1065,7 +1093,10 @@ individually. \code{<all>} forces columns in every mode, while, for example,
 % carries the content as flow text.}{qrcode}
 % \ldeen*{\code{alt}-Default und Kritikprüfung: Ohne explizites
 % \code{alt} übernimmt \cs{__osglecture_qrcode_alt_text:} den codierten
-% Text sprachabhängig (über \cs{olsTargetLanguage}, denselben Schalter,
+% Text sprachabhängig (über \cs{olsTargetLanguage}, mit Rückfallkette auf
+% \cs{OsgLectureLanguage} und zuletzt \code{en}, falls
+% \cs{olsTargetLanguage} nicht existiert -- etwa bei einem einsprachigen
+% Dokument ohne \pkg*{langselect} --, denselben Schalter,
 % den \cs{ldeen} selbst auswertet -- \cs{ldeen} kann hier nicht direkt
 % verwendet werden, da sein Makrokörper \cs{UseHook}-Aufrufe enthält und
 % daher nicht garantiert vollständig~expandierbar ist, was der
@@ -1082,7 +1113,10 @@ individually. \code{<all>} forces columns in every mode, while, for example,
 % wiederholen) oder \code{tag=artifact} ist dann erforderlich.}{Default
 % for \code{alt} and criticality check: without an explicit \code{alt},
 % \cs{__osglecture_qrcode_alt_text:} falls back to the encoded text,
-% language-dependent via \cs{olsTargetLanguage}, the same switch
+% language-dependent via \cs{olsTargetLanguage}, with a fallback chain to
+% \cs{OsgLectureLanguage} and finally \code{en} if \cs{olsTargetLanguage}
+% does not exist -- e.g.\ for a single-language document without
+% \pkg*{langselect} -- the same switch
 % \cs{ldeen} itself reads -- \cs{ldeen} cannot be used directly here since
 % its macro body contains \cs{UseHook} calls and is therefore not
 % guaranteed to be fully~expandable, which the \cs{exp_args:Ne}
@@ -1129,7 +1163,17 @@ individually. \code{<all>} forces columns in every mode, while, for example,
       {
         \tl_if_empty:NTF \l__osglecture_qrcode_alt_tl
           {
-            \str_if_eq:eeTF { \olsTargetLanguage } { de }
+            \str_if_eq:eeTF
+              {
+                \cs_if_exist:NTF \olsTargetLanguage
+                  { \olsTargetLanguage }
+                  {
+                    \cs_if_exist:NTF \OsgLectureLanguage
+                      { \OsgLectureLanguage }
+                      { en }
+                  }
+              }
+              { de }
               { QR-Code:~\qr@texttoencode }
               { QR~code:~\qr@texttoencode }
           }
