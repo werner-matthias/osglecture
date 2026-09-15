@@ -1,0 +1,42 @@
+\input regression-test.tex
+\DocumentMetadata{}
+\documentclass{ltx-talk}
+\NewDocumentCommand\lecture{O{}mm}{\TYPE{LECTURE KEPT}}
+\usepackage[ignorenonframetext]{osglecture-modes-ltxtalk}
+
+\DeclareLectureMode{examboth}
+\SetLectureModes{examboth}
+
+\NewDocumentEnvironment{Aufgabe}{}{\TYPE{AUFGABE BEGIN}}{\TYPE{AUFGABE END}}
+\DeclareLtxtalkKeepEnvironment{Aufgabe}
+
+\DeclareLtxtalkFilterProfile{withSolution}
+\NewDocumentEnvironment{Musterloesung}{}{\TYPE{MUSTERLOESUNG BEGIN}}{\TYPE{MUSTERLOESUNG END}}
+\DeclareLtxtalkKeepEnvironment[profile=withSolution]{Musterloesung}
+
+\DeclareLtxtalkFilterProfile{withGrading}
+\NewDocumentEnvironment{Bewertung}{}{\TYPE{BEWERTUNG BEGIN}}{\TYPE{BEWERTUNG END}}
+\DeclareLtxtalkKeepEnvironment[profile=withGrading]{Bewertung}
+
+\DeclareLtxtalkFilterProfile[parents={withSolution,withGrading}]{withBoth}
+
+\AssignLtxtalkFilterProfile{examboth}{withBoth}
+
+\begin{document}
+\START
+\lecture{Introduction}{intro}
+\section{Sec}
+\begin{Aufgabe}
+  \TYPE{AUFGABE CONTENT}
+\end{Aufgabe}
+\begin{Musterloesung}
+  \TYPE{MUSTERLOESUNG CONTENT}
+\end{Musterloesung}
+\begin{Bewertung}
+  \TYPE{BEWERTUNG CONTENT}
+\end{Bewertung}
+\begin{unregisteredenv}
+  \TYPE{SHOULD NOT APPEAR}
+\end{unregisteredenv}
+\END
+\end{document}

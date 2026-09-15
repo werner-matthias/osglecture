@@ -176,14 +176,20 @@ Matthias Werner.
   Adapter und sein Lua-Helfer benötigen Lua\LaTeX. \cs{DeclareLtxtalkKeepCommand},
   \cs{DeclareLtxtalkKeepLabelCommand} und \cs{DeclareLtxtalkKeepEnvironment}
   tragen projektspezifische Befehle und Environments (etwa einen eigenen
-  Label-Befehl) in die eingebaute Ausnahmeliste ein.
+  Label-Befehl) in die eingebaute Ausnahmeliste ein. \cs{DeclareLtxtalkFilterProfile}
+  bündelt solche Ausnahmen zu benannten, vererbbaren \emph{Filterprofilen}
+  (etwa für Musterlösungen oder Bewertungsrichtlinien in einer Prüfung), die
+  \cs{AssignLtxtalkFilterProfile} an einzelne Blattmodi bindet.
 }{
   The optional \pkg*{osglecture-modes-ltxtalk} package implements skipping
   non-frame text for \pkg*{ltx-talk}. Only this adapter and its Lua helper
   require Lua\LaTeX. \cs{DeclareLtxtalkKeepCommand},
   \cs{DeclareLtxtalkKeepLabelCommand}, and \cs{DeclareLtxtalkKeepEnvironment}
   add project-specific commands and environments (such as a custom label
-  command) to the built-in exception list.
+  command) to the built-in exception list. \cs{DeclareLtxtalkFilterProfile}
+  groups such exceptions into named, inheritable \emph{filter profiles}
+  (for instance for model solutions or grading rubrics in an exam), which
+  \cs{AssignLtxtalkFilterProfile} binds to individual leaf modes.
 }
 
 \section{\ldeen{Modell und Lebenszyklus}{Model and lifecycle}}
@@ -1784,6 +1790,7 @@ Text\\<slides>[3ex]
 \bool_new:N  \g_osglecture_modes_ltxtalk_after_structure_bool
 \clist_new:N \g_osglecture_modes_ltxtalk_raw_skip_envs_clist
 \clist_new:N \g_osglecture_modes_ltxtalk_keep_envs_clist
+\clist_new:N \g_osglecture_modes_ltxtalk_hooked_envs_clist
 
 \msg_new:nnn { osglecture_modes_ltxtalk } { unknown-environment }
   { Environment~'#1'~is~not~defined. }
@@ -1843,13 +1850,23 @@ Text\\<slides>[3ex]
       {#3}
   }
   
+% With no filter profile ever selected for the active leaf modes, this is
+% exactly the original trigger: scan only under "presentation". A selected
+% profile (see \cs{osglecture_modes_ltxtalk_apply_profile:} further below)
+% overrides that -- scanning then also engages for document types (e.g. an
+% exam target) that have nothing to do with "presentation" at all.
 \cs_new_protected:Npn \osglecture_modes_ltxtalk_start_scan:
   {
     \bool_if:NT \g_osglecture_modes_ltxtalk_ignore_bool
     {
       \bool_if:NT \g_osglecture_modes_ltxtalk_scanner_active_bool
-        { \osglecture_modes_if_active:nT { presentation }
-            { \osglecture_modes_ltxtalk_scan: } }
+        {
+          \osglecture_modes_ltxtalk_apply_profile:
+          \tl_if_empty:NTF \l_osglecture_modes_ltxtalk_selected_profile_tl
+            { \osglecture_modes_if_active:nT { presentation }
+                { \osglecture_modes_ltxtalk_scan: } }
+            { \osglecture_modes_ltxtalk_scan: }
+        }
       }
   }
 
@@ -1928,27 +1945,56 @@ Text\\<slides>[3ex]
 
 % A "kept" environment is entered normally; the closing \cs{end} therefore
 % reaches the base class unchanged, and only the hook below re-arms the
-% scanner for what follows. \cs{frame} and \cs{frame*} are declared as the
-% built-in defaults below; project-specific environments (a title page, an
-% appendix wrapper, ...) that should likewise survive
-% \code{ignorenonframetext} register through the same mechanism.
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_declare_keep_environment:n #1
+% scanner for what follows. The hook is registered once per environment
+% name, independently of any filter profile, since the same environment
+% may end up listed in several profiles. \cs{frame} and \cs{frame*} are
+% declared as baseline defaults below; project-specific environments (a
+% task environment, a title page, ...) register through the same
+% mechanism, either unconditionally (baseline, always kept) or scoped to
+% a single filter profile (kept only while that profile is selected; see
+% \cs{DeclareLtxtalkFilterProfile} further below).
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_ensure_env_hook:n #1
   {
     \cs_if_exist:cTF {#1}
       {
-        \clist_if_in:NnF \g_osglecture_modes_ltxtalk_keep_envs_clist {#1}
+        \clist_if_in:NnF \g_osglecture_modes_ltxtalk_hooked_envs_clist {#1}
           {
-            \clist_gput_right:Nn \g_osglecture_modes_ltxtalk_keep_envs_clist {#1}
+            \clist_gput_right:Nn \g_osglecture_modes_ltxtalk_hooked_envs_clist {#1}
             \AddToHook{env/#1/after}{ \osglecture_modes_ltxtalk_start_scan: }
           }
       }
       { \msg_error:nnn { osglecture_modes_ltxtalk } { unknown-environment } {#1} }
   }
 
-\NewDocumentCommand \DeclareLtxtalkKeepEnvironment { m }
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_declare_keep_environment:nn #1#2
   {
-    \clist_map_inline:nn {#1}
-      { \osglecture_modes_ltxtalk_declare_keep_environment:n {##1} }
+    \osglecture_modes_ltxtalk_ensure_env_hook:n {#1}
+    \tl_if_empty:nTF {#2}
+      {
+        \clist_if_in:NnF \g_osglecture_modes_ltxtalk_keep_envs_clist {#1}
+          { \clist_gput_right:Nn \g_osglecture_modes_ltxtalk_keep_envs_clist {#1} }
+      }
+      {
+        \seq_if_in:NnTF \g_osglecture_modes_ltxtalk_profile_known_seq {#2}
+          {
+            \osglecture_modes_ltxtalk_profile_if_mutable:nTF {#2}
+              { \clist_gput_right:cn { osglecture_modes_ltxtalk_profile_own_envs_ #2 _clist } {#1} }
+              { }
+          }
+          { \msg_error:nnn { osglecture_modes_ltxtalk } { unknown-filter-profile } {#2} }
+      }
+  }
+\cs_generate_variant:Nn \osglecture_modes_ltxtalk_declare_keep_environment:nn { nV }
+
+\NewDocumentCommand \DeclareLtxtalkKeepEnvironment { O{} m }
+  {
+    \tl_clear:N \l_osglecture_modes_ltxtalk_keep_profile_tl
+    \keys_set:nn { osglecture_modes_ltxtalk / keep } {#1}
+    \clist_map_inline:nn {#2}
+      {
+        \osglecture_modes_ltxtalk_declare_keep_environment:nV
+          {##1} \l_osglecture_modes_ltxtalk_keep_profile_tl
+      }
   }
 
 % \cs{frame}/\cs{frame*} come from the presentation class, not this
@@ -1956,9 +2002,239 @@ Text\\<slides>[3ex]
 % loaded before the class defines them) is silently tolerated here; a
 % project-declared environment that is missing is still an error above.
 \cs_if_exist:cT { frame }
-  { \osglecture_modes_ltxtalk_declare_keep_environment:n { frame } }
+  { \osglecture_modes_ltxtalk_declare_keep_environment:nn { frame } { } }
 \cs_if_exist:cT { frame* }
-  { \osglecture_modes_ltxtalk_declare_keep_environment:n { frame* } }
+  { \osglecture_modes_ltxtalk_declare_keep_environment:nn { frame* } { } }
+
+% Filter profiles compose named allow-lists via a small parent DAG,
+% mirroring the lecture-mode graph in the core package, but with
+% union-of-ancestors closure instead of single-selection: a profile that
+% has both a "solutions" and a "grading" profile as parents keeps
+% everything either parent keeps. A leaf lecture-mode selects at most one
+% filter profile (\cs{AssignLtxtalkFilterProfile}); once one is selected,
+% its closed allow-list is merged into the baseline (commands and
+% environments declared without \code{profile=}, which stay in effect no
+% matter which, if any, profile applies) the first time the scanner
+% engages. Modes that select no profile keep exactly the previously
+% existing \code{ignorenonframetext} behavior.
+\seq_new:N  \g_osglecture_modes_ltxtalk_profile_known_seq
+\prop_new:N \g_osglecture_modes_ltxtalk_profile_parents_prop
+\bool_new:N \g_osglecture_modes_ltxtalk_profile_frozen_bool
+\prop_new:N \g_osglecture_modes_ltxtalk_mode_profile_prop
+\tl_new:N   \l_osglecture_modes_ltxtalk_selected_profile_tl
+\bool_new:N \g_osglecture_modes_ltxtalk_profile_resolved_bool
+\tl_new:N   \l_osglecture_modes_ltxtalk_keep_profile_tl
+
+\msg_new:nnn { osglecture_modes_ltxtalk } { filter-profile-frozen }
+  { The~ltxtalk~filter-profile~graph~is~already~finalized;~'#1'~cannot~be~changed. }
+\msg_new:nnn { osglecture_modes_ltxtalk } { unknown-filter-profile }
+  { Unknown~ltxtalk~filter~profile~'#1'. }
+\msg_new:nnn { osglecture_modes_ltxtalk } { filter-profile-unknown-parent }
+  { Filter~profile~'#1'~has~unknown~parent~'#2'. }
+\msg_new:nnn { osglecture_modes_ltxtalk } { filter-profile-cycle }
+  { Filter~profile~parent~cycle~detected~at~'#1'. }
+\msg_new:nnn { osglecture_modes_ltxtalk } { conflicting-filter-profiles }
+  { Active~leaf~modes~select~both~filter~profile~'#1'~and~'#2'. }
+
+\keys_define:nn { osglecture_modes_ltxtalk / keep }
+  {
+    profile .tl_set:N = \l_osglecture_modes_ltxtalk_keep_profile_tl,
+  }
+
+\prg_new_protected_conditional:Npnn \osglecture_modes_ltxtalk_profile_if_mutable:n #1 { TF }
+  {
+    \bool_if:NTF \g_osglecture_modes_ltxtalk_profile_frozen_bool
+      {
+        \msg_error:nnn { osglecture_modes_ltxtalk } { filter-profile-frozen } {#1}
+        \prg_return_false:
+      }
+      { \prg_return_true: }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_profile_declare:n #1
+  {
+    \seq_if_in:NnF \g_osglecture_modes_ltxtalk_profile_known_seq {#1}
+      {
+        \seq_gput_right:Nn \g_osglecture_modes_ltxtalk_profile_known_seq {#1}
+        \prop_new:c  { osglecture_modes_ltxtalk_profile_own_dispatch_ #1 _prop }
+        \prop_new:c  { osglecture_modes_ltxtalk_profile_eff_dispatch_ #1 _prop }
+        \clist_new:c { osglecture_modes_ltxtalk_profile_own_envs_ #1 _clist }
+        \clist_new:c { osglecture_modes_ltxtalk_profile_eff_envs_ #1 _clist }
+      }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_profile_declare_parents:nn #1#2
+  {
+    \osglecture_modes_ltxtalk_profile_declare:n {#1}
+    \clist_set:Nn \l_tmpa_clist {#2}
+    \clist_remove_duplicates:N \l_tmpa_clist
+    \prop_gput:NnV \g_osglecture_modes_ltxtalk_profile_parents_prop {#1} \l_tmpa_clist
+  }
+\cs_generate_variant:Nn \osglecture_modes_ltxtalk_profile_declare_parents:nn { Vn }
+
+\tl_new:N \l_osglecture_modes_ltxtalk_profile_decl_tl
+\keys_define:nn { osglecture_modes_ltxtalk / declare-profile }
+  {
+    parent  .code:n = \osglecture_modes_ltxtalk_profile_declare_parents:Vn
+      \l_osglecture_modes_ltxtalk_profile_decl_tl {#1},
+    parents .code:n = \osglecture_modes_ltxtalk_profile_declare_parents:Vn
+      \l_osglecture_modes_ltxtalk_profile_decl_tl {#1},
+  }
+
+\NewDocumentCommand \DeclareLtxtalkFilterProfile { O{} m }
+  {
+    \osglecture_modes_ltxtalk_profile_if_mutable:nTF {#2}
+      {
+        \osglecture_modes_ltxtalk_profile_declare:n {#2}
+        \tl_set:Nn \l_osglecture_modes_ltxtalk_profile_decl_tl {#2}
+        \keys_set:nn { osglecture_modes_ltxtalk / declare-profile } {#1}
+      }
+      { }
+  }
+
+\NewDocumentCommand \DeclareLtxtalkFilterProfileParents { m m }
+  {
+    \osglecture_modes_ltxtalk_profile_if_mutable:nTF {#1}
+      { \osglecture_modes_ltxtalk_profile_declare_parents:nn {#1} {#2} }
+      { }
+  }
+
+\cs_generate_variant:Nn \prop_gput:Nnn { cnn }
+\cs_generate_variant:Nn \prop_map_inline:Nn { c }
+\cs_generate_variant:Nn \clist_gput_right:Nn { cn }
+\cs_generate_variant:Nn \clist_map_inline:Nn { c }
+
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_profile_union_dispatch:nn #1#2
+  { % copies #1(closed)'s effective dispatch entries into #2's effective dispatch
+    \prop_map_inline:cn { osglecture_modes_ltxtalk_profile_eff_dispatch_ #1 _prop }
+      { \prop_gput:cnn { osglecture_modes_ltxtalk_profile_eff_dispatch_ #2 _prop } {##1} {##2} }
+  }
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_profile_union_envs:nn #1#2
+  { % copies #1(closed)'s effective kept environments into #2's effective set
+    \clist_map_inline:cn { osglecture_modes_ltxtalk_profile_eff_envs_ #1 _clist }
+      { \clist_gput_right:cn { osglecture_modes_ltxtalk_profile_eff_envs_ #2 _clist } {##1} }
+  }
+
+\prop_new:N \l_osglecture_modes_ltxtalk_profile_visiting_prop
+\prop_new:N \l_osglecture_modes_ltxtalk_profile_visited_prop
+
+% Post-order DFS: every parent is fully closed (recursively) before its
+% entries are unioned into the current profile, and the current profile's
+% own entries are added last so they can shadow an inherited handler
+% registered for the same command or environment name.
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_profile_visit:n #1
+  {
+    \prop_if_in:NnTF \l_osglecture_modes_ltxtalk_profile_visiting_prop {#1}
+      { \msg_error:nnn { osglecture_modes_ltxtalk } { filter-profile-cycle } {#1} }
+      {
+        \prop_if_in:NnF \l_osglecture_modes_ltxtalk_profile_visited_prop {#1}
+          {
+            \prop_put:Nnn \l_osglecture_modes_ltxtalk_profile_visiting_prop {#1} { }
+            \prop_get:NnNT \g_osglecture_modes_ltxtalk_profile_parents_prop {#1} \l_tmpa_tl
+              {
+                \clist_map_inline:Vn \l_tmpa_tl
+                  {
+                    \seq_if_in:NnTF \g_osglecture_modes_ltxtalk_profile_known_seq {##1}
+                      {
+                        \osglecture_modes_ltxtalk_profile_visit:n {##1}
+                        \osglecture_modes_ltxtalk_profile_union_dispatch:nn {##1} {#1}
+                        \osglecture_modes_ltxtalk_profile_union_envs:nn {##1} {#1}
+                      }
+                      {
+                        \msg_error:nnnn { osglecture_modes_ltxtalk }
+                          { filter-profile-unknown-parent } {#1} {##1}
+                      }
+                  }
+              }
+            \prop_map_inline:cn { osglecture_modes_ltxtalk_profile_own_dispatch_ #1 _prop }
+              { \prop_gput:cnn { osglecture_modes_ltxtalk_profile_eff_dispatch_ #1 _prop } {##1} {##2} }
+            \clist_map_inline:cn { osglecture_modes_ltxtalk_profile_own_envs_ #1 _clist }
+              { \clist_gput_right:cn { osglecture_modes_ltxtalk_profile_eff_envs_ #1 _clist } {##1} }
+            \clist_remove_duplicates:c { osglecture_modes_ltxtalk_profile_eff_envs_ #1 _clist }
+            \prop_remove:Nn \l_osglecture_modes_ltxtalk_profile_visiting_prop {#1}
+            \prop_put:Nnn \l_osglecture_modes_ltxtalk_profile_visited_prop {#1} { }
+          }
+      }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_profile_finalize:
+  {
+    \bool_if:NF \g_osglecture_modes_ltxtalk_profile_frozen_bool
+      {
+        \prop_clear:N \l_osglecture_modes_ltxtalk_profile_visiting_prop
+        \prop_clear:N \l_osglecture_modes_ltxtalk_profile_visited_prop
+        \seq_map_inline:Nn \g_osglecture_modes_ltxtalk_profile_known_seq
+          { \osglecture_modes_ltxtalk_profile_visit:n {##1} }
+        \bool_gset_true:N \g_osglecture_modes_ltxtalk_profile_frozen_bool
+      }
+  }
+
+\NewDocumentCommand \AssignLtxtalkFilterProfile { m m }
+  {
+    \seq_if_in:NnTF \g_osglecture_modes_ltxtalk_profile_known_seq {#2}
+      {
+        \osglecture_modes_ltxtalk_profile_if_mutable:nTF {#2}
+          {
+            \clist_map_inline:nn {#1}
+              {
+                \osglecture_modes_resolve:nN {##1} \l_tmpa_tl
+                \seq_if_in:NVTF \g_osglecture_modes_known_seq \l_tmpa_tl
+                  { \prop_gput:NVn \g_osglecture_modes_ltxtalk_mode_profile_prop \l_tmpa_tl {#2} }
+                  { \msg_error:nnV { osglecture_modes } { unknown-mode } \l_tmpa_tl }
+              }
+          }
+          { }
+      }
+      { \msg_error:nnn { osglecture_modes_ltxtalk } { unknown-filter-profile } {#2} }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_select_profile:
+  {
+    \tl_clear:N \l_osglecture_modes_ltxtalk_selected_profile_tl
+    \seq_map_inline:Nn \g_osglecture_modes_seed_seq
+      {
+        \prop_get:NnNT \g_osglecture_modes_ltxtalk_mode_profile_prop {##1} \l_tmpa_tl
+          {
+            \tl_if_empty:NTF \l_osglecture_modes_ltxtalk_selected_profile_tl
+              { \tl_set_eq:NN \l_osglecture_modes_ltxtalk_selected_profile_tl \l_tmpa_tl }
+              {
+                \str_if_eq:VVF \l_osglecture_modes_ltxtalk_selected_profile_tl \l_tmpa_tl
+                  {
+                    \msg_error:nnVV { osglecture_modes_ltxtalk } { conflicting-filter-profiles }
+                      \l_osglecture_modes_ltxtalk_selected_profile_tl \l_tmpa_tl
+                  }
+              }
+          }
+      }
+  }
+
+% Merges baseline (already live in the runtime tables) with the selected
+% profile's closed allow-list, once per run. Nothing here runs if no active
+% leaf mode selects a profile, so plain \code{ignorenonframetext} without
+% any \cs{DeclareLtxtalkFilterProfile} keeps behaving exactly as before.
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_apply_profile:
+  {
+    \bool_if:NF \g_osglecture_modes_ltxtalk_profile_resolved_bool
+      {
+        \osglecture_modes_ltxtalk_profile_finalize:
+        \osglecture_modes_ltxtalk_select_profile:
+        \tl_if_empty:NF \l_osglecture_modes_ltxtalk_selected_profile_tl
+          {
+            \exp_args:Nc \prop_map_inline:Nn
+              { osglecture_modes_ltxtalk_profile_eff_dispatch_
+                \l_osglecture_modes_ltxtalk_selected_profile_tl _prop }
+              { \prop_gput:Nnn \g_osglecture_modes_ltxtalk_dispatch_prop {##1} {##2} }
+            \exp_args:Nc \clist_map_inline:Nn
+              { osglecture_modes_ltxtalk_profile_eff_envs_
+                \l_osglecture_modes_ltxtalk_selected_profile_tl _clist }
+              {
+                \clist_if_in:NnF \g_osglecture_modes_ltxtalk_keep_envs_clist {##1}
+                  { \clist_gput_right:Nn \g_osglecture_modes_ltxtalk_keep_envs_clist {##1} }
+              }
+          }
+        \bool_gset_true:N \g_osglecture_modes_ltxtalk_profile_resolved_bool
+      }
+  }
 
 \prop_new:N \g_osglecture_modes_ltxtalk_dispatch_prop
 
@@ -1997,32 +2273,66 @@ Text\\<slides>[3ex]
     \osglecture_modes_ltxtalk_scan:
   }
 
-\NewDocumentCommand \DeclareLtxtalkKeepCommand { m }
+% Arguments, in order: command name, handler name, profile name (possibly
+% empty, meaning baseline: added directly to the live dispatch table below,
+% active no matter which, if any, filter profile is selected).
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_register_command:nnn #1#2#3
   {
-    \cs_if_exist:NTF #1
+    \tl_if_empty:nTF {#3}
+      { \osglecture_modes_ltxtalk_declare_allowed_command:nn {#1} {#2} }
+      {
+        \seq_if_in:NnTF \g_osglecture_modes_ltxtalk_profile_known_seq {#3}
+          {
+            \osglecture_modes_ltxtalk_profile_if_mutable:nTF {#3}
+              { \prop_gput:cnn { osglecture_modes_ltxtalk_profile_own_dispatch_ #3 _prop } {#1} {#2} }
+              { }
+          }
+          { \msg_error:nnn { osglecture_modes_ltxtalk } { unknown-filter-profile } {#3} }
+      }
+  }
+\cs_generate_variant:Nn \osglecture_modes_ltxtalk_register_command:nnn { VVV }
+
+\tl_new:N \l_osglecture_modes_ltxtalk_reg_cmd_tl
+\tl_new:N \l_osglecture_modes_ltxtalk_reg_handler_tl
+
+\NewDocumentCommand \DeclareLtxtalkKeepCommand { O{} m }
+  {
+    \tl_clear:N \l_osglecture_modes_ltxtalk_keep_profile_tl
+    \keys_set:nn { osglecture_modes_ltxtalk / keep } {#1}
+    \cs_if_exist:NTF #2
       {
         \exp_args:Nc \cs_set_protected:Npn
-          { osglecture_modes_ltxtalk_keep_generic_ \cs_to_str:N #1 : }
-          { \osglecture_modes_ltxtalk_keep_generic:Nn #1 }
-        \osglecture_modes_ltxtalk_declare_allowed_command:xx
-          { \cs_to_str:N #1 }
-          { osglecture_modes_ltxtalk_keep_generic_ \cs_to_str:N #1 : }
+          { osglecture_modes_ltxtalk_keep_generic_ \cs_to_str:N #2 : }
+          { \osglecture_modes_ltxtalk_keep_generic:Nn #2 }
+        \tl_set:Nx \l_osglecture_modes_ltxtalk_reg_cmd_tl { \cs_to_str:N #2 }
+        \tl_set:Nx \l_osglecture_modes_ltxtalk_reg_handler_tl
+          { osglecture_modes_ltxtalk_keep_generic_ \cs_to_str:N #2 : }
+        \osglecture_modes_ltxtalk_register_command:VVV
+          \l_osglecture_modes_ltxtalk_reg_cmd_tl
+          \l_osglecture_modes_ltxtalk_reg_handler_tl
+          \l_osglecture_modes_ltxtalk_keep_profile_tl
       }
-      { \msg_error:nnN { kernel } { command-not-defined } #1 }
+      { \msg_error:nnN { kernel } { command-not-defined } #2 }
   }
 
-\NewDocumentCommand \DeclareLtxtalkKeepLabelCommand { m }
+\NewDocumentCommand \DeclareLtxtalkKeepLabelCommand { O{} m }
   {
-    \cs_if_exist:NTF #1
+    \tl_clear:N \l_osglecture_modes_ltxtalk_keep_profile_tl
+    \keys_set:nn { osglecture_modes_ltxtalk / keep } {#1}
+    \cs_if_exist:NTF #2
       {
         \exp_args:Nc \cs_set_protected:Npn
-          { osglecture_modes_ltxtalk_keep_generic_ \cs_to_str:N #1 : }
-          { \osglecture_modes_ltxtalk_keep_generic_label:Nn #1 }
-        \osglecture_modes_ltxtalk_declare_allowed_command:xx
-          { \cs_to_str:N #1 }
-          { osglecture_modes_ltxtalk_keep_generic_ \cs_to_str:N #1 : }
+          { osglecture_modes_ltxtalk_keep_generic_ \cs_to_str:N #2 : }
+          { \osglecture_modes_ltxtalk_keep_generic_label:Nn #2 }
+        \tl_set:Nx \l_osglecture_modes_ltxtalk_reg_cmd_tl { \cs_to_str:N #2 }
+        \tl_set:Nx \l_osglecture_modes_ltxtalk_reg_handler_tl
+          { osglecture_modes_ltxtalk_keep_generic_ \cs_to_str:N #2 : }
+        \osglecture_modes_ltxtalk_register_command:VVV
+          \l_osglecture_modes_ltxtalk_reg_cmd_tl
+          \l_osglecture_modes_ltxtalk_reg_handler_tl
+          \l_osglecture_modes_ltxtalk_keep_profile_tl
       }
-      { \msg_error:nnN { kernel } { command-not-defined } #1 }
+      { \msg_error:nnN { kernel } { command-not-defined } #2 }
   }
 
 \cs_new_protected:Npn \osglecture_modes_ltxtalk_scan_token:

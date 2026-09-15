@@ -1,0 +1,67 @@
+\DocumentMetadata{tagging=on}
+\documentclass{article}
+
+\usepackage[a4paper,margin=28mm]{geometry}
+\usepackage{osgstyler-lua}
+\usepackage{tagdirtree}
+
+% Same tree-building macros (\dtdir/\dtfile/\dtarchive) and the same
+% accessible tagging as the default tagdirtree skin -- nothing here
+% touches semantics. Only the *appearance* changes: connector lines
+% instead of icons, colored from an osgstyler theme instead of fixed
+% black. Compare with a plain \usepackage{tagdirtree} document to see
+% that the /Alt text and structure in the PDF stay identical either way.
+
+\DeclareOsgColorPalette{editorial}{
+  primary   = {model=RGB, value={36,74,115}},
+  accent    = {model=RGB, value={217,119,6}},
+  structure = {alias=primary}
+}
+\UseOsgColorPalette{editorial}
+
+% \dtdir/\dtfile/\dtarchive still call \tagdirtreeconnector for every
+% entry, artifact-wrapped -- the base package's default is empty
+% (\tagdirtreedepth is tracked either way). \tagdirtreedepth is a plain
+% counter of surrounding directories, not a position within the
+% sibling list, so this cannot distinguish the true last entry at a
+% level (no "+--" vs a closing corner) without look-ahead across the
+% enclosing \dtdir's argument -- every branch uses the same connector.
+\setlist[itemize]{label=,leftmargin=1.2em,itemindent=0pt}
+\ExplSyntaxOn
+\RenewDocumentCommand \tagdirtreeconnector { }
+  {
+    \int_compare:nNnT { \tagdirtreedepth } > { 0 }
+      {
+        \textcolor{\OsgColorName{accent}}{%
+          \int_step_inline:nn { \tagdirtreedepth - 1 } { |~~ }
+          +\/-~
+        }%
+      }
+  }
+\ExplSyntaxOff
+
+% Icons stay on (default placeholders); a skin can drop them just as
+% easily by redefining \tagdirtree{file,directory,archive}icon to
+% produce nothing.
+
+\begin{document}
+
+\section*{tagdirtree: a connector-line skin}
+
+The tree below uses the same \verb|\dtdir|/\verb|\dtfile|/\verb|\dtarchive|
+calls as any other \texttt{tagdirtree} document -- only
+\verb|\tagdirtreeconnector| was redefined, plus an \texttt{osgstyler} color
+palette for the connector's color.
+
+\begin{tagdirtree}
+  \dtdir{project}{root directory}{
+    \dtdir{src}{source code}{
+      \dtfile{main.py}{entry point}
+      \dtfile{util.py}{}
+    }
+    \dtfile{README.md}{documentation}
+    \dtarchive{legacy.zip}{old sources}
+  }
+\end{tagdirtree}
+
+\end{document}
