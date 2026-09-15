@@ -331,6 +331,33 @@ left, with no real benefit over \cs{OsgColorName} directly.)}
 \NewDocumentCommand \tagdirtreedirectoryicon { } { [D] }
 \NewDocumentCommand \tagdirtreearchiveicon { } { [A] }
 
+% \ldeen*{@1 zählt die umgebenden Verzeichnisse mit (0 auf oberster
+% Ebene); es ist ein reiner Zähler, keine Positionsinformation
+% innerhalb der Geschwisterliste -- @2 (Standard: leer) kann daraus
+% zwar eine tiefenabhängige, aber keine "`letztes Element"'-bewusste
+% Optik bauen (kein \code{├} gegenüber \code{└}), da dafür bekannt sein
+% müsste, wie viele weitere Geschwister noch folgen, was ohne
+% Vorausschau über das jeweilige \cs{dtdir}-Textargument hinweg nicht
+% zur Verfügung steht. @3 zeigt, wie sich damit trotzdem eine
+% klassische Verbindungslinien-Optik bauen lässt, samt Kopplung an
+% \pkg*{osgstyler}s Themefarbe -- bewusst nur als Beispiel, nicht als
+% zusätzliche Paketabhängigkeit.}{@1 counts the surrounding directories
+% (0 at the top level); it is a plain counter, not positional
+% information within the sibling list -- @2 (default: empty) can build
+% a depth-aware look from it, but not a "`last item"'-aware one (no
+% \code{├} versus \code{└}), since that would require knowing how many
+% further siblings still follow, which is not available without
+% look-ahead across the respective \cs{dtdir} text argument. @3 shows
+% how a classic connector-line look can still be built from this,
+% including coupling to \pkg*{osgstyler}'s theme color -- deliberately
+% only as an example, not as an added package dependency.}
+% {\cs{tagdirtreedepth}}{\cs{tagdirtreeconnector}}
+% {\File{tagdirtree-lines-skin.tex}}
+\int_new:N \g__tagdirtree_depth_int
+\NewExpandableDocumentCommand \tagdirtreedepth { }
+  { \int_use:N \g__tagdirtree_depth_int }
+\NewDocumentCommand \tagdirtreeconnector { } { }
+
 \cs_new:Npn \__tagdirtree_icon:n #1
   {
     \str_case:nn {#1}
@@ -344,6 +371,7 @@ left, with no real benefit over \cs{OsgColorName} directly.)}
 \cs_new_protected:Npn \__tagdirtree_render:nnn #1#2#3
   {
     \cs_if_exist:NT \tagmcbegin { \tagmcbegin{artifact} }
+    \tagdirtreeconnector
     \__tagdirtree_icon:n {#1}
     \cs_if_exist:NT \tagmcend { \tagmcend }
     ~
@@ -379,9 +407,11 @@ left, with no real benefit over \cs{OsgColorName} directly.)}
 \NewDocumentCommand \dtdir { m m +m }
   {
     \__tagdirtree_entry:nnnn {directory} {tagdirtree/directory} {#1}{#2}
+    \int_gincr:N \g__tagdirtree_depth_int
     \begin{itemize}
       #3
     \end{itemize}
+    \int_gdecr:N \g__tagdirtree_depth_int
   }
 
 \NewDocumentEnvironment{tagdirtree}{}
