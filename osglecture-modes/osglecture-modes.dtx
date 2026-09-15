@@ -173,11 +173,17 @@ Matthias Werner.
 \ldeen{
   Das optionale Paket \pkg*{osglecture-modes-ltxtalk} implementiert das
   Überspringen von Text außerhalb von Frames für \pkg*{ltx-talk}. Nur dieser
-  Adapter und sein Lua-Helfer benötigen Lua\LaTeX.
+  Adapter und sein Lua-Helfer benötigen Lua\LaTeX. \cs{DeclareLtxtalkKeepCommand},
+  \cs{DeclareLtxtalkKeepLabelCommand} und \cs{DeclareLtxtalkKeepEnvironment}
+  tragen projektspezifische Befehle und Environments (etwa einen eigenen
+  Label-Befehl) in die eingebaute Ausnahmeliste ein.
 }{
   The optional \pkg*{osglecture-modes-ltxtalk} package implements skipping
   non-frame text for \pkg*{ltx-talk}. Only this adapter and its Lua helper
-  require Lua\LaTeX.
+  require Lua\LaTeX. \cs{DeclareLtxtalkKeepCommand},
+  \cs{DeclareLtxtalkKeepLabelCommand}, and \cs{DeclareLtxtalkKeepEnvironment}
+  add project-specific commands and environments (such as a custom label
+  command) to the built-in exception list.
 }
 
 \section{\ldeen{Modell und Lebenszyklus}{Model and lifecycle}}
@@ -1777,6 +1783,10 @@ Text\\<slides>[3ex]
 \bool_new:N  \g_osglecture_modes_ltxtalk_scanner_active_bool
 \bool_new:N  \g_osglecture_modes_ltxtalk_after_structure_bool
 \clist_new:N \g_osglecture_modes_ltxtalk_raw_skip_envs_clist
+\clist_new:N \g_osglecture_modes_ltxtalk_keep_envs_clist
+
+\msg_new:nnn { osglecture_modes_ltxtalk } { unknown-environment }
+  { Environment~'#1'~is~not~defined. }
 
 \clist_gset:Nn \g_osglecture_modes_ltxtalk_raw_skip_envs_clist
   {
@@ -1843,16 +1853,24 @@ Text\\<slides>[3ex]
       }
   }
 
+% Explicit spaces are stripped here, once, before any peek: an undelimited
+% parameter (which is how every peeked branch below ultimately grabs its
+% token) skips leading spaces on its own, so a space reaching one of those
+% branches unstripped would vanish together with the unrelated token after
+% it, silently dropping whatever follows a line break.
 \cs_new_protected:Npn \osglecture_modes_ltxtalk_scan:
   {
-    \peek_meaning:NTF \begin
-      { \osglecture_modes_ltxtalk_scan_begin: }
+    \peek_remove_spaces:n
       {
-        \peek_meaning:NTF \end
-          { \osglecture_modes_ltxtalk_scan_end: }
-          { \osglecture_modes_ltxtalk_scan_token: }
+        \peek_meaning:NTF \begin
+          { \osglecture_modes_ltxtalk_scan_begin: }
+          {
+            \peek_meaning:NTF \end
+              { \osglecture_modes_ltxtalk_scan_end: }
+              { \osglecture_modes_ltxtalk_scan_token: }
+          }
       }
-  }  
+  }
 
 \cs_new_protected:Npn \osglecture_modes_ltxtalk_scan_begin:
   {
@@ -1863,9 +1881,9 @@ Text\\<slides>[3ex]
   
 \cs_new_protected:Npn \osglecture_modes_ltxtalk_scan_begin_aux:n #1
   {
-    \str_if_eq:nnTF {#1} {frame}
+    \clist_if_in:NnTF \g_osglecture_modes_ltxtalk_keep_envs_clist {#1}
       {
-        \begin{frame}
+        \begin{#1}
       }
       {
         \clist_if_in:NnTF \g_osglecture_modes_ltxtalk_raw_skip_envs_clist {#1}
@@ -1908,11 +1926,103 @@ Text\\<slides>[3ex]
     \osglecture_modes_ltxtalk_skip:w
   }
 
+% A "kept" environment is entered normally; the closing \cs{end} therefore
+% reaches the base class unchanged, and only the hook below re-arms the
+% scanner for what follows. \cs{frame} and \cs{frame*} are declared as the
+% built-in defaults below; project-specific environments (a title page, an
+% appendix wrapper, ...) that should likewise survive
+% \code{ignorenonframetext} register through the same mechanism.
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_declare_keep_environment:n #1
+  {
+    \cs_if_exist:cTF {#1}
+      {
+        \clist_if_in:NnF \g_osglecture_modes_ltxtalk_keep_envs_clist {#1}
+          {
+            \clist_gput_right:Nn \g_osglecture_modes_ltxtalk_keep_envs_clist {#1}
+            \AddToHook{env/#1/after}{ \osglecture_modes_ltxtalk_start_scan: }
+          }
+      }
+      { \msg_error:nnn { osglecture_modes_ltxtalk } { unknown-environment } {#1} }
+  }
+
+\NewDocumentCommand \DeclareLtxtalkKeepEnvironment { m }
+  {
+    \clist_map_inline:nn {#1}
+      { \osglecture_modes_ltxtalk_declare_keep_environment:n {##1} }
+  }
+
+% \cs{frame}/\cs{frame*} come from the presentation class, not this
+% package, so their absence (this adapter loaded without ltx-talk, or
+% loaded before the class defines them) is silently tolerated here; a
+% project-declared environment that is missing is still an error above.
+\cs_if_exist:cT { frame }
+  { \osglecture_modes_ltxtalk_declare_keep_environment:n { frame } }
+\cs_if_exist:cT { frame* }
+  { \osglecture_modes_ltxtalk_declare_keep_environment:n { frame* } }
+
 \prop_new:N \g_osglecture_modes_ltxtalk_dispatch_prop
 
 \cs_new_protected:Npn \osglecture_modes_ltxtalk_declare_allowed_command:nn #1#2
   {
     \prop_gput:Nnn \g_osglecture_modes_ltxtalk_dispatch_prop {#1} {#2}
+  }
+\cs_generate_variant:Nn \osglecture_modes_ltxtalk_declare_allowed_command:nn { xx }
+
+% The argument has to be grabbed here, before the original command is
+% re-inserted: appending code after a macro parameter in its own
+% replacement text does not run that code "once the parameter is done" --
+% macro expansion prepends the whole replacement text at once, so the
+% re-inserted command would consume the appended tokens instead of its
+% real argument. Grabbing the argument first and only then writing out
+% the call keeps the two apart. This mirrors \cs{input}/\cs{include} below
+% and covers the common case of a single mandatory argument; a command
+% with a different signature still has the low-level
+% \cs{osglecture_modes_ltxtalk_declare_allowed_command:nn} as an escape
+% hatch.
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_keep_generic:Nn #1#2
+  {
+    #1 {#2}
+    \bool_gset_false:N \g_osglecture_modes_ltxtalk_after_structure_bool
+    \osglecture_modes_ltxtalk_scan:
+  }
+
+% Mirrors \cs{label}'s own dispatcher below: kept only immediately after a
+% structural command, so a project-specific label wrapper can replace
+% \cs{label} everywhere without pulling in labels that sit in dropped text.
+\cs_new_protected:Npn \osglecture_modes_ltxtalk_keep_generic_label:Nn #1#2
+  {
+    \bool_if:NT \g_osglecture_modes_ltxtalk_after_structure_bool
+      { #1 {#2} }
+    \bool_gset_false:N \g_osglecture_modes_ltxtalk_after_structure_bool
+    \osglecture_modes_ltxtalk_scan:
+  }
+
+\NewDocumentCommand \DeclareLtxtalkKeepCommand { m }
+  {
+    \cs_if_exist:NTF #1
+      {
+        \exp_args:Nc \cs_set_protected:Npn
+          { osglecture_modes_ltxtalk_keep_generic_ \cs_to_str:N #1 : }
+          { \osglecture_modes_ltxtalk_keep_generic:Nn #1 }
+        \osglecture_modes_ltxtalk_declare_allowed_command:xx
+          { \cs_to_str:N #1 }
+          { osglecture_modes_ltxtalk_keep_generic_ \cs_to_str:N #1 : }
+      }
+      { \msg_error:nnN { kernel } { command-not-defined } #1 }
+  }
+
+\NewDocumentCommand \DeclareLtxtalkKeepLabelCommand { m }
+  {
+    \cs_if_exist:NTF #1
+      {
+        \exp_args:Nc \cs_set_protected:Npn
+          { osglecture_modes_ltxtalk_keep_generic_ \cs_to_str:N #1 : }
+          { \osglecture_modes_ltxtalk_keep_generic_label:Nn #1 }
+        \osglecture_modes_ltxtalk_declare_allowed_command:xx
+          { \cs_to_str:N #1 }
+          { osglecture_modes_ltxtalk_keep_generic_ \cs_to_str:N #1 : }
+      }
+      { \msg_error:nnN { kernel } { command-not-defined } #1 }
   }
 
 \cs_new_protected:Npn \osglecture_modes_ltxtalk_scan_token:
@@ -1956,15 +2066,6 @@ Text\\<slides>[3ex]
     \osglecture_modes_ltxtalk_scan:
   }
 
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_keep_label:
-  { \osglecture_modes_ltxtalk_keep_label:n }
-
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_keep_input:
-  { \osglecture_modes_ltxtalk_keep_input:n }
-
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_keep_include:
-  { \osglecture_modes_ltxtalk_keep_include:n }
-
 \NewDocumentCommand \osglecture_modes_ltxtalk_keep_lecturemode: { d<> +m }
   {
     \IfNoValueTF {#1}
@@ -2001,12 +2102,17 @@ Text\\<slides>[3ex]
 \osglecture_modes_ltxtalk_declare_allowed_command:nn { subsection }    { osglecture_modes_ltxtalk_keep_subsection: }
 \osglecture_modes_ltxtalk_declare_allowed_command:nn { subsubsection } { osglecture_modes_ltxtalk_keep_subsubsection: }
 \osglecture_modes_ltxtalk_declare_allowed_command:nn { appendix }      { osglecture_modes_ltxtalk_keep_appendix: }
-\osglecture_modes_ltxtalk_declare_allowed_command:nn { label }         { osglecture_modes_ltxtalk_keep_label: }
-\osglecture_modes_ltxtalk_declare_allowed_command:nn { input }         { osglecture_modes_ltxtalk_keep_input: }
-\osglecture_modes_ltxtalk_declare_allowed_command:nn { include }       { osglecture_modes_ltxtalk_keep_include: }
 \osglecture_modes_ltxtalk_declare_allowed_command:nn { lecturemode }   { osglecture_modes_ltxtalk_keep_lecturemode: }
 \osglecture_modes_ltxtalk_declare_allowed_command:nn { mode }          { osglecture_modes_ltxtalk_keep_mode: }
 \osglecture_modes_ltxtalk_declare_allowed_command:nn { maketitle }     { osglecture_modes_ltxtalk_keep_maketitle: }
+
+% \cs{label}, \cs{input}, and \cs{include} are plain instances of the
+% general exception interface below; declaring them through it rather than
+% by hand keeps a single implementation for "keep this command, then resume
+% scanning".
+\DeclareLtxtalkKeepLabelCommand \label
+\DeclareLtxtalkKeepCommand \input
+\DeclareLtxtalkKeepCommand \include
 
 \NewDocumentCommand \osglecture_modes_ltxtalk_keep_structure:N { m s o m }
   {
@@ -2024,29 +2130,6 @@ Text\\<slides>[3ex]
     \bool_gset_true:N \g_osglecture_modes_ltxtalk_after_structure_bool
     \osglecture_modes_ltxtalk_scan:
   }
-
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_keep_label:n #1
-  {
-    \bool_if:NT \g_osglecture_modes_ltxtalk_after_structure_bool
-      { \label{#1} }
-    \bool_gset_false:N \g_osglecture_modes_ltxtalk_after_structure_bool
-    \osglecture_modes_ltxtalk_scan:
-  }
-
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_keep_input:n #1
-  {
-    \input{#1}
-    \bool_gset_false:N \g_osglecture_modes_ltxtalk_after_structure_bool
-    \osglecture_modes_ltxtalk_scan:
-  }
-
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_keep_include:n #1
-  {
-    \include{#1}
-    \bool_gset_false:N \g_osglecture_modes_ltxtalk_after_structure_bool
-    \osglecture_modes_ltxtalk_scan:
-  }
-
 
 \cs_new_protected:Npn \osglecture_modes_ltxtalk_discard_one:
   {
@@ -2076,8 +2159,6 @@ Text\\<slides>[3ex]
     \osglecture_modes_ltxtalk_start_scan:
   }
 
-\AddToHook{env/frame/after}
-  { \osglecture_modes_ltxtalk_start_scan: }
 %</ltxtalk>
 
 %<*lua>

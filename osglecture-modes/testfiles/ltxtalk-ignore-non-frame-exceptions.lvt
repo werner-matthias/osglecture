@@ -1,0 +1,35 @@
+\input regression-test.tex
+\DocumentMetadata{}
+\documentclass{ltx-talk}
+\NewDocumentCommand\lecture{O{}mm}{\TYPE{LECTURE KEPT}}
+\usepackage[ignorenonframetext]{osglecture-modes-ltxtalk}
+
+\NewDocumentCommand\ollabel{m}{\TYPE{OLLABEL~#1}}
+\DeclareLtxtalkKeepLabelCommand\ollabel
+
+\NewDocumentCommand\mycmd{m}{\TYPE{MYCMD~#1}}
+\DeclareLtxtalkKeepCommand\mycmd
+
+\NewDocumentEnvironment{myenv}{}{\TYPE{MYENV~BEGIN}}{\TYPE{MYENV~END}}
+\DeclareLtxtalkKeepEnvironment{myenv}
+
+\begin{document}
+\START
+\lecture{Introduction}{intro}
+\section{Sec}
+\ollabel{kept}
+\foobar
+\ollabel{dropped}
+\mycmd{always}
+\begin{myenv}
+  \TYPE{MYENV CONTENT}
+\end{myenv}
+\mycmd{after-env}
+\begin{unregisteredenv}
+  \TYPE{SHOULD NOT APPEAR}
+\end{unregisteredenv}
+\begin{frame}
+  \TYPE{FRAME KEPT}
+\end{frame}
+\END
+\end{document}
