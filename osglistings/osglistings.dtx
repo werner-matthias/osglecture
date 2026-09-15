@@ -105,7 +105,7 @@ The package is loaded in the usual way using @1 and, in turn, loads (among other
   {\code{cacheignoresfilecontents}}{\pkg*{minted}}
 
 \begin{example}[code-only]
-\usepackage[cachedir=build/minted-cache]{osglistings}
+  \usepackage[cachedir=build/minted-cache]{osglistings}
 \end{example}
 
 \ldeen*{Ein Quelltext, der direkt im Dokument steht, wird mit der Umgebung
@@ -124,9 +124,9 @@ The package is loaded in the usual way using @1 and, in turn, loads (among other
   \usepackage{osglistings}
   \begin{document}
     \begin{osglisting}[style=editor, title=main.rs]{rust}
-fn main() {
-    println!("hi");
-}
+    fn main() {
+      println!("hi");
+    }
     \end{osglisting}
   \end{document}
 \end{example}
@@ -155,11 +155,11 @@ fn main() {
   {\code{osglistings-default}}
 
 \begin{example}[code-only]
-\DeclareOsgListingsPalette{my-theme}{
-  keyword = {model=HTML, value=8A2BE2},
-  string  = {alias=keyword},
-}
-\UseOsgListingsPalette{my-theme}
+  \DeclareOsgListingsPalette{my-theme}{
+    keyword = {model=HTML, value=8A2BE2},
+    string  = {alias=keyword},
+  }
+  \UseOsgListingsPalette{my-theme}
 \end{example}
 
 \ldeen*{Jeder Slot ist entweder eine \emph{Ressource} (@1+@2, in jedem von
@@ -197,8 +197,8 @@ fn main() {
   {\code{cache=refresh}}
 
 \begin{example}[code-only]
-\osglistinginput[style=editor, title={fizzbuzz.rs}]
-  {rust}{gist:werner-matthias/3af1e0.../fizzbuzz.rs}
+  \osglistinginput[style=editor, title={fizzbuzz.rs}]
+    {rust}{gist:werner-matthias/3af1e0.../fizzbuzz.rs}
 \end{example}
 
 \ldeen*{Fehlt der Schlüssel @1, leitet das Paket automatisch einen
@@ -232,7 +232,7 @@ fn main() {
   {\code{remote-refresh=true}}{\File{osglistings-check-updates.lua}}
 
 \begin{example}[code-only]
-texlua osglistings-check-updates.lua --refresh myfile.osglistings-cache
+  texlua osglistings-check-updates.lua --refresh myfile.osglistings-cache
 \end{example}
 
 \begin{warnbox}{\ldeen{Achtung, Sicherheitsrisiko!}{Attention, Security Risk!}}
@@ -262,13 +262,14 @@ texlua osglistings-check-updates.lua --refresh myfile.osglistings-cache
   {\cs{osglistingsmark}\Marg{name}}{\code{tikzpicture}}
   {\code{osglisting}}{\code{escapeinside}}{\code{escapeinside=§§}}
 
-\begin{example}[compile,program=lualatex,exe-with=--shell-escape]
+\begin{example}[compile,program=lualatex,exe-with=--shell-escape,
+  graphics={trim=30mm 200mm 30mm 30mm,clip,scale=1.2}]
   \documentclass{article}
   \usepackage{tikz}
   \usepackage{osglistings}
   \begin{document}
     \begin{osglisting}[style=plain, escapeinside=§§]{rust}
-let code = ExitCode::from(42§\osglistingsmark{here}§);
+    let code = ExitCode::from(42§\osglistingsmark{here}§);
     \end{osglisting}
     \begin{tikzpicture}[remember picture, overlay]
       \draw[->, red, thick] (osgm-here) ++(0,1) node[above]{Exit-Code}
@@ -296,15 +297,15 @@ let code = ExitCode::from(42§\osglistingsmark{here}§);
   {\meta{name}\code{ before "}\meta{text}\code{"}}
 
 \begin{example}[code-only]
-\osglistinginput[
-  marks = {
-    exitc after "ExitCode",
-    semi before ";" occurrence=2,
-  }
-]{rust}{src/example.rs}
+  \osglistinginput[
+    marks = {
+      exitc after "ExitCode",
+      semi before ";" occurrence=2,
+    }
+  ]{rust}{src/example.rs}
 \end{example}
 
-\ldeen{@1 (wie jede Nutzung von @2) benötigt Lua\LaTeX.}
+\ldeen*{@1 (wie jede Nutzung von @2) benötigt Lua\LaTeX.}
   {@1 (like any use of @2) requires Lua\LaTeX.}
   {\code{marks}}{\cs{osglistingsmark}}
 
