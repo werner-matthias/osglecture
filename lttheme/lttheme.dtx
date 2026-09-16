@@ -2702,9 +2702,14 @@ theme.
 
 \cs_new_protected:Npn \__ltxtalk_use_original_block:nnn #1#2#3
   {
+    % ltx-talk's block header currently leaves vertical glue before handing
+    % control to the body.  Remove whatever the last glue happens to be
+    % instead of depending on its present \medskip implementation.  If a
+    % future class version leaves no glue here, \unskip is a no-op; skips
+    % deliberately placed at the start of #3 remain untouched.
     \IfNoValueTF {#1}
-      { \begin{ltxtalk-original-block}{#2}#3\end{ltxtalk-original-block} }
-      { \begin{ltxtalk-original-block}<#1>{#2}#3\end{ltxtalk-original-block} }
+      { \begin{ltxtalk-original-block}{#2}\unskip#3\end{ltxtalk-original-block} }
+      { \begin{ltxtalk-original-block}<#1>{#2}\unskip#3\end{ltxtalk-original-block} }
   }
 
 % \ldeen{
