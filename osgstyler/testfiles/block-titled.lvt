@@ -15,8 +15,28 @@
 \DeclareOsgBlockInstance{pl}{traits={framed}}
 \NewOsgStyledEnvironment{pl}{pl}{none}[1]{#1}
 
+\ExplSyntaxOn
+\newenvironment{bodymodeprobe}
+  {\ifvmode\TYPE{titled-list-start:passed}\else
+     \TYPE{titled-list-start:FAILED}\fi
+   \ifdim\parskip=0pt
+     \TYPE{titled-list-parskip:passed}\else
+     \TYPE{titled-list-parskip:FAILED}\fi
+   \ifdim\l__osgstyler_block_body_padding_top_dim=1pt
+     \TYPE{body-padding-top:passed}\else\TYPE{body-padding-top:FAILED}\fi
+   \ifdim\l__osgstyler_block_body_padding_right_dim=2pt
+     \TYPE{body-padding-right:passed}\else\TYPE{body-padding-right:FAILED}\fi
+   \ifdim\l__osgstyler_block_body_padding_bottom_dim=3pt
+     \TYPE{body-padding-bottom:passed}\else\TYPE{body-padding-bottom:FAILED}\fi
+   \ifdim\l__osgstyler_block_body_padding_left_dim=4pt
+     \TYPE{body-padding-left:passed}\else\TYPE{body-padding-left:FAILED}\fi
+   \begin{itemize}}
+  {\end{itemize}}
+\ExplSyntaxOff
+
 \begin{document}
 \UseOsgColorPalette{block-titled-test}
+\setlength\parskip{0pt}
 \START
 \ExplSyntaxOn
 
@@ -36,12 +56,23 @@
 \OsgIfBlockTitledTF { tb }
   { \TYPE { tb-cleared:FAILED } } { \TYPE { tb-cleared:passed } }
 \StyleOsgBlockInstance { tb } { traits = { titlebar } }
+\StyleOsgBlockInstance { tb }
+  {
+    body-padding = 9pt,
+    body-padding-top = 1pt, body-padding-right = 2pt,
+    body-padding-bottom = 3pt, body-padding-left = 4pt
+  }
 
 \ExplSyntaxOff
 
 % 4. Both layouts typeset without error.
 \begin{tb}{Titled block}
   Body of the titled block.
+\end{tb}
+\begin{tb}{List block}
+  \begin{bodymodeprobe}
+    \item A list must not be preceded by an empty paragraph.
+  \end{bodymodeprobe}
 \end{tb}
 \begin{pl}{Framed block}
   Body of the framed block.

@@ -1996,6 +1996,10 @@ load babel
     \ldeen{\code{0pt} zeichnet keinen Rahmen.}{\code{0pt} draws no
     border.}
   \keyval{padding}{\ldeen{Länge}{length}}\Default{0pt}
+  \keyval{padding-top, padding-right, padding-bottom, padding-left}
+    {\ldeen{Länge}{length}}
+    \ldeen{Überschreiben den entsprechenden Anteil von \code{padding}.}
+      {Override the corresponding side of \code{padding}.}
   \keyval{corner-radius}{\ldeen{Länge}{length}}\Default{0pt}
     \ldeen{Nur im \code{titlebar}-Kastenzweig und nur mit \pkg{pgfcore},
     siehe Abschnitt~\ref{sec:blocks:concept}.}{Only in the \code{titlebar}
@@ -2043,6 +2047,12 @@ load babel
   \keyval{head-font}{\ldeen{Inhalt}{content}}\Default{\cs{normalfont}\cs{bfseries}}
   \keyval{head-padding, head-rule-thickness, body-padding}{\ldeen{Länge}{length}}
     \Default{0.35em, 0pt, 0.4em}
+  \keyval{head-padding-top, head-padding-right, head-padding-bottom,
+      head-padding-left, body-padding-top, body-padding-right,
+      body-padding-bottom, body-padding-left}{\ldeen{Länge}{length}}
+    \ldeen{Überschreiben jeweils die entsprechende Seite des zugehörigen
+      Sammelschlüssels.}{Override the corresponding side of the associated
+      shorthand key.}
   \keyval{body-background}{\ldeen{Farb-Slot}{color slot}\code{|none}}\Default{none}
     \ldeen{Nur bei \code{layout=titled}; ein anderer Wert als \code{none}
     schaltet den Kastenzweig ein (\code{rule-thickness}/\code{rule-color}
@@ -4112,13 +4122,25 @@ load babel
 \tl_new:N \l__osgstyler_block_body_bg_tl
 \dim_new:N \l__osgstyler_block_rule_dim
 \dim_new:N \l__osgstyler_block_padding_dim
+\dim_new:N \l__osgstyler_block_padding_top_dim
+\dim_new:N \l__osgstyler_block_padding_right_dim
+\dim_new:N \l__osgstyler_block_padding_bottom_dim
+\dim_new:N \l__osgstyler_block_padding_left_dim
 \tl_new:N \l__osgstyler_block_shadow_color_tl
 \dim_new:N \l__osgstyler_block_corner_radius_dim
 \dim_new:N \l__osgstyler_block_shadow_offset_dim
 \dim_new:N \l__osgstyler_block_head_padding_dim
+\dim_new:N \l__osgstyler_block_head_padding_top_dim
+\dim_new:N \l__osgstyler_block_head_padding_right_dim
+\dim_new:N \l__osgstyler_block_head_padding_bottom_dim
+\dim_new:N \l__osgstyler_block_head_padding_left_dim
 \dim_new:N \l__osgstyler_block_head_rule_dim
 \dim_new:N \l__osgstyler_block_foot_rule_dim
 \dim_new:N \l__osgstyler_block_body_padding_dim
+\dim_new:N \l__osgstyler_block_body_padding_top_dim
+\dim_new:N \l__osgstyler_block_body_padding_right_dim
+\dim_new:N \l__osgstyler_block_body_padding_bottom_dim
+\dim_new:N \l__osgstyler_block_body_padding_left_dim
 \bool_new:N \l__osgstyler_block_shadow_bool
 
 % \ldeen*{Der Titel wird nicht als Template-Schlüssel geführt (er wechselt
@@ -4143,6 +4165,10 @@ load babel
     rule-color    : tokenlist = structure,
     rule-thickness: length = 0pt,
     padding       : length = 0pt,
+    padding-top   : length = -1pt,
+    padding-right : length = -1pt,
+    padding-bottom: length = -1pt,
+    padding-left  : length = -1pt,
     corner-radius : length = 0pt,
     shadow        : boolean = false,
     shadow-offset : length = 2pt,
@@ -4154,12 +4180,20 @@ load babel
     head-color         : tokenlist = background,
     head-font          : tokenlist = \normalfont \bfseries,
     head-padding       : length = 0.35em,
+    head-padding-top   : length = -1pt,
+    head-padding-right : length = -1pt,
+    head-padding-bottom: length = -1pt,
+    head-padding-left  : length = -1pt,
     head-rule-color    : tokenlist = structure,
     head-rule-thickness: length = 0pt,
     foot-rule-color    : tokenlist = structure,
     foot-rule-thickness: length = 0pt,
     body-background    : tokenlist = none,
-    body-padding      : length = 0.4em
+    body-padding       : length = 0.4em,
+    body-padding-top   : length = -1pt,
+    body-padding-right : length = -1pt,
+    body-padding-bottom: length = -1pt,
+    body-padding-left  : length = -1pt
   }
 \DeclareTemplateCode { osgstyler-block } { standard } { 1 }
   {
@@ -4167,6 +4201,10 @@ load babel
     rule-color = \l__osgstyler_block_rule_color_tl,
     rule-thickness = \l__osgstyler_block_rule_dim,
     padding = \l__osgstyler_block_padding_dim,
+    padding-top = \l__osgstyler_block_padding_top_dim,
+    padding-right = \l__osgstyler_block_padding_right_dim,
+    padding-bottom = \l__osgstyler_block_padding_bottom_dim,
+    padding-left = \l__osgstyler_block_padding_left_dim,
     corner-radius = \l__osgstyler_block_corner_radius_dim,
     shadow = \l__osgstyler_block_shadow_bool,
     shadow-offset = \l__osgstyler_block_shadow_offset_dim,
@@ -4182,14 +4220,40 @@ load babel
     head-color = \l__osgstyler_block_head_fg_tl,
     head-font = \l__osgstyler_block_head_font_tl,
     head-padding = \l__osgstyler_block_head_padding_dim,
+    head-padding-top = \l__osgstyler_block_head_padding_top_dim,
+    head-padding-right = \l__osgstyler_block_head_padding_right_dim,
+    head-padding-bottom = \l__osgstyler_block_head_padding_bottom_dim,
+    head-padding-left = \l__osgstyler_block_head_padding_left_dim,
     head-rule-color = \l__osgstyler_block_head_rule_color_tl,
     head-rule-thickness = \l__osgstyler_block_head_rule_dim,
     foot-rule-color = \l__osgstyler_block_foot_rule_color_tl,
     foot-rule-thickness = \l__osgstyler_block_foot_rule_dim,
     body-background = \l__osgstyler_block_body_bg_tl,
-    body-padding = \l__osgstyler_block_body_padding_dim
+    body-padding = \l__osgstyler_block_body_padding_dim,
+    body-padding-top = \l__osgstyler_block_body_padding_top_dim,
+    body-padding-right = \l__osgstyler_block_body_padding_right_dim,
+    body-padding-bottom = \l__osgstyler_block_body_padding_bottom_dim,
+    body-padding-left = \l__osgstyler_block_body_padding_left_dim
   }
-  { \__osgstyler_block_typeset:n {#1} }
+  { \__osgstyler_block_padding_resolve: \__osgstyler_block_typeset:n {#1} }
+
+\cs_new_protected:Npn \__osgstyler_block_padding_fallback:NN #1#2
+  { \dim_compare:nNnT {#1} < { 0pt } { \dim_set_eq:NN #1#2 } }
+\cs_new_protected:Npn \__osgstyler_block_padding_resolve:
+  {
+    \clist_map_inline:nn { top,right,bottom,left }
+      {
+        \exp_args:Nc \__osgstyler_block_padding_fallback:NN
+          { l__osgstyler_block_padding_##1_dim }
+          \l__osgstyler_block_padding_dim
+        \exp_args:Nc \__osgstyler_block_padding_fallback:NN
+          { l__osgstyler_block_head_padding_##1_dim }
+          \l__osgstyler_block_head_padding_dim
+        \exp_args:Nc \__osgstyler_block_padding_fallback:NN
+          { l__osgstyler_block_body_padding_##1_dim }
+          \l__osgstyler_block_body_padding_dim
+      }
+  }
 
 % \ldeen*{Einzige Aufrufkonvention für den Block-Template-Typ: Titel und
 % Body getrennt übergeben. Aufrufstellen ohne Titel geben \code{\{\}}.}
@@ -4367,18 +4431,23 @@ load babel
         \group_begin:
           \__osgstyler_block_box_para_off:
           \addvspace { \medskipamount }
-          \setlength\fboxsep{\l__osgstyler_block_padding_dim}
+          \setlength\fboxsep{0pt}
           \setlength\fboxrule{\l__osgstyler_block_rule_dim}
           \noindent\fcolorbox
             { \OsgColorName{\l__osgstyler_block_rule_color_tl} }
             { \__osgstyler_block_bg:V \l__osgstyler_block_background_tl }
             {
               \begin{minipage}{\dim_eval:n
-                {\linewidth-2\fboxsep-2\fboxrule}}
-                \__osgstyler_block_plain_title:
-                \setlength\parskip{0.5\baselineskip}
-                #1
-                \par
+                {\linewidth-2\fboxrule}}
+                \tex_kern:D \l__osgstyler_block_padding_top_dim
+                \group_begin:
+                  \dim_set:Nn \leftskip { \l__osgstyler_block_padding_left_dim }
+                  \dim_set:Nn \rightskip { \l__osgstyler_block_padding_right_dim }
+                  \__osgstyler_block_plain_title:
+                  #1
+                  \par
+                \group_end:
+                \tex_kern:D \l__osgstyler_block_padding_bottom_dim
               \end{minipage}
             }
           \par
@@ -4483,7 +4552,6 @@ load babel
 %   decoration it flows into the title line's MC rather than splitting it
 %   and leaving an empty \code{P} fragment; carrying no text it adds nothing
 %   to the reading order. \code{#1} is its width.}
-\dim_new:N \l__osgstyler_block_bar_pad_dim
 \cs_new_protected:Npn \__osgstyler_block_headbar:n #1
   {
     \str_if_eq:VnF \l__osgstyler_block_head_bg_tl { none }
@@ -4497,10 +4565,11 @@ load babel
               \color { \OsgColorName{ \l__osgstyler_block_head_bg_tl } }
               \rule
                 [ \dim_eval:n { -\dp\strutbox
-                                - \l__osgstyler_block_bar_pad_dim } ]
+                                - \l__osgstyler_block_head_padding_bottom_dim } ]
                 { \dim_eval:n { #1 } }
                 { \dim_eval:n { \ht\strutbox + \dp\strutbox
-                                + 2 \l__osgstyler_block_bar_pad_dim } }
+                                + \l__osgstyler_block_head_padding_top_dim
+                                + \l__osgstyler_block_head_padding_bottom_dim } }
             } }%
           }
       }
@@ -4518,9 +4587,9 @@ load babel
         \pgfsetbaseline { 0pt }
         \pgfsetfillcolor { \OsgColorName { \l__osgstyler_block_head_bg_tl } }
         \dim_set:Nn \l_tmpa_dim
-          { \ht\strutbox + \l__osgstyler_block_bar_pad_dim }
+          { \ht\strutbox + \l__osgstyler_block_head_padding_top_dim }
         \dim_set:Nn \l_tmpb_dim
-          { -\dp\strutbox - \l__osgstyler_block_bar_pad_dim }
+          { -\dp\strutbox - \l__osgstyler_block_head_padding_bottom_dim }
         \pgfpathmoveto { \pgfpoint { 0pt } { \l_tmpb_dim } }
         \pgfpathlineto { \pgfpoint { 0pt }
           { \dim_eval:n { \l_tmpa_dim - \l__osgstyler_block_corner_radius_dim } } }
@@ -4548,8 +4617,6 @@ load babel
     \group_begin:
       \__osgstyler_block_box_para_off:
       \addvspace { \medskipamount }
-      \dim_set_eq:NN \l__osgstyler_block_bar_pad_dim
-        \l__osgstyler_block_head_padding_dim
       \setlength \fboxsep { 0pt }
       \setlength \fboxrule { \l__osgstyler_block_rule_dim }
       \noindent
@@ -4565,29 +4632,32 @@ load babel
                 % (smashed) is drawn to the same extent.
                 \rule
                   [ \dim_eval:n { -\dp\strutbox
-                                  - \l__osgstyler_block_bar_pad_dim } ]
+                                  - \l__osgstyler_block_head_padding_bottom_dim } ]
                   { 0pt }
                   { \dim_eval:n { \ht\strutbox + \dp\strutbox
-                                  + 2 \l__osgstyler_block_bar_pad_dim } }%
+                                  + \l__osgstyler_block_head_padding_top_dim
+                                  + \l__osgstyler_block_head_padding_bottom_dim } }%
                 \__osgstyler_block_headbar:n { \linewidth }
-                \skip_horizontal:n { \l__osgstyler_block_head_padding_dim }
-                \dim_set:Nn \rightskip { \l__osgstyler_block_head_padding_dim }
+                \skip_horizontal:n { \l__osgstyler_block_head_padding_left_dim }
+                \dim_set:Nn \rightskip { \l__osgstyler_block_head_padding_right_dim }
                 { \color { \OsgColorName{ \l__osgstyler_block_head_fg_tl } }
                   \l__osgstyler_block_head_font_tl
                   \l__osgstyler_block_title_tl \par }
                 \nobreak
-                \skip_vertical:n { \l__osgstyler_block_body_padding_dim }
+                \skip_vertical:n { \l__osgstyler_block_body_padding_top_dim }
               }
-            \dim_set:Nn \leftskip  { \l__osgstyler_block_body_padding_dim }
-            \dim_set:Nn \rightskip { \l__osgstyler_block_body_padding_dim }
+            \dim_set:Nn \leftskip  { \l__osgstyler_block_body_padding_left_dim }
+            \dim_set:Nn \rightskip { \l__osgstyler_block_body_padding_right_dim }
             \tl_if_empty:NT \l__osgstyler_block_title_tl
-              { \tex_kern:D \l__osgstyler_block_body_padding_dim }
-            \setlength \parskip { 0.5 \baselineskip }
-            \noindent \ignorespaces #1
+              { \tex_kern:D \l__osgstyler_block_body_padding_top_dim }
+            % Do not force horizontal mode here: if the body starts with a
+            % list, \noindent would create an empty paragraph before it.
+            \setlength \parindent { 0pt }
+            \ignorespaces #1
             \par
             % A kern, not \skip_vertical: \endminipage's \unskip would drop
             % trailing glue and leave the body sitting on the bottom edge.
-            \tex_kern:D \l__osgstyler_block_body_padding_dim
+            \tex_kern:D \l__osgstyler_block_body_padding_bottom_dim
           \end { minipage }
         }%
       \par
@@ -4611,26 +4681,35 @@ load babel
               \skip_vertical:n { 0.2 \baselineskip }
             }
           % The coloured strip (if any) sits behind the title's own line.
+          \skip_vertical:n { \l__osgstyler_block_head_padding_top_dim }
           \noindent
           \__osgstyler_block_headstrip:nn
-            { -\l__osgstyler_block_head_padding_dim }
-            { \linewidth + \l__osgstyler_block_head_padding_dim }
+            { -\l__osgstyler_block_head_padding_left_dim }
+            { \linewidth + \l__osgstyler_block_head_padding_left_dim
+                         + \l__osgstyler_block_head_padding_right_dim }
           {
+            \skip_horizontal:n { \l__osgstyler_block_head_padding_left_dim }
+            \dim_set:Nn \rightskip { \l__osgstyler_block_head_padding_right_dim }
             \color { \OsgColorName{ \l__osgstyler_block_head_fg_tl } }
             \l__osgstyler_block_head_font_tl
             \l__osgstyler_block_title_tl
           }%
           \par
+          \skip_vertical:n { \l__osgstyler_block_head_padding_bottom_dim }
+          \skip_vertical:n { \l__osgstyler_block_body_padding_top_dim }
           % Normal interline spacing to the body -- one line apart, like
           % beamer's default block.  The head strip is \cs{smash}ed and
           % reaches only ~0.3\baselineskip below the title baseline, so it
           % does not touch the body at this distance.
         }
       \group_begin:
-        \dim_set:Nn \leftskip  { \l__osgstyler_block_body_padding_dim }
-        \dim_set:Nn \rightskip { \l__osgstyler_block_body_padding_dim }
-        \setlength \parskip { 0.5 \baselineskip }
-        \noindent \ignorespaces #1 \par
+        \dim_set:Nn \leftskip  { \l__osgstyler_block_body_padding_left_dim }
+        \dim_set:Nn \rightskip { \l__osgstyler_block_body_padding_right_dim }
+        % Keep list-like bodies in vertical mode while ordinary text still
+        % starts flush with the body edge.
+        \setlength \parindent { 0pt }
+        \ignorespaces #1 \par
+        \skip_vertical:n { \l__osgstyler_block_body_padding_bottom_dim }
       \group_end:
       % Optional rule below the body (bracket bottom).
       \dim_compare:nNnT \l__osgstyler_block_foot_rule_dim > \c_zero_dim

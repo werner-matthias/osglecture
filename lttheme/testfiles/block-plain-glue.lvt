@@ -1,0 +1,30 @@
+\DocumentMetadata{}
+\input regression-test.tex
+\documentclass{ltx-talk}
+\usepackage{ltxtalk-theme-minimal}
+
+\title[T]{Plain block glue}
+\author[A]{A}
+\date{}
+
+\begin{document}
+\START
+\ExplSyntaxOn
+\begin{frame}
+  \frametitle{Plain block glue}
+  \begin{block}{Card title}
+    \skip_set:Nn \l_tmpa_skip { \tex_lastskip:D }
+    \exp_args:NVV \skip_if_eq:nnTF \l_tmpa_skip \c_zero_skip
+      { \TYPE { block-body-leading-glue:removed } }
+      { \TYPE { block-body-leading-glue:FAILED } }
+    \skip_vertical:n { 7pt }
+    \skip_set:Nn \l_tmpa_skip { \tex_lastskip:D }
+    \skip_if_eq:nnTF { \tex_lastskip:D } { 7pt }
+      { \TYPE { block-body-explicit-skip:preserved } }
+      { \TYPE { block-body-explicit-skip:FAILED } }
+    Card body.
+  \end{block}
+\end{frame}
+\ExplSyntaxOff
+\END
+\end{document}
