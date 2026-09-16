@@ -16,6 +16,34 @@
       { \__osglecture_adapter_beamer_lecture {#2} {#3} }
       { \__osglecture_adapter_beamer_lecture [#1] {#2} {#3} }
   }
+% \ldeen{@2 trennt das Erfassen einer Anmerkung im Quelltext von ihrem
+%   Ausgabeziel: ein Aufruf legt nur fest, \emph{dass} und \emph{mit
+%   welchem Inhalt} eine Anmerkung existiert, nicht \emph{wohin} sie am
+%   Ende geleitet wird. Aufrufstellen dürfen sich daher nicht auf ein
+%   bestimmtes Ausgabeziel verlassen; welches Ziel @2 tatsächlich
+%   bedient, wird allein adapterseitig entschieden und kann sich pro
+%   Adapter oder im Zeitverlauf ändern, ohne dass Quelltext, der @2
+%   benutzt, angepasst werden müsste. Für diesen Adapter ist @1 bereits
+%   ein natives Ziel, das über mehrere Aufrufe pro Folie hinweg sammelt
+%   statt zu überschreiben; @2 leitet lediglich unter eigenem Namen
+%   dorthin weiter, damit das Ziel später geändert werden kann, ohne mit
+%   @1s eigener Presenter-Notizen-Semantik zu kollidieren.}
+%   {@2 decouples capturing a remark in the source from its eventual
+%   output target: a call only records \emph{that} a remark exists and
+%   \emph{with what content}, not \emph{where} it ends up. Call sites
+%   must not assume any particular output target; which target @2
+%   actually feeds is decided solely by the adapter and may differ
+%   between adapters or change over time without requiring source that
+%   uses @2 to be touched. For this adapter, @1 already provides a
+%   native target that accumulates across multiple calls per slide
+%   rather than overwriting; @2 merely forwards to it under its own
+%   name, so the target can change later without colliding with @1's
+%   own presenter-notes semantics.}
+%   {\cs{note}}{\cs{Note}}
+\cs_new_protected:Npn \osglecture_adapter_install:
+  {
+    \NewDocumentCommand \Note { m } { \note {##1} }
+  }
 \ExplSyntaxOff
 %</beamer>
 %<*book>
@@ -56,6 +84,15 @@
       { }
     \NewDocumentCommand \frametitle { D<> {all} O{##3} m } { }
     \NewDocumentCommand \framesubtitle { D<> {all} O{##3} m } { }
+% \ldeen{Die Zielbasisklasse hat kein Presenter-Notizen-Ziel, an das
+%   \cs{Note} weiterleiten könnte; @1 verschluckt die Anmerkung daher
+%   spurlos, damit gemeinsamer Quelltext mit \cs{Note}-Aufrufen auch
+%   hier ohne Sonderfall kompiliert.}{The target base class has no
+%   presenter-notes target for \cs{Note} to forward to; @1 therefore
+%   discards the remark silently, so shared source containing
+%   \cs{Note} calls compiles here too without a special case.}
+%   {\cs{Note}}
+    \NewDocumentCommand \Note { m } { }
   }
 \ExplSyntaxOff
 %</book>
@@ -81,6 +118,22 @@
     \tl_if_blank:nTF {#1}
       { \__osglecture_metadata_native_title {#2} }
       { \__osglecture_metadata_native_title [#1] {#2} }
+  }
+% \ldeen{@1 hat (noch) kein eigenes Presenter-Notizen-Ziel; @2
+%   verschluckt die Anmerkung hier daher spurlos, statt eines von
+%   fremder Semantik zu leihen. Das ist ein bewusst offener
+%   Erweiterungspunkt: sobald @1 eine eigene Ausgabe für gesammelte
+%   Anmerkungen bekommt, ersetzt deren Anbindung diesen No-op, ohne dass
+%   sich an Aufrufstellen von @2 etwas ändern müsste.}{@1 has no
+%   presenter-notes target of its own yet; @2 therefore discards the
+%   remark silently here, rather than borrowing foreign semantics. This
+%   is a deliberately open extension point: once @1 gains its own
+%   output for collected remarks, wiring it in replaces this no-op
+%   without requiring any change at call sites of @2.}
+%   {\cls*{ltx-talk}}{\cs{Note}}
+\cs_new_protected:Npn \osglecture_adapter_install:
+  {
+    \NewDocumentCommand \Note { m } { }
   }
 \ExplSyntaxOff
 %</ltx-talk>
@@ -122,6 +175,15 @@
       { }
     \NewDocumentCommand \frametitle { D<> {all} O{##3} m } { }
     \NewDocumentCommand \framesubtitle { D<> {all} O{##3} m } { }
+% \ldeen{Die Zielbasisklasse hat kein Presenter-Notizen-Ziel, an das
+%   \cs{Note} weiterleiten könnte; @1 verschluckt die Anmerkung daher
+%   spurlos, damit gemeinsamer Quelltext mit \cs{Note}-Aufrufen auch
+%   hier ohne Sonderfall kompiliert.}{The target base class has no
+%   presenter-notes target for \cs{Note} to forward to; @1 therefore
+%   discards the remark silently, so shared source containing
+%   \cs{Note} calls compiles here too without a special case.}
+%   {\cs{Note}}
+    \NewDocumentCommand \Note { m } { }
   }
 \ExplSyntaxOff
 %</scrbook>

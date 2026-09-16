@@ -90,3 +90,19 @@ the master tree and its next-key allocation.
 
 Consequence: `tagpax` registers page-stream and annotation entries with
 `tagpdf`; it never emits a parallel tree or guesses `ParentTreeNextKey`.
+
+## Note-space rendering behind imposition is deferred
+
+Filling a note area next to an imposed page with actual captured remarks (as
+opposed to a blank ruled area) means placing an arbitrary sub-rectangle of a
+source page — e.g. the note-pane half of a page produced with Beamer's
+`show notes on second screen` — not one of its whole predefined PDF boxes.
+`write_page`'s `img.scan` call only selects among a page's existing named
+boxes (media/crop/bleed/trim/art); it has no arbitrary-rectangle crop, and
+neither `tagpax-backend.lua` nor `tagpax-ir.lua` construct Form XObjects with
+a custom `/BBox`/`/Matrix` window onto another Form.
+
+Consequence: the ruled variant (drawn lines, no source content) needs no
+change to the importer and ships first. Rendering actual remarks in that
+space needs either a pre-imposition page-splitting pass or new low-level
+Form-XObject windowing inside the Lua layer — both open, neither started.
