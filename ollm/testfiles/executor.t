@@ -352,4 +352,121 @@ SKIP: {
     'symlinked build-state directory cannot redirect writes outside project';
 }
 
+{
+  # _impose_handout is the seam between a plain handout build and its
+  # optional tagpax N-up imposition (osglecture.dtx mode/handout "layout"
+  # setup area -> \OsgLectureHandoutResult -> here). A mock runner keeps
+  # this a unit test of command construction and artifact repointing,
+  # matching how the rest of this file tests Executor without invoking
+  # real LuaLaTeX/tagpax (already verified manually against the tagpax
+  # and osglecture changes themselves).
+  my $handout_temporary = tempdir(CLEANUP => 1);
+  my %handout_spec = (
+    %$spec,
+    target          => 'handout',
+    build_directory => $handout_temporary,
+    artifact        => File::Spec->catfile(
+      $handout_temporary, "$spec->{job_id}.pdf",
+    ),
+  );
+  my @impose_calls;
+  OLLM::Executor::_impose_handout(
+    'OLLM::Executor', \%handout_spec, '4 on 1', 1, undef,
+    sub {
+      my ($command, $call_spec) = @_;
+      push @impose_calls, { command => [@$command], spec => $call_spec };
+      return 0;
+    },
+  );
+  is scalar @impose_calls, 1, 'imposition starts exactly one process';
+  is $impose_calls[0]{command}[0], 'latexmk',
+    'imposition invokes latexmk directly';
+  ok grep($_ eq "-jobname=$spec->{job_id}-layout", @{ $impose_calls[0]{command} }),
+    'imposition job id is derived from the primary job id';
+  ok grep($_ eq "-outdir=$handout_temporary", @{ $impose_calls[0]{command} }),
+    'imposition writes into the same build directory as the primary artifact';
+  ok grep($_ =~ /--no-shell-escape/, @{ $impose_calls[0]{command} }),
+    'imposition never requests shell-escape, unlike the primary build\'s own policy';
+  ok grep($_ =~ /\Q$spec->{job_id}-layout.tex\E\z/, @{ $impose_calls[0]{command} }),
+    'imposition compiles the generated companion master, not the primary source';
+  is $handout_spec{artifact},
+    File::Spec->catfile($handout_temporary, "$spec->{job_id}.pdf"),
+    'a mock-runner imposition never touches the filesystem, so the artifact path is untouched';
+
+  eval {
+    OLLM::Executor::_impose_handout(
+      'OLLM::Executor', \%handout_spec, '4 on 1', 1, undef, sub { return 1 << 8 },
+    );
+  };
+  like $@, qr/handout imposition failed/,
+    'a failing imposition run aborts instead of silently keeping the plain PDF';
+
+  {
+    # An untagged handout (tagging_active false -- beamer forbids
+    # \DocumentMetadata outright, or an author switched it off) still gets
+    # an N-up handout, just via plain pdfpages instead of tagpax.
+    my @plain_calls;
+    OLLM::Executor::_impose_handout(
+      'OLLM::Executor', \%handout_spec, '4 on 1', 0, undef,
+      sub {
+        my ($command, $call_spec) = @_;
+        push @plain_calls, { command => [@$command], spec => $call_spec };
+        return 0;
+      },
+    );
+    is scalar @plain_calls, 1, 'the untagged fallback also starts exactly one process';
+    ok grep($_ =~ /\Q$spec->{job_id}-layout.tex\E\z/, @{ $plain_calls[0]{command} }),
+      'the untagged fallback compiles its own generated companion master';
+    my $plain_source = File::Spec->catfile(
+      $handout_temporary, "$spec->{job_id}-layout.tex",
+    );
+    open my $plain_handle, '<', $plain_source or die $!;
+    local $/;
+    my $plain_content = <$plain_handle>;
+    close $plain_handle;
+    like $plain_content, qr/\\usepackage\{pdfpages\}/,
+      'the untagged fallback master uses pdfpages, not tagpax';
+    like $plain_content, qr/nup=2x2/,
+      "4 on 1' maps onto pdfpages' own nup=2x2 spelling";
+
+    eval {
+      OLLM::Executor::_impose_handout(
+        'OLLM::Executor', \%handout_spec, '2 on 1|ruled', 0, undef,
+        sub { return 0 },
+      );
+    };
+    like $@, qr/has no untagged fallback/,
+      "the 'ruled' note strip is rejected explicitly, not silently dropped, "
+        . 'when tagging is inactive';
+  }
+
+  # _replace_artifact_with_imposed is the seam _impose_handout uses once a
+  # real (non-mocked) latexmk run has actually produced the imposed PDF --
+  # exercised directly here since a real run is out of scope for this file.
+  open my $plain_handle, '>', $handout_spec{artifact} or die $!;
+  print {$plain_handle} 'plain overlay-flattened handout';
+  close $plain_handle;
+  my $imposed_path = File::Spec->catfile($handout_temporary, 'imposed.pdf');
+  open my $imposed_handle, '>', $imposed_path or die $!;
+  print {$imposed_handle} 'imposed 4-up handout';
+  close $imposed_handle;
+  OLLM::Executor::_replace_artifact_with_imposed(\%handout_spec, $imposed_path);
+  is $handout_spec{artifact},
+    File::Spec->catfile($handout_temporary, "$spec->{job_id}.pdf"),
+    'the canonical artifact path itself never changes';
+  open my $result_handle, '<', $handout_spec{artifact} or die $!;
+  local $/;
+  is <$result_handle>, 'imposed 4-up handout',
+    'the canonical artifact path now holds the imposed content, not the plain one';
+  close $result_handle;
+
+  eval {
+    OLLM::Executor::_replace_artifact_with_imposed(
+      \%handout_spec, File::Spec->catfile($handout_temporary, 'missing.pdf'),
+    );
+  };
+  like $@, qr/imposed handout artifact is missing/,
+    'a missing imposed PDF is caught explicitly instead of silently copying nothing';
+}
+
 done_testing;

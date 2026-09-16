@@ -73,6 +73,58 @@ is $spec->{artifact},
   File::Spec->catfile($spec->{build_directory}, "$spec->{job_id}.pdf"),
   'artifact path is explicit';
 
+my $layout_source = OLLM::BuildFile->render_handout_layout($spec, '4 on 1');
+like $layout_source, qr/\\tagpaxextract\[\Q$spec->{job_id}\E\.tagpax\]\{\Q$spec->{job_id}\E\.pdf\}/,
+  'handout layout master extracts the IR from the primary artifact by basename';
+like $layout_source, qr/\\tagpaxinclude\[ir=\Q$spec->{job_id}\E\.tagpax, layout=4 on 1\]/,
+  'handout layout master passes the requested layout through verbatim';
+like $layout_source, qr/\\usepackage\[a4paper,landscape,margin=1\.5cm\]\{geometry\}/,
+  "a plain grid layout like '4 on 1' packs inherently wide slides, so it lands in landscape";
+my $ruled_source = OLLM::BuildFile->render_handout_layout($spec, '2 on 1|ruled');
+like $ruled_source, qr/\\usepackage\[a4paper,margin=1\.5cm\]\{geometry\}/,
+  "the 'ruled' single-column layout stacks wide slides vertically, so it stays portrait";
+for my $bad ('4 on 1; \input{/etc/passwd}', "4 on 1\n\\catcode`\\%=12") {
+  eval { OLLM::BuildFile->render_handout_layout($spec, $bad) };
+  like $@, qr/cannot be represented safely/,
+    "rejects a handout layout value that is not one of tagpax's own shapes: $bad";
+}
+{
+  my $layout_temporary = tempdir(CLEANUP => 1);
+  my $layout_spec = { %$spec, build_directory => $layout_temporary };
+  my $path = OLLM::BuildFile->write_handout_layout_for_spec(
+    $layout_spec, '2 on 1|ruled',
+  );
+  is $path,
+    File::Spec->catfile($layout_temporary, "$spec->{job_id}-layout.tex"),
+    'handout layout master is written next to the primary artifact under its own job id';
+  ok -f $path, 'handout layout master file exists';
+}
+
+# render_handout_layout_plain is the untagged fallback (osglecture profiles
+# like beamer forbid \DocumentMetadata outright, or an author has tagging
+# switched off): tagpax has no structure tree to import in that case, so
+# this reaches for plain pdfpages nup= imposition instead.
+my $plain_source = OLLM::BuildFile->render_handout_layout_plain($spec, '4 on 1');
+like $plain_source, qr/\\usepackage\{pdfpages\}/,
+  'the untagged fallback master loads pdfpages';
+like $plain_source, qr/\\includepdf\[pages=-, nup=2x2, delta=3mm 3mm, frame=false\]\{\Q$spec->{job_id}\E\.pdf\}/,
+  "'4 on 1' maps onto pdfpages' own nup=2x2 spelling, importing the primary artifact by basename";
+unlike $plain_source, qr/tagpax/,
+  'the untagged fallback master never mentions tagpax';
+like $plain_source, qr/\\usepackage\[a4paper,landscape,margin=1\.5cm\]\{geometry\}/,
+  'the untagged fallback also lands a plain grid layout in landscape';
+for my $count_layout ('2 on 1', '3 on 1', '6 on 1') {
+  my $source = OLLM::BuildFile->render_handout_layout_plain($spec, $count_layout);
+  like $source, qr/\\includepdf\[pages=-, nup=\d+x\d+, delta=3mm 3mm, frame=false\]/,
+    "'$count_layout' also maps onto a plain pdfpages nup= layout with the same gutter";
+}
+eval {
+  OLLM::BuildFile->render_handout_layout_plain($spec, '2 on 1|ruled');
+};
+like $@, qr/has no untagged fallback/,
+  "the 'ruled' note strip is rejected explicitly for the untagged fallback, "
+    . 'not silently dropped';
+
 my $ordinal_units = [
   { physical_unit => '010-first', unit_scope => '', unit_role => 'content' },
   { physical_unit => '011-e-first', unit_scope => '', unit_role => 'e' },

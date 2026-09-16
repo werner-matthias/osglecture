@@ -3421,6 +3421,56 @@ individually. \code{<all>} forces columns in every mode, while, for example,
 \bool_new:N \g__osglecture_unit_valid_bool
 \iow_new:N \g__osglecture_result_iow
 
+% \ldeen{@1 ist derselbe String, den @2 als \option{layout} entgegennimmt
+%   (z.\,B. \code{4~on~1} oder \code{2~on~1|ruled}); die Klasse übersetzt
+%   oder validiert ihn nicht, sondern reicht ihn unverändert über
+%   @3 an OLLM weiter, das ihn -- nur bei aktivem Handout-Build -- an
+%   die von ihm erzeugte @2-Masterdatei durchreicht. Eine zweite,
+%   abweichende Validierung an dieser Stelle würde @2s eigene Prüfung
+%   nur duplizieren, mit dem Risiko, dass beide auseinanderlaufen. Der
+%   Default \code{1~on~1} bildet unverändert den bisherigen
+%   Ein-Seite-pro-Blatt-Pfad ab.}{@1 is the very same string @2 accepts
+%   as \option{layout} (e.g.\ \code{4~on~1} or \code{2~on~1|ruled}); the
+%   class neither translates nor validates it, only passes it through
+%   unchanged via @3 to OLLM, which -- only for an active handout build
+%   -- forwards it to the companion master file it generates. A second,
+%   diverging validation here would only duplicate @2's own check, with
+%   the risk of the two drifting apart. The default \code{1~on~1} maps
+%   unchanged onto the existing one-page-per-sheet path.}
+%   {\cs{g\_\_osglecture\_handout\_layout\_tl}}{\pkg{tagpax}}
+%   {\file{osgresult.aux}}
+% \ldeen*{@1 statt eines wörtlichen Leerzeichens: diese Zeile steht unter
+%   @2, wo ein Leerzeichen im Argument stillschweigend verschluckt würde
+%   ("1on1" statt "1 on 1"), und ein aktives @3 hier überlebt keine
+%   der mehreren Expansionsrunden bis zum Schreiben nach @4 unbeschadet.
+%   @1 ist als Katkode-10-Leerzeichen gegen beides immun.}{@1 instead of a
+%   literal space: this line sits under @2, where a space in the argument
+%   would silently vanish ("1on1" instead of "1 on 1"), and an active @3
+%   here would not survive the several rounds of expansion on the way to
+%   being written to @4 intact. @1, being a catcode-10 space, is immune to
+%   both.}{\cs{c\_space\_tl}}{\cs{ExplSyntaxOn}}{\cs{~}}{\file{osgresult.aux}}
+\tl_new:N \g__osglecture_handout_layout_tl
+\tl_gset:Nx \g__osglecture_handout_layout_tl {1\c_space_tl on\c_space_tl1}
+\cs_new_protected:Npn \__osglecture_handout_layout_setup:n #1
+  { \tl_gset:Nn \g__osglecture_handout_layout_tl {#1} }
+\DeclareOsgLectureModeSetupArea{layout}
+  {\__osglecture_handout_layout_setup:n}
+
+% \ldeen{@1 kann fehlen, wenn diese Build weder @2 noch @3 lädt (z.\,B. das
+%   @4-Profil, das @5 grundsätzlich verbietet); in dem Fall ist "Tagging
+%   aktiv" per Definition falsch, nicht ein Fehler.}{@1 can be absent when
+%   this build loads neither @2 nor @3 (e.g.\ the @4 profile, which
+%   forbids @5 outright); in that case "tagging active" is false by
+%   definition, not an error.}
+%   {\cs{tag\_if\_active:TF}}{\pkg{tagpdf}}{\pkg{tagpdf-base}}
+%   {\option{beamer}}{\option{document-metadata}}
+\cs_new:Npn \__osglecture_tagging_active_tl:
+  {
+    \cs_if_exist:NTF \tag_if_active:TF
+      { \tag_if_active:TF {true} {false} }
+      {false}
+  }
+
 \msg_new:nnnn { osglecture-structure } { invalid-unit }
   { Invalid~logical~unit~identifier~'#1'. }
   { Unit~identifiers~must~not~contain~whitespace,~comma,~equals,~or~'...'. }
@@ -3572,6 +3622,12 @@ individually. \code{<all>} forces columns in every mode, while, for example,
                     \token_to_str:N \OsgLectureDeploymentResult
                     {\exp_not:V \g__osglecture_deployment_chapter_tl}
                     {\exp_not:V \l_tmpb_tl}
+                  }
+                \iow_now:Ne \g__osglecture_result_iow
+                  {
+                    \token_to_str:N \OsgLectureHandoutResult
+                    {\exp_not:V \g__osglecture_handout_layout_tl}
+                    {\__osglecture_tagging_active_tl:}
                   }
                 \iow_close:N \g__osglecture_result_iow
               }

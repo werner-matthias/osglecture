@@ -8,6 +8,7 @@ use Cwd qw(abs_path);
 use Errno qw(EAGAIN EWOULDBLOCK);
 use Fcntl qw(:flock);
 use File::Basename qw(dirname);
+use File::Copy qw(copy);
 use File::Path qw(make_path);
 use File::Spec;
 use OLLM::BuildFile;
@@ -79,10 +80,85 @@ sub execute {
     die "latexmk reported success but artifact is missing: $spec->{artifact}"
       if $action eq 'build' && !$arg{runner}
         && (!-f $spec->{artifact} || !-s _);
-    OLLM::State->promote($spec)
-      if $action eq 'build' && !$arg{runner};
+    if ($action eq 'build' && !$arg{runner}) {
+      if (($spec->{target} // '') eq 'handout') {
+        my $result = OLLM::State->read_result($spec);
+        my $layout = $result->{handout_layout} // '';
+        $class->_impose_handout(
+          $spec, $layout, $result->{handout_tagging}, $latexmk_rc, $arg{runner},
+        ) if $layout ne '' && $layout ne '1 on 1';
+      }
+      OLLM::State->promote($spec);
+    }
   }
   return 0;
+}
+
+# A handout build whose active projectconfig.tex declared a layout (see
+# osglecture.dtx's mode/handout setup area and DESIGN.md's "N-up imposition"
+# note) is not the deliverable on its own -- it is the source PDF for a
+# second, independent compile. This runs that compile and repoints
+# $spec->{artifact} at its output, so the one promote() call right after
+# still publishes exactly one artifact per spec, just the imposed one
+# instead of the plain one. A failure here aborts the whole build rather
+# than silently publishing the plain PDF: the author asked for the imposed
+# layout, so a plain fallback would quietly ignore that request.
+#
+# Which compile that is depends on $tagging_active (osglecture's
+# tag_if_active: report from the primary build, forwarded via
+# \OsgLectureHandoutResult): tagpax needs a tagged source PDF to import --
+# a profile that forbids \DocumentMetadata (e.g. beamer) or an author who
+# has tagging switched off must not lose N-up handouts over that, so this
+# falls back to plain pdfpages imposition instead of erroring. That
+# fallback cannot offer the 'ruled' note strip -- BuildFile rejects it
+# with a clear message rather than silently dropping it.
+sub _impose_handout {
+  my ($class, $spec, $layout, $tagging_active, $latexmk_rc, $runner) = @_;
+  my $source = $tagging_active
+    ? OLLM::BuildFile->write_handout_layout_for_spec($spec, $layout)
+    : OLLM::BuildFile->write_handout_layout_plain_for_spec($spec, $layout);
+  my $job_id = OLLM::BuildFile->handout_layout_job_id($spec);
+  my $engine = join ' ',
+    'lualatex', _shell_escape_flag('off'), '--synctex=1',
+    '--interaction=nonstopmode', '--halt-on-error', '%O', '%P';
+  my @command = (
+    'latexmk',
+    '-norc',
+    (defined($latexmk_rc) ? ('-r', $latexmk_rc) : ()),
+    '-lualatex',
+    '-recorder',
+    '-cd',
+    "-jobname=$job_id",
+    "-outdir=$spec->{build_directory}",
+    "-auxdir=$spec->{build_directory}",
+    "-pdflualatex=$engine",
+    $source,
+  );
+  my $status = $runner ? $runner->(\@command, $spec) : system { $command[0] } @command;
+  die "ollm: cannot start latexmk for handout imposition: $!\n" if $status == -1;
+  my $signal = $status & 127;
+  die "ollm: latexmk (handout imposition) terminated by signal $signal\n"
+    if $signal;
+  die "handout imposition failed for layout '$layout' (job '$job_id')\n"
+    if ($status >> 8) != 0;
+  my $imposed = File::Spec->catfile($spec->{build_directory}, "$job_id.pdf");
+  _replace_artifact_with_imposed($spec, $imposed) if !$runner;
+}
+
+# Overwrites the canonical artifact path in place -- not just $spec's
+# in-memory reference to it -- so every consumer that finds the handout PDF
+# by its well-known <job-id>.pdf path (a human browsing the build directory,
+# not only promote()'s generation copy) sees the imposed layout too.
+# Anything reading $spec->{artifact} afterwards keeps working unchanged
+# since the path itself never changes, only its content.
+sub _replace_artifact_with_imposed {
+  my ($spec, $imposed) = @_;
+  die "latexmk reported success but imposed handout artifact is missing: "
+    . "$imposed\n"
+    if !-f $imposed || !-s _;
+  copy($imposed, $spec->{artifact})
+    or die "cannot replace handout artifact '$spec->{artifact}' with "
+      . "imposed PDF '$imposed': $!\n";
 }
 
 sub validate_request {

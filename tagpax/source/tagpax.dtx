@@ -272,11 +272,28 @@ add-bib=false
   \command{tagpaxinclude}[\oarg{ir=\ldeen{metadata file}{Metadaten-Datei}}\marg{\ldeen{PDF-Datei}{pdf file}}]
   \ldeen*{
     Importiert PDF-Datei mit dem nativen linearen Importer. Mit @1 kann eine bereits
-    erzeugte Zwischenrepräsentation angegeben werden.
+    erzeugte Zwischenrepräsentation angegeben werden. Mit dem Schlüssel @2 kann
+    zusätzlich getaggte Imposition angefordert werden, z.\,B.
+    \code{layout=4~on~1} für vier gleichwertige Quellseiten pro Zielblatt in
+    einem 2\texttimes2-Raster (unterstützte Werte: \code{2}, \code{3}, \code{4}
+    und \code{6~on~1}). Bei \code{2~on~1} und \code{3~on~1} kann ein
+    Suffix \code{|ruled} angehängt werden (\code{layout=2~on~1|ruled}), das
+    neben jeder Quellseite eine liniierte Notizfläche freihält; ein
+    \code{|notes}-Suffix, das dort stattdessen gesammelte @3-Anmerkungen
+    setzen würde, ist noch nicht implementiert. Ohne @2 wird -- wie bisher --
+    jede Quellseite auf ein eigenes Zielblatt gesetzt.
   }{
     Imports \meta{pdf file} with the native linear importer. An existing intermediate
-    representation can be selected with @1.
-  }{\option{ir}}
+    representation can be selected with @1. The @2 key additionally requests
+    tagged imposition, e.g.\ \code{layout=4~on~1} places four equal source
+    pages per target sheet in a 2\texttimes2 grid (supported values:
+    \code{2}, \code{3}, \code{4} and \code{6~on~1}). For \code{2~on~1} and
+    \code{3~on~1}, a \code{|ruled} suffix (\code{layout=2~on~1|ruled}) can be
+    appended to reserve a ruled note area next to each source page; a
+    \code{|notes} suffix that would instead place collected @3 remarks there
+    is not implemented yet. Without @2, every source page is placed on its
+    own target sheet, as before.
+  }{\option{ir}}{\option{layout}}{\cs{Note}}
 %
   \command{tagpaxlastprefix}
   \ldeen*{
@@ -627,6 +644,7 @@ The bridge must not mutate the global \tagpdfpkg{} structure stack.
 \tl_new:N \l__tagpax_ir_tl
 \tl_new:N \l__tagpax_file_tl
 \tl_new:N \l__tagpax_pagecommand_tl
+\tl_new:N \l__tagpax_layout_tl
 \tl_new:N \l__tagpax_import_id_tl
 \tl_new:N \l__tagpax_import_stream_key_tl
 \int_new:N \g__tagpax_import_int
@@ -676,6 +694,7 @@ The bridge must not mutate the global \tagpdfpkg{} structure stack.
     \int_set:Nn\l__tagpax_bookmark_depth_int{\tl_tail:n{#1}}
   },
   pagecommand .tl_set:N=\l__tagpax_pagecommand_tl,
+  layout .tl_set:N=\l__tagpax_layout_tl,
 }
 \msg_new:nnn {tagpax}{deprecated-command}
   {Command~\token_to_str:N #1~is~deprecated;~use~\token_to_str:N #2~instead.}
@@ -699,13 +718,15 @@ The bridge must not mutate the global \tagpdfpkg{} structure stack.
   \tl_set:Nn \l__tagpax_ir_tl {#2}
   \regex_replace_once:nnN { \.pdf\Z } {.tagpax} \l__tagpax_ir_tl
   \tl_clear:N \l__tagpax_pagecommand_tl
+  \tl_clear:N \l__tagpax_layout_tl
   \keys_set:nn {tagpax/include}{#1}
   \directlua{require('tagpax-backend').emit_reservations(
     [[\luaescapestring{\l__tagpax_ir_tl}]],
     [[\luaescapestring{\l__tagpax_import_id_tl}]])}
   \directlua{require('tagpax-native').emit_page_imports(
     [[\luaescapestring{#2}]],[[\luaescapestring{\l__tagpax_ir_tl}]],
-    [[\luaescapestring{\l__tagpax_import_id_tl}]])}
+    [[\luaescapestring{\l__tagpax_import_id_tl}]],
+    [[\luaescapestring{\l__tagpax_layout_tl}]])}
   \directlua{require('tagpax-backend').emit_bindings(
     [[\luaescapestring{\l__tagpax_ir_tl}]],
     [[\luaescapestring{\l__tagpax_import_id_tl}]])}
@@ -1151,6 +1172,206 @@ The bridge must not mutate the global \tagpdfpkg{} structure stack.
         [[\luaescapestring{#4}]],[[\luaescapestring{#5}]],
         \number\textwidth,\number\textheight)}\hss}
     \clearpage
+  }
+
+% \ldeen{Rasterimposition (@1) hält denselben Vertrag pro Quellseite wie @2:
+%   ein frischer @3-Kontext, ein eigener @4-Aufruf. Nur die Platzierung
+%   ändert sich -- von "eine volle Seite" zu "eine Rasterzelle
+%   fester Größe". Zellgröße und Zellzahl pro Blatt sind Paketstate
+%   (@5/@6, @7/@8), nicht Makroparameter, weil mehrere unabhängige
+%   \TeX-Aufrufe pro physischem Blatt zusammenwirken müssen, ohne dass
+%   jeder Aufruf die volle Geometrie erneut mitführt.}{Grid imposition (@1)
+%   keeps the same per-source-page contract as @2: a fresh @3 context, a
+%   dedicated @4 call. Only placement changes -- from "one full page" to
+%   "one fixed-size grid cell". Cell size and cell count per sheet are
+%   package state (@5/@6, @7/@8), not macro parameters, because several
+%   independent \TeX\ calls per physical sheet must cooperate without each
+%   call re-carrying the full geometry.}
+%   {\cs{TagPaxGridPageBegin}}{\cs{TagPaxImportOnePage}}
+%   {\code{StructParents}}{\code{write\_page}}
+%   {\cs{l\_\_tagpax\_grid\_rows\_int}}{\cs{l\_\_tagpax\_grid\_cols\_int}}
+%   {\cs{l\_\_tagpax\_grid\_cellwidth\_dim}}{\cs{l\_\_tagpax\_grid\_cellheight\_dim}}
+\int_new:N \l__tagpax_grid_rows_int
+\int_new:N \l__tagpax_grid_cols_int
+\int_new:N \g__tagpax_grid_col_int
+\dim_new:N \l__tagpax_grid_cellwidth_dim
+\dim_new:N \l__tagpax_grid_cellheight_dim
+\dim_new:N \l__tagpax_grid_imagewidth_dim
+\dim_new:N \l__tagpax_grid_notewidth_dim
+\box_new:N \g__tagpax_grid_page_box
+\box_new:N \g__tagpax_grid_row_box
+\box_new:N \l__tagpax_grid_cell_box
+
+% \ldeen*{Ohne Zwischenraum stoßen benachbarte Zellen direkt aneinander;
+%   einzelne Quellseiten sind dann kaum als solche erkennbar. Der Wert ist
+%   bewusst klein und fest, kein Schlüssel: er soll Zellen nur sichtbar
+%   trennen, nicht Platz für Inhalt schaffen.}{Without a gap, adjacent
+%   cells touch directly; individual source pages become hard to tell
+%   apart. The value is deliberately small and fixed, not a key: it only
+%   needs to visibly separate cells, not make room for content.}
+\dim_new:N \l__tagpax_grid_gutter_dim
+\dim_set:Nn \l__tagpax_grid_gutter_dim {3mm}
+
+% \ldeen*{Zeilenhöhen summieren sich exakt zu @1. Ohne Abzug bliebe kein
+%   Platz für den von \TeX\ oberhalb des ersten Elements jeder Seite
+%   obligatorisch eingefügten @2-Klebstoff -- die Seite überliefe dann
+%   um genau diesen Betrag, und der Seitenumbruchalgorithmus verschöbe
+%   das gesamte, unteilbare Rasterblatt auf die nächste Seite (eine
+%   scheinbar leere Seite wäre die Folge).}{Row heights add up to exactly
+%   @1. Without the deduction there would be no room for the @2 glue
+%   \TeX\ mandatorily inserts above the first item on every page -- the
+%   page would then overflow by exactly that amount, and the page-break
+%   algorithm would push the whole, unbreakable grid sheet onto the next
+%   page (an apparently blank page would result).}
+%   {\cs{textheight}}{\cs{topskip}}
+\cs_new_protected:Npn \TagPaxGridPageBegin #1#2
+  {
+    \clearpage
+    \thispagestyle{empty}
+    \tl_use:N \l__tagpax_pagecommand_tl
+    \int_set:Nn \l__tagpax_grid_rows_int {#1}
+    \int_set:Nn \l__tagpax_grid_cols_int {#2}
+    \dim_set:Nn \l__tagpax_grid_cellwidth_dim
+      {
+        ( \textwidth
+          - \l__tagpax_grid_gutter_dim * ( \l__tagpax_grid_cols_int - 1 ) )
+        / \l__tagpax_grid_cols_int
+      }
+    \dim_set:Nn \l__tagpax_grid_cellheight_dim
+      {
+        ( \textheight - \topskip
+          - \l__tagpax_grid_gutter_dim * ( \l__tagpax_grid_rows_int - 1 ) )
+        / \l__tagpax_grid_rows_int
+      }
+    \box_gclear:N \g__tagpax_grid_page_box
+    \box_gclear:N \g__tagpax_grid_row_box
+    \int_gzero:N \g__tagpax_grid_col_int
+  }
+
+% \ldeen*{Wird auch am Blattende unbedingt aufgerufen: eine unvollständige
+%   letzte Zeile (Seitenzahl kein Vielfaches der Rastergröße) bleibt dann
+%   einfach mit leeren Zellen rechts/unten, statt verworfen zu
+%   werden.}{Also called unconditionally at the end of a sheet: an
+%   incomplete final row (page count not a multiple of the grid size)
+%   simply keeps empty cells on the right/bottom instead of being
+%   dropped.}
+\cs_new_protected:Npn \__tagpax_grid_flush_row:
+  {
+    \int_compare:nNnT {\g__tagpax_grid_col_int} > {0}
+      {
+        \box_if_empty:NTF \g__tagpax_grid_page_box
+          {
+            \vbox_gset:Nn \g__tagpax_grid_page_box
+              { \box_use:N \g__tagpax_grid_row_box }
+          }
+          {
+            \vbox_gset:Nn \g__tagpax_grid_page_box
+              {
+                \box_use:N \g__tagpax_grid_page_box
+                \kern \l__tagpax_grid_gutter_dim
+                \box_use:N \g__tagpax_grid_row_box
+              }
+          }
+        \box_gclear:N \g__tagpax_grid_row_box
+        \int_gzero:N \g__tagpax_grid_col_int
+      }
+  }
+
+\cs_new_protected:Npn \TagPaxGridPageEnd
+  {
+    \__tagpax_grid_flush_row:
+    \noindent \box_use:N \g__tagpax_grid_page_box
+    \clearpage
+  }
+
+\cs_new_protected:Npn \__tagpax_grid_append_cell:
+  {
+    \box_if_empty:NTF \g__tagpax_grid_row_box
+      {
+        \hbox_gset:Nn \g__tagpax_grid_row_box
+          { \box_use:N \l__tagpax_grid_cell_box }
+      }
+      {
+        \hbox_gset:Nn \g__tagpax_grid_row_box
+          {
+            \box_use:N \g__tagpax_grid_row_box
+            \kern \l__tagpax_grid_gutter_dim
+            \box_use:N \l__tagpax_grid_cell_box
+          }
+      }
+    \int_gincr:N \g__tagpax_grid_col_int
+    \int_compare:nNnT {\g__tagpax_grid_col_int} = {\l__tagpax_grid_cols_int}
+      { \__tagpax_grid_flush_row: }
+  }
+
+% \ldeen*{Zentriert vertikal in fester Zellhöhe (@1), unabhängig vom
+%   tatsächlichen, durch @2 bereits proportional herunterskalierten
+%   Seitenverhältnis der Quellseite -- sonst würde jede Zeile an der
+%   Bildhöhe der jeweils enthaltenen Quellseiten driften.}{Centers
+%   vertically within a fixed cell height (@1), independent of the source
+%   page's actual aspect ratio, already proportionally downscaled by @2 --
+%   otherwise every row would drift with the image height of whichever
+%   source pages it happens to contain.}
+%   {\cs{l\_\_tagpax\_grid\_cellheight\_dim}}{\code{write\_page}}
+\cs_new_protected:Npn \__tagpax_grid_image:nnnnnn #1#2#3#4#5#6
+  {
+    \tagpax_tag_stream_new:nN {#3} \l__tagpax_import_stream_key_tl
+    \directlua{require('tagpax-native').emit_page_navigation(
+      [[\luaescapestring{#4}]],#2,[[\luaescapestring{#5}]])}
+    \vbox_to_ht:nn {\l__tagpax_grid_cellheight_dim}
+      {
+        \vfil
+        \hbox_to_wd:nn {#6}
+          {\hss\directlua{require('tagpax-luatex').write_page(
+            [[\luaescapestring{#1}]],#2,\l__tagpax_import_stream_key_tl,[[\luaescapestring{#3}]],
+            [[\luaescapestring{#4}]],[[\luaescapestring{#5}]],
+            \number#6,\number\l__tagpax_grid_cellheight_dim)}\hss}
+        \vfil
+      }
+  }
+
+\cs_new_protected:Npn \TagPaxImportGridPage #1#2#3#4#5
+  {
+    \dim_set_eq:NN \l__tagpax_grid_imagewidth_dim \l__tagpax_grid_cellwidth_dim
+    \vbox_set:Nn \l__tagpax_grid_cell_box
+      { \__tagpax_grid_image:nnnnnn {#1}{#2}{#3}{#4}{#5}{\l__tagpax_grid_imagewidth_dim} }
+    \__tagpax_grid_append_cell:
+  }
+
+% \ldeen{Die Notizfläche zeichnet nur liniierten Leerraum -- kein
+%   Seiteninhalt wird dafür ausgelesen, siehe die entsprechende
+%   Design-Notiz zu zurückgestelltem Notizinhalt.}{The note area only
+%   draws ruled blank space -- no page content is read out for it, see the
+%   corresponding design note on deferred note content.}
+\dim_new:N \l__tagpax_grid_ruled_step_dim
+\dim_set:Nn \l__tagpax_grid_ruled_step_dim {8mm}
+\cs_new_protected:Npn \__tagpax_grid_ruled_lines:n #1
+  {
+    \hbox_to_wd:nn {#1}
+      {
+        \hfil
+        \vbox_to_ht:nn {\l__tagpax_grid_cellheight_dim}
+          {
+            \vfil
+            \prg_replicate:nn {5}
+              { \rule{0.8\l__tagpax_grid_notewidth_dim}{0.4pt} \vfil }
+          }
+        \hfil
+      }
+  }
+
+\cs_new_protected:Npn \TagPaxImportGridPageRuled #1#2#3#4#5
+  {
+    \dim_set:Nn \l__tagpax_grid_imagewidth_dim
+      { 0.72 \l__tagpax_grid_cellwidth_dim }
+    \dim_set:Nn \l__tagpax_grid_notewidth_dim
+      { \l__tagpax_grid_cellwidth_dim - \l__tagpax_grid_imagewidth_dim }
+    \hbox_set:Nn \l__tagpax_grid_cell_box
+      {
+        \__tagpax_grid_image:nnnnnn {#1}{#2}{#3}{#4}{#5}{\l__tagpax_grid_imagewidth_dim}
+        \__tagpax_grid_ruled_lines:n {\l__tagpax_grid_notewidth_dim}
+      }
+    \__tagpax_grid_append_cell:
   }
 
 \cs_new_protected:Npn \TagPaxBackendDocumentBegin

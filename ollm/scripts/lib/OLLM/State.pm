@@ -325,6 +325,17 @@ sub _read_result {
   die "invalid LaTeX result envelope in '$path'\n" if !@match;
   my ($chapter, $ordinal) = $content =~
     /\\OsgLectureDeploymentResult\{([^{}]*)\}\{([^{}]*)\}/;
+  # \OsgLectureHandoutResult is only ever written for a handout build (see
+  # osglecture.dtx __osglecture_result_write:); every other doctype's result
+  # file simply lacks the line, hence the optional match and empty fallback
+  # rather than treating its absence as invalid. Its second field reports
+  # whether tagging was actually active in that build (tag_if_active:,
+  # false whenever the profile forbids \DocumentMetadata outright, e.g.
+  # beamer, or the author has it switched off) -- Executor uses it to pick
+  # between a tagpax-based and a plain pdfpages-based imposition, since
+  # tagpax has nothing to import from an untagged PDF.
+  my ($handout_layout, $handout_tagging) = $content =~
+    /\\OsgLectureHandoutResult\{([^{}]*)\}\{([^{}]*)\}/;
   return {
     schema        => $match[0],
     generation_id => $match[1],
@@ -337,7 +348,24 @@ sub _read_result {
     language      => $match[8],
     chapter       => defined($chapter) ? $chapter : '',
     ordinal       => defined($ordinal) ? $ordinal : '',
+    handout_layout => defined($handout_layout) ? $handout_layout : '',
+    handout_tagging => defined($handout_tagging) && $handout_tagging eq 'true' ? 1 : 0,
   };
+}
+
+# Public accessor for callers (namely Executor) that need to inspect a
+# freshly-built result before deciding whether to promote it -- e.g. to
+# detect a requested handout imposition and swap the artifact beforehand.
+# Kept separate from promote() itself so State stays a pure file/generation
+# manager and never has to know how to run a second latexmk pass.
+sub read_result {
+  my ($class, $spec) = @_;
+  my $result_path = File::Spec->catfile(
+    $spec->{build_directory}, "$spec->{job_id}.osgresult.aux",
+  );
+  my $result = _read_result($result_path);
+  _validate_result($spec, $result);
+  return $result;
 }
 
 sub _validate_result {
