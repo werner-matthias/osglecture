@@ -1266,14 +1266,22 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
   }
 \cs_new_protected:Npn \__ltxtalk_tuc_title_talk:
   {
-    \vspace*{1.55cm}\centering\sffamily
-    {\LARGE\bfseries\color{ltxtalk-primary}\LTXTalkMetadata{title}\par}\medskip
-    \tl_if_blank:eF{\LTXTalkMetadata{subtitle}}
-      {{\Large\color{ltxtalk-secondary}\LTXTalkMetadata{subtitle}\par}\bigskip}
-    {\large\LTXTalkMetadata{author}\par}\smallskip
-    {\normalsize\LTXTalkMetadata{institute}\par}\medskip
-    {\normalsize\LTXTalkMetadata{date}\par}\bigskip
-    \__ltxtalk_tuc_title_logo:
+    \vbox_to_ht:nn {\textheight}
+      {
+        \null
+        \skip_vertical:n {\l__ltxtalk_header_height_dim}
+        \skip_vertical:n {0pt~plus~1fil}
+        \centering\sffamily
+        {\LARGE\bfseries\color{ltxtalk-primary}\LTXTalkMetadata{title}\par}\medskip
+        \tl_if_blank:eF{\LTXTalkMetadata{subtitle}}
+          {{\Large\color{ltxtalk-secondary}\LTXTalkMetadata{subtitle}\par}\bigskip}
+        {\large\LTXTalkMetadata{author}\par}\smallskip
+        {\normalsize\LTXTalkMetadata{institute}\par}\medskip
+        {\normalsize\LTXTalkMetadata{date}\par}\bigskip
+        \__ltxtalk_tuc_title_logo:
+        \skip_vertical:n {0pt~plus~1fil}
+        \null
+      }
   }
 \cs_new_protected:Npn \__ltxtalk_tuc_title_image:
   {
