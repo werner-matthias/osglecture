@@ -10,6 +10,7 @@ Featurewünsche.
 # ltthemer + Co
 * [ ] Section/Title: Sollte wieder eingeführt werden.
 * [ ] TUC-2019: teatching-Mode soll Section im Header führen. 
+* [ ] TStandardtemplates für Titel (Prefix, Nummer), Seitenzahl, etc.
 
 # Handout-Imposition (tagpax/OLLM), Stand 2026-09-16
 * [ ] `ollm handout -pvc`: Der Viewer zeigt nach dem ersten (unimponierten)
