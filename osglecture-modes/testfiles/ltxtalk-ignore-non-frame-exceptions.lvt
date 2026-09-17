@@ -14,6 +14,12 @@
 \DeclareLtxtalkKeepEnvironment{myenv}
 
 \begin{document}
+% Force any lazily-loaded fallback font (e.g. a math package's TU+lmr-base)
+% to load here, before \START opens the recorded transcript: NFSS only
+% emits its one-time "Trying to load font information" notice on first
+% use, and which page first needs a given fallback family is an
+% installation detail, not something this test cares about.
+\IfFileExists{tulmr-base.fd}{\usefont{TU}{lmr-base}{m}{n}}{}
 \START
 \lecture{Introduction}{intro}
 \section{Sec}
