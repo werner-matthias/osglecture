@@ -229,6 +229,7 @@ der Klasse \cls*{osglecture} wird an dieses Paket weitergereicht.
   \command{FinalizeLectureModes}
   \command{LectureModes}
   \command{ActiveLectureModes}
+  \command{ModeValue}[\marg{spec}]
   \command{IfLectureModeTF}[\marg{expression}\marg{true}\marg{false}]
   \command{IfLectureModeT}[\marg{expression}\marg{true}]
   \command{IfLectureModeF}[\marg{expression}\marg{false}]
@@ -560,6 +561,62 @@ Text\\<slides>[3ex]
   branch the original command reads these arguments; in the omitted branch an
   automatically generated gobbler consumes them. Omitting \code{arguments}
   selects an empty signature.
+}
+
+\section{\ldeen{Modusabhängige Werte}{Mode-dependent values}}
+
+\ldeen{
+  \cs{ModeValue} löst, anders als \cs{MakeOverlayAwareCommand}, nicht einen
+  ganzen Befehlsaufruf modusabhängig auf, sondern einen einzelnen Wert. Es
+  ist damit an jeder Stelle einsetzbar, an der ein Makroargument erwartet
+  wird -- auch in Parametern fremder Befehle wie \cs{includegraphics} oder
+  in Register­zuweisungen wie \cs{skip0=\ModeValue{...}} --, ohne den
+  Zielbefehl selbst anzufassen.
+}{
+  Unlike \cs{MakeOverlayAwareCommand}, \cs{ModeValue} does not resolve an
+  entire command call by mode, but a single value. It therefore drops into
+  any position that expects a macro argument -- including parameters of
+  third-party commands such as \cs{includegraphics}, or register
+  assignments such as \cs{skip0=\ModeValue{...}} -- without touching the
+  target command itself.
+}
+
+\begin{verbatim}
+\includegraphics[width=\ModeValue{default=5cm|handout=8cm}]{plot}
+\end{verbatim}
+
+\ldeen{
+  Das Argument ist eine mit \code{|} getrennte Liste von
+  \code{modus=wert}-Paaren -- ein \code{=} statt des sonst im Paket für
+  eine \code{modus:rest}-Qualifikation genutzten Doppelpunkts, weil
+  \code{=} von \cs{ExplSyntaxOn} unberührt bleibt, während ein Doppelpunkt
+  in diesem Syntaxregime zum Buchstaben wird und daher nie auf einen
+  Doppelpunkt träfe, den ein Wert legitim enthalten könnte. \cs{ModeValue}
+  sucht darin, in der Reihenfolge von \cs{ActiveLectureModes}, den ersten
+  passenden Eintrag; \code{default} ist dabei stets ein letzter, immer
+  vorhandener Kandidat. Fehlt ein passender Eintrag und auch
+  \code{default}, expandiert \cs{ModeValue} zu nichts -- ein eigener
+  Fehlertext ist an dieser Stelle
+  nicht möglich, weil das Ergebnis auch in reinen Expansionskontexten
+  (\cs{dimen}-, \cs{skip}- und ähnliche Zuweisungen) entstehen muss, in
+  denen nicht-expandierbare Befehle wie \cs{msg_error:nnn} nicht ausgeführt
+  werden können. Ein Wert darf selbst \code{=}-Zeichen oder Doppelpunkte
+  enthalten (etwa eine URL), aber kein unmaskiertes \code{|}.
+}{
+  The argument is a \code{|}-separated list of \code{mode=value} pairs --
+  an \code{=} rather than the colon the rest of the package uses for a
+  \code{mode:tail} qualification, because \code{=} is untouched by
+  \cs{ExplSyntaxOn}, whereas a colon becomes a letter in that syntax regime
+  and so could never match a colon a value might legitimately contain.
+  \cs{ModeValue} searches it, in the order of \cs{ActiveLectureModes},
+  for the first matching entry; \code{default} is always a last,
+  always-present candidate. If no entry matches and \code{default} is
+  absent too, \cs{ModeValue} expands to nothing -- a dedicated error
+  message is not possible here, because the result must also arise in
+  pure expansion contexts (\cs{dimen}, \cs{skip} and similar assignments)
+  where non-expandable commands such as \cs{msg_error:nnn} cannot run. A
+  value may itself contain "=" signs or colons (a URL, say), but not an
+  unescaped \code{|}.
 }
 
 \section{\ldeen{Zusammenspiel mit Backends}{Backend interaction}}
@@ -922,6 +979,69 @@ Text\\<slides>[3ex]
 \NewDocumentCommand \FinalizeLectureModes { } { \osglecture_modes_finalize: }
 \NewExpandableDocumentCommand \ActiveLectureModes { }
   { \seq_use:Nn \g_osglecture_modes_active_order_seq {,} }
+
+% \ModeValue resolves a "mode=value|mode=value|..." spec by walking
+% \ActiveLectureModes left to right, then trying "default" as the final,
+% always-present candidate -- the same order and priority
+% \__semcat_resolve_presentation:nNNN uses, just expressed expandably so
+% the result drops into \dimen, \skip, \count and similar assignments, not
+% only key-value interfaces. A spec without a matching key and without
+% "default" expands to nothing.
+%
+% Splitting is delimiter-based, not key-value parsing, so a value may
+% contain further "=" signs or colons (an URL, say) but not an unescaped
+% "|"; leading and trailing spaces around a key are trimmed. "=" (rather
+% than the ":" the rest of this package uses for a "mode:tail" overlay
+% qualification) is the key/value separator here because it is untouched
+% by \ExplSyntaxOn, unlike ":", which becomes a letter and so could never
+% delimit on the category-12 colon a value might legitimately contain.
+\cs_new:Npn \osglecture_modes_value_seg:w #1#2#3#4|#5\q_stop
+  {
+    % #1 = candidate mode ; #2 = remaining candidates ; #3 = spec-with-"|"
+    % (kept for the next candidate) ; #4 = this "key=value" segment ;
+    % #5 = remaining segments
+    \osglecture_modes_value_kv_aux {#1} {#2} {#3} {#5} #4 \q_stop
+  }
+
+\cs_new:Npn \osglecture_modes_value_kv_aux #1#2#3#4#5=#6\q_stop
+  {
+    % #5 = this segment's key ; #6 = its value (may itself contain "="
+    % signs, since it was delimited only by \q_stop)
+    \str_if_eq:eeTF { \tl_trim_spaces:n {#5} } {#1}
+      { \tl_trim_spaces:n {#6} }
+      { \osglecture_modes_value_continue:nnnn {#1} {#2} {#3} {#4} }
+  }
+
+\cs_new:Npn \osglecture_modes_value_continue:nnnn #1#2#3#4
+  {
+    \tl_if_empty:nTF {#4}
+      { \osglecture_modes_value_next:nn {#2} {#3} }
+      { \osglecture_modes_value_seg:w {#1} {#2} {#3} #4 \q_stop }
+  }
+
+\cs_new:Npn \osglecture_modes_value_next:nn #1#2
+  {
+    \tl_if_empty:nTF {#1}
+      { }
+      { \osglecture_modes_value_pop:w #1 \q_stop {#2} }
+  }
+
+% Pops one candidate off a comma list that -- like the pipe-list above --
+% always carries a synthetic trailing "," (again from
+% \osglecture_modes_value_start:nn, or reproduced by this function's own
+% output on every further pop), so "default", the last candidate, needs no
+% special case either.
+\cs_new:Npn \osglecture_modes_value_pop:w #1,#2\q_stop #3
+  { \osglecture_modes_value_seg:w {#1} {#2} {#3} #3 \q_stop }
+
+\cs_new:Npn \osglecture_modes_value_priority: { \ActiveLectureModes , default }
+
+\cs_new:Npn \osglecture_modes_value_start:nn #1#2
+  { \osglecture_modes_value_pop:w #1 , \q_stop {#2|} }
+\cs_generate_variant:Nn \osglecture_modes_value_start:nn { fn }
+
+\NewExpandableDocumentCommand \ModeValue { m }
+  { \osglecture_modes_value_start:fn { \osglecture_modes_value_priority: } {#1} }
 
 \prg_new_conditional:Npnn \osglecture_modes_if_active:n #1 { T, F, TF }
   {

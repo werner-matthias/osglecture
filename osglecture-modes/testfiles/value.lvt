@@ -1,0 +1,18 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage[mode=script]{osglecture-modes}
+\begin{document}
+\START
+\edef\ma{\ModeValue{default=5pt|script=10pt}}\TYPE{ACTIVE-WINS=\ma}
+\edef\mb{\ModeValue{script=AAA|default=BBB}}\TYPE{ORDER-IRRELEVANT=\mb}
+\edef\mc{\ModeValue{default=9pt}}\TYPE{DEFAULT-ONLY=\mc}
+\edef\md{\ModeValue{slides=1cm}}\TYPE{NO-MATCH-EMPTY=[\md]}
+\edef\me{\ModeValue{default=http://x.example:8080}}\TYPE{COLON-IN-VALUE=\me}
+\edef\mf{\ModeValue{ default= 1cm | script= 2cm }}\TYPE{SPACES-TRIMMED=\mf}
+\edef\mg{\ModeValue{default=ONLY}}\TYPE{SINGLE-SEGMENT=\mg}
+\dimen0=\ModeValue{default=5pt|script=10pt}\relax
+\TYPE{DIMEN-ASSIGNMENT=\the\dimen0}
+\skip0=\ModeValue{default=5pt|script=10pt}\relax
+\TYPE{SKIP-ASSIGNMENT=\the\skip0}
+\END
+\end{document}

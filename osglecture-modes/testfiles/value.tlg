@@ -1,0 +1,11 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+ACTIVE-WINS=10pt
+ORDER-IRRELEVANT=AAA
+DEFAULT-ONLY=9pt
+NO-MATCH-EMPTY=[]
+COLON-IN-VALUE=http://x.example:8080
+SPACES-TRIMMED=2cm
+SINGLE-SEGMENT=ONLY
+DIMEN-ASSIGNMENT=10.0pt
+SKIP-ASSIGNMENT=10.0pt
