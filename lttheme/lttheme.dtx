@@ -3881,12 +3881,23 @@ theme.
   }
 \NewSocketPlug { lttheme/area/header } { standard }
   { \__ltxtalk_render_area:nnn {header}{\paperwidth}{\l__ltxtalk_header_height_dim} }
+\cs_new_protected:Npn \__ltxtalk_render_standard_side_area:nn #1#2
+  {
+    \dim_set:Nn \l_tmpa_dim { \paperheight }
+    \bool_if:NT \l__ltxtalk_show_header_bool
+      { \dim_sub:Nn \l_tmpa_dim { \l__ltxtalk_header_height_dim } }
+    \bool_if:NT \l__ltxtalk_show_footer_bool
+      { \dim_sub:Nn \l_tmpa_dim { \l__ltxtalk_footer_height_dim } }
+    \__ltxtalk_render_area:nnn {#1}{#2}{\l_tmpa_dim}
+  }
 \NewSocketPlug { lttheme/area/left } { standard }
-  { \__ltxtalk_render_area:nnn {left}{\l__ltxtalk_left_area_width_dim}{\textheight} }
+  { \__ltxtalk_render_standard_side_area:nn
+      {left}{\l__ltxtalk_left_area_width_dim} }
 \NewSocketPlug { lttheme/area/left } { hawk }
   { \__ltxtalk_render_area:nnn {left}{\l__ltxtalk_left_area_width_dim}{\paperheight} }
 \NewSocketPlug { lttheme/area/right } { standard }
-  { \__ltxtalk_render_area:nnn {right}{\l__ltxtalk_right_area_width_dim}{\textheight} }
+  { \__ltxtalk_render_standard_side_area:nn
+      {right}{\l__ltxtalk_right_area_width_dim} }
 \NewSocketPlug { lttheme/area/right } { goose }
   { \__ltxtalk_render_area:nnn {right}{\l__ltxtalk_right_area_width_dim}{\paperheight} }
 \NewSocketPlug { lttheme/area/footer } { standard }
@@ -4380,9 +4391,16 @@ theme.
                       {\UseSocket{lttheme/area/left}}
                   }
                   {
-                    \raisebox
-                      {-\dim_eval:n{\l__ltxtalk_header_height_dim-\Gm@tmargin+\headsep}}
-                      [0pt][0pt]{\UseSocket{lttheme/area/left}}
+                    \bool_if:NTF \l__ltxtalk_show_header_bool
+                      {
+                        \raisebox
+                          {-\dim_eval:n{\l__ltxtalk_header_height_dim-\Gm@tmargin+\headsep}}
+                          [0pt][0pt]{\UseSocket{lttheme/area/left}}
+                      }
+                      {
+                        \raisebox{\dim_eval:n{\Gm@tmargin-\headsep}}[0pt][0pt]
+                          {\UseSocket{lttheme/area/left}}
+                      }
                   }
               }
             \hss
@@ -4402,10 +4420,17 @@ theme.
                       {\UseSocket{lttheme/area/right}}
                   }
                   {
-                    \raisebox
-                      {-\dim_eval:n{\l__ltxtalk_header_height_dim-\Gm@tmargin+\headsep}}
-                      [0pt][0pt]
-                      {\UseSocket{lttheme/area/right}}
+                    \bool_if:NTF \l__ltxtalk_show_header_bool
+                      {
+                        \raisebox
+                          {-\dim_eval:n{\l__ltxtalk_header_height_dim-\Gm@tmargin+\headsep}}
+                          [0pt][0pt]
+                          {\UseSocket{lttheme/area/right}}
+                      }
+                      {
+                        \raisebox{\dim_eval:n{\Gm@tmargin-\headsep}}[0pt][0pt]
+                          {\UseSocket{lttheme/area/right}}
+                      }
                   }
               }
             \hss
@@ -4738,8 +4763,12 @@ theme.
     \styleltxtalkslot{hawk-title}{font-slot=display,font=\fontsize{5}{6}\selectfont,
       color=ltxtalk-text,align=center}
     \styleltxtalkslot{hawk-author}{font=\tiny,color=ltxtalk-secondary,align=center}
-    \styleltxtalkslot{hawk-section}{font-slot=accent,font=\small\bfseries,color=ltxtalk-primary,align=left}
-    \styleltxtalkslot{hawk-subsection}{font=\scriptsize,color=ltxtalk-secondary,align=left}
+    % Hannover uses \tiny for sections on an even narrower default sidebar;
+    % keep that proportion and set subsections one step quieter still.
+    \styleltxtalkslot{hawk-section}
+      {font-slot=accent,font=\tiny\bfseries,color=ltxtalk-primary,align=left}
+    \styleltxtalkslot{hawk-subsection}
+      {font=\fontsize{5}{6}\selectfont,color=ltxtalk-secondary,align=left}
     \styleltxtalkslot{hawk-frametitle}{font-slot=display,font=\Large,color=ltxtalk-primary,align=right}
     \styleltxtalkslot{hawk-framesubtitle}{font=\small,color=ltxtalk-secondary,align=right}
     \decorateltxtalkarea{left}{background=ltxtalk-primary!20,artifact-type=layout}

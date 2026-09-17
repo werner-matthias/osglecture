@@ -44,9 +44,7 @@
     \defineltxtalkslot{show-frame-title}{content}{frametitle}
       {
         role = heading,
-        heading-level = 2,
-        continuation-text = {(Fortsetzung)},
-        continuation-mode = explicit
+        heading-level = 2
       }
     \defineltxtalkslot{show-frame-subtitle}{content}{framesubtitle}
       { role = heading, heading-level = 3 }
@@ -60,15 +58,17 @@
       { role = navigation }
 
     \positionltxtalkslot{show-title}{center}{0.25cm}{0.5\paperwidth}{0.7cm}
-    \positionltxtalkslot{show-section}{left}{1.15cm}{0.3\paperwidth}{0.5cm}
-    \positionltxtalkslot{show-page}{right}{1.15cm}{1cm}{0.5cm}
-    \positionltxtalkslot{show-author}{center}{top}{1.5cm}{1cm}
+    \positionltxtalkslot{show-section}{0.25cm}{1.15cm}{0.3\paperwidth}{0.5cm}
+    \positionltxtalkslot{show-page}
+      {\dim_eval:n{\paperwidth-1.25cm}}{1.15cm}{1cm}{0.5cm}
+    \positionltxtalkslot{show-author}{0.25cm}{0.12cm}{1.2cm}{1cm}
     \positionltxtalkslot{show-frame-title}{left}{top}{0.7\paperwidth}{1cm}
     \positionltxtalkslot{show-frame-subtitle}{left}{1cm}{0.7\paperwidth}{0.7cm}
     \positionltxtalkslot{show-subsection}{center}{top}{1.5cm}{1cm}
-    \positionltxtalkslot{show-institute}{left}{bottom}{0.4\paperwidth}{0.5cm}
+    \positionltxtalkslot{show-institute}{0.25cm}{bottom}{0.4\paperwidth}{0.5cm}
     \positionltxtalkslot{show-date}{center}{bottom}{0.3\paperwidth}{0.5cm}
-    \positionltxtalkslot{show-footer-page}{right}{bottom}{1cm}{0.5cm}
+    \positionltxtalkslot{show-footer-page}
+      {\dim_eval:n{\paperwidth-1.25cm}}{bottom}{1cm}{0.5cm}
 
     \styleltxtalkslot{show-title}
       {
@@ -89,7 +89,7 @@
         frame = box,
         rule-color = ltxtalk-accent,
         rule-thick = 0.8pt,
-        padding = 4pt,
+        padding = 3pt,
         align = center,
         shadow = true
       }
@@ -226,16 +226,17 @@
     \item eigene Farben und Bereichsdekorationen
     \item Rollen und Überschriftenebenen
   \end{itemize}
-  \begin{block}{Akzent}
+  \begin{block}{Block}
     Auch Block, Formel $\int_0^1 x^2\,dx=\frac13$ und \alert{Hervorhebung}
     bleiben Teil des Vergleichs.
   \end{block}
 \end{frame}
 
 \begin{frame}
-  \frametitle{Konfigurierte Inhaltsfolie (Fortsetzung)}
-  \framesubtitle{Explizite Fortsetzungskennzeichnung}
-  Die dritte Seite prüft die konfigurierte Fortsetzungssemantik.
+  \frametitle{Weitere konfigurierte Inhaltsfolie}
+  \framesubtitle{Erneute Belegung der Inhalts-Slots}
+  Die dritte Seite prüft die wiederholte Ausgabe der konfigurierten
+  Titel- und Navigations-Slots.
 \end{frame}
 
 \end{document}

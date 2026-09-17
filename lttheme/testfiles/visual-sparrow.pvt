@@ -8,7 +8,7 @@
 \useltxtalktheme{sparrow}
 
 \title[PDF-Sichttest]{PDF-Sichttest für lttheme}
-\subtitle{Feste Referenzfolie}
+\subtitle{Untertitel}
 \author[A. Beispiel]{Ada Beispiel}
 \institute{Beispiel-Institut}
 \date{3. Juli 2026}
@@ -19,11 +19,11 @@
   \maketitle
 \end{frame}
 
-\section{Referenzabschnitt}
+\section{Abschnitt}
 
 \begin{frame}
   \frametitle{Typografie und Flächen}
-  \framesubtitle{Eine feste visuelle Referenz}
+  \framesubtitle{Untertitel}
   Ein kurzer Absatz prüft Schrift, Textfarbe und Satzspiegel.
   \begin{itemize}
     \item erster Listenpunkt
