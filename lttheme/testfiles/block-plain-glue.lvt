@@ -8,8 +8,32 @@
 \date{}
 
 \begin{document}
-\START
 \ExplSyntaxOn
+\skip_new:N \l__ltxtalk_test_medskip_skip
+\skip_set_eq:NN \l__ltxtalk_test_medskip_skip \medskipamount
+\int_new:N \l__ltxtalk_test_medskip_int
+\cs_new_eq:NN \__ltxtalk_test_medskip: \medskip
+\cs_set_protected:Npn \medskip
+  {
+    \int_gincr:N \l__ltxtalk_test_medskip_int
+    \int_compare:nNnTF { \l__ltxtalk_test_medskip_int } < { 3 }
+      {
+        \skip_if_eq:nnTF { \medskipamount } { 0pt }
+          { \TYPE { block-header-medskip:removed } }
+          { \TYPE { block-header-medskip:FAILED } }
+      }
+      {
+        \int_compare:nNnT { \l__ltxtalk_test_medskip_int } = { 3 }
+          {
+            \exp_args:NVV \skip_if_eq:nnTF
+              \medskipamount \l__ltxtalk_test_medskip_skip
+              { \TYPE { block-body-medskip:preserved } }
+              { \TYPE { block-body-medskip:FAILED } }
+          }
+      }
+    \__ltxtalk_test_medskip:
+  }
+\START
 \begin{frame}
   \frametitle{Plain block glue}
   \begin{block}{Card title}
@@ -17,11 +41,7 @@
     \exp_args:NVV \skip_if_eq:nnTF \l_tmpa_skip \c_zero_skip
       { \TYPE { block-body-leading-glue:removed } }
       { \TYPE { block-body-leading-glue:FAILED } }
-    \skip_vertical:n { 7pt }
-    \skip_set:Nn \l_tmpa_skip { \tex_lastskip:D }
-    \skip_if_eq:nnTF { \tex_lastskip:D } { 7pt }
-      { \TYPE { block-body-explicit-skip:preserved } }
-      { \TYPE { block-body-explicit-skip:FAILED } }
+    \medskip
     Card body.
   \end{block}
 \end{frame}

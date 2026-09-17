@@ -2192,6 +2192,7 @@ theme.
 \bool_if:NTF \g__ltxtalk_outeronly_bool
   { \RequirePackage[colors-only]{osgstyler} }
   { \RequirePackage{osgstyler} }
+\RequirePackage{pgfcore}
 
 \msg_new:nnnn { ltxtalk } { missing-class }
   { Missing~document~class }
@@ -2700,16 +2701,22 @@ theme.
       }
   }
 
+\skip_new:N \l__ltxtalk_original_block_medskip_skip
 \cs_new_protected:Npn \__ltxtalk_use_original_block:nnn #1#2#3
   {
-    % ltx-talk's block header currently leaves vertical glue before handing
-    % control to the body.  Remove whatever the last glue happens to be
-    % instead of depending on its present \medskip implementation.  If a
-    % future class version leaves no glue here, \unskip is a no-op; skips
-    % deliberately placed at the start of #3 remain untouched.
+    % ltx-talk currently puts \medskip both before its title and between the
+    % title and body.  Suppress those class-owned skips only while the begin
+    % code runs, then restore the amount before user body material is read.
+    % The following \unskip remains a harmless fallback for other trailing
+    % glue that a future class version might leave at the hand-off point.
+    \skip_set_eq:NN \l__ltxtalk_original_block_medskip_skip \medskipamount
+    \skip_zero:N \medskipamount
     \IfNoValueTF {#1}
-      { \begin{ltxtalk-original-block}{#2}\unskip#3\end{ltxtalk-original-block} }
-      { \begin{ltxtalk-original-block}<#1>{#2}\unskip#3\end{ltxtalk-original-block} }
+      { \begin{ltxtalk-original-block}{#2} }
+      { \begin{ltxtalk-original-block}<#1>{#2} }
+    \skip_set_eq:NN \medskipamount \l__ltxtalk_original_block_medskip_skip
+    \unskip #3
+    \end{ltxtalk-original-block}
   }
 
 % \ldeen{
@@ -3342,10 +3349,25 @@ theme.
   }
 
 % \ldeen{Ein Punkt je Abschnitt: aktueller gefüllt in \code{ltxtalk-primary},
-%   zurückliegende gefüllt gedämpft, folgende offen. Beide Symbole aus dem
-%   Mathematikmodus, damit die Schrift keine Rolle spielt.}{One dot per
-%   section: current filled in \code{ltxtalk-primary}, past filled and dimmed,
-%   upcoming open. Both symbols from math mode so the font does not matter.}
+%   zurückliegende gefüllt gedämpft, folgende offen. Gefüllte und offene
+%   Punkte werden als gleich große Kreise gezeichnet und hängen daher nicht
+%   von den Formen der aktiven Mathematikschrift ab.}{One dot per section:
+%   current filled in \code{ltxtalk-primary}, past filled and dimmed, upcoming
+%   open. Filled and open dots are drawn as equal-sized circles and therefore
+%   do not depend on the shapes of the active mathematics font.}
+\cs_new_protected:Npn \__ltxtalk_nav_circle:n #1
+  {
+    \raisebox { -.08ex }
+      {
+        \hbox
+          {
+            \begin{pgfpicture}{0pt}{0pt}{.8ex}{.8ex}
+              \pgfpathcircle { \pgfpoint{.4ex}{.4ex} } { .34ex }
+              \pgfusepath {#1}
+            \end{pgfpicture}
+          }
+      }
+  }
 \cs_new_protected:Npn \__ltxtalk_nav_render_section_dots:
   {
     \__ltxtalk_nav_measure:
@@ -3360,11 +3382,11 @@ theme.
         \int_compare:nNnT \g__ltxtalk_nav_map_int > { 0 } { \nobreakspace }
         \int_incr:N \g__ltxtalk_nav_map_int
         \int_compare:nNnTF \g__ltxtalk_nav_map_int = \g__ltxtalk_nav_index_int
-          { {\color{ltxtalk-primary} \ensuremath{\bullet}} }
+          { {\color{ltxtalk-primary} \__ltxtalk_nav_circle:n { fill }} }
           {
             \int_compare:nNnTF \g__ltxtalk_nav_map_int < \g__ltxtalk_nav_index_int
-              { {\color{ltxtalk-primary!45} \ensuremath{\bullet}} }
-              { {\color{ltxtalk-secondary!45} \ensuremath{\circ}} }
+              { {\color{ltxtalk-primary!45} \__ltxtalk_nav_circle:n { fill }} }
+              { {\color{ltxtalk-secondary!45} \__ltxtalk_nav_circle:n { stroke }} }
           }
       }
   }
@@ -4894,7 +4916,9 @@ theme.
     \defineltxtalkslot{bluebird-ftitle}{header}{frametitle}{role=heading,heading-level=2}
     \defineltxtalkslot{bluebird-fsub}{header}{framesubtitle}{role=heading,heading-level=3}
     \positionltxtalkslot{bluebird-ftitle}{0.3cm}{0.82cm}{0.75\paperwidth}{0.55cm}
-    \positionltxtalkslot{bluebird-fsub}{0.3cm}{1.34cm}{0.75\paperwidth}{0.3cm}
+    % Keep a small optical inset below descenders instead of letting the
+    % subtitle slot end almost flush with the 1.65 cm header.
+    \positionltxtalkslot{bluebird-fsub}{0.3cm}{1.28cm}{0.75\paperwidth}{0.3cm}
     \styleltxtalkslot{bluebird-ftitle}
       {font-slot=display,font=\Large\bfseries,color=white,align=left}
     \styleltxtalkslot{bluebird-fsub}
@@ -4976,17 +5000,25 @@ theme.
 % \subsection{Goose theme (inspired by Beamer Goettingen)}
 % \ldeen{Rechte Seitenleiste mit \code{toc}-Navigation (Abschnitte,
 %   darunter die Unterabschnitte des aktuellen), im Kopf die
-%   \code{subsection-list}. Das Layout \code{goose/wide} blendet die
+%   \code{subsection-list}; ohne Unterabschnitte erscheint dort ersatzweise
+%   der aktuelle Abschnitt. Das Layout \code{goose/wide} blendet die
 %   Seitenleiste für breite Abbildungen aus.}{Right sidebar with the
 %   \code{toc} navigation (sections, with the current section's subsections
-%   below it), \code{subsection-list} in the header. The \code{goose/wide}
-%   layout drops the sidebar for wide figures.}
+%   below it), \code{subsection-list} in the header (falling back to the
+%   current section if it has no subsections). The \code{goose/wide} layout
+%   drops the sidebar for wide figures.}
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage{ltxtalk-theme-goose}
 {2026-09-07}
 {v0.5.1}
 {Goose theme for ltx-talk, inspired by Beamer Goettingen}
 \RequirePackage{ltxtalk-theme}
+\cs_new_protected:Npn \__ltxtalk_goose_header_navigation:
+  {
+    \LTXTalkNavigation{subsection-list}
+    \int_compare:nNnT \g__ltxtalk_nav_map_int = { 0 }
+      { \LTXTalkNavigation{current-section} }
+  }
 \cs_new_protected:Npn \__ltxtalk_goose_theme_setup:
   {
     \setltxtalktitleplacement{frametitle=content,section=none}
@@ -5026,7 +5058,7 @@ theme.
 
     % --- header: subsections of the current section ---
     \defineltxtalkslot{goose-subs}{header}{custom}{role=navigation}
-    \setltxtalkslotcontent{goose-subs}{\LTXTalkNavigation{subsection-list}}
+    \setltxtalkslotcontent{goose-subs}{\__ltxtalk_goose_header_navigation:}
     \positionltxtalkslot{goose-subs}{0.3cm}{0.16cm}{0.86\paperwidth}{0.5cm}
     \styleltxtalkslot{goose-subs}
       {font=\scriptsize,align=left,color=ltxtalk-secondary}
@@ -5050,10 +5082,11 @@ theme.
 
     % --- layouts: sidebar (standard) vs. full width (wide) ---
     \DeclareLTXTalkLayout{goose/standard}
-      {header=true,header-height=0.85cm,footer=false,
+      {header=true,header-height=0.72cm,footer=false,
        right-margin=true,right-area-width=2.7cm,content-inset-right=3.0cm}
     \DeclareLTXTalkLayout{goose/wide}
-      {right-margin=false,content-inset-right=0pt}
+      {header=true,header-height=0.72cm,footer=false,
+       right-margin=false,content-inset-right=0pt}
 
     % --- native title page ---
     \EditTemplateDefaults{titlepage}{talk}{framestyle=lttheme,vertical-alignment=center}

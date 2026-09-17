@@ -21,7 +21,7 @@
 \subsection{Ein Aspekt}
 \begin{frame}
   \frametitle{Typografie und Navigation}
-  \framesubtitle{Eine feste visuelle Referenz}
+  \framesubtitle{Untertitel der Folie}
   Ein kurzer Absatz prüft Schrift, Textfarbe und Satzspiegel.
   \begin{itemize}
     \item erster Listenpunkt
