@@ -19,6 +19,8 @@ Currently, the following packages are included:
 * **ansiterm**: ANSI-aware executable terminal windows  (`./ansiterm`)
 * **osglistings**: a `minted`-based code-listing front end with selectable box styles, a swappable color palette, and links into online editors (`./osglistings`)
 * **semcat**: generalized semantic-category markup (inline, margin, box) with optional QR-code annotations (`./semcat`)
+* **tagdirtree**: taggable directory tree
+* **tagbride**: transition package to patch third party package w/o own native PDF/UA support.
 * **osgdoc** is a small wrapper for cnltx and provides some further support for documentation (`./osgdoc`) 
 
 > [!WARNING]
