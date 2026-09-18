@@ -569,11 +569,11 @@ Section~@1.%
 \begin{warnbox}{\ldeen{Achtung}{Attention}!}
     \ldeen{Die automatische Generierung der Sprachmakros kann manchmal zu
       Problemen führen. Beispielsweise ergibt Abchasisch (Code: "`ab"' ) als Erst- und
-      Griechisch (Code: "`el"') als Zweisprache den automatischen Namen \cs{label}, was zu
+      Griechisch (Code: "`el"') als Zweisprache den automatischen Namen \cs*{label}, was zu
       Fehlermeldungen führt. Nutzen Sie in solchen Fällen die im Abschnitt~\ref{sec:own-names}
       beschriebenen Möglichkeiten.}{The automatic generation of language commands can sometimes cause
       problems. For example, Abkhaz (code: "`ab"')  as the first language and
-      Greek (Code: "`el"') as the second language results in the automatic name \cs{label}, which leads to
+      Greek (Code: "`el"') as the second language results in the automatic name \cs*{label}, which leads to
       error messages. In such cases, use the features described in section~\ref{sec:own-names}.}
 \end{warnbox}
 \subsection{\ldeen{Sternvariante}{Starred Variant}}
@@ -791,13 +791,13 @@ Section~@1.%
   \item \textbf{\ldeen{Ist \thepkg\ stabil?}{Is \thepkg\ stable?}}
   
     \ldeen*{Obwohl das Paket mittlerweile die Versionsnummer 1 erreicht 
-      hat\footnote{Übrigens als einziges Paket im \pkg{osglecture}-Bundle}
+      hat\footnote{Übrigens als einziges Paket im \bnd{osglecture}-Bundle}
       und zumindest beim Autor intensiv im Einsatz ist, kann ich nicht versprechen, 
       dass es soweit fehlerfrei ist, dass es das Attribut "`stabil"' verdient.
       Ich bitte darum, gefundene Fehler über @1 zu melden.
     }{ 
       Although the package has now reached version 1 
-      \footnote{Incidentally, it is the only package in the \pkg{osglecture} bundle}
+      \footnote{Incidentally, it is the only package in the \bnd{osglecture} bundle}
       and is in heavy use—at least by the author—I cannot promise 
       that it is bug-free enough to deserve the "`stable"' label.
       Please report any bugs you find via @1.     
@@ -964,10 +964,10 @@ Section~@1.%
         \ior_close:N \g_ols_ini_ior
       }
 % \ldeen{Zeilen aus \cs*{ior\_str\_map\_inline} haben Catcode~12. Babel
-% vergleicht Sprachoptionen mit \cs{ifx} (catcode-empfindlich), daher machen wir
+% vergleicht Sprachoptionen mit \cs*{ifx} (catcode-empfindlich), daher machen wir
 % aus dem Namen wieder Buchstaben mit Standard-Catcodes.}{Lines from
 % \cs*{ior\_str\_map\_inline} have catcode~12. Babel compares language options
-% with \cs{ifx} (catcode sensitive), so we turn the name back into letters with
+% with \cs*{ifx} (catcode sensitive), so we turn the name back into letters with
 % standard catcodes.}
     \tl_if_empty:NF #2 { \tl_set_rescan:NnV #2 { } #2 }
   }
@@ -1640,7 +1640,7 @@ Section~@1.%
 % then need the same entries. Only if @1 or @3 is set and no name can be
 % determined is there an error; if only @2 is set, an unresolvable language
 % is simply left alone, and Babel decides as it would without \thepkg.}
-% {\option{load~babel}}{\option{bcp47}}{\option{load~polyglossia}}
+% {\option{load babel}}{\option{bcp47}}{\option{load polyglossia}}
 % {\cs{setdefaultlanguage}}
 \tl_new:N \ols_babel_name_tl
 \tl_new:N \ols_babel_opts_tl
