@@ -427,8 +427,9 @@ Section~@1.%
       language on its own by first trying the option \keyis*-{targetlang}{babel}
       and then (if no language package was found) the option
       \keyis*-{targetlang}{meta}.}
-  \item \ldeen{Wenn alles andere versagt, wird Englisch als Zielsprache
-      gesetzt.}{If everything else fails, English is set as the target language.}
+  \item \ldeen{Wenn alles andere versagt, wird die erste Auswahlsprache als Zielsprache
+      gesetzt.}{If everything else fails, the first selectable languages is set as the 
+      target language.}
 \end{enumerate}
 \subsection{\ldeen{Optionen}{Options}}
 \label{sec:options}
@@ -1177,23 +1178,8 @@ Section~@1.%
     \edef\olsTargetLanguage{\olsCatElven}
   }
 }
-\cs_if_exist:NF \olsTargetLanguage {
-  \PackageWarningNoLine{\packagename}{Can't~identify~any~target~language.
-    \MessageBreak Falling~back~to~'en'} 
-  \def\olsTargetLanguage{en}
-}
 % \ldeen{
-% Wir führen verschiedene Checks durch. Als erstes prüfen wir, ob eine valide
-% Zielsprache ermittelt werden konnte.
-% }{
-% We are doing some checks. First, we check whether a valid
-% target language could be determined.
-% }
-\IfTagIsValidF{\olsTargetLanguage}{
-  \PackageWarningNoLine{\packagename}{Do~not~recognize~language~'\olsTargetLanguage'.
-    \MessageBreak Take~'en'~as~replacement}
-  \def\olsTargetLanguage{en}
-}
+% Wir führen verschiedene Checks durch.}{We are doing some checks.}
 % \ldeen{Sind mindestes zwei Auswahlsprachen angegeben?}{Are at least two
 % selectable languages specified?}
 \int_compare:nNnT{\clist_count:N{\ols_langs}} < {2}{
@@ -1222,6 +1208,17 @@ Section~@1.%
       Use~valid~ISO-639-1~code~in~option~'languages'.}
     \aftergroup\endinput
   }
+}
+% \ldeen{Nun prüfen wir, ob eine valide Zielsprache ermittelt werden konnte.
+% }{Now we check whether a valid target language could be determined.}
+\cs_if_exist:NF \olsTargetLanguage {
+  \PackageWarningNoLine{\packagename}{Can't~identify~any~target~language.
+    \MessageBreak Falling~back~to~'\clist_item:Nn \ols_langs {1}'}
+  \edef\olsTargetLanguage{\clist_item:Nn \ols_langs {1}}}
+\IfTagIsValidF{\olsTargetLanguage}{
+  \PackageWarningNoLine{\packagename}{Do~not~recognize~language~'\olsTargetLanguage'.
+    \MessageBreak Take~'\clist_item:Nn \ols_langs {1}'~as~replacement}
+  \edef\olsTargetLanguage{\clist_item:Nn \ols_langs {1}}
 }
 % \ldeen{Die Zielsprache sollte in der Liste von Auswahlsprachen enthalten
 % sein.}{The list of selectable languages should include the target language.}
@@ -1705,7 +1702,7 @@ Section~@1.%
 %   Code auflösen kann.}{Activate BCP~47 before language selection so
 %   that \cs{selectlanguage} can resolve the code.}
   \bool_lazy_and:nnT{\ols_bcptags}{\cs_if_exist_p:N\babeladjust}{
-% \ldeen{@1 wird für jede Auswahlsprache mit ermitteltem Namen (oben)
+% \ldeen*{@1 wird für jede Auswahlsprache mit ermitteltem Namen (oben)
 %   vorbelegt, bevor @2 aktiviert wird. Dessen eigene Tag-Auflösung prüft @1
 %   zuerst und nutzt es unverändert, wenn vorhanden (so hängt die
 %   Sprachauswahl nicht von Babels eigener, je nach Release unterschiedlich

@@ -1,0 +1,15 @@
+\input regression-test.tex
+\documentclass{article}
+% No targetlang, no \olsTargetLanguage, no language package, no
+% \DocumentMetadata language -- and 'en' is not among the selectable
+% languages, so the old hardcoded 'en' fallback would have failed the
+% subsequent "target must be a selectable language" check. The fallback
+% must pick the first selectable language instead.
+\usepackage[
+  languages={de,fr}
+]{langselect}
+\begin{document}
+\START
+\TYPE{target=\olsTargetLanguage}
+\END
+\end{document}
