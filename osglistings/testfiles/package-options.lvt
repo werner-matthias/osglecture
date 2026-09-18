@@ -1,6 +1,6 @@
 \input regression-test.tex
 \documentclass{article}
-\usepackage[cachedir=pkgopt-cache, frozencache=true, cacheignoresfilecontents=true]{osglistings}
+\usepackage[cachedir=pkgopt-cache, frozencache=true]{osglistings}
 \makeatletter
 \begin{document}
 \START
@@ -8,7 +8,6 @@
 \TYPE{cache-\ifbool{minted@cache}{true}{false}}
 \TYPE{cachedir-\minted@cachedir}
 \TYPE{frozencache-\ifbool{minted@frozencache}{true}{false}}
-\TYPE{cacheignoresfilecontents-\ifbool{minted@cacheignoresfilecontents}{true}{false}}
 \TYPE{newfloat-\ifbool{minted@newfloat}{true}{false}}
 
 \END

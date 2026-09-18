@@ -69,6 +69,14 @@ local capabilities_after = {
     "ltx-talk support (osglecture + osglecture-modes)",
     lua = ":full_moon:"
   },
+  ["osglistings"] = {
+    "osglistings (cacheignoresfilecontents)",
+    lua = ":full_moon:"
+  },
+  ["langselect"] = {
+    "langselect (bcp47-autoselect)",
+    lua = ":full_moon:"
+  },
 }
 
 -- \Provides commands whose arguments are three braced groups:

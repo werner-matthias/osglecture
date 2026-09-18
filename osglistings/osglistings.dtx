@@ -368,6 +368,8 @@ The package is loaded in the usual way using @1 and, in turn, loads (among other
 \ExplSyntaxOn
 \tl_new:N \l__osglistings_mintedopts_tl
 \tl_set:Nn \l__osglistings_mintedopts_tl { newfloat, highlightmode=immediate }
+\bool_new:N \l__osglistings_cacheignoresfilecontents_given_bool
+\tl_new:N \l__osglistings_cacheignoresfilecontents_tl
 \keys_define:nn { osglistings/options }
   {
     cache .choices:nn = { true, false }
@@ -378,8 +380,22 @@ The package is loaded in the usual way using @1 and, in turn, loads (among other
     frozencache .choices:nn = { true, false }
       { \tl_put_right:Nx \l__osglistings_mintedopts_tl { , frozencache = \l_keys_choice_tl } },
     frozencache .default:n = true,
+% \ldeen{@1 wird nicht mehr an @2s Ladezeit-Optionen angehängt, sondern
+%   erst danach über dessen eigenen etoolbox-Bool gesetzt (siehe unten) --
+%   @1 gibt es erst seit einer neueren @2-Version, und eine unbekannte
+%   Ladezeit-Option würde auf älteren Installationen sonst kommentarlos
+%   verworfen, ohne dass @3 dies dem Nutzer mitteilen könnte.}{@1 is no
+%   longer appended to @2's load-time options but set afterwards through
+%   its own etoolbox bool instead (see below) -- @1 only exists from a
+%   certain @2 version onward, and an unknown load-time option would
+%   otherwise be silently dropped on older installations, leaving @3 with
+%   no way to tell the user.}{\code{cacheignoresfilecontents}}{\pkg*{minted}}
+%   {\pkg*{osglistings}}
     cacheignoresfilecontents .choices:nn = { true, false }
-      { \tl_put_right:Nx \l__osglistings_mintedopts_tl { , cacheignoresfilecontents = \l_keys_choice_tl } },
+      {
+        \bool_set_true:N \l__osglistings_cacheignoresfilecontents_given_bool
+        \tl_set:Nx \l__osglistings_cacheignoresfilecontents_tl { \l_keys_choice_tl }
+      },
     cacheignoresfilecontents .default:n = true,
   }
 \ProcessKeysPackageOptions { osglistings/options }
@@ -399,6 +415,26 @@ The package is loaded in the usual way using @1 and, in turn, loads (among other
 \tl_set:Nx \l__osglistings_mintedload_tl
   { \exp_not:N \RequirePackage [ \l__osglistings_mintedopts_tl ] { minted } }
 \l__osglistings_mintedload_tl
+% \ldeen{@1 prüft mit @2 die Existenz von @3s eigenem Bool, statt dessen
+%   Version zu vergleichen -- der Bool entsteht nur, wenn @3 die Option
+%   selbst kennt, ist also unabhängig von der genauen Versionsnummer, ab
+%   der sie eingeführt wurde.}{@1 checks whether @3's own bool exists via
+%   @2 rather than comparing version numbers -- the bool only comes into
+%   being if @3 knows the option itself, so this is independent of the
+%   exact version number at which it was introduced.}
+%   {\pkg*{osglistings}}{\cs{ifcsname}}{\pkg*{minted}}
+\bool_if:NT \l__osglistings_cacheignoresfilecontents_given_bool
+  {
+    \ifcsname ifminted@cacheignoresfilecontents\endcsname
+      \str_if_eq:eeTF { \l__osglistings_cacheignoresfilecontents_tl } { true }
+        { \booltrue{minted@cacheignoresfilecontents} }
+        { \boolfalse{minted@cacheignoresfilecontents} }
+    \else
+      \PackageWarningNoLine{osglistings}
+        { The~option~'cacheignoresfilecontents'~requires~a~newer~version~
+          of~minted~than~the~one~currently~loaded;~ignoring~it }
+    \fi
+  }
 \ExplSyntaxOff
 \setminted{style=default}
 % \ldeen{Latin Modern Mono (die Standardschrift von \pkg*{minted}/\pkg*{fvextra})

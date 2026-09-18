@@ -68,13 +68,15 @@ The `TL ...` columns are read from the expectations in the workflow above;
 | tagpax | v0.8.5-dev | 2026-07-23 | 2 | :full_moon: | :green_circle: | :green_circle: | :green_circle: |
 | tagbridge | v0.1.0 | 2026-09-14 | 1 | :new_moon: | :green_circle: | :green_circle: | :green_circle: |
 | tagdirtree | v0.1.0 | 2026-09-14 | 1 | :new_moon: | :green_circle: | :green_circle: | :green_circle: |
-| langselect | v1.1.2 | 2026-09-07 | 1 | :full_moon: | :green_circle: | :green_circle: | :green_circle: |
+| langselect | v1.1.3 | 2026-09-18 | 1 | :full_moon: | :green_circle: | :green_circle: | :green_circle: |
+| langselect (bcp47-autoselect) | n/a | n/a | n/a | :full_moon: | :red_circle: | :red_circle: | :green_circle: |
 | osgstyler | v0.2.0 | 2026-08-24 | 2 | :first_quarter_moon: | :red_circle: | :red_circle: | :green_circle: |
 | lttheme | v0.5.2 | 2026-09-17 | 15 | :new_moon: | :red_circle: | :red_circle: | :green_circle: |
 | lttheme-tuc-2019 | v0.5.1 | 2026-08-24 | 1 | :new_moon: | :red_circle: | :red_circle: | :green_circle: |
 | ansiterm[^1] | v0.2.1 | 2026-08-26 | 1 | :full_moon: | :red_circle: | :red_circle: | :green_circle: |
 | osglistings | v0.1.0 | 2026-08-28 | 1 | :full_moon: | :green_circle: | :green_circle: | :green_circle: |
-| semcat | v0.3.0 | 2026-08-31 | 1 | :full_moon: | :red_circle: | :red_circle: | :green_circle: |
+| osglistings (cacheignoresfilecontents) | n/a | n/a | n/a | :full_moon: | :red_circle: | :red_circle: | :green_circle: |
+| semcat | v0.3.0 | 2026-08-31 | 1 | :full_moon: | :green_circle: | :green_circle: | :green_circle: |
 | osgdoc | v0.5.0 | 2026-09-08 | 2 | :first_quarter_moon: | :green_circle: | :green_circle: | :green_circle: |
 [^1]: The incompatibility for TL 2025 refers to tagging only; the basis features are okay.
 <!-- END MODULE VERSIONS -->

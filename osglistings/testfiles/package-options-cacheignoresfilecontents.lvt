@@ -1,0 +1,11 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage[cacheignoresfilecontents=true]{osglistings}
+\makeatletter
+\begin{document}
+\START
+
+\TYPE{cacheignoresfilecontents-\ifbool{minted@cacheignoresfilecontents}{true}{false}}
+
+\END
+\end{document}
