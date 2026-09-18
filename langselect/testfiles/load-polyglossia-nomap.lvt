@@ -1,0 +1,18 @@
+\input regression-test.tex
+\documentclass{article}
+% "load polyglossia" without a "map", for a selectable language that has no
+% direct gloss-<code>.ldf shim in Polyglossia (so the derivation falls back
+% to Babel's babel-<code>.ini, cs -> czech): langselect must still recompute
+% the mapped target language for \setdefaultlanguage, not just for Babel's
+% main= option.
+\usepackage[
+  languages={en,cs},
+  targetlang=cs,
+  load polyglossia
+]{langselect}
+\begin{document}
+\START
+\TYPE{target=\olsTargetLanguage}
+\TYPE{active=\languagename}
+\END
+\end{document}

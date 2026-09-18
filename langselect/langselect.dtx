@@ -467,7 +467,7 @@ Section~@1.%
   \ldeen{Lädt entweder Babel oder Polyglossia so, dass die Zielsprache von
     \thepkg\ als Hauptsprache gesetzt wird. Die hier übergebenen Optionen werden
     an das jeweilige Sprachpaket weitergeleitet.
-    Wenn hier Optionen angegeben werden, darf kein Sprachpaket von \thepkg\ geladen 
+    Wenn hier Optionen angegeben werden, darf kein Sprachpaket vor \thepkg\ geladen 
     sein.
   }{%
     Loads either Babel or Polyglossia so that the target language of \thepkg is
@@ -505,15 +505,17 @@ Section~@1.%
       sprachenübergreifende Shorthands zur Unterstützung von \pkg{csquotes}.}{Defines
       cross-language shorthands to support \pkg{csquotes}}
 
-    \keybool{bcp47}\Default{true}\ldeen{Wenn Babel aktiv ist, aktiviert
-      \thepkg\ dessen BCP-47-Zuordnung, so dass die von \thepkg\ genutzten ISO-Codes als
-      Selektornamen für \cs{selectlanguage} genutzt werden können. Mit \keyis-{bcp47}{false} 
+    \keybool{bcp47}\Default{true}\ldeen{Wenn Babel aktiv ist, sorgt
+      \thepkg\ dafür, dass die von \thepkg\ genutzten ISO-Codes als
+      Selektornamen für \cs{selectlanguage} funktionieren. Mit \keyis-{bcp47}{false} 
       muss die Babelzielsprache über \option{map} oder von Hand ausgewählt werden.
+      Diese Option ist hat keine Wirkung, wenn Babel nicht geladen wird.
       }{
-      When Babel is active,
-      \thepkg\ enables its BCP~47 mapping ISO codes used by \thepkg\ work as
-      selector names for \cs{selectlanguage}. In case of  \keyis-{bcp47}{false}, babel's
-      target language must be selected through \option{map} or by hand.}
+      When Babel is active, \thepkg\ makes the ISO codes used by \thepkg\
+      work as selector names for \cs{selectlanguage}. In case of \keyis-{bcp47}{false}, 
+      Babel's target language must be selected through \option{map} or by hand.
+      This option has no effect if Babel is not loaded.
+      }
 \end{options}
    
 \section{\ldeen{Nutzermakros}{User Commands}}
@@ -916,31 +918,24 @@ Section~@1.%
 \cs_new:Npn \ols_use_map:n #1 {
   \cs_if_exist_use:cF { olslangmap / #1 }{ #1 }
 }
-% \ldeen{\cs{ols\_babel\_name\_from\_ini:nN} liest das Feld \code{name.babel}
-% aus \file{babel-\meta{Code}.ini}, das mehrere durch Leerzeichen getrennte
-% Babel-Namen für dieselbe Sprache enthalten kann. Für die meisten Sprachen
-% sind das reine Schreibweisen-Alternativen (beliebige Wahl liefert dasselbe
-% Ergebnis), für Deutsch aber zwei tatsächlich verschiedene Rechtschreibungen
-% (\code{german} = alte, \code{ngerman} = reformierte Orthographie). Deren
-% Reihenfolge im Feld ist zwischen Babel-Releases bereits umgedreht worden --
-% welcher Eintrag "`zuerst"' oder "`zuletzt"' steht, ist also keine stabile
-% Grundlage für die Wahl. Ist \code{ngerman} unter den Kandidaten, wird es
-% deshalb unabhängig von seiner Position bevorzugt (heutiger Standard für
-% Deutsch); andernfalls wird -- mangels eines allgemeinen Kriteriums für die
-% übrigen, seltener mehrdeutigen Sprachen -- weiterhin der letzte Eintrag
-% verwendet.}{%
-% \cs{ols\_babel\_name\_from\_ini:nN} reads the \code{name.babel} field from
-% \file{babel-\meta{code}.ini}, which can list several space-separated Babel
-% names for the same language. For most languages these are mere spelling
-% alternatives (either choice gives the same result), but for German they are
-% two genuinely different orthographies (\code{german} = old, \code{ngerman}
-% = reformed spelling). Their order within the field has already been
-% reversed between Babel releases, so whether an entry comes "first" or
-% "last" is not a stable basis for the choice. If \code{ngerman} is among the
-% candidates it is therefore preferred regardless of its position (today's
-% standard for German); otherwise -- lacking a general criterion for the
-% remaining, more rarely ambiguous languages -- the last entry is still
-% used.}
+% \ldeen*{\cs{ols\_babel\_name\_from\_ini:nN} liest das Feld @1
+% aus @2, das mehrere Babel-Namen für dieselbe Sprache
+% enthalten kann. Häufig sind das nur alternative Bezeichnungen für das Gleiche. 
+% Für Deutsch gibt es aber zwei tatsächlich verschiedene Rechtschreibungen
+% (\code{german} = alte, \code{ngerman} = reformierte Orthographie). Ist 
+% \code{ngerman} unter den Kandidaten, wird es deshalb bevorzugt (heutiger Standard 
+% für Deutsch). Ansonsten wird der letzte Eintrag verwendet.
+% Falls jemand, der sich mit den Sprachen besser auskennt als ich, eine weitere
+% notwendigen SOnderfall entdeckt: Bitte ein entsprechendes Issue aufmachen.  }{%
+% \cs{ols\_babel\_name\_from\_ini:nN} reads the field @1 from @2, which may
+% contain multiple Babel names for the same language.
+% Often, these are simply alternative names for the same thing.
+% For German, however, there are two distinct orthographies
+% (\code{german} = old, \code{ngerman} = reformed orthography). If \code{ngerman}
+% is among the candidates, it is therefore preferred (today’s standard for German).
+% Otherwise, the last entry is used. If anyone who is more familiar with languages 
+% than I am discovers another necessary special case: Please open a corresponding issue.
+% }{\code{name.babel}}{\File{babel-\meta{Code}.ini}}
 \ior_new:N \g_ols_ini_ior
 \seq_new:N \ols_ini_seq
 \seq_new:N \ols_ini_names_seq
@@ -974,6 +969,82 @@ Section~@1.%
 % with \cs{ifx} (catcode sensitive), so we turn the name back into letters with
 % standard catcodes.}
     \tl_if_empty:NF #2 { \tl_set_rescan:NnV #2 { } #2 }
+  }
+% \ldeen{Babel hat eine (in den verschiedenen Versionen unterschiedlich sortierte)
+% Liste von Sprachennamen. Deshalb gehen wir zur "`Konkurrenz"' und nutzen in
+% \cs{ols\_babel\_name\_from\_polyglossia:nN} \pkg*{polyglossia}s 
+% \file{gloss-\meta{Code}.ldf}-Dateien als Datenquelle: diese
+% enthalten für die Sprachen mit mehreren Babel-Namen (wie Deutsch) ein
+% explizites \code{babelname}-Feld mit einem einzigen, eindeutigen Wert.
+% \pkg*{polyglossia} selbst wird dabei nicht geladen, nur seine Textdateien
+% werden wie schon bei \cs{ols\_babel\_name\_from\_ini:nN} zeilenweise
+% eingelesen.}{%
+% Babel has a list of language names (sorted differently in the various versions).
+% That is why we turn to the “`competition”' and use 
+% \cs{ols\_babel\_name\_from\_polyglossia:nN} \pkg*{polyglossia}s
+% \File{gloss-\meta{Code}.ldf} files as our data source: for
+% languages with multiple Babel names (such as German), these
+% contain an explicit \code{babelname} field with a single, unique value.
+% \pkg*{polyglossia} itself is not loaded for this; its text files are just
+% read line by line, the same way \cs{ols\_babel\_name\_from\_ini:nN} already
+% does.}
+\tl_new:N \ols_ini_module_tl
+\seq_new:N \ols_ini_regex_seq
+\cs_new_protected:Npn \ols_babel_name_from_polyglossia:nN #1 #2
+  {
+    \tl_clear:N #2
+    \tl_clear:N \ols_ini_module_tl
+    \ior_open:NnT \g_ols_ini_ior { gloss- #1 .ldf }
+      {
+        \ior_str_map_inline:Nn \g_ols_ini_ior
+          {
+            \regex_extract_once:nnN { InheritGlossFile\{([a-zA-Z]+)\} } {##1} \ols_ini_regex_seq
+            \seq_if_empty:NF \ols_ini_regex_seq
+              {
+                \tl_set:Ne \ols_ini_module_tl { \seq_item:Nn \ols_ini_regex_seq {2} }
+                \ior_map_break:
+              }
+          }
+        \ior_close:N \g_ols_ini_ior
+      }
+% \ldeen{Der Modulname selbst ist der Babel-Name, sofern die Zieldatei kein
+% eigenes \code{babelname} definiert -- das betrifft die meisten Sprachen,
+% bei denen Polyglossia- und Babel-Name ohnehin identisch sind.}{The module
+% name itself is the Babel name unless the target file defines its own
+% \code{babelname} -- true for most languages, where the Polyglossia and
+% Babel names coincide anyway.}
+    \tl_if_empty:NF \ols_ini_module_tl
+      {
+        \ior_open:NnT \g_ols_ini_ior { gloss- \ols_ini_module_tl .ldf }
+          {
+            \ior_str_map_inline:Nn \g_ols_ini_ior
+              {
+                \regex_extract_once:nnN { babelname\s*=\s*([a-zA-Z]+) } {##1} \ols_ini_regex_seq
+                \seq_if_empty:NF \ols_ini_regex_seq
+                  {
+                    \tl_set:Ne #2 { \seq_item:Nn \ols_ini_regex_seq {2} }
+                    \ior_map_break:
+                  }
+              }
+            \ior_close:N \g_ols_ini_ior
+          }
+        \tl_if_empty:NT #2 { \tl_set_eq:NN #2 \ols_ini_module_tl }
+      }
+    \tl_if_empty:NF #2 { \tl_set_rescan:NnV #2 { } #2 }
+  }
+% \ldeen{\cs{ols\_babel\_name:nN} versucht zuerst \pkg*{polyglossia}s
+% eindeutige Angabe und fällt nur, wenn diese fehlt (etwa weil
+% \pkg*{polyglossia} in der genutzten Installation gar nicht vorhanden ist,
+% oder für eine Sprache ohne eigene \file{gloss}-Datei), auf Babels eigene,
+% mitunter mehrdeutige \file{.ini}-Liste zurück.}{%
+% \cs{ols\_babel\_name:nN} tries \pkg*{polyglossia}'s unambiguous entry
+% first, and only falls back -- e.g.\ because \pkg*{polyglossia} isn't
+% installed at all, or a language has no \file{gloss} file of its own -- to
+% Babel's own, sometimes ambiguous \file{.ini} list.}
+\cs_new_protected:Npn \ols_babel_name:nN #1 #2
+  {
+    \ols_babel_name_from_polyglossia:nN {#1} #2
+    \tl_if_empty:NT #2 { \ols_babel_name_from_ini:nN {#1} #2 }
   }
 % \ldeen{Wir definieren einige Optionen. Alle außer \option{languages} sind
 % optional. Einige Ergebnisse werden wir in Variablen spreichern, die wir zuerst
@@ -1557,33 +1628,48 @@ Section~@1.%
 }
 % \ldeen*{Wenn gewünscht, lädt \thepkg\ Babel und setzt die Zielsprache als
 % Hauptsprache. Babel erwartet dafür Sprachnamen, keine ISO-Codes. Für jede
-% Auswahlsprache ohne \option{map}-Eintrag wird der Name deshalb aus
-% \file{babel-\meta{Code}.ini} nachgeschlagen und als impliziter Map-Eintrag
-% hinterlegt. Wenn kein Name ermittelt werden kann, gibt es einen Fehler.
+% Auswahlsprache ohne \option{map}-Eintrag wird der Name deshalb ermittelt
+% und als impliziter Map-Eintrag hinterlegt -- auch wenn @1 selbst nicht
+% gesetzt ist, aber @2 oder @3 aktiv sind, denn dann brauchen die
+% BCP-47-Anbindung bzw.\ @4 weiter unten dieselben Einträge. Nur wenn @1 oder
+% @3 gesetzt ist und kein Name ermittelt werden kann, gibt es einen Fehler;
+% ist nur @2 gesetzt, bleibt eine unauflösbare Sprache einfach unangetastet,
+% Babel entscheidet dann wie ohne \thepkg.
 % }{If requested, \thepkg\ loads Babel and sets the target language as the
-% main language. Babel expects language names, not ISO codes. For every 
-% selectable language without a \option{map} entry the name is therefore 
-% looked up from \file{babel-\meta{code}.ini} and stored as an
-% implicit map entry. Only if no name can be determined do raise an error.}
+% main language. Babel expects language names, not ISO codes. For every
+% selectable language without a \option{map} entry the name is therefore
+% determined and stored as an implicit map entry -- even if @1 itself isn't
+% set but @2 or @3 are active, since the BCP-47 hookup and @4 further below
+% then need the same entries. Only if @1 or @3 is set and no name can be
+% determined is there an error; if only @2 is set, an unresolvable language
+% is simply left alone, and Babel decides as it would without \thepkg.}
+% {\option{load~babel}}{\option{bcp47}}{\option{load~polyglossia}}
+% {\cs{setdefaultlanguage}}
 \tl_new:N \ols_babel_name_tl
 \tl_new:N \ols_babel_opts_tl
-\bool_if:NT \ols_load_babel{
+\bool_if:nT { \ols_load_babel || \ols_load_polyglossia || \ols_bcptags } {
   \clist_map_inline:Nn \ols_langs {
     \cs_if_exist:cF{ olslangmap / \tl_to_str:n {#1} }{
-      \ols_babel_name_from_ini:nN {#1} \ols_babel_name_tl
+      \ols_babel_name:nN {#1} \ols_babel_name_tl
       \tl_if_empty:NTF \ols_babel_name_tl {
-        \PackageError{\packagename}{Can't~find~a~babel~name~for~language~'#1'}{
-          Add~a~'map'~entry~such~as~map={#1=...}~to~the~package~options,
-          \MessageBreak or~load~babel~yourself~before~\packagename.}
+        \bool_if:nT { \ols_load_babel || \ols_load_polyglossia } {
+          \PackageError{\packagename}{Can't~find~a~language~name~for~'#1'}{
+            Add~a~'map'~entry~such~as~map={#1=...}~to~the~package~options,
+            \MessageBreak or~load~babel/polyglossia~yourself~before~\packagename.}
+        }
       }{
         \cs_gset:cpe { olslangmap / \tl_to_str:n {#1} } { \ols_babel_name_tl }
       }
     }
   }
 % \ldeen{\cs{ols\_mapped\_target\_lang} nach den neuen Map-Einträgen neu
-% berechnen.}{Recompute \cs{ols\_mapped\_target\_lang} after the new map
-% entries.}
+% berechnen -- @1 und @2 unten brauchen beide den aktualisierten Wert.}
+% {Recompute \cs{ols\_mapped\_target\_lang} after the new map entries -- @1
+% and @2 below both need the updated value.}
+% {\cs{selectlanguage}}{\cs{setdefaultlanguage}}
   \edef\ols_mapped_target_lang{\ols_use_map:n{\olsTargetLanguage}}
+}
+\bool_if:NT \ols_load_babel{
 % \ldeen{Alle Auswahlsprachen unter ihren Babel-Namen laden, die Zielsprache als
 % Hauptsprache.}{Load all selectable languages under their Babel names, the
 % target as the main language.}
@@ -1619,6 +1705,23 @@ Section~@1.%
 %   Code auflösen kann.}{Activate BCP~47 before language selection so
 %   that \cs{selectlanguage} can resolve the code.}
   \bool_lazy_and:nnT{\ols_bcptags}{\cs_if_exist_p:N\babeladjust}{
+% \ldeen{@1 wird für jede Auswahlsprache mit ermitteltem Namen (oben)
+%   vorbelegt, bevor @2 aktiviert wird. Dessen eigene Tag-Auflösung prüft @1
+%   zuerst und nutzt es unverändert, wenn vorhanden (so hängt die
+%   Sprachauswahl nicht von Babels eigener, je nach Release unterschiedlich
+%   vollständiger BCP-47-Datenbank ab). Für Sprachen, die nicht ermittelt werden
+%   konnten,  bleibt @2s eigenes Verhalten unverändert.}{@1 is pre-populated for every
+%   selectable language with a name determined (above) before @2 is
+%   enabled. Its own tag resolution checks @1 first and uses it unchanged if
+%   present (in this way, language selection does not depend on Babel's own,
+%   release-dependent BCP-47 database). For languages that could not be 
+%   determined there, @2's own behavior is unchanged.}
+%   {\cs{bbl@bcp@map@}\meta{Code}}{\code{autoload.bcp47}}
+    \clist_map_inline:Nn \ols_langs {
+      \cs_if_exist:cT{ olslangmap / \tl_to_str:n {#1} }{
+        \cs_gset:cpe { bbl@bcp@map@ #1 } { \ols_use_map:n {#1} }
+      }
+    }
     \babeladjust{ bcp47.toname = on , autoload.bcp47 = on }
   }
   \bool_if:NT\ols_shorthands {
