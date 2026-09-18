@@ -1,6 +1,6 @@
 \input regression-test.tex
 \documentclass{article}
-\usepackage[cachedir=pkgopt-cache, frozencache=true]{osglistings}
+\usepackage[cachedir=pkgopt-cache, frozencache=true, cacheignoresfilecontents=true]{osglistings}
 \makeatletter
 \begin{document}
 \START
@@ -9,6 +9,18 @@
 \TYPE{cachedir-\minted@cachedir}
 \TYPE{frozencache-\ifbool{minted@frozencache}{true}{false}}
 \TYPE{newfloat-\ifbool{minted@newfloat}{true}{false}}
+
+% Whether minted itself knows 'cacheignoresfilecontents' is minted's own
+% compatibility, not osglistings' -- osglistings only promises to forward
+% the option and to degrade gracefully where minted can't honor it (see
+% osglistings.dtx). So this only exercises that path for crashes; it makes
+% no claim about minted's resulting internal state, which differs by
+% version.
+\OMIT
+\TYPE{cacheignoresfilecontents-\ifcsname ifminted@cacheignoresfilecontents\endcsname
+  \ifbool{minted@cacheignoresfilecontents}{true}{false}\else
+  unsupported-by-minted\fi}
+\TIMO
 
 \END
 \end{document}

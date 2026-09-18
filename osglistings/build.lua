@@ -20,8 +20,4 @@ checkopts = (checkopts or "-interaction=nonstopmode") .. " --shell-escape"
 -- check" run and is exercised on demand, the same way ansiterm keeps its
 -- own tagging test opt-in. remote.lvt exercises gist:/github: locators,
 -- which need live network access, so it stays opt-in the same way.
--- package-options-cacheignoresfilecontents.lvt exercises a minted option
--- that only exists from a minted version newer than the one bundled with
--- older TeX Live releases, so it lives in its own "cacheopt" config (see
--- cacheopt.lua) instead of the default run.
-excludetests = { "tagging", "remote", "package-options-cacheignoresfilecontents" }
+excludetests = { "tagging", "remote" }

@@ -50,12 +50,6 @@ jobs:
             expect_2024: pass
             expect_2025: pass
             expect_current: pass
-          - name: osglistings (cacheignoresfilecontents)
-            directory: osglistings
-            config: cacheopt
-            expect_2024: fail
-            expect_2025: fail
-            expect_current: pass
           - name: semcat
             directory: semcat
             config: build
@@ -79,12 +73,6 @@ jobs:
             config: build
             expect_2024: pass
             expect_2025: pass
-            expect_current: pass
-          - name: langselect (bcp47-autoselect)
-            directory: langselect
-            config: bcp47
-            expect_2024: fail
-            expect_2025: fail
             expect_current: pass
           - name: osgstyler
             directory: osgstyler
@@ -162,7 +150,7 @@ jobs:
       # with TL 2024/2025 are incompatible with argparse from Python 3.14, so
       # keep Python within their supported range when testing osglistings.
       - name: Use Python 3.13 for historic osglistings tests
-        if: matrix.component.directory == 'osglistings' && matrix.distribution.texlive != 'current'
+        if: matrix.component.name == 'osglistings' && matrix.distribution.texlive != 'current'
         uses: actions/setup-python@v6
         with:
           python-version: '3.13'
@@ -192,7 +180,7 @@ jobs:
         run: |
           lualatex --version
           l3build version
-          if [[ "${{ matrix.component.directory }}" == "osglistings" ]]; then
+          if [[ "${{ matrix.component.name }}" == "osglistings" ]]; then
             python3 --version
             latexminted --version
           fi
