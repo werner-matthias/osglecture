@@ -5,9 +5,11 @@
 [![Windows](https://github.com/werner-matthias/osglecture/actions/workflows/tests-windows.yml/badge.svg)](https://github.com/werner-matthias/osglecture/actions/workflows/tests-windows.yml)
 
 LaTeX bundle for generating lecture materials at the Operating Systems Group at the TU Chemnitz.
+The bundle serves two main purposes:
+* To support an “one source, many documents” approach
+* To support accessibility (tagging)  
 
 Currently, the following packages are included:
-
 * The **osglecture** class to generate different materials (slides, script) from a common source (`./osglecture`)
 * **OSG LaTeX Lecture Maker** is a latexmk-based build script to support creation and deploying of lecture materials (`./ollm`)
 * **osglecture-modes** provides a generalization of portable document modes in the style of beamer/ltx-talk (`./osglecture-modes`)
@@ -17,10 +19,10 @@ Currently, the following packages are included:
 * **ltxtalk-theme**: is a theme engine to allow easy and flexible design of themes for ltx-talk (`./lttheme`)
 * **ltxtalk-theme-tuc-2019** is (an unofficial version of) the presentation theme of TU Chemnitz for ltx-talk (`./lttheme-tuc-2019`)
 * **ansiterm**: ANSI-aware executable terminal windows  (`./ansiterm`)
-* **osglistings**: a `minted`-based code-listing front end with selectable box styles, a swappable color palette, and links into online editors (`./osglistings`)
+* **osglistings**: a `minted`-based code-listing front end (`./osglistings`)
 * **semcat**: generalized semantic-category markup (inline, margin, box) with optional QR-code annotations (`./semcat`)
 * **tagdirtree**: taggable directory tree
-* **tagbride**: transition package to patch third party package w/o own native PDF/UA support.
+* **tagbride**: transition package to patch few third party package w/o own native PDF/UA support.
 * **osgdoc** is a small wrapper for cnltx and provides some further support for documentation (`./osgdoc`) 
 
 > [!WARNING]
