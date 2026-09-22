@@ -36,7 +36,7 @@ function M.new()
   -- are stored both in order and indexed by ID.}
   return {
     nodes = {}, kids = {}, roots = {}, headings = {}, streams = {},
-    destinations = {}, annotations = {}, header = nil, source = nil,
+    destinations = {}, annotations = {}, rolemaps = {}, header = nil, source = nil,
   }
 end
 
@@ -60,6 +60,7 @@ function M.read(filename)
       elseif record.record_type == "heading" then ir.headings[#ir.headings + 1] = record
       elseif record.record_type == "stream" then ir.streams[record.id] = record
       elseif record.record_type == "destination" then ir.destinations[record.id] = record
+      elseif record.record_type == "rolemap" then ir.rolemaps[#ir.rolemaps + 1] = record
       elseif record.record_type == "annotation" then
         -- \ldeen{Die Reihenfolge steuert die Seitenausgabe; der ID-Zugriff löst
         -- OBJR-Verweise auf.}{Order drives page output; ID access resolves OBJR

@@ -68,7 +68,16 @@ local function walk_ir(filename, phase, prefix)
     end
   end
 
-  if phase == "reserve" then out("\\TagPaxBackendDocumentBegin") end
+  if phase == "reserve" then
+    out("\\TagPaxBackendDocumentBegin")
+    -- \ldeen*{Die RoleMap-Registrierung muss jedem @1 vorausgehen, das eine
+    -- eigene Rolle der Quellstruktur referenziert.}{RoleMap registration must
+    -- precede any @1 that references a custom role from the source
+    -- structure.}{\code{TagPaxBackendNode}}
+    for _, rolemap in ipairs(ir.rolemaps or {}) do
+      out("\\TagPaxBackendRoleMap{" .. tex_escape(rolemap.tag) .. "}{" .. tex_escape(rolemap.role) .. "}")
+    end
+  end
   -- \ldeen*{Ein Quell-@1 dient nur als Transporthülle: Seine Kinder hängen
   -- direkt unter dem synthetischen @2; andere Wurzeln bleiben explizit.}{A
   -- source @1 is only a transport wrapper: its children attach directly to the

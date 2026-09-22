@@ -11,9 +11,8 @@ order. Each page becomes a fresh Form XObject. The source structure tree,
 marked-content references, supported link annotations, destinations, headings,
 table-of-contents entries and bookmarks are reconstructed around those Forms.
 
-The native path deliberately does not support page selection, imposition,
-repetition or arbitrary graphics placement. Explicit nested source Form streams
-are represented in the IR but remain unresolved by the native writer.
+Explicit nested source Form streams are represented in the IR but remain 
+unresolved by the native writer.
 
 ## Data flow and ownership
 

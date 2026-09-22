@@ -4,6 +4,7 @@
 \title{A Tagged Contribution}
 \author{Example Author}
 \begin{document}
+\tagpdfsetup{role/new-tag={tag=Frame,role=Sect}}
 \tagstructbegin{tag=Part}
 \tagstructbegin{tag=H2,title={A Tagged Contribution}}\tagmcbegin{tag=H2,actualtext={A Tagged Contribution}}\section*{A Tagged Contribution}\tagmcend\tagstructend
 \tagstructbegin{tag=Sect}
@@ -12,6 +13,7 @@
 Continue with the \hyperlink{second-page}{second page}, visit the
 \href{https://example.org/tagpax?source=test}{project site}, or open the
 \href{other.pdf}{external PDF}.\tagmcend\tagstructend
+\tagstructbegin{tag=Frame}\tagmcbegin{tag=Frame}A custom-role remark, mapped to Sect via RoleMap.\tagmcend\tagstructend
 \newpage
 \hypertarget{second-page}{}
 \tagstructbegin{tag=H3,title={Second page}}\tagmcbegin{tag=H3,actualtext={Second page}}\subsection*{Second page}\tagmcend\tagstructend

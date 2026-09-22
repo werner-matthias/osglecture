@@ -1395,6 +1395,34 @@ The bridge must not mutate the global \tagpdfpkg{} structure stack.
     \tagpax_tag_struct_new:nnN {#2}{\l_tmpa_tl}\l_tmpb_tl
     \prop_gput:NnV \g__tagpax_backend_node_prop {#1}\l_tmpb_tl
   }
+% \ldeen*{Die Rolle wird auf sich selbst registriert statt via
+% \cs{tagpdfsetup}\{role/new-tag=...\} auf @2 aufgelöst: @3 würde den
+% importierten Rollennamen durch @2 ersetzen und damit gerade die
+% Unterscheidung verwerfen, die die Quellstruktur getroffen hat. Die
+% Selbstregistrierung genügt, um die "unknown tag"-Warnung abzustellen; der
+% separate Eintrag in @4 sorgt dafür, dass @1 dennoch mit korrektem Mapping
+% auf einen Standardtyp im finalen PDF erscheint. Nur bisher unbekannte
+% Rollennamen werden registriert; eine bereits bekannte Rolle -- ob nativ
+% oder aus einer früheren @5 -- bleibt unverändert, damit wiederholte Importe
+% idempotent bleiben.}{The role is registered onto itself rather than
+% resolved onto @2 via \cs{tagpdfsetup}\{role/new-tag=...\}: @3 would replace
+% the imported role name with @2, discarding exactly the distinction the
+% source structure made. Self-registration is enough to silence the
+% "unknown tag" warning; the separate entry in @4 still makes @1 appear with
+% a correct mapping onto a standard type in the final PDF. Only role names
+% not yet known are registered; a role that is already known -- whether
+% native or from an earlier @5 -- is left unchanged, keeping repeated
+% imports idempotent.}
+% {\code{tag}}{\code{role}}{\cs{tagpdfsetup}}{\code{RoleMap}}{\cs{tagpaxinclude}}
+\cs_new_protected:Npn \TagPaxBackendRoleMap #1#2
+  {
+    \prop_get:NnNF \g__tag_role_tags_NS_prop {#1} \l_tmpa_tl
+      {
+        \prop_gput:Nnn \g__tag_role_tags_NS_prop {#1}{user}
+        \prop_gput:Nnn \g__tag_role_NS_user_prop {#1}{{#1}{user}}
+        \prop_gput:Nnn \g__tag_role_rolemap_prop {#1}{#2}
+      }
+  }
 \prop_new:N \g__tagpax_backend_annotation_parent_prop
 \cs_new:Npn \__tagpax_backend_form_ref:n #1
   { \prop_item:Nn \g__tagpax_backend_form_prop {#1} }

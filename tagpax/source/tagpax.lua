@@ -279,6 +279,29 @@ local function build_struct_page_map(root)
   return result
 end
 
+-- \ldeen{RoleMap-Übernahme}{RoleMap capture}
+-- \ldeen*{Eigene Rollennamen der Quellstruktur sind ohne ihre @1-Eintragung
+-- semantisch unvollständig; Konsumenten der IR (z.\,B. @2) müssten sie sonst
+-- als unbekannt behandeln.}{Custom role names from the source structure are
+-- semantically incomplete without their @1 entry; consumers of the IR
+-- (e.g. @2) would otherwise have to treat them as unknown.}
+-- {\code{RoleMap}}{\code{tagpaxinclude}}
+local function extract_role_map(root)
+  local result = {}
+  local rolemap = pdfe.getdictionary(root, "RoleMap")
+  if not rolemap then return result end
+  local keys = {}
+  for key in pairs(pdfe.dictionarytotable(rolemap)) do
+    keys[#keys + 1] = key
+  end
+  table.sort(keys, function(a, b) return tostring(a) < tostring(b) end)
+  for _, key in ipairs(keys) do
+    local target = pdf_name(rolemap, key)
+    if target then result[#result + 1] = { tag = tostring(key), role = target } end
+  end
+  return result
+end
+
 -- \ldeen*{@1 prüft nur auf @2 und liefert bei ungetaggten PDFs @3. Unlesbare
 -- oder beschädigte Dateien bleiben Fehler.}{@1 checks only for @2 and returns
 -- @3 for untagged PDFs. Unreadable or corrupt files remain errors.}
@@ -305,10 +328,14 @@ function M.extract(filename, outname)
   local root = pdfe.getdictionary(doc.Catalog, "StructTreeRoot")
   assert(root, "PDF has no StructTreeRoot")
   local struct_page = build_struct_page_map(root)
+  local role_map = extract_role_map(root)
 
   local f = assert(io.open(outname, "wb"))
   write_record(f, "tagpax", { __order = { "version", "generator" }, version = 1, generator = M.version })
   write_record(f, "source", { __order = { "file", "pages" }, file = filename, pages = npages })
+  for _, entry in ipairs(role_map) do
+    write_record(f, "rolemap", { __order = { "tag", "role" }, tag = entry.tag, role = entry.role })
+  end
 
   local nextid, seen = 0, {}
   local headings, node_meta = {}, {}

@@ -20,6 +20,10 @@
   for _ in pairs(ir.destinations) do destination_count = destination_count + 1 end
   report("destinations=" .. tostring(destination_count))
   report("annotations=" .. tostring(rawlen(ir.annotations)))
+  report("rolemaps=" .. tostring(rawlen(ir.rolemaps)))
+  for _, rolemap in ipairs(ir.rolemaps) do
+    report("rolemap=" .. tostring(rolemap.tag) .. "->" .. tostring(rolemap.role))
+  end
   if ir.annotations[1] then
     report(
       "annotation-1=" .. tostring(ir.annotations[1].action) ..
