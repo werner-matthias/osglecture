@@ -10,6 +10,10 @@
 \edef\me{\ModeValue{default=http://x.example:8080}}\TYPE{COLON-IN-VALUE=\me}
 \edef\mf{\ModeValue{ default= 1cm | script= 2cm }}\TYPE{SPACES-TRIMMED=\mf}
 \edef\mg{\ModeValue{default=ONLY}}\TYPE{SINGLE-SEGMENT=\mg}
+\edef\mh{\ModeValue{5pt|script=10pt}}\TYPE{BARE-LOSES-TO-MODE=\mh}
+\edef\mi{\ModeValue{5pt|slides=10pt}}\TYPE{BARE-IS-FALLBACK=\mi}
+\edef\mj{\ModeValue{ONLY}}\TYPE{BARE-SINGLE-SEGMENT=\mj}
+\edef\mk{\ModeValue{ 5pt |script=10pt}}\TYPE{BARE-SPACES-TRIMMED=[\mk]}
 \dimen0=\ModeValue{default=5pt|script=10pt}\relax
 \TYPE{DIMEN-ASSIGNMENT=\the\dimen0}
 \skip0=\ModeValue{default=5pt|script=10pt}\relax

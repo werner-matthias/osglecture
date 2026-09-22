@@ -619,6 +619,37 @@ Text\\<slides>[3ex]
   unescaped \code{|}.
 }
 
+\ldeen{
+  Ein Segment ganz ohne \code{=} gilt dabei als unqualifizierter Wert und
+  damit als \code{default}-Eintrag:
+}{
+  A segment without any \code{=} at all counts as an unqualified value,
+  and thus as the \code{default} entry:
+}
+
+\begin{verbatim}
+\includegraphics[width=\ModeValue{5cm|handout=8cm}]{plot}
+\end{verbatim}
+
+\ldeen{
+  ist gleichbedeutend mit \code{default=5cm|handout=8cm}. Das ist die
+  gleiche Kurzform, die die frühere, wegen Catcode-Problemen mit
+  \cs{ExplSyntaxOn} aufgegebene \code{:}-Syntax des Pakets bot (dort war
+  ein Eintrag ohne \code{modus:}-Präfix automatisch der Default); unter
+  \code{=} ist sie wieder verfügbar, weil sich ein fehlendes \code{=} --
+  anders als ein fehlender Doppelpunkt in jener alten Syntax -- gefahrlos
+  erkennen lässt. Höchstens ein solcher Eintrag pro Spezifikation ist
+  sinnvoll.
+}{
+  is equivalent to \code{default=5cm|handout=8cm}. This is the same
+  shorthand the package's former \code{:}-based syntax offered for free
+  (there, an entry without a \code{mode:} prefix was automatically the
+  default) before it was abandoned over \cs{ExplSyntaxOn} catcode
+  problems; under \code{=} it is available again, because a missing
+  \code{=} -- unlike a missing colon under that old syntax -- can be
+  detected safely. At most one such entry per spec is meaningful.
+}
+
 \section{\ldeen{Zusammenspiel mit Backends}{Backend interaction}}
 \label{sec:backend-interaction}
 
@@ -994,21 +1025,58 @@ Text\\<slides>[3ex]
 % than the ":" the rest of this package uses for a "mode:tail" overlay
 % qualification) is the key/value separator here because it is untouched
 % by \ExplSyntaxOn, unlike ":", which becomes a letter and so could never
-% delimit on the category-12 colon a value might legitimately contain.
+% delimit on the category-12 colon a value might legitimately contain. A
+% segment carrying no "=" at all is an unqualified value and stands for
+% "default=" that value -- restoring, under "=", the convenience the
+% package's former ":"-based spec syntax offered for free (there, an
+% unqualified segment simply wasn't "mode:"-prefixed).
 \cs_new:Npn \osglecture_modes_value_seg:w #1#2#3#4|#5\q_stop
   {
     % #1 = candidate mode ; #2 = remaining candidates ; #3 = spec-with-"|"
-    % (kept for the next candidate) ; #4 = this "key=value" segment ;
-    % #5 = remaining segments
+    % (kept for the next candidate) ; #4 = this segment ; #5 = remaining
+    % segments
     \osglecture_modes_value_kv_aux {#1} {#2} {#3} {#5} #4 \q_stop
   }
 
-\cs_new:Npn \osglecture_modes_value_kv_aux #1#2#3#4#5=#6\q_stop
+% #5 here is this segment's full raw text, delimited only by the \q_stop
+% \osglecture_modes_value_seg:w always supplies right after it -- so,
+% unlike matching straight for a "=", this always terminates, whether or
+% not the segment contains one. Whether it does still needs testing, but
+% on a throwaway copy, so the real extraction below is free to keep
+% delimiting a value by \q_stop alone (letting it contain further "="
+% signs): appending "=" \q_no_value to that copy and matching the first
+% "=" again means none was present in the segment exactly when nothing
+% is left before \q_no_value, since a "=" already in the segment always
+% leaves at least the appended one there.
+\cs_new:Npn \osglecture_modes_value_kv_aux #1#2#3#4#5\q_stop
   {
-    % #5 = this segment's key ; #6 = its value (may itself contain "="
+    \osglecture_modes_value_kv_test:w #5 = \q_no_value {#1} {#2} {#3} {#4} {#5}
+  }
+
+\cs_new:Npn \osglecture_modes_value_kv_test:w #1=#2\q_no_value #3#4#5#6#7
+  {
+    \tl_if_empty:nTF {#2}
+      { \osglecture_modes_value_bare:nnnnn {#3} {#4} {#5} {#6} {#7} }
+      { \osglecture_modes_value_kv_extract:w #7 \q_stop {#3} {#4} {#5} {#6} }
+  }
+
+\cs_new:Npn \osglecture_modes_value_kv_extract:w #1=#2\q_stop #3#4#5#6
+  {
+    % #1 = this segment's key ; #2 = its value (may itself contain "="
     % signs, since it was delimited only by \q_stop)
-    \str_if_eq:eeTF { \tl_trim_spaces:n {#5} } {#1}
-      { \tl_trim_spaces:n {#6} }
+    \str_if_eq:eeTF { \tl_trim_spaces:n {#1} } {#3}
+      { \tl_trim_spaces:n {#2} }
+      { \osglecture_modes_value_continue:nnnn {#3} {#4} {#5} {#6} }
+  }
+
+% An unqualified (key-less) segment counts as a match only for the
+% "default" candidate -- the always-present last resort -- so it behaves
+% exactly like an explicit "default=..." entry and never pre-empts a
+% mode that matches earlier in \ActiveLectureModes.
+\cs_new:Npn \osglecture_modes_value_bare:nnnnn #1#2#3#4#5
+  {
+    \str_if_eq:eeTF {#1} {default}
+      { \tl_trim_spaces:n {#5} }
       { \osglecture_modes_value_continue:nnnn {#1} {#2} {#3} {#4} }
   }
 
