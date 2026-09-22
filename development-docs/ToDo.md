@@ -20,17 +20,46 @@ Featurewünsche.
   `$success_cmd`-Hook nutzen, um die Imposition nach jedem Rebuild-Zyklus
   mitlaufen zu lassen -- macht aber jeden Live-Rebuild langsamer, dazu
   hatte OLLM/Executor.pm keine geprüfte Lösung.
-* [ ] `tikz`/`pgf` `fit=`, das einen Knoten aus einer *anderen*
-  `tikzpicture` referenziert (typisch bei `remember picture`-Annotationen,
-  z.\,B. `\markword`), bricht mit aktivem Tagging
+* [ ] **Korrigierte Diagnose (2026-09-22, war zuvor als `fit=`/
+  `remember picture`-Problem beschrieben):** Ursache ist *nicht* `fit=`
+  oder ein Querverweis auf einen Knoten aus einer anderen `tikzpicture`.
+  Minimal reproduziert (mit reinem `\documentclass{osglecture}`,
+  unabhängig von `ltx-talk`/Handout/Overlay): ein `itemize`-Punkt, gefolgt
+  irgendwo im selben `frame` von *irgendeinem* `tikz`-Knoten mit
+  `text width=` -- ganz ohne `remember picture`, `fit`, Querverweis oder
+  `\markword` --, bricht mit aktivem Tagging
   (`\DocumentMetadata{tagging=on}`) mit `Package tagpdf Error: there is
-  no open structure on the stack` bzw. `...para hooks differ`. Reproduziert
-  minimal mit reinem `article`, unabhängig von `ltx-talk`/Handout/Overlay --
-  ein generelles `tikz`+`tagpdf`-Problem, nicht osglecture-spezifisch.
-  `fit` *innerhalb derselben* `tikzpicture` sowie Querverweise *ohne* `fit`
-  (`at (marke)`) funktionieren beide einwandfrei. Optionen: Workaround in
-  `tagbridge` (analog zum bestehenden `qrcode`-Hook), oder upstream
-  melden.
+  no open structure on the stack` bzw. `...para hooks differ`. `fit`
+  setzt `text width`/`text height` intern immer, daher der ursprüngliche
+  Verdacht. Mechanismus: schließt ein Absatz (z.\,B. ein `itemize`-Punkt)
+  seinen echten \LaTeX-Absatz nicht sofort mit `\par`, sondern erst beim
+  nächsten Absatzwechsel -- was passiert, wenn direkt danach ein
+  `tikzpicture` mit `text width`-Knoten folgt, da dessen Aufbau selbst
+  einen echten Absatz anstößt --, kann dieser Abschluss *innerhalb* des
+  bereits von `latex-lab-testphase-tikz`s `\tag_suspend:n`/`\tag_resume:n`
+  abgeschalteten `\pgfpicture` feuern. Diese Funktionen schalten Tagging
+  aber nur *lokal* (gruppenbezogen) ab; der \LaTeX-Kern-Hook
+  `\AddToHook{para/begin}`/`{para/end}` löst dann `\tag_struct_begin:n`/
+  `\tag_struct_end:` unkoordiniert mit dem Auf-/Abbau-Zustand aus --
+  daher der Stack- bzw. Zähler-Fehler. Ein Hook in `tagbridge`, der die
+  vier internen Kern-Sockets (`para/semantic/begin`\slash`/end`,
+  `para/textblock/begin`\slash`/end`) beim Suspend abfängt und
+  auf-/abbaut, behebt den reinen "`Absatz + `text width`-Knoten"'-Fall
+  zuverlässig -- versagt aber identisch (Patch greift gar nicht erst),
+  sobald der auslösende Absatz seinerseits durch ein *eigenes* Inline-
+  `\tikz`-Bild (wie `\markword`s `\tikz[remember picture,baseline]
+  \node[anchor=text]{...}` als erster Punktinhalt) geöffnet wird --
+  exakt osglectures/AuP's tatsächliches Nutzungsmuster. Der Patch wurde
+  deshalb *nicht* übernommen (siehe verworfener Branch-Stand,
+  nicht committet). **Workaround bis auf Weiteres:** `\markword`/
+  ähnliche Inline-Marken nicht als *ersten* Inhalt eines `itemize`-Punkts
+  setzen (in normalem Fließtext funktioniert es), bzw. auf `text width`
+  setzende Schlüssel (inkl. `fit=`) auf Knoten verzichten, die einem
+  solchen Punkt im selben `frame` folgen. Optionen für eine echte
+  Lösung: die verbleibende Inline-Tikz-Interaktion weiter aufklären,
+  oder das Ganze (mit den beiden Minimalbeispielen) upstream bei
+  `tagpdf`/`latex-lab` melden -- es ist ein generelles
+  `tikz`+`tagpdf`-Problem, nicht osglecture-spezifisch.
 * [x] `tagpax`: Rollenregistrierung beim Import.
 * [ ] Für die neue `mode/handout`-Setup-Area (`layout`-Schlüssel,
   `osglecture.dtx`) fehlt noch ein regulärer l3build-Regressionstest nach
