@@ -858,17 +858,29 @@ The package is loaded in the usual way using @1 and, in turn, loads (among other
     %   selbst wieder überschreibt -- ohne sofortige Expansion würde
     %   hier nur eine \emph{Referenz} gespeichert, die zum
     %   Verwendungszeitpunkt längst einen anderen Schlüsselnamen
-    %   trägt.}{@1 instead of @2: \cs{l_keys_key_str} is a shared
-    %   l3keys variable that \pkg*{minted}'s own \cs{keys\_set:nn} call
-    %   (when later processing @3) overwrites again itself -- without
+    %   trägt. @4 schützt dagegen den Wert @5 selbst vor dieser Expansion:
+    %   Ein Wert wie \cs{tiny} expandiert unter \cs{edef}/@1 zu
+    %   \cs{let}\cs{@currsize}\cs{tiny} -- das erneut lesbare \cs{tiny}
+    %   am Ende expandiert die \cs{edef}-Maschinerie sofort weiter, und
+    %   das wiederholt sich ohne Ende, bis der Eingabestack überläuft.}
+    %   {@1 instead of @2: \cs{l_keys_key_str} is a shared l3keys
+    %   variable that \pkg*{minted}'s own \cs{keys\_set:nn} call (when
+    %   later processing @3) overwrites again itself -- without
     %   immediate expansion this would only store a \emph{reference},
     %   which by the time it's used already holds some other key's
-    %   name.}{\cs{tl\_set:Nx}}{\cs{tl\_set:Nn}}{\cs{l\_\_osglistings\_extra\_tl}}
+    %   name. @4 in turn protects the value @5 itself from that same
+    %   expansion: a value such as \cs{tiny} expands under \cs{edef}/@1
+    %   to \cs{let}\cs{@currsize}\cs{tiny} -- the freshly re-exposed
+    %   \cs{tiny} at the end gets expanded again immediately by the same
+    %   \cs{edef} machinery, and that repeats without end until the input
+    %   stack overflows.}
+    %   {\cs{tl\_set:Nx}}{\cs{tl\_set:Nn}}{\cs{l\_\_osglistings\_extra\_tl}}
+    %   {\cs{exp\_not:n}}{\code{#1}}
     unknown .code:n =
       {
         \tl_if_empty:NTF \l__osglistings_extra_tl
-          { \tl_set:Nx \l__osglistings_extra_tl { \l_keys_key_str = {#1} } }
-          { \tl_put_right:Nx \l__osglistings_extra_tl { , \l_keys_key_str = {#1} } }
+          { \tl_set:Nx \l__osglistings_extra_tl { \l_keys_key_str = { \exp_not:n {#1} } } }
+          { \tl_put_right:Nx \l__osglistings_extra_tl { , \l_keys_key_str = { \exp_not:n {#1} } } }
       },
   }
 \keys_set:nn { osglistings }
