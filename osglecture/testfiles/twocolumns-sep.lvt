@@ -1,0 +1,30 @@
+\input regression-test
+\documentclass{article}
+\usepackage[mode=script]{osglecture-modes}
+\DeclareModeBehaviorClass{longform}
+\AssignLectureModeBehavior{script}{longform}
+\usepackage{osglecture-twocolumns}
+\ExplSyntaxOn
+\cs_new_eq:NN \osg_test_twocol_parse:n \twocol_parse:n
+\cs_set_protected:Npn \twocol_parse:n #1
+  {
+    \osg_test_twocol_parse:n {#1}
+    \TYPE{SEP\c_space_tl\the\l_twocol_sep_dim\c_space_tl FRAC\c_space_tl\fp_to_tl:N\l_twocol_frac_fp}
+  }
+\ExplSyntaxOff
+\begin{document}
+\START
+\begin{twocolumns}<longform>
+  Default~left\nextcolumn Default~right
+\end{twocolumns}
+\begin{twocolumns}<longform>[sep=1cm]
+  Wide~left\nextcolumn Wide~right
+\end{twocolumns}
+\begin{twocolumns}<longform>[t,sep=2cm,.3]
+  Mixed~left\nextcolumn Mixed~right
+\end{twocolumns}
+\begin{twocolumns}<longform>
+  Back~to~default~left\nextcolumn Back~to~default~right
+\end{twocolumns}
+\END
+\end{document}

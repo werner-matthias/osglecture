@@ -316,7 +316,7 @@
 \begin{environments}
 
 \environment{twocolumns}[\code{<}\meta{Modusausdruck}\code{>}
-  \oarg{Ausrichtung,Anteil}]
+  \oarg{Ausrichtung,Anteil,sep=Länge}]
   \ldeen{setzt zwei durch \cs{nextcolumn} getrennte Inhalte nebeneinander,
   wenn der Modusausdruck erfüllt ist, andernfalls untereinander. Der
   Modusausdruck steht in spitzen Klammern und ist standardmäßig
@@ -337,6 +337,14 @@ both columns at the top, centre, or bottom; two such values align the columns
 individually. \code{<all>} forces columns in every mode, while, for example,
 \code{<longform>} selects only long-form documents and
 \code{<presentation|longform>} selects both behaviour classes.}
+
+\ldeen{Der Schlüssel \code{sep} setzt den Steg zwischen den beiden Spalten
+auf eine beliebige Länge und überschreibt damit die Vorgabe \cs{columnsep}
+(z.\,B. \code{sep=1cm}); das ist nützlich, wenn der Standardsteg bei sehr
+ungleichen Spaltenanteilen zu knapp wirkt.}{The \code{sep} key sets the
+gutter between the two columns to an arbitrary length, overriding the
+default \cs{columnsep} (e.g.\ \code{sep=1cm}); this is useful when the
+default gutter looks too tight with very unequal column shares.}
   \environment{presitemize}[\oarg{\ldeen{Optionen}{options}}]
     \ldeen{setzt eine flache Folge kurzer Aussagen in Präsentationen als
     \env{itemize}-Liste und verbindet sie in Langformen zu Fließtext. Die Klasse
@@ -4449,6 +4457,7 @@ individually. \code{<all>} forces columns in every mode, while, for example,
 
 \cs_generate_variant:Nn \tl_if_blank:nF { V }
 \cs_generate_variant:Nn \tl_if_eq:nnTF { Vn }
+\cs_generate_variant:Nn \tl_if_in:nnTF { Vn }
 \cs_generate_variant:Nn \seq_put_right:Nn { NV }
 
 \dim_new:N \l_twocol_sep_dim
@@ -4466,7 +4475,14 @@ individually. \code{<all>} forces columns in every mode, while, for example,
 \box_new:N \l_twocol_a_box
 \box_new:N \l_twocol_b_box
 
-\dim_set:Nn \l_twocol_sep_dim { \columnsep }
+% \ldeen{Der Schlüssel \code{sep} erlaubt es, den sonst auf \cs{columnsep}
+% voreingestellten Spaltensteg pro Umgebung zu überschreiben.}{The
+% \code{sep} key allows overriding the column gutter, which otherwise
+% defaults to \cs{columnsep}, on a per-environment basis.}
+\keys_define:nn { osglecture/twocol }
+  {
+    sep .dim_set:N = \l_twocol_sep_dim,
+  }
 
 \cs_new_protected:Npn \twocol_add_option:n #1
   {
@@ -4474,15 +4490,19 @@ individually. \code{<all>} forces columns in every mode, while, for example,
 
     \tl_if_blank:VF \l_tmpa_tl
       {
-        \tl_if_eq:VnTF \l_tmpa_tl { t }
-          { \seq_put_right:NV \l_twocol_align_seq \l_tmpa_tl }
+        \tl_if_in:VnTF \l_tmpa_tl { = }
+          { \keys_set:nV { osglecture/twocol } \l_tmpa_tl }
           {
-            \tl_if_eq:VnTF \l_tmpa_tl { c }
+            \tl_if_eq:VnTF \l_tmpa_tl { t }
               { \seq_put_right:NV \l_twocol_align_seq \l_tmpa_tl }
               {
-                \tl_if_eq:VnTF \l_tmpa_tl { b }
+                \tl_if_eq:VnTF \l_tmpa_tl { c }
                   { \seq_put_right:NV \l_twocol_align_seq \l_tmpa_tl }
-                  { \fp_set:Nn \l_twocol_frac_fp { \l_tmpa_tl } }
+                  {
+                    \tl_if_eq:VnTF \l_tmpa_tl { b }
+                      { \seq_put_right:NV \l_twocol_align_seq \l_tmpa_tl }
+                      { \fp_set:Nn \l_twocol_frac_fp { \l_tmpa_tl } }
+                  }
               }
           }
       }
@@ -4494,6 +4514,7 @@ individually. \code{<all>} forces columns in every mode, while, for example,
     \tl_set:Nn \l_twocol_a_align_tl { c }
     \tl_set:Nn \l_twocol_b_align_tl { c }
     \seq_clear:N \l_twocol_align_seq
+    \dim_set:Nn \l_twocol_sep_dim { \columnsep }
 
     \clist_map_inline:nn {#1}
       { \twocol_add_option:n {##1} }
