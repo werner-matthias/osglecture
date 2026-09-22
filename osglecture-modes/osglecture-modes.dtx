@@ -1137,11 +1137,11 @@ Text\\<slides>[3ex]
       { \prg_return_true: } { \prg_return_false: }
   }
 
-\NewDocumentCommand \IfLectureModeTF { m m m }
+\NewDocumentCommand \IfLectureModeTF { m +m +m }
   { \osglecture_modes_if_active:nTF {#1} {#2} {#3} }
-\NewDocumentCommand \IfLectureModeT { m m }
+\NewDocumentCommand \IfLectureModeT { m +m }
   { \osglecture_modes_if_active:nT {#1} {#2} }
-\NewDocumentCommand \IfLectureModeF { m m }
+\NewDocumentCommand \IfLectureModeF { m +m }
   { \osglecture_modes_if_active:nF {#1} {#2} }
 
 \NewDocumentCommand \lecturemode { d<> +m }
