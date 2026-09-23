@@ -5,8 +5,8 @@
 \usepackage[ignorenonframetext]{osglecture-modes-ltxtalk}
 \ExplSyntaxOn
 \cs_new_protected:Npn \test_keep_end:
-  { \END \osglecture_modes_ltxtalk_scan: }
-\osglecture_modes_ltxtalk_declare_allowed_command:nn { END } { test_keep_end: }
+  { \END \osglecture_modes_scan: }
+\osglecture_modes_declare_allowed_command:nn { END } { test_keep_end: }
 \ExplSyntaxOff
 \begin{document}
 \START

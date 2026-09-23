@@ -1,0 +1,29 @@
+\input regression-test.tex
+\DocumentMetadata{}
+\documentclass{article}
+\usepackage[mode=article]{osglecture-modes}
+
+\NewDocumentEnvironment{task}{}{\TYPE{TASK BEGIN}}{\TYPE{TASK END}}
+\DeclareLectureKeepEnvironment{task}
+
+\DeclareLectureMode{solutions}
+\NewDocumentEnvironment{solution}{}{\TYPE{SOLUTION BEGIN}}{\TYPE{SOLUTION END}}
+\DeclareLectureKeepEnvironment[mode=solutions]{solution}
+
+\title{Exam}
+\author{}
+\date{}
+
+\begin{document}
+\START
+\mode*
+\maketitle
+\foobar
+\begin{task}
+  \TYPE{TASK CONTENT}
+\end{task}
+\begin{solution}
+  \TYPE{SHOULD NOT APPEAR}
+\end{solution}
+\END
+\end{document}

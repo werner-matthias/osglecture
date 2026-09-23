@@ -4,23 +4,19 @@
 \NewDocumentCommand\lecture{O{}mm}{\TYPE{LECTURE KEPT}}
 \usepackage[ignorenonframetext]{osglecture-modes-ltxtalk}
 
-\DeclareLectureMode{examboth}
+\DeclareLectureMode{withSolution}
+\DeclareLectureMode{withGrading}
+\DeclareLectureMode[parents={withSolution,withGrading}]{examboth}
 \SetLectureModes{examboth}
 
 \NewDocumentEnvironment{Aufgabe}{}{\TYPE{AUFGABE BEGIN}}{\TYPE{AUFGABE END}}
-\DeclareLtxtalkKeepEnvironment{Aufgabe}
+\DeclareLectureKeepEnvironment{Aufgabe}
 
-\DeclareLtxtalkFilterProfile{withSolution}
 \NewDocumentEnvironment{Musterloesung}{}{\TYPE{MUSTERLOESUNG BEGIN}}{\TYPE{MUSTERLOESUNG END}}
-\DeclareLtxtalkKeepEnvironment[profile=withSolution]{Musterloesung}
+\DeclareLectureKeepEnvironment[mode=withSolution]{Musterloesung}
 
-\DeclareLtxtalkFilterProfile{withGrading}
 \NewDocumentEnvironment{Bewertung}{}{\TYPE{BEWERTUNG BEGIN}}{\TYPE{BEWERTUNG END}}
-\DeclareLtxtalkKeepEnvironment[profile=withGrading]{Bewertung}
-
-\DeclareLtxtalkFilterProfile[parents={withSolution,withGrading}]{withBoth}
-
-\AssignLtxtalkFilterProfile{examboth}{withBoth}
+\DeclareLectureKeepEnvironment[mode=withGrading]{Bewertung}
 
 \begin{document}
 \START

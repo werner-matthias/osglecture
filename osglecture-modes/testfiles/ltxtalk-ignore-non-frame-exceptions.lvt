@@ -5,13 +5,13 @@
 \usepackage[ignorenonframetext]{osglecture-modes-ltxtalk}
 
 \NewDocumentCommand\ollabel{m}{\TYPE{OLLABEL~#1}}
-\DeclareLtxtalkKeepLabelCommand\ollabel
+\DeclareLectureKeepLabelCommand\ollabel
 
 \NewDocumentCommand\mycmd{m}{\TYPE{MYCMD~#1}}
-\DeclareLtxtalkKeepCommand\mycmd
+\DeclareLectureKeepCommand\mycmd
 
 \NewDocumentEnvironment{myenv}{}{\TYPE{MYENV~BEGIN}}{\TYPE{MYENV~END}}
-\DeclareLtxtalkKeepEnvironment{myenv}
+\DeclareLectureKeepEnvironment{myenv}
 
 \begin{document}
 % Force any lazily-loaded fallback font (e.g. a math package's TU+lmr-base)

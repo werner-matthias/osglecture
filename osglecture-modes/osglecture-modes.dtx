@@ -57,6 +57,8 @@ Matthias Werner.
 
 \usepackage{enumitem}
 \usepackage{microtype}
+\usepackage{needspace}
+\newarg\modearg{<}{>}
 \usepackage[
   languages={de,en},
   map={de=german,en=english},
@@ -103,552 +105,345 @@ Matthias Werner.
   url = https://github.com/werner-matthias/osglecture,
   build-title
 }
-
+\OnlyDescription
 \begin{document}
 
-\section{\ldeen{Überblick}{Overview}}
+\section{\ldeen{Schnellstart}{Quick start}}
 
 \ldeen{
-  \LaTeX-Pakete wie \needpackage{beamer} und \needpackage{ltx-talk} und in einem
-  etwas allgemeineren Sinne auch Pakete wie \pkg{comment}, \pkg{xcomment}, 
-  \pkg{multiaudience} etc.\ bieten das 
-  Konzept von \emph{Modi} an, bei dem, abhängig vom Dokumentmodus,
-  nur bestimmte Dokumentteile gezielt übersetzt werden.
-
-  Dieses Paket erweitert das Konzept und verwaltet Dokumentmodi 
-  als gerichteten azyklischen Graphen. 
-  Es ergänzt die Modusschnittstellen von \pkg*{beamer} und \pkg*{ltx-talk},
-  funktioniert aber ebenso mit gewöhnlichen Dokumentklassen.  
-
-  Ein konkreter Dokumentmodus kann mehreren allgemeineren Modi angehören.
-  Beispielsweise kann \code{handout} gleichzeitig \code{presentation} und
-  \code{print} aktivieren. Das Paket berechnet die transitive Elternhülle,
-  unterstützt Aliase und mehrere gleichzeitig aktive Blattmodi und prüft den
-  vollständigen Graphen auf ungültige Referenzen und Zyklen.
+Wer Beamer oder \pkg*{ltx-talk} verwendet, kennt Modusspezifikationen wie
+\code{<presentation>} oder \code{<handout>}. \thepkg\ macht solche
+Dokumentmodi auch in anderen Klassen nutzbar und erlaubt eigene Modi mit
+mehreren Elternmodi. Ein gemeinsamer Quelltext kann so beispielsweise
+Folien, ein Handout und ein Skript enthalten.
 }{
-  \LaTeX packages such as \needpackage{beamer} and \needpackage{ltx-talk}, and in a
-  slightly more general sense, packages such as \pkg{comment}, \pkg{xcomment}, 
-  \pkg{multiaudience}, etc., offer the 
-  concept of \emph{modes}, in which, depending on the document mode,
-  only specific parts of the document are rendered.
-
-  This package extends this concept and manages document modes as directed 
-  acyclic graphs. It complements the mode interfaces of \pkg*{beamer} and 
-  \pkg*{ltx-talk}, but also works with standard document classes. 
-
-  A concrete document mode may belong to several more general modes.  For
-  example, \code{handout} may activate both \code{presentation} and
-  \code{print}. The package computes the transitive parent closure, supports
-  aliases and multiple active leaf modes, and validates the complete graph
-  for invalid references and cycles.
+Users of Beamer or \pkg*{ltx-talk} will recognize mode specifications such as
+\code{<presentation>} or \code{<handout>}. \thepkg\ makes document modes
+available in other classes as well and allows custom modes with multiple
+parent modes. One source can thus contain slides, a handout, and a script.
 }
 
-\begin{verbatim}
+\begin{example}[code-only,gobble=0]
+\documentclass{article}
 \usepackage[mode=script]{osglecture-modes}
+\begin{document}
+Common text.
+\lecturemode<print>{Text for printed documents.}
+\lecturemode<presentation>{Text for presentations.}
+\IfLectureModeTF{script}{Detailed explanation.}{Short explanation.}
+\end{document}
+\end{example}
 
-\DeclareLectureMode{reading}
-\DeclareLectureModeParents{reading}{article,print}
-\AddLectureModes{reading}
+\ldeen{
+Das Beispiel gibt den gemeinsamen Text, den Text für Druckfassungen und die
+ausführliche Erklärung aus. Der Präsentationstext entfällt, weil
+\code{script} den Modus \code{print}, aber nicht \code{presentation} aktiviert.
+\code{mode=handout} würde stattdessen beide Textvarianten und die kurze
+Erklärung auswählen. Die Paketoption ändert dabei nicht die Dokumentklasse.
+}{
+The example prints the common text, the text for printed documents, and the
+detailed explanation. Presentation text is omitted: \code{script} activates
+\code{print}, but not \code{presentation}. Selecting \code{mode=handout}
+would print both variants and the short explanation instead. The package
+option does not change the document class.
+}
+
+\ldeen{
+Das Kernpaket benötigt einen aktuellen \LaTeX-Kernel. Es kann unabhängig
+von \cls*{osglecture}, OLLM und Projektverzeichnissen verwendet werden.
+Laden Sie es gewöhnlich nach der Dokumentklasse. Ohne explizite Moduswahl
+erkennt es Beamer und \pkg*{ltx-talk}; bei anderen Klassen wählt es
+\code{article}. Nur die portablen Textfilter aus
+Abschnitt~\ref{sec:ltxtalk-filter} benötigen Lua\LaTeX.
+}{
+The core package needs a current \LaTeX\ kernel. It works independently of
+\cls*{osglecture}, OLLM, and project directories. Normally, load it after the
+document class. Without an explicit mode selection it detects Beamer and
+\pkg*{ltx-talk}; for other classes it selects \code{article}. Only the
+portable text filters in Section~\ref{sec:ltxtalk-filter} require Lua\LaTeX.
+}
+
+\section{\ldeen{Modi und Vererbung}{Modes and inheritance}}
+\label{sec:model}
+
+\ldeen{
+Ein ausgewählter Modus aktiviert auch alle seine Eltern, deren Eltern usw.
+Mehrere Eltern sind erlaubt; Kreise sind es nicht. Anders als bei einer
+reinen Baumstruktur kann deshalb \code{handout} sowohl zu
+\code{presentation} als auch zu \code{print} gehören. Die folgenden Modi
+sind bereits deklariert; die Tabelle nennt jeweils die unmittelbaren Eltern.
+}{
+Selecting a mode also activates its parents, their parents, and so on.
+Multiple parents are allowed, cycles are not. Unlike a simple tree,
+this lets \code{handout} belong to both \code{presentation} and
+\code{print}. The following modes are predefined; the table lists their
+direct parents.
+}
+
+\begin{center}
+\begin{tabular}{ll}
+\textbf{\ldeen{Modus}{Mode}} & \textbf{\ldeen{Eltern}{Parents}} \\\hline
+\code{presentation} & --- \\
+\code{beamer}, \code{projector}, \code{trans} & \code{presentation} \\
+\code{handout} & \code{presentation}, \code{print} \\
+\code{longform}, \code{print} & --- \\
+\code{article} & \code{longform}, \code{print} \\
+\code{script} & \code{article} \\
+\code{web} & \code{longform} \\
+\code{*} & --- \\
+\end{tabular}
+\end{center}
+
+\ldeen{
+\code{slides} ist ein Alias für \code{projector}, kein zusätzlicher Modus.
+\code{all} ist eine stets wahre Abfrage. Der Modus \code{*} dient der
+Textfilterung (Abschnitt~\ref{sec:ltxtalk-filter}).
+}{
+\code{slides} is an alias for \code{projector}, not a separate mode.
+\code{all} is an always-true query. Mode \code{*} is used for text filtering
+(Section~\ref{sec:ltxtalk-filter}).
+}
+
+\subsection{\ldeen{Eigene Modi und mehrere aktive Modi}{Custom and simultaneous modes}}
+
+\begin{example}[code-only,gobble=0]
+\documentclass{article}
+\usepackage{osglecture-modes}
+\DeclareLectureMode[parents={article,print}]{reading}
+\DeclareLectureModeAlias{reader}{reading}
+\SetLectureModes{reader}
 \FinalizeLectureModes
-
-\lecturemode<article||presentation>{Common source text}
-\end{verbatim}
-
-\section{\ldeen{Voraussetzungen und eigenständige Nutzung}
-                 {Requirements and standalone use}}
-
-\ldeen{
-  Das Kernpaket benötigt nur einen aktuellen \LaTeX-Kernel. Weder
-  \cls*{osglecture} noch \code{ollm}, ein Projektmanifest oder eine bestimmte
-  Verzeichnisstruktur werden vorausgesetzt. Es erkennt eine bereits geladene
-  Beamer- oder \pkg*{ltx-talk}-Klasse, bleibt aber auch mit Artikel-, Buch- und
-  KOMA-Script-Klassen vollständig nutzbar.
-}{
-  The core package requires only a current \LaTeX\ kernel. It does not require
-  \cls*{osglecture}, \code{ollm}, a project manifest, or any directory layout.
-  It detects an already loaded Beamer or \pkg*{ltx-talk} class, but remains
-  fully usable with article, book, and KOMA-Script classes.
-}
+\begin{document}
+\lecturemode<reading>{Reading edition.}
+\lecturemode<longform>{Extended explanation.}
+\end{document}
+\end{example}
 
 \ldeen{
-  Das optionale Paket \pkg*{osglecture-modes-ltxtalk} implementiert das
-  Überspringen von Text außerhalb von Frames für \pkg*{ltx-talk}. Nur dieser
-  Adapter und sein Lua-Helfer benötigen Lua\LaTeX. \cs{DeclareLtxtalkKeepCommand},
-  \cs{DeclareLtxtalkKeepLabelCommand} und \cs{DeclareLtxtalkKeepEnvironment}
-  tragen projektspezifische Befehle und Environments (etwa einen eigenen
-  Label-Befehl) in die eingebaute Ausnahmeliste ein. \cs{DeclareLtxtalkFilterProfile}
-  bündelt solche Ausnahmen zu benannten, vererbbaren \emph{Filterprofilen}
-  (etwa für Musterlösungen oder Bewertungsrichtlinien in einer Prüfung), die
-  \cs{AssignLtxtalkFilterProfile} an einzelne Blattmodi bindet.
+\cs{SetLectureModes} ersetzt die bisherige Auswahl; \cs{AddLectureModes}
+ergänzt sie. Beide nehmen kommaseparierte Listen entgegen. Die Auswahl
+\code{slides,web} aktiviert beispielsweise gleichzeitig
+\code{projector}, \code{presentation}, \code{web} und \code{longform}.
+Die Dokumentklasse und ihre nativen Ausgabeoptionen bleiben davon unberührt.
 }{
-  The optional \pkg*{osglecture-modes-ltxtalk} package implements skipping
-  non-frame text for \pkg*{ltx-talk}. Only this adapter and its Lua helper
-  require Lua\LaTeX. \cs{DeclareLtxtalkKeepCommand},
-  \cs{DeclareLtxtalkKeepLabelCommand}, and \cs{DeclareLtxtalkKeepEnvironment}
-  add project-specific commands and environments (such as a custom label
-  command) to the built-in exception list. \cs{DeclareLtxtalkFilterProfile}
-  groups such exceptions into named, inheritable \emph{filter profiles}
-  (for instance for model solutions or grading rubrics in an exam), which
-  \cs{AssignLtxtalkFilterProfile} binds to individual leaf modes.
+\cs{SetLectureModes} replaces the previous selection; \cs{AddLectureModes}
+extends it. Both accept comma-separated lists. For instance,
+selecting \code{slides,web} activates \code{projector},
+\code{presentation}, \code{web}, and \code{longform} together. This does
+not change the document class or its native output options.
 }
 
-\section{\ldeen{Modell und Lebenszyklus}{Model and lifecycle}}
+\subsection{\ldeen{Zeitpunkt der Deklarationen}{When to declare modes}}
+\ldeen{
+Deklarieren Sie Modi, Eltern und Aliase und wählen Sie danach die aktiven
+Modi, bevor die erste Abfrage erfolgt. \cs{FinalizeLectureModes} prüft den
+gesamten Graphen, auch inaktive Modi, und schließt diese Konfiguration ab.
+Die erste Abfrage mit \cs{IfLectureModeTF}, \cs{IfLectureModeT},
+\cs{IfLectureModeF} oder einer spezifizierten \cs{lecturemode}-Anweisung
+erledigt dies bei Bedarf automatisch; spätestens vor
+\cs{begin}\Marg{document} wird abgeschlossen.
+Danach sind Deklarationen, \cs{SetLectureModes} und \cs{AddLectureModes}
+nicht mehr zulässig. Die Aktivierung bereits deklarierter Filtermodi im
+Dokument ist ein eigener Vorgang, siehe Abschnitt~\ref{sec:ltxtalk-filter}.
+}{
+Declare modes, parents, and aliases and select the active modes before the
+first query.
 
-\begin{enumerate}
-  \item \ldeen{Modi, Elternkanten und Aliase deklarieren.}
-               {Declare modes, parent edges, and aliases.}
-  \item \ldeen{Die aktiven Blattmodi setzen oder ergänzen.}
-               {Set or add the active leaf modes.}
-  \item \ldeen{Den Graphen abschließen. Danach ist er unveränderlich.}
-               {Finalize the graph. It is immutable afterwards.}
-  \item \ldeen{Modusabhängige Metadaten und Inhalte auswerten.}
-               {Evaluate mode-dependent metadata and content.}
-\end{enumerate}
+\cs{FinalizeLectureModes} validates the entire graph, including
+inactive modes, and closes this configuration. The first query using
+\cs{IfLectureModeTF}, \cs{IfLectureModeT}, \cs{IfLectureModeF}, or a
+\cs{lecturemode} instruction with a specification does this automatically
+if necessary; finalization takes place before \cs{begin}\Marg{document}
+at the latest. Afterwards, further declarations and changes to the mode selection are
+no longer allowed. Activating previously declared
+filter modes in the document is a separate operation; see
+Section~\ref{sec:ltxtalk-filter}.
+}
 
-Die Paketoption \code{mode=\meta{name}} setzt einen einzelnen Blattmodus.
-\code{mode=auto} erkennt Beamer, \pkg*{ltx-talk} oder eine generische
-Artikelklasse bereits beim Laden. In integrierten Systemen sollte der Modus
-ausdrücklich gesetzt werden.
-
-Die standardmäßig aktive Option
-\code{full=\meta{boolean}} integriert den Modusgraphen
-in die nativen Modus- und Overlaybefehle von Beamer und \pkg*{ltx-talk}.
-Mit \code{full=false} bleiben diese Backendbefehle
-vollständig unverändert; dann werten nur \cs{lecturemode} und die
-\cs{IfLectureMode...}-Befehle die portablen Modi aus. Die gleichnamige Option
-der Klasse \cls*{osglecture} wird an dieses Paket weitergereicht.
-
-\section{\ldeen{Schnittstelle}{Interface}}
-
+\section{\ldeen{Inhalte und Werte auswählen}{Selecting content and values}}
+\label{sec:selection}
 \begin{commands}
-  \command{DeclareLectureMode}[\oarg{parents=\meta{list}}\marg{mode}]
-  \command{DeclareLectureModeParents}[\marg{mode}\marg{list}]
-  \command{DeclareLectureModeAlias}[\marg{alias}\marg{mode}]
-  \command{SetLectureModes}[\marg{list}]
-  \command{AddLectureModes}[\marg{list}]
-  \command{FinalizeLectureModes}
-  \command{LectureModes}
-  \command{ActiveLectureModes}
-  \command{ModeValue}[\marg{spec}]
-  \command{IfLectureModeTF}[\marg{expression}\marg{true}\marg{false}]
-  \command{IfLectureModeT}[\marg{expression}\marg{true}]
-  \command{IfLectureModeF}[\marg{expression}\marg{false}]
-  \command{lecturemode}[\oarg*{\meta{expression}}\marg{content}]
-  \command{DeclareModeBehaviorClass}[\marg{class}]
-  \command{AssignLectureModeBehavior}[\marg{modes}\marg{class}]
-  \command{DeclareModeAwareCommand}
-    [\marg{command}\marg{required classes}]
-  \command{DeclareModeAwareCommandImplementation}
-    [\marg{command}\marg{class}\marg{implementation command}]
-  \command{FinalizeModeAwareCommands}
-  \command{MakeOverlayAwareCommand}
-    [\oarg{default-mode=\meta{mode},fallback=\meta{strategy}}\marg{command}]
+\command{lecturemode}[\modearg{expression}\marg{content}]
+\ldeen{Gibt den Inhalt aus, wenn der Ausdruck wahr ist. Ohne Spezifikation
+wird der Inhalt immer ausgegeben.}{Prints the content if the expression is
+true. Without a specification the content is always printed.}
+\command{IfLectureModeTF}[\marg{expression}\marg{true}\marg{false}]
+\ldeen{Führt je nach Ergebnis den zweiten oder dritten Parameter aus.}
+{Executes the second or third argument according to the query result.}
+\command{IfLectureModeT}[\marg{expression}\marg{true}]
+\ldeen{Führt den zweiten Parameter nur bei wahrer Abfrage aus.}
+{Executes the second argument only if the query is true.}
+\command{IfLectureModeF}[\marg{expression}\marg{false}]
+\ldeen{Führt den zweiten Parameter nur bei falscher Abfrage aus.}
+{Executes the second argument only if the query is false.}
 \end{commands}
 
 \ldeen{
-  Eine Modusliste ist kommasepariert. In Ausdrücken für Abfragen und
-  \cs{lecturemode} kann zusätzlich \code{||} als Oder-Verknüpfung verwendet
-  werden. Ein einfaches \code{|} ist dort kein Operator, sondern bleibt der
-  Modusskopierung der Overlaybackends vorbehalten (siehe
-  Abschnitt~\ref{sec:backend-interaction}). \code{all} ist immer aktiv. Die
-  erste Abfrage finalisiert einen noch offenen Graphen automatisch.
+Diese Abfragen akzeptieren einen Modusnamen oder mehrere Namen, getrennt
+durch \code{||} oder Kommas (Oder-Verknüpfung). Aliase sind erlaubt;
+unbekannte Namen ergeben einen Fehler. \code{all} trifft immer zu.
+Ein einzelnes \code{|}, Overlaynummern, Negation und Und-Verknüpfung gehören
+nicht zu dieser Abfragesyntax. Für verschachtelte Bedingungen können Sie
+mehrere Abfragen ineinandersetzen. Bei nativen Overlaybefehlen gelten andere
+Regeln für Kommas und \code{|}, siehe Abschnitt~\ref{sec:backend-interaction}.
 }{
-  A mode list is comma-separated. Queries and \cs{lecturemode} expressions may
-  additionally use \code{||} for disjunction. A single \code{|} is not an
-  operator there; it stays reserved for the overlay backends' mode scoping
-  (see Section~\ref{sec:backend-interaction}). \code{all} is always active. The
-  first query automatically finalizes a graph that is still open.
+These queries accept a mode name or several names separated by \code{||}
+or commas (disjunction). Aliases are allowed; unknown names cause an error.
+\code{all} always matches. A single \code{|}, overlay numbers, negation,
+and conjunction are not part of this query syntax. Nest queries to express
+combined conditions. Native overlay commands use different rules for commas
+and \code{|}; see Section~\ref{sec:backend-interaction}.
 }
+\begin{example}[code-only,gobble=0]
+\lecturemode<article||handout>{Material for readers.}
+\IfLectureModeT{print}{\IfLectureModeF{handout}{Extended printed text.}}
+\end{example}
 
-\section{\ldeen{Modusabhängige Befehlsverträge}
-                 {Mode-aware command contracts}}
-
-\ldeen{
-  Ein semantischer Befehl muss für jede von ihm versprochene
-  Verhaltensklasse eine konkrete Implementierung besitzen. Die Registry prüft
-  diese Vollständigkeit unabhängig davon, welche Klasse im aktuellen Lauf
-  aktiv ist. Blattmodi wählen genau eine Verhaltensklasse; mehrere gleichzeitig
-  aktive Blattmodi dürfen dieselbe, aber keine widersprüchlichen Klassen
-  auswählen.
-}{
-  A semantic command must have a concrete implementation for every behavior
-  class in its contract. The registry checks this completeness independently
-  of the class active in the current run. Leaf modes select exactly one
-  behavior class; simultaneously active leaves may select the same class but
-  not conflicting classes.
-}
-
-\begin{verbatim}
-\DeclareModeBehaviorClass{dynamic}
-\DeclareModeBehaviorClass{longform}
-\AssignLectureModeBehavior{slides}{dynamic}
-\AssignLectureModeBehavior{script,article}{longform}
-
-\ExplSyntaxOn
-\cs_new_protected:Npn \example_dynamic:n  #1 { ... }
-\cs_new_protected:Npn \example_longform:n #1 { ... }
-\ExplSyntaxOff
-
-\DeclareModeAwareCommand{\Example}{dynamic,longform}
-\DeclareModeAwareCommandImplementation
-  {\Example}{dynamic}{\example_dynamic:n}
-\DeclareModeAwareCommandImplementation
-  {\Example}{longform}{\example_longform:n}
-\end{verbatim}
-
-\ldeen{
-  Die Implementierungsbefehle besitzen selbst die vollständige
-  Argumentsignatur. Beim ersten Gebrauch beziehungsweise spätestens vor
-  \cs{begin}\Marg{document} bindet die Registry den öffentlichen Befehl direkt
-  an die gewählte Implementierung. Dadurch unterstützt der Mechanismus
-  beliebige Signaturen, ohne Argumente nachzubauen. Ein bereits existierender
-  öffentlicher Befehl wird nicht stillschweigend überschrieben.
-}{
-  Implementation commands themselves own the complete argument signature. On
-  first use, or at the latest before \cs{begin}\Marg{document}, the registry
-  binds the public command directly to the selected implementation. This
-  supports arbitrary signatures without reconstructing arguments. An existing
-  public command is never overwritten silently.
-}
-
-\section{\ldeen{Minitutorial: ein zusätzlicher Dokumenttyp}{}}
-
-\ldeen{
-  Dieses Beispiel ergänzt die Langform \code{studyguide}. Sie soll wie
-  \code{script} auf \pkg*{scrbook} beruhen, darf aber später eine eigene
-  Semantik und Gestaltung erhalten. Das Beispiel führt deshalb durch alle
-  beteiligten Schichten. Ein Dokumenttyp ist dabei keine Klassenabkürzung:
-  OLLM wählt ein Target, dessen Definition den gleichnamigen Dokumenttyp
-  liefert; dieser wird zum aktiven Blattmodus. Erst das Dokumentprofil wählt
-  Backend und Basisklasse.
-}{}
-
-\begin{center}
-\code{Target} $\longrightarrow$ \code{doctype/Blattmodus}
-$\longrightarrow$ \code{Verhaltensklasse}
-$\longrightarrow$ \code{Dokumentprofil}
-$\longrightarrow$ \code{Backend/Basisklasse}
-\end{center}
-
-\subsection{\ldeen{1. Target und Dokumenttyp registrieren}{}}
-
-\ldeen{
-  Zuerst erhält OLLM in einem eingebundenen Definitionspfad eine
-  Targetdefinition \code{targets/studyguide.toml}. Der Targetname und
-  \code{doctype} bleiben im gewöhnlichen Fall identisch. Eine Abweichung wäre
-  ein eigener, versionierter Adaptervertrag und kein bloßer Alias.
-}{}
-
-\begin{verbatim}
-schema = 1
-kind = "target"
-name = "studyguide"
-version = "1.0"
-doctype = "studyguide"
-family = "publication"
-unit_scopes = ["a", "as"]
-\end{verbatim}
-
-\ldeen{
-  Anschließend kann das Projekt das Target und seine Sprachen wie jedes
-  eingebaute Target in \code{ollmconfig.toml} freigeben:
-}{}
-
-\begin{verbatim}
-[targets.studyguide]
-languages = ["de", "en"]
-\end{verbatim}
-
-\ldeen{
-  Der Definitionspfad gehört in die lokale OLLM-Konfiguration oder in ein
-  installierbares Bundle-Preset. Die Targetdefinition beschreibt weder eine
-  \LaTeX-Klasse noch Formatierung; diese Entscheidungen bleiben im
-  Dokumentprofil.
-}{}
-
-\subsection{\ldeen{2. Blattmodus und Obermodi festlegen}{}}
-
-\ldeen{
-  Die Modusmatrix ordnet den neuen Blattmodus seinen fachlichen Obermodi zu.
-  Für eine druckbare Langform sind dies zunächst \code{longform} und
-  \code{print}. Die Deklaration gehört in eine kleine, installierte
-  Modus-Setup-Datei, hier \code{osglecture-mode-studyguide.def}.
-}{}
-
-\begin{verbatim}
-\ProvidesExplFile{osglecture-mode-studyguide.def}
-{2026-08-02}
-{v0.4.0}
-{studyguide mode setup}
-\DeclareLectureMode[parents={longform,print}]{studyguide}
-\AssignLectureModeBehavior{studyguide}{longform}
-\end{verbatim}
-
-\ldeen{
-  Damit erbt \code{studyguide} die bereits vollständige Semantik der
-  Verhaltensklasse \code{longform}. Eine Abfrage auf \code{studyguide},
-  \code{longform} oder \code{print} ist in diesem Build wahr. Soll der neue
-  Dokumenttyp tatsächlich ein abweichendes Verhalten erhalten, wird
-  stattdessen beispielsweise \code{studyguide-longform} mit
-  \cs{DeclareModeBehaviorClass} deklariert und dem Blattmodus zugewiesen.
-  Dann muss jeder öffentliche Befehlsvertrag, der diese Klasse verspricht,
-  auch eine Implementierung für sie registrieren. Die
-  Vollständigkeitsprüfung macht fehlende Fälle zu Fehlern.
-}{}
-
-\subsection{\ldeen{3. Dokumentprofil und Backend anbinden}{}}
-
-\ldeen{
-  Das Dokumentprofil verbindet die fachliche Auswahl mit einer konkreten
-  Basisklasse. Die Datei
-  \code{osglecture-profile-studyguide-scrbook.def} kann so beginnen:
-}{}
-
-\begin{verbatim}
-\ProvidesExplFile{osglecture-profile-studyguide-scrbook.def}
-{2026-08-02}
-{v0.4.0}
-{studyguide scrbook profile}
-\DeclareOsgLectureProfile{studyguide-scrbook}
-  {
-    backend = scrbook,
-    class = scrbook,
-    doctypes = {script,article,studyguide},
-    mode-setup-file = osglecture-mode-studyguide.def,
-    setup-file = osglecture-studyguide.code.tex
-  }
-\DeclareOsgLectureProfileClassOptions
-  {studyguide-scrbook}{studyguide}{oneside}
-\end{verbatim}
-
-\ldeen{
-  \code{mode-setup-file} erweitert ausschließlich Modusgraph und
-  Verhaltenszuordnung. \code{setup-file} enthält dagegen den Adapter- und
-  Formatierungscode, der nach Klassen- und Moduswahl geladen werden darf.
-  Semantische öffentliche Befehle sollten dort nicht durch zufällige
-  Klassendetails ersetzt werden, sondern über die oben beschriebene Registry
-  ihre Implementierung erhalten. Dass das Profil auch \code{script} und
-  \code{article} aufführt, erlaubt es, das derzeitige projektweite
-  Langformprofil zu ersetzen, ohne bestehende Langform-Targets auszuschließen.
-}{}
-
-\ldeen{
-  Das Projekt beziehungsweise die Nutzervorgabe wählt anschließend dieses
-  Profil; eine einzelne Buildanforderung darf es nicht spontan austauschen:
-}{}
-
-\begin{verbatim}
-[latex.defaults]
-script_profile = "studyguide-scrbook"
-\end{verbatim}
-
-\subsection{\ldeen{4. Semantische Befehle prüfen}{}}
-
-\ldeen{
-  Für jeden bereits registrierten semantischen Befehl sind nun zwei Fragen
-  getrennt zu beantworten:
-}{}
-
-\begin{enumerate}
-  \item \ldeen{
-    Gilt für \code{studyguide} dieselbe fachliche Bedeutung wie für andere
-    Langformen? Dann genügt die Zuordnung zur vorhandenen Verhaltensklasse
-    \code{longform}; eine Kopie der Implementierung ist gerade nicht nötig.
-  }{}
-  \item \ldeen{
-    Ist die Bedeutung anders? Dann erhält der Blattmodus eine eigene
-    Verhaltensklasse. Diese wird in den Vertrag des betroffenen Befehls
-    aufgenommen und bekommt eine eigene Implementierung. Vor
-    \cs{begin}\Marg{document} prüft
-    \cs{FinalizeModeAwareCommands} die vollständige Matrix.
-  }{}
-\end{enumerate}
-
-\ldeen{
-  Ein nicht vorhandenes Backendmerkmal braucht ebenfalls eine definierte
-  Semantik. Beispielsweise kann eine Overlayanweisung in der Langform alle
-  Inhalte ohne schrittweise Aufdeckung ausgeben. Sie darf nicht nur deshalb
-  verschwinden, weil \pkg*{scrbook} keine nativen Overlays besitzt.
-}{}
-
-\subsection{\ldeen{5. Durchstich testen}{}}
-
-\ldeen{
-  Ein neuer Dokumenttyp ist erst vollständig, wenn nicht nur die einzelne
-  Setup-Datei, sondern der gesamte Durchstich geprüft ist. Ein sinnvoller
-  minimaler Testsatz umfasst:
-}{}
-
-\begin{itemize}
-  \item \ldeen{
-    OLLM löst \code{studyguide} mit jeder freigegebenen Sprache in einen
-    BuildSpec mit \code{target=studyguide},
-    \code{doctype=studyguide} und
-    \code{document-profile=studyguide-scrbook} auf.
-  }{}
-  \item \ldeen{
-    Die erzeugte Auftragsdatei wird vom tatsächlichen Jobnamen akzeptiert und
-    die Klasse lädt \pkg*{scrbook} sowie das gewählte Profil.
-  }{}
-  \item \ldeen{
-    \cs{IfLectureModeTF} erkennt \code{studyguide}, \code{longform} und
-    \code{print}, aber beispielsweise nicht \code{presentation}.
-  }{}
-  \item \ldeen{
-    Die Vollständigkeitsprüfung aller modusabhängigen Befehle läuft für den
-    neuen Dokumenttyp fehlerfrei; mindestens ein repräsentativer Befehl wird
-    bis zur Ausgabe getestet.
-  }{}
-  \item \ldeen{
-    Ein Standalone-Dokument mit explizitem \code{doctype} und \code{profile}
-    benötigt weder Projektmanifest noch Serienverzeichnis.
-  }{}
-\end{itemize}
-
-\subsection{\ldeen{Eingebaute Defaults und offene Erweiterung}{}}
-
-\ldeen{
-  \pkg*{osglecture} kennt für \code{slides}, \code{handout}, \code{script} und
-  \code{article} eingebaute Standardprofile. Diese Namen bilden keine
-  geschlossene Dokumenttypliste. Jeder andere Dokumenttyp ist zulässig, wenn
-  das Projekt beziehungsweise die Nutzervorgabe ein Profil auswählt, das ihn
-  deklariert. Dessen \code{mode-setup-file} wird nach den eingebauten
-  Verhaltensklassen, aber vor der Aktivierung des Blattmodus eingelesen. Damit
-  benötigt das hier beschriebene \code{studyguide} keine Änderung am Kern der
-  Klasse.
-}{}
-
-\section{\ldeen{Overlayfähige einfache Befehle}
-                 {Overlay-aware simple commands}}
-
-\ldeen{
-  \cs{MakeOverlayAwareCommand} ist der klar begrenzte Nachfolger des
-  experimentellen \cs{osgmakeselectable}. Er erweitert einen vorhandenen
-  Befehl um eine spitze Spezifikation. Registrierte
-  Dokumentmodi werden portabel ausgewertet. Andere Spezifikationen werden bei
-  vorhandenem Overlaybackend an dessen \cs{only} delegiert.
-}{
-  \cs{MakeOverlayAwareCommand} is the deliberately limited successor of the
-  experimental \cs{osgmakeselectable}. It augments an existing command with
-  an angle-bracket specification. Registered document modes are
-  evaluated portably. Other specifications are delegated to the overlay
-  backend's \cs{only}, if available.
-}
-
-\begin{verbatim}
-\MakeOverlayAwareCommand
-  [arguments={s o},default-mode=slides,fallback=flatten]
-  {\\}
-
-Text\\<slides>[3ex]
-\end{verbatim}
-
-\ldeen{
-  Ohne natives Overlaybackend bestimmt \code{fallback} die Semantik echter
-  Overlayspezifikationen: \code{flatten} führt den Befehl aus, \code{omit}
-  lässt ihn aus und \code{error} meldet die fehlende Fähigkeit. Der Standard
-  ist \code{flatten}. \code{arguments} enthält die \pkg*{xparse}-Signatur der
-  nach der Winkelspezifikation folgenden Argumente. Im aktiven Zweig liest der
-  Originalbefehl diese Argumente; im ausgelassenen Zweig konsumiert sie ein
-  automatisch erzeugter Gobbler. Ohne \code{arguments} wird eine leere
-  Signatur angenommen.
-}{
-  Without a native overlay backend, \code{fallback} defines the semantics of
-  genuine overlay specifications: \code{flatten} executes the command,
-  \code{omit} drops it, and \code{error} reports the missing capability. The
-  default is \code{flatten}. \code{arguments} contains the \pkg*{xparse}
-  signature of the arguments following the angle specification. In the active
-  branch the original command reads these arguments; in the omitted branch an
-  automatically generated gobbler consumes them. Omitting \code{arguments}
-  selects an empty signature.
-}
-
-\section{\ldeen{Modusabhängige Werte}{Mode-dependent values}}
-
-\ldeen{
-  \cs{ModeValue} löst, anders als \cs{MakeOverlayAwareCommand}, nicht einen
-  ganzen Befehlsaufruf modusabhängig auf, sondern einen einzelnen Wert. Es
-  ist damit an jeder Stelle einsetzbar, an der ein Makroargument erwartet
-  wird -- auch in Parametern fremder Befehle wie \cs{includegraphics} oder
-  in Register­zuweisungen wie \cs{skip0=\ModeValue{...}} --, ohne den
-  Zielbefehl selbst anzufassen.
-}{
-  Unlike \cs{MakeOverlayAwareCommand}, \cs{ModeValue} does not resolve an
-  entire command call by mode, but a single value. It therefore drops into
-  any position that expects a macro argument -- including parameters of
-  third-party commands such as \cs{includegraphics}, or register
-  assignments such as \cs{skip0=\ModeValue{...}} -- without touching the
-  target command itself.
-}
-
-\begin{verbatim}
-\includegraphics[width=\ModeValue{default=5cm|handout=8cm}]{plot}
-\end{verbatim}
-
-\ldeen{
-  Das Argument ist eine mit \code{|} getrennte Liste von
-  \code{modus=wert}-Paaren -- ein \code{=} statt des sonst im Paket für
-  eine \code{modus:rest}-Qualifikation genutzten Doppelpunkts, weil
-  \code{=} von \cs{ExplSyntaxOn} unberührt bleibt, während ein Doppelpunkt
-  in diesem Syntaxregime zum Buchstaben wird und daher nie auf einen
-  Doppelpunkt träfe, den ein Wert legitim enthalten könnte. \cs{ModeValue}
-  sucht darin, in der Reihenfolge von \cs{ActiveLectureModes}, den ersten
-  passenden Eintrag; \code{default} ist dabei stets ein letzter, immer
-  vorhandener Kandidat. Fehlt ein passender Eintrag und auch
-  \code{default}, expandiert \cs{ModeValue} zu nichts -- ein eigener
-  Fehlertext ist an dieser Stelle
-  nicht möglich, weil das Ergebnis auch in reinen Expansionskontexten
-  (\cs{dimen}-, \cs{skip}- und ähnliche Zuweisungen) entstehen muss, in
-  denen nicht-expandierbare Befehle wie \cs{msg_error:nnn} nicht ausgeführt
-  werden können. Ein Wert darf selbst \code{=}-Zeichen oder Doppelpunkte
-  enthalten (etwa eine URL), aber kein unmaskiertes \code{|}.
-}{
-  The argument is a \code{|}-separated list of \code{mode=value} pairs --
-  an \code{=} rather than the colon the rest of the package uses for a
-  \code{mode:tail} qualification, because \code{=} is untouched by
-  \cs{ExplSyntaxOn}, whereas a colon becomes a letter in that syntax regime
-  and so could never match a colon a value might legitimately contain.
-  \cs{ModeValue} searches it, in the order of \cs{ActiveLectureModes},
-  for the first matching entry; \code{default} is always a last,
-  always-present candidate. If no entry matches and \code{default} is
-  absent too, \cs{ModeValue} expands to nothing -- a dedicated error
-  message is not possible here, because the result must also arise in
-  pure expansion contexts (\cs{dimen}, \cs{skip} and similar assignments)
-  where non-expandable commands such as \cs{msg_error:nnn} cannot run. A
-  value may itself contain "=" signs or colons (a URL, say), but not an
-  unescaped \code{|}.
-}
-
-\ldeen{
-  Ein Segment ganz ohne \code{=} gilt dabei als unqualifizierter Wert und
-  damit als \code{default}-Eintrag:
-}{
-  A segment without any \code{=} at all counts as an unqualified value,
-  and thus as the \code{default} entry:
-}
-
-\begin{verbatim}
+\subsection{\ldeen{Modusabhängige Werte}{Mode-dependent values}}
+\begin{commands}
+\command{ModeValue}[\marg{specification}]
+\ldeen{Expandiert zu einem ausgewählten Wert. Die Spezifikation besteht aus
+mit \code{|} getrennten Einträgen der Form \code{modus=wert}.
+\code{default=wert} oder ein Eintrag ohne \code{=} gibt den Ersatzwert an.
+Ohne Treffer und ohne Ersatzwert ist das Ergebnis leer.}
+{Expands to a selected value. The specification consists of entries of the
+form \code{mode=value}, separated by \code{|}. Use \code{default=value}
+or an entry without \code{=} for the fallback. With no match and no
+fallback the result is empty.}
+\end{commands}
+\begin{example}[code-only,gobble=0]
+% With graphicx loaded:
 \includegraphics[width=\ModeValue{5cm|handout=8cm}]{plot}
-\end{verbatim}
-
+\end{example}
 \ldeen{
-  ist gleichbedeutend mit \code{default=5cm|handout=8cm}. Das ist die
-  gleiche Kurzform, die die frühere, wegen Catcode-Problemen mit
-  \cs{ExplSyntaxOn} aufgegebene \code{:}-Syntax des Pakets bot (dort war
-  ein Eintrag ohne \code{modus:}-Präfix automatisch der Default); unter
-  \code{=} ist sie wieder verfügbar, weil sich ein fehlendes \code{=} --
-  anders als ein fehlender Doppelpunkt in jener alten Syntax -- gefahrlos
-  erkennen lässt. Höchstens ein solcher Eintrag pro Spezifikation ist
-  sinnvoll.
+Die Reihenfolge der Einträge in der Spezifikation entscheidet nicht über
+die Auswahl. Maßgeblich ist \cs{ActiveLectureModes}: Eltern stehen vor ihren
+Kindern, die ausgewählten Modi werden in Auswahlreihenfolge durchlaufen;
+jeder Modus kommt nur einmal vor. Der erste Modus mit einem Eintrag gewinnt,
+\code{default} kommt zuletzt. Verwenden Sie hier die kanonischen Namen,
+also beispielsweise \code{projector} statt des Alias \code{slides}.
 }{
-  is equivalent to \code{default=5cm|handout=8cm}. This is the same
-  shorthand the package's former \code{:}-based syntax offered for free
-  (there, an entry without a \code{mode:} prefix was automatically the
-  default) before it was abandoned over \cs{ExplSyntaxOn} catcode
-  problems; under \code{=} it is available again, because a missing
-  \code{=} -- unlike a missing colon under that old syntax -- can be
-  detected safely. At most one such entry per spec is meaningful.
+The order of entries in the specification does not determine the result.
+\cs{ActiveLectureModes} supplies the priority: parents precede their
+children, selected modes are traversed in selection order, and each mode
+occurs only once. The first mode with an entry wins; \code{default} is
+last. Use canonical names here, for example \code{projector} rather than
+the alias \code{slides}.
 }
+\begin{example}[code-only,gobble=0]
+% mode=script: ActiveLectureModes = longform,print,article,script
+\ModeValue{script=8cm|print=6cm|default=5cm} % -> 6cm
+\ModeValue{script=8cm|default=5cm}           % -> 8cm
+\end{example}
+\ldeen{
+\cs{ModeValue} ist expandierbar und auch für Längen- und Registerzuweisungen
+geeignet. Es finalisiert den Graphen nicht selbst: Soll es bereits in der
+Präambel verwendet werden, rufen Sie zuvor \cs{FinalizeLectureModes} auf.
+Werte dürfen weitere Gleichheitszeichen und Doppelpunkte enthalten;
+\code{|} dient als Trenner. Verwenden Sie höchstens einen Ersatzwert.
+}{
+\cs{ModeValue} is expandable and can be used in length and register
+assignments. It does not finalize the graph itself: call
+\cs{FinalizeLectureModes} first when using it in the preamble. Values may
+contain further equals signs and colons; \code{|} serves as the separator.
+Use at most one fallback entry.
+}
+
+\clearpage
+\section{\ldeen{Konfigurationsreferenz}{Configuration reference}}
+\subsection{\ldeen{Paketoptionen}{Package options}}
+\begin{options}
+\keyval{mode}{name}\Default{auto}
+\ldeen{Wählt beim Laden einen bereits bekannten Modus. Eigene Modi erst
+nach dem Laden deklarieren und dann mit \cs{SetLectureModes} wählen.
+Bei \code{auto} wählt Beamer im Handoutbetrieb \code{handout,beamer}, sonst
+\code{slides,beamer}; \pkg*{ltx-talk} liefert entsprechend \code{handout},
+\code{article} oder \code{slides}. Andere Klassen erhalten \code{article}.}
+{Selects a mode already known at load time. Declare custom modes after
+loading and select them with \cs{SetLectureModes}. With \code{auto}, Beamer
+selects \code{handout,beamer} in handout mode and \code{slides,beamer}
+otherwise; \pkg*{ltx-talk} selects \code{handout}, \code{article}, or
+\code{slides} as appropriate. Other classes select \code{article}.}
+\keybool{full}\Default{true}
+\ldeen{Aktiviert die Integration in vorhandene Modus- und Overlaybefehle.
+\code{full=false} lässt diese nativen Befehle unverändert. Portable Abfragen
+bleiben nutzbar. Fehlende Befehle können weiterhin ergänzt werden.}
+{Enables integration into existing mode and overlay commands.
+\code{full=false} leaves these native commands unchanged. Portable queries
+remain available. Missing commands may still be supplied.}
+\keybool{patch-overlays}\Default{true}
+\ldeen{Dieselbe Einstellung wie \option{full}; bei mehrfacher Angabe gilt
+die zuletzt gesetzte Einstellung.}{The same setting as \option{full};
+if specified more than once, the last setting wins.}
+\keybool{ignorenonframetext}\Default{false}
+\ldeen{Aktiviert zu Dokumentbeginn die Filterung mit \code{*}.
+Bloße Angabe der Option bedeutet \code{true}.}
+{Enables filtering with \code{*} at the start of the document.
+Naming the option without a value means \code{true}.}
+\keyval{raw-skip-envs}{list}
+\ldeen{Ersetzt die Liste der beim Filtern wörtlich zu überspringenden
+Umgebungen. Vorgabe: \env{verbatim}, \env{Verbatim}, \env{lstlisting}, \env{minted}, \env{comment}.
+Siehe Abschnitt~\ref{sec:ltxtalk-filter}.}
+{Replaces the list of environments to skip verbatim while filtering.
+Default: \env{verbatim}, \env{Verbatim}, \env{lstlisting}, \env{minted}, \env{comment}.
+See Section~\ref{sec:ltxtalk-filter}.}
+\keybool{deferred}\Default{false}
+\ldeen{Für Klassenautoren: unterdrückt die automatische Moduswahl und
+Overlayintegration beim Laden. Die Klasse wählt den Modus selbst und ruft
+nach dem Laden ihrer Basisklasse den unten beschriebenen
+Aktivierungsbefehl auf.}
+{For class authors: suppresses automatic mode selection and overlay
+integration at load time. The class selects the mode itself and calls the
+activation command described below after loading its base class.}
+\end{options}
+
+\subsection{\ldeen{Deklaration und Auswahl}{Declaration and selection}}
+\begin{commands}
+\command{DeclareLectureMode}[\oarg{parents=\meta{list}}\marg{mode}]
+\ldeen{Deklariert einen Modus, optional mit kommaseparierten Eltern.
+\code{parent} ist ein Synonym für \code{parents}. Eltern müssen spätestens
+beim Abschluss deklariert sein; verwenden Sie ihre kanonischen Namen.}
+{Declares a mode, optionally with comma-separated parents. \code{parent}
+is a synonym for \code{parents}. Parents must be declared by finalization;
+use their canonical names.}
+\command{DeclareLectureModeParents}[\marg{mode}\marg{list}]
+\ldeen{Setzt die vollständige Elternliste neu; ergänzt nicht die alte Liste.
+Deklariert den Modus bei Bedarf mit.}
+{Replaces the complete parent list rather than appending to it. Also
+declares the mode if needed.}
+\command{DeclareLectureModeAlias}[\marg{alias}\marg{mode}]
+\ldeen{Deklariert einen alternativen Namen. Aliasketten sind erlaubt,
+Aliaskreise und unbekannte Endziele nicht.}
+{Declares an alternative name. Alias chains are allowed; alias cycles and
+unknown final targets are not.}
+\command{SetLectureModes}[\marg{list}]
+\ldeen{Ersetzt die bisherige Auswahl durch die angegebene Liste.}
+{Replaces the previous selection with the given list.}
+\command{AddLectureModes}[\marg{list}]
+\ldeen{Ergänzt die Auswahl. Die Modi müssen bereits
+deklariert sein; Aliase werden aufgelöst, doppelte Einträge entfernt.}
+{Extends the selection. Modes must already be declared;
+aliases are resolved and duplicates removed.}
+\command{FinalizeLectureModes}
+\ldeen{Prüft und schließt den Graphen ab. Wiederholter Aufruf ist erlaubt.}
+{Validates and finalizes the graph. Repeated calls are allowed.}
+\command{LectureModes}
+\ldeen{Expandiert zur kommaseparierten Auswahl ohne geerbte Eltern und mit
+aufgelösten Aliasnamen.}{Expands to the comma-separated selection without
+inherited parents and with aliases resolved.}
+\command{ActiveLectureModes}
+\ldeen{Expandiert zur aktiven Liste einschließlich Eltern. Vor Abschluss
+ist diese Liste noch nicht berechnet. Beide Listenbefehle finalisieren
+nicht selbst. Die Reihenfolge bestimmt auch \cs{ModeValue}.}
+{Expands to the active list including parents. Before finalization this
+list has not yet been computed. Neither list command finalizes the graph.
+The order also determines \cs{ModeValue}.}
+\command{LectureModesActivateOverlays}
+\ldeen{Bindet nach dem Laden der Basisklasse die Overlaybefehle ein.
+Nur bei \code{deferred=true} selbst einmal aufrufen. Wählt keinen Modus.}
+{Integrates overlay commands after loading the base class. Call this once
+only when using \code{deferred=true}. It does not select a mode.}
+\end{commands}
 
 \section{\ldeen{Zusammenspiel mit Backends}{Backend interaction}}
 \label{sec:backend-interaction}
@@ -695,17 +490,15 @@ Text\\<slides>[3ex]
   }
   \item \ldeen{
     \emph{nativ} -- alles Übrige: Backend-Modusnamen, \code{|}-Modusskopierung
-    über unbekannte Modi, Actionspezifikationen, Beamers ungebundene
-    Modusschalter, \cs{mode*}. Wird unverändert an das Backend delegiert.
+    über unbekannte Modi, Actionspezifikationen und native Modusschalter mit unbekannten Namen. Wird unverändert an das Backend delegiert.
   }{
     \emph{native} -- everything else: backend mode names, \code{|} mode scoping
-    over unknown modes, action specifications, Beamer's unbraced mode switches,
-    \cs{mode*}. Delegated to the backend unchanged.
+    over unknown modes, action specifications and native mode switches with unknown names. Delegated to the backend unchanged.
   }
 \end{itemize}
 
 \ldeen{
-  \code{|} und \code{,} innerhalb von \code{<...>} sind stets Backendsyntax;
+  Bei Backendbefehlen sind \code{|} und \code{,} innerhalb von \code{<...>} stets Backendsyntax;
   \code{||} ist der einzige portable Oder-Operator. Ein Ausdruck, der portable
   Modi mit nativen Overlayatomen mischt, muss dies also über \code{||} oder die
   Form \code{modus:rest} kenntlich machen. Fehlt der geladenen Klasse ein
@@ -713,7 +506,7 @@ Text\\<slides>[3ex]
   \emph{anzeigen} abgeschwächt. Alle diese Eingriffe lassen sich mit
   \code{patch-overlays=false} abschalten.
 }{
-  \code{|} and \code{,} inside \code{<...>} are always backend syntax; \code{||}
+  For backend commands, \code{|} and \code{,} inside \code{<...>} are always backend syntax; \code{||}
   is the only portable disjunction operator, so an expression that mixes
   portable modes with native overlay atoms must signal this with \code{||} or
   the \code{mode:tail} form. When the loaded class has no overlay backend, a
@@ -721,6 +514,361 @@ Text\\<slides>[3ex]
   patches can be turned off with \code{patch-overlays=false}.
 }
 
+\subsection{\ldeen{Eigene Befehle overlayfähig machen}{Making custom commands overlay-aware}}
+\begin{commands}
+\command{MakeOverlayAwareCommand}[\oarg{options}\marg{command}]
+\ldeen{Erweitert einen vorhandenen Befehl um eine unmittelbar folgende
+Winkelspezifikation. Registrierte Modi werden portabel ausgewertet; echte
+Overlays werden vom vorhandenen Backend ausgewertet.}
+{Adds an angle-bracket specification immediately after an existing command.
+Registered modes are evaluated portably; genuine overlays are evaluated
+by the available backend.}
+\end{commands}
+\begin{options}
+\keyval{arguments}{signature}\Default{\ldeen{leer}{empty}}
+\ldeen{Argumentsignatur des Originalbefehls in der Syntax von
+\cs{NewDocumentCommand}, beispielsweise \code{m} oder \code{s o}.
+Sie muss alle nach der Winkelspezifikation folgenden Argumente beschreiben,
+damit diese auch im ausgelassenen Zweig korrekt gelesen werden.}
+{Argument signature of the original command in \cs{NewDocumentCommand}
+syntax, for example \code{m} or \code{s o}. It must describe all arguments
+following the angle specification so they are consumed correctly even when
+the command is omitted.}
+\keyval{default-mode}{mode}\Default{\ldeen{leer}{empty}}
+\ldeen{Modusspezifikation für Aufrufe ohne Winkelargument. Ohne diese
+Option wird ein Aufruf ohne Winkelargument unverändert ausgeführt.}
+{Mode specification for calls without an angle argument. Without this
+option, a call without an angle argument executes unchanged.}
+\keychoice{fallback}{flatten,omit,error}\Default{flatten}
+\ldeen{Verhalten bei echten Overlays ohne natives Backend:
+\code{flatten} führt den Befehl aus, \code{omit} lässt ihn einschließlich
+Argumenten aus, \code{error} meldet einen Fehler.}
+{Behavior for genuine overlays without a native backend:
+\code{flatten} executes the command, \code{omit} omits it and its arguments,
+and \code{error} reports an error.}
+\end{options}
+\begin{example}[code-only,gobble=0]
+\NewDocumentCommand{\Remark}{m}{\textbf{#1}}
+\MakeOverlayAwareCommand[arguments=m]{\Remark}
+% In the document:
+\Remark<print>{For the printed edition.}
+\end{example}
+\ldeen{Die Winkelspezifikation steht vor Stern und optionalen Argumenten
+ des Originalbefehls, beispielsweise:}
+{The angle specification precedes the original command's star and optional
+arguments, for example:}
+\begin{example}[code-only,gobble=0]
+\MakeOverlayAwareCommand
+  [arguments={s o},default-mode=slides,fallback=flatten]{\\}
+Text\\<slides>[3ex]
+\end{example}
+
+\section{\ldeen{Filtermodi}{Filter modes}}
+\label{sec:ltxtalk-filter}
+
+\ldeen{
+  \thepkg\ verallgemeinert Beamers eigenes \cs{mode*} zu einem portablen
+  Mechanismus: \code{*} ist selbst nur ein vorinstallierter Modus (siehe
+  Abschnitt~\ref{sec:model}), und das Paket unterscheidet nicht zwischen
+  ihm und jedem anderen, selbst deklarierten \emph{Filtermodus}. Ist ein
+  Filtermodus aktiv, wird alles außerhalb registrierter
+  \emph{Inhaltsumgebungen} (per Vorgabe \env{frame}, falls vorhanden)
+  verworfen, mit registrierten Ausnahmen. Das funktioniert unter Beamer,
+  \pkg*{ltx-talk} und mit gewöhnlichen Klassen wie \cls*{article}
+  gleichermaßen -- eine Prüfung mit Aufgaben-, Lösungs- und
+  Bewertungsumgebungen benötigt weder Beamer noch \pkg*{ltx-talk}.
+}{
+  \thepkg\ generalizes Beamer's own \cs{mode*} into a portable mechanism:
+  \code{*} is itself just a pre-installed mode (see
+  Section~\ref{sec:model}), and the package does not distinguish between
+  it and any other, self-declared \emph{filter mode}. While a filter mode
+  is active, everything outside registered \emph{unit environments} (by
+  default \env{frame}, if present) is dropped, with registered
+  exceptions. This works equally under Beamer, \pkg*{ltx-talk}, and with
+  ordinary classes such as \cls*{article} -- an exam with task, solution,
+  and grading environments needs neither Beamer nor \pkg*{ltx-talk}.
+}
+
+\ldeen{
+  Die tatsächliche Filterung benötigt Lua\LaTeX\ und läuft, wo möglich,
+  über das eigene Backend: Ist ein natives \cs{mode*} vorhanden (Beamer)
+  \emph{und} sind keine Ausnahmen über dessen feste Positivliste hinaus
+  registriert, delegiert \code{*} unverändert dorthin -- ohne Lua\LaTeX\
+  und ohne Verhaltensänderung an bestehenden Beamer-Dokumenten. Sobald
+  eigene Ausnahmen registriert sind oder ein anderer Filtermodus als
+  \code{*} verwendet wird, übernimmt zwingend der portable Scanner dieses
+  Pakets, da kein Backend eine beliebige, selbst deklarierte
+  Positivliste kennen kann.
+}{
+  The actual filtering needs Lua\LaTeX\ and runs through the native
+  backend where possible: if a native \cs{mode*} exists (Beamer)
+  \emph{and} no exceptions beyond its fixed allow-list are registered,
+  \code{*} delegates there unchanged -- no Lua\LaTeX, no behavior change
+  for existing Beamer documents. As soon as custom exceptions are
+  registered, or a filter mode other than \code{*} is used, the
+  package's own portable scanner necessarily takes over, since no
+  backend can know about an arbitrary, self-declared allow-list.
+}
+
+\begin{example}[code-only,gobble=0]
+\usepackage[ignorenonframetext]{osglecture-modes}
+\end{example}
+
+\ldeen{
+  Die Paketoption \code{ignorenonframetext} (Vorgabe bei bloßer Nennung:
+  wahr) aktiviert den eingebauten Modus \code{*} -- entspricht also
+  einem \cs{mode*} zu Dokumentbeginn. Für jeden
+  anderen Filtermodus ist keine eigene Paketoption nötig: Er wird wie
+  jeder andere Modus deklariert (\cs{DeclareLectureMode}) und über die
+  Schalterform \cs{mode<name>} -- ohne Inhaltsargument -- direkt im
+  Dokument aktiviert; \cs{mode*} ist dafür nur die aus Beamer-Kompatibilität
+  beibehaltene Syntax für \cs{mode<*>}. \code{raw-skip-envs=\meta{Liste}}
+  ersetzt die Liste wörtlich zu überspringender Umgebungen. Vorgabe sind
+  \env{verbatim}, \env{Verbatim}, \env{lstlisting}, \env{minted} und
+  \env{comment}. Ergänzen Sie eigene Verbatim-Umgebungen in dieser Liste,
+  wenn sie in ausgefilterten Dokumentteilen vorkommen.
+
+}{
+  The package option \code{ignorenonframetext} (default when named bare:
+  true) activates the built-in \code{*} mode -- equivalent to a
+  \cs{mode*} at the start of the document. No package option is needed
+  for any other filter mode: it is declared like any other mode
+  (\cs{DeclareLectureMode}) and activated directly in the document via
+  the switch form \cs{mode<name>} -- without a content argument;
+  \cs{mode*} is only the syntax kept for Beamer compatibility with
+  \cs{mode<*>}. \code{raw-skip-envs=\meta{list}} replaces the built-in
+  list of environments to skip verbatim. The defaults are \env{verbatim},
+  \env{Verbatim}, \env{lstlisting}, \env{minted}, and \env{comment}.
+  Include custom verbatim environments in this list if they occur in
+  filtered parts of the document.
+
+}
+
+\ldeen{
+  Alles außerhalb einer registrierten Inhaltsumgebung wird verworfen, mit
+  eingebauten Ausnahmen: \env{frame} und \env{frame*} selbst (falls
+  vorhanden), die Gliederungsbefehle
+  einschließlich \cs{appendix}, \cs{lecturemode}, \cs{mode} und \cs{maketitle}
+  passieren den Scanner unverändert; die Gliederungsbefehle erhalten
+  außerdem ein unmittelbar folgendes
+  \cs{label}; ein \cs{label} an anderer Stelle verschwindet dagegen
+  mit dem verworfenen Text. Der optionale, weiterhin
+  \pkg*{ltx-talk}-spezifische Adapter \pkg*{osglecture-modes-ltxtalk}
+  ergänzt \cs{lecture} als weitere allgemeine Ausnahme und setzt die
+  Filterung nach jedem \cs{lecture} fort.
+}{
+  Everything outside a registered unit environment is dropped, with
+  built-in exceptions: \env{frame} and \env{frame*} themselves (if
+  present), structural commands
+  including \cs{appendix}, \cs{lecturemode}, \cs{mode}, and
+  \cs{maketitle} pass through the scanner unchanged; the structural
+  commands also preserve an immediately following \cs{label}, while a \cs{label} elsewhere in
+  dropped text vanishes along with it. The optional, still
+  \pkg*{ltx-talk}-specific adapter \pkg*{osglecture-modes-ltxtalk} adds
+  \cs{lecture} as a further exception and resumes filtering after every
+  \cs{lecture}.
+}
+
+\begin{infobox}{\ldeen{Beginn der portablen Filterung}{When portable filtering starts}}
+\ldeen{Im aktuellen Paket aktiviert der Modusschalter die Filterung,
+das tatsächliche Überspringen beginnt aber erst nach \cs{maketitle}.
+Beim Zusatzpaket für \pkg*{ltx-talk} startet es auch nach \cs{lecture}.
+Text davor wird normal verarbeitet. Ein Dokument ohne einen solchen
+Aufruf wird durch den Schalter allein noch nicht gefiltert. Dies betrifft
+den portablen Filter; bei Delegation an Beamer gilt dessen natives Verhalten.}
+{In the current package, the mode switch enables filtering, but actual
+skipping starts only after \cs{maketitle}. With the additional package for
+\pkg*{ltx-talk}, it also starts after \cs{lecture}. Earlier text is processed
+normally. A document without such a call is not filtered by the switch
+alone. This applies to the portable filter; delegation to Beamer retains
+its native behavior.}
+\end{infobox}
+
+\subsection{\ldeen{Ausnahmen registrieren}{Registering exceptions}}
+\begin{commands}
+  \command{DeclareLectureKeepCommand}[\oarg{mode=\meta{name}}\marg{command}]
+  \ldeen{Erhält einen bereits definierten Befehl mit genau einem
+  Pflichtargument, etwa einen eigenen Eingabebefehl. Befehl und Argument
+  werden normal ausgeführt.}{Keeps an already defined command with exactly
+  one mandatory argument, such as a custom input command. The command and
+  its argument are executed normally.}
+  \command{DeclareLectureKeepLabelCommand}[\oarg{mode=\meta{name}}\marg{command}]
+  \ldeen{Wie oben, aber nur unmittelbar nach einem Gliederungsbefehl.
+  Damit kann ein eigener Label-Befehl das eingebaute \cs{label} ersetzen,
+  ohne Labels in verworfenem Text zu erhalten.}
+  {As above, but only immediately after a structural command. This lets a
+  custom label command replace the built-in \cs{label} without preserving
+  labels in discarded text.}
+  \command{DeclareLectureKeepEnvironment}[\oarg{mode=\meta{name}}\marg{list}]
+  \ldeen{Erhält die Umgebungen einer kommaseparierten Liste. Sie müssen
+  bereits definiert sein. Ihr Inhalt wird normal verarbeitet; nach dem
+  Ende einer solchen Umgebung wird wieder gefiltert.}
+  {Keeps the environments in a comma-separated list. They must already be
+  defined. Their content is processed normally; filtering resumes after
+  each such environment ends.}
+\end{commands}
+
+\ldeen{
+Ohne \code{mode=} gilt die Ausnahme in jedem Filtermodus. Mit
+\code{mode=\meta{name}} gilt sie nur, wenn dieser Modus aktiv ist.
+Dabei zählt auch die Vererbung: Ein ausgewählter Modus mit mehreren
+Filtermodi als Eltern vereinigt deren Ausnahmen. Registrieren Sie die
+Ausnahmen in der Präambel, bevor Sie die Filterung aktivieren.
+}{
+Without \code{mode=}, the exception applies in every filter mode. With
+\code{mode=\meta{name}}, it applies only when that mode is active.
+Inheritance counts too: a selected mode with multiple filter modes as
+parents combines their exceptions. Register exceptions in the preamble
+before activating filtering.
+}
+
+\begin{example}[code-only,gobble=0]
+\documentclass{article}
+\usepackage{osglecture-modes} % compile with LuaLaTeX
+\NewDocumentEnvironment{task}{}{}{}
+\DeclareLectureKeepEnvironment{task}
+\DeclareLectureMode{solutions}
+\NewDocumentEnvironment{solution}{}{}{}
+\DeclareLectureKeepEnvironment[mode=solutions]{solution}
+\title{Exercises}
+\author{}
+\date{}
+\begin{document}
+\mode<solutions>
+\maketitle
+This text is skipped.
+\begin{task}An exercise.\end{task}
+\begin{solution}Its solution.\end{solution}
+\end{document}
+\end{example}
+
+\ldeen{
+Das Beispiel gibt den Titel, die Aufgabe und die Lösung aus. Ersetzen Sie
+\code{\string\mode<solutions>} durch \cs{mode*}, bleiben Titel und Aufgabe.
+Ohne Aktivierung eines Filters wird auch der Text außerhalb der Umgebungen
+normal verarbeitet; die Ausnahmeregistrierung allein blendet nichts aus.
+Ein Schalter aktiviert den genannten Modus zusätzlich, er ersetzt nicht
+die bisher aktive Modusmenge. Mehrere aktivierte Filtermodi vereinigen
+daher ihre Ausnahmen. Eine portable Anweisung zum Deaktivieren bietet
+das Paket derzeit nicht.
+}{
+The example prints the title, exercise, and solution. Replacing
+\code{\string\mode<solutions>} with \cs{mode*} keeps the title and exercise.
+Without an active filter, text outside the environments is processed
+normally too; registering exceptions alone does not hide anything.
+A switch activates the named mode additionally rather than replacing the
+active mode set. Multiple activated filter modes therefore combine their
+exceptions. The package currently provides no portable deactivation command.
+}
+
+\subsection{\ldeen{Zusatzpaket für ltx-talk}{Additional package for ltx-talk}}
+\begin{example}[code-only,gobble=0]
+\documentclass{ltx-talk}
+\usepackage[ignorenonframetext]{osglecture-modes-ltxtalk}
+\end{example}
+\ldeen{
+Das Zusatzpaket lädt das Kernpaket und ergänzt \cs{lecture} als Ausnahme.
+Es akzeptiert \option{mode}, \option{ignorenonframetext} und
+\option{raw-skip-envs}. Weitere Kernoptionen geben Sie bei Bedarf beim
+vorherigen Laden von \thepkg\ an. Für eigene Umgebungen und Befehle gelten
+dieselben Registrierungsbefehle wie oben.
+}{
+The additional package loads the core package and adds \cs{lecture} as an
+exception. It accepts \option{mode}, \option{ignorenonframetext}, and
+\option{raw-skip-envs}. If you need other core options, load \thepkg\ first
+with those options. Register custom environments and commands as above.
+}
+
+\section{\ldeen{Modusabhängige Befehle definieren}{Defining mode-dependent commands}}
+\label{sec:behavior}
+\ldeen{
+Für einfache Fallunterscheidungen genügt \cs{IfLectureModeTF}. Soll ein
+öffentlicher Befehl je nach Dokumentmodus eine eigene Definition erhalten,
+können Sie dagegen Verhaltensklassen verwenden. Diese bündeln Modi mit
+derselben Befehlsdefinition, etwa \code{dynamic} für Folien und
+\code{longform} für Artikel und Skripte. Verhaltensklassen und Dokumentmodi
+sind getrennte Namenräume; gleiche Namen stellen keine automatische
+Verbindung her. Das eigenständige Paket deklariert keine Verhaltensklassen.
+}{
+For simple conditional content, \cs{IfLectureModeTF} suffices. To give a
+public command a different definition depending on the document mode,
+use behavior classes instead. These group modes that share a command
+definition, such as \code{dynamic} for slides and \code{longform} for
+articles and scripts. Behavior classes and document modes have separate
+namespaces; identical names do not establish an automatic connection.
+The standalone package does not predeclare behavior classes.
+}
+\begin{example}[code-only,gobble=0]
+\documentclass{article}
+\usepackage[mode=script]{osglecture-modes}
+\DeclareModeBehaviorClass{dynamic}
+\DeclareModeBehaviorClass{longform}
+\AssignLectureModeBehavior{slides}{dynamic}
+\AssignLectureModeBehavior{script,article}{longform}
+\NewDocumentCommand{\BriefRemark}{m}{\textbf{#1}}
+\NewDocumentCommand{\FullRemark}{m}{\begin{quote}#1\end{quote}}
+\DeclareModeAwareCommand{\Remark}{dynamic,longform}
+\DeclareModeAwareCommandImplementation
+  {\Remark}{dynamic}{\BriefRemark}
+\DeclareModeAwareCommandImplementation
+  {\Remark}{longform}{\FullRemark}
+\begin{document}
+\Remark{This is set as a quotation in script mode.}
+\end{document}
+\end{example}
+
+\begin{commands}
+\command{DeclareModeBehaviorClass}[\marg{class}]
+\ldeen{Deklariert eine Verhaltensklasse.}{Declares a behavior class.}
+\command{AssignLectureModeBehavior}[\marg{modes}\marg{class}]
+\ldeen{Ordnet einer kommaseparierten Modusliste eine bereits deklarierte
+Verhaltensklasse zu. Aliase sind erlaubt. Die Zuordnung wird nicht von
+Elternmodi geerbt: Ordnen Sie die tatsächlich ausgewählten Modi zu.}
+{Assigns a previously declared behavior class to a comma-separated list
+of modes. Aliases are allowed. Assignment is not inherited from parent
+modes: assign the modes actually selected.}
+\command{DeclareModeAwareCommand}[\marg{command}\marg{classes}]
+\ldeen{Deklariert einen neuen öffentlichen Befehl und die kommaseparierte
+Liste der Verhaltensklassen, für die Definitionen vorliegen müssen.
+Ein vorhandener Befehl wird nicht überschrieben.}
+{Declares a new public command and the comma-separated list of behavior
+classes for which definitions are required. An existing command is not
+overwritten.}
+\command{DeclareModeAwareCommandImplementation}
+  [\marg{command}\marg{class}\marg{implementation command}]
+\ldeen{Registriert den Definitionsbefehl für eine Verhaltensklasse.
+Dieser besitzt selbst die vollständige Argumentsignatur. Verwenden Sie
+für alle Varianten eine zum gemeinsamen Quelltext passende Signatur.}
+{Registers the implementation command for a behavior class. That command
+owns the complete argument signature. Use signatures compatible with the
+shared source for all variants.}
+\command{FinalizeModeAwareCommands}
+\ldeen{Prüft alle geforderten Definitionen, auch für im aktuellen Lauf
+inaktive Verhaltensklassen, und bindet die öffentlichen Befehle an ihre
+gewählten Definitionen. Schließt bei Bedarf auch den Modusgraphen ab.}
+{Checks all required definitions, including behavior classes inactive in
+the current run, and binds public commands to their selected definitions.
+Also finalizes the mode graph if necessary.}
+\end{commands}
+
+\ldeen{
+Die Auswahl berücksichtigt die mit \cs{SetLectureModes} oder
+\cs{AddLectureModes} gewählten Modi. Mindestens einer muss eine
+Verhaltensklasse liefern; mehrere zugeordnete Modi dürfen keine
+widersprüchlichen Klassen auswählen. Beim ersten Gebrauch eines solchen
+Befehls, spätestens vor \cs{begin}\Marg{document}, erfolgt der Abschluss
+automatisch. Danach sind keine weiteren Deklarationen oder Zuordnungen
+für modusabhängige Befehle möglich. Später aktivierte Filtermodi wählen
+die Befehlsdefinitionen nicht erneut aus.
+}{
+Selection considers the modes chosen with \cs{SetLectureModes} or
+\cs{AddLectureModes}. At least one must supply a behavior class; multiple
+assigned modes must not select conflicting classes. Finalization occurs
+automatically on first use of such a command, or before
+\cs{begin}\Marg{document} at the latest. Afterwards, no further declarations
+or assignments for mode-dependent commands are possible. Activating filter
+modes later does not reselect command definitions.
+}
 \section{\ldeen{Einschränkungen}{Limitations}}
 
 \begin{itemize}
@@ -743,11 +891,11 @@ Text\\<slides>[3ex]
     \emph{or}; use \code{||} for that.
   }
   \item \ldeen{
-    Eine Basisklasse muss vor \thepkg\ geladen sein, damit ihre Fähigkeiten
-    erkannt werden können.
+    Laden Sie die Basisklasse vor \thepkg. Für Klassen, die erst später ihre
+    Basisklasse laden, gibt es die Option \code{deferred=true}.
   }{
-    A base class must be loaded before \thepkg\ so that its capabilities can be
-    detected.
+    Load the base class before \thepkg. Classes loading their base class
+    later can use \code{deferred=true}.
   }
   \item \ldeen{
     Fehlt einer Basisklasse \cs{only}, \cs{uncover}, \cs{visible},
@@ -766,7 +914,127 @@ Text\\<slides>[3ex]
   }
 \end{itemize}
 
-\section{Implementation}
+\clearpage
+\appendix
+\section{\ldeen{Bundle-Integration: ein eigener Dokumenttyp}
+{Bundle integration: a custom document type}}
+\label{sec:bundle}
+\ldeen{
+Dieser Abschnitt richtet sich an Nutzer von \cls*{osglecture} und OLLM.
+Für die eigenständige Verwendung von \thepkg\ sind diese Schritte nicht
+nötig. Als Beispiel ergänzen wir \code{studyguide}, eine druckbare Langform
+auf Basis von \cls*{scrbook}. Das OLLM-Target bestimmt den Dokumenttyp;
+dieser wird als Modus ausgewählt. Das Dokumentprofil bestimmt dagegen
+Basisklasse und Einrichtung des Dokuments.
+}{
+This section is for users of \cls*{osglecture} and OLLM. These steps are
+not required for standalone use of \thepkg. We add \code{studyguide}, a
+printable long-form document based on \cls*{scrbook}. The OLLM target
+specifies the document type, which is selected as a mode. The document
+profile specifies the base class and document setup instead.
+}
+\subsection{\ldeen{Target registrieren}{Registering the target}}
+\ldeen{Legen Sie in einem eingebundenen OLLM-Definitionspfad die Datei
+\code{targets/studyguide.toml} an:}
+{Create \code{targets/studyguide.toml} in a configured OLLM definition path:}
+\begin{example}[code-only,gobble=0]
+schema = 1
+kind = "target"
+name = "studyguide"
+version = "1.0"
+doctype = "studyguide"
+family = "publication"
+unit_scopes = ["a", "as"]
+\end{example}
+\ldeen{Geben Sie das Target anschließend in \code{ollmconfig.toml} frei.
+Der Definitionspfad muss über die lokale OLLM-Konfiguration oder ein
+installiertes Bundle-Preset eingebunden sein.}
+{Then enable the target in \code{ollmconfig.toml}. The definition path must
+be configured through local OLLM settings or an installed bundle preset.}
+\begin{example}[code-only,gobble=0]
+[targets.studyguide]
+languages = ["de", "en"]
+\end{example}
+\subsection{\ldeen{Modus und Verhalten festlegen}{Declaring mode and behavior}}
+\ldeen{Erstellen Sie die für TeX auffindbare Datei
+\code{osglecture-mode-studyguide.def}. Die Klasse \cls*{osglecture} stellt
+die Verhaltensklasse \code{longform} bereits bereit.}
+{Create \code{osglecture-mode-studyguide.def} where TeX can find it.
+The \cls*{osglecture} class already supplies the \code{longform} behavior class.}
+\begin{example}[code-only,gobble=0]
+\ProvidesExplFile{osglecture-mode-studyguide.def}
+  {2026-08-02}{v0.4.0}{studyguide mode setup}
+\DeclareLectureMode[parents={longform,print}]{studyguide}
+\AssignLectureModeBehavior{studyguide}{longform}
+\end{example}
+\ldeen{Damit sind Abfragen auf \code{studyguide}, \code{longform} und
+\code{print} wahr. Soll ein Befehl anders arbeiten als in bisherigen
+Langformen, deklarieren Sie eine eigene Verhaltensklasse und ergänzen Sie
+die erforderlichen Befehlsdefinitionen nach Abschnitt~\ref{sec:behavior}.}
+{Queries for \code{studyguide}, \code{longform}, and \code{print} now match.
+If commands need behavior different from existing long-form documents,
+declare a separate behavior class and supply the required command
+definitions as described in Section~\ref{sec:behavior}.}
+\Needspace{8\baselineskip}
+\subsection{\ldeen{Dokumentprofil einrichten}{Setting up the document profile}}
+\ldeen{Legen Sie \code{osglecture-profile-studyguide-scrbook.def} an:}
+{Create \code{osglecture-profile-studyguide-scrbook.def}:}
+\begin{example}[code-only,gobble=0]
+\ProvidesExplFile{osglecture-profile-studyguide-scrbook.def}
+  {2026-08-02}{v0.4.0}{studyguide scrbook profile}
+\DeclareOsgLectureProfile{studyguide-scrbook}
+  {
+    backend = scrbook,
+    class = scrbook,
+    doctypes = {script,article,studyguide},
+    mode-setup-file = osglecture-mode-studyguide.def,
+    setup-file = osglecture-studyguide.code.tex
+  }
+\DeclareOsgLectureProfileClassOptions
+  {studyguide-scrbook}{studyguide}{oneside}
+\end{example}
+\ldeen{
+\code{mode-setup-file} enthält die Modusdeklarationen und Zuordnungen.
+Die ebenfalls bereitzustellende Datei \code{osglecture-studyguide.code.tex}
+enthält die Einrichtung und Formatierung nach dem Laden der Basisklasse.
+Das Profil umfasst auch \code{script} und \code{article}, damit diese
+Targets beim Ersetzen des projektweiten Langformprofils verfügbar bleiben.
+Wählen Sie das Profil in der Projekt- oder Nutzerkonfiguration:
+}{
+\code{mode-setup-file} contains mode declarations and assignments. Also
+provide \code{osglecture-studyguide.code.tex}, which contains setup and
+formatting applied after loading the base class. Including \code{script}
+and \code{article} keeps these targets available when replacing the
+project's long-form profile. Select the profile in the project or user
+configuration:
+}
+\begin{example}[code-only,gobble=0]
+[latex.defaults]
+script_profile = "studyguide-scrbook"
+\end{example}
+\ldeen{
+Die Klasse lädt die Modusdatei vor Auswahl des neuen Modus. Eine Änderung
+am Klassenkern ist dafür nicht nötig. Prüfen Sie abschließend den Build
+für jede freigegebene Sprache: Target, Dokumenttyp und Profil müssen
+zusammenpassen, die Modusabfragen das erwartete Ergebnis liefern und die
+verwendeten modusabhängigen Befehle definiert sein. Prüfen Sie auch ein
+Dokument mit explizitem \code{doctype} und \code{profile} ohne OLLM-Projekt.
+Die vollständige Profil- und Targetkonfiguration beschreiben die
+Dokumentationen von \cls*{osglecture} und OLLM.
+}{
+The class loads the mode setup file before selecting the new mode; no
+change to the class core is needed. Finally, build each enabled language:
+target, document type, and profile must agree, mode queries must return the
+expected results, and the mode-dependent commands used must be defined.
+Also check a document with explicit \code{doctype} and \code{profile}
+outside an OLLM project. The \cls*{osglecture} and OLLM manuals describe
+the full profile and target configuration.
+}
+
+% Comment out \OnlyDescription above to include the implementation.
+\MaybeStop{}
+
+\section{\ldeen{Implementierung}{Implementation}}
 \subsection{\pkg*{osglecture-modes.sty}}
 \AutoDocInput{osglecture-modes.dtx}{package}
 \subsection{\pkg*{osglecture-modes-ltxtalk.sty}}
@@ -774,7 +1042,6 @@ Text\\<slides>[3ex]
 \subsection{\code{osglecture-modes-ltxtalk.lua}}
 \AutoDocInput{osglecture-modes.dtx}{lua}
 
-\printindex
 \end{document}
 
 %</driver>
@@ -803,6 +1070,16 @@ Text\\<slides>[3ex]
   { Mode~parent~cycle~detected~at~'#1'. }
 
 \bool_new:N \g_osglecture_modes_deferred_bool
+\bool_new:N \g_osglecture_modes_ignorenonframetext_bool
+\clist_new:N \g_osglecture_modes_raw_skip_envs_clist
+\clist_gset:Nn \g_osglecture_modes_raw_skip_envs_clist
+  {
+    verbatim,
+    Verbatim,
+    lstlisting,
+    minted,
+    comment
+  }
 
 \keys_define:nn { osglecture_modes }
   {
@@ -813,10 +1090,32 @@ Text\\<slides>[3ex]
     patch-overlays .initial:n = true,
     full .meta:n = { patch-overlays = #1 },
     full .default:n = true,
-    % A class that loads this package before its own \LoadClass (osglecture
-    % does, so the mode graph is finalized in time for class options keyed by
-    % mode) sets this: leaf-mode resolution and overlay patching then wait for
-    % \LectureModesActivateOverlays, called once the base class is present.
+    % \ldeen{Aktiviert den eingebauten Modus \code{*} (siehe die
+    % Modell-Standardvorgaben weiter unten): Alles außerhalb einer
+    % Unit-Umgebung (etwa \cs{frame}) wird dann verworfen, mit den
+    % registrierten Ausnahmen. Entspricht genau dem Aufruf von \cs{mode*}
+    % an derselben Stelle, an der Beamer diese Option selbst
+    % auswertet.}{Activates the built-in \code{*} mode (see the model
+    % defaults below): everything outside a unit environment (such as
+    % \cs{frame}) is then dropped, with the registered exceptions.
+    % Equivalent to calling \cs{mode*} at the same point where Beamer
+    % itself evaluates this option.}
+    ignorenonframetext .bool_gset:N =
+      \g_osglecture_modes_ignorenonframetext_bool,
+    ignorenonframetext .default:n = true,
+    ignorenonframetext .initial:n = false,
+    raw-skip-envs .clist_gset:N =
+      \g_osglecture_modes_raw_skip_envs_clist,
+    % \ldeen{Wird von einer Klasse gesetzt, die dieses Paket noch vor ihrem
+    % eigenen \cs{LoadClass} lädt (osglecture tut das, damit der Modusgraph
+    % rechtzeitig für modusabhängige Klassenoptionen abgeschlossen ist): Die
+    % Auflösung des Blattmodus und das Patchen der Overlays warten dann auf
+    % \cs{LectureModesActivateOverlays}, aufgerufen sobald die Basisklasse
+    % vorhanden ist.}{A class that loads this package before its own
+    % \cs{LoadClass} (osglecture does, so the mode graph is finalized in
+    % time for class options keyed by mode) sets this: leaf-mode resolution
+    % and overlay patching then wait for \cs{LectureModesActivateOverlays},
+    % called once the base class is present.}
     deferred .bool_gset:N = \g_osglecture_modes_deferred_bool,
     deferred .initial:n = false,
   }
@@ -927,7 +1226,8 @@ Text\\<slides>[3ex]
 \NewDocumentCommand \AddLectureModes { m }
   { \osglecture_modes_activate:n {#1} }
 
-% Compatibility: setting a mode replaces the previous seed set.
+% \ldeen{Kompatibilität: Das Setzen eines Modus ersetzt die vorherige
+% Startmenge.}{Compatibility: setting a mode replaces the previous seed set.}
 \NewDocumentCommand \SetLectureModes { m }
   {
     \osglecture_modes_if_mutable:nTF {#1}
@@ -1011,43 +1311,108 @@ Text\\<slides>[3ex]
 \NewExpandableDocumentCommand \ActiveLectureModes { }
   { \seq_use:Nn \g_osglecture_modes_active_order_seq {,} }
 
-% \ModeValue resolves a "mode=value|mode=value|..." spec by walking
-% \ActiveLectureModes left to right, then trying "default" as the final,
-% always-present candidate -- the same order and priority
-% \__semcat_resolve_presentation:nNNN uses, just expressed expandably so
-% the result drops into \dimen, \skip, \count and similar assignments, not
-% only key-value interfaces. A spec without a matching key and without
-% "default" expands to nothing.
+\cs_generate_variant:Nn \osglecture_modes_visit:n { V }
+% \ldeen{Aktiviert einen einzelnen, bereits deklarierten Modus zusätzlich
+% zur aktuellen aktiven Menge -- anders als \cs{AddLectureModes} auch
+% dann sicher, wenn der Graph schon abgeschlossen ist (finalisiert bei
+% Bedarf zunächst, wie die erste Abfrage es ohnehin täte). \cs{osglecture_modes_visit:n}
+% selbst ist dafür unverändert wiederverwendbar: Nach dem Abschluss bleibt
+% \code{mark\_active\_bool} wahr und die Besucht-Buchführung bestehen,
+% sodass ein erneuter Aufruf nur die noch nicht besuchten Vorfahren des
+% neuen Modus markiert, bereits aktive Knoten aber unangetastet
+% lässt.}{Activates a single, already-declared mode in addition to the
+% current active set -- unlike \cs{AddLectureModes}, safe even once the
+% graph is already finalized (finalizing first if needed, as the first
+% query would anyway). \cs{osglecture_modes_visit:n} itself is directly
+% reusable for this: after finalization, \code{mark\_active\_bool} stays
+% true and the visited bookkeeping survives, so a further call only marks
+% the new mode's not-yet-visited ancestors, leaving already-active nodes
+% untouched.}
+\cs_new_protected:Npn \osglecture_modes_activate_runtime:n #1
+  {
+    \osglecture_modes_resolve:nN {#1} \l_tmpa_tl
+    \seq_if_in:NVTF \g_osglecture_modes_known_seq \l_tmpa_tl
+      {
+        \bool_if:NF \g_osglecture_modes_frozen_bool { \osglecture_modes_finalize: }
+        \osglecture_modes_visit:V \l_tmpa_tl
+      }
+      { \msg_error:nnV { osglecture_modes } { unknown-mode } \l_tmpa_tl }
+  }
+
+% \ldeen{\cs{ModeValue} löst eine Spezifikation der Form
+% \code{modus=wert|modus=wert|...} auf, indem \cs{ActiveLectureModes} von
+% links nach rechts durchlaufen wird, mit \code{default} als letztem, stets
+% vorhandenem Kandidaten -- dieselbe Reihenfolge und Priorität, die auch
+% \cs{__semcat_resolve_presentation:nNNN} verwendet, hier aber expandierbar
+% formuliert, damit das Ergebnis auch in \cs{dimen}-, \cs{skip}- und
+% ähnliche Zuweisungen passt, nicht nur in Schlüssel-Wert-Schnittstellen.
+% Eine Spezifikation ohne passenden Schlüssel und ohne \code{default}
+% expandiert zu nichts.}{\cs{ModeValue} resolves a "mode=value|mode=value|..."
+% spec by walking \cs{ActiveLectureModes} left to right, then trying
+% "default" as the final, always-present candidate -- the same order and
+% priority \cs{__semcat_resolve_presentation:nNNN} uses, just expressed
+% expandably so the result drops into \cs{dimen}, \cs{skip}, \cs{count} and
+% similar assignments, not only key-value interfaces. A spec without a
+% matching key and without "default" expands to nothing.}
 %
-% Splitting is delimiter-based, not key-value parsing, so a value may
-% contain further "=" signs or colons (an URL, say) but not an unescaped
-% "|"; leading and trailing spaces around a key are trimmed. "=" (rather
-% than the ":" the rest of this package uses for a "mode:tail" overlay
-% qualification) is the key/value separator here because it is untouched
-% by \ExplSyntaxOn, unlike ":", which becomes a letter and so could never
-% delimit on the category-12 colon a value might legitimately contain. A
-% segment carrying no "=" at all is an unqualified value and stands for
-% "default=" that value -- restoring, under "=", the convenience the
-% package's former ":"-based spec syntax offered for free (there, an
-% unqualified segment simply wasn't "mode:"-prefixed).
+% \ldeen{Die Aufteilung erfolgt anhand von Trennzeichen, nicht durch echtes
+% Schlüssel-Wert-Parsing, daher darf ein Wert weitere \code{=}-Zeichen oder
+% Doppelpunkte enthalten (etwa eine URL), aber kein unmaskiertes \code{|};
+% führende und folgende Leerzeichen um einen Schlüssel werden entfernt.
+% \code{=} -- statt des sonst im Paket für eine \code{modus:rest}-Qualifikation
+% genutzten Doppelpunkts -- ist hier der Schlüssel-Wert-Trenner, weil es von
+% \cs{ExplSyntaxOn} unberührt bleibt, während ein Doppelpunkt in diesem
+% Syntaxregime zum Buchstaben wird und daher nie auf den
+% Kategorie-12-Doppelpunkt träfe, den ein Wert legitim enthalten könnte.
+% Ein Segment ganz ohne \code{=} gilt als unqualifizierter Wert und steht für
+% \code{default=} diesen Wert -- das stellt, unter \code{=}, dieselbe Kurzform
+% wieder her, die die frühere, wegen Catcode-Problemen mit
+% \cs{ExplSyntaxOn} aufgegebene \code{:}-basierte Spezifikationssyntax des
+% Pakets kostenlos bot (dort war ein Segment ohne \code{modus:}-Präfix
+% automatisch unqualifiziert).}{Splitting is delimiter-based, not
+% key-value parsing, so a value may contain further "=" signs or colons
+% (an URL, say) but not an unescaped "|"; leading and trailing spaces
+% around a key are trimmed. "=" (rather than the ":" the rest of this
+% package uses for a "mode:tail" overlay qualification) is the key/value
+% separator here because it is untouched by \cs{ExplSyntaxOn}, unlike ":",
+% which becomes a letter and so could never delimit on the category-12
+% colon a value might legitimately contain. A segment carrying no "=" at
+% all is an unqualified value and stands for "default=" that value --
+% restoring, under "=", the convenience the package's former ":"-based
+% spec syntax offered for free (there, an unqualified segment simply
+% wasn't "mode:"-prefixed).}
 \cs_new:Npn \osglecture_modes_value_seg:w #1#2#3#4|#5\q_stop
   {
-    % #1 = candidate mode ; #2 = remaining candidates ; #3 = spec-with-"|"
-    % (kept for the next candidate) ; #4 = this segment ; #5 = remaining
-    % segments
+    % \ldeen{\#1 = Kandidatenmodus ; \#2 = verbleibende Kandidaten ; \#3 =
+    % Spezifikation-mit-"|" (für den nächsten Kandidaten aufbewahrt) ; \#4 =
+    % dieses Segment ; \#5 = verbleibende Segmente}{\#1 = candidate mode ;
+    % \#2 = remaining candidates ; \#3 = spec-with-"|" (kept for the next
+    % candidate) ; \#4 = this segment ; \#5 = remaining segments}
     \osglecture_modes_value_kv_aux {#1} {#2} {#3} {#5} #4 \q_stop
   }
 
-% #5 here is this segment's full raw text, delimited only by the \q_stop
-% \osglecture_modes_value_seg:w always supplies right after it -- so,
-% unlike matching straight for a "=", this always terminates, whether or
-% not the segment contains one. Whether it does still needs testing, but
-% on a throwaway copy, so the real extraction below is free to keep
-% delimiting a value by \q_stop alone (letting it contain further "="
-% signs): appending "=" \q_no_value to that copy and matching the first
-% "=" again means none was present in the segment exactly when nothing
-% is left before \q_no_value, since a "=" already in the segment always
-% leaves at least the appended one there.
+% \ldeen{\#5 ist hier der vollständige Rohtext dieses Segments, begrenzt
+% nur durch das \cs{q_stop}, das \cs{osglecture_modes_value_seg:w} stets
+% unmittelbar danach liefert -- anders als ein direktes Matching auf \code{=}
+% endet dies also immer, ob das Segment eines enthält oder nicht. Ob es
+% eines enthält, muss aber trotzdem getestet werden -- nur auf einer
+% Wegwerfkopie, sodass die eigentliche Extraktion unten weiterhin einen
+% Wert allein durch \cs{q_stop} begrenzen darf (er darf also weitere
+% \code{=}-Zeichen enthalten): \code{=} \cs{q_no_value} an diese Kopie
+% anzuhängen und dann auf das erste \code{=} zu matchen bedeutet, dass genau
+% dann keines im Segment vorlag, wenn vor \cs{q_no_value} nichts mehr
+% übrig ist, da ein bereits im Segment vorhandenes \code{=} stets mindestens
+% das angehängte übrig lässt.}{\#5 here is this segment's full raw text,
+% delimited only by the \cs{q_stop} \cs{osglecture_modes_value_seg:w}
+% always supplies right after it -- so, unlike matching straight for a
+% "=", this always terminates, whether or not the segment contains one.
+% Whether it does still needs testing, but on a throwaway copy, so the
+% real extraction below is free to keep delimiting a value by
+% \cs{q_stop} alone (letting it contain further "=" signs): appending "="
+% \cs{q_no_value} to that copy and matching the first "=" again means
+% none was present in the segment exactly when nothing is left before
+% \cs{q_no_value}, since a "=" already in the segment always leaves at
+% least the appended one there.}
 \cs_new:Npn \osglecture_modes_value_kv_aux #1#2#3#4#5\q_stop
   {
     \osglecture_modes_value_kv_test:w #5 = \q_no_value {#1} {#2} {#3} {#4} {#5}
@@ -1062,17 +1427,24 @@ Text\\<slides>[3ex]
 
 \cs_new:Npn \osglecture_modes_value_kv_extract:w #1=#2\q_stop #3#4#5#6
   {
-    % #1 = this segment's key ; #2 = its value (may itself contain "="
-    % signs, since it was delimited only by \q_stop)
+    % \ldeen{\#1 = Schlüssel dieses Segments ; \#2 = sein Wert (darf selbst
+    % \code{=}-Zeichen enthalten, da er nur durch \cs{q_stop} begrenzt
+    % wurde)}{\#1 = this segment's key ; \#2 = its value (may itself
+    % contain "=" signs, since it was delimited only by \cs{q_stop})}
     \str_if_eq:eeTF { \tl_trim_spaces:n {#1} } {#3}
       { \tl_trim_spaces:n {#2} }
       { \osglecture_modes_value_continue:nnnn {#3} {#4} {#5} {#6} }
   }
 
-% An unqualified (key-less) segment counts as a match only for the
-% "default" candidate -- the always-present last resort -- so it behaves
-% exactly like an explicit "default=..." entry and never pre-empts a
-% mode that matches earlier in \ActiveLectureModes.
+% \ldeen{Ein unqualifiziertes (schlüsselloses) Segment gilt nur für den
+% Kandidaten \code{default} als Treffer -- den stets vorhandenen letzten
+% Ausweg -- und verhält sich damit genau wie ein explizites
+% \code{default=...}-Segment; es kommt also nie einem Modus zuvor, der
+% weiter vorn in \cs{ActiveLectureModes} passt.}{An unqualified (key-less)
+% segment counts as a match only for the "default" candidate -- the
+% always-present last resort -- so it behaves exactly like an explicit
+% "default=..." entry and never pre-empts a mode that matches earlier in
+% \cs{ActiveLectureModes}.}
 \cs_new:Npn \osglecture_modes_value_bare:nnnnn #1#2#3#4#5
   {
     \str_if_eq:eeTF {#1} {default}
@@ -1094,11 +1466,16 @@ Text\\<slides>[3ex]
       { \osglecture_modes_value_pop:w #1 \q_stop {#2} }
   }
 
-% Pops one candidate off a comma list that -- like the pipe-list above --
-% always carries a synthetic trailing "," (again from
-% \osglecture_modes_value_start:nn, or reproduced by this function's own
-% output on every further pop), so "default", the last candidate, needs no
-% special case either.
+% \ldeen{Entnimmt einen Kandidaten aus einer Kommaliste, die -- wie die
+% Pipe-Liste oben -- stets ein synthetisches, angehängtes \code{,} trägt
+% (wieder aus \cs{osglecture_modes_value_start:nn} bzw. bei jedem
+% weiteren Pop von dieser Funktion selbst reproduziert), sodass auch
+% \code{default}, der letzte Kandidat, keinen Sonderfall braucht.}{Pops one
+% candidate off a comma list that -- like the pipe-list above -- always
+% carries a synthetic trailing "," (again from
+% \cs{osglecture_modes_value_start:nn}, or reproduced by this function's
+% own output on every further pop), so "default", the last candidate,
+% needs no special case either.}
 \cs_new:Npn \osglecture_modes_value_pop:w #1,#2\q_stop #3
   { \osglecture_modes_value_seg:w {#1} {#2} {#3} #3 \q_stop }
 
@@ -1116,8 +1493,11 @@ Text\\<slides>[3ex]
     \bool_if:NF \g_osglecture_modes_frozen_bool { \osglecture_modes_finalize: }
     \bool_set_false:N \l_tmpa_bool
     \tl_set:Nn \l_tmpa_tl {#1}
-    % "||" is the portable disjunction operator; a bare "|" is backend
-    % overlay syntax and has no meaning in a portable mode expression.
+    % \ldeen{\code{||} ist der portable Oder-Operator; ein bloßes \code{|} ist
+    % Backend-Overlaysyntax und hat in einem portablen Modusausdruck keine
+    % Bedeutung.}{"||" is the portable disjunction operator; a bare "|"
+    % is backend overlay syntax and has no meaning in a portable mode
+    % expression.}
     \tl_replace_all:Nnn \l_tmpa_tl {||} {,}
     \clist_map_inline:Vn \l_tmpa_tl
       {
@@ -1151,10 +1531,14 @@ Text\\<slides>[3ex]
       { \osglecture_modes_if_active:nT {#1} {#2} }
   }
 
-% Mode-aware command dispatch is deliberately based on implementation
-% commands.  The selected implementation reads the original argument stream,
-% so arbitrary command signatures remain possible without duplicating them in
-% this package.
+% \ldeen{Die modusabhängige Befehlsauswahl beruht bewusst auf
+% Implementationsbefehlen. Die gewählte Implementierung liest den
+% ursprünglichen Argumentstrom selbst, sodass beliebige Befehlssignaturen
+% möglich bleiben, ohne dass dieses Paket sie nachbilden müsste.}{Mode-aware
+% command dispatch is deliberately based on implementation commands. The
+% selected implementation reads the original argument stream, so arbitrary
+% command signatures remain possible without duplicating them in this
+% package.}
 \seq_new:N  \g_osglecture_modes_behavior_classes_seq
 \prop_new:N \g_osglecture_modes_mode_behavior_prop
 \seq_new:N  \g_osglecture_modes_aware_commands_seq
@@ -1372,9 +1756,13 @@ Text\\<slides>[3ex]
 \NewDocumentCommand \FinalizeModeAwareCommands { }
   { \osglecture_modes_finalize_commands: }
 
-% Portable mode specifications are evaluated here. Genuine overlay
-% specifications use a native \cs{alt}, which selects either the original
-% command or a signature-aware gobbler before the remaining arguments are read.
+% \ldeen{Portable Modusspezifikationen werden hier ausgewertet. Echte
+% Overlayspezifikationen nutzen ein natives \cs{alt}, das entweder den
+% ursprünglichen Befehl oder einen signaturbewussten Schlucker wählt,
+% bevor die restlichen Argumente gelesen werden.}{Portable mode
+% specifications are evaluated here. Genuine overlay specifications use a
+% native \cs{alt}, which selects either the original command or a
+% signature-aware gobbler before the remaining arguments are read.}
 \tl_new:N \l_osglecture_modes_overlay_default_tl
 \tl_new:N \l_osglecture_modes_overlay_fallback_tl
 \tl_new:N \l_osglecture_modes_overlay_arguments_tl
@@ -1412,11 +1800,18 @@ Text\\<slides>[3ex]
       }
   }
 
-% Captured once, before any portable-only \cs{alt} fallback further below
-% could exist and be mistaken for a native judge: \cs{alt} doubles as this
-% function's own way of asking a real overlay backend whether an arbitrary
-% (non-portable) spec is active, which only a genuine backend can answer --
-% a portable-only \cs{alt} understands named modes, not arbitrary specs.
+% \ldeen{Einmalig erfasst, bevor ein portabler \cs{alt}-Fallback weiter
+% unten überhaupt existieren und fälschlich für ein natives Urteil
+% gehalten werden könnte: \cs{alt} dient dieser Funktion zugleich als
+% eigener Weg, ein echtes Overlaybackend zu fragen, ob eine beliebige
+% (nicht-portable) Spezifikation aktiv ist -- das kann nur ein echtes
+% Backend beantworten; ein rein portables \cs{alt} versteht benannte
+% Modi, keine beliebigen Spezifikationen.}{Captured once, before any
+% portable-only \cs{alt} fallback further below could exist and be
+% mistaken for a native judge: \cs{alt} doubles as this function's own
+% way of asking a real overlay backend whether an arbitrary (non-portable)
+% spec is active, which only a genuine backend can answer -- a
+% portable-only \cs{alt} understands named modes, not arbitrary specs.}
 \bool_new:N \g_osglecture_modes_native_alt_bool
 \bool_set:Nn \g_osglecture_modes_native_alt_bool { \cs_if_exist_p:N \alt }
 
@@ -1498,23 +1893,49 @@ Text\\<slides>[3ex]
   }
 \cs_generate_variant:Nn \osglecture_modes_overlay_apply:nn { nV }
 
-% Every angle-bracket specification handed to \cs{only}, \cs{mode}, the
-% overlay-aware commands, or the patched backend decoders is sorted into one
-% of three kinds.  The classifier records show, hide, or native, and for a
-% native verdict the specification to forward to the backend.
-%
-%   portable  -- a "||"-separated disjunction of registered modes (or
-%                "all").  Evaluated entirely here; needs no overlay backend.
-%   qualified -- not portable, but every "|"-separated segment is a
-%                registered mode, "registeredmode:tail", or a purely numeric
-%                overlay atom.  The portable parts are evaluated here and the
-%                surviving native tails are recombined into one backend spec.
-%   native    -- anything else: backend mode names, "|" mode scoping over
-%                unknown modes, action specs, ...  Forwarded verbatim.
-%
-% "|" and "," inside <...> are always backend syntax.  "||" is the only
-% portable disjunction operator, so a spec that mixes portable modes with
-% native overlay atoms must use "||" (or the "mode:tail" form) to say so.
+% \ldeen{Jede an \cs{only}, \cs{mode}, die overlayfähigen Befehle oder die
+% gepatchten Backend-Decoder übergebene Winkelspezifikation wird in eine
+% von drei Arten einsortiert. Der Klassifizierer merkt sich anzeigen,
+% verbergen oder nativ, und im nativen Fall zusätzlich die an das Backend
+% weiterzureichende Spezifikation.
+% \begin{itemize}
+%   \item \emph{portabel} -- eine mit \code{||} verknüpfte Oder-Liste
+%     registrierter Modi (oder \code{all}). Wird vollständig hier
+%     ausgewertet; benötigt kein Overlaybackend.
+%   \item \emph{modusqualifiziert} -- nicht portabel, aber jedes mit
+%     \code{|} getrennte Segment ist ein registrierter Modus, ein
+%     \code{registriertermodus:rest} oder ein rein numerisches Overlayatom.
+%     Die portablen Anteile werden hier ausgewertet und die überlebenden
+%     nativen Reste zu einer einzigen Backendspezifikation
+%     zusammengesetzt.
+%   \item \emph{nativ} -- alles Übrige: Backend-Modusnamen,
+%     \code{|}-Modusskopierung über unbekannte Modi, Actionspezifikationen,
+%     \dots{} Wird unverändert weitergereicht.
+% \end{itemize}
+% \code{|} und \code{,} innerhalb von \code{<...>} sind stets Backendsyntax.
+% \code{||} ist der einzige portable Oder-Operator, daher muss eine
+% Spezifikation, die portable Modi mit nativen Overlayatomen mischt, dies
+% über \code{||} (oder die Form \code{modus:rest}) kenntlich machen.}{Every
+% angle-bracket specification handed to \cs{only}, \cs{mode}, the
+% overlay-aware commands, or the patched backend decoders is sorted into
+% one of three kinds. The classifier records show, hide, or native, and
+% for a native verdict the specification to forward to the backend.
+% \begin{itemize}
+%   \item \emph{portable} -- a "||"-separated disjunction of registered
+%     modes (or "all"). Evaluated entirely here; needs no overlay
+%     backend.
+%   \item \emph{qualified} -- not portable, but every "|"-separated
+%     segment is a registered mode, "registeredmode:tail", or a purely
+%     numeric overlay atom. The portable parts are evaluated here and the
+%     surviving native tails are recombined into one backend spec.
+%   \item \emph{native} -- anything else: backend mode names, "|" mode
+%     scoping over unknown modes, action specs, \dots{} Forwarded
+%     verbatim.
+% \end{itemize}
+% "|" and "," inside \code{<...>} are always backend syntax. "||" is the
+% only portable disjunction operator, so a spec that mixes portable modes
+% with native overlay atoms must use "||" (or the "mode:tail" form) to
+% say so.}
 \tl_new:N    \l_osglecture_modes_action_tl
 \tl_new:N    \l_osglecture_modes_native_tl
 \bool_new:N  \l_osglecture_modes_spec_ok_bool
@@ -1530,9 +1951,12 @@ Text\\<slides>[3ex]
 \cs_generate_variant:Nn \osglecture_modes_resolve:nN { VN }
 \prg_generate_conditional_variant:Nnn \osglecture_modes_if_active:n
   { V } { T, F, TF }
-% ":" is a letter in this syntax regime, so a literal one never matches the
-% category-12 colons that reach us from the document; split on the colon
-% string constant instead.
+% \ldeen{\code{:} ist in diesem Syntaxregime ein Buchstabe, ein Literal
+% trifft daher nie auf die Kategorie-12-Doppelpunkte, die uns aus dem
+% Dokument erreichen; stattdessen anhand der Doppelpunkt-Stringkonstante
+% aufteilen.}{":" is a letter in this syntax regime, so a literal one
+% never matches the category-12 colons that reach us from the document;
+% split on the colon string constant instead.}
 \cs_generate_variant:Nn \seq_set_split:Nnn { NVn }
 \cs_generate_variant:Nn \seq_use:Nn { NV }
 
@@ -1558,8 +1982,11 @@ Text\\<slides>[3ex]
       { \prg_return_true: } { \prg_return_false: }
   }
 
-% A segment is "native shape" when it holds only overlay-number characters,
-% i.e. it is a mode-independent overlay atom rather than a backend mode name.
+% \ldeen{Ein Segment hat \emph{native Form}, wenn es nur aus
+% Overlay-Zahlzeichen besteht -- es ist dann ein modusunabhängiges
+% Overlayatom statt eines Backend-Modusnamens.}{A segment is "native
+% shape" when it holds only overlay-number characters, i.e. it is a
+% mode-independent overlay atom rather than a backend mode name.}
 \prg_new_protected_conditional:Npnn \osglecture_modes_spec_if_native_shape:n
   #1 { TF }
   {
@@ -1584,7 +2011,9 @@ Text\\<slides>[3ex]
     \seq_if_in:NVTF \g_osglecture_modes_known_seq
       \l_osglecture_modes_spec_resolved_tl
       {
-        % A bare registered mode means "in this mode, on every slide".
+        % \ldeen{Ein bloßer registrierter Modus bedeutet \emph{in diesem
+        % Modus, auf jeder Folie}.}{A bare registered mode means "in
+        % this mode, on every slide".}
         \osglecture_modes_if_active:VT \l_osglecture_modes_spec_resolved_tl
           { \clist_put_right:Nn \l_osglecture_modes_spec_parts_clist { all } }
       }
@@ -1671,9 +2100,12 @@ Text\\<slides>[3ex]
       }
   }
 
-% Content shows unless a portable expression is present and evaluates false;
-% a native or unrecognised specification degrades to "show" where no overlay
-% backend can honour it.
+% \ldeen{Inhalt wird angezeigt, außer ein portabler Ausdruck ist vorhanden
+% und wertet zu falsch aus; eine native oder unerkannte Spezifikation
+% degradiert dort zu \emph{anzeigen}, wo kein Overlaybackend sie erfüllen
+% kann.}{Content shows unless a portable expression is present and
+% evaluates false; a native or unrecognised specification degrades to
+% "show" where no overlay backend can honour it.}
 \prg_new_protected_conditional:Npnn \osglecture_modes_if_reveal:n #1
   { T, F, TF }
   {
@@ -1682,7 +2114,8 @@ Text\\<slides>[3ex]
       { \prg_return_false: } { \prg_return_true: }
   }
 
-% Defaults describe semantics, not a backend choice.
+% \ldeen{Die Vorgaben beschreiben Semantik, keine Backend-Wahl.}{Defaults
+% describe semantics, not a backend choice.}
 \DeclareLectureMode{presentation}
 \DeclareLectureMode[parents=presentation]{beamer}
 \DeclareLectureMode[parents=presentation]{projector}
@@ -1695,9 +2128,513 @@ Text\\<slides>[3ex]
 \DeclareLectureMode[parents=longform]{web}
 \DeclareLectureModeAlias{slides}{projector}
 
-% Resolve the compatibility option, so metadata in the preamble sees the
-% selected mode. osglecture should pass an explicit leaf mode. Deferred: a
-% class doing its own leaf resolution before \LoadClass skips this entirely.
+% \ldeen{Der Modus \code{*} ist ein gewöhnlicher, aber vorinstallierter
+% Modus: Ist er aktiv, wird alles außerhalb einer registrierten
+% Unit-Umgebung (per Vorgabe \cs{frame}, falls vorhanden) verworfen, mit
+% den unten registrierten Ausnahmen. Aktiviert wird er entweder über die
+% Paketoption \code{ignorenonframetext} (Vorgabe: \code{true}, s.\,o.)
+% oder -- wie jeder andere Filtermodus auch -- direkt über \cs{mode*}
+% beziehungsweise \cs{mode<*>}; \cs{mode*} ist dabei nur eine wegen
+% Beamer-Kompatibilität beibehaltene Syntaxvariante für
+% \cs{mode<*>}, kein eigener Mechanismus.}{Mode \code{*} is an ordinary,
+% but pre-installed mode: while active, everything outside a registered
+% unit environment (by default \cs{frame}, if present) is dropped, with
+% the exceptions registered below. It is activated either via the
+% \code{ignorenonframetext} package option (default: \code{true}, see
+% above) or, like any other filter mode, directly via \cs{mode*} or
+% \cs{mode<*>}; \cs{mode*} is only a syntax variant kept for Beamer
+% compatibility with \cs{mode<*>}, not a separate mechanism.}
+\DeclareLectureMode{*}
+
+% \ldeen{Modi, die über die Schalterform \cs{mode<name>} (ohne
+% Inhaltsargument) statt über \cs{lecturemode}/\cs{IfLectureModeTF}
+% eingesetzt werden, heißen hier \emph{Filtermodi}: Ihre Aktivierung
+% schaltet nicht Inhalt an einer Stelle sichtbar, sondern engagiert --
+% global, ab dieser Stelle -- das Verwerfen alles Unregistrierten
+% außerhalb der registrierten Unit-Umgebungen. Sie werden wie jeder
+% andere Modus mit \cs{DeclareLectureMode} deklariert; nichts an ihrer
+% Deklaration unterscheidet sie von inhaltlichen Modi wie \code{script}
+% oder \code{presentation}. Ausnahmen (welche Befehle/Umgebungen dabei
+% erhalten bleiben) werden separat über \cs{DeclareLectureKeepCommand},
+% \cs{DeclareLectureKeepLabelCommand} und \cs{DeclareLectureKeepEnvironment}
+% registriert, optional an einen bestimmten Filtermodus gebunden
+% (\code{mode=\meta{name}}); ohne diesen Schlüssel gilt die Ausnahme als
+% Baseline, unabhängig davon, welcher Filtermodus (falls überhaupt einer)
+% gerade aktiv ist.}{Modes used via the switch form \cs{mode<name>}
+% (without a content argument) rather than via
+% \cs{lecturemode}/\cs{IfLectureModeTF} are called \emph{filter modes}
+% here: activating one does not toggle content visible at one spot, but
+% engages -- globally, from that point on -- dropping everything
+% unregistered outside the registered unit environments. They are
+% declared like any other mode, with \cs{DeclareLectureMode}; nothing
+% about their declaration distinguishes them from content modes such as
+% \code{script} or \code{presentation}. Exceptions (which
+% commands/environments survive) are registered separately via
+% \cs{DeclareLectureKeepCommand}, \cs{DeclareLectureKeepLabelCommand},
+% and \cs{DeclareLectureKeepEnvironment}, optionally bound to a specific
+% filter mode (\code{mode=\meta{name}}); without that key, an exception
+% counts as baseline, in effect no matter which filter mode, if any, is
+% currently active.}
+\bool_new:N  \g_osglecture_modes_scanner_active_bool
+\bool_new:N  \g_osglecture_modes_after_structure_bool
+\bool_new:N  \g_osglecture_modes_scan_engaged_bool
+\bool_new:N  \g_osglecture_modes_scan_extended_bool
+\bool_new:N  \g_osglecture_modes_native_mode_exists_bool
+\clist_new:N \g_osglecture_modes_keep_envs_clist
+\clist_new:N \g_osglecture_modes_hooked_envs_clist
+\prop_new:N  \g_osglecture_modes_dispatch_prop
+\prop_new:N  \g_osglecture_modes_dispatch_mode_prop
+\prop_new:N  \g_osglecture_modes_keep_envs_mode_prop
+\tl_new:N    \l_osglecture_modes_keep_mode_tl
+
+\msg_new:nnn { osglecture_modes } { unknown-environment }
+  { Environment~'#1'~is~not~defined. }
+
+\keys_define:nn { osglecture_modes / keep }
+  {
+    mode .tl_set:N = \l_osglecture_modes_keep_mode_tl,
+  }
+
+\sys_if_engine_luatex:T
+  { \directlua{require("osglecture-modes-ltxtalk.lua")} }
+
+\cs_new_protected:Npn \osglecture_modes_lua_raw_skip:n #1
+  {
+    \sys_if_engine_luatex:T
+      {
+        \directlua{
+          osglecture_modes_ltxtalk.start_raw_skip("\luaescapestring{#1}")
+        }
+      }
+  }
+
+% \ldeen{Engagiert den Scanner nur, wenn ihn zuvor \cs{osglecture_modes_switch:n}
+% tatsächlich eingeschaltet hat (weil kein natives \cs{mode*} zur
+% Verfügung stand oder eigene Ausnahmen über die native Positivliste
+% hinausgehen), und nur außerhalb einer gerade betretenen
+% Unit-Umgebung.}{Only engages the scanner if
+% \cs{osglecture_modes_switch:n} actually turned it on (because no
+% native \cs{mode*} was available, or because custom exceptions go
+% beyond the native allow-list), and only outside a unit environment
+% just entered.}
+\cs_new_protected:Npn \osglecture_modes_start_scan:
+  {
+    \bool_if:NT \g_osglecture_modes_scan_engaged_bool
+      {
+        \bool_if:NT \g_osglecture_modes_scanner_active_bool
+          { \osglecture_modes_scan: }
+      }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_scan:
+  {
+    \peek_remove_spaces:n
+      {
+        \peek_meaning:NTF \begin
+          { \osglecture_modes_scan_begin: }
+          {
+            \peek_meaning:NTF \end
+              { \osglecture_modes_scan_end: }
+              { \osglecture_modes_scan_token: }
+          }
+      }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_scan_begin:
+  {
+    \peek_meaning_remove:NT \begin
+    \osglecture_modes_scan_begin_aux:n
+  }
+
+\cs_new_protected:Npn \osglecture_modes_scan_begin_aux:n #1
+  {
+    \clist_if_in:NnTF \g_osglecture_modes_keep_envs_clist {#1}
+      {
+        \prop_get:NnNTF \g_osglecture_modes_keep_envs_mode_prop {#1} \l_tmpa_tl
+          {
+            \osglecture_modes_if_active:VTF \l_tmpa_tl
+              { \begin{#1} }
+              {
+                \osglecture_modes_skip_environment:n {#1}
+                \osglecture_modes_scan:
+              }
+          }
+          { \begin{#1} }
+      }
+      {
+        \clist_if_in:NnTF \g_osglecture_modes_raw_skip_envs_clist {#1}
+          {
+            \osglecture_modes_lua_raw_skip:n {#1}
+            \osglecture_modes_scan:
+          }
+          {
+            \osglecture_modes_skip_environment:n {#1}
+            \osglecture_modes_scan:
+          }
+      }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_scan_end:
+  {
+    \peek_meaning_remove:NT \end
+    \osglecture_modes_scan_end_aux:n
+  }
+
+\cs_new_protected:Npn \osglecture_modes_scan_end_aux:n #1
+  {
+    \str_if_eq:nnTF {#1} {document}
+      {
+        \end{document}
+      }
+      {
+        % \ldeen{fremdes \cs{end}\code{\{...\}} außerhalb von Unit-Umgebungen
+        % ignorieren}{ignore a foreign \cs{end}\code{\{...\}} outside unit
+        % environments}
+        \osglecture_modes_scan:
+      }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_skip_environment:n #1
+  {
+    \cs_set_protected:Npn \osglecture_modes_skip:w ##1 \end ##2
+      {
+        \str_if_eq:nnF {#1} {##2}
+          { \osglecture_modes_skip:w }
+      }
+    \osglecture_modes_skip:w
+  }
+
+\cs_new_protected:Npn \osglecture_modes_ensure_env_hook:n #1
+  {
+    \cs_if_exist:cTF {#1}
+      {
+        \clist_if_in:NnF \g_osglecture_modes_hooked_envs_clist {#1}
+          {
+            \clist_gput_right:Nn \g_osglecture_modes_hooked_envs_clist {#1}
+            \AddToHook{env/#1/after}{ \osglecture_modes_start_scan: }
+          }
+      }
+      { \msg_error:nnn { osglecture_modes } { unknown-environment } {#1} }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_declare_keep_environment:nn #1#2
+  {
+    \osglecture_modes_ensure_env_hook:n {#1}
+    \clist_if_in:NnF \g_osglecture_modes_keep_envs_clist {#1}
+      { \clist_gput_right:Nn \g_osglecture_modes_keep_envs_clist {#1} }
+    \tl_if_empty:nF {#2}
+      { \prop_gput:Nnn \g_osglecture_modes_keep_envs_mode_prop {#1} {#2} }
+  }
+\cs_generate_variant:Nn \osglecture_modes_declare_keep_environment:nn { nV }
+
+\NewDocumentCommand \DeclareLectureKeepEnvironment { O{} m }
+  {
+    \tl_clear:N \l_osglecture_modes_keep_mode_tl
+    \keys_set:nn { osglecture_modes / keep } {#1}
+    \bool_gset_true:N \g_osglecture_modes_scan_extended_bool
+    \clist_map_inline:nn {#2}
+      {
+        \osglecture_modes_declare_keep_environment:nV
+          {##1} \l_osglecture_modes_keep_mode_tl
+      }
+  }
+
+\cs_if_exist:cT { frame }
+  { \osglecture_modes_declare_keep_environment:nn { frame } { } }
+\cs_if_exist:cT { frame* }
+  { \osglecture_modes_declare_keep_environment:nn { frame* } { } }
+
+% \ldeen{Eine ohne \code{mode=} deklarierte Ausnahme gilt als Baseline:
+% Sie erweitert die native Positivliste immer, deshalb erzwingt sie hier
+% wie eine modusgebundene Ausnahme den eigenen Scanner (siehe
+% \cs{osglecture_modes_switch:n} weiter unten) -- die intern registrierten
+% Basisausnahmen (Gliederungsbefehle, \cs{mode}, \cs{lecturemode},
+% \cs{maketitle}, \cs{frame}) setzen diesen Schalter dagegen bewusst
+% nicht: Sie spiegeln genau das, was Beamers eigenes \cs{mode*} ohnehin
+% kennt.}{An exception declared without \code{mode=} counts as baseline:
+% it always extends the native allow-list, so it forces the package's
+% own scanner here just like a mode-bound exception (see
+% \cs{osglecture_modes_switch:n} further below) -- the internally
+% registered baseline exceptions (structural commands, \cs{mode},
+% \cs{lecturemode}, \cs{maketitle}, \cs{frame}) deliberately do not set
+% this flag: they mirror exactly what Beamer's own \cs{mode*} already
+% knows about.}
+\cs_new_protected:Npn \osglecture_modes_declare_allowed_command:nn #1#2
+  { \prop_gput:Nnn \g_osglecture_modes_dispatch_prop {#1} {#2} }
+\cs_generate_variant:Nn \osglecture_modes_declare_allowed_command:nn { xx }
+
+\cs_new_protected:Npn \osglecture_modes_register_command:nnn #1#2#3
+  {
+    \osglecture_modes_declare_allowed_command:nn {#1} {#2}
+    \tl_if_empty:nF {#3}
+      { \prop_gput:Nnn \g_osglecture_modes_dispatch_mode_prop {#1} {#3} }
+  }
+\cs_generate_variant:Nn \osglecture_modes_register_command:nnn { VVV }
+
+\cs_new_protected:Npn \osglecture_modes_keep_generic:Nn #1#2
+  {
+    #1 {#2}
+    \bool_gset_false:N \g_osglecture_modes_after_structure_bool
+    \osglecture_modes_scan:
+  }
+
+\cs_new_protected:Npn \osglecture_modes_keep_generic_label:Nn #1#2
+  {
+    \bool_if:NT \g_osglecture_modes_after_structure_bool
+      { #1 {#2} }
+    \bool_gset_false:N \g_osglecture_modes_after_structure_bool
+    \osglecture_modes_scan:
+  }
+
+\tl_new:N \l_osglecture_modes_reg_cmd_tl
+\tl_new:N \l_osglecture_modes_reg_handler_tl
+
+\NewDocumentCommand \DeclareLectureKeepCommand { O{} m }
+  {
+    \tl_clear:N \l_osglecture_modes_keep_mode_tl
+    \keys_set:nn { osglecture_modes / keep } {#1}
+    \bool_gset_true:N \g_osglecture_modes_scan_extended_bool
+    \cs_if_exist:NTF #2
+      {
+        \exp_args:Nc \cs_set_protected:Npn
+          { osglecture_modes_keep_generic_ \cs_to_str:N #2 : }
+          { \osglecture_modes_keep_generic:Nn #2 }
+        \tl_set:Nx \l_osglecture_modes_reg_cmd_tl { \cs_to_str:N #2 }
+        \tl_set:Nx \l_osglecture_modes_reg_handler_tl
+          { osglecture_modes_keep_generic_ \cs_to_str:N #2 : }
+        \osglecture_modes_register_command:VVV
+          \l_osglecture_modes_reg_cmd_tl
+          \l_osglecture_modes_reg_handler_tl
+          \l_osglecture_modes_keep_mode_tl
+      }
+      { \msg_error:nnN { kernel } { command-not-defined } #2 }
+  }
+
+\NewDocumentCommand \DeclareLectureKeepLabelCommand { O{} m }
+  {
+    \tl_clear:N \l_osglecture_modes_keep_mode_tl
+    \keys_set:nn { osglecture_modes / keep } {#1}
+    \bool_gset_true:N \g_osglecture_modes_scan_extended_bool
+    \cs_if_exist:NTF #2
+      {
+        \exp_args:Nc \cs_set_protected:Npn
+          { osglecture_modes_keep_generic_ \cs_to_str:N #2 : }
+          { \osglecture_modes_keep_generic_label:Nn #2 }
+        \tl_set:Nx \l_osglecture_modes_reg_cmd_tl { \cs_to_str:N #2 }
+        \tl_set:Nx \l_osglecture_modes_reg_handler_tl
+          { osglecture_modes_keep_generic_ \cs_to_str:N #2 : }
+        \osglecture_modes_register_command:VVV
+          \l_osglecture_modes_reg_cmd_tl
+          \l_osglecture_modes_reg_handler_tl
+          \l_osglecture_modes_keep_mode_tl
+      }
+      { \msg_error:nnN { kernel } { command-not-defined } #2 }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_scan_token:
+  {
+    \peek_N_type:TF
+      { \osglecture_modes_scan_control_sequence:N }
+      { \osglecture_modes_discard_one: }
+  }
+
+% \ldeen{Modusgebundene Ausnahmen werden hier direkt gegen den normalen
+% Modusgraphen geprüft (\cs{osglecture_modes_if_active:n}) statt gegen
+% eine eigene, zweite Vererbungsstruktur -- ein Blattmodus mit mehreren
+% Filtermodi als Eltern vereinigt deren Ausnahmen also bereits über die
+% ohnehin vorhandene transitive Elternhülle.}{Mode-bound exceptions are
+% checked here directly against the normal mode graph
+% (\cs{osglecture_modes_if_active:n}) rather than against a second,
+% separate inheritance structure -- a leaf mode with several filter modes
+% as parents therefore already unions their exceptions via the existing
+% transitive parent closure.}
+% \ldeen{Verwendet eigene, benannte Variablen statt der generischen
+% \cs{l\_tmpa\_tl}/\cs{l\_tmpb\_tl}: Der Handlername muss über den Aufruf
+% von \cs{osglecture_modes_if_active:n} hinweg erhalten bleiben, das
+% \cs{l\_tmpa\_tl} intern selbst für die Aliasauflösung
+% verwendet.}{Uses dedicated, named variables instead of the generic
+% \cs{l\_tmpa\_tl}/\cs{l\_tmpb\_tl}: the handler name must survive the
+% call to \cs{osglecture_modes_if_active:n}, which itself uses
+% \cs{l\_tmpa\_tl} internally for alias resolution.}
+\tl_new:N \l_osglecture_modes_scan_key_tl
+\tl_new:N \l_osglecture_modes_scan_handler_tl
+\tl_new:N \l_osglecture_modes_scan_dispatch_mode_tl
+\cs_generate_variant:Nn \prop_item:Nn { NV }
+\cs_new_protected:Npn \osglecture_modes_scan_control_sequence:N #1
+  {
+    \tl_set:Nx \l_osglecture_modes_scan_key_tl { \cs_to_str:N #1 }
+    \tl_set:Nx \l_osglecture_modes_scan_handler_tl
+      {
+        \prop_item:NV \g_osglecture_modes_dispatch_prop
+          \l_osglecture_modes_scan_key_tl
+      }
+    \tl_if_empty:NTF \l_osglecture_modes_scan_handler_tl
+      { \osglecture_modes_scan: }
+      {
+        \tl_set:Nx \l_osglecture_modes_scan_dispatch_mode_tl
+          {
+            \prop_item:NV \g_osglecture_modes_dispatch_mode_prop
+              \l_osglecture_modes_scan_key_tl
+          }
+        \tl_if_empty:NTF \l_osglecture_modes_scan_dispatch_mode_tl
+          { \use:c { \l_osglecture_modes_scan_handler_tl } }
+          {
+            \osglecture_modes_if_active:VTF \l_osglecture_modes_scan_dispatch_mode_tl
+              { \use:c { \l_osglecture_modes_scan_handler_tl } }
+              { \osglecture_modes_scan: }
+          }
+      }
+  }
+
+\cs_new_protected:Npn \osglecture_modes_keep_part:
+  { \osglecture_modes_keep_structure:N \part }
+\cs_new_protected:Npn \osglecture_modes_keep_section:
+  { \osglecture_modes_keep_structure:N \section }
+\cs_new_protected:Npn \osglecture_modes_keep_subsection:
+  { \osglecture_modes_keep_structure:N \subsection }
+\cs_new_protected:Npn \osglecture_modes_keep_subsubsection:
+  { \osglecture_modes_keep_structure:N \subsubsection }
+\cs_new_protected:Npn \osglecture_modes_keep_appendix:
+  {
+    \appendix
+    \bool_gset_true:N \g_osglecture_modes_after_structure_bool
+    \osglecture_modes_scan:
+  }
+
+\NewDocumentCommand \osglecture_modes_keep_lecturemode: { d<> +m }
+  {
+    \IfNoValueTF {#1}
+      { \lecturemode{#2} }
+      { \lecturemode<#1>{#2} }
+    \bool_gset_false:N \g_osglecture_modes_after_structure_bool
+    \osglecture_modes_scan:
+  }
+
+\NewDocumentCommand \osglecture_modes_keep_mode: { d<> +m }
+  {
+    \IfNoValueTF {#1}
+      { \mode{#2} }
+      { \mode<#1>{#2} }
+    \bool_gset_false:N \g_osglecture_modes_after_structure_bool
+    \osglecture_modes_scan:
+  }
+
+\NewDocumentCommand \osglecture_modes_keep_maketitle: { O{} }
+  {
+    \bool_gset_false:N \g_osglecture_modes_scanner_active_bool
+    \tl_if_blank:nTF {#1} { \maketitle } { \maketitle[#1] }
+  }
+
+\osglecture_modes_declare_allowed_command:nn { part }          { osglecture_modes_keep_part: }
+\osglecture_modes_declare_allowed_command:nn { section }       { osglecture_modes_keep_section: }
+\osglecture_modes_declare_allowed_command:nn { subsection }    { osglecture_modes_keep_subsection: }
+\osglecture_modes_declare_allowed_command:nn { subsubsection } { osglecture_modes_keep_subsubsection: }
+\osglecture_modes_declare_allowed_command:nn { appendix }      { osglecture_modes_keep_appendix: }
+\osglecture_modes_declare_allowed_command:nn { lecturemode }   { osglecture_modes_keep_lecturemode: }
+\osglecture_modes_declare_allowed_command:nn { mode }          { osglecture_modes_keep_mode: }
+\osglecture_modes_declare_allowed_command:nn { maketitle }     { osglecture_modes_keep_maketitle: }
+
+\NewDocumentCommand \osglecture_modes_keep_structure:N { m s o m }
+  {
+    \IfBooleanTF {#2}
+      {
+        \IfNoValueTF {#3}
+          { #1*{#4} }
+          { #1*[#3]{#4} }
+      }
+      {
+        \IfNoValueTF {#3}
+          { #1{#4} }
+          { #1[#3]{#4} }
+      }
+    \bool_gset_true:N \g_osglecture_modes_after_structure_bool
+    \osglecture_modes_scan:
+  }
+
+\cs_new_protected:Npn \osglecture_modes_discard_one:
+  { \osglecture_modes_discard_one:n }
+\cs_new_protected:Npn \osglecture_modes_discard_one:n #1
+  {
+    \bool_gset_false:N \g_osglecture_modes_after_structure_bool
+    \osglecture_modes_scan:
+  }
+
+\AddToHook{cmd/maketitle/after}
+  {
+    \bool_gset_true:N \g_osglecture_modes_scanner_active_bool
+    \bool_gset_false:N \g_osglecture_modes_after_structure_bool
+    \osglecture_modes_start_scan:
+  }
+
+% \ldeen{Entscheidet, wie \cs{mode*} bzw. die Schalterform \cs{mode<name>}
+% ausgeführt wird. \code{*} delegiert an ein natives \cs{mode*}, wenn
+% eines existiert \emph{und} keine eigene Ausnahme über die native
+% Positivliste hinausgeht (\cs{g\_osglecture\_modes\_scan\_extended\_bool}) --
+% das erhält die native Semantik unverändert im einfachen Fall (siehe den
+% \code{native-adapter}-Test). Jeder andere Filtermodus hat naturgemäß
+% keine native Entsprechung und läuft daher immer über den eigenen
+% Scanner.}{Decides how \cs{mode*} or the switch form \cs{mode<name>} is
+% carried out. \code{*} delegates to a native \cs{mode*} when one exists
+% \emph{and} no custom exception goes beyond the native allow-list
+% (\cs{g\_osglecture\_modes\_scan\_extended\_bool}) -- this keeps native
+% semantics unchanged in the simple case (see the \code{native-adapter}
+% test). Any other filter mode by construction has no native counterpart
+% and therefore always runs through the package's own scanner.}
+% \ldeen{Engagiert nur den Scanner selbst (\cs{g\_osglecture\_modes\_scan\_engaged\_bool});
+% ob tatsächlich gescannt wird, entscheidet weiterhin
+% \cs{g\_osglecture\_modes\_scanner\_active\_bool}, das erst eine
+% registrierte Unit-Umgebung oder \cs{maketitle} setzt. Ein früheres
+% sofortiges Scharfschalten direkt an dieser Stelle hätte auch
+% Präambel-nahen Inhalt gleich nach \cs{begindocument/end} erfasst (etwa
+% den Testtreiber-Makro \cs{START} selbst) -- deutlich aggressiver als
+% Beamers natives \cs{mode*}, dessen feste Ausnahmeliste genau solche
+% frühen Fälle vorsieht.}{Only engages the scanner itself
+% (\cs{g\_osglecture\_modes\_scan\_engaged\_bool}); whether scanning
+% actually happens is still decided by
+% \cs{g\_osglecture\_modes\_scanner\_active\_bool}, which only a
+% registered unit environment or \cs{maketitle} sets. Arming scanning
+% immediately right here would also have caught preamble-adjacent content
+% right after \cs{begindocument/end} (such as the test driver's own
+% \cs{START} macro) -- notably more aggressive than Beamer's native
+% \cs{mode*}, whose fixed allow-list accounts for exactly such early
+% cases.}
+\cs_new_protected:Npn \osglecture_modes_switch_own:
+  {
+    \bool_gset_true:N \g_osglecture_modes_scan_engaged_bool
+    \osglecture_modes_start_scan:
+  }
+
+\cs_new_protected:Npn \osglecture_modes_switch:n #1
+  {
+    \osglecture_modes_activate_runtime:n {#1}
+    \str_if_eq:nnTF {#1} {*}
+      {
+        \bool_if:NTF \g_osglecture_modes_native_mode_exists_bool
+          {
+            \bool_if:NTF \g_osglecture_modes_scan_extended_bool
+              { \osglecture_modes_switch_own: }
+              { \osglecture_modes_native_mode * }
+          }
+          { \osglecture_modes_switch_own: }
+      }
+      { \osglecture_modes_switch_own: }
+  }
+\cs_generate_variant:Nn \osglecture_modes_switch:n { V }
+
+\AddToHook{begindocument/end}
+  {
+    \bool_if:NT \g_osglecture_modes_ignorenonframetext_bool
+      { \osglecture_modes_switch:n {*} }
+  }
+
+% \ldeen{Löst die Kompatibilitätsoption auf, damit Metadaten in der
+% Präambel den gewählten Modus sehen. osglecture sollte einen expliziten
+% Blattmodus übergeben. Bei \code{deferred}: Eine Klasse, die ihre eigene
+% Blattmodus-Auflösung vor \cs{LoadClass} durchführt, überspringt dies
+% vollständig.}{Resolve the compatibility option, so metadata in the
+% preamble sees the selected mode. osglecture should pass an explicit
+% leaf mode. Deferred: a class doing its own leaf resolution before
+% \cs{LoadClass} skips this entirely.}
 \cs_new_protected:Npn \__osglecture_modes_resolve_leaf:
   {
 \tl_if_eq:NnTF \g_osglecture_modes_option_mode_tl {auto}
@@ -1735,19 +2672,29 @@ Text\\<slides>[3ex]
   { \exp_args:NV \SetLectureModes \g_osglecture_modes_option_mode_tl }
   }
 
-% Wire portable mode expressions into the loaded overlay backend. Needs the
+% \ldeen{Verdrahtet portable Modusausdrücke mit dem geladenen
+% Overlaybackend. Braucht die vorhandene Basisklasse, daher führt ein
+% verzögertes Laden dies erst über \cs{LectureModesActivateOverlays} nach
+% \cs{LoadClass} aus, nicht sofort. Der Rumpf steckt in einer eigenen
+% Datei, damit seine Befehlsparameter-Token nicht eine Verschachtelungsebene
+% zu tief innerhalb einer Wrapper-Definition erneut geparst werden.}{Wire
+% portable mode expressions into the loaded overlay backend. Needs the
 % base class present, so a deferred load runs this from
-% \LectureModesActivateOverlays after \LoadClass rather than now. The body is
-% kept in a separate file so its command-parameter tokens are not reparsed
-% one nesting level too deep inside a wrapper definition.
+% \cs{LectureModesActivateOverlays} after \cs{LoadClass} rather than now.
+% The body is kept in a separate file so its command-parameter tokens are
+% not reparsed one nesting level too deep inside a wrapper definition.}
 \cs_new_protected:Npn \__osglecture_modes_patch_overlays:
   { \file_input:n { osglecture-modes-overlays.code.tex } }
 \NewDocumentCommand \LectureModesActivateOverlays { }
   { \__osglecture_modes_patch_overlays: }
 
-% A normal \usepackage load happens after \documentclass, so the base class
-% is already present: resolve and patch straight away. A deferred load waits
-% for the class to call \LectureModesActivateOverlays.
+% \ldeen{Ein gewöhnliches Laden per \cs{usepackage} geschieht nach
+% \cs{documentclass}, die Basisklasse ist also bereits vorhanden: sofort
+% auflösen und patchen. Ein verzögertes Laden wartet dagegen darauf, dass
+% die Klasse \cs{LectureModesActivateOverlays} aufruft.}{A normal
+% \cs{usepackage} load happens after \cs{documentclass}, so the base
+% class is already present: resolve and patch straight away. A deferred
+% load waits for the class to call \cs{LectureModesActivateOverlays}.}
 \bool_if:NF \g_osglecture_modes_deferred_bool
   {
     \__osglecture_modes_resolve_leaf:
@@ -1758,11 +2705,16 @@ Text\\<slides>[3ex]
 %</package>
 
 %<*overlays>
-% Wired into the loaded overlay backend by
-% \__osglecture_modes_patch_overlays:; runs in expl3 syntax provided by its
-% caller.
-% Let the native overlay decoders recognize a pure portable mode expression.
-% Everything else, especially mixed mode/overlay syntax, remains untouched.
+% \ldeen{Wird von \cs{__osglecture_modes_patch_overlays:} in das geladene
+% Overlaybackend eingebunden; läuft in der von diesem Aufrufer
+% bereitgestellten expl3-Syntax.}{Wired into the loaded overlay backend by
+% \cs{__osglecture_modes_patch_overlays:}; runs in expl3 syntax provided
+% by its caller.}
+% \ldeen{Lässt die nativen Overlay-Decoder einen rein portablen
+% Modusausdruck erkennen. Alles andere, insbesondere gemischte
+% Modus-/Overlaysyntax, bleibt unangetastet.}{Let the native overlay
+% decoders recognize a pure portable mode expression. Everything else,
+% especially mixed mode/overlay syntax, remains untouched.}
 \bool_if:NT \g_osglecture_modes_patch_overlays_bool
   {
     \cs_if_exist:NT \beamer@masterdecode
@@ -1811,24 +2763,43 @@ Text\\<slides>[3ex]
       }
   }
 
-% Add portable inline modes to an existing backend without taking over its
-% switching syntax or unknown/complex overlay specifications.
+% \ldeen{Ergänzt ein bestehendes Backend um portable Inlinemodi, ohne
+% dessen Umschaltsyntax oder unbekannte/komplexe Overlayspezifikationen
+% zu übernehmen.}{Add portable inline modes to an existing backend
+% without taking over its switching syntax or unknown/complex overlay
+% specifications.}
 \cs_if_exist:NTF \mode
   {
     \bool_if:NT \g_osglecture_modes_patch_overlays_bool
       {
         \cs_new_eq:NN \osglecture_modes_native_mode \mode
+        \bool_gset_true:N \g_osglecture_modes_native_mode_exists_bool
+        % \ldeen{Eine Schalterform \cs{mode<name>} ohne Inhalt wird nur dann
+        % als portable Filtermodus-Aktivierung behandelt, wenn \code{name}
+        % ein registrierter Modus ist; ein unbekannter (also nativer)
+        % Name wird unverändert an das Backend weitergereicht, genau wie
+        % zuvor.}{A switch form \cs{mode<name>} without content is only
+        % treated as a portable filter-mode activation when \code{name}
+        % is a registered mode; an unknown (i.e. native) name is
+        % forwarded to the backend unchanged, exactly as before.}
+        \cs_new_protected:Npn \osglecture_modes_switch_or_native:n #1
+          {
+            \osglecture_modes_resolve:nN {#1} \l_tmpa_tl
+            \seq_if_in:NVTF \g_osglecture_modes_known_seq \l_tmpa_tl
+              { \osglecture_modes_switch:n {#1} }
+              { \osglecture_modes_native_mode <#1> }
+          }
         \RenewDocumentCommand \mode { s d<> }
           {
             \IfBooleanTF {#1}
-              { \osglecture_modes_native_mode * }
+              { \osglecture_modes_switch:n {*} }
               {
                 \IfNoValueTF {#2}
                   { \osglecture_modes_native_mode }
                   {
                     \peek_meaning:NTF \c_group_begin_token
                       { \osglecture_modes_mode_inline:n {#2} }
-                      { \osglecture_modes_native_mode <#2> }
+                      { \osglecture_modes_switch_or_native:n {#2} }
                   }
               }
           }
@@ -1851,22 +2822,47 @@ Text\\<slides>[3ex]
       }
   }
   {
-    \NewDocumentCommand \mode { d<> +m }
+    \cs_new_protected:Npn \osglecture_modes_mode_fallback_bare:n #1 {#1}
+    \cs_new_protected:Npn \osglecture_modes_mode_fallback_inline:n #1#2
+      { \osglecture_modes_if_reveal:nT {#1} {#2} }
+    \NewDocumentCommand \mode { s d<> }
       {
-        \IfNoValueTF {#1}
-          {#2}
-          { \osglecture_modes_if_reveal:nT {#1} {#2} }
+        \IfBooleanTF {#1}
+          { \osglecture_modes_switch:n {*} }
+          {
+            \IfNoValueTF {#2}
+              {
+                \peek_meaning:NTF \c_group_begin_token
+                  { \osglecture_modes_mode_fallback_bare:n }
+                  { }
+              }
+              {
+                \peek_meaning:NTF \c_group_begin_token
+                  { \osglecture_modes_mode_fallback_inline:n {#2} }
+                  { \osglecture_modes_switch:n {#2} }
+              }
+          }
       }
   }
 
-% \cs{only} is implemented specially by both beamer and ltx-talk and does not
-% pass through their common overlay decoders in every case, so it needs its
-% own adapter rather than sharing \cs{mode}'s. Mirrors \cs{mode}'s two-branch
-% shape above: where \cs{only} already exists (beamer, ltx-talk), bind it
-% through the signature-aware adapter so portable modes are handled directly
-% while native overlay specifications are delegated unchanged; where it does
-% not exist (article, scrbook, book, ...), define a portable-only \cs{only}
-% so shared source can still use it.
+% \ldeen{\cs{only} ist sowohl bei Beamer als auch bei ltx-talk speziell
+% implementiert und läuft nicht in jedem Fall durch deren gemeinsame
+% Overlay-Decoder, braucht also einen eigenen Adapter statt sich den von
+% \cs{mode} zu teilen. Spiegelt die zweigeteilte Form von \cs{mode} oben:
+% Existiert \cs{only} bereits (Beamer, ltx-talk), wird es über den
+% signaturbewussten Adapter gebunden, sodass portable Modi direkt
+% behandelt und native Overlayspezifikationen unverändert weitergereicht
+% werden; existiert es nicht (Artikel, scrbook, book, \dots{}), wird ein
+% rein portables \cs{only} definiert, damit gemeinsamer Quelltext es
+% trotzdem nutzen kann.}{\cs{only} is implemented specially by both
+% beamer and ltx-talk and does not pass through their common overlay
+% decoders in every case, so it needs its own adapter rather than sharing
+% \cs{mode}'s. Mirrors \cs{mode}'s two-branch shape above: where
+% \cs{only} already exists (beamer, ltx-talk), bind it through the
+% signature-aware adapter so portable modes are handled directly while
+% native overlay specifications are delegated unchanged; where it does
+% not exist (article, scrbook, book, ...), define a portable-only
+% \cs{only} so shared source can still use it.}
 \cs_if_exist:NTF \only
   {
     \bool_if:NT \g_osglecture_modes_patch_overlays_bool
@@ -1881,14 +2877,24 @@ Text\\<slides>[3ex]
       }
   }
 
-% Unlike \cs{only} and \cs{mode}, \cs{uncover}, \cs{visible}, \cs{onslide},
-% \cs{invisible}, and \cs{alt} route through beamer's and ltx-talk's common
-% overlay decoders (patched above), so a portable mode spec already reaches
-% them correctly there without adapting each command individually --
-% \cs{alt} additionally serves as the decoder fallback's own native-spec
-% judge just below, so wrapping it here would make that judge call back
-% into itself. Only a base class that lacks the command natively (article,
-% scrbook, book, ...) needs a portable-only definition.
+% \ldeen{Anders als \cs{only} und \cs{mode} laufen \cs{uncover},
+% \cs{visible}, \cs{onslide}, \cs{invisible} und \cs{alt} durch die
+% gemeinsamen Overlay-Decoder von Beamer und ltx-talk (oben gepatcht),
+% sodass eine portable Modusspezifikation sie dort bereits korrekt
+% erreicht, ohne jeden Befehl einzeln anzupassen -- \cs{alt} dient
+% zusätzlich als eigenes natives-Spezifikations-Urteil des
+% Decoder-Fallbacks weiter unten, ein Einpacken hier würde dieses Urteil
+% also auf sich selbst zurückrufen lassen. Nur eine Basisklasse, der der
+% Befehl nativ fehlt (Artikel, scrbook, book, \dots{}), braucht eine rein
+% portable Definition.}{Unlike \cs{only} and \cs{mode}, \cs{uncover},
+% \cs{visible}, \cs{onslide}, \cs{invisible}, and \cs{alt} route through
+% beamer's and ltx-talk's common overlay decoders (patched above), so a
+% portable mode spec already reaches them correctly there without
+% adapting each command individually -- \cs{alt} additionally serves as
+% the decoder fallback's own native-spec judge just below, so wrapping it
+% here would make that judge call back into itself. Only a base class
+% that lacks the command natively (article, scrbook, book, ...) needs a
+% portable-only definition.}
 \cs_if_exist:NF \uncover
   {
     \NewDocumentCommand \uncover { d<> +m }
@@ -1917,9 +2923,12 @@ Text\\<slides>[3ex]
       }
   }
 
-% \cs{invisible} inverts the polarity: content shows everywhere except in
-% the given mode.  A native or unrecognised specification degrades to
-% "show" like the positive commands.
+% \ldeen{\cs{invisible} kehrt die Polarität um: Inhalt wird überall
+% angezeigt außer im angegebenen Modus. Eine native oder unerkannte
+% Spezifikation degradiert wie bei den positiven Befehlen zu
+% \emph{anzeigen}.}{\cs{invisible} inverts the polarity: content shows
+% everywhere except in the given mode. A native or unrecognised
+% specification degrades to "show" like the positive commands.}
 \cs_if_exist:NF \invisible
   {
     \NewDocumentCommand \invisible { d<> +m }
@@ -1933,9 +2942,13 @@ Text\\<slides>[3ex]
       }
   }
 
-% \cs{alt} takes two content arguments (active branch, inactive branch)
-% instead of \cs{only}'s single one; the fallback mirrors that shape and
-% treats a native or unrecognised specification as the active branch.
+% \ldeen{\cs{alt} nimmt zwei Inhaltsargumente (aktiver Zweig, inaktiver
+% Zweig) statt des einen von \cs{only}; der Fallback spiegelt diese Form
+% und behandelt eine native oder unerkannte Spezifikation als aktiven
+% Zweig.}{\cs{alt} takes two content arguments (active branch, inactive
+% branch) instead of \cs{only}'s single one; the fallback mirrors that
+% shape and treats a native or unrecognised specification as the active
+% branch.}
 \cs_if_exist:NF \alt
   {
     \NewDocumentCommand \alt { d<> +m +m }
@@ -1949,14 +2962,23 @@ Text\\<slides>[3ex]
       }
   }
 
-% \cs{pause} marks a live-reveal point with no content to select, and
-% \cs{temporal}'s before/during/after split assumes an ordered overlay
-% range, which named portable modes do not have -- neither maps onto
-% content selection by mode the way the commands above do. Base classes
-% without their own \cs{pause}/\cs{temporal} still get a definition so
-% shared source compiles: \cs{pause} does nothing, and \cs{temporal}
-% always shows its "`during"' argument, the state a static, non-overlay
-% rendering settles on.
+% \ldeen{\cs{pause} markiert einen Live-Aufdeckpunkt ohne zu wählenden
+% Inhalt, und die Vorher-/Während-/Nachher-Aufteilung von \cs{temporal}
+% setzt einen geordneten Overlaybereich voraus, den benannte portable
+% Modi nicht besitzen -- keines von beidem lässt sich auf
+% Inhaltsauswahl per Modus abbilden wie bei den Befehlen oben.
+% Basisklassen ohne eigenes \cs{pause}/\cs{temporal} erhalten dennoch eine
+% Definition, damit gemeinsamer Quelltext kompiliert: \cs{pause} tut
+% nichts, und \cs{temporal} zeigt stets sein \emph{während}-Argument, den
+% Zustand, auf den eine statische, overlaylose Darstellung sich
+% einpendelt.}{\cs{pause} marks a live-reveal point with no content to
+% select, and \cs{temporal}'s before/during/after split assumes an
+% ordered overlay range, which named portable modes do not have --
+% neither maps onto content selection by mode the way the commands above
+% do. Base classes without their own \cs{pause}/\cs{temporal} still get a
+% definition so shared source compiles: \cs{pause} does nothing, and
+% \cs{temporal} always shows its "during" argument, the state a
+% static, non-overlay rendering settles on.}
 \cs_if_exist:NF \pause
   { \NewDocumentCommand \pause { O{} } { } }
 \cs_if_exist:NF \temporal
@@ -1967,30 +2989,27 @@ Text\\<slides>[3ex]
 \ProvidesExplPackage{osglecture-modes-ltxtalk}
 {2026-08-02}
 {v0.4.0}
-{ltx-talk adapter with ignore-non-frame-text}
+{ltx-talk adapter: lecture-specific baseline exceptions}
 
 \RequirePackage{osglecture-modes}
 
 \ExplSyntaxOn
 
-\bool_new:N  \g_osglecture_modes_ltxtalk_ignore_bool
-\bool_new:N  \g_osglecture_modes_ltxtalk_scanner_active_bool
-\bool_new:N  \g_osglecture_modes_ltxtalk_after_structure_bool
-\clist_new:N \g_osglecture_modes_ltxtalk_raw_skip_envs_clist
-\clist_new:N \g_osglecture_modes_ltxtalk_keep_envs_clist
-\clist_new:N \g_osglecture_modes_ltxtalk_hooked_envs_clist
-
-\msg_new:nnn { osglecture_modes_ltxtalk } { unknown-environment }
-  { Environment~'#1'~is~not~defined. }
-
-\clist_gset:Nn \g_osglecture_modes_ltxtalk_raw_skip_envs_clist
-  {
-    verbatim,
-    Verbatim,
-    lstlisting,
-    minted,
-    comment
-  }
+% \ldeen{Die generische "`außerhalb von Unit-Umgebungen verwerfen"'-Maschinerie
+% (Scanner, Modus \code{*}, \cs{DeclareLectureKeepCommand} und Geschwister)
+% gehört jetzt zum Kernpaket und funktioniert unabhängig von ltx-talk. Dieser
+% Adapter ergänzt nur noch das, was tatsächlich ltx-talk-spezifisch ist:
+% \cs{lecture} als weitere Baseline-Ausnahme (mit eigener, dreiteiliger
+% Signatur) sowie den Hook, der den Scanner nach \cs{lecture} scharf
+% schaltet -- \cs{frame}/\cs{frame*} werden bereits vom Kernpaket erkannt und
+% registriert, sobald sie existieren.}{The generic "drop everything outside
+% unit environments" machinery (scanner, mode \code{*},
+% \cs{DeclareLectureKeepCommand} and siblings) now lives in the core package
+% and works independently of ltx-talk. This adapter only adds what is
+% actually ltx-talk-specific: \cs{lecture} as a further baseline exception
+% (with its own three-part signature) and the hook that arms the scanner
+% after \cs{lecture} -- \cs{frame}/\cs{frame*} are already detected and
+% registered by the core package once they exist.}
 
 \keys_define:nn { osglecture_modes_ltxtalk }
   {
@@ -1998,22 +3017,19 @@ Text\\<slides>[3ex]
       { \SetLectureModes{#1} },
 
     ignorenonframetext .bool_gset:N =
-      \g_osglecture_modes_ltxtalk_ignore_bool,
+      \g_osglecture_modes_ignorenonframetext_bool,
 
     ignorenonframetext .default:n = true,
 
     raw-skip-envs .clist_gset:N =
-      \g_osglecture_modes_ltxtalk_raw_skip_envs_clist,
+      \g_osglecture_modes_raw_skip_envs_clist,
   }
 
 \ProcessKeyOptions [ osglecture_modes_ltxtalk ]
 
-\sys_if_engine_luatex:TF
+\sys_if_engine_luatex:F
   {
-    \directlua{require("osglecture-modes-ltxtalk.lua")}
-  }
-  {
-    \bool_if:NT \g_osglecture_modes_ltxtalk_ignore_bool
+    \bool_if:NT \g_osglecture_modes_ignorenonframetext_bool
       {
         \PackageWarning
           {osglecture_modes_ltxtalk}
@@ -2021,640 +3037,35 @@ Text\\<slides>[3ex]
       }
   }
 
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_lua_raw_skip:n #1
-  {
-    \sys_if_engine_luatex:T
-      {
-        \directlua{
-          osglecture_modes_ltxtalk.start_raw_skip("\luaescapestring{#1}")
-        }
-      }
-  }
-
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_peek_if_exist:NTF #1#2#3
-  {
-    \cs_if_exist:NTF #1
-      { \peek_meaning_remove:NTF #1 {#2} {#3} }
-      {#3}
-  }
-  
-% With no filter profile ever selected for the active leaf modes, this is
-% exactly the original trigger: scan only under "presentation". A selected
-% profile (see \cs{osglecture_modes_ltxtalk_apply_profile:} further below)
-% overrides that -- scanning then also engages for document types (e.g. an
-% exam target) that have nothing to do with "presentation" at all.
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_start_scan:
-  {
-    \bool_if:NT \g_osglecture_modes_ltxtalk_ignore_bool
-    {
-      \bool_if:NT \g_osglecture_modes_ltxtalk_scanner_active_bool
-        {
-          \osglecture_modes_ltxtalk_apply_profile:
-          \tl_if_empty:NTF \l_osglecture_modes_ltxtalk_selected_profile_tl
-            { \osglecture_modes_if_active:nT { presentation }
-                { \osglecture_modes_ltxtalk_scan: } }
-            { \osglecture_modes_ltxtalk_scan: }
-        }
-      }
-  }
-
-% Explicit spaces are stripped here, once, before any peek: an undelimited
-% parameter (which is how every peeked branch below ultimately grabs its
-% token) skips leading spaces on its own, so a space reaching one of those
-% branches unstripped would vanish together with the unrelated token after
-% it, silently dropping whatever follows a line break.
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_scan:
-  {
-    \peek_remove_spaces:n
-      {
-        \peek_meaning:NTF \begin
-          { \osglecture_modes_ltxtalk_scan_begin: }
-          {
-            \peek_meaning:NTF \end
-              { \osglecture_modes_ltxtalk_scan_end: }
-              { \osglecture_modes_ltxtalk_scan_token: }
-          }
-      }
-  }
-
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_scan_begin:
-  {
-    \peek_meaning_remove:NT \begin
-    \osglecture_modes_ltxtalk_scan_begin_aux:n
-  }
-
-  
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_scan_begin_aux:n #1
-  {
-    \clist_if_in:NnTF \g_osglecture_modes_ltxtalk_keep_envs_clist {#1}
-      {
-        \begin{#1}
-      }
-      {
-        \clist_if_in:NnTF \g_osglecture_modes_ltxtalk_raw_skip_envs_clist {#1}
-          {
-            \osglecture_modes_ltxtalk_lua_raw_skip:n {#1}
-            \osglecture_modes_ltxtalk_scan:
-          }
-          {
-            \osglecture_modes_ltxtalk_skip_environment:n {#1}
-            \osglecture_modes_ltxtalk_scan:
-          }
-      }
-  }
-
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_scan_end:
-  {
-    \peek_meaning_remove:NT \end
-    \osglecture_modes_ltxtalk_scan_end_aux:n
-  }
-
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_scan_end_aux:n #1
-  {
-    \str_if_eq:nnTF {#1} {document}
-      {
-        \end{document}
-      }
-      {
-        % fremdes \cs{end}\code{\{...\}} außerhalb von frames ignorieren
-        \osglecture_modes_ltxtalk_scan:
-      }
-  }
-  
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_skip_environment:n #1
-  {
-    \cs_set_protected:Npn \osglecture_modes_ltxtalk_skip:w ##1 \end ##2
-      {
-        \str_if_eq:nnF {#1} {##2}
-          { \osglecture_modes_ltxtalk_skip:w }
-      }
-    \osglecture_modes_ltxtalk_skip:w
-  }
-
-% A "kept" environment is entered normally; the closing \cs{end} therefore
-% reaches the base class unchanged, and only the hook below re-arms the
-% scanner for what follows. The hook is registered once per environment
-% name, independently of any filter profile, since the same environment
-% may end up listed in several profiles. \cs{frame} and \cs{frame*} are
-% declared as baseline defaults below; project-specific environments (a
-% task environment, a title page, ...) register through the same
-% mechanism, either unconditionally (baseline, always kept) or scoped to
-% a single filter profile (kept only while that profile is selected; see
-% \cs{DeclareLtxtalkFilterProfile} further below).
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_ensure_env_hook:n #1
-  {
-    \cs_if_exist:cTF {#1}
-      {
-        \clist_if_in:NnF \g_osglecture_modes_ltxtalk_hooked_envs_clist {#1}
-          {
-            \clist_gput_right:Nn \g_osglecture_modes_ltxtalk_hooked_envs_clist {#1}
-            \AddToHook{env/#1/after}{ \osglecture_modes_ltxtalk_start_scan: }
-          }
-      }
-      { \msg_error:nnn { osglecture_modes_ltxtalk } { unknown-environment } {#1} }
-  }
-
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_declare_keep_environment:nn #1#2
-  {
-    \osglecture_modes_ltxtalk_ensure_env_hook:n {#1}
-    \tl_if_empty:nTF {#2}
-      {
-        \clist_if_in:NnF \g_osglecture_modes_ltxtalk_keep_envs_clist {#1}
-          { \clist_gput_right:Nn \g_osglecture_modes_ltxtalk_keep_envs_clist {#1} }
-      }
-      {
-        \seq_if_in:NnTF \g_osglecture_modes_ltxtalk_profile_known_seq {#2}
-          {
-            \osglecture_modes_ltxtalk_profile_if_mutable:nTF {#2}
-              { \clist_gput_right:cn { osglecture_modes_ltxtalk_profile_own_envs_ #2 _clist } {#1} }
-              { }
-          }
-          { \msg_error:nnn { osglecture_modes_ltxtalk } { unknown-filter-profile } {#2} }
-      }
-  }
-\cs_generate_variant:Nn \osglecture_modes_ltxtalk_declare_keep_environment:nn { nV }
-
-\NewDocumentCommand \DeclareLtxtalkKeepEnvironment { O{} m }
-  {
-    \tl_clear:N \l_osglecture_modes_ltxtalk_keep_profile_tl
-    \keys_set:nn { osglecture_modes_ltxtalk / keep } {#1}
-    \clist_map_inline:nn {#2}
-      {
-        \osglecture_modes_ltxtalk_declare_keep_environment:nV
-          {##1} \l_osglecture_modes_ltxtalk_keep_profile_tl
-      }
-  }
-
-% \cs{frame}/\cs{frame*} come from the presentation class, not this
-% package, so their absence (this adapter loaded without ltx-talk, or
-% loaded before the class defines them) is silently tolerated here; a
-% project-declared environment that is missing is still an error above.
-\cs_if_exist:cT { frame }
-  { \osglecture_modes_ltxtalk_declare_keep_environment:nn { frame } { } }
-\cs_if_exist:cT { frame* }
-  { \osglecture_modes_ltxtalk_declare_keep_environment:nn { frame* } { } }
-
-% Filter profiles compose named allow-lists via a small parent DAG,
-% mirroring the lecture-mode graph in the core package, but with
-% union-of-ancestors closure instead of single-selection: a profile that
-% has both a "solutions" and a "grading" profile as parents keeps
-% everything either parent keeps. A leaf lecture-mode selects at most one
-% filter profile (\cs{AssignLtxtalkFilterProfile}); once one is selected,
-% its closed allow-list is merged into the baseline (commands and
-% environments declared without \code{profile=}, which stay in effect no
-% matter which, if any, profile applies) the first time the scanner
-% engages. Modes that select no profile keep exactly the previously
-% existing \code{ignorenonframetext} behavior.
-\seq_new:N  \g_osglecture_modes_ltxtalk_profile_known_seq
-\prop_new:N \g_osglecture_modes_ltxtalk_profile_parents_prop
-\bool_new:N \g_osglecture_modes_ltxtalk_profile_frozen_bool
-\prop_new:N \g_osglecture_modes_ltxtalk_mode_profile_prop
-\tl_new:N   \l_osglecture_modes_ltxtalk_selected_profile_tl
-\bool_new:N \g_osglecture_modes_ltxtalk_profile_resolved_bool
-\tl_new:N   \l_osglecture_modes_ltxtalk_keep_profile_tl
-
-\msg_new:nnn { osglecture_modes_ltxtalk } { filter-profile-frozen }
-  { The~ltxtalk~filter-profile~graph~is~already~finalized;~'#1'~cannot~be~changed. }
-\msg_new:nnn { osglecture_modes_ltxtalk } { unknown-filter-profile }
-  { Unknown~ltxtalk~filter~profile~'#1'. }
-\msg_new:nnn { osglecture_modes_ltxtalk } { filter-profile-unknown-parent }
-  { Filter~profile~'#1'~has~unknown~parent~'#2'. }
-\msg_new:nnn { osglecture_modes_ltxtalk } { filter-profile-cycle }
-  { Filter~profile~parent~cycle~detected~at~'#1'. }
-\msg_new:nnn { osglecture_modes_ltxtalk } { conflicting-filter-profiles }
-  { Active~leaf~modes~select~both~filter~profile~'#1'~and~'#2'. }
-
-\keys_define:nn { osglecture_modes_ltxtalk / keep }
-  {
-    profile .tl_set:N = \l_osglecture_modes_ltxtalk_keep_profile_tl,
-  }
-
-\prg_new_protected_conditional:Npnn \osglecture_modes_ltxtalk_profile_if_mutable:n #1 { TF }
-  {
-    \bool_if:NTF \g_osglecture_modes_ltxtalk_profile_frozen_bool
-      {
-        \msg_error:nnn { osglecture_modes_ltxtalk } { filter-profile-frozen } {#1}
-        \prg_return_false:
-      }
-      { \prg_return_true: }
-  }
-
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_profile_declare:n #1
-  {
-    \seq_if_in:NnF \g_osglecture_modes_ltxtalk_profile_known_seq {#1}
-      {
-        \seq_gput_right:Nn \g_osglecture_modes_ltxtalk_profile_known_seq {#1}
-        \prop_new:c  { osglecture_modes_ltxtalk_profile_own_dispatch_ #1 _prop }
-        \prop_new:c  { osglecture_modes_ltxtalk_profile_eff_dispatch_ #1 _prop }
-        \clist_new:c { osglecture_modes_ltxtalk_profile_own_envs_ #1 _clist }
-        \clist_new:c { osglecture_modes_ltxtalk_profile_eff_envs_ #1 _clist }
-      }
-  }
-
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_profile_declare_parents:nn #1#2
-  {
-    \osglecture_modes_ltxtalk_profile_declare:n {#1}
-    \clist_set:Nn \l_tmpa_clist {#2}
-    \clist_remove_duplicates:N \l_tmpa_clist
-    \prop_gput:NnV \g_osglecture_modes_ltxtalk_profile_parents_prop {#1} \l_tmpa_clist
-  }
-\cs_generate_variant:Nn \osglecture_modes_ltxtalk_profile_declare_parents:nn { Vn }
-
-\tl_new:N \l_osglecture_modes_ltxtalk_profile_decl_tl
-\keys_define:nn { osglecture_modes_ltxtalk / declare-profile }
-  {
-    parent  .code:n = \osglecture_modes_ltxtalk_profile_declare_parents:Vn
-      \l_osglecture_modes_ltxtalk_profile_decl_tl {#1},
-    parents .code:n = \osglecture_modes_ltxtalk_profile_declare_parents:Vn
-      \l_osglecture_modes_ltxtalk_profile_decl_tl {#1},
-  }
-
-\NewDocumentCommand \DeclareLtxtalkFilterProfile { O{} m }
-  {
-    \osglecture_modes_ltxtalk_profile_if_mutable:nTF {#2}
-      {
-        \osglecture_modes_ltxtalk_profile_declare:n {#2}
-        \tl_set:Nn \l_osglecture_modes_ltxtalk_profile_decl_tl {#2}
-        \keys_set:nn { osglecture_modes_ltxtalk / declare-profile } {#1}
-      }
-      { }
-  }
-
-\NewDocumentCommand \DeclareLtxtalkFilterProfileParents { m m }
-  {
-    \osglecture_modes_ltxtalk_profile_if_mutable:nTF {#1}
-      { \osglecture_modes_ltxtalk_profile_declare_parents:nn {#1} {#2} }
-      { }
-  }
-
-\cs_generate_variant:Nn \prop_gput:Nnn { cnn }
-\cs_generate_variant:Nn \prop_map_inline:Nn { c }
-\cs_generate_variant:Nn \clist_gput_right:Nn { cn }
-\cs_generate_variant:Nn \clist_map_inline:Nn { c }
-
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_profile_union_dispatch:nn #1#2
-  { % copies #1(closed)'s effective dispatch entries into #2's effective dispatch
-    \prop_map_inline:cn { osglecture_modes_ltxtalk_profile_eff_dispatch_ #1 _prop }
-      { \prop_gput:cnn { osglecture_modes_ltxtalk_profile_eff_dispatch_ #2 _prop } {##1} {##2} }
-  }
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_profile_union_envs:nn #1#2
-  { % copies #1(closed)'s effective kept environments into #2's effective set
-    \clist_map_inline:cn { osglecture_modes_ltxtalk_profile_eff_envs_ #1 _clist }
-      { \clist_gput_right:cn { osglecture_modes_ltxtalk_profile_eff_envs_ #2 _clist } {##1} }
-  }
-
-\prop_new:N \l_osglecture_modes_ltxtalk_profile_visiting_prop
-\prop_new:N \l_osglecture_modes_ltxtalk_profile_visited_prop
-
-% Post-order DFS: every parent is fully closed (recursively) before its
-% entries are unioned into the current profile, and the current profile's
-% own entries are added last so they can shadow an inherited handler
-% registered for the same command or environment name.
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_profile_visit:n #1
-  {
-    \prop_if_in:NnTF \l_osglecture_modes_ltxtalk_profile_visiting_prop {#1}
-      { \msg_error:nnn { osglecture_modes_ltxtalk } { filter-profile-cycle } {#1} }
-      {
-        \prop_if_in:NnF \l_osglecture_modes_ltxtalk_profile_visited_prop {#1}
-          {
-            \prop_put:Nnn \l_osglecture_modes_ltxtalk_profile_visiting_prop {#1} { }
-            \prop_get:NnNT \g_osglecture_modes_ltxtalk_profile_parents_prop {#1} \l_tmpa_tl
-              {
-                \clist_map_inline:Vn \l_tmpa_tl
-                  {
-                    \seq_if_in:NnTF \g_osglecture_modes_ltxtalk_profile_known_seq {##1}
-                      {
-                        \osglecture_modes_ltxtalk_profile_visit:n {##1}
-                        \osglecture_modes_ltxtalk_profile_union_dispatch:nn {##1} {#1}
-                        \osglecture_modes_ltxtalk_profile_union_envs:nn {##1} {#1}
-                      }
-                      {
-                        \msg_error:nnnn { osglecture_modes_ltxtalk }
-                          { filter-profile-unknown-parent } {#1} {##1}
-                      }
-                  }
-              }
-            \prop_map_inline:cn { osglecture_modes_ltxtalk_profile_own_dispatch_ #1 _prop }
-              { \prop_gput:cnn { osglecture_modes_ltxtalk_profile_eff_dispatch_ #1 _prop } {##1} {##2} }
-            \clist_map_inline:cn { osglecture_modes_ltxtalk_profile_own_envs_ #1 _clist }
-              { \clist_gput_right:cn { osglecture_modes_ltxtalk_profile_eff_envs_ #1 _clist } {##1} }
-            \clist_remove_duplicates:c { osglecture_modes_ltxtalk_profile_eff_envs_ #1 _clist }
-            \prop_remove:Nn \l_osglecture_modes_ltxtalk_profile_visiting_prop {#1}
-            \prop_put:Nnn \l_osglecture_modes_ltxtalk_profile_visited_prop {#1} { }
-          }
-      }
-  }
-
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_profile_finalize:
-  {
-    \bool_if:NF \g_osglecture_modes_ltxtalk_profile_frozen_bool
-      {
-        \prop_clear:N \l_osglecture_modes_ltxtalk_profile_visiting_prop
-        \prop_clear:N \l_osglecture_modes_ltxtalk_profile_visited_prop
-        \seq_map_inline:Nn \g_osglecture_modes_ltxtalk_profile_known_seq
-          { \osglecture_modes_ltxtalk_profile_visit:n {##1} }
-        \bool_gset_true:N \g_osglecture_modes_ltxtalk_profile_frozen_bool
-      }
-  }
-
-\NewDocumentCommand \AssignLtxtalkFilterProfile { m m }
-  {
-    \seq_if_in:NnTF \g_osglecture_modes_ltxtalk_profile_known_seq {#2}
-      {
-        \osglecture_modes_ltxtalk_profile_if_mutable:nTF {#2}
-          {
-            \clist_map_inline:nn {#1}
-              {
-                \osglecture_modes_resolve:nN {##1} \l_tmpa_tl
-                \seq_if_in:NVTF \g_osglecture_modes_known_seq \l_tmpa_tl
-                  { \prop_gput:NVn \g_osglecture_modes_ltxtalk_mode_profile_prop \l_tmpa_tl {#2} }
-                  { \msg_error:nnV { osglecture_modes } { unknown-mode } \l_tmpa_tl }
-              }
-          }
-          { }
-      }
-      { \msg_error:nnn { osglecture_modes_ltxtalk } { unknown-filter-profile } {#2} }
-  }
-
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_select_profile:
-  {
-    \tl_clear:N \l_osglecture_modes_ltxtalk_selected_profile_tl
-    \seq_map_inline:Nn \g_osglecture_modes_seed_seq
-      {
-        \prop_get:NnNT \g_osglecture_modes_ltxtalk_mode_profile_prop {##1} \l_tmpa_tl
-          {
-            \tl_if_empty:NTF \l_osglecture_modes_ltxtalk_selected_profile_tl
-              { \tl_set_eq:NN \l_osglecture_modes_ltxtalk_selected_profile_tl \l_tmpa_tl }
-              {
-                \str_if_eq:VVF \l_osglecture_modes_ltxtalk_selected_profile_tl \l_tmpa_tl
-                  {
-                    \msg_error:nnVV { osglecture_modes_ltxtalk } { conflicting-filter-profiles }
-                      \l_osglecture_modes_ltxtalk_selected_profile_tl \l_tmpa_tl
-                  }
-              }
-          }
-      }
-  }
-
-% Merges baseline (already live in the runtime tables) with the selected
-% profile's closed allow-list, once per run. Nothing here runs if no active
-% leaf mode selects a profile, so plain \code{ignorenonframetext} without
-% any \cs{DeclareLtxtalkFilterProfile} keeps behaving exactly as before.
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_apply_profile:
-  {
-    \bool_if:NF \g_osglecture_modes_ltxtalk_profile_resolved_bool
-      {
-        \osglecture_modes_ltxtalk_profile_finalize:
-        \osglecture_modes_ltxtalk_select_profile:
-        \tl_if_empty:NF \l_osglecture_modes_ltxtalk_selected_profile_tl
-          {
-            \exp_args:Nc \prop_map_inline:Nn
-              { osglecture_modes_ltxtalk_profile_eff_dispatch_
-                \l_osglecture_modes_ltxtalk_selected_profile_tl _prop }
-              { \prop_gput:Nnn \g_osglecture_modes_ltxtalk_dispatch_prop {##1} {##2} }
-            \exp_args:Nc \clist_map_inline:Nn
-              { osglecture_modes_ltxtalk_profile_eff_envs_
-                \l_osglecture_modes_ltxtalk_selected_profile_tl _clist }
-              {
-                \clist_if_in:NnF \g_osglecture_modes_ltxtalk_keep_envs_clist {##1}
-                  { \clist_gput_right:Nn \g_osglecture_modes_ltxtalk_keep_envs_clist {##1} }
-              }
-          }
-        \bool_gset_true:N \g_osglecture_modes_ltxtalk_profile_resolved_bool
-      }
-  }
-
-\prop_new:N \g_osglecture_modes_ltxtalk_dispatch_prop
-
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_declare_allowed_command:nn #1#2
-  {
-    \prop_gput:Nnn \g_osglecture_modes_ltxtalk_dispatch_prop {#1} {#2}
-  }
-\cs_generate_variant:Nn \osglecture_modes_ltxtalk_declare_allowed_command:nn { xx }
-
-% The argument has to be grabbed here, before the original command is
-% re-inserted: appending code after a macro parameter in its own
-% replacement text does not run that code "once the parameter is done" --
-% macro expansion prepends the whole replacement text at once, so the
-% re-inserted command would consume the appended tokens instead of its
-% real argument. Grabbing the argument first and only then writing out
-% the call keeps the two apart. This mirrors \cs{input}/\cs{include} below
-% and covers the common case of a single mandatory argument; a command
-% with a different signature still has the low-level
-% \cs{osglecture_modes_ltxtalk_declare_allowed_command:nn} as an escape
-% hatch.
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_keep_generic:Nn #1#2
-  {
-    #1 {#2}
-    \bool_gset_false:N \g_osglecture_modes_ltxtalk_after_structure_bool
-    \osglecture_modes_ltxtalk_scan:
-  }
-
-% Mirrors \cs{label}'s own dispatcher below: kept only immediately after a
-% structural command, so a project-specific label wrapper can replace
-% \cs{label} everywhere without pulling in labels that sit in dropped text.
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_keep_generic_label:Nn #1#2
-  {
-    \bool_if:NT \g_osglecture_modes_ltxtalk_after_structure_bool
-      { #1 {#2} }
-    \bool_gset_false:N \g_osglecture_modes_ltxtalk_after_structure_bool
-    \osglecture_modes_ltxtalk_scan:
-  }
-
-% Arguments, in order: command name, handler name, profile name (possibly
-% empty, meaning baseline: added directly to the live dispatch table below,
-% active no matter which, if any, filter profile is selected).
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_register_command:nnn #1#2#3
-  {
-    \tl_if_empty:nTF {#3}
-      { \osglecture_modes_ltxtalk_declare_allowed_command:nn {#1} {#2} }
-      {
-        \seq_if_in:NnTF \g_osglecture_modes_ltxtalk_profile_known_seq {#3}
-          {
-            \osglecture_modes_ltxtalk_profile_if_mutable:nTF {#3}
-              { \prop_gput:cnn { osglecture_modes_ltxtalk_profile_own_dispatch_ #3 _prop } {#1} {#2} }
-              { }
-          }
-          { \msg_error:nnn { osglecture_modes_ltxtalk } { unknown-filter-profile } {#3} }
-      }
-  }
-\cs_generate_variant:Nn \osglecture_modes_ltxtalk_register_command:nnn { VVV }
-
-\tl_new:N \l_osglecture_modes_ltxtalk_reg_cmd_tl
-\tl_new:N \l_osglecture_modes_ltxtalk_reg_handler_tl
-
-\NewDocumentCommand \DeclareLtxtalkKeepCommand { O{} m }
-  {
-    \tl_clear:N \l_osglecture_modes_ltxtalk_keep_profile_tl
-    \keys_set:nn { osglecture_modes_ltxtalk / keep } {#1}
-    \cs_if_exist:NTF #2
-      {
-        \exp_args:Nc \cs_set_protected:Npn
-          { osglecture_modes_ltxtalk_keep_generic_ \cs_to_str:N #2 : }
-          { \osglecture_modes_ltxtalk_keep_generic:Nn #2 }
-        \tl_set:Nx \l_osglecture_modes_ltxtalk_reg_cmd_tl { \cs_to_str:N #2 }
-        \tl_set:Nx \l_osglecture_modes_ltxtalk_reg_handler_tl
-          { osglecture_modes_ltxtalk_keep_generic_ \cs_to_str:N #2 : }
-        \osglecture_modes_ltxtalk_register_command:VVV
-          \l_osglecture_modes_ltxtalk_reg_cmd_tl
-          \l_osglecture_modes_ltxtalk_reg_handler_tl
-          \l_osglecture_modes_ltxtalk_keep_profile_tl
-      }
-      { \msg_error:nnN { kernel } { command-not-defined } #2 }
-  }
-
-\NewDocumentCommand \DeclareLtxtalkKeepLabelCommand { O{} m }
-  {
-    \tl_clear:N \l_osglecture_modes_ltxtalk_keep_profile_tl
-    \keys_set:nn { osglecture_modes_ltxtalk / keep } {#1}
-    \cs_if_exist:NTF #2
-      {
-        \exp_args:Nc \cs_set_protected:Npn
-          { osglecture_modes_ltxtalk_keep_generic_ \cs_to_str:N #2 : }
-          { \osglecture_modes_ltxtalk_keep_generic_label:Nn #2 }
-        \tl_set:Nx \l_osglecture_modes_ltxtalk_reg_cmd_tl { \cs_to_str:N #2 }
-        \tl_set:Nx \l_osglecture_modes_ltxtalk_reg_handler_tl
-          { osglecture_modes_ltxtalk_keep_generic_ \cs_to_str:N #2 : }
-        \osglecture_modes_ltxtalk_register_command:VVV
-          \l_osglecture_modes_ltxtalk_reg_cmd_tl
-          \l_osglecture_modes_ltxtalk_reg_handler_tl
-          \l_osglecture_modes_ltxtalk_keep_profile_tl
-      }
-      { \msg_error:nnN { kernel } { command-not-defined } #2 }
-  }
-
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_scan_token:
-  {
-    \peek_N_type:TF
-      { \osglecture_modes_ltxtalk_scan_control_sequence:N }
-      { \osglecture_modes_ltxtalk_discard_one: }
-  }
-
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_scan_control_sequence:N #1
-  {
-    % Document commands created by xparse often share the same dispatcher
-    % meaning.  Dispatch by control-sequence name, not by \ifx-like meaning.
-    \exp_args:NNx \prop_get:NnNTF
-      \g_osglecture_modes_ltxtalk_dispatch_prop
-      { \cs_to_str:N #1 }
-      \l_tmpa_tl
-      {
-        \use:c { \l_tmpa_tl }
-      }
-      { \osglecture_modes_ltxtalk_scan: }
-  }
-
-% handler
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_keep_part:
-  { \osglecture_modes_ltxtalk_keep_structure:N \part }
-
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_keep_section:
-  { \osglecture_modes_ltxtalk_keep_structure:N \section }
-
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_keep_subsection:
-  { \osglecture_modes_ltxtalk_keep_structure:N \subsection }
-
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_keep_subsubsection:
-  { \osglecture_modes_ltxtalk_keep_structure:N \subsubsection }
-
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_keep_appendix:
-  {
-    \appendix
-    \bool_gset_true:N \g_osglecture_modes_ltxtalk_after_structure_bool
-    \osglecture_modes_ltxtalk_scan:
-  }
-
-\NewDocumentCommand \osglecture_modes_ltxtalk_keep_lecturemode: { d<> +m }
-  {
-    \IfNoValueTF {#1}
-      { \lecturemode{#2} }
-      { \lecturemode<#1>{#2} }
-    \bool_gset_false:N \g_osglecture_modes_ltxtalk_after_structure_bool
-    \osglecture_modes_ltxtalk_scan:
-  }
-  
-\NewDocumentCommand \osglecture_modes_ltxtalk_keep_mode: { d<> +m }
-  {
-    \IfNoValueTF {#1}
-      { \mode{#2} }
-      { \mode<#1>{#2} }
-    \bool_gset_false:N \g_osglecture_modes_ltxtalk_after_structure_bool
-    \osglecture_modes_ltxtalk_scan:
-  }
-
-\NewDocumentCommand \osglecture_modes_ltxtalk_keep_lecture: { O{} m m }
+\NewDocumentCommand \osglecture_modes_keep_lecture: { O{} m m }
   {
     \lecture[#1]{#2}{#3}
-    \bool_gset_false:N \g_osglecture_modes_ltxtalk_after_structure_bool
-    \osglecture_modes_ltxtalk_scan:
+    \bool_gset_false:N \g_osglecture_modes_after_structure_bool
+    \osglecture_modes_scan:
   }
+\osglecture_modes_declare_allowed_command:nn { lecture } { osglecture_modes_keep_lecture: }
 
-\NewDocumentCommand \osglecture_modes_ltxtalk_keep_maketitle: { O{} }
-  {
-    \bool_gset_false:N \g_osglecture_modes_ltxtalk_scanner_active_bool
-    \tl_if_blank:nTF {#1} { \maketitle } { \maketitle[#1] }
-  }
+% \ldeen{\cs{label}, \cs{input} und \cs{include} sind schlichte Instanzen
+% der allgemeinen Ausnahmeschnittstelle des Kernpakets; sie über diese statt
+% von Hand zu deklarieren, erhält eine einzige Implementierung für
+% \emph{diesen Befehl erhalten, dann den Scan fortsetzen}.}{\cs{label},
+% \cs{input}, and \cs{include} are plain instances of the core package's
+% general exception interface; declaring them through it rather than by
+% hand keeps a single implementation for "keep this command, then resume
+% scanning".}
+\DeclareLectureKeepLabelCommand \label
+\DeclareLectureKeepCommand \input
+\DeclareLectureKeepCommand \include
 
-\osglecture_modes_ltxtalk_declare_allowed_command:nn { part }          { osglecture_modes_ltxtalk_keep_part: }
-\osglecture_modes_ltxtalk_declare_allowed_command:nn { section }       { osglecture_modes_ltxtalk_keep_section: }
-\osglecture_modes_ltxtalk_declare_allowed_command:nn { subsection }    { osglecture_modes_ltxtalk_keep_subsection: }
-\osglecture_modes_ltxtalk_declare_allowed_command:nn { subsubsection } { osglecture_modes_ltxtalk_keep_subsubsection: }
-\osglecture_modes_ltxtalk_declare_allowed_command:nn { appendix }      { osglecture_modes_ltxtalk_keep_appendix: }
-\osglecture_modes_ltxtalk_declare_allowed_command:nn { lecturemode }   { osglecture_modes_ltxtalk_keep_lecturemode: }
-\osglecture_modes_ltxtalk_declare_allowed_command:nn { mode }          { osglecture_modes_ltxtalk_keep_mode: }
-\osglecture_modes_ltxtalk_declare_allowed_command:nn { maketitle }     { osglecture_modes_ltxtalk_keep_maketitle: }
-
-% \cs{label}, \cs{input}, and \cs{include} are plain instances of the
-% general exception interface below; declaring them through it rather than
-% by hand keeps a single implementation for "keep this command, then resume
-% scanning".
-\DeclareLtxtalkKeepLabelCommand \label
-\DeclareLtxtalkKeepCommand \input
-\DeclareLtxtalkKeepCommand \include
-
-\NewDocumentCommand \osglecture_modes_ltxtalk_keep_structure:N { m s o m }
-  {
-    \IfBooleanTF {#2}
-      {
-        \IfNoValueTF {#3}
-          { #1*{#4} }
-          { #1*[#3]{#4} }
-      }
-      {
-        \IfNoValueTF {#3}
-          { #1{#4} }
-          { #1[#3]{#4} }
-      }
-    \bool_gset_true:N \g_osglecture_modes_ltxtalk_after_structure_bool
-    \osglecture_modes_ltxtalk_scan:
-  }
-
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_discard_one:
-  {
-    \osglecture_modes_ltxtalk_discard_one:n
-  }
-
-\cs_new_protected:Npn \osglecture_modes_ltxtalk_discard_one:n #1
-  {
-    \bool_gset_false:N \g_osglecture_modes_ltxtalk_after_structure_bool
-    \osglecture_modes_ltxtalk_scan:
-  }
-
-% Arm the scanner after osglecture has completely processed its logical-unit
-% declaration.  This covers non-frame material before the title as well.  The
-% maketitle handler temporarily disarms it because the title implementation
-% uses an internal frame of its own.
+% \ldeen{Rüstet den Scanner auf, nachdem osglecture seine
+% Gliederungseinheit-Deklaration vollständig verarbeitet hat. Das deckt
+% auch Nichtrahmenmaterial vor dem Titel ab.}{Arm the scanner after
+% osglecture has completely processed its logical-unit declaration. This
+% covers non-frame material before the title as well.}
 \AddToHook{cmd/lecture/after}
   {
-    \bool_gset_true:N \g_osglecture_modes_ltxtalk_scanner_active_bool
-    \osglecture_modes_ltxtalk_start_scan:
-  }
-
-\AddToHook{cmd/maketitle/after}
-  {
-    \bool_gset_true:N \g_osglecture_modes_ltxtalk_scanner_active_bool
-    \bool_gset_false:N \g_osglecture_modes_ltxtalk_after_structure_bool
-    \osglecture_modes_ltxtalk_start_scan:
+    \bool_gset_true:N \g_osglecture_modes_scanner_active_bool
+    \osglecture_modes_start_scan:
   }
 
 %</ltxtalk>
