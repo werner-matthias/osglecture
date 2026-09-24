@@ -134,7 +134,8 @@ $texinputs_path =~ s{\\}{/}g;
 local $ENV{TEXINPUTS} = $texinputs_path . $separator
   . $osglecture_path . $separator
   . ($ENV{TEXINPUTS} // '');
-local $ENV{LUAINPUTS} = $osglecture_path . $separator
+local $ENV{LUAINPUTS} = $texinputs_path . $separator
+  . $osglecture_path . $separator
   . ($ENV{LUAINPUTS} // '');
 local $ENV{TEXMFVAR} = $ENV{TEXMFVAR}
   // File::Spec->catdir($root, 'texmf-var');
