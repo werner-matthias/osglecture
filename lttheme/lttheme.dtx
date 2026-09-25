@@ -671,6 +671,61 @@ provide suitable slots for the selected placement. The option alone does not
 create an additional visible element when the corresponding slot is absent.
 }
 
+\subsection{
+  \ldeen{Abschnittstitel als Frametitel}{Section titles as frame titles}
+}
+
+\ldeen{
+Mit \cs*{setltxtalkheadingbehavior}\marg{auto-section-title = true} übernimmt
+die erste \cs{frametitle}-Folie nach \cs{section} oder \cs{subsection} deren
+Text automatisch als Titel -- unabhängig davon, ob dasselbe Theme Abschnitte
+zusätzlich im Kopf zeigt (\cs*{setltxtalktitleplacement}s Schlüssel
+\code{section}). Wird an dieser Folie zusätzlich ein eigener Text angegeben,
+wandert er auf den Subtitel-Platz; ein daneben separat gesetzter
+\cs{framesubtitle} entfällt dann, weil der demotierte Titel den Platz schon
+belegt:
+}{
+With \cs*{setltxtalkheadingbehavior}\marg{auto-section-title = true}, the
+first \cs{frametitle} frame after \cs{section} or \cs{subsection}
+automatically takes over its text as the title -- independently of whether
+the same theme also shows sections in the header (\cs*
+{setltxtalktitleplacement}'s \code{section} key). If that same frame also
+gives its own text, it moves to the subtitle slot; a separately given
+\cs{framesubtitle} is then dropped, because the demoted title already
+occupies that slot:
+}
+
+\begin{sourcecode}
+  \setltxtalkheadingbehavior{auto-section-title = true}
+  ...
+  \section{Introduction}
+  \begin{frame}
+    \frametitle{} % title becomes "Introduction"
+    ...
+  \end{frame}
+  \section{Related Work}
+  \begin{frame}
+    \frametitle{A Short History}   % title becomes "Related Work",
+                                    % subtitle becomes "A Short History"
+    ...
+  \end{frame}
+\end{sourcecode}
+
+\ldeen{
+Der Merker wird von genau einem \cs{frametitle}-Aufruf verbraucht: spätere
+Folien desselben Abschnitts sind unbeeinflusst, und folgen \cs{section} und
+\cs{subsection} ohne dazwischenliegende Folie aufeinander, gewinnt der
+zuletzt genannte (speziellere) Abschnitt. Ohne jeden \cs{frametitle}-Aufruf
+bleibt eine Folie wie bisher titellos; ein leeres \cs{frametitle}\marg{}
+genügt, um allein den Abschnittstitel zu übernehmen.
+}{
+The flag is consumed by exactly one \cs{frametitle} call: later frames in the
+same section are unaffected, and if \cs{section} and \cs{subsection} follow
+each other with no frame in between, the last (more specific) one wins. A
+frame with no \cs{frametitle} call at all stays titleless as before; an
+empty \cs{frametitle}\marg{} is enough to pick up just the section title.
+}
+
 \subsection{\ldeen{Weitere Anpassungen}{Further customizations}}
 
 \ldeen{
@@ -1881,6 +1936,23 @@ and page style.
   }
 \end{commands}
 
+\begin{commands}
+  \command{setltxtalkheadingbehavior}[\marg{Optionen}]
+  \ldeen{
+    Konfiguriert mit dem booleschen Schlüssel \code{auto-section-title}
+    (Vorgabe: \code{false}), ob die erste \cs{frametitle}-Folie nach
+    \cs{section}/\cs{subsection} deren Text als Titel übernimmt. Ein an
+    derselben Folie gegebener Text wird dabei zum Subtitel; ein zusätzlich
+    gesetzter \cs{framesubtitle} entfällt.
+  }{
+    Configures, with the Boolean key \code{auto-section-title} (default:
+    \code{false}), whether the first \cs{frametitle} frame after
+    \cs{section}/\cs{subsection} takes over its text as the title. Text
+    given at that same frame becomes the subtitle; a separately set
+    \cs{framesubtitle} is dropped.
+  }
+\end{commands}
+
 \subsection{
   \ldeen
     {Optionen für Barrierefreiheit}
@@ -3050,6 +3122,67 @@ theme.
     continuation-mode / implicit .code:n = 
       { \bool_set_false:N \l__ltxtalk_explicit_cont_bool },
     continuation-mode .initial:n = implicit,
+  }
+
+% ==========================================
+% ABSCHNITTSTITEL ALS FRAMETITLE
+% ==========================================
+% \ldeen{
+%   Auf Wunsch übernimmt der nächste \cs{frametitle}-Aufruf nach
+%   \cs{section}/\cs{subsection} deren Text als Frametitel, unabhängig davon,
+%   ob ein Theme Abschnitte zusätzlich im Kopf zeigt (Schlüssel \code{section}
+%   von \cs*{setltxtalktitleplacement}). Ein am selben Aufruf gegebener Text
+%   wird dabei zum Subtitel; eine zugehörige explizite \cs{framesubtitle}
+%   entfällt dann, weil der demotierte Titel deren Platz einnimmt. Der Haken
+%   \code{section/begin} beziehungsweise \code{subsection/begin} merkt nur
+%   \emph{vor}; verbraucht wird der Merker erst vom nächsten
+%   \cs{frametitle}-Aufruf -- so erscheint der Abschnittstitel höchstens
+%   einmal, auch wenn ihm mehrere titellose Folien vorausgehen.
+% }{
+%   On request, the next \cs{frametitle} call after \cs{section}/\cs{subsection}
+%   takes over its text as the frame title, independently of whether a theme
+%   also shows sections in the header (the \code{section} key of
+%   \cs*{setltxtalktitleplacement}). Text given at that same call then becomes
+%   the subtitle; an accompanying explicit \cs{framesubtitle} is then dropped,
+%   because the demoted title takes its place. The \code{section/begin} and
+%   \code{subsection/begin} hooks only \emph{flag} the pending title; it is
+%   consumed by the next \cs{frametitle} call -- so the section title appears
+%   at most once, even if several titleless frames precede it.
+% }
+\bool_new:N \g__ltxtalk_auto_section_title_bool
+\bool_new:N \g__ltxtalk_pending_heading_title_bool
+\tl_new:N   \g__ltxtalk_pending_heading_title_tl
+\int_new:N  \g__ltxtalk_auto_subtitle_frame_int
+
+\NewDocumentCommand \setltxtalkheadingbehavior { m }
+  { \keys_set:nn { ltxtalk / heading } {#1} }
+
+\keys_define:nn { ltxtalk / heading }
+  {
+    auto-section-title .bool_gset:N = \g__ltxtalk_auto_section_title_bool,
+    auto-section-title .initial:n = false,
+  }
+
+% \ldeen{Nur \emph{merken}: \cs{l__talk_section_tl}/\cs{l__talk_subsection_tl}
+%   stehen laut \cls{ltx-talk} bereits, wenn der Haken feuert.}{Only
+%   \emph{record}: \cs{l__talk_section_tl}/\cs{l__talk_subsection_tl} are
+%   already set by \cls{ltx-talk} when the hook fires.}
+\AddToHook { section / begin }
+  {
+    \bool_if:NT \g__ltxtalk_auto_section_title_bool
+      {
+        \tl_gset_eq:NN \g__ltxtalk_pending_heading_title_tl \l__talk_section_tl
+        \bool_gset_true:N \g__ltxtalk_pending_heading_title_bool
+      }
+  }
+\AddToHook { subsection / begin }
+  {
+    \bool_if:NT \g__ltxtalk_auto_section_title_bool
+      {
+        \tl_gset_eq:NN \g__ltxtalk_pending_heading_title_tl
+          \l__talk_subsection_tl
+        \bool_gset_true:N \g__ltxtalk_pending_heading_title_bool
+      }
   }
 
 % ==========================================
@@ -4331,20 +4464,53 @@ theme.
     \group_end:
     \par
   }
+% \ldeen{Ist ein Abschnittstitel vorgemerkt, tritt er an die Stelle von
+%   \cs{frametitle}s Text; ein gegebener Text wird stattdessen (sofort) als
+%   Subtitel gesetzt und die aktuelle Foliennummer gemerkt, damit ein
+%   \emph{eigener} nachfolgender \cs{framesubtitle}-Aufruf in derselben Folie
+%   entfällt -- er träfe sonst auf einen bereits durch die Demotion belegten
+%   Subtitel. Folgefolien desselben Abschnitts sind nicht betroffen, weil der
+%   Merker mit dem Verbrauch gelöscht wird.}{If a section title is pending, it
+%   takes the place of \cs{frametitle}'s text; any given text is instead set
+%   (immediately) as the subtitle, and the current frame number is recorded so
+%   an \emph{own} subsequent \cs{framesubtitle} call in the same frame is
+%   dropped -- it would otherwise collide with the subtitle already occupied
+%   by the demotion. Later frames in the same section are unaffected, since
+%   the flag is cleared once consumed.}
 \RenewDocumentCommand \frametitle { D <> { all } O {#3} m }
   {
     \__talk_if_overlay:nT {#1}
       {
-        \tl_gset:Nn \g__talk_frame_title_tl {#3}
-        \__ltxtalk_render_content_slots:n {frametitle}
+        \bool_if:NTF \g__ltxtalk_pending_heading_title_bool
+          {
+            \bool_gset_false:N \g__ltxtalk_pending_heading_title_bool
+            \tl_gset_eq:NN \g__talk_frame_title_tl
+              \g__ltxtalk_pending_heading_title_tl
+            \__ltxtalk_render_content_slots:n {frametitle}
+            \tl_if_empty:nF {#3}
+              {
+                \int_gset:Nn \g__ltxtalk_auto_subtitle_frame_int
+                  { \g__talk_frame_int }
+                \tl_gset:Nn \g__talk_frame_subtitle_tl {#3}
+                \__ltxtalk_render_content_slots:n {framesubtitle}
+              }
+          }
+          {
+            \tl_gset:Nn \g__talk_frame_title_tl {#3}
+            \__ltxtalk_render_content_slots:n {frametitle}
+          }
       }
   }
 \RenewDocumentCommand \framesubtitle { D <> { all } O {#3} m }
   {
     \__talk_if_overlay:nT {#1}
       {
-        \tl_gset:Nn \g__talk_frame_subtitle_tl {#3}
-        \__ltxtalk_render_content_slots:n {framesubtitle}
+        \int_compare:nNnF
+          { \g__ltxtalk_auto_subtitle_frame_int } = { \g__talk_frame_int }
+          {
+            \tl_gset:Nn \g__talk_frame_subtitle_tl {#3}
+            \__ltxtalk_render_content_slots:n {framesubtitle}
+          }
       }
   }
 

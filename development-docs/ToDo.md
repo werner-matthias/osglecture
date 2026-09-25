@@ -8,7 +8,8 @@ Featurewünsche.
 * [ ] Neue Pakete (tagbridge, tagtree) in README und CI aufnehmen, Kompatibilität ermitteln.
 
 # ltthemer + Co
-* [ ] Section/Title: Sollte wieder eingeführt werden.
+* [x] Section/Title: `\setltxtalkheadingbehavior{auto-section-title=true}`
+  übernimmt Section/Subsection wieder als Frametitle (lttheme.dtx).
 * [ ] TUC-2019: teaching-Mode soll Section im Header führen. 
 * [ ] TStandardtemplates für Titel (Prefix, Nummer), Seitenzahl, etc.
 

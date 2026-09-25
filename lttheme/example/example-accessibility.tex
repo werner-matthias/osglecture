@@ -6,6 +6,9 @@
 \usepackage{ltxtalk-theme-hawk}
 
 \useltxtalktheme{hawk}
+\ExplSyntaxOn
+\setltxtalkheadingbehavior{auto-section-title = true}
+\ExplSyntaxOff
 
 \title{Accessible Presentation}
 \author{Accessibility Team}
@@ -16,12 +19,15 @@
 
 % Die Abschnitts- und Folienstruktur wird von ltx-talk getaggt; das Theme
 % platziert und gestaltet sie nur. Explizite Titel statt visueller Umbrüche
-% verwenden, damit jede Folie eine echte Überschrift hat.
+% verwenden, damit jede Folie eine echte Überschrift hat. Mit
+% auto-section-title uebernimmt die erste Folie nach \section/\subsection
+% deren Text automatisch als Titel, ohne ihn zu wiederholen -- ein leeres
+% \frametitle{} genuegt.
 
 \section{Introduction to Accessibility}
 
 \begin{frame}
-  \frametitle{Introduction to Accessibility}
+  \frametitle{}
   \begin{itemize}
     \item What is accessibility?
     \item Why does it matter?
@@ -41,7 +47,7 @@
 \section{Implementation Strategies}
 
 \begin{frame}
-  \frametitle{Implementation Strategies}
+  \frametitle{}
   \begin{itemize}
     \item Semantic structure
     \item Alternative texts
@@ -61,8 +67,7 @@
 \section{Best Practices}
 
 \begin{frame}
-  \frametitle{Best Practices}
-  \framesubtitle{Summary of Key Points}
+  \frametitle{Summary of Key Points}
   \begin{enumerate}
     \item Always provide text alternatives
     \item Ensure sufficient color contrast

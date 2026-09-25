@@ -1,0 +1,188 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+title:passed
+subtitle:passed
+LaTeX Font Info:    Trying to load font information for TU+lmr-base on input line ....
+(../tulmr-base.fd
+File: tulmr-base.fd ....-..-.. v... LaTeX font definitions for Latin Modern in base mode
+) [1]
+title:passed
+subtitle:passed
+[2
+]
+title:passed
+subtitle:passed
+[3
+]
+title:passed
+subtitle:passed
+[4
+]
+title:passed
+subtitle:passed
+[5
+]
+title:passed
+subtitle:passed
+[6
+]
+============================================================
+TEST 1: Show PDF Tags
+============================================================
+-------- auto-section-title.xml (start) ---------
+<PDF>
+ <StructTreeRoot>
+  <Document xmlns="http://iso.org/pdf2/ssn"
+     id="ID.002"
+    >
+   <Sect xmlns="http://iso.org/pdf2/ssn"
+      id="ID.006"
+     >
+    <section xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.007"
+       title="Unberuehrt"
+       actualtext="Unberuehrt"
+       rolemaps-to="H1"
+      >
+    </section>
+    <frame xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+       id="ID.008"
+       rolemaps-to="Sect"
+      >
+     <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+        id="ID.009"
+        title="Eigener Titel"
+        rolemaps-to="H4"
+       >
+      <?MarkedContent page="1" ?>Eigener Titel
+     </frametitle>
+    </frame>
+   </Sect>
+   <Sect xmlns="http://iso.org/pdf2/ssn"
+      id="ID.010"
+     >
+    <section xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.011"
+       title="Erster Abschnitt"
+       actualtext="Erster Abschnitt"
+       rolemaps-to="H1"
+      >
+    </section>
+    <frame xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+       id="ID.012"
+       rolemaps-to="Sect"
+      >
+     <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+        id="ID.013"
+        title="Erster Abschnitt"
+        rolemaps-to="H4"
+       >
+      <?MarkedContent page="2" ?>Erster Abschnitt
+     </frametitle>
+    </frame>
+    <frame xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+       id="ID.014"
+       rolemaps-to="Sect"
+      >
+     <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+        id="ID.015"
+        title="Zweite Folie"
+        rolemaps-to="H4"
+       >
+      <?MarkedContent page="3" ?>Zweite Folie
+     </frametitle>
+    </frame>
+   </Sect>
+   <Sect xmlns="http://iso.org/pdf2/ssn"
+      id="ID.016"
+     >
+    <section xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.017"
+       title="Zweiter Abschnitt"
+       actualtext="Zweiter Abschnitt"
+       rolemaps-to="H1"
+      >
+    </section>
+    <Sect xmlns="http://iso.org/pdf2/ssn"
+       id="ID.018"
+      >
+     <subsection xmlns="https://www.latex-project.org/ns/dflt"
+        id="ID.019"
+        title="Ein Unterabschnitt"
+        actualtext="Ein Unterabschnitt"
+        rolemaps-to="H2"
+       >
+     </subsection>
+     <frame xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+        id="ID.020"
+        rolemaps-to="Sect"
+       >
+      <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+         id="ID.021"
+         title="Ein Unterabschnitt"
+         rolemaps-to="H4"
+        >
+       <?MarkedContent page="4" ?>Ein Unterabschnitt
+      </frametitle>
+     </frame>
+    </Sect>
+   </Sect>
+   <Sect xmlns="http://iso.org/pdf2/ssn"
+      id="ID.022"
+     >
+    <section xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.023"
+       title="Titel und Subtitel zugleich"
+       actualtext="Titel und Subtitel zugleich"
+       rolemaps-to="H1"
+      >
+    </section>
+    <frame xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+       id="ID.024"
+       rolemaps-to="Sect"
+      >
+     <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+        id="ID.025"
+        title="Titel und Subtitel zugleich"
+        rolemaps-to="H4"
+       >
+      <?MarkedContent page="5" ?>Titel und Subtitel zugleich
+     </frametitle>
+    </frame>
+    <frame xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+       id="ID.026"
+       rolemaps-to="Sect"
+      >
+     <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+        id="ID.027"
+        title="Normale Folie"
+        rolemaps-to="H4"
+       >
+      <?MarkedContent page="6" ?>Normale Folie
+     </frametitle>
+    </frame>
+   </Sect>
+  </Document>
+ </StructTreeRoot>
+</PDF>
+-------- auto-section-title.xml (end) -----------
+============================================================
+<<latex-list-css.html>><<latex-align-css.html>> (auto-section-title.aux)
+MathML statistic
+================
+==> 0 MathML fragments read
+==> 0 different MathML fragments
+==> 0 math fragments found
+==> 0 fitting MathML AF found
+==> 0 MathML AF attached
+Package tagpdf Info: Finalizing the tagging structure:
+(tagpdf)             Writing out ~27 structure objects
+(tagpdf)             with ~24 'MC' leaf nodes.
+(tagpdf)             Be patient if there are lots of objects!
+Package tagpdf Info: writing ParentTree
+Package tagpdf Info: writing IDTree
+Package tagpdf Info: writing RoleMap
+Package tagpdf Info: writing ClassMap
+Package tagpdf Info: writing NameSpaces
+Package tagpdf Info: writing StructElems
+Package tagpdf Info: writing Root
