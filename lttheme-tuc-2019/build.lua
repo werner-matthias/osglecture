@@ -4,8 +4,14 @@ maindir = ".."
 
 -- The external TUC theme is implemented on top of the core theme engine.
 -- lttheme itself now requires osgstyler, so it must be listed here too
--- (checkdeps/typesetdeps are not transitive).
-checkdeps = { "../lttheme", "../osgstyler" }
+-- (checkdeps/typesetdeps are not transitive).  The teaching-lecture-number
+-- test loads the osglecture class directly, which pulls in osglecture's own
+-- checkdeps (osglecture-modes, tagpax, langselect, tagbridge); those must be
+-- listed here too for the same non-transitive reason.
+checkdeps = {
+    "../lttheme", "../osgstyler",
+    "../osglecture", "../osglecture-modes", "../tagpax", "../langselect", "../tagbridge",
+}
 typesetdeps = { "../lttheme", "../osgstyler" }
 
 -- Make the logos selected automatically by the theme available in l3build's
