@@ -2004,12 +2004,31 @@ with the load option \code{outer-only=true}.}
     \cs{section}/\cs{subsection} deren Text als Titel übernimmt. Ein an
     derselben Folie gegebener Text wird dabei zum Subtitel; ein zusätzlich
     gesetzter \cs{framesubtitle} entfällt.
+
+    \textbf{Bekanntes Problem:} Bei aktivem Tagging (\code{tagging=on}) kann
+    das Zusammenspiel aus dieser Titel-zu-Subtitel-Demotion und bestimmten,
+    bislang nicht vollständig eingegrenzten Folieninhalten einen
+    unausgeglichenen Absatz-Tagging-Hook auslösen und in der Folge zu einem
+    echten \enquote{TeX capacity exceeded}-Abbruch führen -- reproduziert in
+    einem realen Kursskript, nicht nur in isolierten Testfällen. Vor dem
+    Einsatz mit aktivem Tagging in umfangreichen Dokumenten: einmal
+    vollständig durchkompilieren und im Fehlerfall probeweise wieder
+    ausschalten.
   }{
     Configures, with the Boolean key \code{auto-section-title} (default:
     \code{false}), whether the first \cs{frametitle} frame after
     \cs{section}/\cs{subsection} takes over its text as the title. Text
     given at that same frame becomes the subtitle; a separately set
     \cs{framesubtitle} is dropped.
+
+    \textbf{Known issue:} With tagging active (\code{tagging=on}), the
+    interaction between this title-to-subtitle demotion and certain frame
+    content, not yet fully narrowed down, can trigger an unbalanced
+    per-paragraph tagging hook and, downstream, a genuine \enquote{TeX
+    capacity exceeded} abort -- reproduced in a real course deck, not just
+    in isolated test cases. Before using this with tagging active in a
+    sizeable document: do a full compile, and turn it back off if that
+    fails.
   }
 \end{commands}
 
@@ -4534,6 +4553,22 @@ theme.
   }
 \cs_new_protected:Npn \__ltxtalk_render_slot_aux:w #1#2#3#4 \q_stop #5
   { \__ltxtalk_render_slot:nnnnn {#5}{#1}{#2}{#3}{#4} }
+% \ldeen{Ermittelt die für einen Slot deklarierte Rolle (Vorgabe
+%   \code{artifact}) in \cs{l__ltxtalk_slot_role_tl} -- dieselbe
+%   Auswertung wie in \cs{__ltxtalk_slot_accessibility_apply:nn}, hier
+%   separat aufrufbar, weil \cs{__ltxtalk_render_slot:nnnnn} sie schon
+%   \emph{vor} dem Aufbau der Slot-\cs{parbox} braucht (siehe dort).}{
+%   Determines the role declared for a slot (default \code{artifact})
+%   into \cs{l__ltxtalk_slot_role_tl} -- the same evaluation as in
+%   \cs{__ltxtalk_slot_accessibility_apply:nn}, callable separately here
+%   because \cs{__ltxtalk_render_slot:nnnnn} needs it \emph{before}
+%   building the slot's \cs{parbox} (see there).}
+\cs_new_protected:Npn \__ltxtalk_slot_role:n #1
+  {
+    \tl_set:Nn \l__ltxtalk_slot_role_tl { artifact }
+    \prop_get:NnNT \g__ltxtalk_slot_accessibility_prop {#1} \l_tmpa_tl
+      { \keys_set:nV { ltxtalk / a11y } \l_tmpa_tl }
+  }
 \cs_new_protected:Npn \__ltxtalk_render_slot:nnnnn #1#2#3#4#5
   {
     \dim_set:Nn \l__ltxtalk_current_slot_width_dim {#4}
@@ -4556,11 +4591,83 @@ theme.
             {bottom}{\l__ltxtalk_current_area_height_dim-#5}
           }{#3}
       }
+    % \ldeen{Die \cs{parbox} unten schließt intern immer mit einem
+    %   impliziten \cs{par}. Für jede Rolle außer \code{content} (dort ist
+    %   der automatische Hook gewollt) muss tagpdfs automatischer
+    %   Absatz-Tagging-Hook deshalb schon \emph{vor} dem
+    %   \cs{hcoffin_set:Nn}-Aufruf abgeschaltet werden -- das gilt auch für
+    %   Rollen mit echtem Strukturelement (\code{heading}, \code{note}
+    %   etc.): \cs{__ltxtalk_accessibility_struct:nn} schaltet den Hook
+    %   zwar bereits \emph{innerhalb} ihres eigenen Struct-Tags ab, aber
+    %   erst, nachdem \cs{__ltxtalk_slot_content:n} von hier aus (über
+    %   \cs{UseInstance}) aufgerufen wurde -- und damit \emph{innerhalb}
+    %   der \cs{parbox}, in einer eigenen, dort bereits wieder
+    %   geschlossenen Gruppe. Ein dort lokal gesetztes \cs{tagpdfparaOff}
+    %   ist also für das implizite \cs{par} der umschließenden
+    %   \cs{parbox} schon wieder aufgehoben (ausprobiert und bestätigt:
+    %   ein Rollen-Filter, der nur \code{navigation}/\code{artifact} hier
+    %   abschaltete und \code{note}/\code{heading} dem inneren, zu spät
+    %   greifenden Abschalten überließ, reichte \emph{nicht} -- erst das
+    %   Abschalten für \emph{alle} Rollen außer \code{content} schon hier
+    %   behob den Fehler). Kopf-/Rand-/Fußbereiche baut \cls{ltx-talk}
+    %   erst beim Ausschiffen auf; ein dort vom automatischen Hook
+    %   trotzdem erzeugtes Struct landet dann an einer zu diesem späten
+    %   Zeitpunkt falschen/zufälligen Stelle im Baum -- beobachtet als
+    %   \enquote{Parent-Child ... Relation is not allowed!} und, bei
+    %   Inhalten, die sich von Folie zu Folie ändern, akkumulierend bis
+    %   hin zu einem TeX-\enquote{capacity exceeded}-Abbruch. Kein
+    %   umschließendes \cs{group_begin:}/\cs{group_end:}: \cs{hcoffin_set:Nn}
+    %   setzt \cs{l__ltxtalk_slot_coffin} über \cs{hbox_set:Nn} -- also
+    %   \emph{lokal} --, eine Gruppe hier würde den gesetzten Koffer-Inhalt
+    %   vor dem folgenden \cs{coffin_join:NnnNnnnn} wieder verwerfen.
+    %   \cs{tagpdfparaOff} wird deshalb ohne Gruppe gesetzt und danach
+    %   explizit mit \cs{tagpdfparaOn} wieder aufgehoben -- dasselbe Muster
+    %   wie \pkg{latex-lab}s \code{\textbackslash tagpdfparaOff\space
+    %   \textbackslash par\space\textbackslash tagpdfparaOn} für denselben
+    %   Zweck.}{The \cs{parbox} below always closes with an implicit
+    %   \cs{par} internally. For every role except \code{content} (there
+    %   the automatic hook is wanted), tagpdf's automatic per-paragraph
+    %   tagging hook must therefore be switched off already \emph{before}
+    %   the \cs{hcoffin_set:Nn} call -- this includes roles with a
+    %   genuine structure element (\code{heading}, \code{note}, etc.):
+    %   \cs{__ltxtalk_accessibility_struct:nn} does switch the hook off,
+    %   but only \emph{inside} its own struct tag -- which only runs once
+    %   \cs{__ltxtalk_slot_content:n} is called from here (via
+    %   \cs{UseInstance}), i.e., \emph{inside} the \cs{parbox}, in its own
+    %   group that has already closed again by then. A
+    %   \cs{tagpdfparaOff} set locally in there is therefore already
+    %   reverted again for the enclosing \cs{parbox}'s implicit \cs{par}
+    %   (tried and confirmed: a role filter that switched off only
+    %   \code{navigation}/\code{artifact} here, leaving \code{note}/
+    %   \code{heading} to their inner, too-late switch-off, was \emph{not}
+    %   enough -- only switching off for \emph{every} role except
+    %   \code{content} already here fixed it). \cls{ltx-talk} only builds
+    %   header/margin/footer areas at shipout; a struct the automatic hook
+    %   still creates there ends up at a wrong/arbitrary point in the tree
+    %   at that late moment -- observed as \enquote{Parent-Child ...
+    %   Relation is not allowed!} and, for content that changes from frame
+    %   to frame, accumulating all the way to a TeX \enquote{capacity
+    %   exceeded} abort. No enclosing \cs{group_begin:}/\cs{group_end:}
+    %   here: \cs{hcoffin_set:Nn} sets \cs{l__ltxtalk_slot_coffin} via
+    %   \cs{hbox_set:Nn} -- i.e., \emph{locally} --, so a group here would
+    %   discard the coffin content just set before the following
+    %   \cs{coffin_join:NnnNnnnn} can use it. \cs{tagpdfparaOff} is
+    %   therefore set without a group and explicitly reverted afterward
+    %   with \cs{tagpdfparaOn} -- the same pattern \pkg{latex-lab} uses
+    %   (\code{\textbackslash tagpdfparaOff\space\textbackslash par\space
+    %   \textbackslash tagpdfparaOn}) for the same purpose.}
+    \bool_if:NT \g__talk_frame_tag_bool
+      {
+        \__ltxtalk_slot_role:n {#1}
+        \str_if_eq:VnF \l__ltxtalk_slot_role_tl { content }
+          { \tagpdfparaOff }
+      }
     \hcoffin_set:Nn \l__ltxtalk_slot_coffin
       {
         \parbox[c][#5][c]{#4}
           {\UseInstance {lttheme-slot}{#1}{\__ltxtalk_slot_content:n {#1}}}
       }
+    \bool_if:NT \g__talk_frame_tag_bool { \tagpdfparaOn }
     \coffin_join:NnnNnnnn \l__ltxtalk_area_coffin {l}{t}
       \l__ltxtalk_slot_coffin {l}{t}
       {\l__ltxtalk_current_slot_x_dim}{-\l__ltxtalk_current_slot_y_dim}
@@ -4651,6 +4758,32 @@ theme.
 %   dropped -- it would otherwise collide with the subtitle already occupied
 %   by the demotion. Later frames in the same section are unaffected, since
 %   the flag is cleared once consumed.}
+% \ldeen{Die beiden Slot-Rendervorgänge (Titel, dann Subtitel) laufen bei
+%   aktivem Tagging in einer gemeinsamen, lokalen \cs{tagpdfparaOff}-Hülle:
+%   \cs{__ltxtalk_render_content_slot_aux:w} beendet jeden Slot mit einem
+%   \cs{par} (nötig, damit der Slot als eigener Absatz endet) -- ohne diese
+%   Hülle träfe dieses \cs{par} zwischen Titel- und Subtitel-Rendering auf
+%   ein bereits wieder aktives \cs{tagpdfparaOff} nur \emph{innerhalb} des
+%   ersten Aufrufs, feuerte also für einen (leeren) Zwischenabsatz erneut
+%   tagpdfs automatischen Absatz-Tagging-Hook -- exakt dieselbe, oben bei
+%   \cs{__ltxtalk_render_content_slots:n} dokumentierte Ursache für
+%   \enquote{the number of automatic begin and end text-unit para hooks
+%   differ}, hier nur durch das \emph{nachlaufende} statt vorangehende
+%   \cs{par} ausgelöst. Mit echtem Text an derselben Folie riss das
+%   in der Praxis bis zum \enquote{TeX capacity exceeded}.}{The two slot
+%   renders (title, then subtitle) run inside one shared, local
+%   \cs{tagpdfparaOff} wrapper when tagging is active:
+%   \cs{__ltxtalk_render_content_slot_aux:w} ends every slot with a
+%   \cs{par} (needed so the slot ends as its own paragraph) -- without this
+%   wrapper, that \cs{par} between the title and subtitle render would hit
+%   \cs{tagpdfparaOff} already reverted (it was only local \emph{inside}
+%   the first call), firing tagpdf's automatic per-paragraph tagging hook
+%   again for a (blank) in-between paragraph -- the exact same cause
+%   documented above at \cs{__ltxtalk_render_content_slots:n} for
+%   \enquote{the number of automatic begin and end text-unit para hooks
+%   differ}, just triggered by the \emph{trailing} rather than a leading
+%   \cs{par}. With real text given on the same frame this cascaded, in
+%   practice, all the way to \enquote{TeX capacity exceeded}.}
 \RenewDocumentCommand \frametitle { D <> { all } O {#3} m }
   {
     \__talk_if_overlay:nT {#1}
@@ -4660,13 +4793,29 @@ theme.
             \bool_gset_false:N \g__ltxtalk_pending_heading_title_bool
             \tl_gset_eq:NN \g__talk_frame_title_tl
               \g__ltxtalk_pending_heading_title_tl
-            \__ltxtalk_render_content_slots:n {frametitle}
-            \tl_if_empty:nF {#3}
+            \bool_if:NTF \g__talk_frame_tag_bool
               {
-                \int_gset:Nn \g__ltxtalk_auto_subtitle_frame_int
-                  { \g__talk_frame_int }
-                \tl_gset:Nn \g__talk_frame_subtitle_tl {#3}
-                \__ltxtalk_render_content_slots:n {framesubtitle}
+                \group_begin:
+                  \tagpdfparaOff
+                  \__ltxtalk_render_content_slots:n {frametitle}
+                  \tl_if_empty:nF {#3}
+                    {
+                      \int_gset:Nn \g__ltxtalk_auto_subtitle_frame_int
+                        { \g__talk_frame_int }
+                      \tl_gset:Nn \g__talk_frame_subtitle_tl {#3}
+                      \__ltxtalk_render_content_slots:n {framesubtitle}
+                    }
+                \group_end:
+              }
+              {
+                \__ltxtalk_render_content_slots:n {frametitle}
+                \tl_if_empty:nF {#3}
+                  {
+                    \int_gset:Nn \g__ltxtalk_auto_subtitle_frame_int
+                      { \g__talk_frame_int }
+                    \tl_gset:Nn \g__talk_frame_subtitle_tl {#3}
+                    \__ltxtalk_render_content_slots:n {framesubtitle}
+                  }
               }
           }
           {

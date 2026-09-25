@@ -10,7 +10,62 @@ Featurewünsche.
 # ltthemer + Co
 * [x] Section/Title: `\setltxtalkheadingbehavior{auto-section-title=true}`
   übernimmt Section/Subsection wieder als Frametitle (lttheme.dtx).
-* [ ] TUC-2019: teaching-Mode soll Section im Header führen. 
+* [x] Kleinerer Folgefix (2026-09-26): Titel-zu-Subtitel-Demotion in
+  `\frametitle` rendert bei gegebenem Folientext zwei Content-Slots
+  (frametitle, framesubtitle) hintereinander; das dazwischenliegende
+  `\par` konnte bei aktivem Tagging (`tagging=on`) tagpdfs automatischen
+  Absatz-Tagging-Hook erneut auslösen (siehe
+  `__ltxtalk_render_content_slots:n`s eigene Dokumentation zum exakt
+  selben Mechanismus mit umgekehrter Ursache) -- reproduziert als
+  `! Package tagpdf Error: ... para hooks differ`. Fix: gemeinsamer
+  `tagpdfparaOff`-Wrap um beide Renderaufrufe (lttheme.dtx).
+* [x] Tieferliegender Tagging-Bug gefunden und behoben (2026-09-26):
+  `\__ltxtalk_render_slot:nnnnn` (Kopf-/Rand-/Fuß-Slots aller Themes,
+  nicht nur TUC-2019) setzt seinen Inhalt immer über eine `\parbox`, die
+  intern stets mit einem impliziten `\par` schließt. Für Rollen ohne
+  automatisches Tagging (`navigation`, `artifact`, aber auch `note`/
+  `heading`/`H1`-`H3`, die zwar ein echtes Struct bekommen, aber
+  \emph{zusätzlich} den automatischen Absatz-Tagging-Hook unterdrücken
+  müssen) reichte das bisherige `tagpdfparaOff` in
+  `__ltxtalk_accessibility_artifact:n`/`__ltxtalk_accessibility_struct:nn`
+  nicht: es steht in einer eigenen, lokalen Gruppe, die \emph{vor} dem
+  impliziten `\par` der umschließenden `\parbox` schon wieder schließt.
+  Fix: `tagpdfparaOff` jetzt in `\__ltxtalk_render_slot:nnnnn` selbst,
+  \emph{vor} dem `\hcoffin_set:Nn`-Aufruf, für jede Rolle außer
+  `content` -- ohne umschließende Gruppe (die würde den lokal gesetzten
+  Koffer-Inhalt vor `\coffin_join:` verwerfen), stattdessen explizit mit
+  `\tagpdfparaOn` danach aufgehoben. Per Bisektion abgesichert: ein
+  Rollen-Filter, der nur `navigation`/`artifact` abschaltete (nicht aber
+  `note`, wie es z.\,B. die TUC-2019-Kopfzeilenfelder `tuc-author`/
+  `tuc-url` verwenden), reichte *nicht*.
+* [ ] **Versucht, aber weiterhin zurückgezogen (2026-09-25/26, Update
+  2026-09-26): TUC-2019 teaching-Mode soll Section im Header führen.**
+  Mit dem oben behobenen `tagpdfparaOff`-Scoping-Bug verschwindet der
+  Absturz in kleinen/isolierten Testfällen (auch einem eigens gebauten,
+  mit dem realen Foliendeck bis Zeile 441 identischen Kurztest) und in
+  einem synthetischen Drei-Abschnitte-Test vollständig -- im *realen*
+  Kursskript (AuP/Script2/001-Intro, Foliendeck mit ~50 Seiten,
+  `ollm build --target=slides`) bleibt derselbe
+  `TeX capacity exceeded`-Absturz an derselben Stelle (Zeile 441)
+  bestehen. Per Bisektion (Hook-Body schrittweise reduziert: leer -> nur
+  `\bool_gset_true:N` -> zusätzlich `\tl_gset_eq:NN ... \l__talk_section_tl`)
+  eindeutig auf das Kopieren des *echten, wechselnden*
+  `\l__talk_section_tl`-Werts eingegrenzt -- ein Ersatz durch einen
+  festen, nie wechselnden String derselben Länge löst den Absturz
+  \emph{nicht} aus, ein synthetischer Dreifach-Abschnittswechsel mit
+  schlankem Folieninhalt (ohne Bilder/TikZ/Listings/QR-Codes) ebenfalls
+  nicht -- der Absturz braucht also sowohl den wechselnden Text als auch
+  einen erheblichen Anteil der echten Dokumentkomplexität; welcher
+  zusätzliche Faktor genau fehlt, ist nicht mehr eingegrenzt worden. Bis
+  dahin bleibt `\__ltxtalk_tuc_teaching_header_section:` (Kopfzeile 2:
+  `Lecturenummer.Sectionnummer Abschnittstitel`) zurückgenommen
+  (`git checkout -- lttheme-tuc-2019/lttheme-tuc-2019.dtx`); `teaching`
+  zeigt Kopfzeile 2 weiterhin unverändert den Lecturetitel. Für einen
+  neuen Anlauf: den in dieser Sitzung gefundenen, oben behobenen
+  `tagpdfparaOff`-Bug als bereits erledigt voraussetzen und direkt am
+  realen Dokument (nicht an verkürzten Auszügen) weiter eingrenzen,
+  z.\,B. mit `\tracingall`/gezieltem Herausschneiden von Foliengruppen
+  aus einer Kopie von AuP/Script2/001-Intro/main.tex.
 * [ ] TStandardtemplates für Titel (Prefix, Nummer), Seitenzahl, etc.
 
 # Handout-Imposition (tagpax/OLLM), Stand 2026-09-16
