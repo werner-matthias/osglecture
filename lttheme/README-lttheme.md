@@ -1,8 +1,8 @@
-# ltxtalk-themes - Theme Engine for ltx-talk
+# ltxtalk-theme — Themes for ltx-talk
 
-A flexible, accessible theme system for the ltx-talk presentation class.
+Theme selection, composition, and customization for the ltx-talk presentation class.
 
-Version 0.5.0 is tested with `ltx-talk` 0.5.3 (2026-08-05) and checks this
+The theme engine is tested with `ltx-talk` 0.5.3 (2026-08-05) and checks this
 compatibility range when it is loaded. An older class produces a targeted
 error instead of continuing with potentially incompatible layout interfaces;
 a newer class only produces a warning, since no known incompatibility exists
@@ -26,6 +26,19 @@ so it cannot be replaced after `\documentclass` has loaded it.
 \end{frame}
 \end{document}
 ```
+
+## Manuals
+
+The [German manual](../doc/lttheme-de.pdf) and
+[English manual](../doc/lttheme-en.pdf) cover theme selection, layering,
+customization, slot names, a complete custom theme, and the command and
+option reference. Build both with `l3build doc` in this directory.
+
+Activate the layout theme first, add colour and font themes, then apply
+custom settings. Grid and slot changes are global; ending a frame does not
+undo them. Slot accessibility fields such as `role` and `alt-text` are
+currently descriptive data only and do not produce PDF tags or alternative
+text. The manuals distinguish this from tagging supplied by the class.
 
 ## Tests
 
