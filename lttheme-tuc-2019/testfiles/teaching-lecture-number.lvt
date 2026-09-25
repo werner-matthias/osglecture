@@ -1,0 +1,40 @@
+\input regression-test
+\DocumentMetadata{}
+\documentclass[standalone,doctype=slides,profile=ltx-talk]{osglecture}
+\usepackage{ltxtalk-theme-tuc-2019}
+\useltxtalktheme{tuc-2019}
+\course[Kurz]{Echtzeitsysteme}
+\title{Falten und Schneiden}
+\author{A. Beispiel}
+\ExplSyntaxOn
+\settucthemeheader{teaching}
+\ExplSyntaxOff
+
+\begin{document}
+\START
+\OsgLectureDeploymentChapter{3}
+\lecture[Falten]{Falten und Schneiden}{falten-schneiden}
+
+\ExplSyntaxOn
+\str_if_eq:eeTF { \__ltxtalk_tuc_lecture_number: } { 3 }
+  { \TYPE { lecture-number:passed } }
+  { \TYPE { lecture-number:FAILED=\__ltxtalk_tuc_lecture_number: } }
+\clist_if_in:NnTF \g__osglecture_continuation_counters_clist { chapter }
+  { \TYPE { continuation-default:passed } }
+  { \TYPE { continuation-default:FAILED } }
+\ExplSyntaxOff
+
+% Rendered output verified once with pdftotext:
+%   maketitle[osg] title line: "3. Kapitel: Falten und Schneiden"
+%   frame header line 1 (2-row): "Kurz -- 3. Falten und Schneiden"
+%   frame footer: "3 -- 1" (lecture number -- frame number)
+\begin{frame}
+  \maketitle[osg]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Testfolie}
+\end{frame}
+
+\END
+\end{document}

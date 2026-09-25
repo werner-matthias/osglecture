@@ -308,6 +308,33 @@ before a frame.}
 \end{tabular}
 \end{center}
 
+\ldeen{
+Mit \code{teaching} und einer über \pkg{osglecture} gesetzten
+Vorlesungs-/Kapitelnummer (\cs*{OsgLectureDeploymentChapter} oder ein von
+der Basisklasse übernommenes \cs*{thechapter}) zeigen drei Stellen
+übereinstimmend dieselbe Nummer: die Titelseite stellt ihr
+\enquote{\meta{Nummer}.~Kapitel:~} vor den Lecturetitel, die Kopfzeile
+setzt \enquote{\meta{Nummer}.~} vor den Lecturetitel, und der Fuß zeigt
+\enquote{\meta{Nummer}~--~\meta{Foliennummer}} statt \enquote{Foliennummer
+von Gesamtzahl}. Beim ersten Wechsel zu \code{teaching} wird \code{chapter}
+außerdem zur Liste der über \pkg{osglecture} fortzuführenden Zähler
+hinzugefügt, ohne eine bereits gesetzte Liste zu ersetzen. Ohne gesetzte
+Nummer (oder ganz ohne \pkg{osglecture}) bleiben alle drei Stellen
+unverändert.
+}{
+With \code{teaching} and a lecture/chapter number set through
+\pkg{osglecture} (\cs*{OsgLectureDeploymentChapter}, or a \cs*{thechapter}
+adopted from the base class), three spots consistently show the same
+number: the title page prefixes \enquote{\meta{number}.~Chapter:~} to the
+lecture title, the header prefixes \enquote{\meta{number}.~} to the lecture
+title, and the footer shows \enquote{\meta{number}~--~\meta{frame number}}
+instead of \enquote{frame number of total count}. On first switching to
+\code{teaching}, \code{chapter} is also added to the list of counters
+continued through \pkg{osglecture}, without replacing an already-set list.
+Without a number set (or without \pkg{osglecture} at all), all three spots
+stay unchanged.
+}
+
 \begin{sourcecode}
   \settucthemeheader{section}
   \tucthreeheader
@@ -656,6 +683,7 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
 \tl_new:N \g__ltxtalk_tuc_title_image_tl
 \tl_new:N \g__ltxtalk_tuc_title_image_crop_tl
 \dim_new:N \g__ltxtalk_tuc_title_logo_raise_dim
+\bool_new:N \g__ltxtalk_tuc_teaching_continuation_bool
 \dim_new:N \l__ltxtalk_tuc_crop_x_dim
 \dim_new:N \l__ltxtalk_tuc_crop_bottom_dim
 \dim_new:N \l__ltxtalk_tuc_crop_top_dim
@@ -821,6 +849,26 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
 %   default lines (title/subtitle/institute, regardless of the row
 %   count), which is easily mistaken for an ignored call. Invalid values
 %   are therefore now rejected.}
+% \ldeen{Beim ersten Wechsel zu \code{teaching} wird \code{chapter} -- sofern
+%   noch nicht enthalten -- zur Liste der fortzuführenden Zähler
+%   hinzugefügt, statt sie (wie ein direkter \cs*{OsgLectureSetup}\Marg{...}
+%   -Aufruf) zu ersetzen: eine bereits von der Projektkonfiguration gesetzte
+%   Liste (etwa \code{page,section}) bleibt erhalten, nur \code{chapter}
+%   kommt hinzu. Ohne einen tatsächlich existierenden \code{chapter}-Zähler
+%   bewirkt das nichts -- \pkg{osglecture}s Fortführungsmechanismus
+%   überspringt unbekannte Zähler mit einer Warnung; die auf der Titelseite,
+%   in der Kopfzeile und im Fuß angezeigte Nummer kommt unabhängig davon
+%   weiterhin aus \cs{OsgLectureDeploymentChapter} beziehungsweise
+%   \cs{thechapter}.}{On first switching to \code{teaching}, \code{chapter}
+%   is added to the list of counters to continue -- unless already present
+%   -- rather than replacing it (as a direct
+%   \cs*{OsgLectureSetup}\Marg{...} call would): a list already set by the
+%   project configuration (say, \code{page,section}) is preserved, only
+%   \code{chapter} is appended. Without an actually existing \code{chapter}
+%   counter this has no effect -- \pkg{osglecture}'s continuation mechanism
+%   skips unknown counters with a warning; the number shown on the title
+%   page, in the header, and in the footer still comes from
+%   \cs{OsgLectureDeploymentChapter} or \cs{thechapter} regardless.}
 \NewDocumentCommand \settucthemeheader {m}
   {
     \str_case:nnF {#1}
@@ -830,6 +878,22 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
           { settucthemeheader } { title, section, teaching, custom } {#1}
       }
     \tl_gset:Nn \g__ltxtalk_tuc_header_instance_tl {#1}
+    \str_if_eq:nnT {#1} {teaching}
+      {
+        \bool_if:NF \g__ltxtalk_tuc_teaching_continuation_bool
+          {
+            \bool_gset_true:N \g__ltxtalk_tuc_teaching_continuation_bool
+            \cs_if_exist:NT \g__osglecture_continuation_counters_clist
+              {
+                \clist_if_in:NnF \g__osglecture_continuation_counters_clist
+                  {chapter}
+                  {
+                    \clist_gput_right:Nn
+                      \g__osglecture_continuation_counters_clist {chapter}
+                  }
+              }
+          }
+      }
   }
 \NewDocumentCommand \settucthemeheaderlines {m m m}
   {
@@ -957,6 +1021,55 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
          {2}{\UseLTXTalkMetadata[lines=1]{short-subtitle}}
          {3}{\UseLTXTalkMetadata[lines=1]{short-institute}}}}
   }
+% \ldeen{Gemeinsame Quelle für die Vorlesungs-/Kapitelnummer, die
+%   Titelseite, Kopfzeile und Fuß der \code{teaching}-Kopfzeileninstanz
+%   übereinstimmend verwenden. \cs{g__osglecture_deployment_chapter_tl}
+%   speichert genau diesen Wert -- von Autoren gesetzt über
+%   \cs{OsgLectureDeploymentChapter} oder automatisch aus \cs{thechapter}
+%   übernommen, falls die Basisklasse einen Kapitelzähler kennt -- und wird
+%   sonst am Dokumentende in \file{osgresult.aux} für OLLMs
+%   Deployment-Dateinamen exportiert. Ohne \pkg{osglecture} oder ohne
+%   gesetzte Nummer bleiben alle drei Stellen unverändert (Titel ohne
+%   Präfix, Kopfzeile ohne Nummer, Fuß beim bisherigen
+%   \enquote{Foliennummer von Gesamtzahl}).}{Shared source for the
+%   lecture/chapter number that the title page, header, and footer of the
+%   \code{teaching} header instance use consistently.
+%   \cs{g__osglecture_deployment_chapter_tl} stores exactly this value --
+%   set by authors via \cs{OsgLectureDeploymentChapter} or picked up
+%   automatically from \cs{thechapter} if the base class has a chapter
+%   counter -- and is otherwise exported at the end of the document to
+%   \file{osgresult.aux} for OLLM's deployment filenames. Without
+%   \pkg{osglecture}, or without a number set, all three spots stay
+%   unchanged (title with no prefix, header with no number, footer at the
+%   previous \enquote{frame number of total count}).}
+\cs_new:Npn \__ltxtalk_tuc_lecture_number:
+  {
+    \cs_if_exist:NT \g__osglecture_deployment_chapter_tl
+      { \tl_use:N \g__osglecture_deployment_chapter_tl }
+  }
+% \ldeen{Verschachtelt statt als boolescher Ausdruck: Letzterer würde den
+%   zweiten Operanden auch dann noch (e-)expandieren, wenn der erste bereits
+%   falsch ist -- ohne \pkg{osglecture} existiert
+%   \cs{g__osglecture_deployment_chapter_tl} gar nicht, und dessen
+%   Expansion bräche dann mit \enquote{Undefined control sequence} ab.}{
+%   Nested rather than a Boolean expression: the latter would still
+%   (e-)expand the second operand even when the first is already false --
+%   without \pkg{osglecture}, \cs{g__osglecture_deployment_chapter_tl} does
+%   not exist at all, and expanding it would then abort with
+%   \enquote{Undefined control sequence}.}
+\cs_new_protected:Npn \__ltxtalk_tuc_if_lecture_number:TF #1#2
+  {
+    \cs_if_exist:NTF \g__osglecture_deployment_chapter_tl
+      {
+        \tl_if_blank:eTF { \g__osglecture_deployment_chapter_tl }
+          {#2} {#1}
+      }
+      {#2}
+  }
+\cs_new_protected:Npn \__ltxtalk_tuc_if_lecture_number:T #1
+  { \__ltxtalk_tuc_if_lecture_number:TF {#1} { } }
+\cs_new_protected:Npn \__ltxtalk_tuc_if_lecture_number:F #1
+  { \__ltxtalk_tuc_if_lecture_number:TF { } {#1} }
 \cs_new_protected:Npn \__ltxtalk_tuc_teaching_header_line:n #1
   {
     \int_compare:nNnTF {\LTXTalkHeaderRows} = {3}
@@ -964,7 +1077,9 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
         {{1}{\cs_if_exist:NTF \OsgLectureShortCourse
                 {\OsgLectureShortCourse}
                 {\UseLTXTalkMetadata[lines=1]{short-title}}}
-         {2}{\cs_if_exist:NTF \g__osglecture_unit_title_tl
+         {2}{\__ltxtalk_tuc_if_lecture_number:T
+               {\__ltxtalk_tuc_lecture_number: .~}
+             \cs_if_exist:NTF \g__osglecture_unit_title_tl
                 {\tl_use:N \g__osglecture_unit_title_tl}
                 {\UseLTXTalkMetadata[lines=1]{section}}}
          {3}{\UseLTXTalkMetadata[lines=1]{subsection}}}}
@@ -973,10 +1088,32 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
                 {\OsgLectureShortCourse}
                 {\UseLTXTalkMetadata[lines=1]{short-title}}
               {}~--~
+              \__ltxtalk_tuc_if_lecture_number:T
+                {\__ltxtalk_tuc_lecture_number: .~}
               \cs_if_exist:NTF \g__osglecture_unit_title_tl
                 {\tl_use:N \g__osglecture_unit_title_tl}
                 {\UseLTXTalkMetadata[lines=1]{section}}}
          {2}{\UseLTXTalkMetadata[lines=1]{subsection}}}}
+  }
+
+% \ldeen{Nur in der \code{teaching}-Kopfzeileninstanz und nur bei gesetzter
+%   Nummer erscheint \enquote{Vorlesungsnummer~--~Foliennummer}; sonst
+%   bleibt es bei \enquote{Foliennummer von Gesamtzahl} -- das behebt
+%   zugleich den zuvor hartkodierten Platzhalter \enquote{N}, der nie durch
+%   einen echten Wert ersetzt wurde.}{Only in the \code{teaching} header
+%   instance and only with a number set does \enquote{lecture
+%   number~--~frame number} appear; otherwise it stays at \enquote{frame
+%   number of total count} -- this also fixes the previously hard-coded
+%   \enquote{N} placeholder, which was never replaced by a real value.}
+\cs_new_protected:Npn \__ltxtalk_tuc_page_footer:
+  {
+    \str_if_eq:VnTF \g__ltxtalk_tuc_header_instance_tl {teaching}
+      {
+        \__ltxtalk_tuc_if_lecture_number:TF
+          { \__ltxtalk_tuc_lecture_number:~--~\LTXTalkMetadata{framenumber} }
+          { \LTXTalkMetadata{framenumber}\ von~\LTXTalkMetadata{totalframes} }
+      }
+      { \LTXTalkMetadata{framenumber}\ von~\LTXTalkMetadata{totalframes} }
   }
 
 \cs_new_protected:Npn \__ltxtalk_tuc_theme_setup:
@@ -1180,8 +1317,7 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
       {align=left,color=ltxtalk-secondary,font=\tiny\sffamily}
 
     \defineltxtalkslot{tuc-page}{footer}{custom}{role=navigation}
-    \setltxtalkslotcontent{tuc-page}
-      {N~--~\LTXTalkMetadata{framenumber}\ von~\LTXTalkMetadata{totalframes}}
+    \setltxtalkslotcontent{tuc-page}{\__ltxtalk_tuc_page_footer:}
     \positionltxtalkslot{tuc-page}{center}{center}{0.22\paperwidth}{0.32cm}
     \styleltxtalkslot{tuc-page}
       {align=center,color=ltxtalk-secondary,font=\tiny\sffamily}
@@ -1238,6 +1374,20 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
 %   built later, at shipout; without re-measuring here, this text block
 %   would compute its gap from whichever width the previous frame's
 %   header last left behind.}
+% \ldeen{Nur in der \code{teaching}-Kopfzeileninstanz und nur bei gesetzter
+%   Nummer (siehe \cs{__ltxtalk_tuc_lecture_number:}); sonst leer, sodass
+%   \cs{LTXTalkMetadata}\Marg{title} unverändert allein erscheint.}{Only in
+%   the \code{teaching} header instance and only with a number set (see
+%   \cs{__ltxtalk_tuc_lecture_number:}); empty otherwise, so
+%   \cs{LTXTalkMetadata}\Marg{title} appears alone, unchanged.}
+\cs_new_protected:Npn \__ltxtalk_tuc_title_chapter_prefix:
+  {
+    \str_if_eq:VnT \g__ltxtalk_tuc_header_instance_tl {teaching}
+      {
+        \__ltxtalk_tuc_if_lecture_number:T
+          {\__ltxtalk_tuc_lecture_number:.~Kapitel:~}
+      }
+  }
 \cs_new_protected:Npn \__ltxtalk_tuc_title_osg:
   {
     \__ltxtalk_tuc_measure_header_logo_width:
@@ -1258,7 +1408,8 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
       }
     \begin{minipage}[t]{0.62\paperwidth}
       \vspace{0pt}\sffamily
-      \Large\bfseries \LTXTalkMetadata{title}\par\vspace{0.8cm}
+      \Large\bfseries \__ltxtalk_tuc_title_chapter_prefix:
+        \LTXTalkMetadata{title}\par\vspace{0.8cm}
       \color{ltxtalk-primary}\large \LTXTalkMetadata{subtitle}\par\vspace{0.75cm}
       \normalsize\color{ltxtalk-secondary}\LTXTalkMetadata{author}\par
       \small \LTXTalkMetadata{institute}
@@ -1272,7 +1423,8 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
         \skip_vertical:n {\l__ltxtalk_header_height_dim}
         \skip_vertical:n {0pt~plus~1fil}
         \centering\sffamily
-        {\LARGE\bfseries\color{ltxtalk-primary}\LTXTalkMetadata{title}\par}\medskip
+        {\LARGE\bfseries\color{ltxtalk-primary}
+          \__ltxtalk_tuc_title_chapter_prefix: \LTXTalkMetadata{title}\par}\medskip
         \tl_if_blank:eF{\LTXTalkMetadata{subtitle}}
           {{\Large\color{ltxtalk-secondary}\LTXTalkMetadata{subtitle}\par}\bigskip}
         {\large\LTXTalkMetadata{author}\par}\smallskip
@@ -1286,7 +1438,8 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
 \cs_new_protected:Npn \__ltxtalk_tuc_title_image:
   {
     \vspace*{1.55cm}\raggedright\sffamily
-    {\LARGE\bfseries\color{ltxtalk-primary}\LTXTalkMetadata{title}\par}\smallskip
+    {\LARGE\bfseries\color{ltxtalk-primary}
+      \__ltxtalk_tuc_title_chapter_prefix: \LTXTalkMetadata{title}\par}\smallskip
     \tl_if_blank:eF{\LTXTalkMetadata{subtitle}}
       {{\Large\color{ltxtalk-secondary}\LTXTalkMetadata{subtitle}\par}\medskip}
     \file_if_exist:VTF \g__ltxtalk_tuc_title_image_tl
