@@ -38,34 +38,55 @@ Featurewünsche.
   Rollen-Filter, der nur `navigation`/`artifact` abschaltete (nicht aber
   `note`, wie es z.\,B. die TUC-2019-Kopfzeilenfelder `tuc-author`/
   `tuc-url` verwenden), reichte *nicht*.
-* [ ] **Versucht, aber weiterhin zurückgezogen (2026-09-25/26, Update
-  2026-09-26): TUC-2019 teaching-Mode soll Section im Header führen.**
-  Mit dem oben behobenen `tagpdfparaOff`-Scoping-Bug verschwindet der
-  Absturz in kleinen/isolierten Testfällen (auch einem eigens gebauten,
-  mit dem realen Foliendeck bis Zeile 441 identischen Kurztest) und in
-  einem synthetischen Drei-Abschnitte-Test vollständig -- im *realen*
+* [ ] **Offener Bug, nicht TUC-2019-spezifisch (2026-09-25/26): dynamischer
+  Text in einem Header-/Rand-/Fuß-Slot + `tagging=on` + ausreichend
+  Dokumentumfang stürzt mit `TeX capacity exceeded` ab.** Ursprünglich an
+  einer neuen TUC-2019-`teaching`-Funktion entdeckt (Kopfzeile 2 sollte
+  `Lecturenummer.Sectionnummer Abschnittstitel` zeigen, sobald eine
+  `\section` läuft, statt konstant den Lecturetitel). Mit dem oben
+  behobenen `tagpdfparaOff`-Scoping-Bug verschwindet der Absturz in
+  kleinen/isolierten Testfällen (auch einem eigens gebauten, mit dem
+  realen Foliendeck bis Zeile 441 identischen Kurztest) und in einem
+  synthetischen Drei-Abschnitte-Test vollständig -- im *realen*
   Kursskript (AuP/Script2/001-Intro, Foliendeck mit ~50 Seiten,
-  `ollm build --target=slides`) bleibt derselbe
-  `TeX capacity exceeded`-Absturz an derselben Stelle (Zeile 441)
-  bestehen. Per Bisektion (Hook-Body schrittweise reduziert: leer -> nur
-  `\bool_gset_true:N` -> zusätzlich `\tl_gset_eq:NN ... \l__talk_section_tl`)
-  eindeutig auf das Kopieren des *echten, wechselnden*
-  `\l__talk_section_tl`-Werts eingegrenzt -- ein Ersatz durch einen
-  festen, nie wechselnden String derselben Länge löst den Absturz
-  \emph{nicht} aus, ein synthetischer Dreifach-Abschnittswechsel mit
-  schlankem Folieninhalt (ohne Bilder/TikZ/Listings/QR-Codes) ebenfalls
-  nicht -- der Absturz braucht also sowohl den wechselnden Text als auch
-  einen erheblichen Anteil der echten Dokumentkomplexität; welcher
-  zusätzliche Faktor genau fehlt, ist nicht mehr eingegrenzt worden. Bis
-  dahin bleibt `\__ltxtalk_tuc_teaching_header_section:` (Kopfzeile 2:
-  `Lecturenummer.Sectionnummer Abschnittstitel`) zurückgenommen
+  `ollm build --target=slides`) bleibt derselbe Absturz an derselben
+  Stelle (Zeile 441) bestehen. Per Bisektion (Hook-Body schrittweise
+  reduziert: leer -> nur `\bool_gset_true:N` -> zusätzlich
+  `\tl_gset_eq:NN ... \l__talk_section_tl`) eindeutig auf das Kopieren
+  des *echten, wechselnden* `\l__talk_section_tl`-Werts eingegrenzt --
+  ein Ersatz durch einen festen, nie wechselnden String derselben Länge
+  löst den Absturz \emph{nicht} aus, ein synthetischer
+  Dreifach-Abschnittswechsel mit schlankem Folieninhalt (ohne
+  Bilder/TikZ/Listings/QR-Codes) ebenfalls nicht -- der Absturz braucht
+  also sowohl den wechselnden Text als auch einen erheblichen Anteil der
+  echten Dokumentkomplexität; welcher zusätzliche Faktor genau fehlt,
+  ist nicht eingegrenzt.
+
+  **Wichtiger Fund:** Es ist kein TUC-2019-Problem. `\settucthemeheader{section}`
+  -- ltx-talks/lthemes eigener, unveränderter Bestandsmechanismus, der
+  ebenfalls pro Folie wechselnden Abschnittstext im Header zeigt --
+  stürzt mit demselben Realdokument identisch ab (dieselbe
+  `Relation is not allowed!`-Vorstufe auf derselben Zeile, nur ein
+  anderer finaler Auslöse-Primitive: `\box_gset_to_last:N` statt
+  `\g__para_standard_everypar_tl`). Vermutlich wurde das noch nie mit
+  `tagging=on` an einem so umfangreichen Dokument getestet. Der
+  ursprüngliche Lösungsansatz (Section-in-Header als Artefakt markieren,
+  wenn die Section zusätzlich im Fließtext auftaucht, sonst den
+  "nativen" ltx-talk-Mechanismus nutzen) geht daher am Kern vorbei -- der
+  native Mechanismus selbst ist betroffen.
+
+  Status: TUC-2019-`teaching`-Änderung komplett zurückgenommen
   (`git checkout -- lttheme-tuc-2019/lttheme-tuc-2019.dtx`); `teaching`
-  zeigt Kopfzeile 2 weiterhin unverändert den Lecturetitel. Für einen
-  neuen Anlauf: den in dieser Sitzung gefundenen, oben behobenen
-  `tagpdfparaOff`-Bug als bereits erledigt voraussetzen und direkt am
-  realen Dokument (nicht an verkürzten Auszügen) weiter eingrenzen,
-  z.\,B. mit `\tracingall`/gezieltem Herausschneiden von Foliengruppen
-  aus einer Kopie von AuP/Script2/001-Intro/main.tex.
+  zeigt Kopfzeile 2 weiterhin unverändert den Lecturetitel. Pausiert,
+  Fortsetzung an einem anderen Tag geplant. Für den nächsten Anlauf: den
+  in dieser Sitzung gefundenen, oben behobenen `tagpdfparaOff`-Bug als
+  bereits erledigt voraussetzen; direkt am realen Dokument (nicht an
+  verkürzten Auszügen) weiter eingrenzen, z.\,B. mit
+  `\tracingall`/gezieltem Herausschneiden von Foliengruppen aus einer
+  Kopie von AuP/Script2/001-Intro/main.tex; da auch die
+  `section`-Instanz betroffen ist, lohnt sich ein Test unabhängig von
+  TUC-2019, direkt mit `\documentclass{ltx-talk}` + einem der
+  eingebauten Themes.
 * [ ] TStandardtemplates für Titel (Prefix, Nummer), Seitenzahl, etc.
 
 # Handout-Imposition (tagpax/OLLM), Stand 2026-09-16
