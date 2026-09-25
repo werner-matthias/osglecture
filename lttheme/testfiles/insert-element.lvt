@@ -1,0 +1,81 @@
+\input regression-test.tex
+\DocumentMetadata{}
+\documentclass{ltx-talk}
+\usepackage{ltxtalk-theme-hawk}
+\useltxtalktheme{hawk}
+
+\title{Insert-Element-Test}
+\author{A. Beispiel}
+\date{\today}
+
+\begin{document}
+\START
+
+\ExplSyntaxOn
+% Sanity check: all six built-in instances got registered, and defining a
+% custom one plus editing a built-in one does not error.
+\clist_map_inline:nn
+  {
+    pagenumber, totalframes, pagenumber-of-total,
+    section-pagenumber, sectionheading, subsectionheading
+  }
+  {
+    \IfInstanceExistsTF { ltxtalk-element } { #1 }
+      { \TYPE { instance-#1:passed } }
+      { \TYPE { instance-#1:FAILED } }
+  }
+\DeclareInstance { ltxtalk-element } { my-counter } { counter } { source = XY }
+\IfInstanceExistsTF { ltxtalk-element } { my-counter }
+  { \TYPE { instance-my-counter:passed } }
+  { \TYPE { instance-my-counter:FAILED } }
+\ExplSyntaxOff
+
+% \InsertLTXTalkElement wraps the protected \UseInstance (like
+% \LTXTalkNavigation) and so cannot be checked via expansion; the rendered
+% values below were verified once with pdftotext:
+%   frame A: [pagenumber]=1  [totalframes]=3  [pagenumber-of-total]=1/3
+%   frame B: [pagenumber-of-total]=2/3  [sectionheading]=1 Erster Abschnitt
+%            [subsectionheading]=1.1 Erster Unterabschnitt
+%            [section-pagenumber]=Erster Abschnitt -- 2 (en-dash ligature)
+%   frame C (after the EditInstance calls below):
+%            [pagenumber-of-total]=3 of 3  [sectionheading]=Erster Abschnitt
+
+\begin{frame}
+  \frametitle{A}
+  [pagenumber]=\InsertLTXTalkElement{pagenumber}
+
+  [totalframes]=\InsertLTXTalkElement{totalframes}
+
+  [pagenumber-of-total]=\InsertLTXTalkElement{pagenumber-of-total}
+
+  [my-counter]=\InsertLTXTalkElement{my-counter}
+\end{frame}
+
+\section{Erster Abschnitt}
+\subsection{Erster Unterabschnitt}
+
+\begin{frame}
+  \frametitle{B}
+  [pagenumber-of-total]=\InsertLTXTalkElement{pagenumber-of-total}
+
+  [sectionheading]=\InsertLTXTalkElement{sectionheading}
+
+  [subsectionheading]=\InsertLTXTalkElement{subsectionheading}
+
+  [section-pagenumber]=\InsertLTXTalkElement{section-pagenumber}
+\end{frame}
+
+\ExplSyntaxOn
+\EditInstance { ltxtalk-element } { pagenumber-of-total } { separator = { ~of~ } }
+\EditInstance { ltxtalk-element } { sectionheading } { numbered = false }
+\ExplSyntaxOff
+
+\begin{frame}
+  \frametitle{C}
+  [pagenumber-of-total, edited separator]=%
+  \InsertLTXTalkElement{pagenumber-of-total}
+
+  [sectionheading, unnumbered]=\InsertLTXTalkElement{sectionheading}
+\end{frame}
+
+\end{document}

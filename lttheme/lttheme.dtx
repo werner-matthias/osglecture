@@ -1538,6 +1538,85 @@ output with the following options:}
   }
 \end{commands}
 
+\subsection{\ldeen{Inhaltselemente}{Content elements}}
+\label{sec:ref-elements}
+
+\begin{commands}
+  \command{InsertLTXTalkElement}[\marg{\ldeen{Name}{name}}]
+  \ldeen{
+    Setzt eine benannte Instanz des Template-Typs \code{ltxtalk-element} --
+    gedacht für einzelne, formatierbare Inhaltswerte wie Seitenzahlen oder
+    Abschnittsüberschriften, im Unterschied zu \cs*{LTXTalkNavigation}s
+    Renderern für die \emph{gesamte} Abschnittsfolge. Die getaggte Rolle
+    kommt, wie bei jedem anderen Slotinhalt, vom vierten Argument des
+    umgebenden \cs*{defineltxtalkslot} (Abschnitt~\ref{sec:ref-navigation}
+    behandelt entsprechend die Tagging-Optionen der Slots).
+
+    Mitgeliefert:
+    \begin{itemize}
+      \item \code{pagenumber}, \code{totalframes} -- aktuelle Foliennummer
+        beziehungsweise Gesamtzahl.
+      \item \code{pagenumber-of-total} -- \enquote{\meta{Foliennummer} /
+        \meta{Gesamtzahl}}.
+      \item \code{section-pagenumber} -- \enquote{\meta{Abschnittstitel} --
+        \meta{Foliennummer}}.
+      \item \code{sectionheading}, \code{subsectionheading} -- nummerierter
+        Abschnitts- beziehungsweise Unterabschnittstitel.
+    \end{itemize}
+    Jede eingebaute Instanz verwendet eine von drei Schablonen und lässt
+    sich mit \cs{EditInstance}\Marg{ltxtalk-element}\Marg{Name}\Marg{Schlüssel}
+    anpassen:
+    \begin{itemize}
+      \item \code{counter}: Schlüssel \code{source} (der auszugebende Wert).
+      \item \code{fraction}: Schlüssel \code{left}, \code{right},
+        \code{separator}.
+      \item \code{heading}: Schlüssel \code{numbered} (boolesch),
+        \code{number}, \code{text}, \code{separator}.
+    \end{itemize}
+    Neue Instanzen -- auch mit einer dieser drei Schablonen, nur mit anderen
+    Werten -- entstehen wie bei jedem anderen Template-Typ über
+    \cs{DeclareInstance}\Marg{ltxtalk-element}\Marg{Name}\Marg{Schablone}\Marg{Schlüssel}.
+  }{
+    Typesets a named instance of the \code{ltxtalk-element} template type --
+    intended for single, formattable content values such as page numbers or
+    section headings, as opposed to \cs*{LTXTalkNavigation}'s renderers for
+    the \emph{whole} section sequence. The tagged role comes, like for any
+    other slot content, from the surrounding \cs*{defineltxtalkslot}'s
+    fourth argument (Section~\ref{sec:ref-navigation} covers the slots'
+    tagging options accordingly).
+
+    Bundled:
+    \begin{itemize}
+      \item \code{pagenumber}, \code{totalframes} -- current frame number
+        and total count.
+      \item \code{pagenumber-of-total} -- \enquote{\meta{frame number} /
+        \meta{total count}}.
+      \item \code{section-pagenumber} -- \enquote{\meta{section title} --
+        \meta{frame number}}.
+      \item \code{sectionheading}, \code{subsectionheading} -- numbered
+        section or subsection title.
+    \end{itemize}
+    Every built-in instance uses one of three templates and can be adjusted
+    with \cs{EditInstance}\Marg{ltxtalk-element}\Marg{name}\Marg{keys}:
+    \begin{itemize}
+      \item \code{counter}: key \code{source} (the value to output).
+      \item \code{fraction}: keys \code{left}, \code{right},
+        \code{separator}.
+      \item \code{heading}: keys \code{numbered} (Boolean), \code{number},
+        \code{text}, \code{separator}.
+    \end{itemize}
+    New instances -- even reusing one of these three templates with just
+    different values -- are created like for any other template type, via
+    \cs{DeclareInstance}\Marg{ltxtalk-element}\Marg{name}\Marg{template}\Marg{keys}.
+  }
+\end{commands}
+
+\begin{sourcecode}
+  \defineltxtalkslot{my-page}{footer}{custom}{role=navigation}
+  \setltxtalkslotcontent{my-page}{\InsertLTXTalkElement{pagenumber-of-total}}
+  \EditInstance{ltxtalk-element}{pagenumber-of-total}{separator = { of }}
+\end{sourcecode}
+
 \subsection{\ldeen{Farbkonfiguration}{Colour configuration}}
 
 \begin{commands}
@@ -1940,33 +2019,58 @@ with the load option \code{outer-only=true}.}
     {Accessibility options}
 }
 
-\begin{infobox}{\ldeen{Gespeicherte Angaben sind kein Tagging}{Stored data is not tagging}}
-\ldeen{Das vierte Argument von \cs*{defineltxtalkslot} wird derzeit
-lediglich gespeichert. Die Slot-Ausgabe wertet diese Angaben nicht aus.
-Insbesondere erzeugen \code{role}, \code{heading-level} und \code{alt-text}
-keinen PDF-Tag und keinen Alternativtext. Verlassen Sie sich für
-inhaltliche Grafiken auf die Tagging-Schnittstelle des Grafikpakets und
-prüfen Sie das erzeugte PDF.}
-{The fourth argument of \cs*{defineltxtalkslot} is currently stored only.
-Slot output does not evaluate it. In particular, \code{role},
-\code{heading-level}, and \code{alt-text} do not create a PDF tag or
-alternative text. Use the graphics package's tagging interface for
-content-bearing images and check the resulting PDF.}
-\end{infobox}
+\ldeen{Das vierte Argument von \cs*{defineltxtalkslot} steuert die
+tatsächliche Tagging-Ausgabe des Slots -- außer beim Slottyp
+\code{frametitle}, der sich über \cls*{ltx-talk}s eigene, an der
+Abschnittstiefe orientierte Funktion selbst taggt (eine zusätzliche Hülle
+hier würde ein Duplikat erzeugen). Leerer Slotinhalt bleibt immer ohne
+Tagging-Hülle, unabhängig von \code{role}. Bei abgeschaltetem Tagging für
+die aktuelle Folie unterbleibt jeder Tagging-Aufruf.}{The fourth argument of
+\cs*{defineltxtalkslot} drives the slot's actual tagging output -- except
+for the \code{frametitle} slot type, which tags itself via \cls*{ltx-talk}'s
+own function, aware of section depth (an additional wrapper here would
+create a duplicate). Empty slot content is never given a tagging wrapper,
+regardless of \code{role}. With tagging switched off for the current frame,
+no tagging call happens at all.}
 \begin{options}
 \keyval{role}{\ldeen{Rolle}{role}}
 \ldeen{Namen:}{Names:} \code{heading}, \code{heading-1}, \code{heading-2}, \code{heading-3}, \code{artifact}, \code{content}, \code{navigation}, \code{note}.
-\ldeen{Beschreibt die beabsichtigte Rolle; derzeit ohne Ausgabewirkung.}{Describes the intended role; currently without output effect.}
+\ldeen{\code{heading}/\code{heading-\meta{n}} öffnen ein echtes
+Strukturelement \code{H\meta{n}} (Ebene aus \code{heading-level}, geklemmt auf
+1--6, beziehungsweise fest 1--3 bei der Kurzform); \code{note} öffnet
+\code{Note}. \code{artifact} und \code{navigation} (mangels eigenen
+PDF-Strukturtyps für wiederkehrende Navigationselemente) erzeugen nur einen
+Artefakt-MC-Span außerhalb des Strukturbaums. \code{content} (Vorgabe)
+lässt das automatische Absatz-Tagging unangetastet.}{\code{heading}/
+\code{heading-\meta{n}} open a genuine \code{H\meta{n}} structure element
+(level from \code{heading-level}, clamped to 1--6, or fixed 1--3 for the
+short form); \code{note} opens \code{Note}. \code{artifact} and
+\code{navigation} (for lack of a dedicated PDF structure type for recurring
+navigation chrome) only produce an artifact MC span outside the structure
+tree. \code{content} (the default) leaves automatic per-paragraph tagging
+untouched.}
 \keyval{heading-level}{\ldeen{Ganzzahl}{integer}}
-\ldeen{Beabsichtigte Überschriftenebene; derzeit ohne Ausgabewirkung.}{Intended heading level; currently without output effect.}
+\ldeen{Überschriftenebene für \code{role=heading} (Vorgabe~1).}{Heading level for \code{role=heading} (default~1).}
 \keyval{alt-text}{\ldeen{Text}{text}}
-\ldeen{Beabsichtigter Alternativtext; derzeit ohne Ausgabewirkung.}{Intended alternative text; currently without output effect.}
+\ldeen{Ist dieser Text nicht leer, bekommt der Slot in jedem Fall ein echtes
+Strukturelement mit \code{Alt}-Attribut -- \code{Note}/\code{H\meta{n}}, falls
+die Rolle selbst schon eines wäre, sonst \code{Figure}. Das überschreibt
+\code{artifact}/\code{navigation}/\code{content}, da diese sonst kein
+Strukturelement zum Anheften eines Alternativtexts hätten.}{If this text is
+non-empty, the slot always gets a genuine structure element with an
+\code{Alt} attribute -- \code{Note}/\code{H\meta{n}} if the role itself
+would already be one, otherwise \code{Figure}. This overrides
+\code{artifact}/\code{navigation}/\code{content}, since those would
+otherwise have no structure element to attach alternative text to.}
 \keyval{continuation-text}{\ldeen{Text}{text}}
 \ldeen{Beabsichtigter Fortsetzungstext; derzeit ohne Ausgabewirkung.}{Intended continuation text; currently without output effect.}
 \keychoice{continuation-mode}{explicit,implicit}
 \ldeen{Beabsichtigte Fortsetzungsart; derzeit ohne Ausgabewirkung.}{Intended continuation mode; currently without output effect.}
 \end{options}
-\ldeen{Unabhängig davon erhält der Folieninhalt das Tagging der Klasse. Der Slottyp \code{frametitle} verwendet deren Titel-Ausgabe. Bereichshintergründe mit Farbaufteilung oder Verlauf werden ausdrücklich als Artefakte ausgegeben. Diese Wirkungen entstehen nicht durch das vierte Slotargument.}{Independently of these fields, frame content receives the class tagging. The \code{frametitle} slot type uses its title output. Split and gradient area backgrounds are explicitly emitted as artifacts. These effects do not come from the fourth slot argument.}
+\ldeen{Bereichshintergründe mit Farbaufteilung oder Verlauf werden
+unabhängig davon immer ausdrücklich als Artefakte ausgegeben.}{Split and
+gradient area backgrounds are always explicitly emitted as artifacts,
+independently of the above.}
 
 \subsection{\ldeen{Templates und Sockets}{Templates and sockets}}
 
@@ -2935,6 +3039,152 @@ theme.
     continuation-mode .initial:n = implicit,
   }
 
+% \ldeen{Wendet das vierte Argument von \cs*{defineltxtalkslot} tatsächlich
+%   an, statt es nur zu dokumentieren. Wiederverwendet dafür bewusst
+%   \cls*{ltx-talk}s eigenen, bereits für \cs{frametitle} bewährten
+%   Tagging-Baustein (\cs{__talk_header_tag_begin:e}/\cs{__talk_header_tag_end:}
+%   mit \code{parent}\code{=}\cs{g__talk_frame_struct_int}), statt einen
+%   zweiten zu erfinden: dieselbe Positionierung im Tag-Baum funktioniert
+%   nachweislich unabhängig davon, ob der Slot im Inhaltsbereich (sofortiges
+%   Rendern im Textfluss) oder in einem Kopf-/Rand-/Fußbereich (verzögertes
+%   Rendern über die Seitenstil-Ausgaberoutine, also physisch \emph{nach} dem
+%   umgebenden Folieninhalt) liegt. \code{role=heading}/\code{H1..H3} und
+%   \code{role=note} öffnen daher ein echtes Strukturelement (\code{Hn}
+%   beziehungsweise \code{Note}, Standard-PDF2.0-Typen ohne RoleMap-Umweg);
+%   \code{role=artifact} und \code{role=navigation} (letzteres mangels
+%   eigenen PDF-Strukturtyps für wiederkehrende Navigationselemente wie
+%   Seitenzahlen) erzeugen nur einen reinen Artefakt-MC-Span außerhalb des
+%   Strukturbaums; \code{role=content} lässt den automatischen
+%   Absatz-Tagging-Hook unangetastet. Ist \code{alt-text} gesetzt, gewinnt es:
+%   der Slot bekommt in jedem Fall ein echtes Strukturelement mit
+%   \code{Alt}-Attribut (\code{Figure}, sofern die Rolle selbst kein
+%   Strukturelement wäre). Bei abgeschaltetem Tagging für die aktuelle Folie
+%   (\cs{g__talk_frame_tag_bool} falsch) unterbleibt jeder Tagging-Aufruf --
+%   genau wie bei \cls*{ltx-talk}s eigener Frametitel-Funktion, aus demselben
+%   Grund: kein unausgeglichener Tag-Stack.}{Actually applies the fourth
+%   argument of \cs*{defineltxtalkslot} instead of merely documenting it.
+%   Deliberately reuses \cls*{ltx-talk}'s own tagging primitive, already
+%   proven for \cs{frametitle} (\cs{__talk_header_tag_begin:e}/
+%   \cs{__talk_header_tag_end:} with \code{parent}\code{=}
+%   \cs{g__talk_frame_struct_int}), rather than inventing a second one: the
+%   same tag-tree positioning demonstrably works whether the slot sits in the
+%   content area (rendered immediately, in text flow) or in a header/margin/
+%   footer area (rendered later, through the page style's output routine --
+%   physically \emph{after} the surrounding frame content). \code{role=heading}
+%   /\code{H1..H3} and \code{role=note} therefore open a genuine structure
+%   element (\code{Hn} or \code{Note}, standard PDF2.0 types, no RoleMap
+%   indirection needed); \code{role=artifact} and \code{role=navigation}
+%   (the latter for lack of a dedicated PDF structure type for recurring
+%   navigation chrome such as page numbers) produce a plain artifact MC span
+%   outside the structure tree; \code{role=content} leaves the automatic
+%   per-paragraph tagging hook untouched. A given \code{alt-text} wins: the
+%   slot then always gets a genuine structure element with an \code{Alt}
+%   attribute (\code{Figure} if the role itself would not be a structure
+%   element). With tagging switched off for the current frame
+%   (\cs{g__talk_frame_tag_bool} false), no tagging call happens at all --
+%   exactly as in \cls*{ltx-talk}'s own frame-title function, for the same
+%   reason: no unbalanced tag stack.}
+\cs_new_protected:Npn \__ltxtalk_accessibility_artifact:n #1
+  {
+    \bool_if:NTF \g__talk_frame_tag_bool
+      { \tag_mc_begin:n { artifact } #1 \tag_mc_end: }
+      { #1 }
+  }
+\cs_new_protected:Npn \__ltxtalk_accessibility_struct:nn #1 #2
+  {
+    \bool_if:NTF \g__talk_frame_tag_bool
+      {
+        \__talk_header_tag_begin:e
+          {
+            firstkid = true,
+            parent = \int_use:N \g__talk_frame_struct_int,
+            #1
+          }
+        \group_begin:
+          \tagpdfparaOff
+          #2
+        \group_end:
+        \__talk_header_tag_end:
+      }
+      { #2 }
+  }
+\cs_new:Npn \__ltxtalk_accessibility_heading_tag:
+  {
+    H
+    \int_compare:nNnTF { \l__ltxtalk_heading_level_int } < {1} {1}
+      { \int_compare:nNnTF { \l__ltxtalk_heading_level_int } > {6} {6}
+          { \int_use:N \l__ltxtalk_heading_level_int } }
+  }
+\cs_new_protected:Npn \__ltxtalk_slot_accessibility_dispatch:n #1
+  {
+    \tl_if_empty:NTF \l__ltxtalk_alt_text_tl
+      {
+        \str_case:VnF \l__ltxtalk_slot_role_tl
+          {
+            { artifact }   { \__ltxtalk_accessibility_artifact:n {#1} }
+            { navigation } { \__ltxtalk_accessibility_artifact:n {#1} }
+            { content }    { #1 }
+            { note }       { \__ltxtalk_accessibility_struct:nn { tag = Note } {#1} }
+            { heading }    { \__ltxtalk_accessibility_struct:nn
+                               { tag = \__ltxtalk_accessibility_heading_tag: } {#1} }
+            { H1 }         { \__ltxtalk_accessibility_struct:nn { tag = H1 } {#1} }
+            { H2 }         { \__ltxtalk_accessibility_struct:nn { tag = H2 } {#1} }
+            { H3 }         { \__ltxtalk_accessibility_struct:nn { tag = H3 } {#1} }
+          }
+          { #1 }
+      }
+      {
+        \str_case:VnF \l__ltxtalk_slot_role_tl
+          {
+            { note }    { \__ltxtalk_accessibility_struct:nn
+                            { tag = Note, alt = \l__ltxtalk_alt_text_tl } {#1} }
+            { heading } { \__ltxtalk_accessibility_struct:nn
+                            { tag = \__ltxtalk_accessibility_heading_tag: ,
+                              alt = \l__ltxtalk_alt_text_tl } {#1} }
+            { H1 }      { \__ltxtalk_accessibility_struct:nn
+                            { tag = H1, alt = \l__ltxtalk_alt_text_tl } {#1} }
+            { H2 }      { \__ltxtalk_accessibility_struct:nn
+                            { tag = H2, alt = \l__ltxtalk_alt_text_tl } {#1} }
+            { H3 }      { \__ltxtalk_accessibility_struct:nn
+                            { tag = H3, alt = \l__ltxtalk_alt_text_tl } {#1} }
+          }
+          { \__ltxtalk_accessibility_struct:nn
+              { tag = Figure, alt = \l__ltxtalk_alt_text_tl } {#1} }
+      }
+  }
+% \ldeen{Leerer Inhalt bekommt keine Tagging-Hülle: eine Folie ohne
+%   \cs{framesubtitle} etwa liefert für den zugehörigen Slot leeren Inhalt,
+%   der bei jedem Bereichs-Rendern (Kopf/Rand/Fuß laufen pro Folie, unabhängig
+%   davon ob der zugehörige Befehl überhaupt aufgerufen wurde) trotzdem
+%   erzeugt würde -- ohne diese Prüfung entstünde eine leere, bedeutungslose
+%   Übrschrift/Struktur im Tag-Baum. Die Leerheitsprüfung (\code{:e}) expandiert
+%   den Inhalt nur für den Test, damit z.\,B. \cs{LTXTalkMetadata} als auf
+%   leer aufgelöst erkannt wird; getippt wird weiterhin die unexpandierte
+%   Fassung.}{Empty content gets no tagging wrapper: a frame without
+%   \cs{framesubtitle}, for instance, yields empty content for that slot,
+%   which would still be produced on every area render (header/margin/footer
+%   run once per frame, regardless of whether the corresponding command was
+%   ever called) -- without this check, an empty, meaningless
+%   heading/structure would appear in the tag tree. The blankness check
+%   (\code{:e}) expands the content only for the test, so that, e.g.,
+%   \cs{LTXTalkMetadata} resolving to nothing is detected; typesetting still
+%   uses the unexpanded form.}
+\cs_new_protected:Npn \__ltxtalk_slot_accessibility_apply:nn #1 #2
+  {
+    \tl_if_blank:eTF {#2}
+      { #2 }
+      {
+        \group_begin:
+          \tl_set:Nn \l__ltxtalk_slot_role_tl { artifact }
+          \int_set:Nn \l__ltxtalk_heading_level_int { 1 }
+          \tl_clear:N \l__ltxtalk_alt_text_tl
+          \prop_get:NnNT \g__ltxtalk_slot_accessibility_prop {#1} \l_tmpa_tl
+            { \keys_set:nV { ltxtalk / a11y } \l_tmpa_tl }
+          \__ltxtalk_slot_accessibility_dispatch:n {#2}
+        \group_end:
+      }
+  }
+
 % ==========================================
 % ABSCHNITTSTITEL ALS FRAMETITLE
 % ==========================================
@@ -3366,6 +3616,106 @@ theme.
 \DeclareLTXTalkNavigation { section-progress }
   { \__ltxtalk_nav_use_structure: \__ltxtalk_nav_render_section_progress: }
 
+% ==========================================
+% INHALTSELEMENTE
+% ==========================================
+% \ldeen{Eine \emph{Inhaltselement}-Instanz erzeugt formatierten, aber
+%   ungetaggten Text (z.\,B. \enquote{3~/~12}); die semantische Tagging-Rolle
+%   kommt -- wie bei jedem anderen Slot-Inhalt -- vom vierten Argument des
+%   umgebenden \cs*{defineltxtalkslot}, nicht vom Element selbst. Drei
+%   Schablonen decken die eingebauten Instanzen ab: \code{counter} (ein
+%   einzelner Wert), \code{fraction} (zwei Werte mit Trennzeichen, z.\,B.
+%   Seite~/~Gesamtzahl) und \code{heading} (optional nummerierter Text, z.\,B.
+%   eine Abschnittsüberschrift). Neue Instanzen -- auch mit einer der drei
+%   Schablonen und nur anderen Werten -- entstehen wie bei jedem anderen
+%   Template-Typ über \cs{DeclareInstance}; vorhandene lassen sich mit
+%   \cs{EditInstance} anpassen, etwa um das Trennzeichen zu ändern.}{A
+%   \emph{content element} instance produces formatted but untagged text
+%   (e.g.\ \enquote{3~/~12}); the semantic tagging role -- like for any other
+%   slot content -- comes from the surrounding \cs*{defineltxtalkslot}'s
+%   fourth argument, not from the element itself. Three templates cover the
+%   built-in instances: \code{counter} (a single value), \code{fraction}
+%   (two values with a separator, e.g.\ page~/~total) and \code{heading}
+%   (optionally numbered text, e.g.\ a section heading). New instances --
+%   even reusing one of the three templates with just different values --
+%   are created like for any other template type, via \cs{DeclareInstance};
+%   existing ones can be adjusted with \cs{EditInstance}, e.g.\ to change the
+%   separator.}
+\tl_new:N \l__ltxtalk_element_source_tl
+\tl_new:N \l__ltxtalk_element_left_tl
+\tl_new:N \l__ltxtalk_element_right_tl
+\tl_new:N \l__ltxtalk_element_sep_tl
+\tl_new:N \l__ltxtalk_element_number_tl
+\tl_new:N \l__ltxtalk_element_text_tl
+\bool_new:N \l__ltxtalk_element_numbered_bool
+
+\NewTemplateType { ltxtalk-element } { 0 }
+
+\DeclareTemplateInterface { ltxtalk-element } { counter } { 0 }
+  { source : tokenlist = { } }
+\DeclareTemplateCode { ltxtalk-element } { counter } { 0 }
+  { source = \l__ltxtalk_element_source_tl }
+  { \l__ltxtalk_element_source_tl }
+
+\DeclareTemplateInterface { ltxtalk-element } { fraction } { 0 }
+  {
+    left      : tokenlist = { },
+    right     : tokenlist = { },
+    separator : tokenlist = { / },
+  }
+\DeclareTemplateCode { ltxtalk-element } { fraction } { 0 }
+  {
+    left      = \l__ltxtalk_element_left_tl,
+    right     = \l__ltxtalk_element_right_tl,
+    separator = \l__ltxtalk_element_sep_tl,
+  }
+  {
+    \l__ltxtalk_element_left_tl
+    \l__ltxtalk_element_sep_tl
+    \l__ltxtalk_element_right_tl
+  }
+
+\DeclareTemplateInterface { ltxtalk-element } { heading } { 0 }
+  {
+    numbered  : boolean   = true,
+    number    : tokenlist = { },
+    text      : tokenlist = { },
+    separator : tokenlist = { ~ },
+  }
+\DeclareTemplateCode { ltxtalk-element } { heading } { 0 }
+  {
+    numbered  = \l__ltxtalk_element_numbered_bool,
+    number    = \l__ltxtalk_element_number_tl,
+    text      = \l__ltxtalk_element_text_tl,
+    separator = \l__ltxtalk_element_sep_tl,
+  }
+  {
+    \bool_if:NT \l__ltxtalk_element_numbered_bool
+      { \l__ltxtalk_element_number_tl \l__ltxtalk_element_sep_tl }
+    \l__ltxtalk_element_text_tl
+  }
+
+\DeclareInstance { ltxtalk-element } { pagenumber } { counter }
+  { source = \@framenumber }
+\DeclareInstance { ltxtalk-element } { totalframes } { counter }
+  { source = \@totalframes }
+\DeclareInstance { ltxtalk-element } { pagenumber-of-total } { fraction }
+  { left = \@framenumber, right = \@totalframes, separator = { / } }
+\DeclareInstance { ltxtalk-element } { section-pagenumber } { fraction }
+  { left = \insertsection, right = \@framenumber, separator = { ~--~ } }
+\DeclareInstance { ltxtalk-element } { sectionheading } { heading }
+  { number = \thesection, text = \insertsection }
+\DeclareInstance { ltxtalk-element } { subsectionheading } { heading }
+  { number = \thesubsection, text = \insertsubsection }
+
+% \ldeen{\cs*{InsertLTXTalkElement}\Marg{Name} ist der einzige Aufrufpunkt für
+%   Anwender: er reicht an \cs{UseInstance} durch, unabhängig davon, welche
+%   der drei Schablonen die benannte Instanz tatsächlich verwendet.}{
+%   \cs*{InsertLTXTalkElement}\Marg{name} is the only call site users need:
+%   it forwards to \cs{UseInstance}, regardless of which of the three
+%   templates the named instance actually uses.}
+\NewDocumentCommand \InsertLTXTalkElement { m }
+  { \UseInstance { ltxtalk-element } {#1} }
 
 % ==========================================
 % INITIALISIERUNG
@@ -4087,24 +4437,37 @@ theme.
     { \msg_error:nnn {ltxtalk}{unknown-theme}{#1} }
 }
 
+% \ldeen{Der Slottyp \code{frametitle} bleibt bewusst außen vor: er taggt
+%   sich über \cls*{ltx-talk}s eigene, dynamisch abschnittstiefen-abhängige
+%   Funktion bereits selbst (siehe oben); eine zweite, hier zusätzlich
+%   aufgesetzte Tagging-Schicht würde ein verschachteltes Duplikat
+%   erzeugen.}{The \code{frametitle} slot type is deliberately excluded: it
+%   already tags itself via \cls*{ltx-talk}'s own function, dynamically
+%   aware of section depth (see above); a second tagging layer stacked on
+%   top here would create a nested duplicate.}
 \cs_new_protected:Npn \__ltxtalk_slot_content:n #1
   {
     \prop_get:NnN \g__ltxtalk_slot_types_prop {#1} \l__ltxtalk_slot_type_tl
-    \str_case:VnF \l__ltxtalk_slot_type_tl
+    \str_if_eq:VnTF \l__ltxtalk_slot_type_tl {frametitle}
+      { \__talk_frame_title:n {\tl_use:N \g__talk_frame_title_tl} }
       {
-        {title}         {\LTXTalkMetadata{short-title}}
-        {subtitle}      {\LTXTalkMetadata{short-subtitle}}
-        {author}        {\LTXTalkMetadata{short-author}}
-        {date}          {\LTXTalkMetadata{date}}
-        {institute}     {\LTXTalkMetadata{short-institute}}
-        {section}       {\LTXTalkMetadata{section}}
-        {subsection}    {\LTXTalkMetadata{subsection}}
-        {frametitle}
-          {\__talk_frame_title:n {\tl_use:N \g__talk_frame_title_tl}}
-        {framesubtitle} {\tl_use:N \g__talk_frame_subtitle_tl}
-        {pagenumber}    {\LTXTalkMetadata{framenumber}}
+        \__ltxtalk_slot_accessibility_apply:nn {#1}
+          {
+            \str_case:VnF \l__ltxtalk_slot_type_tl
+              {
+                {title}         {\LTXTalkMetadata{short-title}}
+                {subtitle}      {\LTXTalkMetadata{short-subtitle}}
+                {author}        {\LTXTalkMetadata{short-author}}
+                {date}          {\LTXTalkMetadata{date}}
+                {institute}     {\LTXTalkMetadata{short-institute}}
+                {section}       {\LTXTalkMetadata{section}}
+                {subsection}    {\LTXTalkMetadata{subsection}}
+                {framesubtitle} {\tl_use:N \g__talk_frame_subtitle_tl}
+                {pagenumber}    {\LTXTalkMetadata{framenumber}}
+              }
+              { \prop_item:Nn \g__ltxtalk_slot_contents_prop {#1} }
+          }
       }
-      { \prop_item:Nn \g__ltxtalk_slot_contents_prop {#1} }
   }
 
 \cs_new_protected:Npn \__ltxtalk_render_slot:n #1

@@ -1,0 +1,60 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+LaTeX Font Info:    Trying to load font information for TU+lmr-base on input line ....
+(../tulmr-base.fd
+File: tulmr-base.fd ....-..-.. v... LaTeX font definitions for Latin Modern in base mode
+) [1]
+============================================================
+TEST 1: Show PDF Tags
+============================================================
+-------- accessibility-roles.xml (start) ---------
+<PDF>
+ <StructTreeRoot>
+  <Document xmlns="http://iso.org/pdf2/ssn"
+     id="ID.02"
+    >
+   <frame xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+      id="ID.06"
+      rolemaps-to="Sect"
+     >
+    <Figure xmlns="http://iso.org/pdf2/ssn"
+       id="ID.09"
+       alt="A decorative mark"
+      >
+     <?MarkedContent page="1" ?>***
+    </Figure>
+    <Note xmlns="http://iso.org/pdf/ssn"
+       id="ID.08"
+      >
+     <?MarkedContent page="1" ?>A Note
+    </Note>
+    <H2 xmlns="http://iso.org/pdf2/ssn"
+       id="ID.07"
+      >
+     <?MarkedContent page="1" ?>A Heading
+    </H2>
+   </frame>
+  </Document>
+ </StructTreeRoot>
+</PDF>
+-------- accessibility-roles.xml (end) -----------
+============================================================
+<<latex-list-css.html>><<latex-align-css.html>> (accessibility-roles.aux)
+MathML statistic
+================
+==> 0 MathML fragments read
+==> 0 different MathML fragments
+==> 0 math fragments found
+==> 0 fitting MathML AF found
+==> 0 MathML AF attached
+Package tagpdf Info: Finalizing the tagging structure:
+(tagpdf)             Writing out ~9 structure objects
+(tagpdf)             with ~8 'MC' leaf nodes.
+(tagpdf)             Be patient if there are lots of objects!
+Package tagpdf Info: writing ParentTree
+Package tagpdf Info: writing IDTree
+Package tagpdf Info: writing RoleMap
+Package tagpdf Info: writing ClassMap
+Package tagpdf Info: writing NameSpaces
+Package tagpdf Info: writing StructElems
+Package tagpdf Info: writing Root
