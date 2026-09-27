@@ -6,4 +6,5 @@ excludetests = {
   "ltxtalk-ignore-non-frame",
   "ltxtalk-ignore-non-frame-exceptions",
   "ltxtalk-ignore-non-frame-star",
+  "ltxtalk-mode-then-section",
 }

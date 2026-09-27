@@ -64,10 +64,10 @@ The `TL ...` columns are read from the expectations in the workflow above;
 | Module | Version | Date | Files | Lua | TL 2024 | TL 2025 | TL current |
 |---|---|---|---|:---:|:---:|:---:|:---:|
 | osglecture | v0.13.0 | 2026-08-21 | 22 | :full_moon: | :red_circle: | :green_circle: | :green_circle: |
-| osglecture-modes | v0.4.0 | 2026-08-02 | 2 | :new_moon: | :green_circle: | :green_circle: | :green_circle: |
+| osglecture-modes | v0.5.1 | 2026-09-27 | 2 | :full_moon: | :red_circle: | :green_circle: | :green_circle: |
 | ltx-talk support (osglecture + osglecture-modes) | n/a | n/a | n/a | :full_moon: | :red_circle: | :red_circle: | :green_circle: |
 | ollm | v0.14.1 | n/a | 1 | :white_circle: | :white_circle: | :green_circle: | :green_circle: |
-| tagpax | v0.8.5-dev | 2026-07-23 | 2 | :full_moon: | :green_circle: | :green_circle: | :green_circle: |
+| tagpax | v0.8.5-dev | 2026-07-23 | 2 | :full_moon: | :red_circle: | :green_circle: | :green_circle: |
 | tagbridge | v0.1.0 | 2026-09-14 | 1 | :new_moon: | :green_circle: | :green_circle: | :green_circle: |
 | tagdirtree | v0.1.0 | 2026-09-14 | 1 | :new_moon: | :green_circle: | :green_circle: | :green_circle: |
 | langselect | v1.1.3 | 2026-09-18 | 1 | :full_moon: | :green_circle: | :green_circle: | :green_circle: |

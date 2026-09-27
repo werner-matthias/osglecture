@@ -95,7 +95,7 @@ jobs:
           - name: osglecture-modes-core
             directory: osglecture-modes
             config: core
-            expect_2024: pass
+            expect_2024: fail
             expect_2025: pass
             expect_current: pass
           - name: ltx-talk support (osglecture + osglecture-modes)
@@ -115,7 +115,7 @@ jobs:
           - name: tagpax
             directory: tagpax
             config: build
-            expect_2024: pass
+            expect_2024: fail
             expect_2025: pass
             expect_current: pass
           - name: tagbridge
