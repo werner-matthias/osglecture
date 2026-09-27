@@ -36,9 +36,10 @@ option reference. Build both with `l3build doc` in this directory.
 
 Activate the layout theme first, add colour and font themes, then apply
 custom settings. Grid and slot changes are global; ending a frame does not
-undo them. Slot accessibility fields such as `role` and `alt-text` are
-currently descriptive data only and do not produce PDF tags or alternative
-text. The manuals distinguish this from tagging supplied by the class.
+undo them. With tagging enabled, slot options `role` and `alt-text` control the
+semantic role and alternative text. The default role is `artifact`;
+frame-title tagging is handled by the class. See the manual for the
+accessibility options and their exceptions.
 
 ## Tests
 

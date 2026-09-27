@@ -103,15 +103,15 @@ describe areas and the elements placed in them, called \emph{slots} here.
 \ldeen{
 Verwenden Sie für die Beispiele Lua\LaTeX\ und eine aktuelle Installation
 des Bundles einschließlich \pkg*{osgstyler}. Das Paket ist auf
-\cls{ltx-talk}~v0.5.3 vom 5.~August~2026 abgestimmt. Eine ältere Klasse führt
-zu einem Fehler, eine neuere zu einer Kompatibilitätswarnung. Die Klasse
+\cls{ltx-talk}~v0.5.3 vom 5.~August~2026 abgestimmt. Klassenstände vor dem 5.~August~2026 führen zu einem Fehler,
+Stände nach dem 17.~September~2026 zu einer Kompatibilitätswarnung. Die Klasse
 und das Themesystem befinden sich noch in Entwicklung. Laden Sie die
 Klasse zuerst; Themenpakete ersetzen keine bereits geladene Klasse.
 }{
 Use Lua\LaTeX\ and a current bundle installation including \pkg*{osgstyler}
 for the examples. The package is matched to \cls{ltx-talk}~v0.5.3 dated
-5~August~2026. An older class causes an error; a newer class produces a
-compatibility warning. Both the class and the theme system are still under
+5~August~2026. Class releases before 5~August~2026 cause an error; releases after
+17~September~2026 produce a compatibility warning. Both the class and the theme system are still under
 development. Load the class first; theme packages do not replace a class
 that has already been loaded.
 }
@@ -531,6 +531,8 @@ explicitly return to \code{goose/standard} afterwards:}
   % Preamble:
   \usepackage{ltxtalk-theme-goose}
   \useltxtalktheme{goose}
+  \title{A presentation}
+  \author{A. Author}
   % In the document:
   \UseLTXTalkLayout{goose/wide}
   \begin{frame}
@@ -654,20 +656,20 @@ create an additional visible element when the corresponding slot is absent.
 \ldeen{
 Mit \cs*{setltxtalkheadingbehavior}\marg{auto-section-title = true} übernimmt
 die erste \cs{frametitle}-Folie nach \cs{section} oder \cs{subsection} deren
-Text automatisch als Titel -- unabhängig davon, ob dasselbe Theme Abschnitte
+nummerierte Überschrift automatisch als Titel -- unabhängig davon, ob dasselbe Theme Abschnitte
 zusätzlich im Kopf zeigt (\cs*{setltxtalktitleplacement}s Schlüssel
 \code{section}). Wird an dieser Folie zusätzlich ein eigener Text angegeben,
 wandert er auf den Subtitel-Platz; ein daneben separat gesetzter
-\cs{framesubtitle} entfällt dann, weil der demotierte Titel den Platz schon
+\cs{framesubtitle} entfällt dann, weil der eigene Titel den Platz schon
 belegt:
 }{
 With \cs*{setltxtalkheadingbehavior}\marg{auto-section-title = true}, the
 first \cs{frametitle} frame after \cs{section} or \cs{subsection}
-automatically takes over its text as the title -- independently of whether
+automatically takes over its numbered heading as the title -- independently of whether
 the same theme also shows sections in the header (\cs*
 {setltxtalktitleplacement}'s \code{section} key). If that same frame also
 gives its own text, it moves to the subtitle slot; a separately given
-\cs{framesubtitle} is then dropped, because the demoted title already
+\cs{framesubtitle} is then dropped, because the supplied title already
 occupies that slot:
 }
 
@@ -676,12 +678,12 @@ occupies that slot:
   ...
   \section{Introduction}
   \begin{frame}
-    \frametitle{} % title becomes "Introduction"
+    \frametitle{} % title becomes "1 Introduction"
     ...
   \end{frame}
   \section{Related Work}
   \begin{frame}
-    \frametitle{A Short History}   % title becomes "Related Work",
+    \frametitle{A Short History}   % title becomes "2 Related Work",
                                     % subtitle becomes "A Short History"
     ...
   \end{frame}
@@ -811,14 +813,12 @@ Für inhaltliche Grafiken gelten die Möglichkeiten von \cls{ltx-talk} und den
 verwendeten Grafikpaketen; dort ist ein aussagekräftiger Alternativtext
 anzugeben. Wiederkehrende Logos, Farbflächen und Trennlinien sind gewöhnlich
 dekorativ und dürfen die Lesereihenfolge nicht mit wiederholten Informationen
-belasten. Die Slot-Rolle allein erzeugt derzeit kein Artefakt-Tag; Anwender sollten ein inhaltliches Bild daher nicht lediglich als
-Theme-Logo einsetzen.
+belasten. Die Slotrolle \code{artifact} kennzeichnet dekorative Elemente. Für ein inhaltliches Bild in einem Slot geben Sie einen Alternativtext mit \code{alt-text} an; siehe Abschnitt~\ref{sec:ref-accessibility}.
 }{
 Content graphics use the facilities of \cls{ltx-talk} and the loaded graphics
 packages; provide meaningful alternative text there. Repeated logos, colour
 fields, and rules are usually decorative and must not burden the reading order
-with duplicate information. A slot role alone currently does not create an artifact tag; users should not place a content-bearing image merely as a theme
-logo.
+with duplicate information. The slot role \code{artifact} marks decorative elements. For meaningful graphics in a slot, provide alternative text with \code{alt-text}; see Section~\ref{sec:ref-accessibility}.
 }
 
 \subsection{\ldeen{Tagging und Prüfung}{Tagging and testing}}
@@ -828,14 +828,12 @@ Für getaggte PDF-Ausgabe sollte die Präsentation mit \cs*{DocumentMetadata}
 beginnen. Das eigentliche Tagging von Frame-Inhalt und Überschriften übernimmt
 gegenwärtig überwiegend \cls{ltx-talk}. \lttheme{} bewahrt diese Anbindung,
 indem Folientitel im Inhaltsbereich über die öffentlichen Klassenbefehle
-gesetzt werden. Die Angaben zur Barrierefreiheit der Slot-Schnittstelle dokumentieren
-zusätzlich die beabsichtigte Rolle; sie werden von der Slot-Ausgabe derzeit nicht ausgewertet.
+gesetzt werden. Die Optionen der Slot-Schnittstelle steuern zusätzlich die Rolle und den Alternativtext der Theme-Elemente im getaggten PDF (Abschnitt~\ref{sec:ref-accessibility}).
 }{
 For tagged PDF output, begin the presentation with \cs*{DocumentMetadata}.
 At present, \cls{ltx-talk} performs most tagging of frame content and
 headings. \lttheme{} preserves that connection by typesetting frame titles in
-the content area through the class's public commands. Accessibility data in
-the slot interface additionally records the intended role, but slot output does not currently evaluate it.
+the content area through the class's public commands. The slot interface additionally controls the role and alternative text of theme elements in tagged PDF (Section~\ref{sec:ref-accessibility}).
 }
 
 \ldeen{
@@ -859,7 +857,7 @@ check the heading structure generated by \cls{ltx-talk}.
 
 \section{\ldeen{Das Theme-Modell}{The theme model}}
 \label{sec:theme-model}
-\ldeen{Ein Theme besteht aus Bereichen, Slots und Gestaltung. Der Slottyp bestimmt den Inhalt; Bereich und Position bestimmen den Ort; die Slotgestaltung bestimmt Schrift, Farbe und Rahmen. Verwenden Sie die vorhandenen Typen für Titel und Metadaten, und \code{custom} für eigenen Inhalt. Die Klasse bleibt für Frames, Overlays und die semantische Struktur des Folieninhalts zuständig. Slotrollen erzeugen derzeit keine eigenen PDF-Tags; siehe die Referenz zu den Angaben für Barrierefreiheit.}{A theme consists of areas, slots, and styling. The slot type determines content; area and position determine location; slot styling determines font, colour, and frame. Use existing types for titles and metadata, and \code{custom} for custom content. The class remains responsible for frames, overlays, and the semantic structure of frame content. Slot roles do not currently create their own PDF tags; see the accessibility-field reference.}
+\ldeen{Ein Theme besteht aus Bereichen, Slots und Gestaltung. Der Slottyp bestimmt den Inhalt; Bereich und Position bestimmen den Ort; die Slotgestaltung bestimmt Schrift, Farbe und Rahmen. Verwenden Sie die vorhandenen Typen für Titel und Metadaten, und \code{custom} für eigenen Inhalt. Die Klasse bleibt für Frames, Overlays und die semantische Struktur des Folieninhalts zuständig. Die semantische Rolle der Theme-Elemente legen Sie mit den Optionen für Barrierefreiheit fest (Abschnitt~\ref{sec:ref-accessibility}).}{A theme consists of areas, slots, and styling. The slot type determines content; area and position determine location; slot styling determines font, colour, and frame. Use existing types for titles and metadata, and \code{custom} for custom content. The class remains responsible for frames, overlays, and the semantic structure of frame content. Specify the semantic role of theme elements through the accessibility options (Section~\ref{sec:ref-accessibility}).}
 
 \subsection{\ldeen{Bereiche}{Areas}}
 
@@ -1549,7 +1547,7 @@ output with the following options:}
     Abschnittsüberschriften, im Unterschied zu \cs*{LTXTalkNavigation}s
     Renderern für die \emph{gesamte} Abschnittsfolge. Die getaggte Rolle
     kommt, wie bei jedem anderen Slotinhalt, vom vierten Argument des
-    umgebenden \cs*{defineltxtalkslot} (Abschnitt~\ref{sec:ref-navigation}
+    umgebenden \cs*{defineltxtalkslot} (Abschnitt~\ref{sec:ref-accessibility}
     behandelt entsprechend die Tagging-Optionen der Slots).
 
     Mitgeliefert:
@@ -1564,7 +1562,7 @@ output with the following options:}
         Abschnitts- beziehungsweise Unterabschnittstitel.
     \end{itemize}
     Jede eingebaute Instanz verwendet eine von drei Schablonen und lässt
-    sich mit \cs{EditInstance}\Marg{ltxtalk-element}\Marg{Name}\Marg{Schlüssel}
+    sich mit \cs{EditInstance}\allowbreak\Marg{ltxtalk-element}\allowbreak\Marg{Name}\Marg{Schlüssel}
     anpassen:
     \begin{itemize}
       \item \code{counter}: Schlüssel \code{source} (der auszugebende Wert).
@@ -1575,14 +1573,14 @@ output with the following options:}
     \end{itemize}
     Neue Instanzen -- auch mit einer dieser drei Schablonen, nur mit anderen
     Werten -- entstehen wie bei jedem anderen Template-Typ über
-    \cs{DeclareInstance}\Marg{ltxtalk-element}\Marg{Name}\Marg{Schablone}\Marg{Schlüssel}.
+    \cs{DeclareInstance}\allowbreak\Marg{ltxtalk-element}\allowbreak\Marg{Name}\Marg{Schablone}\Marg{Schlüssel}.
   }{
     Typesets a named instance of the \code{ltxtalk-element} template type --
     intended for single, formattable content values such as page numbers or
     section headings, as opposed to \cs*{LTXTalkNavigation}'s renderers for
     the \emph{whole} section sequence. The tagged role comes, like for any
     other slot content, from the surrounding \cs*{defineltxtalkslot}'s
-    fourth argument (Section~\ref{sec:ref-navigation} covers the slots'
+    fourth argument (Section~\ref{sec:ref-accessibility} covers the slots'
     tagging options accordingly).
 
     Bundled:
@@ -1597,7 +1595,7 @@ output with the following options:}
         section or subsection title.
     \end{itemize}
     Every built-in instance uses one of three templates and can be adjusted
-    with \cs{EditInstance}\Marg{ltxtalk-element}\Marg{name}\Marg{keys}:
+    with \cs{EditInstance}\allowbreak\Marg{ltxtalk-element}\allowbreak\Marg{name}\Marg{keys}:
     \begin{itemize}
       \item \code{counter}: key \code{source} (the value to output).
       \item \code{fraction}: keys \code{left}, \code{right},
@@ -1607,7 +1605,7 @@ output with the following options:}
     \end{itemize}
     New instances -- even reusing one of these three templates with just
     different values -- are created like for any other template type, via
-    \cs{DeclareInstance}\Marg{ltxtalk-element}\Marg{name}\Marg{template}\Marg{keys}.
+    \cs{DeclareInstance}\allowbreak\Marg{ltxtalk-element}\allowbreak\Marg{name}\Marg{template}\Marg{keys}.
   }
 \end{commands}
 
@@ -1821,7 +1819,7 @@ with the load option \code{outer-only=true}.}
 \begin{tabular}{lll}
 \hline
 \textbf{\ldeen{Typ}{Type}} & \textbf{\ldeen{Beschreibung}{Description}}
-  & \textbf{\ldeen{Beabsichtigte Rolle}{Intended role}} \\
+  & \textbf{\ldeen{Mögliche Rolle}{Possible role}} \\
 \hline
 \texttt{frametitle}    & \ldeen{Folientitel}{Frame title}        & heading (H2)     \\
 \texttt{framesubtitle} & \ldeen{Folienuntertitel}{Frame subtitle} & heading (H3)     \\
@@ -1839,6 +1837,7 @@ with the load option \code{outer-only=true}.}
 \caption{\ldeen{Vordefinierte Slottypen}{Predefined slot types}}
 \label{tab:template-variables}
 \end{table}
+\ldeen{Die Rollen in der Tabelle sind Beispiele, keine Vorgaben des Slottyps. Ohne explizite Rolle gilt \code{artifact}; eine Ausnahme ist \code{frametitle}, dessen Tagging die Klasse übernimmt.}{The roles in the table are examples, not defaults imposed by the slot type. Without an explicit role, \code{artifact} applies; \code{frametitle} is an exception, with tagging provided by the class.}
 
 \Needspace{8\baselineskip}
 \subsection{\ldeen{Slot-Positionierung}{Slot positioning}}
@@ -2001,35 +2000,30 @@ with the load option \code{outer-only=true}.}
   \ldeen{
     Konfiguriert mit dem booleschen Schlüssel \code{auto-section-title}
     (Vorgabe: \code{false}), ob die erste \cs{frametitle}-Folie nach
-    \cs{section}/\cs{subsection} deren Text als Titel übernimmt. Ein an
+    \cs{section}/\cs{subsection} deren nummerierte Überschrift als Titel übernimmt. Ein an
     derselben Folie gegebener Text wird dabei zum Subtitel; ein zusätzlich
     gesetzter \cs{framesubtitle} entfällt.
 
-    \textbf{Bekanntes Problem:} Bei aktivem Tagging (\code{tagging=on}) kann
-    das Zusammenspiel aus dieser Titel-zu-Subtitel-Demotion und bestimmten,
-    bislang nicht vollständig eingegrenzten Folieninhalten einen
-    unausgeglichenen Absatz-Tagging-Hook auslösen und in der Folge zu einem
-    echten \enquote{TeX capacity exceeded}-Abbruch führen -- reproduziert in
-    einem realen Kursskript, nicht nur in isolierten Testfällen. Vor dem
-    Einsatz mit aktivem Tagging in umfangreichen Dokumenten: einmal
-    vollständig durchkompilieren und im Fehlerfall probeweise wieder
-    ausschalten.
+    \textbf{Bekanntes Problem:} Mit \code{tagging=on} kann diese Option
+    bei bestimmten Folieninhalten zum Fehler \enquote{TeX capacity exceeded}
+    führen. Prüfen Sie das vollständige Dokument und deaktivieren Sie
+    \code{auto-section-title}, falls dieser Fehler auftritt.
   }{
     Configures, with the Boolean key \code{auto-section-title} (default:
     \code{false}), whether the first \cs{frametitle} frame after
-    \cs{section}/\cs{subsection} takes over its text as the title. Text
+    \cs{section}/\cs{subsection} takes over its numbered heading as the title. Text
     given at that same frame becomes the subtitle; a separately set
     \cs{framesubtitle} is dropped.
 
-    \textbf{Known issue:} With tagging active (\code{tagging=on}), the
-    interaction between this title-to-subtitle demotion and certain frame
-    content, not yet fully narrowed down, can trigger an unbalanced
-    per-paragraph tagging hook and, downstream, a genuine \enquote{TeX
-    capacity exceeded} abort -- reproduced in a real course deck, not just
-    in isolated test cases. Before using this with tagging active in a
-    sizeable document: do a full compile, and turn it back off if that
-    fails.
+    \textbf{Known issue:} With \code{tagging=on}, this option can cause
+    a \enquote{TeX capacity exceeded} error with some frame content.
+    Compile the complete document and disable \code{auto-section-title}
+    if that error occurs.
   }
+
+  \command{contframetitle}[\oarg{\ldeen{Untertitel}{subtitle}}]
+  \ldeen{Wiederholt die zuletzt mit \cs*{section} oder \cs*{subsection} gesetzte, nummerierte Überschrift mit einem Fortsetzungshinweis. Verwenden Sie den Befehl innerhalb eines neuen \env{frame}, wenn ein Thema mehrere separate Frames umfasst. Er ist unabhängig von \code{auto-section-title} und übernimmt nicht den letzten manuell gesetzten Folientitel. Das optionale Argument setzt einen Untertitel; ein Pflichtargument gibt es nicht. Vor dem optionalen Argument ist wie bei \cs*{frametitle} eine Overlay-Spezifikation in spitzen Klammern möglich. Für Overlays innerhalb desselben Frames genügt \cs*{frametitle}.}{Repeats the numbered heading most recently set by \cs*{section} or \cs*{subsection}, adding a continuation marker. Use it inside a new \env{frame} when a topic spans several separate frames. It is independent of \code{auto-section-title} and does not repeat the last manually set frame title. The optional argument supplies a subtitle; there is no mandatory argument. As with \cs*{frametitle}, an overlay specification in angle brackets may precede the optional argument. For overlays within the same frame, \cs*{frametitle} suffices.}
+
 \end{commands}
 
 \subsection{
@@ -2038,49 +2032,15 @@ with the load option \code{outer-only=true}.}
     {Accessibility options}
 }
 
-\ldeen{Das vierte Argument von \cs*{defineltxtalkslot} steuert die
-tatsächliche Tagging-Ausgabe des Slots -- außer beim Slottyp
-\code{frametitle}, der sich über \cls*{ltx-talk}s eigene, an der
-Abschnittstiefe orientierte Funktion selbst taggt (eine zusätzliche Hülle
-hier würde ein Duplikat erzeugen). Leerer Slotinhalt bleibt immer ohne
-Tagging-Hülle, unabhängig von \code{role}. Bei abgeschaltetem Tagging für
-die aktuelle Folie unterbleibt jeder Tagging-Aufruf.}{The fourth argument of
-\cs*{defineltxtalkslot} drives the slot's actual tagging output -- except
-for the \code{frametitle} slot type, which tags itself via \cls*{ltx-talk}'s
-own function, aware of section depth (an additional wrapper here would
-create a duplicate). Empty slot content is never given a tagging wrapper,
-regardless of \code{role}. With tagging switched off for the current frame,
-no tagging call happens at all.}
+\label{sec:ref-accessibility}
+\ldeen{Das vierte Argument von \cs*{defineltxtalkslot} legt die semantische Rolle und gegebenenfalls einen Alternativtext fest. Diese Angaben wirken bei aktiviertem Tagging. Leere Slots erzeugen kein Strukturelement. Beim Typ \code{frametitle} übernimmt die Klasse das Tagging; die folgenden Optionen ändern dessen Struktur nicht.}{The fourth argument of \cs*{defineltxtalkslot} specifies the semantic role and, optionally, alternative text. These settings take effect when tagging is enabled. Empty slots create no structure element. The class handles tagging for the \code{frametitle} type; the following options do not change its structure.}
 \begin{options}
-\keyval{role}{\ldeen{Rolle}{role}}
-\ldeen{Namen:}{Names:} \code{heading}, \code{heading-1}, \code{heading-2}, \code{heading-3}, \code{artifact}, \code{content}, \code{navigation}, \code{note}.
-\ldeen{\code{heading}/\code{heading-\meta{n}} öffnen ein echtes
-Strukturelement \code{H\meta{n}} (Ebene aus \code{heading-level}, geklemmt auf
-1--6, beziehungsweise fest 1--3 bei der Kurzform); \code{note} öffnet
-\code{Note}. \code{artifact} und \code{navigation} (mangels eigenen
-PDF-Strukturtyps für wiederkehrende Navigationselemente) erzeugen nur einen
-Artefakt-MC-Span außerhalb des Strukturbaums. \code{content} (Vorgabe)
-lässt das automatische Absatz-Tagging unangetastet.}{\code{heading}/
-\code{heading-\meta{n}} open a genuine \code{H\meta{n}} structure element
-(level from \code{heading-level}, clamped to 1--6, or fixed 1--3 for the
-short form); \code{note} opens \code{Note}. \code{artifact} and
-\code{navigation} (for lack of a dedicated PDF structure type for recurring
-navigation chrome) only produce an artifact MC span outside the structure
-tree. \code{content} (the default) leaves automatic per-paragraph tagging
-untouched.}
-\keyval{heading-level}{\ldeen{Ganzzahl}{integer}}
-\ldeen{Überschriftenebene für \code{role=heading} (Vorgabe~1).}{Heading level for \code{role=heading} (default~1).}
-\keyval{alt-text}{\ldeen{Text}{text}}
-\ldeen{Ist dieser Text nicht leer, bekommt der Slot in jedem Fall ein echtes
-Strukturelement mit \code{Alt}-Attribut -- \code{Note}/\code{H\meta{n}}, falls
-die Rolle selbst schon eines wäre, sonst \code{Figure}. Das überschreibt
-\code{artifact}/\code{navigation}/\code{content}, da diese sonst kein
-Strukturelement zum Anheften eines Alternativtexts hätten.}{If this text is
-non-empty, the slot always gets a genuine structure element with an
-\code{Alt} attribute -- \code{Note}/\code{H\meta{n}} if the role itself
-would already be one, otherwise \code{Figure}. This overrides
-\code{artifact}/\code{navigation}/\code{content}, since those would
-otherwise have no structure element to attach alternative text to.}
+\keyval{role}{\ldeen{Rolle}{role}}\Default{artifact}
+\ldeen{\code{heading} kennzeichnet eine Überschrift auf der mit \code{heading-level} gewählten Ebene; \code{heading-1}, \code{heading-2} und \code{heading-3} wählen direkt die jeweilige Ebene. \code{note} kennzeichnet eine Anmerkung. \code{artifact} und \code{navigation} nehmen dekorative beziehungsweise wiederkehrende Navigationselemente aus der Lesereihenfolge aus. \code{content} verwendet das automatische Absatz-Tagging für normalen Inhalt.}{\code{heading} marks a heading at the level selected by \code{heading-level}; \code{heading-1}, \code{heading-2}, and \code{heading-3} select that level directly. \code{note} marks a note. \code{artifact} and \code{navigation} exclude decorative or recurring navigation elements from the reading order. \code{content} uses automatic paragraph tagging for ordinary content.}
+\keyval{heading-level}{\ldeen{Ganzzahl}{integer}}\Default{1}
+\ldeen{Überschriftenebene für \code{role=heading}, begrenzt auf 1 bis 6.}{Heading level for \code{role=heading}, limited to 1 through 6.}
+\keyval{alt-text}{\ldeen{Text}{text}}\Default{\ldeen{leer}{empty}}
+\ldeen{Alternativtext für den Slotinhalt. Ein nicht leerer Wert erhält bei Überschriften und Anmerkungen deren Rolle; für alle anderen Rollen wird der Slot als Abbildung (\code{Figure}) mit Alternativtext ausgegeben. Er wird dadurch auch bei \code{artifact} oder \code{navigation} Teil der Dokumentstruktur. Für rein dekorative Elemente lassen Sie den Wert leer.}{Alternative text for the slot content. A non-empty value preserves heading and note roles; for every other role, the slot becomes a figure (\code{Figure}) with alternative text. This includes it in the document structure even with \code{artifact} or \code{navigation}. Leave the value empty for purely decorative elements.}
 \keyval{continuation-text}{\ldeen{Text}{text}}
 \ldeen{Beabsichtigter Fortsetzungstext; derzeit ohne Ausgabewirkung.}{Intended continuation text; currently without output effect.}
 \keychoice{continuation-mode}{explicit,implicit}
