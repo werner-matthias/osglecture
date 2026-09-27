@@ -36,11 +36,12 @@
 \setltxtalkheadingbehavior{auto-section-title=true}
 \ExplSyntaxOff
 
-% Abschnittstitel ohne gegebenen Frametitel: wird zum Titel, kein Subtitel.
+% Abschnittstitel ohne gegebenen Frametitel: wird zum Titel (mit
+% schlichter Abschnittsnummer als Prefix), kein Subtitel.
 \section{Erster Abschnitt}
 \begin{frame}
   \frametitle{}
-  \CHECKTITLE{Erster Abschnitt}
+  \CHECKTITLE{2 Erster Abschnitt}
   \CHECKSUBTITLE{}
 \end{frame}
 
@@ -52,12 +53,13 @@
 \end{frame}
 
 % Abschnitt und Unterabschnitt ohne Folie dazwischen: der Unterabschnitt
-% (der speziellere, zuletzt genannte) gewinnt.
+% (der speziellere, zuletzt genannte) gewinnt. Prefix ist
+% Abschnitt.Unterabschnitt (schlicht, nicht Kapitel-prefixiert).
 \section{Zweiter Abschnitt}
 \subsection{Ein Unterabschnitt}
 \begin{frame}
   \frametitle{Gegebener Titel}
-  \CHECKTITLE{Ein Unterabschnitt}
+  \CHECKTITLE{3.1 Ein Unterabschnitt}
   \CHECKSUBTITLE{Gegebener Titel}
 \end{frame}
 
@@ -67,7 +69,7 @@
 \begin{frame}
   \frametitle{Gegebener Titel}
   \framesubtitle{Eigener Subtitel}
-  \CHECKTITLE{Titel und Subtitel zugleich}
+  \CHECKTITLE{4 Titel und Subtitel zugleich}
   \CHECKSUBTITLE{Gegebener Titel}
 \end{frame}
 
@@ -78,6 +80,52 @@
   \framesubtitle{Normaler Subtitel}
   \CHECKTITLE{Normale Folie}
   \CHECKSUBTITLE{Normaler Subtitel}
+\end{frame}
+
+% Mehrseitige Folie (Overlays/\pause): die demotierte Ueberschrift und
+% ihr Subtitel muessen auf JEDEM Folienschritt stehen, nicht nur auf dem
+% ersten -- \frametitle laeuft pro Schritt erneut, das
+% "vorgemerkt"-Flag ist aber nur beim ersten Durchlauf aktiv.
+\section{Mehrseitiger Abschnitt}
+\begin{frame}
+  \frametitle{Eigene Folie}
+  \CHECKTITLE{5 Mehrseitiger Abschnitt}
+  \CHECKSUBTITLE{Eigene Folie}
+  \pause
+  \CHECKTITLE{5 Mehrseitiger Abschnitt}
+  \CHECKSUBTITLE{Eigene Folie}
+  \pause
+  \CHECKTITLE{5 Mehrseitiger Abschnitt}
+  \CHECKSUBTITLE{Eigene Folie}
+\end{frame}
+
+% \contframetitle: explizite Fortsetzungsfolien (separate \begin{frame}
+% Bloecke), unabhaengig vom auto-section-title-Schalter -- daher hier
+% bewusst mit ausgeschaltetem Schalter getestet.
+\ExplSyntaxOn
+\setltxtalkheadingbehavior{auto-section-title=false}
+\ExplSyntaxOff
+\section{Fortsetzungsabschnitt}
+\begin{frame}
+  \frametitle{Erste Folie}
+  \CHECKTITLE{Erste Folie}
+  \CHECKSUBTITLE{}
+\end{frame}
+
+% Bare \contframetitle: wiederholt die numerierte Abschnittsueberschrift
+% mit sprachabhaengigem Suffix, kein Subtitel. Kein babel geladen, daher
+% englisches Sprachdefault-Verhalten ("(cont.)").
+\begin{frame}
+  \contframetitle
+  \CHECKTITLE{6 Fortsetzungsabschnitt (cont.)}
+  \CHECKSUBTITLE{}
+\end{frame}
+
+% \contframetitle[...]: wie oben, aber mit explizitem Subtitel.
+\begin{frame}
+  \contframetitle[Weiterer Subtitel]
+  \CHECKTITLE{6 Fortsetzungsabschnitt (cont.)}
+  \CHECKSUBTITLE{Weiterer Subtitel}
 \end{frame}
 
 \clearpage

@@ -893,6 +893,8 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
                   }
               }
           }
+        \bool_if:NF \g__ltxtalk_auto_section_title_explicit_bool
+          { \bool_gset_true:N \g__ltxtalk_auto_section_title_bool }
       }
   }
 \NewDocumentCommand \settucthemeheaderlines {m m m}
@@ -1070,6 +1072,97 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
   { \__ltxtalk_tuc_if_lecture_number:TF {#1} { } }
 \cs_new_protected:Npn \__ltxtalk_tuc_if_lecture_number:F #1
   { \__ltxtalk_tuc_if_lecture_number:TF { } {#1} }
+% \ldeen{Ob gerade ein Abschnitt läuft, entscheidet der echte, von
+%   \cls{ltx-talk} selbst gepflegte Wert -- Existenz- und
+%   Leerprüfung spiegeln \cs{__ltxtalk_nav_sec_title:} (weiter oben in
+%   dieser Datei), die denselben Wert für die Navigationsleiste liest.
+%   Bewusst \emph{nicht} über \cs{LTXTalkMetadata}\Arg{section}
+%   (\cs{insertsection}): das ist ein reiner Beamer-Befehl, den
+%   \cls{ltx-talk} nur bei geladenem \pkg{beamer} bereitstellt --
+%   \code{teaching} soll aber auch ohne Beamer (z.\,B. im
+%   Artikel-/Skriptmodus) funktionieren.}{Whether a section is currently
+%   running is decided by the real value \cls{ltx-talk} itself maintains
+%   -- the existence and blank checks mirror
+%   \cs{__ltxtalk_nav_sec_title:} (further up in this file), which reads
+%   the same value for the navigation bar. Deliberately \emph{not} via
+%   \cs{LTXTalkMetadata}\Arg{section} (\cs{insertsection}): that is a
+%   pure Beamer command that \cls{ltx-talk} only provides when
+%   \pkg{beamer} is loaded -- but \code{teaching} should also work
+%   without Beamer (e.g.\ in article/script mode).}
+\cs_new_protected:Npn \__ltxtalk_tuc_if_section_active:TF #1#2
+  {
+    \tl_if_exist:cTF { l__talk_section_tl }
+      {
+        \tl_if_blank:eTF { \tl_to_str:c { l__talk_section_tl } }
+          {#2} {#1}
+      }
+      {#2}
+  }
+% \ldeen{Immer -- unabhängig vom Abschnittsstatus -- Vorlesungsnummer
+%   und Einheitstitel (bzw.\ Metadaten-Rückfall); bildet in beiden
+%   Zeilenmodi die \emph{obere} der beiden \code{teaching}-spezifischen
+%   Zeilen (Zeile~1 nach dem Trennstrich im Zweizeilenmodus, Zeile~2 im
+%   Dreizeilenmodus).}{Always -- independent of section status --
+%   lecture number and unit title (or metadata fallback); forms the
+%   \emph{upper} of the two \code{teaching}-specific lines in both row
+%   modes (line~1 after the separator dash in two-row mode, line~2 in
+%   three-row mode).}
+\cs_new_protected:Npn \__ltxtalk_tuc_teaching_unit_title:
+  {
+    \__ltxtalk_tuc_if_lecture_number:T
+      {\__ltxtalk_tuc_lecture_number: .~}
+    \cs_if_exist:NTF \g__osglecture_unit_title_tl
+       {\tl_use:N \g__osglecture_unit_title_tl}
+       {\UseLTXTalkMetadata[lines=1]{section}}
+  }
+% \ldeen{Sobald ein Abschnitt läuft, ersetzt
+%   \enquote{Vorlesungsnummer.Abschnittsnummer Abschnittstitel} die
+%   bisherige Subsection-Zeile; vor dem ersten Abschnitt bleibt das
+%   bisherige Verhalten (Subsection-Metadaten) unverändert. Bildet die
+%   \emph{untere} der beiden \code{teaching}-spezifischen Zeilen.
+%   Die Nummer wird bewusst \emph{nicht} über \cs{thesection} gebildet
+%   (das würde in dieser Kopfzeile korrekt \enquote{Kapitel.Abschnitt}
+%   liefern, tut es in der Praxis aber nicht zuverlässig: die
+%   Vorlesungsnummer aus \cs{OsgLectureDeploymentChapter} landet in
+%   \cs{g__osglecture_deployment_chapter_tl}, einer von \cs{thechapter}
+%   \emph{unabhängigen} Anzeige-Zeichenkette -- \cs{thesection} liefert
+%   dadurch oft nur die bloße Abschnittsnummer). Stattdessen wird die
+%   Vorlesungsnummer genau wie in \cs{__ltxtalk_tuc_teaching_unit_title:}
+%   (Zeile darüber) über \cs{__ltxtalk_tuc_lecture_number:} geholt und mit
+%   der schlichten Abschnittsnummer (\cs{c@section}) kombiniert.
+%   \cs{c_space_tl} statt \code{~}: eine aktive Tilde direkt nach der
+%   Nummer wurde in diesem Slot stillschweigend verschluckt -- per
+%   \file{pdftotext} an der gerenderten Kopfzeile bestätigt, Ursache
+%   nicht weiter verfolgt -- während die feste Leerzeichen-Tokenliste
+%   korrekt rendert.}{\enquote{lecture-number.section-number
+%   section-title} replaces the previous subsection line; before the
+%   first section, the previous behavior (subsection metadata) is
+%   unchanged. Forms the \emph{lower} of the two \code{teaching}-specific
+%   lines. The number is deliberately \emph{not} built via
+%   \cs{thesection} (which would correctly give \enquote{chapter.section}
+%   in this header, but in practice does not reliably: the lecture
+%   number from \cs{OsgLectureDeploymentChapter} lands in
+%   \cs{g__osglecture_deployment_chapter_tl}, a display string
+%   \emph{independent} of \cs{thechapter} -- so \cs{thesection} often
+%   yields only the bare section number). Instead, the lecture number is
+%   fetched the same way as in \cs{__ltxtalk_tuc_teaching_unit_title:}
+%   (the line above) via \cs{__ltxtalk_tuc_lecture_number:} and combined
+%   with the plain section number (\cs{c@section}).
+%   \cs{c_space_tl} rather than \code{~}: an active-character tie
+%   directly after the number was silently swallowed in this slot --
+%   confirmed via \file{pdftotext} on the rendered header, cause not
+%   tracked down further -- while the constant space token list renders
+%   correctly.}
+\cs_new_protected:Npn \__ltxtalk_tuc_teaching_section_line:
+  {
+    \__ltxtalk_tuc_if_section_active:TF
+      {
+        \__ltxtalk_tuc_if_lecture_number:T
+          {\__ltxtalk_tuc_lecture_number: .}
+        \int_use:N \c@section \c_space_tl \tl_to_str:c { l__talk_section_tl }
+      }
+      { \UseLTXTalkMetadata[lines=1]{subsection} }
+  }
 \cs_new_protected:Npn \__ltxtalk_tuc_teaching_header_line:n #1
   {
     \int_compare:nNnTF {\LTXTalkHeaderRows} = {3}
@@ -1077,23 +1170,15 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
         {{1}{\cs_if_exist:NTF \OsgLectureShortCourse
                 {\OsgLectureShortCourse}
                 {\UseLTXTalkMetadata[lines=1]{short-title}}}
-         {2}{\__ltxtalk_tuc_if_lecture_number:T
-               {\__ltxtalk_tuc_lecture_number: .~}
-             \cs_if_exist:NTF \g__osglecture_unit_title_tl
-                {\tl_use:N \g__osglecture_unit_title_tl}
-                {\UseLTXTalkMetadata[lines=1]{section}}}
-         {3}{\UseLTXTalkMetadata[lines=1]{subsection}}}}
+         {2}{\__ltxtalk_tuc_teaching_unit_title:}
+         {3}{\__ltxtalk_tuc_teaching_section_line:}}}
       {\int_case:nn {#1}
         {{1}{\cs_if_exist:NTF \OsgLectureShortCourse
                 {\OsgLectureShortCourse}
                 {\UseLTXTalkMetadata[lines=1]{short-title}}
               {}~--~
-              \__ltxtalk_tuc_if_lecture_number:T
-                {\__ltxtalk_tuc_lecture_number: .~}
-              \cs_if_exist:NTF \g__osglecture_unit_title_tl
-                {\tl_use:N \g__osglecture_unit_title_tl}
-                {\UseLTXTalkMetadata[lines=1]{section}}}
-         {2}{\UseLTXTalkMetadata[lines=1]{subsection}}}}
+              \__ltxtalk_tuc_teaching_unit_title:}
+         {2}{\__ltxtalk_tuc_teaching_section_line:}}}
   }
 
 % \ldeen{Nur in der \code{teaching}-Kopfzeileninstanz und nur bei gesetzter

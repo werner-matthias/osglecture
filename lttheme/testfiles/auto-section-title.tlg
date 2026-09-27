@@ -26,6 +26,42 @@ title:passed
 subtitle:passed
 [6
 ]
+title:passed
+subtitle:passed
+title:passed
+subtitle:passed
+title:passed
+subtitle:passed
+[7
+]
+title:passed
+subtitle:passed
+title:passed
+subtitle:passed
+title:passed
+subtitle:passed
+[8
+]
+title:passed
+subtitle:passed
+title:passed
+subtitle:passed
+title:passed
+subtitle:passed
+[9
+]
+title:passed
+subtitle:passed
+[10
+]
+title:passed
+subtitle:passed
+[11
+]
+title:passed
+subtitle:passed
+[12
+]
 ============================================================
 TEST 1: Show PDF Tags
 ============================================================
@@ -84,10 +120,10 @@ TEST 1: Show PDF Tags
       >
      <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
         id="ID.017"
-        title="Erster Abschnitt"
+        title="2 Erster Abschnitt"
         rolemaps-to="H4"
        >
-      <?MarkedContent page="2" ?>Erster Abschnitt
+      <?MarkedContent page="2" ?>2 Erster Abschnitt
      </frametitle>
      <Note xmlns="http://iso.org/pdf/ssn"
         id="ID.016"
@@ -154,10 +190,10 @@ TEST 1: Show PDF Tags
       </H3>
       <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
          id="ID.029"
-         title="Ein Unterabschnitt"
+         title="3.1 Ein Unterabschnitt"
          rolemaps-to="H4"
         >
-       <?MarkedContent page="4" ?>Ein Unterabschnitt
+       <?MarkedContent page="4" ?>3.1 Ein Unterabschnitt
       </frametitle>
       <Note xmlns="http://iso.org/pdf/ssn"
          id="ID.028"
@@ -193,10 +229,10 @@ TEST 1: Show PDF Tags
      </H3>
      <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
         id="ID.036"
-        title="Titel und Subtitel zugleich"
+        title="4 Titel und Subtitel zugleich"
         rolemaps-to="H4"
        >
-      <?MarkedContent page="5" ?>Titel und Subtitel zugleich
+      <?MarkedContent page="5" ?>4 Titel und Subtitel zugleich
      </frametitle>
      <Note xmlns="http://iso.org/pdf/ssn"
         id="ID.035"
@@ -237,6 +273,126 @@ TEST 1: Show PDF Tags
      </Note>
     </frame>
    </Sect>
+   <Sect xmlns="http://iso.org/pdf2/ssn"
+      id="ID.043"
+     >
+    <section xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.044"
+       title="Mehrseitiger Abschnitt"
+       actualtext="Mehrseitiger Abschnitt"
+       rolemaps-to="H1"
+      >
+    </section>
+    <frame xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+       id="ID.045"
+       rolemaps-to="Sect"
+      >
+     <H3 xmlns="http://iso.org/pdf2/ssn"
+        id="ID.049"
+       >
+      <?MarkedContent page="9" ?>Eigene Folie
+     </H3>
+     <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+        id="ID.048"
+        title="5 Mehrseitiger Abschnitt"
+        rolemaps-to="H4"
+       >
+      <?MarkedContent page="9" ?>5 Mehrseitiger Abschnitt
+     </frametitle>
+     <Note xmlns="http://iso.org/pdf/ssn"
+        id="ID.047"
+       >
+      <?MarkedContent page="9" ?>A. Beispiel
+     </Note>
+     <Note xmlns="http://iso.org/pdf/ssn"
+        id="ID.046"
+       >
+      <?MarkedContent page="9" ?>Auto-Section-Title-Test
+     </Note>
+    </frame>
+   </Sect>
+   <Sect xmlns="http://iso.org/pdf2/ssn"
+      id="ID.050"
+     >
+    <section xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.051"
+       title="Fortsetzungsabschnitt"
+       actualtext="Fortsetzungsabschnitt"
+       rolemaps-to="H1"
+      >
+    </section>
+    <frame xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+       id="ID.052"
+       rolemaps-to="Sect"
+      >
+     <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+        id="ID.055"
+        title="Erste Folie"
+        rolemaps-to="H4"
+       >
+      <?MarkedContent page="10" ?>Erste Folie
+     </frametitle>
+     <Note xmlns="http://iso.org/pdf/ssn"
+        id="ID.054"
+       >
+      <?MarkedContent page="10" ?>A. Beispiel
+     </Note>
+     <Note xmlns="http://iso.org/pdf/ssn"
+        id="ID.053"
+       >
+      <?MarkedContent page="10" ?>Auto-Section-Title-Test
+     </Note>
+    </frame>
+    <frame xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+       id="ID.056"
+       rolemaps-to="Sect"
+      >
+     <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+        id="ID.059"
+        title="6 Fortsetzungsabschnitt (cont.)"
+        rolemaps-to="H4"
+       >
+      <?MarkedContent page="11" ?>6 Fortsetzungsabschnitt (cont.)
+     </frametitle>
+     <Note xmlns="http://iso.org/pdf/ssn"
+        id="ID.058"
+       >
+      <?MarkedContent page="11" ?>A. Beispiel
+     </Note>
+     <Note xmlns="http://iso.org/pdf/ssn"
+        id="ID.057"
+       >
+      <?MarkedContent page="11" ?>Auto-Section-Title-Test
+     </Note>
+    </frame>
+    <frame xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+       id="ID.060"
+       rolemaps-to="Sect"
+      >
+     <H3 xmlns="http://iso.org/pdf2/ssn"
+        id="ID.064"
+       >
+      <?MarkedContent page="12" ?>Weiterer Subtitel
+     </H3>
+     <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+        id="ID.063"
+        title="6 Fortsetzungsabschnitt (cont.)"
+        rolemaps-to="H4"
+       >
+      <?MarkedContent page="12" ?>6 Fortsetzungsabschnitt (cont.)
+     </frametitle>
+     <Note xmlns="http://iso.org/pdf/ssn"
+        id="ID.062"
+       >
+      <?MarkedContent page="12" ?>A. Beispiel
+     </Note>
+     <Note xmlns="http://iso.org/pdf/ssn"
+        id="ID.061"
+       >
+      <?MarkedContent page="12" ?>Auto-Section-Title-Test
+     </Note>
+    </frame>
+   </Sect>
   </Document>
  </StructTreeRoot>
 </PDF>
@@ -251,8 +407,8 @@ MathML statistic
 ==> 0 fitting MathML AF found
 ==> 0 MathML AF attached
 Package tagpdf Info: Finalizing the tagging structure:
-(tagpdf)             Writing out ~42 structure objects
-(tagpdf)             with ~54 'MC' leaf nodes.
+(tagpdf)             Writing out ~64 structure objects
+(tagpdf)             with ~96 'MC' leaf nodes.
 (tagpdf)             Be patient if there are lots of objects!
 Package tagpdf Info: writing ParentTree
 Package tagpdf Info: writing IDTree

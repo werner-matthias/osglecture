@@ -22,6 +22,22 @@
 \clist_if_in:NnTF \g__osglecture_continuation_counters_clist { chapter }
   { \TYPE { continuation-default:passed } }
   { \TYPE { continuation-default:FAILED } }
+% auto-section-title defaults to true for the teaching header instance
+% (re-enabled 2026-09-26 after the \osglecture_modes_keep_mode: argument-
+% corruption bug -- likely the real cause of the earlier crash blamed on
+% this feature -- was fixed; see development-docs/ToDo.md, "ltthemer +
+% Co").
+\bool_if:NTF \g__ltxtalk_auto_section_title_bool
+  { \TYPE { auto-section-title-default:passed } }
+  { \TYPE { auto-section-title-default:FAILED } }
+% \__ltxtalk_tuc_if_section_active:TF and \__ltxtalk_tuc_teaching_middle:
+% are \cs_new_protected:Npn (matching \__ltxtalk_tuc_if_lecture_number:TF's
+% style), so they cannot be e-expanded for \str_if_eq:ee -- call the
+% conditional directly instead (protection only matters for \edef-like
+% contexts, not normal execution).
+\__ltxtalk_tuc_if_section_active:TF
+  { \TYPE { header-active-before-section:FAILED-unexpectedly-active } }
+  { \TYPE { header-active-before-section:passed } }
 \ExplSyntaxOff
 
 % Rendered output verified once with pdftotext:
@@ -34,6 +50,26 @@
 
 \begin{frame}
   \frametitle{Testfolie}
+\end{frame}
+
+\section{Fourier-Transformation}
+
+\ExplSyntaxOn
+\__ltxtalk_tuc_if_section_active:TF
+  { \TYPE { header-active-after-section:passed } }
+  { \TYPE { header-active-after-section:FAILED-still-inactive } }
+\str_if_eq:eeTF { \thesection } { 1 }
+  { \TYPE { header-section-number:passed } }
+  { \TYPE { header-section-number:FAILED=\thesection } }
+\str_if_eq:eeTF { \tl_to_str:c { l__talk_section_tl } } { Fourier-Transformation }
+  { \TYPE { header-section-title:passed } }
+  { \TYPE { header-section-title:FAILED=\tl_to_str:c{l__talk_section_tl} } }
+\ExplSyntaxOff
+
+% Rendered output verified once with pdftotext:
+%   frame header line 1 (2-row, after \section): "Kurz -- 1 Fourier-Transformation"
+\begin{frame}
+  \frametitle{Nach~der~Section}
 \end{frame}
 
 \END

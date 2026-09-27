@@ -3233,36 +3233,120 @@ theme.
 \bool_new:N \g__ltxtalk_pending_heading_title_bool
 \tl_new:N   \g__ltxtalk_pending_heading_title_tl
 \int_new:N  \g__ltxtalk_auto_subtitle_frame_int
+% \ldeen{Merkt sich, für welche Folie (Foliennummer) die Demotion zuletzt
+%   angewendet wurde -- initial \code{0}, was nie mit einer echten
+%   Foliennummer (beginnt bei~1) zusammenfällt. Nötig, weil \cs{frametitle}
+%   bei mehrseitigen Folien (Overlays/\cs{pause}) pro Folienschritt erneut
+%   ausgeführt wird, der \enquote{vorgemerkt}-Schalter aber nur beim
+%   \emph{ersten} Schritt aktiv ist; siehe \cs{frametitle} weiter
+%   unten.}{Records which frame (frame number) the demotion was last
+%   applied to -- initially \code{0}, which never coincides with a real
+%   frame number (starts at~1). Needed because \cs{frametitle} re-runs
+%   once per overlay step on multi-page frames
+%   (overlays/\cs{pause}), but the "'pending"' flag is only true on the
+%   \emph{first} step; see \cs{frametitle} further below.}
+\int_new:N  \g__ltxtalk_auto_title_frame_int
 
 \NewDocumentCommand \setltxtalkheadingbehavior { m }
   { \keys_set:nn { ltxtalk / heading } {#1} }
 
+% \ldeen{Merkt sich \emph{zusätzlich} zum eigentlichen Bool, ob
+%   \code{auto-section-title} jemals explizit gesetzt wurde (in welche
+%   Richtung auch immer) -- unabhängig davon, ob das vor oder nach einer
+%   Kopfzeileninstanz geschieht, die es standardmäßig aktivieren möchte
+%   (siehe \cs*{settucthemeheader}'s \code{teaching}-Zweig). Ein solcher
+%   Default darf eine bereits getroffene Nutzerentscheidung nie
+%   überschreiben.}{Additionally records whether
+%   \code{auto-section-title} was ever set explicitly (in either
+%   direction) -- independent of whether that happens before or after a
+%   header instance that wants to default it on (see
+%   \cs*{settucthemeheader}'s \code{teaching} branch). Such a default must
+%   never overwrite a choice the user already made.}
+\bool_new:N \g__ltxtalk_auto_section_title_explicit_bool
+
 \keys_define:nn { ltxtalk / heading }
   {
-    auto-section-title .bool_gset:N = \g__ltxtalk_auto_section_title_bool,
-    auto-section-title .initial:n = false,
+    auto-section-title .code:n =
+      {
+        \bool_gset_true:N \g__ltxtalk_auto_section_title_explicit_bool
+        \str_if_eq:eeTF {#1} {false}
+          { \bool_gset_false:N \g__ltxtalk_auto_section_title_bool }
+          { \bool_gset_true:N \g__ltxtalk_auto_section_title_bool }
+      },
+    auto-section-title .default:n = true,
+    % \ldeen{Bewusst \emph{kein} \code{.initial:n}: Bei einem
+    %   \code{.code:n}-Schlüssel löst das den Code einmal beim Definieren
+    %   aus (mit dem Anfangswert als Argument) -- das würde
+    %   \cs{g__ltxtalk_auto_section_title_explicit_bool} sofort auf
+    %   \code{true} setzen, noch bevor je ein echter Nutzeraufruf
+    %   stattfand. \cs{bool_new:N} initialisiert
+    %   \cs{g__ltxtalk_auto_section_title_bool} ohnehin bereits mit
+    %   \code{false}.}{Deliberately \emph{no} \code{.initial:n}: for a
+    %   \code{.code:n} key, that fires the code once at definition time
+    %   (with the initial value as its argument) -- which would set
+    %   \cs{g__ltxtalk_auto_section_title_explicit_bool} to \code{true}
+    %   immediately, before any real user call ever happened.
+    %   \cs{bool_new:N} already initializes
+    %   \cs{g__ltxtalk_auto_section_title_bool} to \code{false} anyway.}
   }
 
 % \ldeen{Nur \emph{merken}: \cs{l__talk_section_tl}/\cs{l__talk_subsection_tl}
-%   stehen laut \cls{ltx-talk} bereits, wenn der Haken feuert.}{Only
-%   \emph{record}: \cs{l__talk_section_tl}/\cs{l__talk_subsection_tl} are
-%   already set by \cls{ltx-talk} when the hook fires.}
+%   stehen laut \cls{ltx-talk} bereits, wenn der Haken feuert. Die
+%   demotierte Frametitle bekommt eine \emph{einfache} Nummer als Präfix
+%   (\cs{c@section} bzw.\ \code{section.subsection}) -- bewusst
+%   \emph{nicht} \cs{thesection}/\cs{thesubsection}, die \pkg{osglecture}
+%   auf \enquote{Kapitel.Abschnitt} umdefiniert: die zusammengesetzte
+%   Nummer gehört in die Kopfzeile (siehe
+%   \file{lttheme-tuc-2019.dtx}s \code{teaching}-Instanz), der
+%   Content-Teil (hier: die Folie selbst) bekommt nur die schlichte,
+%   lokale Nummer. \cs{c_space_tl} statt \code{~}: eine aktive Tilde
+%   direkt nach der Nummer landete unter \cs{tl_gset:Nx} als leeres
+%   Nichts in der getaggten PDF-Bookmark-/Struktur-Titel-Zeichenkette
+%   (vermutlich eine Eigenheit von deren Text-Purifizierung) -- die
+%   sichtbare Folie selbst zeigte dabei ebenfalls keine Lücke; die feste
+%   Leerzeichen-Tokenliste behebt beides.}{Only \emph{record}:
+%   \cs{l__talk_section_tl}/\cs{l__talk_subsection_tl} are already set by
+%   \cls{ltx-talk} when the hook fires. The demoted frame title gets a
+%   \emph{simple} number as its prefix (\cs{c@section} resp.\
+%   \code{section.subsection}) -- deliberately \emph{not}
+%   \cs{thesection}/\cs{thesubsection}, which \pkg{osglecture} redefines
+%   to \enquote{chapter.section}: the compound number belongs in the
+%   header (see \file{lttheme-tuc-2019.dtx}'s \code{teaching} instance),
+%   the content part (here: the slide itself) only gets the plain, local
+%   number. \cs{c_space_tl} rather than \code{~}: an active-character tie
+%   directly after the number vanished under \cs{tl_gset:Nx} in the
+%   tagged PDF bookmark/structure title string (likely a quirk of its
+%   text purification) -- the visible slide itself also showed no gap;
+%   the constant space token list fixes both.}
+% \ldeen{Die numerierte Überschrift wird \emph{immer} nachgeführt, auch
+%   bei ausgeschaltetem \code{auto-section-title} -- \cs{contframetitle}
+%   (weiter unten) liest denselben Wert und ist ein bewusst
+%   \emph{eigenständiger}, explizit vom Autor aufgerufener Mechanismus,
+%   der nicht an die automatische Demotion gekoppelt sein soll. Nur das
+%   \emph{automatische} Verbrauchen durch \cs{frametitle} bleibt hinter
+%   dem Schalter.}{The numbered heading is \emph{always} kept current,
+%   even with \code{auto-section-title} off -- \cs{contframetitle}
+%   (further below) reads the same value and is a deliberately
+%   \emph{independent}, explicitly author-invoked mechanism that should
+%   not be tied to the automatic demotion. Only the \emph{automatic}
+%   consumption by \cs{frametitle} stays behind the switch.}
 \AddToHook { section / begin }
   {
+    \tl_gset:Nx \g__ltxtalk_pending_heading_title_tl
+      { \int_use:N \c@section \c_space_tl }
+    \tl_gput_right:NV \g__ltxtalk_pending_heading_title_tl
+      \l__talk_section_tl
     \bool_if:NT \g__ltxtalk_auto_section_title_bool
-      {
-        \tl_gset_eq:NN \g__ltxtalk_pending_heading_title_tl \l__talk_section_tl
-        \bool_gset_true:N \g__ltxtalk_pending_heading_title_bool
-      }
+      { \bool_gset_true:N \g__ltxtalk_pending_heading_title_bool }
   }
 \AddToHook { subsection / begin }
   {
+    \tl_gset:Nx \g__ltxtalk_pending_heading_title_tl
+      { \int_use:N \c@section . \int_use:N \c@subsection \c_space_tl }
+    \tl_gput_right:NV \g__ltxtalk_pending_heading_title_tl
+      \l__talk_subsection_tl
     \bool_if:NT \g__ltxtalk_auto_section_title_bool
-      {
-        \tl_gset_eq:NN \g__ltxtalk_pending_heading_title_tl
-          \l__talk_subsection_tl
-        \bool_gset_true:N \g__ltxtalk_pending_heading_title_bool
-      }
+      { \bool_gset_true:N \g__ltxtalk_pending_heading_title_bool }
   }
 
 % ==========================================
@@ -4784,6 +4868,55 @@ theme.
 %   differ}, just triggered by the \emph{trailing} rather than a leading
 %   \cs{par}. With real text given on the same frame this cascaded, in
 %   practice, all the way to \enquote{TeX capacity exceeded}.}
+% \ldeen{Gemeinsame Rendering-Logik für eine (numerierte) Überschrift
+%   plus optionalem Subtitel, ausgelagert, damit sie identisch für drei
+%   Aufrufer läuft: den ersten Verbrauch des
+%   \enquote{vorgemerkt}-Schalters, jeden späteren Overlay-Schritt
+%   derselben Folie (eine mehrseitige Folie soll ihre demotierte
+%   Überschrift auf \emph{jeder} ihrer Seiten zeigen, nicht nur auf der
+%   ersten -- siehe \cs{frametitle} unten) und \cs{contframetitle}
+%   (weiter unten), das dieselbe Renderlogik mit einem zusätzlichen
+%   Fortsetzungs-Suffix braucht. \cs{#1} ist die \cs{tl}-Variable mit dem
+%   fertigen Titeltext, \cs{#2} der (ggf.\ leere) Subtiteltext.}{Shared
+%   rendering logic for a (numbered) heading plus an optional subtitle,
+%   factored out so it runs identically for three callers: the first
+%   consumption of the "'pending"' flag, every later overlay step of the
+%   same frame (a multi-page frame should show its demoted heading on
+%   \emph{every} one of its pages, not just the first -- see
+%   \cs{frametitle} below), and \cs{contframetitle} (further below),
+%   which needs the same render logic with an added continuation
+%   suffix. \cs{#1} is the \cs{tl} variable holding the finished title
+%   text, \cs{#2} the (possibly empty) subtitle text.}
+\cs_new_protected:Npn \__ltxtalk_apply_frame_heading:Nn #1#2
+  {
+    \tl_gset_eq:NN \g__talk_frame_title_tl #1
+    \bool_if:NTF \g__talk_frame_tag_bool
+      {
+        \group_begin:
+          \tagpdfparaOff
+          \__ltxtalk_render_content_slots:n {frametitle}
+          \tl_if_empty:nF {#2}
+            {
+              \int_gset:Nn \g__ltxtalk_auto_subtitle_frame_int
+                { \g__talk_frame_int }
+              \tl_gset:Nn \g__talk_frame_subtitle_tl {#2}
+              \__ltxtalk_render_content_slots:n {framesubtitle}
+            }
+        \group_end:
+      }
+      {
+        \__ltxtalk_render_content_slots:n {frametitle}
+        \tl_if_empty:nF {#2}
+          {
+            \int_gset:Nn \g__ltxtalk_auto_subtitle_frame_int
+              { \g__talk_frame_int }
+            \tl_gset:Nn \g__talk_frame_subtitle_tl {#2}
+            \__ltxtalk_render_content_slots:n {framesubtitle}
+          }
+      }
+  }
+\cs_new_protected:Npn \__ltxtalk_apply_auto_title:n #1
+  { \__ltxtalk_apply_frame_heading:Nn \g__ltxtalk_pending_heading_title_tl {#1} }
 \RenewDocumentCommand \frametitle { D <> { all } O {#3} m }
   {
     \__talk_if_overlay:nT {#1}
@@ -4791,37 +4924,60 @@ theme.
         \bool_if:NTF \g__ltxtalk_pending_heading_title_bool
           {
             \bool_gset_false:N \g__ltxtalk_pending_heading_title_bool
-            \tl_gset_eq:NN \g__talk_frame_title_tl
-              \g__ltxtalk_pending_heading_title_tl
-            \bool_if:NTF \g__talk_frame_tag_bool
-              {
-                \group_begin:
-                  \tagpdfparaOff
-                  \__ltxtalk_render_content_slots:n {frametitle}
-                  \tl_if_empty:nF {#3}
-                    {
-                      \int_gset:Nn \g__ltxtalk_auto_subtitle_frame_int
-                        { \g__talk_frame_int }
-                      \tl_gset:Nn \g__talk_frame_subtitle_tl {#3}
-                      \__ltxtalk_render_content_slots:n {framesubtitle}
-                    }
-                \group_end:
-              }
-              {
-                \__ltxtalk_render_content_slots:n {frametitle}
-                \tl_if_empty:nF {#3}
-                  {
-                    \int_gset:Nn \g__ltxtalk_auto_subtitle_frame_int
-                      { \g__talk_frame_int }
-                    \tl_gset:Nn \g__talk_frame_subtitle_tl {#3}
-                    \__ltxtalk_render_content_slots:n {framesubtitle}
-                  }
-              }
+            \int_gset:Nn \g__ltxtalk_auto_title_frame_int { \g__talk_frame_int }
+            \__ltxtalk_apply_auto_title:n {#3}
           }
           {
-            \tl_gset:Nn \g__talk_frame_title_tl {#3}
-            \__ltxtalk_render_content_slots:n {frametitle}
+            \int_compare:nNnTF
+              { \g__ltxtalk_auto_title_frame_int } = { \g__talk_frame_int }
+              { \__ltxtalk_apply_auto_title:n {#3} }
+              {
+                \tl_gset:Nn \g__talk_frame_title_tl {#3}
+                \__ltxtalk_render_content_slots:n {frametitle}
+              }
           }
+      }
+  }
+% \ldeen{Manuelle Entsprechung zu \cs{frametitle} für
+%   Fortsetzungsfolien: eine logische Überschrift, die sich über mehrere
+%   \emph{separate} \cs{begin}\Arg{frame}-Blöcke erstreckt (nicht zu
+%   verwechseln mit Overlays/\cs{pause} innerhalb \emph{einer} Folie, die
+%   \cs{frametitle} bereits von selbst über alle Folienschritte hält).
+%   Wiederholt die zuletzt von \cs{section}/\cs{subsection} gemerkte,
+%   numerierte Überschrift (dieselbe Quelle wie die automatische
+%   Demotion, aber bewusst \emph{unabhängig} von deren
+%   \code{auto-section-title}-Schalter -- \cs{contframetitle} wird ja
+%   gezielt vom Autor aufgerufen) mit angehängtem, sprachabhängigem
+%   Fortsetzungs-Hinweis. Anders als \cs{frametitle} nimmt
+%   \cs{contframetitle} \emph{kein} Pflichtargument (die Überschrift kommt
+%   ja immer aus dem Merker) -- nur ein optionales
+%   \cs{contframetitle}\oarg{Subtitel} in eckigen statt geschweiften
+%   Klammern; ohne Argument bleibt der Subtitel leer.}{Manual counterpart
+%   to \cs{frametitle} for continuation frames: one logical heading
+%   spanning multiple \emph{separate} \cs{begin}\Arg{frame} blocks (not
+%   to be confused with overlays/\cs{pause} within \emph{one} frame,
+%   which \cs{frametitle} already keeps across all its steps on its
+%   own). Repeats the numbered heading last recorded by
+%   \cs{section}/\cs{subsection} (the same source as the automatic
+%   demotion, but deliberately \emph{independent} of its
+%   \code{auto-section-title} switch -- \cs{contframetitle} is, after
+%   all, invoked deliberately by the author) with a language-dependent
+%   continuation marker appended. Unlike \cs{frametitle},
+%   \cs{contframetitle} takes \emph{no} mandatory argument (the heading
+%   always comes from the recorded value) -- only an optional
+%   \cs{contframetitle}\oarg{subtitle} in square rather than curly
+%   brackets; without an argument the subtitle stays empty.}
+\tl_new:N \l__ltxtalk_cont_title_tl
+\NewDocumentCommand \contframetitle { D <> { all } O { } }
+  {
+    \__talk_if_overlay:nT {#1}
+      {
+        \tl_set_eq:NN \l__ltxtalk_cont_title_tl \g__ltxtalk_pending_heading_title_tl
+        \tl_put_right:Nn \l__ltxtalk_cont_title_tl { \c_space_tl }
+        \str_if_eq:eeTF {\languagename} {english}
+          { \tl_put_right:Nn \l__ltxtalk_cont_title_tl { (cont.) } }
+          { \tl_put_right:Nn \l__ltxtalk_cont_title_tl { (Forts.) } }
+        \__ltxtalk_apply_frame_heading:Nn \l__ltxtalk_cont_title_tl {#2}
       }
   }
 \RenewDocumentCommand \framesubtitle { D <> { all } O {#3} m }
