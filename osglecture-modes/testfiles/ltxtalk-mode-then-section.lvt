@@ -1,0 +1,31 @@
+\input regression-test.tex
+\DocumentMetadata{}
+\documentclass{ltx-talk}
+\NewDocumentCommand\lecture{O{}mm}{\TYPE{LECTURE KEPT}}
+\usepackage[ignorenonframetext]{osglecture-modes-ltxtalk}
+\ExplSyntaxOn
+\cs_new_protected:Npn \test_keep_end:
+  { \END \osglecture_modes_scan: }
+\osglecture_modes_declare_allowed_command:nn { END } { test_keep_end: }
+% Defined here, in the preamble, rather than inline inside the frame
+% body below: a beamer/ltx-talk frame body is pre-tokenized before its
+% own content runs, so \ExplSyntaxOn inside it does not retroactively
+% fix "_"'s catcode for tokens already grabbed as part of the frame
+% argument -- calling a preamble-defined helper avoids that.
+\cs_new_protected:Npn \checksectionarg
+  {
+    \str_if_eq:eeTF { \tl_to_str:c { l__talk_section_tl } } { Organisatorisches }
+      { \TYPE { section-arg:passed } }
+      { \TYPE { section-arg:FAILED=\tl_to_str:c{l__talk_section_tl} } }
+  }
+\ExplSyntaxOff
+\begin{document}
+\START
+\lecture{Introduction}{intro}
+\mode<presentation>
+\section{Organisatorisches}
+\begin{frame}
+  \checksectionarg
+\end{frame}
+\END
+\end{document}

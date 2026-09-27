@@ -6,6 +6,64 @@ Featurewünsche.
 * [x] tagging bei presitemize und twocolumns
 * [x] Windows bug
 * [ ] Neue Pakete (tagbridge, tagtree) in README und CI aufnehmen, Kompatibilität ermitteln.
+* [x] Bug gefunden und behoben (2026-09-27): `\only<N>` (reines
+  Overlay-Atom, z.\,B. `\only<4>`) zeigte unter `\documentclass{osglecture}`
+  seinen Inhalt auf \emph{jeder} Folie des umgebenden `frame` und die
+  Gesamtfolienzahl blieb auf den von `\item`-Overlays bestimmten Wert
+  begrenzt -- reproduziert am realen Kursskript
+  (`AuP/Script2/001-Intro/main.tex`, Folie "`Warum überhaupt?"'): drei statt
+  sechs Folien, `\only<4>`-Inhalt auf allen dreien sichtbar, `\only<5>`
+  (Bild) und `\only<6>` nie. Trat sowohl unter `profile=ltx-talk` als auch
+  `profile=beamer` auf; der ursprüngliche Verdacht auf einen
+  Mode-Scanner-Bug (siehe `osglecture-modes-lua-scan.md`) bestätigte sich
+  \emph{nicht} -- eigenständige Ursache, anderer Mechanismus.
+  **Ursache** (`osglecture-modes.dtx`): `\g_osglecture_modes_native_alt_bool`
+  (merkt sich, ob ein natives `\alt` fürs Overlay-Backend existiert; steuert
+  `\MakeOverlayAwareCommand`s Weiche zwischen echtem `\alt<spec>{...}{...}`
+  und dem `flatten`-Fallback, der jede native Spezifikation kommentarlos
+  \emph{immer} zeigt) wurde \emph{sofort} beim Laden von
+  `osglecture-modes` per `\cs_if_exist_p:N \alt` erfasst -- nicht erst im
+  verzögerten `overlays`-Baustein
+  (`\__osglecture_modes_patch_overlays:`/`\LectureModesActivateOverlays`).
+  `osglecture.cls` bindet `osglecture-modes` aber bewusst mit
+  `deferred=true` \emph{vor} `\LoadClass` der Backend-Klasse ein (damit der
+  eigentliche Overlay-Patch erst nach deren `\LoadClass` läuft) -- an der
+  sofortigen Erfassungsstelle existierte das backend-eigene `\alt`
+  (beamer/ltx-talk) deshalb noch gar nicht, die Variable blieb für das
+  gesamte Dokument dauerhaft `false`, obwohl `\alt` längst geladen war.
+  Ergebnis: jeder mit `\MakeOverlayAwareCommand` gepatchte Befehl (`\only`
+  eingeschlossen) nahm für jede native Overlayspezifikation den
+  `flatten`-Fallback statt des echten Backends -- Inhalt erscheint
+  bedingungslos, das Backend erfährt nie von der referenzierten
+  Foliennummer.
+  **Fix:** Erfassung in den `overlays`-Baustein verschoben (läuft nach
+  `\LoadClass`, weiterhin vor der dort definierten portablen
+  `\alt`-Rückfalldefinition, damit die Prüfung nicht deren rein portable
+  Fassung fälschlich für ein natives Urteil hält). Bare
+  `\usepackage{osglecture-modes}` \emph{nach} `\documentclass{beamer|ltx-talk}`
+  (der bisher einzige getestete Fall) ist unverändert korrekt, da `\alt`
+  dort auch beim alten, sofortigen Zeitpunkt schon existierte. Alle 16
+  bestehenden Tests weiterhin grün; am realen Kursskript bestätigt (per
+  `ollm build slides` neu gebaut: Folie "`Warum überhaupt?"' jetzt korrekt
+  6 Folien, `KI-Fehler.png` erscheint genau einmal auf der richtigen).
+  **Offen:** kein dedizierter Regressionstest in
+  `osglecture-modes/testfiles/` nachgereicht -- der Bug braucht exakt das
+  Ladereihenfolgemuster von `osglecture.cls` (`deferred=true` \emph{vor}
+  `\LoadClass`), das sich in einer eigenständigen `.lvt`-Datei nur über
+  einen händisch nachgebauten Fake-Backend-`\alt` nachstellen lässt; ein
+  erster Versuch dazu funktionierte inhaltlich (`ALT-CALLED-WITH=4`
+  bestätigt den Fix), erzeugte aber einen harmlosen, ungeklärten
+  `Missing \begin{document}`-Fehler beim manuellen Aufruf von
+  `\LectureModesActivateOverlays` in der Präambel unter
+  `\documentclass{article}` (Ursache nicht gefunden: mutmaßlich existiert
+  `\mode` dort bereits aus unbekannter Quelle, sodass der
+  `\cs_if_exist:NTF \mode`-Zweig in `osglecture-modes-overlays.code.tex`
+  einen für diesen Kontext ungeeigneten Pfad nimmt). Sauberer wäre ein
+  Test in `osglecture/testfiles/` gegen die echte Klasse
+  (`\documentclass[standalone,profile=ltx-talk|beamer]{osglecture}` mit
+  echtem `frame`+`\only<N>`, Auswertung z.\,B. über `\arabic{page}` in den
+  `\TYPE`-Ausgaben, um unterschiedliche vs. identische Folienzahlen zu
+  unterscheiden).
 
 # ltthemer + Co
 * [x] Section/Title: `\setltxtalkheadingbehavior{auto-section-title=true}`

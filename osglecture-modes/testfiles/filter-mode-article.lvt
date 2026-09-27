@@ -2,6 +2,11 @@
 \DocumentMetadata{}
 \documentclass{article}
 \usepackage[mode=article]{osglecture-modes}
+\ExplSyntaxOn
+\cs_new_protected:Npn \test_keep_end:
+  { \END \osglecture_modes_scan: }
+\osglecture_modes_declare_allowed_command:nn { END } { test_keep_end: }
+\ExplSyntaxOff
 
 \NewDocumentEnvironment{task}{}{\TYPE{TASK BEGIN}}{\TYPE{TASK END}}
 \DeclareLectureKeepEnvironment{task}

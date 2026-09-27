@@ -3,6 +3,11 @@
 \documentclass{ltx-talk}
 \NewDocumentCommand\lecture{O{}mm}{\TYPE{LECTURE KEPT}}
 \usepackage[ignorenonframetext]{osglecture-modes-ltxtalk}
+\ExplSyntaxOn
+\cs_new_protected:Npn \test_keep_end:
+  { \END \osglecture_modes_scan: }
+\osglecture_modes_declare_allowed_command:nn { END } { test_keep_end: }
+\ExplSyntaxOff
 
 \DeclareLectureMode{withSolution}
 \DeclareLectureMode{withGrading}
