@@ -46,8 +46,8 @@ Matthias Werner.
 %</driver>
 %<*package>
 \ProvidesExplPackage{osglecture-modes}
-  {2026-08-02}
-  {v0.4.0}
+  {2026-09-27}
+  {v0.5.1}
   {Portable document-modes}
 %</package>
 %<*driver>
@@ -963,7 +963,7 @@ die Verhaltensklasse \code{longform} bereits bereit.}
 The \cls*{osglecture} class already supplies the \code{longform} behavior class.}
 \begin{example}[code-only,gobble=0]
 \ProvidesExplFile{osglecture-mode-studyguide.def}
-  {2026-08-02}{v0.4.0}{studyguide mode setup}
+  {2026-09-27}{v0.5.1}{studyguide mode setup}
 \DeclareLectureMode[parents={longform,print}]{studyguide}
 \AssignLectureModeBehavior{studyguide}{longform}
 \end{example}
@@ -981,7 +981,7 @@ definitions as described in Section~\ref{sec:behavior}.}
 {Create \code{osglecture-profile-studyguide-scrbook.def}:}
 \begin{example}[code-only,gobble=0]
 \ProvidesExplFile{osglecture-profile-studyguide-scrbook.def}
-  {2026-08-02}{v0.4.0}{studyguide scrbook profile}
+  {2026-09-27}{v0.5.1}{studyguide scrbook profile}
 \DeclareOsgLectureProfile{studyguide-scrbook}
   {
     backend = scrbook,
@@ -1087,19 +1087,43 @@ the full profile and target configuration.
 % \cs{osglecture_modes_lua_raw_skip:n}. \code{raw-skip-envs} is a full
 % \code{clist_gset:N}, not an incremental add, so the complete Lua table
 % is rebuilt from scratch on every change.}
+% \ldeen{Als eigenständiger, außerhalb jeder Makrodefinition stehender
+% \code{:n}-Helfer formuliert (statt als Inline-Funktionskörper von
+% \cs{clist_map_inline:Nn}), damit der einzelne \cs{directlua}-Aufruf ein
+% ungedoppeltes \code{#1} verwenden kann: ein in einer \emph{umschließenden}
+% Makrodefinition doppelt geschriebenes \code{##1} ist zwar TeX-seitig
+% ebenso sicher (die äußere Definition faltet es beim Definieren einmal auf
+% ein echtes \code{#1} zusammen, bevor \cs{directlua} es je zu Gesicht
+% bekommt), lässt sich aber von einem rein textuellen Lint auf
+% \file{osglecture-modes.dtx}s Ebene (siehe
+% \file{.github/scripts/lint-directlua.pl}) nicht von einem echten,
+% ungedoppelten Catcode-6-Zeichen unterscheiden, das \cs{directlua}
+% tatsächlich erreichen würde.}{Written as a standalone \code{:n} helper
+% outside any macro definition (rather than as \cs{clist_map_inline:Nn}'s
+% inline function body), so the single \cs{directlua} call can use an
+% undoubled \code{#1}: a \code{##1} doubled because it sits inside an
+% \emph{enclosing} macro definition is just as safe on the TeX side (that
+% outer definition folds it down to a real \code{#1} once, at definition
+% time, before \cs{directlua} ever sees it), but a purely textual lint at
+% \file{osglecture-modes.dtx}'s own level (see
+% \file{.github/scripts/lint-directlua.pl}) cannot tell it apart from a
+% genuine, undoubled catcode-6 character that would actually reach
+% \cs{directlua}.}
+\cs_new_protected:Npn \osglecture_modes_lua_register_raw_skip_env:n #1
+  {
+    \directlua{
+      osglecture_modes_ltxtalk.register_raw_skip_env(
+        "\luaescapestring{#1}")
+    }
+  }
 \cs_new_protected:Npn \osglecture_modes_sync_raw_skip_envs_lua:
   {
     \sys_if_engine_luatex:T
       {
         \directlua{ require("osglecture-modes-ltxtalk.lua") }
         \directlua{ osglecture_modes_ltxtalk.clear_raw_skip_envs() }
-        \clist_map_inline:Nn \g_osglecture_modes_raw_skip_envs_clist
-          {
-            \directlua{
-              osglecture_modes_ltxtalk.register_raw_skip_env(
-                "\luaescapestring{##1}")
-            }
-          }
+        \clist_map_function:NN \g_osglecture_modes_raw_skip_envs_clist
+          \osglecture_modes_lua_register_raw_skip_env:n
       }
   }
 
@@ -3198,8 +3222,8 @@ the full profile and target configuration.
 
 %<*ltxtalk>
 \ProvidesExplPackage{osglecture-modes-ltxtalk}
-{2026-08-02}
-{v0.4.0}
+{2026-09-27}
+{v0.5.1}
 {ltx-talk adapter: lecture-specific baseline exceptions}
 
 \RequirePackage{osglecture-modes}

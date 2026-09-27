@@ -6,6 +6,33 @@ Featurewünsche.
 * [x] tagging bei presitemize und twocolumns
 * [x] Windows bug
 * [ ] Neue Pakete (tagbridge, tagtree) in README und CI aufnehmen, Kompatibilität ermitteln.
+* [x] CI-Regression behoben (2026-09-27, nur Linux): der
+  `\directlua`-Catcode-Lint (`.github/scripts/lint-directlua.pl`, läuft nur
+  im Linux-Workflow, daher "nur Linux" -- keine echte
+  Plattformverhaltensdifferenz) schlug für den obigen `\only`-Fix-Commit
+  fehl: `osglecture-modes.dtx:1098: risky \directlua body - bare '#'`.
+  Ursache: `\osglecture_modes_sync_raw_skip_envs_lua:` reichte
+  `\clist_map_inline:Nn`s Inline-Funktionskörper mit `##1` (korrekt
+  gedoppelt, weil dieser Körper innerhalb der umschließenden Definition von
+  `\osglecture_modes_sync_raw_skip_envs_lua:` selbst steht -- TeX faltet
+  das beim Definieren einmal zu einem echten `#1` zusammen, bevor
+  `\directlua` es je sieht, siehe Abschnitt 8.2 in
+  `osglecture-modes-lua-scan.md` zum selben Mechanismus). Der Lint kann das
+  nicht von einem echten, ungedoppelten Catcode-6-Zeichen unterscheiden --
+  zurecht laut eigener Doku ("heuristic lint... review each hit"), ein
+  Aufweichen der Regex auf Zeichenebene wäre aber selbst unsicher (ein
+  Lauf aus drei oder mehr `#` gefolgt von einer Ziffer sähe dann fälschlich
+  sicher aus, obwohl das Falten nur bei tatsächlich vorhandener
+  Verschachtelungstiefe passiert, die ein rein textueller Lint nicht
+  zuverlässig feststellen kann). Fix daher am Code, nicht am Lint:
+  `\osglecture_modes_lua_register_raw_skip_env:n` als eigenständiger,
+  außerhalb jeder Makrodefinition stehender `:n`-Helfer mit ungedoppeltem
+  `#1`, aufgerufen über `\clist_map_function:NN` statt
+  `\clist_map_inline:Nn`. Laufzeitverhalten manuell verifiziert (Lua-Tabelle
+  `osglecture_modes_ltxtalk.raw_skip_envs` enthält nach dem Umbau exakt
+  dieselben Einträge wie zuvor) -- kein bestehender Test deckt
+  `raw-skip-envs` direkt ab. Alle 16 Tests weiterhin grün, Lint jetzt
+  sauber.
 * [x] Bug gefunden und behoben (2026-09-27): `\only<N>` (reines
   Overlay-Atom, z.\,B. `\only<4>`) zeigte unter `\documentclass{osglecture}`
   seinen Inhalt auf \emph{jeder} Folie des umgebenden `frame` und die
