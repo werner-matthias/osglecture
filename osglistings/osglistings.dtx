@@ -305,6 +305,50 @@ The package is loaded in the usual way using @1 and, in turn, loads (among other
   ]{rust}{src/example.rs}
 \end{example}
 
+\ldeen*{@1 verhält sich wie @2/@3, markiert aber keine Einzelstelle,
+  sondern grenzt den gefundenen Text mit einem Knotenpaar @4/@5 ein.
+  @6 verbindet ein solches Paar anschließend zu einer Markierungsbox --
+  dank der in @7 mitgemessenen Zeichenhöhe/-tiefe ganz ohne manuelle
+  \code{xshift}/\code{yshift}-Korrekturen. Für Inline-Quelltext lässt
+  sich derselbe Effekt auch ohne @8 erzielen, indem @7 einfach zweimal
+  (mit den Namen @4/@5) direkt im Quelltext gesetzt wird.}
+  {@1 behaves like @2/@3, but instead of marking a single spot it
+  brackets the found text with a node pair @4/@5. @6 then connects
+  such a pair into a highlight box -- thanks to the character
+  height/depth captured by @7, with no manual
+  \code{xshift}/\code{yshift} corrections needed. For inline source
+  the same effect is available without @8 too, by simply placing @7
+  twice (named @4/@5) directly in the source.}
+  {\code{around}}{\code{after}}{\code{before}}
+  {\meta{name}\code{-begin}}{\meta{name}\code{-end}}
+  {\cs{osglistingshighlight}}{\cs{osglistingsmark}}{\code{marks}}
+
+\begin{example}[compile,program=lualatex,exe-with=--shell-escape,
+  graphics={trim=30mm 200mm 30mm 30mm,clip,scale=1.2}]
+  \documentclass{article}
+  \usepackage{tikz}
+  \usepackage{osglistings}
+  \begin{document}
+    \begin{osglisting}[style=plain, escapeinside=§§]{rust}
+    let code = §\osglistingsmark{kw-begin}§ExitCode§\osglistingsmark{kw-end}§::from(42);
+    \end{osglisting}
+    \osglistingshighlight{kw}
+  \end{document}
+\end{example}
+
+\ldeen*{Für externe Quellen genügt dagegen @1 im @2-Eintrag, gefolgt
+  von @3.}
+  {For external sources, @1 in the @2 entry is enough instead,
+  followed by @3.}
+  {\code{around}}{\code{marks}}{\cs{osglistingshighlight}}
+
+\begin{example}[code-only]
+  \osglistinginput[
+    marks = { exitc around "ExitCode" }
+  ]{rust}{src/example.rs}
+  \osglistingshighlight{exitc}
+\end{example}
+
 \ldeen*{@1 (wie jede Nutzung von @2) benötigt Lua\LaTeX.}
   {@1 (like any use of @2) requires Lua\LaTeX.}
   {\code{marks}}{\cs{osglistingsmark}}
@@ -342,7 +386,7 @@ The package is loaded in the usual way using @1 and, in turn, loads (among other
 %<*package>
 \RequirePackage{xcolor}
 \RequirePackage{tikz}
-\usetikzlibrary{positioning,calc,shapes.geometric,decorations.pathreplacing,decorations.pathmorphing}
+\usetikzlibrary{positioning,calc,shapes.geometric,decorations.pathreplacing,decorations.pathmorphing,fit}
 \RequirePackage{tcolorbox}
 \tcbuselibrary{skins,breakable}
 \RequirePackage{fontawesome5}
@@ -1152,10 +1196,49 @@ The package is loaded in the usual way using @1 and, in turn, loads (among other
 %   happens on the second compile pass, like any cross-element
 %   \pkg*{tikz} overlay.}{\cs{osglistingsmark}}{\code{remember~picture}}
 %   {\code{tikzpicture}}
+% \ldeen{@1 im Knoteninhalt gibt dem sonst punktförmigen Knoten die
+%   Höhe/Tiefe eines Zeichens der aktuell aktiven (Mono-)Schrift, ohne
+%   seine Breite zu verändern -- @2 verankert den Knoten trotzdem exakt
+%   an der Einfügestelle (der Textbasislinie), so dass bestehende
+%   Verweise auf \code{osgm-}\meta{name} als Punkt unverändert bleiben;
+%   erst @3 nutzt die neu gewonnene Ausdehnung, um zwei solcher Knoten
+%   zu einer Box zu verbinden.}{@1 in the node content gives the
+%   otherwise point-sized node the height/depth of a character in the
+%   currently active (mono) font, without changing its width -- @2
+%   still pins the node exactly at the insertion point (the text
+%   baseline), so that existing references to \code{osgm-}\meta{name}
+%   as a point are unaffected; only @3 makes use of the newly gained
+%   extent to connect two such nodes into a box.}
+%   {\cs{vphantom\{Xg\}}}{\code{anchor=base}}{\cs{osglistingshighlight}}
 \NewDocumentCommand \osglistingsmark { m }
   {
     \tikz[remember~picture,~overlay,~baseline=-0.5ex]
-      \node[inner~sep=0pt](osgm-#1){};
+      \node[inner~sep=0pt,~anchor=base](osgm-#1){\vphantom{Xg}};
+  }
+
+% \ldeen{Verbindet zwei per @1 (oder per \code{marks}-Schlüssel mit
+%   \code{around}) gesetzte Knoten \code{osgm-}\meta{name}\code{-begin}
+%   und \code{osgm-}\meta{name}\code{-end} zu einer Markierungsbox --
+%   dank der in @1 gemessenen Höhe/Tiefe ohne manuelle
+%   \code{xshift}/\code{yshift}-Korrekturen. @2 reicht beliebige
+%   weitere \pkg*{tikz}-Optionen durch, z.\,B. um Farbe oder
+%   Eckenradius zu ändern; die Voreinstellung zeichnet eine
+%   halbtransparente, gelbe, abgerundete Box hinter (dank Deckkraft
+%   durchscheinendem) Text.}{Connects two nodes
+%   \code{osgm-}\meta{name}\code{-begin} and
+%   \code{osgm-}\meta{name}\code{-end} placed via @1 (or via the
+%   \code{marks} key's \code{around}) into a highlight box -- thanks to
+%   the height/depth measured in @1, with no manual
+%   \code{xshift}/\code{yshift} corrections needed. @2 passes through
+%   arbitrary further \pkg*{tikz} options, e.g.\ to change color or
+%   corner radius; the default draws a semi-transparent, yellow,
+%   rounded box behind (translucent, so the) text (shows through).}
+%   {\cs{osglistingsmark}}{\Oarg{tikz~options}}
+\NewDocumentCommand \osglistingshighlight { O{} m }
+  {
+    \tikz[remember~picture,~overlay]
+      \node[fill=yellow,~fill~opacity=0.4,~draw=none,~rounded~corners=1pt,
+            inner~sep=1pt,~fit=(osgm-#2-begin)(osgm-#2-end),~#1]{};
   }
 
 \cs_new_protected:Npn \__osglistings_apply_marks:N #1

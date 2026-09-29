@@ -382,6 +382,7 @@ local function parse_mark_entry(entry)
   end
   local dname, dir, needle, rest = entry:match('^(%S+)%s+(after)%s+"(.-)"%s*(.-)$')
   if not dname then dname, dir, needle, rest = entry:match('^(%S+)%s+(before)%s+"(.-)"%s*(.-)$') end
+  if not dname then dname, dir, needle, rest = entry:match('^(%S+)%s+(around)%s+"(.-)"%s*(.-)$') end
   if dname then
     local occurrence = tonumber(rest:match('occurrence%s*=%s*(%d+)')) or 1
     return { name = dname, kind = dir, needle = needle, occurrence = occurrence }
@@ -441,13 +442,16 @@ function M.inject_marks(o)
   local resolved = {}
   for _, raw in ipairs(split_marks_spec(o.marks)) do
     local e = parse_mark_entry(raw)
-    local offset
     if e.kind == "at" then
-      offset = line_col_to_offset(content, e.line, e.col)
+      resolved[#resolved + 1] = { offset = line_col_to_offset(content, e.line, e.col), name = e.name }
+    elseif e.kind == "around" then
+      -- brackets the Nth occurrence of needle with a <name>-begin/<name>-end
+      -- pair, for \osglistingshighlight to later `fit` a box between.
+      resolved[#resolved + 1] = { offset = nth_occurrence_offset(content, e.needle, e.occurrence, true), name = e.name .. "-begin" }
+      resolved[#resolved + 1] = { offset = nth_occurrence_offset(content, e.needle, e.occurrence, false), name = e.name .. "-end" }
     else
-      offset = nth_occurrence_offset(content, e.needle, e.occurrence, e.kind == "before")
+      resolved[#resolved + 1] = { offset = nth_occurrence_offset(content, e.needle, e.occurrence, e.kind == "before"), name = e.name }
     end
-    resolved[#resolved + 1] = { offset = offset, name = e.name }
   end
   table.sort(resolved, function(a, b) return a.offset > b.offset end)
 

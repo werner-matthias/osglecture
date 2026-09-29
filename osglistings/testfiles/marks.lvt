@@ -27,5 +27,22 @@ let code = ExitCode::from(42§\osglistingsmark{one}§);
 \TIMO
 \TYPE{inline-mark-ok}
 
+\OMIT
+\osglistinginput[
+  style=plain,
+  marks = { exitc around "ExitCode" }
+]{rust}{sample-marks.rs}
+\osglistingshighlight{exitc}
+\TIMO
+\TYPE{marks-around-ok}
+
+\OMIT
+\begin{osglisting}[style=plain, escapeinside=§§]{rust}
+let code = §\osglistingsmark{two-begin}§ExitCode§\osglistingsmark{two-end}§::from(42);
+\end{osglisting}
+\osglistingshighlight{two}
+\TIMO
+\TYPE{inline-highlight-ok}
+
 \END
 \end{document}

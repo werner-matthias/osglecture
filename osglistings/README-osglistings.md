@@ -68,7 +68,12 @@ resolving after a second compile run like any such overlay. The `marks`
 key on `\osglistinginput` does the same for external sources, addressing
 positions either by `name at line:col` or by a literal text search
 (`name after/before "text" [occurrence=n]`) — no manual `escapeinside`
-needed there. `link-display=qrcode` renders the link as a QR code below
+needed there. A third mode, `around` (`name around "text"`, or two
+`\osglistingsmark`s named `name-begin`/`name-end` for inline source),
+brackets the text instead of pointing at one spot; `\osglistingshighlight{name}`
+then draws a highlight box between the pair with no manual
+`xshift`/`yshift` tuning, since the box's height/depth is measured from
+the mark itself. `link-display=qrcode` renders the link as a QR code below
 the box instead of a title-bar icon or text label.
 
 ## Build

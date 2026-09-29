@@ -6,7 +6,7 @@
 
 LaTeX bundle for generating lecture materials at the Operating Systems Group at the TU Chemnitz.
 The bundle serves two main purposes:
-* To support an “one source, many documents” approach
+* To support an "one source, many documents" approach
 * To support accessibility (tagging)  
 
 Currently, the following packages are included:
