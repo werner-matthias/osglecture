@@ -13,6 +13,13 @@ if tags:sub(-1) ~= "\n" then
   tags = tags .. "\n"
 end
 
+-- show-pdf-tags started annotating the root element with the PDF's
+-- container version (e.g. <PDF version="2.0">) in some releases but not
+-- others; that's a toolchain-version artifact, not part of what these
+-- tests check (the tag *tree*), so it's stripped before comparison to
+-- keep the recorded .tlg stable across show-pdf-tags versions.
+tags = tags:gsub("^<PDF[^>]*>", "<PDF>")
+
 local marker = "%-%-INSERT%-PDF%-TAGS%s+[^\r\n]+%s*\r?\n"
 local replacements
 log, replacements = log:gsub(marker, function()
