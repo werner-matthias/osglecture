@@ -1,6 +1,7 @@
 \input regression-test.tex
 \DocumentMetadata{tagging=on,lang=en-US}
 \documentclass{article}
+\usepackage{tikz}
 \usepackage{osglistings}
 \begin{document}
 
@@ -11,6 +12,12 @@ fn main() {}
 \end{osglisting}
 
 Plain paragraph after.
+
+\begin{osglisting}[style=plain, escapeinside=§§]{rust}
+let code = §\osglistingsmarkspanbegin{kw}{the process exit status}§ExitCode§\osglistingsmarkspanend{kw}§::from(42);
+\end{osglisting}
+\osglistingshighlight{kw}
+
 \clearpage
 \SHOWPDFTAGS
 \end{document}

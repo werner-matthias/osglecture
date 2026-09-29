@@ -73,8 +73,16 @@ needed there. A third mode, `around` (`name around "text"`, or two
 brackets the text instead of pointing at one spot; `\osglistingshighlight{name}`
 then draws a highlight box between the pair with no manual
 `xshift`/`yshift` tuning, since the box's height/depth is measured from
-the mark itself. `link-display=qrcode` renders the link as a QR code below
-the box instead of a title-bar icon or text label.
+the mark itself. Adding `desc="text"` to an `around` entry (or calling
+`\osglistingsmarkspanbegin{name}{text}`/`\osglistingsmarkspanend{name}`
+directly for inline source) additionally tags that span as `alt` text
+when `\DocumentMetadata{tagging=on}` is active, and `\osglistingshighlight`
+tags its own overlay as an `Artifact` so assistive technology skips the
+decoration and reads `desc` instead — the rest of a listing's source
+isn't otherwise exposed as readable text, so `desc` is usually the only
+thing actually read aloud for a marked span. `link-display=qrcode`
+renders the link as a QR code below the box instead of a title-bar icon
+or text label.
 
 ## Build
 

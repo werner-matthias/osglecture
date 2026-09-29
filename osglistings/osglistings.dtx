@@ -353,6 +353,49 @@ The package is loaded in the usual way using @1 and, in turn, loads (among other
   {@1 (like any use of @2) requires Lua\LaTeX.}
   {\code{marks}}{\cs{osglistingsmark}}
 
+\subsection{\ldeen{Barrierefreiheit}{Accessibility}}
+\ldeen*{Trägt ein @1-Eintrag zusätzlich @2, öffnet die Ersetzung statt
+  eines bloßen Punktpaars eine getaggte @3-Struktur mit diesem Text als
+  \code{alt}-Attribut (Voraussetzung: @4, sonst bleibt es beim
+  Punktpaar) -- assistive Technologien lesen dann @2 statt des
+  markierten Quelltexts selbst. Für Inline-Quelltext leisten @5/@6
+  dasselbe von Hand. @7 selbst kapselt sein Overlay dabei automatisch
+  als \code{Artifact}; assistive Technologien überspringen es, weil die
+  eigentliche Information ja schon über @2 am Quelltext hängt, nicht am
+  Pfeil oder der Box drumherum.}
+  {When an @1 entry also carries @2, the substitution opens a tagged
+  @3 structure instead of a bare point pair, with that text as its
+  \code{alt} attribute (requires @4; without it, a plain point pair as
+  usual) -- assistive technology then reads @2 instead of the marked-up
+  source itself. For inline source, @5/@6 do the same by hand. @7
+  itself wraps its overlay as an \code{Artifact} automatically;
+  assistive technology skips it, because the real information already
+  hangs off the source via @2, not off the arrow or box around it.}
+  {\code{around}}{\code{desc="}\meta{text}\code{"}}{\code{Span}}
+  {\cs{DocumentMetadata}\Marg{tagging=on}}
+  {\cs{osglistingsmarkspanbegin}}{\cs{osglistingsmarkspanend}}
+  {\cs{osglistingshighlight}}
+
+\begin{example}[code-only]
+  \osglistinginput[
+    marks = {
+      exitc around "ExitCode" desc="the process exit status",
+    }
+  ]{rust}{src/example.rs}
+  \osglistingshighlight{exitc}
+\end{example}
+
+\begin{warnbox}{\ldeen{Nur getaggte Spannen tragen Text}{Only Tagged Spans Carry Text}}
+\ldeen*{Der übrige Quelltext landet zwar in einer getaggten @1-Struktur,
+  aber (Stand dieser Implementierung) ohne für Screenreader auslesbaren
+  Text -- @2 ist für eine markierte Spanne also meist nicht Zusatz,
+  sondern die einzige tatsächlich vorgelesene Information.}
+  {The rest of the source does land inside a tagged @1 structure, but
+  (as currently implemented) without screen-reader-readable text -- for
+  a marked span, @2 is therefore usually not an addition but the only
+  information actually read aloud.}{\code{Code}}{\code{desc}}
+\end{warnbox}
+
 \begin{warnbox}{\ldeen{Zweiter Kompilierlauf nötig}{Second Compile Run Needed}}
 \ldeen*{@1 löst sich, wie jedes seitenübergreifende \pkg*{tikz}-Overlay,
   erst nach einem zweiten Kompilierlauf korrekt auf -- vor dem ersten
@@ -1236,9 +1279,70 @@ The package is loaded in the usual way using @1 and, in turn, loads (among other
 %   {\cs{osglistingsmark}}{\Oarg{tikz~options}}
 \NewDocumentCommand \osglistingshighlight { O{} m }
   {
-    \tikz[remember~picture,~overlay]
-      \node[fill=yellow,~fill~opacity=0.4,~draw=none,~rounded~corners=1pt,
-            inner~sep=1pt,~fit=(osgm-#2-begin)(osgm-#2-end),~#1]{};
+    \osglistingsartifact
+      {
+        \tikz[remember~picture,~overlay]
+          \node[fill=yellow,~fill~opacity=0.4,~draw=none,~rounded~corners=1pt,
+                inner~sep=1pt,~fit=(osgm-#2-begin)(osgm-#2-end),~#1]{};
+      }
+  }
+
+% \ldeen{Markiert #1 als \code{Artifact} (ist Tagging aktiv) -- für rein
+%   dekoratives Beiwerk wie Pfeile oder Beschriftungen eines Overlays,
+%   das assistive Technologien überspringen sollen, weil die eigentliche
+%   Information bereits über einen \code{alt}-Text am Quelltext selbst
+%   hängt (siehe \code{desc=} bei \code{around}). Ohne Tagging (oder
+%   ohne @1) ein reines Durchreichen.}{Marks #1 as an \code{Artifact}
+%   (when tagging is active) -- for purely decorative overlay chrome
+%   like arrows or labels that assistive technology should skip,
+%   because the real information already hangs off the source itself
+%   via an \code{alt} text (see \code{desc=} on \code{around}). Without
+%   tagging (or without @1) a plain passthrough.}
+%   {\cs{DocumentMetadata}\Marg{tagging=on}}
+\NewDocumentCommand \osglistingsartifact { m }
+  {
+    \cs_if_exist:NT \tagstructbegin { \tagstructbegin{ tag=Artifact } }
+    #1
+    \cs_if_exist:NT \tagstructend { \tagstructend }
+  }
+
+% \ldeen{Das Gegenstück zu @1 für den \code{desc=}-Fall von
+%   \code{around}: statt eines bloßen Punktpaars @2/@3 öffnet @4 (bzw.
+%   schließt @5) zusätzlich eine getaggte \code{Span}-Struktur mit dem
+%   angegebenen Text als \code{alt}-Attribut -- assistive Technologien
+%   lesen dann diesen Text statt (oder zusätzlich zu) dem markierten
+%   Quelltext selbst. Ohne Tagging ein reines @2/@3-Punktpaar wie
+%   sonst auch.}{The counterpart to @1 for \code{around}'s \code{desc=}
+%   case: instead of a bare point pair @2/@3, @4 (resp.\ @5) also opens
+%   (resp.\ closes) a tagged \code{Span} structure carrying the given
+%   text as its \code{alt} attribute -- assistive technology then reads
+%   that text instead of (or alongside) the marked-up source itself.
+%   Without tagging, a plain @2/@3 point pair like any other.}
+%   {\cs{osglistingsmark}}{\code{osgm-}\meta{name}\code{-begin}}
+%   {\code{osgm-}\meta{name}\code{-end}}
+%   {\cs{osglistingsmarkspanbegin}}{\cs{osglistingsmarkspanend}}
+\NewDocumentCommand \osglistingsmarkspanbegin { m m }
+  {
+    \osglistingsmark{#1-begin}
+    \cs_if_exist:NT \tagstructbegin
+      {
+        % \tagstructbegin alone only pushes an (empty) structure element;
+        % \tagmcbegin is what actually attaches the following glyphs to
+        % it -- the \alt attribute has to sit on the former, since that's
+        % the one \tagmcbegin's own `alt` key would only stamp onto the
+        % raw MC dictionary, not onto a real child structure element.
+        \tagstructbegin{ tag=Span, alt={#2} }
+        \tagmcbegin{ tag=Span }
+      }
+  }
+\NewDocumentCommand \osglistingsmarkspanend { m }
+  {
+    \cs_if_exist:NT \tagstructbegin
+      {
+        \tagmcend
+        \tagstructend
+      }
+    \osglistingsmark{#1-end}
   }
 
 \cs_new_protected:Npn \__osglistings_apply_marks:N #1

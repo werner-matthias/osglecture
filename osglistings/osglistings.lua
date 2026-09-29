@@ -385,7 +385,11 @@ local function parse_mark_entry(entry)
   if not dname then dname, dir, needle, rest = entry:match('^(%S+)%s+(around)%s+"(.-)"%s*(.-)$') end
   if dname then
     local occurrence = tonumber(rest:match('occurrence%s*=%s*(%d+)')) or 1
-    return { name = dname, kind = dir, needle = needle, occurrence = occurrence }
+    local desc = rest:match('desc%s*=%s*"(.-)"')
+    if desc and dir ~= "around" then
+      error("osglistings: 'desc' is only allowed on an 'around' mark entry ('" .. entry .. "')")
+    end
+    return { name = dname, kind = dir, needle = needle, occurrence = occurrence, desc = desc }
   end
   error("osglistings: could not parse mark entry '" .. entry .. "'")
 end
@@ -447,8 +451,20 @@ function M.inject_marks(o)
     elseif e.kind == "around" then
       -- brackets the Nth occurrence of needle with a <name>-begin/<name>-end
       -- pair, for \osglistingshighlight to later `fit` a box between.
-      resolved[#resolved + 1] = { offset = nth_occurrence_offset(content, e.needle, e.occurrence, true), name = e.name .. "-begin" }
-      resolved[#resolved + 1] = { offset = nth_occurrence_offset(content, e.needle, e.occurrence, false), name = e.name .. "-end" }
+      local begin_offset = nth_occurrence_offset(content, e.needle, e.occurrence, true)
+      local end_offset = nth_occurrence_offset(content, e.needle, e.occurrence, false)
+      if e.desc then
+        -- A tagged Span must stay within one MC-eligible run; a match
+        -- spanning a line break would straddle fvextra's per-line boxes.
+        if e.needle:find("\n", 1, true) then
+          error("osglistings: 'desc' requires an 'around' match that stays on one line ('" .. e.needle .. "' contains a newline)")
+        end
+        resolved[#resolved + 1] = { offset = begin_offset, text = "\\osglistingsmarkspanbegin{" .. e.name .. "}{" .. e.desc .. "}" }
+        resolved[#resolved + 1] = { offset = end_offset, text = "\\osglistingsmarkspanend{" .. e.name .. "}" }
+      else
+        resolved[#resolved + 1] = { offset = begin_offset, name = e.name .. "-begin" }
+        resolved[#resolved + 1] = { offset = end_offset, name = e.name .. "-end" }
+      end
     else
       resolved[#resolved + 1] = { offset = nth_occurrence_offset(content, e.needle, e.occurrence, e.kind == "before"), name = e.name }
     end
@@ -457,7 +473,8 @@ function M.inject_marks(o)
 
   local marked = content
   for _, r in ipairs(resolved) do
-    local insert = o.escape_open .. "\\osglistingsmark{" .. r.name .. "}" .. o.escape_close
+    local body = r.text or ("\\osglistingsmark{" .. r.name .. "}")
+    local insert = o.escape_open .. body .. o.escape_close
     marked = marked:sub(1, r.offset - 1) .. insert .. marked:sub(r.offset)
   end
 
