@@ -647,7 +647,8 @@ Text\\<slides>[3ex]
 \ldeen{
   Alles außerhalb einer registrierten Inhaltsumgebung wird verworfen, mit
   eingebauten Ausnahmen: \env{frame} und \env{frame*} selbst (falls
-  vorhanden), die Gliederungsbefehle
+  vorhanden), \cs{againframe} (falls vorhanden) als eigenständiger
+  Befehl zum Wiederholen einer Inhaltsumgebung, die Gliederungsbefehle
   einschließlich \cs{appendix}, \cs{lecturemode}, \cs{mode} und \cs{maketitle}
   passieren den Scanner unverändert; die Gliederungsbefehle erhalten
   außerdem ein unmittelbar folgendes
@@ -659,7 +660,8 @@ Text\\<slides>[3ex]
 }{
   Everything outside a registered unit environment is dropped, with
   built-in exceptions: \env{frame} and \env{frame*} themselves (if
-  present), structural commands
+  present), \cs{againframe} (if present) as a standalone command for
+  repeating a unit environment, structural commands
   including \cs{appendix}, \cs{lecturemode}, \cs{mode}, and
   \cs{maketitle} pass through the scanner unchanged; the structural
   commands also preserve an immediately following \cs{label}, while a \cs{label} elsewhere in
@@ -2752,6 +2754,46 @@ the full profile and target configuration.
 \osglecture_modes_declare_allowed_command:nn { lecturemode }   { osglecture_modes_keep_lecturemode: }
 \osglecture_modes_declare_allowed_command:nn { mode }          { osglecture_modes_keep_mode: }
 \osglecture_modes_declare_allowed_command:nn { maketitle }     { osglecture_modes_keep_maketitle: }
+
+% \ldeen{Beamers eigenes \cs{mode*} überspringt \cs{againframe} bereits
+%   nicht (siehe dessen feste Positivliste in
+%   \file{beamerbasemodes.sty}); diese Deklaration spiegelt das als
+%   weitere interne Basisausnahme und setzt daher bewusst
+%   \emph{nicht} \cs{g\_osglecture\_modes\_scan\_extended\_bool} -- genau
+%   wie \cs{frame}/\cs{frame*} und die Gliederungsbefehle oben. Die
+%   eigene, vereinfachte Signatur \code{d<>~O\{\}~m} deckt die in der
+%   Praxis verwendete Form
+%   \cs{againframe}\sarg{Overlay}\oarg{Optionen}\marg{Name} ab, sowohl
+%   unter Beamer als auch unter \pkg*{ltx-talk} (wo \cs{againframe} ein
+%   Alias für \cs{reuseframe} mit ebendieser Signatur ist); das seltene
+%   zweite Klammerpaar aus Beamers eigener, tiefer verschachtelter
+%   \cs{@ifnextchar}-Kette wird hier nicht nachgebildet.}{Beamer's own
+%   \cs{mode*} already does not skip \cs{againframe} (see its fixed
+%   allow-list in \file{beamerbasemodes.sty}); this declaration mirrors
+%   that as a further internal baseline exception and therefore
+%   deliberately does \emph{not} set
+%   \cs{g\_osglecture\_modes\_scan\_extended\_bool} -- just like
+%   \cs{frame}/\cs{frame*} and the structural commands above. The
+%   package's own, simplified signature \code{d<>~O\{\}~m} covers the
+%   form actually used in practice,
+%   \cs{againframe}\sarg{overlay}\oarg{options}\marg{name}, both under
+%   Beamer and under \pkg*{ltx-talk} (where \cs{againframe} is an alias
+%   for \cs{reuseframe} with exactly this signature); the rare second
+%   bracket from Beamer's own, deeply nested \cs{@ifnextchar} chain is
+%   not reproduced here.}
+\cs_if_exist:cT { againframe }
+  {
+    \NewDocumentCommand \osglecture_modes_keep_againframe: { d<> O{} m }
+      {
+        \IfNoValueTF {#1}
+          { \againframe [#2] {#3} }
+          { \againframe <#1> [#2] {#3} }
+        \bool_gset_false:N \g_osglecture_modes_after_structure_bool
+        \osglecture_modes_scan:
+      }
+    \osglecture_modes_declare_allowed_command:nn { againframe }
+      { osglecture_modes_keep_againframe: }
+  }
 
 \NewDocumentCommand \osglecture_modes_keep_structure:N { m s o m }
   {

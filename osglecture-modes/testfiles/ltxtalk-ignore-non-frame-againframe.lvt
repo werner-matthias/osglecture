@@ -1,0 +1,24 @@
+\input regression-test.tex
+\DocumentMetadata{}
+\documentclass{ltx-talk}
+\NewDocumentCommand\lecture{O{}mm}{\TYPE{LECTURE KEPT}}
+\RenewDocumentCommand\againframe{d<> O{} m}
+  {
+    \IfNoValueTF{#1}
+      {\TYPE{AGAINFRAME~#2~#3}}
+      {\TYPE{AGAINFRAME~<#1>~#2~#3}}
+  }
+\usepackage[ignorenonframetext]{osglecture-modes-ltxtalk}
+
+\begin{document}
+\START
+\lecture{Introduction}{intro}
+\foobar
+\againframe{plain}
+\againframe[opt]{withopt}
+\againframe<2->[opt]{withoverlay}
+\begin{frame}
+  \TYPE{FRAME KEPT}
+\end{frame}
+\END
+\end{document}

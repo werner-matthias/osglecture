@@ -1,0 +1,14 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+LECTURE KEPT
+AGAINFRAME~~plain
+AGAINFRAME~opt~withopt
+AGAINFRAME~<2->~opt~withoverlay
+FRAME KEPT
+[1]
+LaTeX Font Info:    Trying to load font information for TU+lmr-base on input line ....
+(../tulmr-base.fd
+File: tulmr-base.fd ....-..-.. v... LaTeX font definitions for Latin Modern in base mode
+) [2] (ltxtalk-ignore-non-frame-againframe.aux)
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+LaTeX Warning: Temporary extra page added at the end. Rerun to get it removed.
