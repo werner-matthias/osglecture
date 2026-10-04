@@ -73,11 +73,16 @@
   { \TYPE { measure-index:passed } }
   { \TYPE { measure-index:FAILED= \int_use:N \g__ltxtalk_nav_index_int } }
 
-% 6. The parent-section test: subsection 2.1 belongs to section 2, not to
-%    the current section 3.
-\__ltxtalk_nav_subsec_in_current:nTF { 3.1 }
+% 6. The parent-section test: while mapping, the entries following the
+%    current section's entry (id 3) are "in current", those following
+%    another section's entry (id 2) are not.
+\__ltxtalk_nav_track_init:
+\__ltxtalk_nav_track:nn { 1 } { 3 }
+\bool_if:NTF \g__ltxtalk_nav_in_current_bool
   { \TYPE { subsec-in-current:passed } } { \TYPE { subsec-in-current:FAILED } }
-\__ltxtalk_nav_subsec_in_current:nTF { 2.1 }
+\__ltxtalk_nav_track:nn { 1 } { 2 }
+\__ltxtalk_nav_track:nn { 2 } { 2.1 }
+\bool_if:NTF \g__ltxtalk_nav_in_current_bool
   { \TYPE { subsec-not-in-current:FAILED } } { \TYPE { subsec-not-in-current:passed } }
 
 \ExplSyntaxOff

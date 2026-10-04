@@ -1569,7 +1569,10 @@ output with the following options:}
       \item \code{fraction}: Schlüssel \code{left}, \code{right},
         \code{separator}.
       \item \code{heading}: Schlüssel \code{numbered} (boolesch),
-        \code{number}, \code{text}, \code{separator}.
+        \code{level}, \code{number}, \code{text}, \code{separator}. Mit
+        \code{level} (\code{section}, \code{subsection} oder
+        \code{subsubsection}) entfällt die Nummer, solange die aktuelle
+        Überschrift dieser Ebene unnummeriert ist (\cs*{section*}).
     \end{itemize}
     Neue Instanzen -- auch mit einer dieser drei Schablonen, nur mit anderen
     Werten -- entstehen wie bei jedem anderen Template-Typ über
@@ -1600,8 +1603,11 @@ output with the following options:}
       \item \code{counter}: key \code{source} (the value to output).
       \item \code{fraction}: keys \code{left}, \code{right},
         \code{separator}.
-      \item \code{heading}: keys \code{numbered} (Boolean), \code{number},
-        \code{text}, \code{separator}.
+      \item \code{heading}: keys \code{numbered} (Boolean), \code{level},
+        \code{number}, \code{text}, \code{separator}. With \code{level}
+        (\code{section}, \code{subsection}, or \code{subsubsection}) the
+        number is omitted while the current heading of that level is
+        unnumbered (\cs*{section*}).
     \end{itemize}
     New instances -- even reusing one of these three templates with just
     different values -- are created like for any other template type, via
@@ -3290,10 +3296,106 @@ theme.
 %   \emph{independent}, explicitly author-invoked mechanism that should
 %   not be tied to the automatic demotion. Only the \emph{automatic}
 %   consumption by \cs{frametitle} stays behind the switch.}
+% \ldeen{\cls{ltx-talk} erhöht den Zähler auch bei der Sternform
+%   (\cs{section*}) und beim Schlüssel \code{unnumbered}; beides schaltet
+%   dort nur \cs{l__talk_sec_numbered_bool} aus -- und zwar bleibend, denn
+%   die Klasse setzt den Schalter nie zurück (und initialisiert ihn auch
+%   nicht mit \code{true}). \cs{__ltxtalk_heading_begin:n} läuft deshalb als
+%   \emph{erster} Hakencode jeder Ebene: es übernimmt den Schalter in ein
+%   eigenes, globales Bool je Ebene, setzt ihn für die nächste Überschrift
+%   wieder auf \code{true} und nimmt bei unnummerierten Überschriften den
+%   Zählerschritt zurück -- einschließlich der dabei zurückgesetzten
+%   untergeordneten Zähler, deren letzter Stand dafür mitgeführt wird. So
+%   verhält sich \cs{section*} wie in den Standardklassen: keine Nummer,
+%   und die folgende nummerierte Überschrift zählt lückenlos weiter.}{
+%   \cls{ltx-talk} steps the counter for the starred form (\cs{section*})
+%   and the \code{unnumbered} key, too; both merely switch off
+%   \cs{l__talk_sec_numbered_bool} there -- permanently, as the class never
+%   resets the switch (nor initialises it to \code{true}).
+%   \cs{__ltxtalk_heading_begin:n} therefore runs as the \emph{first} hook
+%   code of each level: it copies the switch into a global Boolean of its
+%   own per level, resets it to \code{true} for the next heading, and for
+%   unnumbered headings undoes the counter step -- including the
+%   subordinate counters reset by it, whose last values are tracked for
+%   that purpose. \cs{section*} thus behaves as in the standard classes: no
+%   number, and the next numbered heading continues without a gap.}
+\bool_new:N \g__ltxtalk_section_numbered_bool
+\bool_new:N \g__ltxtalk_subsection_numbered_bool
+\bool_new:N \g__ltxtalk_subsubsection_numbered_bool
+\bool_gset_true:N \g__ltxtalk_section_numbered_bool
+\bool_gset_true:N \g__ltxtalk_subsection_numbered_bool
+\bool_gset_true:N \g__ltxtalk_subsubsection_numbered_bool
+\int_new:N \g__ltxtalk_last_subsection_int
+\int_new:N \g__ltxtalk_last_subsubsection_int
+\bool_if_exist:NT \l__talk_sec_numbered_bool
+  { \bool_set_true:N \l__talk_sec_numbered_bool }
+% \ldeen{Der Zählerschritt der Klasse hat sein Sprungziel bereits angelegt,
+%   wenn der Haken läuft; nach dem Zurücknehmen trüge die nächste
+%   nummerierte Überschrift dasselbe Ziel noch einmal, und ihr Lesezeichen
+%   zeigte auf die unnummerierte. Die Zielnamen (\cs{theHsection} usw.)
+%   erhalten deshalb nach jeder unnummerierten Überschrift einen neuen
+%   Zusatz; ohne unnummerierte Überschriften bleiben sie unverändert.}{The
+%   class's counter step has already created its link destination when the
+%   hook runs; after undoing the step, the next numbered heading would carry
+%   the same destination again, and its bookmark would point at the
+%   unnumbered one. The destination names (\cs{theHsection} etc.) therefore
+%   receive a fresh suffix after every unnumbered heading; without
+%   unnumbered headings they stay unchanged.}
+\int_new:N \g__ltxtalk_unnumbered_heading_int
+\AddToHook { begindocument / before }
+  {
+    \clist_map_inline:nn { section, subsection, subsubsection }
+      {
+        \cs_if_exist:cT { theH #1 }
+          {
+            \cs_gset_eq:cc { __ltxtalk_theH_ #1 : } { theH #1 }
+            \cs_gset:cpn { theH #1 }
+              {
+                \use:c { __ltxtalk_theH_ #1 : }
+                \int_compare:nNnT \g__ltxtalk_unnumbered_heading_int > { 0 }
+                  { .u \int_use:N \g__ltxtalk_unnumbered_heading_int }
+              }
+          }
+      }
+  }
+\cs_new_protected:Npn \__ltxtalk_heading_begin:n #1
+  {
+    \bool_lazy_and:nnTF
+      { \bool_if_exist_p:N \l__talk_sec_numbered_bool }
+      { ! \l__talk_sec_numbered_bool }
+      {
+        \bool_gset_false:c { g__ltxtalk_ #1 _numbered_bool }
+        \int_gincr:N \g__ltxtalk_unnumbered_heading_int
+        \int_gdecr:c { c@ #1 }
+        \str_case:nn {#1}
+          {
+            { section }
+              {
+                \int_gset_eq:NN \c@subsection
+                  \g__ltxtalk_last_subsection_int
+                \int_gset_eq:NN \c@subsubsection
+                  \g__ltxtalk_last_subsubsection_int
+              }
+            { subsection }
+              {
+                \int_gset_eq:NN \c@subsubsection
+                  \g__ltxtalk_last_subsubsection_int
+              }
+          }
+        \bool_set_true:N \l__talk_sec_numbered_bool
+      }
+      { \bool_gset_true:c { g__ltxtalk_ #1 _numbered_bool } }
+    \int_gset_eq:NN \g__ltxtalk_last_subsection_int \c@subsection
+    \int_gset_eq:NN \g__ltxtalk_last_subsubsection_int \c@subsubsection
+  }
 \AddToHook { section / begin }
   {
+    \__ltxtalk_heading_begin:n { section }
     \tl_gset:Nx \g__ltxtalk_pending_heading_title_tl
-      { \int_use:N \c@section \c_space_tl }
+      {
+        \bool_if:NT \g__ltxtalk_section_numbered_bool
+          { \int_use:N \c@section \c_space_tl }
+      }
     \tl_gput_right:NV \g__ltxtalk_pending_heading_title_tl
       \l__talk_section_tl
     \bool_if:NT \g__ltxtalk_auto_section_title_bool
@@ -3301,13 +3403,19 @@ theme.
   }
 \AddToHook { subsection / begin }
   {
+    \__ltxtalk_heading_begin:n { subsection }
     \tl_gset:Nx \g__ltxtalk_pending_heading_title_tl
-      { \int_use:N \c@section . \int_use:N \c@subsection \c_space_tl }
+      {
+        \bool_if:NT \g__ltxtalk_subsection_numbered_bool
+          { \int_use:N \c@section . \int_use:N \c@subsection \c_space_tl }
+      }
     \tl_gput_right:NV \g__ltxtalk_pending_heading_title_tl
       \l__talk_subsection_tl
     \bool_if:NT \g__ltxtalk_auto_section_title_bool
       { \bool_gset_true:N \g__ltxtalk_pending_heading_title_bool }
   }
+\AddToHook { subsubsection / begin }
+  { \__ltxtalk_heading_begin:n { subsubsection } }
 
 % ==========================================
 % SLOT-CONTENT-RESOLVER
@@ -3461,11 +3569,46 @@ theme.
   { \tl_if_exist:cT { l__talk_subsection_tl }
       { \tl_to_str:c { l__talk_subsection_tl } } }
 
+% \ldeen{Jeder Eintrag trägt eine Kennung, über die die Renderer den
+%   \emph{aktuellen} (Unter-)Abschnitt wiederfinden: bei nummerierten
+%   Überschriften die Nummer, bei unnummerierten (\cs{section*}) ein
+%   fortlaufendes \code{*}\meta{n} -- deren Zähler steht ja still, die Nummer
+%   würde also auf den vorangehenden Abschnitt zeigen. Unnummerierte
+%   Abschnitte erscheinen damit wie bei \beamer{} weiterhin in der
+%   Navigation.}{Every entry carries an identifier by which the renderers
+%   find the \emph{current} (sub)section again: the number for numbered
+%   headings, a running \code{*}\meta{n} for unnumbered ones
+%   (\cs{section*}) -- their counter stands still, so the number would point
+%   at the preceding section. Unnumbered sections thus still appear in the
+%   navigation, as with \beamer{}.}
+\tl_new:N \g__ltxtalk_nav_sec_id_tl
+\tl_new:N \g__ltxtalk_nav_subsec_id_tl
+\int_new:N \g__ltxtalk_nav_unnumbered_int
+\bool_new:N \g__ltxtalk_nav_in_current_bool
+\cs_new_protected:Npn \__ltxtalk_nav_set_id:NNn #1#2#3
+  {
+    \bool_if:NTF #1
+      { \tl_gset:Ne #2 {#3} }
+      {
+        \int_gincr:N \g__ltxtalk_nav_unnumbered_int
+        \tl_gset:Ne #2 { * \int_use:N \g__ltxtalk_nav_unnumbered_int }
+      }
+  }
 \AddToHook { section / begin }
-  { \__ltxtalk_nav_record:nnn { 1 } { \thesection } { \__ltxtalk_nav_sec_title: } }
+  {
+    \__ltxtalk_nav_set_id:NNn \g__ltxtalk_section_numbered_bool
+      \g__ltxtalk_nav_sec_id_tl { \thesection }
+    \tl_gclear:N \g__ltxtalk_nav_subsec_id_tl
+    \__ltxtalk_nav_record:nnn { 1 } { \g__ltxtalk_nav_sec_id_tl }
+      { \__ltxtalk_nav_sec_title: }
+  }
 \AddToHook { subsection / begin }
-  { \__ltxtalk_nav_record:nnn { 2 } { \thesubsection }
-      { \__ltxtalk_nav_subsec_title: } }
+  {
+    \__ltxtalk_nav_set_id:NNn \g__ltxtalk_subsection_numbered_bool
+      \g__ltxtalk_nav_subsec_id_tl { \thesubsection }
+    \__ltxtalk_nav_record:nnn { 2 } { \g__ltxtalk_nav_subsec_id_tl }
+      { \__ltxtalk_nav_subsec_title: }
+  }
 
 \AddToHook { enddocument / afterlastpage }
   {
@@ -3490,7 +3633,7 @@ theme.
         \int_compare:nNnT \g__ltxtalk_nav_map_int > { 0 }
           { \l__ltxtalk_nav_sep_tl }
         \int_incr:N \g__ltxtalk_nav_map_int
-        \str_if_eq:eeTF {#2} { \thesection }
+        \str_if_eq:eeTF {#2} { \g__ltxtalk_nav_sec_id_tl }
           { {\color{ltxtalk-primary} #3} }
           { {\color{ltxtalk-secondary!55} #3} }
       }
@@ -3509,16 +3652,32 @@ theme.
       { \__ltxtalk_nav_list_entry:nnnn ##1 }
   }
 
-% \ldeen{Wahr, wenn die Unterabschnittsnummer \#1 zum aktuellen Abschnitt
-%   gehört -- also ihr Bestandteil vor dem ersten Punkt gleich
-%   \cs{thesection} ist.}{True when the subsection number \#1 belongs to the
-%   current section -- i.e.\ its component before the first dot equals
-%   \cs{thesection}.}
-\prg_new_protected_conditional:Npnn \__ltxtalk_nav_subsec_in_current:n #1 { T, F, TF }
+% \ldeen{Die Unterabschnitte des aktuellen Abschnitts sind die Einträge
+%   der Ebene~2, die in der Liste auf dessen Eintrag folgen. Die Renderer
+%   führen dazu beim Durchlaufen \cs{g__ltxtalk_nav_in_current_bool} mit:
+%   vor dem ersten Abschnitt wahr, solange noch kein Abschnitt läuft,
+%   danach bei jedem Eintrag der Ebene~1 neu bestimmt. (Ein Vergleich der
+%   Nummernpräfixe scheiterte an unnummerierten Abschnitten und an einem
+%   umdefinierten \cs{thesection}.)}{The current section's subsections are
+%   the level-2 entries following its entry in the list. While mapping, the
+%   renderers therefore maintain \cs{g__ltxtalk_nav_in_current_bool}: true
+%   ahead of the first section as long as no section is running, then
+%   determined anew at every level-1 entry. (Comparing number prefixes
+%   failed for unnumbered sections and for a redefined \cs{thesection}.)}
+\cs_new_protected:Npn \__ltxtalk_nav_track_init:
   {
-    \seq_set_split:Nnn \l__ltxtalk_nav_tmp_seq { . } {#1}
-    \str_if_eq:eeTF { \seq_item:Nn \l__ltxtalk_nav_tmp_seq { 1 } } { \thesection }
-      { \prg_return_true: } { \prg_return_false: }
+    \tl_if_empty:NTF \g__ltxtalk_nav_sec_id_tl
+      { \bool_gset_true:N \g__ltxtalk_nav_in_current_bool }
+      { \bool_gset_false:N \g__ltxtalk_nav_in_current_bool }
+  }
+\cs_new_protected:Npn \__ltxtalk_nav_track:nn #1#2
+  {
+    \str_if_eq:nnT {#1} { 1 }
+      {
+        \str_if_eq:eeTF {#2} { \g__ltxtalk_nav_sec_id_tl }
+          { \bool_gset_true:N \g__ltxtalk_nav_in_current_bool }
+          { \bool_gset_false:N \g__ltxtalk_nav_in_current_bool }
+      }
   }
 
 % \ldeen{Zählt die Abschnitte und merkt sich die Position des aktuellen; von
@@ -3538,7 +3697,7 @@ theme.
     \str_if_eq:nnT {#1} { 1 }
       {
         \int_gincr:N \g__ltxtalk_nav_total_int
-        \str_if_eq:eeT {#2} { \thesection }
+        \str_if_eq:eeT {#2} { \g__ltxtalk_nav_sec_id_tl }
           { \int_gset_eq:NN \g__ltxtalk_nav_index_int \g__ltxtalk_nav_total_int }
       }
   }
@@ -3549,19 +3708,21 @@ theme.
 \cs_new_protected:Npn \__ltxtalk_nav_render_subsection_list:
   {
     \int_gzero:N \g__ltxtalk_nav_map_int
+    \__ltxtalk_nav_track_init:
     \seq_map_inline:Nn \g__ltxtalk_nav_toc_seq
       { \__ltxtalk_nav_subsec_entry:nnnn ##1 }
   }
 \cs_new_protected:Npn \__ltxtalk_nav_subsec_entry:nnnn #1#2#3#4
   {
+    \__ltxtalk_nav_track:nn {#1} {#2}
     \str_if_eq:nnT {#1} { 2 }
       {
-        \__ltxtalk_nav_subsec_in_current:nT {#2}
+        \bool_if:NT \g__ltxtalk_nav_in_current_bool
           {
             \int_compare:nNnT \g__ltxtalk_nav_map_int > { 0 }
               { \l__ltxtalk_nav_sep_tl }
             \int_incr:N \g__ltxtalk_nav_map_int
-            \str_if_eq:eeTF {#2} { \thesubsection }
+            \str_if_eq:eeTF {#2} { \g__ltxtalk_nav_subsec_id_tl }
               { {\color{ltxtalk-primary} #3} }
               { {\color{ltxtalk-secondary!55} #3} }
           }
@@ -3576,28 +3737,30 @@ theme.
 \cs_new_protected:Npn \__ltxtalk_nav_render_toc:
   {
     \int_gzero:N \g__ltxtalk_nav_map_int
+    \__ltxtalk_nav_track_init:
     \seq_map_inline:Nn \g__ltxtalk_nav_toc_seq
       { \__ltxtalk_nav_toc_entry:nnnn ##1 }
   }
 \cs_new_protected:Npn \__ltxtalk_nav_toc_entry:nnnn #1#2#3#4
   {
+    \__ltxtalk_nav_track:nn {#1} {#2}
     \str_if_eq:nnTF {#1} { 1 }
       {
         \int_compare:nNnT \g__ltxtalk_nav_map_int > { 0 } { \newline }
         \int_incr:N \g__ltxtalk_nav_map_int
-        \str_if_eq:eeTF {#2} { \thesection }
+        \str_if_eq:eeTF {#2} { \g__ltxtalk_nav_sec_id_tl }
           { {\color{ltxtalk-primary} #3} }
           { {\color{ltxtalk-secondary!55} #3} }
       }
       {
         \str_if_eq:nnT {#1} { 2 }
           {
-            \__ltxtalk_nav_subsec_in_current:nT {#2}
+            \bool_if:NT \g__ltxtalk_nav_in_current_bool
               {
                 \int_compare:nNnT \g__ltxtalk_nav_map_int > { 0 } { \newline }
                 \int_incr:N \g__ltxtalk_nav_map_int
                 \hspace { 1em }
-                \str_if_eq:eeTF {#2} { \thesubsection }
+                \str_if_eq:eeTF {#2} { \g__ltxtalk_nav_subsec_id_tl }
                   { {\color{ltxtalk-primary} #3} }
                   { {\color{ltxtalk-secondary!55} #3} }
               }
@@ -3709,6 +3872,7 @@ theme.
 \tl_new:N \l__ltxtalk_element_right_tl
 \tl_new:N \l__ltxtalk_element_sep_tl
 \tl_new:N \l__ltxtalk_element_number_tl
+\tl_new:N \l__ltxtalk_element_level_tl
 \tl_new:N \l__ltxtalk_element_text_tl
 \bool_new:N \l__ltxtalk_element_numbered_bool
 
@@ -3741,6 +3905,7 @@ theme.
 \DeclareTemplateInterface { ltxtalk-element } { heading } { 0 }
   {
     numbered  : boolean   = true,
+    level     : tokenlist = { },
     number    : tokenlist = { },
     text      : tokenlist = { },
     separator : tokenlist = { ~ },
@@ -3748,12 +3913,22 @@ theme.
 \DeclareTemplateCode { ltxtalk-element } { heading } { 0 }
   {
     numbered  = \l__ltxtalk_element_numbered_bool,
+    level     = \l__ltxtalk_element_level_tl,
     number    = \l__ltxtalk_element_number_tl,
     text      = \l__ltxtalk_element_text_tl,
     separator = \l__ltxtalk_element_sep_tl,
   }
   {
-    \bool_if:NT \l__ltxtalk_element_numbered_bool
+    \bool_lazy_and:nnT
+      { \l__ltxtalk_element_numbered_bool }
+      {
+        \bool_lazy_or_p:nn
+          { \tl_if_empty_p:N \l__ltxtalk_element_level_tl }
+          {
+            \bool_if_p:c
+              { g__ltxtalk_ \l__ltxtalk_element_level_tl _numbered_bool }
+          }
+      }
       { \l__ltxtalk_element_number_tl \l__ltxtalk_element_sep_tl }
     \l__ltxtalk_element_text_tl
   }
@@ -3767,9 +3942,9 @@ theme.
 \DeclareInstance { ltxtalk-element } { section-pagenumber } { fraction }
   { left = \insertsection, right = \@framenumber, separator = { ~--~ } }
 \DeclareInstance { ltxtalk-element } { sectionheading } { heading }
-  { number = \thesection, text = \insertsection }
+  { level = section, number = \thesection, text = \insertsection }
 \DeclareInstance { ltxtalk-element } { subsectionheading } { heading }
-  { number = \thesubsection, text = \insertsubsection }
+  { level = subsection, number = \thesubsection, text = \insertsubsection }
 
 % \ldeen{\cs*{InsertLTXTalkElement}\Marg{Name} ist der einzige Aufrufpunkt für
 %   Anwender: er reicht an \cs{UseInstance} durch, unabhängig davon, welche

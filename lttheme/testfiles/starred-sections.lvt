@@ -1,0 +1,97 @@
+\DocumentMetadata{}
+\input regression-test.tex
+\documentclass{ltx-talk}
+\usepackage{ltxtalk-theme-hawk}
+\useltxtalktheme{hawk}
+
+\ExplSyntaxOn
+\setltxtalkheadingbehavior{auto-section-title=true}
+\NewDocumentCommand \CHECKTITLE { m } {
+  \str_if_eq:eeTF {#1} { \g__talk_frame_title_tl }
+    { \TYPE { title:passed } }
+    { \TYPE { title:FAILED=\g__talk_frame_title_tl } }
+}
+% #1 expected section number, #2 expected subsection number.
+\NewDocumentCommand \CHECKNUMBERS { m m } {
+  \str_if_eq:eeTF { #1 / #2 } { \thesection / \thesubsection }
+    { \TYPE { numbers:passed } }
+    { \TYPE { numbers:FAILED=\thesection / \thesubsection } }
+}
+\NewDocumentCommand \CHECKELEMENT { m m } {
+  \hbox_set:Nn \l_tmpa_box { \InsertLTXTalkElement {#1} }
+  \hbox_set:Nn \l_tmpb_box {#2}
+  \dim_compare:nNnTF { \box_wd:N \l_tmpa_box } = { \box_wd:N \l_tmpb_box }
+    { \TYPE { element~#1:passed } }
+    { \TYPE { element~#1:FAILED } }
+}
+\ExplSyntaxOff
+
+\begin{document}
+\START
+
+\section{Eins}
+\subsection{Eins-Eins}
+\begin{frame}
+  \frametitle{}
+  \CHECKTITLE{1.1 Eins-Eins}
+  \CHECKNUMBERS{1}{1.1}
+  \CHECKELEMENT{sectionheading}{1 Eins}
+\end{frame}
+
+% Sternform: keine Nummer, Zaehler (auch der untergeordnete) unveraendert.
+\section*{Exkurs}
+\begin{frame}
+  \frametitle{}
+  \CHECKTITLE{Exkurs}
+  \CHECKNUMBERS{1}{1.1}
+  \CHECKELEMENT{sectionheading}{Exkurs}
+\end{frame}
+
+% Die naechste nummerierte Ueberschrift zaehlt lueckenlos weiter; der
+% Schalter der Klasse bleibt nicht auf "unnummeriert" haengen.
+\section{Zwei}
+\begin{frame}
+  \frametitle{}
+  \CHECKTITLE{2 Zwei}
+  \CHECKNUMBERS{2}{2.0}
+  \CHECKELEMENT{sectionheading}{2 Zwei}
+\end{frame}
+
+\subsection*{Ohne Nummer}
+\begin{frame}
+  \frametitle{}
+  \CHECKTITLE{Ohne Nummer}
+  \CHECKNUMBERS{2}{2.0}
+  \CHECKELEMENT{subsectionheading}{Ohne Nummer}
+\end{frame}
+
+\subsection{Zwei-Eins}
+\begin{frame}
+  \frametitle{}
+  \CHECKTITLE{2.1 Zwei-Eins}
+  \CHECKNUMBERS{2}{2.1}
+  \CHECKELEMENT{subsectionheading}{2.1 Zwei-Eins}
+\end{frame}
+
+% Der Schluessel unnumbered wirkt wie die Sternform.
+\section[unnumbered=true]{Anhang}
+\begin{frame}
+  \frametitle{}
+  \CHECKTITLE{Anhang}
+  \CHECKNUMBERS{2}{2.1}
+\end{frame}
+
+\section{Drei}
+\begin{frame}
+  \frametitle{}
+  \CHECKTITLE{3 Drei}
+\end{frame}
+
+% Navigation: unnummerierte Abschnitte bleiben Eintraege mit eigener
+% Kennung (*n), damit der aktuelle Abschnitt eindeutig bleibt.
+\ExplSyntaxOn
+\tl_set:Ne \l_tmpa_tl { \seq_use:Nn \g__ltxtalk_nav_thisrun_seq { || } }
+\TYPE { thisrun-seq= \tl_to_str:N \l_tmpa_tl }
+\ExplSyntaxOff
+
+\end{document}

@@ -1153,13 +1153,22 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
 %   confirmed via \file{pdftotext} on the rendered header, cause not
 %   tracked down further -- while the constant space token list renders
 %   correctly.}
+% \ldeen{Unnummerierte Abschnitte (\cs{section*}) erscheinen nur mit ihrem
+%   Titel; \pkg{lttheme} führt dazu \cs{g__ltxtalk_section_numbered_bool}
+%   nach.}{Unnumbered sections (\cs{section*}) appear with their title
+%   only; \pkg{lttheme} maintains \cs{g__ltxtalk_section_numbered_bool} for
+%   that purpose.}
 \cs_new_protected:Npn \__ltxtalk_tuc_teaching_section_line:
   {
     \__ltxtalk_tuc_if_section_active:TF
       {
-        \__ltxtalk_tuc_if_lecture_number:T
-          {\__ltxtalk_tuc_lecture_number: .}
-        \int_use:N \c@section \c_space_tl \tl_to_str:c { l__talk_section_tl }
+        \bool_if:NT \g__ltxtalk_section_numbered_bool
+          {
+            \__ltxtalk_tuc_if_lecture_number:T
+              {\__ltxtalk_tuc_lecture_number: .}
+            \int_use:N \c@section \c_space_tl
+          }
+        \tl_to_str:c { l__talk_section_tl }
       }
       { \UseLTXTalkMetadata[lines=1]{subsection} }
   }
