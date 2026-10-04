@@ -4565,6 +4565,65 @@ default gutter looks too tight with very unequal column shares.}
       }
   }
 
+% \ldeen*{Eine Fußnote innerhalb einer Spalte kann nicht über den
+% normalen \cs{insert}-Mechanismus gesetzt werden -- dieser lässt sich in
+% der verschachtelten \code{vbox}/\code{hbox}-Konstruktion von
+% \env{twocolumns} nie auflösen und hängt den Lauf auf. Wer in einer
+% Spalte eine Fußnote braucht, muss deren Inhalt daher selbst in eine
+% \env{minipage} einbetten, damit \cs{footnote} stattdessen den
+% \code{mpfootnote}-Mechanismus verwendet.
+%
+% \code{mpfootnote} ist dabei ein eigener, von \code{footnote}
+% unabhängiger Zähler, der bei jeder \env{minipage} wieder bei 0 beginnt
+% -- eine Fußnote in einer Spalte würde also isoliert mit ``1'' markiert
+% statt lückenlos in der Zählung des restlichen Dokuments weiterzulaufen.
+% \code{osgmpfnbase} merkt sich daher beim Betreten der \env{minipage}
+% den aktuellen Stand von \code{footnote}, \cs{thempfootnote} zeigt stets
+% \code{osgmpfnbase~+~mpfootnote} an, und beim Verlassen wird dieselbe
+% Summe -- \cs{global} gesetzt, damit sie die von \env{minipage} selbst
+% geöffnete Gruppe überlebt -- in \code{footnote} zurückgeschrieben.
+%
+% Ein direkter Versuch, \code{mpfootnote} selbst per
+% \cs{AtBeginEnvironment}\{minipage\} auf den aktuellen Zähler zu setzen,
+% scheitert: dieser Hook feuert \emph{vor} dem eigenen Startcode von
+% \env{minipage}, der \code{mpfootnote} anschließend ohnehin wieder auf 0
+% zurücksetzt. \code{osgmpfnbase} wird davon nicht berührt und bleibt
+% daher als separater, additiver Offset zuverlässig erhalten.}{A footnote
+% inside a column cannot be set via the normal \cs{insert} mechanism --
+% it can never be resolved inside \env{twocolumns}' nested
+% \code{vbox}/\code{hbox} construction and hangs the run. Anyone who
+% needs a footnote inside a column therefore has to wrap that column's
+% content in a \env{minipage} themselves, so \cs{footnote} uses the
+% \code{mpfootnote} mechanism instead.
+%
+% \code{mpfootnote} is a counter of its own, independent of
+% \code{footnote}, and restarts at 0 in every \env{minipage} -- a
+% footnote inside a column would therefore be marked ``1'' in isolation
+% instead of continuing the rest of the document's numbering without a
+% gap. \code{osgmpfnbase} therefore remembers the current value of
+% \code{footnote} when the \env{minipage} is entered, \cs{thempfootnote}
+% always displays \code{osgmpfnbase~+~mpfootnote}, and on exit the same
+% sum -- set \cs{global} so it survives the group \env{minipage} itself
+% opens -- is written back into \code{footnote}.
+%
+% Setting \code{mpfootnote} itself directly via
+% \cs{AtBeginEnvironment}\{minipage\} does not work: that hook fires
+% \emph{before} \env{minipage}'s own startup code, which afterwards
+% resets \code{mpfootnote} to 0 regardless. \code{osgmpfnbase} is
+% untouched by that reset and therefore reliably survives as a separate,
+% additive offset.}
+\RequirePackage{etoolbox}
+\newcounter{osgmpfnbase}
+\AtBeginEnvironment{minipage}
+  { \setcounter{osgmpfnbase}{\value{footnote}} }
+\renewcommand{\thempfootnote}
+  { \number\numexpr \value{osgmpfnbase} + \value{mpfootnote} \relax }
+\AtEndEnvironment{minipage}
+  {
+    \global\setcounter{footnote}
+      { \numexpr \value{osgmpfnbase} + \value{mpfootnote} \relax }
+  }
+
 \cs_new_protected:Npn \twocol_aligned_box:NN #1#2
   {
     \vbox to \l_twocol_h_dim
