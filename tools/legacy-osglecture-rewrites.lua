@@ -11,6 +11,11 @@
 --   --rules=a,b,...    restrict to the named rule groups (default: all)
 --                      modes, sections, frames, columns, figures, semcat,
 --                      listings, terminals, references, class
+--   --chapter=N        force the unit number: adds
+--                      \OsgLectureDeploymentChapter{N} before \lecture.
+--                      Normally not needed: in a series the number is
+--                      continued from the previous unit; only the first
+--                      unit of a series that does not start at 1 needs it.
 --   --no-report        suppress the list of manual candidates
 --   --quiet            print nothing but errors
 --
@@ -28,12 +33,14 @@ local VERSION = "2026-10-05"
 -- command line
 ----------------------------------------------------------------------------
 
-local opt = { check = false, report = true, quiet = false, rules = nil }
+local opt = { check = false, report = true, quiet = false, rules = nil, chapter = nil }
 local files = {}
 for _, a in ipairs(arg) do
   if a == "--check" then opt.check = true
   elseif a == "--no-report" then opt.report = false
   elseif a == "--quiet" then opt.quiet = true
+  elseif a:match("^%-%-chapter=") then
+    opt.chapter = a:sub(11)
   elseif a:match("^%-%-rules=") then
     opt.rules = {}
     for r in a:sub(9):gmatch("[^,]+") do opt.rules[r] = true end
@@ -716,6 +723,36 @@ local function typed_ref(doctype)
 end
 H.xarticleref = typed_ref("script")
 H.xpresentationref = typed_ref("slides")
+
+-- \lecture[short]{title}{id}: osgbeamer made the title page itself;
+-- osglecture wants \maketitle spelled out.  The unit number is continued
+-- from the previous unit of the series and is only set on request.
+local has_maketitle = text:find("\\maketitle%f[%A]") ~= nil
+local has_chapter = text:find("\\OsgLectureDeploymentChapter%f[%A]") ~= nil
+local lecture_done = false
+
+function H.lecture(s, i, base)
+  if not enabled("class") or lecture_done then return nil end
+  local args, e = parse(s, i, "aomm")
+  if not args then return nil end
+  lecture_done = true
+  local head, tail = "", ""
+  if not has_chapter then
+    if opt.chapter then
+      head = "\\OsgLectureDeploymentChapter{" .. opt.chapter .. "}\n"
+      count("chapter number added before \\lecture")
+    end
+  end
+  if not has_maketitle then
+    -- \maketitle must stay at the top level: wrapped in \lecturemode the
+    -- theme's title layout is not left again and every following slide
+    -- loses its frame title and footer
+    tail = "\n\n\\maketitle"
+    count("title page added after \\lecture")
+  end
+  if head == "" and tail == "" then return nil end
+  return head .. "\\lecture" .. s:sub(i, e - 1) .. tail, e
+end
 
 -- \documentclass[...]{osgbeamer}
 function H.documentclass(s, i, base)

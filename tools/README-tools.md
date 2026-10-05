@@ -36,7 +36,11 @@ Rule groups (`--rules=modes,figures,...`; default: all):
 single listing -> `style=paper`
 |`terminals` |`terminal` -> `ansiterm`, `termexec` -> `ansitermexec`
 |`references` |`\xref` -> `\olref`, `\xarticleref`/`\xpresentationref` -> `\olref[type=..]`
-|`class` |`\documentclass[..]{osgbeamer}` -> `\documentclass{osglecture}`
+|`class` |`\documentclass[..]{osgbeamer}` -> `\documentclass{osglecture}`; after `\lecture` a
+title page (`\maketitle`, at the top level). The unit
+number is continued from the previous unit of the series; `--chapter=N` forces one
+(`\OsgLectureDeploymentChapter{N}`), which only the first unit of a series that does
+not start at 1 needs
 |===
 
 Mode-qualified overlay specifications such as `<+|handout:0>` are kept:

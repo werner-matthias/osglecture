@@ -134,8 +134,24 @@
 % scanners untouched. @1's own teaching header consumes the unit
 % metadata recorded by @2.  The logical unit is also the presentation title;
 % the profile-mapped course metadata supplies its subtitle.}{\cls*{ltx-talk}}{\pkg*{osglecture-structure}}
+% \ldeen{\cls*{ltx-talk} kennt keinen Kapitelzähler. Ohne ihn hat die
+%   Fortsetzung über Einheiten hinweg nichts, was sie weiterzählen könnte
+%   (\enquote{Cannot continue unknown LaTeX counter 'chapter'}), und die
+%   Nummer der Lehreinheit müsste in jeder Einheit von Hand gesetzt werden.
+%   In einer Serie legt der Adapter deshalb den Zähler \code{chapter} an,
+%   und \cs{lecture} zählt ihn weiter; die Klasse übernimmt \cs{thechapter}
+%   dann wie in den Langform-Profilen als Nummer der Einheit. Eigenständige
+%   Dokumente bleiben unnummeriert.}{\cls*{ltx-talk} has no chapter counter.
+%   Without one, continuation across units has nothing to count on
+%   (\enquote{Cannot continue unknown LaTeX counter 'chapter'}), and the
+%   unit number would have to be set by hand in every unit. In a series
+%   the adapter therefore creates the \code{chapter} counter and
+%   \cs{lecture} steps it; the class then picks up \cs{thechapter} as the
+%   unit number, as in the long-form profiles. Standalone documents stay
+%   unnumbered.}
 \cs_new_protected:Npn \osglecture_adapter_lecture:nnn #1#2#3
   {
+    \cs_if_exist:NT \c@chapter { \stepcounter { chapter } }
     \tl_if_blank:nTF {#1}
       { \__osglecture_metadata_native_title {#2} }
       { \__osglecture_metadata_native_title [#1] {#2} }
@@ -154,6 +170,9 @@
 %   {\cls*{ltx-talk}}{\cs{Note}}
 \cs_new_protected:Npn \osglecture_adapter_install:
   {
+    \OsgLectureStandaloneTF
+      { }
+      { \cs_if_exist:NF \c@chapter { \newcounter { chapter } } }
     \NewDocumentCommand \Note { m } { }
   }
 \ExplSyntaxOff

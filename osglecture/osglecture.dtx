@@ -3113,10 +3113,32 @@ default gutter looks too tight with very unequal column shares.}
       }
   }
 
+% \ldeen{Die Werte der Vorgängereinheit werden zweimal angewendet. Vor
+% \cs{lecture} alle: Der Einheitenzähler \code{chapter} steht dann auf dem
+% Endwert des Vorgängers, und der Schritt, den \cs{lecture} selbst macht
+% (\cs{chapter} in den Langform-Profilen, der Zähler des
+% \cls*{ltx-talk}-Adapters), ergibt die nächste Nummer. Nach \cs{lecture}
+% alle außer \code{chapter}: Dieser Schritt setzt abhängige Zähler wie
+% \code{section} zurück, und sie sollen ihren fortgesetzten Wert behalten.
+% Würde \code{chapter} danach ebenfalls zurückgeschrieben, trüge die Einheit
+% die Nummer ihres Vorgängers.}{The previous unit's values are applied
+% twice. Before \cs{lecture}, all of them: the unit counter \code{chapter}
+% then holds the predecessor's final value, and the step \cs{lecture} itself
+% makes (\cs{chapter} in the long-form profiles, the counter of the
+% \cls*{ltx-talk} adapter) yields the next number. After \cs{lecture}, all
+% but \code{chapter}: that step resets dependent counters such as
+% \code{section}, and they are to keep their continued value. Writing
+% \code{chapter} back as well would give the unit its predecessor's
+% number.}
 \cs_new_protected:Npn \__osglecture_continuation_apply:
   {
     \prop_map_inline:Nn \g__osglecture_continuation_values_prop
       { \int_gset:cn { c@##1 } {##2} }
+  }
+\cs_new_protected:Npn \__osglecture_continuation_apply_dependent:
+  {
+    \prop_map_inline:Nn \g__osglecture_continuation_values_prop
+      { \str_if_eq:nnF {##1} { chapter } { \int_gset:cn { c@##1 } {##2} } }
   }
 
 \cs_new_protected:Npn \__osglecture_continuation_input:
@@ -3216,8 +3238,10 @@ default gutter looks too tight with very unequal column shares.}
   { \__osglecture_continuation_import: }
 \DeclareHookRule{begindocument/before}{osglecture-continuation/import}
   {after}{osglecture-references/setup}
-\AddToHook{osglecture/lecture/after}[osglecture-continuation/apply]
+\AddToHook{osglecture/lecture/before}[osglecture-continuation/apply]
   { \__osglecture_continuation_apply: }
+\AddToHook{osglecture/lecture/after}[osglecture-continuation/apply]
+  { \__osglecture_continuation_apply_dependent: }
 \AddToHook{enddocument/afterlastpage}[osglecture-continuation/export]
   { \__osglecture_continuation_export: }
 \DeclareHookRule{enddocument/afterlastpage}{osglecture-continuation/export}
@@ -3555,6 +3579,7 @@ default gutter looks too tight with very unequal column shares.}
   { Keep~the~explicit~unit-id~stable~or~remove~the~stale~OLLM~state. }
 
 \bool_gset_true:N \g__osglecture_unit_valid_bool
+\NewHook{osglecture/lecture/before}
 \NewHook{osglecture/lecture/after}
 
 \cs_new_protected:Npn \__osglecture_unit_validate:n #1
@@ -3606,6 +3631,7 @@ default gutter looks too tight with very unequal column shares.}
 \cs_new_protected:Npn \__osglecture_lecture:nnn #1#2#3
   {
     \__osglecture_unit_declare:nnn {#1}{#2}{#3}
+    \UseHook{osglecture/lecture/before}
     \osglecture_adapter_lecture:nnn {#1}{#2}{#3}
     \UseHook{osglecture/lecture/after}
     % \ldeen*{Fängt die von der Basisklasse beim @1-Aufruf tatsächlich
@@ -3619,10 +3645,27 @@ default gutter looks too tight with very unequal column shares.}
     % value to be overridden manually when the base class has no
     % \cs{thechapter} counter, or a different value is
     % authoritative.}{\cs{lecture}}
-    \tl_if_empty:NT \g__osglecture_deployment_chapter_tl
+    % \ldeen{Eine von Hand gesetzte, ganzzahlige Nummer wird in den
+    % Zähler zurückgeschrieben, damit die Fortsetzung in der nächsten
+    % Einheit von ihr aus weiterzählt und nicht von dem Wert, den der
+    % Zähler zufällig hatte.}{A number set by hand, if it is an integer, is
+    % written back to the counter, so that continuation in the next unit
+    % counts on from it rather than from whatever value the counter
+    % happened to have.}
+    \tl_if_empty:NTF \g__osglecture_deployment_chapter_tl
       {
         \cs_if_exist:NT \thechapter
           { \tl_gset:Ne \g__osglecture_deployment_chapter_tl {\thechapter} }
+      }
+      {
+        \cs_if_exist:NT \c@chapter
+          {
+            \regex_match:nVT { \A-?\d+\Z } \g__osglecture_deployment_chapter_tl
+              {
+                \int_gset:Nn \c@chapter
+                  { \g__osglecture_deployment_chapter_tl }
+              }
+          }
       }
   }
 
