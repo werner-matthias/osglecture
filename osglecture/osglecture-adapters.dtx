@@ -76,12 +76,33 @@
 % without a special case.}{\cs{osglecture\_adapter\_install:}}
 \cs_new_protected:Npn \osglecture_adapter_install:
   {
+    % \ldeen{Die Modusangabe eines Frames gilt auch in der Langform:
+    % \code{<presentation>} hält ihn aus dem Skript heraus, \code{<article>}
+    % oder eine reine Overlayangabe nicht. Die Auswertung übernimmt
+    % \pkg*{osglecture-modes}.}{A frame's mode specification also applies in
+    % long-form output: \code{<presentation>} keeps it out of the script,
+    % \code{<article>} or a plain overlay specification does not.
+    % \pkg*{osglecture-modes} does the evaluation.}
     \RenewDocumentEnvironment {frame} { D<> {all} O{} +b }
-      {##3}
+      { \osglecture_modes_if_reveal:nT {##1} {##3} }
       { }
     \NewDocumentEnvironment {frame*} { D<> {all} O{} +b }
-      {##3}
+      { \osglecture_modes_if_reveal:nT {##1} {##3} }
       { }
+    % \ldeen{Eine Overlayangabe an \cs{item} wird in der Langform
+    % verschluckt; ohne das stünde sie als Text im Listenpunkt.}{An overlay
+    % specification on \cs{item} is swallowed in long-form output; without
+    % this it would be printed as text in the list item.}
+    \AddToHook { begindocument / end }
+      {
+        \NewCommandCopy \__osglecture_adapter_item: \item
+        \RenewDocumentCommand \item { d<> o }
+          {
+            \IfNoValueTF {##2}
+              { \__osglecture_adapter_item: }
+              { \__osglecture_adapter_item: [##2] }
+          }
+      }
     \NewDocumentCommand \frametitle { D<> {all} O{##3} m } { }
     \NewDocumentCommand \framesubtitle { D<> {all} O{##3} m } { }
 % \ldeen{Die Zielbasisklasse hat kein Presenter-Notizen-Ziel, an das
@@ -167,12 +188,33 @@
 % without a special case.}{\cs{osglecture\_adapter\_install:}}
 \cs_new_protected:Npn \osglecture_adapter_install:
   {
+    % \ldeen{Die Modusangabe eines Frames gilt auch in der Langform:
+    % \code{<presentation>} hält ihn aus dem Skript heraus, \code{<article>}
+    % oder eine reine Overlayangabe nicht. Die Auswertung übernimmt
+    % \pkg*{osglecture-modes}.}{A frame's mode specification also applies in
+    % long-form output: \code{<presentation>} keeps it out of the script,
+    % \code{<article>} or a plain overlay specification does not.
+    % \pkg*{osglecture-modes} does the evaluation.}
     \RenewDocumentEnvironment {frame} { D<> {all} O{} +b }
-      {##3}
+      { \osglecture_modes_if_reveal:nT {##1} {##3} }
       { }
     \NewDocumentEnvironment {frame*} { D<> {all} O{} +b }
-      {##3}
+      { \osglecture_modes_if_reveal:nT {##1} {##3} }
       { }
+    % \ldeen{Eine Overlayangabe an \cs{item} wird in der Langform
+    % verschluckt; ohne das stünde sie als Text im Listenpunkt.}{An overlay
+    % specification on \cs{item} is swallowed in long-form output; without
+    % this it would be printed as text in the list item.}
+    \AddToHook { begindocument / end }
+      {
+        \NewCommandCopy \__osglecture_adapter_item: \item
+        \RenewDocumentCommand \item { d<> o }
+          {
+            \IfNoValueTF {##2}
+              { \__osglecture_adapter_item: }
+              { \__osglecture_adapter_item: [##2] }
+          }
+      }
     \NewDocumentCommand \frametitle { D<> {all} O{##3} m } { }
     \NewDocumentCommand \framesubtitle { D<> {all} O{##3} m } { }
 % \ldeen{Die Zielbasisklasse hat kein Presenter-Notizen-Ziel, an das

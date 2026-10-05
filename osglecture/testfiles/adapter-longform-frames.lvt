@@ -1,0 +1,38 @@
+\input regression-test
+\DocumentMetadata{}
+\documentclass[standalone,doctype=script,lang=de]{osglecture}
+\begin{document}
+\START
+\begin{frame}<presentation>
+  \TYPE{presentation-frame=LEAKED}
+\end{frame}
+\begin{frame}<presentation|handout:1>
+  \TYPE{presentation-handout-frame=LEAKED}
+\end{frame}
+\begin{frame}<article>
+  \TYPE{article-frame=shown}
+\end{frame}
+\begin{frame}<1-4>
+  \TYPE{overlay-only-frame=shown}
+\end{frame}
+\begin{frame}
+  \TYPE{plain-frame=shown}
+  \setbox0=\vbox{\hsize=20em
+    \begin{itemize}
+      \item<2-> zwei
+      \item<alert@3|handout:1>[x] drei
+    \end{itemize}}
+  \directlua{
+    local chars = {}
+    local function collect(head)
+      for n in node.traverse(head) do
+        if n.id == node.id("glyph") then table.insert(chars, utf8.char(n.char))
+        elseif n.head then collect(n.head) end
+      end
+    end
+    collect(tex.box[0].head)
+    tex.sprint("\string\\TYPE{item-text=" .. table.concat(chars) .. "}")
+  }
+\end{frame}
+\END
+\end{document}

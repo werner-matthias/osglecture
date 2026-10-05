@@ -23,7 +23,8 @@ Rule groups (`--rules=modes,figures,...`; default: all):
 |===
 |`modes` |`\only<article>{..}` -> `\lecturemode<longform>{..}`, `\alt<mode>{a}{b}` ->
 `\IfLectureModeTF`, `\medskip<mode>`/`\small<mode>`/`\vspace<mode>{..}`/`\footnote<mode>{..}`
--> guarded by `\lecturemode`, size pairs -> `\ModeValue`, `\mode<mode>{..}` blocks
+-> guarded by `\lecturemode`, size pairs -> `\ModeValue`, `\mode<mode>{..}` blocks,
+`\pipar` -> `\prespar`
 |`sections` |`\section<mode>..` -> `\lecturemode<mode>{\section..}`
 |`frames` |`[t]`/`[c]`/`[b]` -> `vertical-alignment=...`
 |`columns` |`twocolumns`: `T` -> `t`, mode specification before the options

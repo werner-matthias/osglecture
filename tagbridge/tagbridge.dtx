@@ -294,6 +294,21 @@ content) can be set per call or via \cs{qrset} as usual;
         }%
       }
   }
+% \ldeen{Ohne aktives Tagging bleiben die Schlüssel \code{tag} und
+%   \code{alt} trotzdem bekannt, nur wirkungslos: Pakete und Dokumente,
+%   die sie setzen (etwa \pkg*{semcat} mit \code{tag=artifact}), müssen
+%   auch ungetaggt übersetzbar bleiben.}{Without active tagging the keys
+%   \code{tag} and \code{alt} are still known, merely inert: packages and
+%   documents that set them (\pkg*{semcat} with \code{tag=artifact}, say)
+%   must remain compilable untagged as well.}
+\cs_if_exist:NF \tagstructbegin
+  {
+    \AddToHook { package/qrcode/after } [ tagbridge/qrcode-keys ]
+      {
+        \define@key{qr}{tag}{}
+        \define@key{qr}{alt}{}
+      }
+  }
 
 % \ldeen*{pgf/tikz reserviert die Schlüssel \code{alt}, \code{artifact}
 % und \code{actualtext} für \env{tikzpicture} ausdrücklich für

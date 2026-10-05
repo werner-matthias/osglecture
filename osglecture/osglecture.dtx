@@ -433,6 +433,16 @@ default gutter looks too tight with very unequal column shares.}
     Relation \code{therefore} wird es in der Langform ans Satzende verschoben.}{
     marks the finite verb. For the German \code{therefore} relation it is moved
     to the end of the clause in long-form output.}
+    \cs{prespar} \ldeen{beginnt in der Langform einen neuen Absatz und
+    schließt dazu den laufenden Satz ab; in Präsentationen bewirkt es nichts.
+    Eine bloße Leerzeile zwischen Items trennt dagegen nicht. Gewöhnliche
+    Listen (\env{itemize}, \env{enumerate}, \env{description}) dürfen in
+    einem Item stehen und bleiben auch in der Langform Listen.}{starts a new
+    paragraph in long-form output, closing the running sentence; in
+    presentations it does nothing. A mere blank line between items does not
+    separate. Ordinary lists (\env{itemize}, \env{enumerate},
+    \env{description}) may appear inside an item and remain lists in
+    long-form output as well.}
     \cs{preskeepcase}\marg{Text} \ldeen{verhindert die automatische Anpassung
     des Anfangsbuchstabens.}{prevents automatic adjustment of the initial letter.}
     \cs{prescase}\marg{Präsentation}\marg{Langform}
@@ -4384,12 +4394,88 @@ default gutter looks too tight with very unequal column shares.}
 \cs_new_protected:Npn \__osglecture_pres_begin_compact_item:nnn #1#2#3
   { \__osglecture_pres_begin_item:nnn {relation=#1}{#2}{#3} }
 
+\bool_new:N \l__osglecture_pres_inside_bool
 \IfLectureModeTF{longform}
   {
     \bool_set_true:N \l__osglecture_pres_longform_bool
 
+    % \ldeen{\cs{prespar} beginnt in der Langform einen neuen Absatz, auf
+    % Folien bewirkt es nichts. Innerhalb von \env{presitemize} ist
+    % \cs{par} zu einem Leerzeichen umdefiniert, damit Leerzeilen zwischen
+    % Items den Fließtext nicht zerreißen; ein gewollter Absatzwechsel
+    % braucht deshalb einen eigenen Befehl. Er schließt den laufenden Satz
+    % wie das Umgebungsende ab (zurückgestelltes finites Verb, Satzzeichen)
+    % und setzt den Satzanfang zurück, sodass das nächste Item ohne
+    % Verbindungswort und großgeschrieben beginnt.}{\cs{prespar} starts a
+    % new paragraph in long-form output and does nothing on slides. Inside
+    % \env{presitemize}, \cs{par} is redefined to a space so that blank
+    % lines between items do not tear the prose apart; a deliberate
+    % paragraph break therefore needs a command of its own. It closes the
+    % running sentence like the end of the environment does (deferred
+    % finite verb, punctuation) and resets the sentence start, so the next
+    % item begins without a joining word and capitalised.}
+    \NewDocumentCommand \prespar { } { \__osglecture_pres_par_token: }
+    \cs_new_protected:Npn \__osglecture_pres_close_sentence:
+      {
+        \__osglecture_pres_flush_finite:
+        \bool_if:nT
+          {
+            \l__osglecture_pres_has_item_bool
+            && \l__osglecture_pres_auto_punctuation_bool
+          }
+          { \__osglecture_pres_punctuate:n {.} }
+        \bool_set_false:N \l__osglecture_pres_has_item_bool
+      }
+
+    % \ldeen{Gewöhnliche Listen innerhalb von \env{presitemize} bleiben
+    % Listen. Vor der inneren Liste wird der laufende Satz abgeschlossen;
+    % in ihr gelten wieder das ursprüngliche \cs{item} und \cs{par}. Die
+    % Hooks greifen nur unmittelbar innerhalb der Langform-Umgebung; tiefer
+    % verschachtelte Listen sehen den Schalter nicht mehr.}{Ordinary lists
+    % inside \env{presitemize} remain lists. The running sentence is closed
+    % before the inner list; inside it the original \cs{item} and \cs{par}
+    % apply again. The hooks only act directly inside the long-form
+    % environment; lists nested more deeply no longer see the switch.}
+    \NewCommandCopy \__osglecture_pres_saved_item: \item
+    \cs_new_protected:Npn \__osglecture_pres_before_inner_list:
+      {
+        \bool_if:NT \l__osglecture_pres_inside_bool
+          { \__osglecture_pres_close_sentence: }
+      }
+    \cs_new_protected:Npn \__osglecture_pres_begin_inner_list:
+      {
+        \bool_if:NT \l__osglecture_pres_inside_bool
+          {
+            \bool_set_false:N \l__osglecture_pres_inside_bool
+            \DeclareCommandCopy \item \__osglecture_pres_saved_item:
+            \cs_set_eq:NN \par \__osglecture_pres_par_token:
+          }
+      }
+    \clist_map_inline:nn { itemize, enumerate, description }
+      {
+        \AddToHook { env/#1/before } { \__osglecture_pres_before_inner_list: }
+        \AddToHook { env/#1/begin }  { \__osglecture_pres_begin_inner_list: }
+      }
+    % \ldeen{Auch \env{center}, \env{quote} und Verwandte sind intern
+    % (Trivial-)Listen und rufen \cs{item} auf. Sie stehen oft mitten im
+    % Satz (eine abgesetzte Formel), deshalb wird hier nur das
+    % ursprüngliche \cs{item} wiederhergestellt und der Satz nicht
+    % abgeschlossen.}{\env{center}, \env{quote} and their relatives are
+    % (trivial) lists internally, too, and call \cs{item}. They often sit
+    % in the middle of a sentence (a displayed formula), so only the
+    % original \cs{item} is restored here and the sentence is not closed.}
+    \clist_map_inline:nn
+      { center, flushleft, flushright, quote, quotation, verse, verbatim }
+      { \AddToHook { env/#1/begin } { \__osglecture_pres_begin_inner_list: } }
+
     \NewDocumentEnvironment{presitemize}{O{}}
       {
+        % \ldeen{Ein verschachteltes \env{presitemize} schließt wie eine
+        % innere Liste zuerst den laufenden Satz der äußeren Umgebung
+        % ab.}{A nested \env{presitemize}, like an inner list, first closes
+        % the running sentence of the outer environment.}
+        \bool_if:NT \l__osglecture_pres_inside_bool
+          { \__osglecture_pres_close_sentence: }
         \group_begin:
         \tl_clear:N \l__osglecture_pres_language_override_tl
         \bool_set_true:N \l__osglecture_pres_auto_punctuation_bool
@@ -4414,10 +4500,25 @@ default gutter looks too tight with very unequal column shares.}
         % taggen.}{Longform is semantic prose, not an inline list. Keeping
         % it out of a list environment also lets the \LaTeX\ tagging layer
         % tag the result as ordinary paragraph content.}
+        % \ldeen{Im vertikalen Modus -- nach einer inneren Liste oder
+        % einer abgesetzten Zeile -- beginnt das Item einen neuen Absatz;
+        % das Verbindungsstück des vorigen Satzes gehört dann nicht an
+        % dessen Anfang.}{In vertical mode -- after an inner list or a
+        % displayed line -- the item starts a new paragraph; the joining
+        % text of the previous sentence does not belong at its start.}
         \cs_set_protected:Npn \__osglecture_pres_original_item:
           {
             \bool_if:NT \l__osglecture_pres_has_item_bool
-              { \tl_use:N \l__osglecture_pres_join_tl }
+              { \mode_if_vertical:F { \tl_use:N \l__osglecture_pres_join_tl } }
+          }
+        \bool_if:NF \l__osglecture_pres_inside_bool
+          { \DeclareCommandCopy \__osglecture_pres_saved_item: \item }
+        \bool_set_true:N \l__osglecture_pres_inside_bool
+        \RenewDocumentCommand \prespar { }
+          {
+            \__osglecture_pres_close_sentence:
+            \unskip
+            \__osglecture_pres_par_token:
           }
         \RenewDocumentCommand \item {d<> o}
           {
@@ -4450,6 +4551,7 @@ default gutter looks too tight with very unequal column shares.}
   }
   {
     \bool_set_false:N \l__osglecture_pres_longform_bool
+    \NewDocumentCommand \prespar { } { }
     \cs_new_protected:Npn \__osglecture_pres_presentation_item:nnn #1#2#3
       {
         \keys_set:nn {osglecture/presitem}
@@ -4477,7 +4579,28 @@ default gutter looks too tight with very unequal column shares.}
         \keys_set:nn {osglecture/presitemize}{#1}
         \__osglecture_pres_resolve_language:
         \begin{itemize}
-        \cs_set_eq:NN \__osglecture_pres_original_item: \item
+        % \ldeen{Kopie mit \cs{DeclareCommandCopy}, nicht mit
+        % \cs{cs_set_eq:NN}: Ist \cs{item} selbst mit
+        % \cs{RenewDocumentCommand} definiert (wie unter \cls*{ltx-talk}),
+        % kopierte \cs{cs_set_eq:NN} nur die äußere Hülle; das folgende
+        % \cs{RenewDocumentCommand} überschriebe deren gemeinsamen
+        % Innenteil, und die \enquote{Originalfassung} riefe sich endlos
+        % selbst auf.}{Copied with \cs{DeclareCommandCopy}, not with
+        % \cs{cs_set_eq:NN}: if \cs{item} is itself defined with
+        % \cs{RenewDocumentCommand} (as under \cls*{ltx-talk}),
+        % \cs{cs_set_eq:NN} would copy only the outer wrapper; the
+        % following \cs{RenewDocumentCommand} would overwrite their shared
+        % inner part, and the \enquote{original} would call itself
+        % forever.}
+        % \ldeen{In einem verschachtelten \env{presitemize} ist \cs{item}
+        % bereits die Präsentationsfassung; sie erneut als
+        % \enquote{Original} zu kopieren, ließe sie sich selbst
+        % aufrufen.}{Inside a nested \env{presitemize}, \cs{item} already is
+        % the presentation version; copying it again as the
+        % \enquote{original} would make it call itself.}
+        \bool_if:NF \l__osglecture_pres_inside_bool
+          { \DeclareCommandCopy \__osglecture_pres_original_item: \item }
+        \bool_set_true:N \l__osglecture_pres_inside_bool
         \RenewDocumentCommand \item {d<> o}
           { \__osglecture_pres_presentation_item:nnn {} {##1}{##2} }
         \RenewDocumentCommand \presitem {O{} d<> o}

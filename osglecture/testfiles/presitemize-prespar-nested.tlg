@@ -1,0 +1,7 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+prespar: lines=2 text=|Erster Satz. Zweiter Satz.|Dritter Satz.
+nested: lines=4 text=|Ein Satz mit Liste:|•Punkt A|•Punkt B|Danach weiter.
+nested-presitemize: lines=3 text=|Au^^dfen eins. Innen eins. Innen zwei.|•ganz innen|Au^^dfen zwei.
+center: lines=3 text=|Ein Satz mit Formel|A gleich B|Danach weiter.
+prespar-outside=ok

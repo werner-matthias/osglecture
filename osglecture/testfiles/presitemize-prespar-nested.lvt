@@ -1,0 +1,78 @@
+\input regression-test
+\documentclass[standalone,doctype=script,lang=de]{osglecture}
+\newcommand\COLLECT[1]{%
+  \directlua{
+    local chars, lines = {}, 0
+    local hlist, vlist, glyph, glue =
+      node.id("hlist"), node.id("vlist"), node.id("glyph"), node.id("glue")
+    local function collect(head, top)
+      for n in node.traverse(head) do
+        if n.id == glyph then
+          table.insert(chars, utf8.char(n.char))
+        elseif n.id == glue and n.subtype == 13 then
+          table.insert(chars, " ")
+        elseif (n.id == hlist or n.id == vlist) and n.head then
+          if top and n.id == hlist then
+            lines = lines + 1
+            table.insert(chars, "|")
+          end
+          collect(n.head, false)
+        end
+      end
+    end
+    collect(tex.box[0].head, true)
+    tex.sprint("\string\\TYPE{#1: lines=" .. lines .. " text="
+      .. table.concat(chars) .. "}")
+  }%
+}
+\begin{document}
+\START
+\setbox0=\vbox{\hsize=30em
+  \begin{presitemize}
+    \item erster Satz
+
+    \item zweiter Satz
+    \prespar
+    \item dritter Satz
+  \end{presitemize}%
+}
+\COLLECT{prespar}
+\setbox0=\vbox{\hsize=30em
+  \begin{presitemize}
+    \item ein Satz mit Liste:
+      \begin{itemize}
+        \item Punkt A
+        \item Punkt B
+      \end{itemize}
+    \item danach weiter
+  \end{presitemize}%
+}
+\COLLECT{nested}
+\setbox0=\vbox{\hsize=30em
+  \begin{presitemize}
+    \item außen eins
+      \begin{presitemize}
+        \item innen eins
+        \item innen zwei
+          \begin{itemize}
+            \item ganz innen
+          \end{itemize}
+      \end{presitemize}
+    \item außen zwei
+  \end{presitemize}%
+}
+\COLLECT{nested-presitemize}
+\setbox0=\vbox{\hsize=30em
+  \begin{presitemize}
+    \item ein Satz mit Formel
+      \begin{center}
+        A gleich B
+      \end{center}
+    \item danach weiter
+  \end{presitemize}%
+}
+\COLLECT{center}
+\prespar
+\TYPE{prespar-outside=ok}
+\END
+\end{document}

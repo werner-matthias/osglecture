@@ -297,6 +297,55 @@ local function pure_mode(specification)
   return table.concat(parts, "||")
 end
 
+-- Mode-qualified overlay specifications.  Beamer let a bare overlay atom
+-- apply to every presentation mode and used "article:0" to keep material
+-- out of the script; osglecture-modes wants each atom qualified:
+--   <2|article:0|handout:0>  ->  <slides:2|handout:0>
+--   <14-|article:0>          ->  <presentation:14->
+--   <presentation|+->        ->  <presentation:+->
+-- Returns the new specification, or nil when nothing needs to change.
+local function normalise_overlay_spec(specification)
+  local spec = specification:gsub("%s", "")
+  if not spec:find("%a") or pure_mode(spec) then return nil end
+  local segments, bare_modes, atoms, qualified = {}, {}, {}, {}
+  local has_article_zero, handout_qualified = false, false
+  for seg in spec:gmatch("[^|]+") do
+    local mode, rest = seg:match("^(%a+):(.*)$")
+    if mode and MODE[mode] then
+      if mode == "article" and rest == "0" then has_article_zero = true
+      else
+        if mode == "handout" then handout_qualified = true end
+        qualified[#qualified + 1] = seg
+      end
+    elseif MODE[seg] then bare_modes[#bare_modes + 1] = seg
+    elseif seg:match("^[%d%-+,.]+$") or seg:match("^%a+@[%d%-+,.]+$") then atoms[#atoms + 1] = seg
+    else return nil end
+  end
+  -- action atoms (alert@2-3) next to mode-qualified segments are not
+  -- recognised as overlay atoms by osglecture-modes and reach the backend
+  -- with the mode prefix still attached
+  local has_action = false
+  for _, a in ipairs(atoms) do if a:find("@", 1, true) then has_action = true end end
+  if not has_article_zero and #bare_modes == 0
+     and not (has_action and #qualified > 0) then return nil end
+  if #atoms == 0 then return nil end
+  -- visibility and action for the same mode ("1-|alert@2") cannot be
+  -- written as mode:rest, where rest may not contain "|"
+  if has_action and #atoms > 1 then return nil end
+  if #bare_modes > 1 then return nil end
+  local prefix
+  if #bare_modes == 1 then
+    if bare_modes[1] == "article" or bare_modes[1] == "all" then return nil end
+    prefix = MODE[bare_modes[1]]
+  else
+    prefix = handout_qualified and "slides" or "presentation"
+  end
+  local out = {}
+  for _, a in ipairs(atoms) do out[#out + 1] = prefix .. ":" .. a end
+  for _, q in ipairs(qualified) do out[#out + 1] = q end
+  return table.concat(out, "|")
+end
+
 local function wrap_mode(mode, content)
   if mode == nil or mode == "all" then return content end
   return "\\lecturemode<" .. mode .. ">{" .. content .. "}"
@@ -321,8 +370,8 @@ for _, n in ipairs { "tiny", "scriptsize", "footnotesize", "small",
 
 -- commands that are simply executed or not: \vspace<article>{1ex}
 local GUARDED = {
-  vspace = "sm", hspace = "sm", footnote = "om", frametitle = "m",
-  framesubtitle = "m", index = "m", label = "m", pagebreak = "o",
+  vspace = "sm", hspace = "sm", footnote = "om",
+  index = "m", label = "m", pagebreak = "o",
   includegraphics = "om", VersionWarning = "", lineellipsis = "",
 }
 
@@ -338,9 +387,6 @@ local STYLED = {
 local REPORT_ONLY = {
   contframetitle = { "\\contframetitle",
     "kept; the theme provides it (ltxtalk-theme)" },
-  pipar = { "\\pipar",
-    "paragraph break inside the old prose list; the osglecture presitemize "
-      .. "has no counterpart -- split the list or use \\lecturemode<longform>{\\par}" },
   dictum = { "\\dictum", "KOMA-Script only; guard with \\lecturemode<longform>" },
   includeChapterNo = { "\\includeChapterNo",
     "combined script; replaced by OLLM series/integration units (\\includeunit)" },
@@ -446,6 +492,15 @@ function H.only(s, i, base)
   end
   local args, e = parse(s, p, "m")
   if not args then return nil end
+  do
+    local _, nb = args[1]:gsub("\\begin%s*{", "")
+    local _, ne = args[1]:gsub("\\end%s*{", "")
+    if nb ~= ne then
+      note(base + i, "environment opened or closed inside \\only<mode>{...}",
+        "the two halves end up in different arguments; tagged environments such as "
+          .. "tikzpicture break -- use one \\begin with \\ModeValue in its options instead")
+    end
+  end
   count("\\only<mode> -> \\lecturemode")
   return wrap_mode(mode, rewrite(args[1], base + p)), e
 end
@@ -512,6 +567,13 @@ H.subsection = sectioning("subsection")
 H.subsubsection = sectioning("subsubsection")
 H.chapter = sectioning("chapter")
 
+-- \pipar: paragraph break inside the prose list
+function H.pipar(s, i, base)
+  if not enabled("modes") then return nil end
+  count("\\pipar -> \\prespar")
+  return "\\prespar", i
+end
+
 -- \centerpic<mode>[w_pres,w_art]{file}
 function H.centerpic(s, i, base)
   if not enabled("figures") then return nil end
@@ -568,8 +630,9 @@ function H.OsgDefineCategory(s, i, base)
   local args, e = parse(s, i, "smm")
   if not args then return nil end
   count("\\OsgDefineCategory -> \\SemCatDefine")
+  -- the legacy block marking (catbar) was a margin bar, not a box
   return "\\SemCatDefine" .. (args[1] and "*" or "") .. "{" .. args[2]
-    .. "}[color=" .. args[3] .. "]", e
+    .. "}[color=" .. args[3] .. ", style=bar]", e
 end
 
 -- listings
@@ -731,12 +794,23 @@ function E.twocolumns(s, i, base)
     .. (o and ("[" .. o .. "]") or ""), e
 end
 
+local PRESITEMIZE_KEYS = { language = true, punctuation = true, whitespace = true }
+
 function E.presitemize(s, i, base)
   local o, e = balanced(s, i, "[", "]")
-  if not o then return nil end
-  note(base + i, "presitemize with an enumitem option [" .. o .. "]",
-    "the osglecture presitemize takes its own keys (language, punctuation, whitespace)")
-  return nil
+  if not o or o:find("\1", 1, true) then return nil end
+  local keep = {}
+  for _, it in ipairs(split_keys(o)) do
+    if PRESITEMIZE_KEYS[key_of(it)] then keep[#keep + 1] = it
+    else
+      note(base + i, "presitemize option '" .. it .. "' dropped",
+        "enumitem option of the legacy list; the osglecture presitemize only "
+          .. "knows language, punctuation and whitespace")
+    end
+  end
+  if #keep == #split_keys(o) then return nil end
+  count("presitemize: legacy enumitem options removed")
+  return "\\begin{presitemize}" .. (#keep > 0 and ("[" .. table.concat(keep, ",") .. "]") or ""), e
 end
 
 -- artfigure / arttable
@@ -756,12 +830,24 @@ local function float_env(kind)
     end
     local body = rewrite(s:sub(bs, be), base + bs)
     local placement = star and "H" or (args[4] and trim(args[4]) ~= "" and trim(args[4]) or "htb")
-    local cap = ""
+    local cap, moved = "", ""
     if caption then
+      -- a QR code cannot live inside \caption (it contains paragraphs);
+      -- it is moved behind the caption
+      while true do
+        local b, name, a = caption:match("()\\(qrr?)()%f[%A]")
+        if not b then break end
+        local replacement, e = H[name](caption, a, base + i)
+        if not replacement then break end
+        moved = moved .. "\n  " .. replacement
+        caption = caption:sub(1, b - 1) .. caption:sub(e)
+        count("QR code moved out of a caption")
+      end
       cap = "\\caption{" .. rewrite(caption, base + i) .. "}"
       if label and trim(label) ~= "" then cap = cap .. "\\label{" .. trim(label) .. "}" end
       -- '-' meant: no caption on slides
       if args[2] then cap = "\\lecturemode<longform>{" .. cap .. "}" end
+      cap = cap .. moved
     else
       note(base + i, env .. " without caption/label arguments", "check the result")
     end
@@ -830,6 +916,24 @@ function E.catbox(s, i, base, env)
     .. "\\end{SemCatExplain}", after
 end
 
+-- A catbox wrapped in a float: SemCatExplain floats on its own, and a
+-- float inside a float is an error ("Not in outer par mode").
+function E.figure(s, i, base, env)
+  if not enabled("semcat") then return nil end
+  local o, p = balanced(s, i, "[", "]")
+  p = p or i
+  local bs, be, after = env_body(s, p, env)
+  if not bs then return nil end
+  local body = s:sub(bs, be)
+  local inner = trim(body)
+  if inner:match("^\\begin{catbox}") and inner:match("\\end{catbox}$")
+     and select(2, inner:gsub("\\begin{catbox}", "")) == 1 then
+    count("figure around a single catbox removed")
+    return rewrite(body, base + bs), after
+  end
+  return nil
+end
+
 -- terminals
 function E.terminal(s, i, base, env)
   if not enabled("terminals") then return nil end
@@ -862,7 +966,7 @@ local function termexec(s, i, base, env)
       local k, v = it:match("^%s*([%w-]+)%s*=%s*(.-)%s*$")
       if k == "last" then keep[#keep + 1] = "lines={-" .. v .. "}"
       elseif k == "first" then keep[#keep + 1] = "lines={" .. v .. "-}"
-      elseif k == "range" or k == "lines" then keep[#keep + 1] = "lines={" .. v:gsub("^{(.*)}$", "%1") .. "}"
+      elseif k == "range" or k == "lines" or k == "linerange" then keep[#keep + 1] = "lines={" .. v:gsub("^{(.*)}$", "%1") .. "}"
       else
         note(base + i, "termexec key '" .. (k or it) .. "' dropped",
           "legacy osgcode key without counterpart in ansitermexec")
@@ -947,6 +1051,13 @@ local function generic_mode_spec(name, s, i, base)
     return wrap_mode(mode, "\\" .. name .. rewrite(s:sub(p, e - 1), base + p)), e
   end
 
+  -- frame titles keep their mode: slides themes evaluate it, and in
+  -- long-form output the project decides whether a title is a heading
+  if name == "frametitle" or name == "framesubtitle" then
+    count("kept: \\" .. name .. "<mode> (evaluated by theme / project setup)")
+    return nil
+  end
+
   if STYLED[name] then
     aware[name] = STYLED[name]
     count("kept: \\" .. name .. "<mode> (declare overlay-aware in the project setup)")
@@ -995,6 +1106,17 @@ function rewrite(s, base)
         end
         if not replacement and not handler then
           replacement, e = generic_mode_spec(name, s, after, base)
+        end
+      end
+      if not replacement and enabled("modes") then
+        -- last resort: only the overlay specification itself is normalised
+        local p = after
+        if name == "begin" then p = s:match("^{[%a]+%*?}()", after) or after end
+        local spec, e2 = angle(s, p)
+        local fixed = spec and normalise_overlay_spec(spec)
+        if fixed then
+          count("overlay specification qualified (article:0 / bare mode)")
+          replacement, e = s:sub(b, p - 1) .. "<" .. fixed .. ">", e2
         end
       end
       if replacement then

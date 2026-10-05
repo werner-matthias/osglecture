@@ -1,0 +1,25 @@
+\DocumentMetadata{lang=de,tagging=on}
+\input regression-test
+\documentclass[standalone,profile=ltx-talk,lang=de]{osglecture}
+\begin{document}
+\START
+\begin{frame}
+  \frametitle{Liste}
+  \begin{presitemize}
+    \item erster Punkt
+    \anditem<2-> zweiter Punkt
+    \prespar
+    \item dritter Punkt
+      \begin{itemize}
+        \item innen
+      \end{itemize}
+    \item vierter Punkt
+      \begin{presitemize}
+        \item verschachtelt
+        \anditem noch einer
+      \end{presitemize}
+  \end{presitemize}
+\end{frame}
+\TYPE{presitemize-ltx-talk-complete=true}
+\END
+\end{document}
