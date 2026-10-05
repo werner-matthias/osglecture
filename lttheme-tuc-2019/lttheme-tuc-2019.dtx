@@ -118,8 +118,9 @@ Inconsolata ergänzt Roboto als platzsparende Codeschrift. Ihre schmaleren
 Glyphen bringen auf einer typischen Codezeile merklich mehr Zeichen unter als
 Roboto Mono, ohne die offene Formensprache zu verlassen. Fira Math ist eine
 vollständige serifenlose Unicode-Mathematikschrift mit ähnlich sachlichem,
-humanistischem Duktus. Die Option lädt dafür \pkg*{unicode-math} und setzt die
-Mathematikschrift beim Aktivieren des Themes.
+humanistischem Duktus. Die Option setzt die Mathematikschrift beim Aktivieren
+des Themes über das von \cls*{ltx-talk} geladene \pkg*{lua-unicode-math}; nur
+wo dieses fehlt, lädt sie dafür \pkg*{unicode-math}.
 }{
 The optional bundle deliberately keeps the corporate design entirely in
 Roboto: body copy, supporting text, headings, and emphasis are distinguished
@@ -128,8 +129,9 @@ Inconsolata complements Roboto as a space-efficient code face. Its narrower
 glyphs fit noticeably more characters on a typical source line than Roboto
 Mono without abandoning the open shapes. Fira Math is a complete sans-serif
 Unicode mathematics face with a similarly matter-of-fact, humanist character.
-The option therefore loads \pkg*{unicode-math} and selects the mathematics
-face when the theme is activated.
+The option selects the mathematics face when the theme is activated, via the
+\pkg*{lua-unicode-math} loaded by \cls*{ltx-talk}; only where that is absent
+does it load \pkg*{unicode-math} for the purpose.
 }
 
 \begin{sourcecode}
@@ -653,9 +655,20 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
 \RequirePackage{ltxtalk-theme}
 \RequirePackage{tikz}
 
+% \ldeen{\cls*{ltx-talk} lädt unter Lua\LaTeX{} bereits
+%   \pkg*{lua-unicode-math}, das \cs{setmathfont} selbst bereitstellt und
+%   ein zusätzlich angefordertes \pkg*{unicode-math} mit einer Warnung
+%   abschaltet. \pkg*{unicode-math} wird deshalb nur noch geladen, wenn
+%   \pkg*{lua-unicode-math} fehlt.}{Under Lua\LaTeX{} \cls*{ltx-talk}
+%   already loads \pkg*{lua-unicode-math}, which provides \cs{setmathfont}
+%   itself and disables an additionally requested \pkg*{unicode-math} with
+%   a warning. \pkg*{unicode-math} is therefore only loaded when
+%   \pkg*{lua-unicode-math} is absent.}
 \str_if_eq:VnT \g__ltxtalk_tuc_fonts_tl { roboto }
   {
-    \RequirePackage{unicode-math}
+    \@ifpackageloaded { lua-unicode-math }
+      { }
+      { \RequirePackage{unicode-math} }
     \DeclareLTXTalkFontPalette { ltxtalk-tuc-roboto }
       {
         main =
