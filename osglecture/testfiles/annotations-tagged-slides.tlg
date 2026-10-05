@@ -1,0 +1,9 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+TAG line-remark={FENote}{FENote}in {text}{P}
+TAG item-remark={text}{P}in {text-unit}{Part}
+TAG inline-credit={FENote}{FENote}in {text}{P}
+TAG block-credit={text}{P}in {text-unit}{Part}
+TAG frame-remark={text}{P}in {text-unit}{Part}
+[1]
+annotations-tagged-complete=true

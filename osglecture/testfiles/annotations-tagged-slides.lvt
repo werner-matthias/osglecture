@@ -1,0 +1,32 @@
+\DocumentMetadata{lang=de,tagging=on}
+\input regression-test
+\documentclass[standalone,profile=ltx-talk,lang=de]{osglecture}
+\ExplSyntaxOn
+\NewDocumentCommand \ShowTag { m }
+  {
+    \iow_term:e
+      {
+        TAG~#1 = \seq_item:Nn \g__tag_struct_tag_stack_seq { 1 }
+        ~in~ \seq_item:Nn \g__tag_struct_tag_stack_seq { 2 }
+      }
+  }
+\ExplSyntaxOff
+\begin{document}
+\START
+\begin{frame}
+  \frametitle{Annotations}
+  \begin{itemize}
+    \item First item
+      \osgannotation{Remark in line\ShowTag{line-remark}}
+    \item Second item
+
+      \osgannotation{Remark in item\ShowTag{item-remark}}
+  \end{itemize}
+  Text with a box \mbox{X\sourceref[Bildquelle]{Inline credit\ShowTag{inline-credit}}}.
+
+  \sourceref{Block credit\ShowTag{block-credit}}
+  \osgannotation{Remark after the list\ShowTag{frame-remark}}
+\end{frame}
+\TYPE{annotations-tagged-complete=true}
+\END
+\end{document}

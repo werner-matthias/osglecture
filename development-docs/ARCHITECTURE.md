@@ -663,6 +663,16 @@ zweispaltig gesetzt werden. Das Paket hängt direkt von `osglecture-modes` ab;
 es besitzt kein zweites, von der Ladereihenfolge abhängiges Verhalten ohne
 Modussystem.
 
+Das ebenfalls obligatorische Klassenpaket `osglecture-annotations.sty` stellt
+Inhalte neben dem eigentlichen Textstrom bereit: `\sourceref` für
+Quellenangaben und `\osgannotation` für Einwürfe (typischerweise
+Overlay-TikZ-Bilder). Ihm gehört die Entscheidung, als welches
+PDF-Strukturelement solcher Nebeninhalt erscheint: zwischen Absätzen als
+`Aside`, innerhalb eines Absatzes als `FENote`, weil `Aside` dort unzulässig
+ist. Das Paket ist modusunabhängig und hängt nur vom LaTeX-Kern ab; ohne
+tagpdf setzt es lediglich den Inhalt. Die Lesereihenfolge bestimmt die
+Aufrufstelle im Quelltext, nicht die Platzierung auf der Seite.
+
 ### 3.8 Paketgrenzen folgen semantischer Eigentümerschaft
 
 Doctype-Abhängigkeit entscheidet nicht, ob eine Funktion zur Kernklasse oder

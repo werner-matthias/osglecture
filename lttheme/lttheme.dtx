@@ -3099,6 +3099,20 @@ theme.
 %   opens and closes structure and MC itself and leaves the tagging state as
 %   it found it. No \code{firstkid}: the element sits in the tree where it
 %   sits in the text stream.}
+% \ldeen{Strukturelemente aus Kopf-/Rand-/Fußbereichen entstehen erst beim
+%   Ausschiffen. Sie werden ebenfalls \emph{ohne} \code{firstkid} an den
+%   \code{frame} gehängt, also hinter dessen Inhalt: Mit \code{firstkid}
+%   stellten sie sich vor den im Textstrom getaggten Folientitel, und der
+%   Titel wäre nicht mehr das erste Element der Folie. Die Lesereihenfolge
+%   ist damit in allen Themes Titel, Untertitel, Inhalt, dann die
+%   Randnotizen in der Reihenfolge ihrer Slots.}{Structure elements from
+%   header/margin/footer areas are only created at shipout. They too are
+%   attached to the \code{frame} \emph{without} \code{firstkid}, i.e. after
+%   its content: with \code{firstkid} they would jump ahead of the frame
+%   title tagged in the text stream, and the title would no longer be the
+%   first element of the frame. Reading order is thus, in every theme,
+%   title, subtitle, content, then the marginal notes in the order of
+%   their slots.}
 \cs_new_protected:Npn \__ltxtalk_flow_struct:nn #1 #2
   {
     \tagpdfparaOff
@@ -3123,7 +3137,6 @@ theme.
           {
             \__talk_header_tag_begin:e
               {
-                firstkid = true,
                 parent = \int_use:N \g__talk_frame_struct_int,
                 #1
               }

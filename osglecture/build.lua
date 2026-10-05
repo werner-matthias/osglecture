@@ -22,6 +22,7 @@ installfiles = {
   "osglecture-osgbeamer.code.tex",
   "osglecture-presitemize.sty",
   "osglecture-twocolumns.sty",
+  "osglecture-annotations.sty",
   "osglecture-series-index.lua",
   "osglecture-series.sty",
   "osglecture-toml.lua",

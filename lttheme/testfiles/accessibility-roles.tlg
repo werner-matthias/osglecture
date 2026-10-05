@@ -17,22 +17,22 @@ TEST 1: Show PDF Tags
       id="ID.06"
       rolemaps-to="Sect"
      >
+    <H2 xmlns="http://iso.org/pdf2/ssn"
+       id="ID.07"
+      >
+     <?MarkedContent page="1" ?>A Heading
+    </H2>
+    <Note xmlns="http://iso.org/pdf/ssn"
+       id="ID.08"
+      >
+     <?MarkedContent page="1" ?>A Note
+    </Note>
     <Figure xmlns="http://iso.org/pdf2/ssn"
        id="ID.09"
        alt="A decorative mark"
       >
      <?MarkedContent page="1" ?>***
     </Figure>
-    <Note xmlns="http://iso.org/pdf/ssn"
-       id="ID.08"
-      >
-     <?MarkedContent page="1" ?>A Note
-    </Note>
-    <H2 xmlns="http://iso.org/pdf2/ssn"
-       id="ID.07"
-      >
-     <?MarkedContent page="1" ?>A Heading
-    </H2>
    </frame>
   </Document>
  </StructTreeRoot>

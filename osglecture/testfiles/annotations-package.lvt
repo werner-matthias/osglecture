@@ -1,0 +1,17 @@
+\input regression-test
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{osglecture-annotations}
+\begin{document}
+\START
+Text.
+\sourceref{Block credit}
+\sourceref*[Bildquelle]{Flush right}
+\sourceref[]{No label}
+
+\mbox{Box\sourceref[Inline]{credit}}
+\osgannotation{Vertical remark}
+Text \osgannotation{inline remark} goes on.
+\TYPE{annotations-untagged-complete=true}
+\END
+\end{document}

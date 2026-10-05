@@ -36,6 +36,7 @@
   \file{osglecture-profiles.sty}{\from{osglecture.dtx}{profiles}}
   \file{osglecture-presitemize.sty}{\from{osglecture.dtx}{presitemize}}
   \file{osglecture-twocolumns.sty}{\from{osglecture.dtx}{twocolumns}}
+  \file{osglecture-annotations.sty}{\from{osglecture.dtx}{annotations}}
   \file{osglecture-series.sty}{\from{osglecture.dtx}{series}}
   \file{osglecture-osgbeamer.code.tex}{\from{osglecture.dtx}{osgbeamer}}
   \file{osglecture-adapter-beamer.def}{\from{osglecture-adapters.dtx}{beamer}}
@@ -309,6 +310,47 @@
       document language is the default.}
     \end{options}
   \end{quote}
+
+  \command{sourceref}[\sarg\oarg{\ldeen{Bezeichner}{label}}\marg{\ldeen{Quelle}{source}}]
+  \ldeen{setzt eine Quellenangabe (etwa eine Bildquelle) in kleiner Schrift.
+  Der Bezeichner ist mit \enquote{Quelle} bzw.\ \enquote{Source}
+  vorbelegt; ein leerer Bezeichner entfällt samt Doppelpunkt. In einer Box
+  -- typischerweise unmittelbar hinter \cs{includegraphics} -- steht die
+  Angabe in der Zeile und wird als \code{FENote} getaggt; sonst bildet sie
+  einen eigenen Absatz und wird als \code{Aside} getaggt, mit Stern
+  rechtsbündig. Eine Quellenangabe ist echter Inhalt und nie Artefakt. Die
+  Klasse lädt das bereitstellende Paket \pkg*{osglecture-annotations}
+  automatisch.}{typesets a source credit (an image credit, say) in small
+  type. The label defaults to \enquote{Quelle} or \enquote{Source}; an
+  empty label is dropped together with its colon. Inside a box --
+  typically right after \cs{includegraphics} -- the credit stays in the
+  line and is tagged as \code{FENote}; otherwise it forms a paragraph of
+  its own and is tagged as \code{Aside}, flush right with the star. A
+  source credit is real content and never an artifact. The class
+  automatically loads the package \pkg*{osglecture-annotations}, which
+  provides this command.}
+
+  \command{osgannotation}[\marg{\ldeen{Inhalt}{content}}]
+  \ldeen{kennzeichnet einen Einwurf neben dem eigentlichen Textstrom --
+  typischerweise ein \env{tikzpicture} mit \code{overlay} und
+  \code{remember picture}, das eine handschriftliche Anmerkung samt Pfeil
+  über die Folie legt. Zwischen Absätzen (vertikaler Modus) entsteht ein
+  \code{Aside}, das keine Höhe belegt; mitten in einer Zeile ein
+  \code{FENote}, weil \code{Aside} innerhalb eines Absatzes unzulässig ist.
+  Der Text darin bleibt echter, normal getaggter Text; gezeichnete Pfade
+  werden von tagpdf ohnehin als Artefakt markiert.
+  Die Lesereihenfolge folgt der Stelle des Aufrufs im Quelltext, nicht der
+  Platzierung auf der Seite: Der Aufruf gehört dorthin, wo die Anmerkung
+  inhaltlich hingehört.}{marks a remark beside the main text stream --
+  typically a \env{tikzpicture} with \code{overlay} and \code{remember
+  picture} that lays a handwritten note with an arrow over the slide.
+  Between paragraphs (vertical mode) this yields an \code{Aside} that
+  occupies no height; in the middle of a line an \code{FENote}, as
+  \code{Aside} is inadmissible inside a paragraph. The text inside remains
+  real, normally tagged text; drawn paths are marked as artifact by tagpdf
+  anyway. Reading order follows the position of the
+  call in the source, not the placement on the page: put the call where
+  the remark belongs logically.}
 \end{commands}
 
 \section{\ldeen{Umgebungen zur Textgestaltung}{Text-formatting environments}}
@@ -432,6 +474,8 @@ default gutter looks too tight with very unequal column shares.}
 \AutoDocInput{osglecture.dtx}{presitemize}
 \subsection{\code{osglecture-twocolumns.sty}}
 \AutoDocInput{osglecture.dtx}{twocolumns}
+\subsection{\code{osglecture-annotations.sty}}
+\AutoDocInput{osglecture.dtx}{annotations}
 \subsection{\code{osglecture-series.sty}}
 \AutoDocInput{osglecture.dtx}{series}
 %\subsection{\code{osglecture-osgbeamer.code.tex}}
@@ -545,6 +589,13 @@ default gutter looks too tight with very unequal column shares.}
   {v0.13.0}
   {Mode-aware two-column layouts for osglecture}
 %</twocolumns>
+%<*annotations>
+\ProvidesExplPackage
+  {osglecture-annotations}
+  {2026-08-21}
+  {v0.13.0}
+  {Tagged source credits and side annotations for osglecture}
+%</annotations>
 %<*series>
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
 \ProvidesExplPackage
@@ -1096,6 +1147,7 @@ default gutter looks too tight with very unequal column shares.}
 
 \__osglecture_require_package:n {osglecture-presitemize}
 \__osglecture_require_package:n {osglecture-twocolumns}
+\__osglecture_require_package:n {osglecture-annotations}
 \__osglecture_require_package:n {osglecture-adapters}
 % The adapter .def files are read with expl3 catcodes and switch expl3
 % syntax off on their way out, so it has to be switched back on here before
@@ -4715,6 +4767,129 @@ default gutter looks too tight with very unequal column shares.}
 
 \ExplSyntaxOff
 %</twocolumns>
+%<*annotations>
+
+% \ldeen{Zwei Hüllen für Strukturelemente neben dem Textstrom. Die
+% \emph{Inline}-Hülle unterbricht die laufende MC des Absatzes, setzt ihr
+% Element samt eigener MC und nimmt die Absatz-MC danach wieder auf; die
+% \emph{Block}-Hülle steht zwischen Absätzen und überlässt das Tagging des
+% Inhalts dem automatischen Absatz-Hook. Welche Elemente wo zulässig sind,
+% bestimmt die Wahl: \code{Aside} ist in \code{P} nicht erlaubt (tagpdf:
+% \enquote{Parent-Child 'P' --> 'Aside'}), \code{FENote} schon; als
+% Blockelement ist \code{Aside} auf Folienebene wie im Listenpunkt
+% zulässig. Fehlt tagpdf (auch \pkg{tagpdf-base}), bleibt nur der Inhalt.}{
+% Two wrappers for structure elements beside the text stream. The
+% \emph{inline} wrapper interrupts the paragraph's current MC, sets its
+% element with an MC of its own and resumes the paragraph MC afterwards;
+% the \emph{block} wrapper sits between paragraphs and leaves tagging of
+% the content to the automatic paragraph hook. Which element is admissible
+% where decides the choice: \code{Aside} is not allowed in \code{P}
+% (tagpdf: \enquote{Parent-Child 'P' --> 'Aside'}), \code{FENote} is; as a
+% block element \code{Aside} is admissible at frame level as well as
+% inside a list item. Without tagpdf (even \pkg{tagpdf-base}) only the
+% content remains.}
+\cs_new_protected:Npn \__osglecture_annot_inline:nn #1 #2
+  {
+    \cs_if_exist:NTF \tag_mc_end_push:
+      {
+        \tag_mc_end_push:
+        \tag_struct_begin:n { tag = #1 }
+        \tag_mc_begin:n { }
+        #2
+        \tag_mc_end:
+        \tag_struct_end:
+        \tag_mc_begin_pop:n { }
+      }
+      { #2 }
+  }
+\cs_new_protected:Npn \__osglecture_annot_block:nn #1 #2
+  {
+    \cs_if_exist:NTF \tag_struct_begin:n
+      {
+        \tag_struct_begin:n { tag = #1 }
+        #2
+        \tag_struct_end:
+      }
+      { #2 }
+  }
+
+% \ldeen{Vorbelegung des Bezeichners von \cs{sourceref}; \cs{ldeen} wird
+% genutzt, wo es existiert.}{Default label of \cs{sourceref}; \cs{ldeen}
+% is used where it exists.}
+\cs_new:Npn \__osglecture_annot_source_name:
+  { \cs_if_exist:NTF \ldeen { \ldeen { Quelle } { Source } } { Quelle } }
+\cs_new_protected:Npn \__osglecture_annot_source_text:nn #1 #2
+  {
+    \group_begin:
+      \tiny
+      \tl_if_blank:nF {#1} { #1 : ~ }
+      #2
+    \group_end:
+  }
+
+% \ldeen{\cs{sourceref} beginnt wie bisher mit \cs{par}. In einer Box
+% (eingeschränkt horizontaler Modus, etwa \cs{smash} hinter
+% \cs{includegraphics}) ist das wirkungslos; die Angabe steht dann in der
+% Zeile und wird \code{FENote}. Sonst steht sie als eigener Absatz in
+% einem \code{Aside}. Der Absatz endet \emph{außerhalb} der Schriftgruppe,
+% damit sein Zeilenabstand wie bisher der der Umgebung bleibt.}{
+% \cs{sourceref} starts with \cs{par} as before. Inside a box (restricted
+% horizontal mode, e.g. \cs{smash} after \cs{includegraphics}) that has no
+% effect; the credit then stays in the line and becomes an \code{FENote}.
+% Otherwise it forms a paragraph of its own inside an \code{Aside}. The
+% paragraph ends \emph{outside} the font group, so its line spacing stays
+% that of the surrounding text as before.}
+\NewDocumentCommand \sourceref
+  { s O { \__osglecture_annot_source_name: } m }
+  {
+    \par
+    \mode_if_vertical:TF
+      {
+        \__osglecture_annot_block:nn { Aside }
+          {
+            \group_begin:
+              \IfBooleanT {#1} { \raggedleft }
+              \__osglecture_annot_source_text:nn {#2} {#3}
+              \par
+            \group_end:
+          }
+      }
+      {
+        \__osglecture_annot_inline:nn { FENote }
+          { \__osglecture_annot_source_text:nn {#2} {#3} }
+      }
+  }
+
+% \ldeen{\cs{osgannotation}: Im vertikalen Modus steht der Einwurf in
+% einer \cs{vbox} der Höhe null, und \cs{prevdepth} wird wiederhergestellt
+% -- die vertikale Liste bleibt, wie sie ohne den Einwurf wäre. Ohne diese
+% Box erzeugte ein reines Overlay-Bild einen leeren Absatz, also eine
+% Leerzeile an der Aufrufstelle. Im horizontalen Modus steht er in der
+% Zeile und wird, weil \code{Aside} in \code{P} unzulässig ist, als
+% \code{FENote} getaggt.}{\cs{osgannotation}: in vertical mode the
+% remark sits in a \cs{vbox} of zero height, and \cs{prevdepth} is
+% restored -- the vertical list stays as it would be without the remark.
+% Without that box a pure overlay picture would create an empty
+% paragraph, i.e. a blank line at the point of the call. In horizontal
+% mode it sits in the line and, \code{Aside} being inadmissible in
+% \code{P}, is tagged as \code{FENote}.}
+\NewDocumentCommand \osgannotation { +m }
+  {
+    \mode_if_vertical:TF
+      {
+        \dim_set:Nn \l_tmpa_dim { \tex_prevdepth:D }
+        \nointerlineskip
+        \vbox_to_zero:n
+          {
+            \__osglecture_annot_block:nn { Aside } { #1 \par }
+            \tex_vss:D
+          }
+        \tex_prevdepth:D = \l_tmpa_dim
+      }
+      { \__osglecture_annot_inline:nn { FENote } {#1} }
+  }
+
+%</annotations>
 %<*series>
 
 \ExplSyntaxOn

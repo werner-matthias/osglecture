@@ -86,7 +86,7 @@ TEST 1: Show PDF Tags
        rolemaps-to="Sect"
       >
      <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
-        id="ID.011"
+        id="ID.009"
         title="Eigener Titel"
         rolemaps-to="H4"
        >
@@ -95,12 +95,12 @@ TEST 1: Show PDF Tags
      <Note xmlns="http://iso.org/pdf/ssn"
         id="ID.010"
        >
-      <?MarkedContent page="1" ?>A. Beispiel
+      <?MarkedContent page="1" ?>Auto-Section-Title-Test
      </Note>
      <Note xmlns="http://iso.org/pdf/ssn"
-        id="ID.009"
+        id="ID.011"
        >
-      <?MarkedContent page="1" ?>Auto-Section-Title-Test
+      <?MarkedContent page="1" ?>A. Beispiel
      </Note>
     </frame>
    </Sect>
@@ -119,7 +119,7 @@ TEST 1: Show PDF Tags
        rolemaps-to="Sect"
       >
      <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
-        id="ID.017"
+        id="ID.015"
         title="2 Erster Abschnitt"
         rolemaps-to="H4"
        >
@@ -128,12 +128,12 @@ TEST 1: Show PDF Tags
      <Note xmlns="http://iso.org/pdf/ssn"
         id="ID.016"
        >
-      <?MarkedContent page="2" ?>A. Beispiel
+      <?MarkedContent page="2" ?>Auto-Section-Title-Test
      </Note>
      <Note xmlns="http://iso.org/pdf/ssn"
-        id="ID.015"
+        id="ID.017"
        >
-      <?MarkedContent page="2" ?>Auto-Section-Title-Test
+      <?MarkedContent page="2" ?>A. Beispiel
      </Note>
     </frame>
     <frame xmlns="https://www.latex-project.org/ns/local/ltx-talk"
@@ -141,7 +141,7 @@ TEST 1: Show PDF Tags
        rolemaps-to="Sect"
       >
      <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
-        id="ID.021"
+        id="ID.019"
         title="Zweite Folie"
         rolemaps-to="H4"
        >
@@ -150,12 +150,12 @@ TEST 1: Show PDF Tags
      <Note xmlns="http://iso.org/pdf/ssn"
         id="ID.020"
        >
-      <?MarkedContent page="3" ?>A. Beispiel
+      <?MarkedContent page="3" ?>Auto-Section-Title-Test
      </Note>
      <Note xmlns="http://iso.org/pdf/ssn"
-        id="ID.019"
+        id="ID.021"
        >
-      <?MarkedContent page="3" ?>Auto-Section-Title-Test
+      <?MarkedContent page="3" ?>A. Beispiel
      </Note>
     </frame>
    </Sect>
@@ -183,27 +183,27 @@ TEST 1: Show PDF Tags
         id="ID.026"
         rolemaps-to="Sect"
        >
-      <H3 xmlns="http://iso.org/pdf2/ssn"
-         id="ID.030"
-        >
-       <?MarkedContent page="4" ?>Gegebener Titel
-      </H3>
       <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
-         id="ID.029"
+         id="ID.027"
          title="3.1 Ein Unterabschnitt"
          rolemaps-to="H4"
         >
        <?MarkedContent page="4" ?>3.1 Ein Unterabschnitt
       </frametitle>
-      <Note xmlns="http://iso.org/pdf/ssn"
+      <H3 xmlns="http://iso.org/pdf2/ssn"
          id="ID.028"
         >
-       <?MarkedContent page="4" ?>A. Beispiel
-      </Note>
+       <?MarkedContent page="4" ?>Gegebener Titel
+      </H3>
       <Note xmlns="http://iso.org/pdf/ssn"
-         id="ID.027"
+         id="ID.029"
         >
        <?MarkedContent page="4" ?>Auto-Section-Title-Test
+      </Note>
+      <Note xmlns="http://iso.org/pdf/ssn"
+         id="ID.030"
+        >
+       <?MarkedContent page="4" ?>A. Beispiel
       </Note>
      </frame>
     </Sect>
@@ -222,54 +222,54 @@ TEST 1: Show PDF Tags
        id="ID.033"
        rolemaps-to="Sect"
       >
-     <H3 xmlns="http://iso.org/pdf2/ssn"
-        id="ID.037"
-       >
-      <?MarkedContent page="5" ?>Gegebener Titel
-     </H3>
      <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
-        id="ID.036"
+        id="ID.034"
         title="4 Titel und Subtitel zugleich"
         rolemaps-to="H4"
        >
       <?MarkedContent page="5" ?>4 Titel und Subtitel zugleich
      </frametitle>
-     <Note xmlns="http://iso.org/pdf/ssn"
+     <H3 xmlns="http://iso.org/pdf2/ssn"
         id="ID.035"
        >
-      <?MarkedContent page="5" ?>A. Beispiel
-     </Note>
+      <?MarkedContent page="5" ?>Gegebener Titel
+     </H3>
      <Note xmlns="http://iso.org/pdf/ssn"
-        id="ID.034"
+        id="ID.036"
        >
       <?MarkedContent page="5" ?>Auto-Section-Title-Test
+     </Note>
+     <Note xmlns="http://iso.org/pdf/ssn"
+        id="ID.037"
+       >
+      <?MarkedContent page="5" ?>A. Beispiel
      </Note>
     </frame>
     <frame xmlns="https://www.latex-project.org/ns/local/ltx-talk"
        id="ID.038"
        rolemaps-to="Sect"
       >
-     <H3 xmlns="http://iso.org/pdf2/ssn"
-        id="ID.042"
-       >
-      <?MarkedContent page="6" ?>Normaler Subtitel
-     </H3>
      <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
-        id="ID.041"
+        id="ID.039"
         title="Normale Folie"
         rolemaps-to="H4"
        >
       <?MarkedContent page="6" ?>Normale Folie
      </frametitle>
-     <Note xmlns="http://iso.org/pdf/ssn"
+     <H3 xmlns="http://iso.org/pdf2/ssn"
         id="ID.040"
        >
-      <?MarkedContent page="6" ?>A. Beispiel
-     </Note>
+      <?MarkedContent page="6" ?>Normaler Subtitel
+     </H3>
      <Note xmlns="http://iso.org/pdf/ssn"
-        id="ID.039"
+        id="ID.041"
        >
       <?MarkedContent page="6" ?>Auto-Section-Title-Test
+     </Note>
+     <Note xmlns="http://iso.org/pdf/ssn"
+        id="ID.042"
+       >
+      <?MarkedContent page="6" ?>A. Beispiel
      </Note>
     </frame>
    </Sect>
@@ -287,27 +287,27 @@ TEST 1: Show PDF Tags
        id="ID.045"
        rolemaps-to="Sect"
       >
-     <H3 xmlns="http://iso.org/pdf2/ssn"
-        id="ID.049"
-       >
-      <?MarkedContent page="9" ?>Eigene Folie
-     </H3>
      <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
-        id="ID.048"
+        id="ID.046"
         title="5 Mehrseitiger Abschnitt"
         rolemaps-to="H4"
        >
       <?MarkedContent page="9" ?>5 Mehrseitiger Abschnitt
      </frametitle>
-     <Note xmlns="http://iso.org/pdf/ssn"
+     <H3 xmlns="http://iso.org/pdf2/ssn"
         id="ID.047"
        >
-      <?MarkedContent page="9" ?>A. Beispiel
-     </Note>
+      <?MarkedContent page="9" ?>Eigene Folie
+     </H3>
      <Note xmlns="http://iso.org/pdf/ssn"
-        id="ID.046"
+        id="ID.048"
        >
       <?MarkedContent page="9" ?>Auto-Section-Title-Test
+     </Note>
+     <Note xmlns="http://iso.org/pdf/ssn"
+        id="ID.049"
+       >
+      <?MarkedContent page="9" ?>A. Beispiel
      </Note>
     </frame>
    </Sect>
@@ -326,7 +326,7 @@ TEST 1: Show PDF Tags
        rolemaps-to="Sect"
       >
      <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
-        id="ID.055"
+        id="ID.053"
         title="Erste Folie"
         rolemaps-to="H4"
        >
@@ -335,12 +335,12 @@ TEST 1: Show PDF Tags
      <Note xmlns="http://iso.org/pdf/ssn"
         id="ID.054"
        >
-      <?MarkedContent page="10" ?>A. Beispiel
+      <?MarkedContent page="10" ?>Auto-Section-Title-Test
      </Note>
      <Note xmlns="http://iso.org/pdf/ssn"
-        id="ID.053"
+        id="ID.055"
        >
-      <?MarkedContent page="10" ?>Auto-Section-Title-Test
+      <?MarkedContent page="10" ?>A. Beispiel
      </Note>
     </frame>
     <frame xmlns="https://www.latex-project.org/ns/local/ltx-talk"
@@ -348,7 +348,7 @@ TEST 1: Show PDF Tags
        rolemaps-to="Sect"
       >
      <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
-        id="ID.059"
+        id="ID.057"
         title="6 Fortsetzungsabschnitt (cont.)"
         rolemaps-to="H4"
        >
@@ -357,39 +357,39 @@ TEST 1: Show PDF Tags
      <Note xmlns="http://iso.org/pdf/ssn"
         id="ID.058"
        >
-      <?MarkedContent page="11" ?>A. Beispiel
+      <?MarkedContent page="11" ?>Auto-Section-Title-Test
      </Note>
      <Note xmlns="http://iso.org/pdf/ssn"
-        id="ID.057"
+        id="ID.059"
        >
-      <?MarkedContent page="11" ?>Auto-Section-Title-Test
+      <?MarkedContent page="11" ?>A. Beispiel
      </Note>
     </frame>
     <frame xmlns="https://www.latex-project.org/ns/local/ltx-talk"
        id="ID.060"
        rolemaps-to="Sect"
       >
-     <H3 xmlns="http://iso.org/pdf2/ssn"
-        id="ID.064"
-       >
-      <?MarkedContent page="12" ?>Weiterer Subtitel
-     </H3>
      <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
-        id="ID.063"
+        id="ID.061"
         title="6 Fortsetzungsabschnitt (cont.)"
         rolemaps-to="H4"
        >
       <?MarkedContent page="12" ?>6 Fortsetzungsabschnitt (cont.)
      </frametitle>
-     <Note xmlns="http://iso.org/pdf/ssn"
+     <H3 xmlns="http://iso.org/pdf2/ssn"
         id="ID.062"
        >
-      <?MarkedContent page="12" ?>A. Beispiel
-     </Note>
+      <?MarkedContent page="12" ?>Weiterer Subtitel
+     </H3>
      <Note xmlns="http://iso.org/pdf/ssn"
-        id="ID.061"
+        id="ID.063"
        >
       <?MarkedContent page="12" ?>Auto-Section-Title-Test
+     </Note>
+     <Note xmlns="http://iso.org/pdf/ssn"
+        id="ID.064"
+       >
+      <?MarkedContent page="12" ?>A. Beispiel
      </Note>
     </frame>
    </Sect>
