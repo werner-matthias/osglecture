@@ -775,10 +775,26 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
 %   the left logo column in the narrow layout are all derived from this
 %   value, so they stay consistent regardless of the aspect ratio of
 %   whichever logo is in effect.}
+% \ldeen{Die Messbox wird nie gesetzt; trotzdem legte \cs{includegraphics}
+%   bei aktivem Tagging sofort ein \code{Figure}-Strukturelement an -- in
+%   der Präambel (über \cs{useltxtalktheme}) noch vor \code{Document}, also
+%   direkt an der Wurzel (\enquote{Parent-Child 'StructTreeRoot' -->
+%   'Figure'}), auf der Titelfolie als leeres \code{Figure} im
+%   \code{frame}. Das Tagging wird deshalb für die Dauer der Messung
+%   ausgesetzt; in Kopfbereichen ist es ohnehin schon suspendiert, das Paar
+%   ist dort wirkungslos.}{The measuring box is never typeset; even so,
+%   with tagging active \cs{includegraphics} immediately created a
+%   \code{Figure} structure element -- in the preamble (via
+%   \cs{useltxtalktheme}) before \code{Document} exists, i.e. directly at
+%   the root (\enquote{Parent-Child 'StructTreeRoot' --> 'Figure'}), and on
+%   the title frame as an empty \code{Figure} in the \code{frame}. Tagging
+%   is therefore suspended for the duration of the measurement; in header
+%   areas it is suspended already, where the pair has no effect.}
 \dim_new:N \g__ltxtalk_tuc_header_logo_width_dim
 \cs_new_protected:Npn \__ltxtalk_tuc_measure_header_logo_width:
   {
     \__ltxtalk_tuc_set_logo_file:
+    \tag_suspend:n { tuc-logo-measure }
     \hbox_set:Nn \l_tmpa_box
       {
         \file_if_exist:VTF \l__ltxtalk_tuc_logo_file_tl
@@ -791,6 +807,7 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
           }
           {\sffamily\bfseries TU~CHEMNITZ}
       }
+    \tag_resume:n { tuc-logo-measure }
     \dim_gset:Nn \g__ltxtalk_tuc_header_logo_width_dim {\box_wd:N \l_tmpa_box}
   }
 % \ldeen{X-Position des Trennstrichs bzw.\ Startpunkt des Navigationstexts:

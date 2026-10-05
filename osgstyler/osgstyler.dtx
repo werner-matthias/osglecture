@@ -4513,18 +4513,45 @@ load babel
       { \__osgstyler_block_typeset_titled_flow:n {#1} }
       { \__osgstyler_block_typeset_titled_box:n {#1} }
   }
+% \ldeen{Kopfstreifen und Kopfbalken sind Dekoration und werden als
+%   Artefakt markiert. Damit das die MC der Titelzeile nicht teilt und kein
+%   leeres \code{P}-Fragment hinterlässt, steht das Artefakt \emph{ganz am
+%   Absatzanfang}, unmittelbar nach \cs{noindent} und noch vor jedem
+%   anderen Material der Zeile (auch vor dem unsichtbaren Strut des
+%   Kastenzweigs, der deshalb mit hineingenommen wird): Der vom Absatz-Hook
+%   geöffneten MC ist dann kein einziger Knoten zugeordnet, sie erscheint
+%   im PDF gar nicht, und der Titeltext bildet nach dem Pop wieder genau
+%   eine MC. Ohne offene MC (Absatz-Tagging aus) bleibt der Pop
+%   wirkungslos; ohne geladenes tagpdf entfällt die Markierung ganz.}{Head strip and head bar are decoration and are marked as
+%   artifact. So that this neither splits the title line's MC nor leaves
+%   an empty \code{P} fragment, the artifact sits \emph{at the very start
+%   of the paragraph}, right after \cs{noindent} and before any other
+%   material of the line (including the boxed branch's invisible strut,
+%   which is therefore taken inside): the MC opened by the paragraph hook
+%   then has not a single node assigned, does not appear in the PDF at
+%   all, and after the pop the title text again forms exactly one MC.
+%   Without an open MC (paragraph tagging off) the pop has no effect;
+%   without tagpdf loaded the marking is skipped altogether.}
+\cs_new_protected:Npn \__osgstyler_block_head_artifact:n #1
+  {
+    \cs_if_exist:NTF \tag_mc_end_push:
+      {
+        \tag_mc_end_push:
+        \tag_mc_begin:n { artifact }
+        #1
+        \tag_mc_end:
+        \tag_mc_begin_pop:n { }
+      }
+      { #1 }
+  }
 % \ldeen{Der Kopfstreifen als nullgrosse \cs{rlap}\cs{smash}-Deko hinter der
-%   Titelzeile. Bewusst \emph{ohne} \cs{tag_mc}-Push/Pop: als nullgrosse
-%   Fläche fliesst er in die MC der Titelzeile ein, statt sie zu teilen und
-%   ein leeres \code{P}-Fragment zu hinterlassen; ohne Text trägt er nichts
-%   zur Vorlesereihenfolge bei. Aufruf im hmode. \code{#1} verschiebt die
-%   Streifenkante nach links, \code{#2} ist seine Breite.}{The head strip as
-%   zero-size \cs{rlap}\cs{smash} decoration behind the title line.
-%   Deliberately \emph{without} \cs{tag_mc} push/pop: as a zero-size area it
-%   flows into the title line's MC rather than splitting it and leaving an
-%   empty \code{P} fragment; carrying no text it adds nothing to the reading
-%   order. Call in hmode. \code{#1} shifts the strip edge left, \code{#2}
-%   its width.}
+%   Titelzeile; ohne Text trägt er nichts zur Vorlesereihenfolge bei. Aufruf
+%   im hmode, innerhalb von \cs{__osgstyler_block_head_artifact:n}.
+%   \code{#1} verschiebt die Streifenkante nach links, \code{#2} ist seine
+%   Breite.}{The head strip as zero-size \cs{rlap}\cs{smash} decoration
+%   behind the title line; carrying no text it adds nothing to the reading
+%   order. Call in hmode, inside \cs{__osgstyler_block_head_artifact:n}.
+%   \code{#1} shifts the strip edge left, \code{#2} its width.}
 \cs_new_protected:Npn \__osgstyler_block_headstrip:nn #1#2
   {
     \str_if_eq:VnF \l__osgstyler_block_head_bg_tl { none }
@@ -4542,16 +4569,13 @@ load babel
 % \ldeen{Der Kopfbalken des Kastenzweigs: eine \cs{rlap}\cs{smash}-\cs{rule}
 %   genau in Höhe der (durch einen unsichtbaren Strut aufgepolsterten)
 %   Titelzeile -- so schliesst der Balken bündig mit der Kastenoberkante ab.
-%   Bewusst \emph{ohne} \cs{tag_mc}-Push/Pop: als nullgrosse Deko fliesst er
-%   in die MC der Titelzeile ein, statt sie zu teilen und ein leeres
-%   \code{P}-Fragment zu hinterlassen; ohne Text trägt er nichts zur
-%   Vorlesereihenfolge bei. \code{#1} ist seine Breite.}{The boxed branch's
+%   Die Artefakt-Markierung übernimmt der Aufrufer
+%   (\cs{__osgstyler_block_head_artifact:n}). \code{#1} ist seine
+%   Breite.}{The boxed branch's
 %   head bar: an \cs{rlap}\cs{smash} \cs{rule} exactly as tall as the title
 %   line (padded by an invisible strut), so it meets the box's top edge
-%   flush. Deliberately \emph{without} \cs{tag_mc} push/pop: as zero-size
-%   decoration it flows into the title line's MC rather than splitting it
-%   and leaving an empty \code{P} fragment; carrying no text it adds nothing
-%   to the reading order. \code{#1} is its width.}
+%   flush. The caller marks it as artifact
+%   (\cs{__osgstyler_block_head_artifact:n}). \code{#1} is its width.}
 \cs_new_protected:Npn \__osgstyler_block_headbar:n #1
   {
     \str_if_eq:VnF \l__osgstyler_block_head_bg_tl { none }
@@ -4576,10 +4600,9 @@ load babel
   }
 % \ldeen{Kopfbalken mit abgerundeten \emph{oberen} Ecken (Radius wie der
 %   Kasten), damit er in einem gerundeten \code{titlebar}-Kasten nicht über
-%   die Ecken hinaussteht. Ebenfalls ohne \cs{tag_mc}-Push/Pop.}{Head bar
+%   die Ecken hinaussteht.}{Head bar
 %   with rounded \emph{top} corners (the box's radius) so it does not
-%   overshoot the corners inside a rounded \code{titlebar} box. Also without
-%   \cs{tag_mc} push/pop.}
+%   overshoot the corners inside a rounded \code{titlebar} box.}
 \cs_new_protected:Npn \__osgstyler_block_headbar_round:n #1
   {
     \rlap { \smash {
@@ -4630,14 +4653,17 @@ load babel
                 \noindent
                 % invisible strut sets the title line's metrics; the bar
                 % (smashed) is drawn to the same extent.
-                \rule
-                  [ \dim_eval:n { -\dp\strutbox
-                                  - \l__osgstyler_block_head_padding_bottom_dim } ]
-                  { 0pt }
-                  { \dim_eval:n { \ht\strutbox + \dp\strutbox
-                                  + \l__osgstyler_block_head_padding_top_dim
-                                  + \l__osgstyler_block_head_padding_bottom_dim } }%
-                \__osgstyler_block_headbar:n { \linewidth }
+                \__osgstyler_block_head_artifact:n
+                  {
+                    \rule
+                      [ \dim_eval:n { -\dp\strutbox
+                                      - \l__osgstyler_block_head_padding_bottom_dim } ]
+                      { 0pt }
+                      { \dim_eval:n { \ht\strutbox + \dp\strutbox
+                                      + \l__osgstyler_block_head_padding_top_dim
+                                      + \l__osgstyler_block_head_padding_bottom_dim } }%
+                    \__osgstyler_block_headbar:n { \linewidth }
+                  }
                 \skip_horizontal:n { \l__osgstyler_block_head_padding_left_dim }
                 \dim_set:Nn \rightskip { \l__osgstyler_block_head_padding_right_dim }
                 { \color { \OsgColorName{ \l__osgstyler_block_head_fg_tl } }
@@ -4683,10 +4709,13 @@ load babel
           % The coloured strip (if any) sits behind the title's own line.
           \skip_vertical:n { \l__osgstyler_block_head_padding_top_dim }
           \noindent
-          \__osgstyler_block_headstrip:nn
-            { -\l__osgstyler_block_head_padding_left_dim }
-            { \linewidth + \l__osgstyler_block_head_padding_left_dim
-                         + \l__osgstyler_block_head_padding_right_dim }
+          \__osgstyler_block_head_artifact:n
+            {
+              \__osgstyler_block_headstrip:nn
+                { -\l__osgstyler_block_head_padding_left_dim }
+                { \linewidth + \l__osgstyler_block_head_padding_left_dim
+                             + \l__osgstyler_block_head_padding_right_dim }
+            }
           {
             \skip_horizontal:n { \l__osgstyler_block_head_padding_left_dim }
             \dim_set:Nn \rightskip { \l__osgstyler_block_head_padding_right_dim }
