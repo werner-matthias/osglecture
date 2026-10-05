@@ -3075,21 +3075,64 @@ theme.
       { \tag_mc_begin:n { artifact } #1 \tag_mc_end: }
       { #1 }
   }
+% \ldeen{Strukturelemente im Textstrom des Frames (Inhalts-Slots) dürfen
+%   \emph{nicht} über \cs{__talk_header_tag_begin:e}/\cs{__talk_header_tag_end:}
+%   getaggt werden: Dieses Paar ist für Kopf-/Fußbereiche gebaut, die beim
+%   Ausschiffen innerhalb eines offenen Artefakt-MC mit suspendiertem Tagging
+%   entstehen, und endet deshalb mit \cs{tag_mc_begin:n}\code{\{artifact\}}
+%   und \cs{tag_suspend:n}. Im Folienrumpf bliebe dieser MC offen; folgt dann
+%   Material ohne Absatz-Tagging (etwa ein Block), landet es als loser Inhalt
+%   direkt im \code{frame} bzw. \code{Sect} (\enquote{Parent-Child ... MC
+%   (realcontent) ... Relation is not allowed!}). \cs{__ltxtalk_flow_struct:nn}
+%   öffnet und schließt Struktur und MC deshalb selbst und hinterlässt den
+%   Tagging-Zustand so, wie es ihn vorgefunden hat. Kein \code{firstkid}:
+%   das Element steht dort im Baum, wo es im Textstrom steht.}{Structure
+%   elements in the frame's text stream (content slots) must \emph{not} be
+%   tagged via \cs{__talk_header_tag_begin:e}/\cs{__talk_header_tag_end:}:
+%   that pair is built for header/footer areas, which are created at shipout
+%   inside an open artifact MC with tagging suspended, and therefore ends
+%   with \cs{tag_mc_begin:n}\code{\{artifact\}} and \cs{tag_suspend:n}. In the
+%   frame body that MC would stay open; if material without paragraph tagging
+%   follows (a block, say), it ends up as loose content directly in the
+%   \code{frame} or \code{Sect} (\enquote{Parent-Child ... MC (realcontent)
+%   ... Relation is not allowed!}). \cs{__ltxtalk_flow_struct:nn} therefore
+%   opens and closes structure and MC itself and leaves the tagging state as
+%   it found it. No \code{firstkid}: the element sits in the tree where it
+%   sits in the text stream.}
+\cs_new_protected:Npn \__ltxtalk_flow_struct:nn #1 #2
+  {
+    \tagpdfparaOff
+    \tag_struct_begin:e
+      {
+        parent = \int_use:N \g__talk_frame_struct_int ,
+        #1
+      }
+    \tag_mc_begin:n { }
+    \group_begin:
+      #2
+    \group_end:
+    \tag_mc_end:
+    \tag_struct_end:
+  }
 \cs_new_protected:Npn \__ltxtalk_accessibility_struct:nn #1 #2
   {
     \bool_if:NTF \g__talk_frame_tag_bool
       {
-        \__talk_header_tag_begin:e
+        \bool_if:NTF \l__ltxtalk_slot_flow_bool
+          { \__ltxtalk_flow_struct:nn {#1} {#2} }
           {
-            firstkid = true,
-            parent = \int_use:N \g__talk_frame_struct_int,
-            #1
+            \__talk_header_tag_begin:e
+              {
+                firstkid = true,
+                parent = \int_use:N \g__talk_frame_struct_int,
+                #1
+              }
+            \group_begin:
+              \tagpdfparaOff
+              #2
+            \group_end:
+            \__talk_header_tag_end:
           }
-        \group_begin:
-          \tagpdfparaOff
-          #2
-        \group_end:
-        \__talk_header_tag_end:
       }
       { #2 }
   }
@@ -4675,20 +4718,57 @@ theme.
     { \msg_error:nnn {ltxtalk}{unknown-theme}{#1} }
 }
 
-% \ldeen{Der Slottyp \code{frametitle} bleibt bewusst außen vor: er taggt
-%   sich über \cls*{ltx-talk}s eigene, dynamisch abschnittstiefen-abhängige
-%   Funktion bereits selbst (siehe oben); eine zweite, hier zusätzlich
-%   aufgesetzte Tagging-Schicht würde ein verschachteltes Duplikat
-%   erzeugen.}{The \code{frametitle} slot type is deliberately excluded: it
-%   already tags itself via \cls*{ltx-talk}'s own function, dynamically
-%   aware of section depth (see above); a second tagging layer stacked on
-%   top here would create a nested duplicate.}
+% \ldeen{Folientitel und -untertitel sind \emph{nur} im Textstrom des Frames
+%   Strukturelemente; in Kopf-/Rand-/Fußbereichen sind sie reiner
+%   Artefakt-Text (dort ist ohnehin ein Artefakt-MC offen). Damit gibt es
+%   genau einen Tagging-Mechanismus, unabhängig davon, wo ein Theme den
+%   Titel zeigt. Der Slottyp \code{frametitle} behält \cls*{ltx-talk}s
+%   Strukturtyp \code{frametitle} (samt dessen abschnittstiefen-abhängigem
+%   RoleMap) und wird per \code{firstkid} vor bereits vorhandenen Frame-Inhalt
+%   gestellt, nutzt aber \cs{__ltxtalk_flow_struct:nn} statt
+%   \cs{__talk_frame_title:n} (siehe dort zum Grund). Der Untertitel läuft
+%   wie jeder andere Slot über seine deklarierte Rolle.}{Frame title and
+%   subtitle are structure elements \emph{only} in the frame's text stream;
+%   in header/margin/footer areas they are plain artifact text (an artifact
+%   MC is open there anyway). This gives exactly one tagging mechanism,
+%   regardless of where a theme shows the title. The \code{frametitle} slot
+%   type keeps \cls*{ltx-talk}'s structure type \code{frametitle} (with its
+%   section-depth-dependent role map) and is placed before already existing
+%   frame content via \code{firstkid}, but uses \cs{__ltxtalk_flow_struct:nn}
+%   instead of \cs{__talk_frame_title:n} (see there for the reason). The
+%   subtitle goes through its declared role like any other slot.}
+\cs_new:Npn \__ltxtalk_frame_title_struct_keys:
+  {
+    firstkid = true ,
+    tag      = frametitle ,
+    title    = { \text_purify:n { \g__talk_frame_title_tl } }
+  }
 \cs_new_protected:Npn \__ltxtalk_slot_content:n #1
   {
     \prop_get:NnN \g__ltxtalk_slot_types_prop {#1} \l__ltxtalk_slot_type_tl
-    \str_if_eq:VnTF \l__ltxtalk_slot_type_tl {frametitle}
-      { \__talk_frame_title:n {\tl_use:N \g__talk_frame_title_tl} }
+    \bool_lazy_and:nnTF
+      { ! \l__ltxtalk_slot_flow_bool }
       {
+        \bool_lazy_or_p:nn
+          { \str_if_eq_p:Vn \l__ltxtalk_slot_type_tl {frametitle} }
+          { \str_if_eq_p:Vn \l__ltxtalk_slot_type_tl {framesubtitle} }
+      }
+      {
+        \str_if_eq:VnTF \l__ltxtalk_slot_type_tl {frametitle}
+          { \tl_use:N \g__talk_frame_title_tl }
+          { \tl_use:N \g__talk_frame_subtitle_tl }
+      }
+      {
+       \str_if_eq:VnTF \l__ltxtalk_slot_type_tl {frametitle}
+        {
+          \bool_if:NTF \g__talk_frame_tag_bool
+            {
+              \__ltxtalk_flow_struct:nn { \__ltxtalk_frame_title_struct_keys: }
+                { \tl_use:N \g__talk_frame_title_tl }
+            }
+            { \tl_use:N \g__talk_frame_title_tl }
+        }
+        {
         \__ltxtalk_slot_accessibility_apply:nn {#1}
           {
             \str_case:VnF \l__ltxtalk_slot_type_tl
@@ -4705,6 +4785,7 @@ theme.
               }
               { \prop_item:Nn \g__ltxtalk_slot_contents_prop {#1} }
           }
+        }
       }
   }
 
@@ -4903,6 +4984,132 @@ theme.
       {\__ltxtalk_render_slot:n {##1}}
     \coffin_typeset:Nnnnn \l__ltxtalk_area_coffin {l}{t}{0pt}{0pt}
   }
+% \ldeen{Zeigt ein Theme Titel oder Untertitel nicht im Textstrom (sondern
+%   etwa nur in der Kopfzeile), wird der Text trotzdem hier -- und nur hier
+%   -- getaggt, aber unsichtbar gesetzt: Textrendermodus 3 in einer Box ohne
+%   Höhe, die die vertikale Liste nicht verändert (\cs{prevdepth} wird
+%   wiederhergestellt). \cs{phantom} schiede aus, weil es keine Glyphen und
+%   damit ein leeres Strukturelement erzeugt. Der Untertitel übernimmt das
+%   Strukturelement aus der Rolle des (Kopf-)Slots seines Typs; hat dieser
+%   keine Strukturrolle, entsteht auch kein Element. Leere Titel erzeugen
+%   nichts, ebenso ein Titel, für den das Theme gar keinen Slot deklariert:
+%   was nirgends sichtbar ist, wird auch nicht getaggt.}{If a theme does not show title or subtitle in the text stream
+%   (but only in the header, say), the text is still tagged here -- and only
+%   here --, but set invisibly: text rendering mode 3 in a box of zero
+%   height that does not alter the vertical list (\cs{prevdepth} is
+%   restored). \cs{phantom} is not an option, as it produces no glyphs and
+%   hence an empty structure element. The subtitle takes its structure
+%   element from the role of the (header) slot of its type; if that has no
+%   structure role, no element is created either. Empty titles produce
+%   nothing, and neither does a title for which the theme declares no slot
+%   at all: what is visible nowhere is not tagged either.}
+\bool_new:N \l__ltxtalk_content_slot_found_bool
+\tl_new:N \l__ltxtalk_hidden_struct_keys_tl
+\cs_new_protected:Npn \__ltxtalk_hidden_struct:nn #1 #2
+  {
+    \mode_if_vertical:TF
+      {
+        \dim_set:Nn \l_tmpa_dim { \tex_prevdepth:D }
+        \nointerlineskip
+        \vbox_to_zero:n
+          { \hbox:n { \__ltxtalk_hidden_struct_aux:nn {#1} {#2} } \tex_vss:D }
+        \tex_prevdepth:D = \l_tmpa_dim
+      }
+      {
+        \hbox_overlap_right:n
+          { \tex_smash:D { \hbox:n { \__ltxtalk_hidden_struct_aux:nn {#1} {#2} } } }
+      }
+  }
+\cs_new_protected:Npn \__ltxtalk_hidden_struct_aux:nn #1 #2
+  {
+    \tag_struct_begin:e
+      {
+        parent = \int_use:N \g__talk_frame_struct_int ,
+        #1
+      }
+    \tag_mc_begin:n { }
+    \tex_pdfextension:D literal~page { 3~Tr }
+    #2
+    \tex_pdfextension:D literal~page { 0~Tr }
+    \tag_mc_end:
+    \tag_struct_end:
+  }
+\cs_new_protected:Npn \__ltxtalk_hidden_slot_keys:n #1
+  {
+    \tl_clear:N \l__ltxtalk_hidden_struct_keys_tl
+    \prop_map_inline:Nn \g__ltxtalk_slot_types_prop
+      {
+        \str_if_eq:nnT {##2} {#1}
+          {
+            \prop_map_break:n
+              {
+                \group_begin:
+                  \tl_set:Nn \l__ltxtalk_slot_role_tl { artifact }
+                  \int_set:Nn \l__ltxtalk_heading_level_int { 1 }
+                  \tl_clear:N \l__ltxtalk_alt_text_tl
+                  \prop_get:NnNT \g__ltxtalk_slot_accessibility_prop {##1} \l_tmpa_tl
+                    { \keys_set:nV { ltxtalk / a11y } \l_tmpa_tl }
+                  \tl_set:Ne \l_tmpa_tl
+                    {
+                      \str_case:Vn \l__ltxtalk_slot_role_tl
+                        {
+                          { heading } { tag = \__ltxtalk_accessibility_heading_tag: }
+                          { H1 }      { tag = H1 }
+                          { H2 }      { tag = H2 }
+                          { H3 }      { tag = H3 }
+                          { note }    { tag = Note }
+                        }
+                    }
+                \exp_args:NNNV \group_end:
+                \tl_set:Nn \l__ltxtalk_hidden_struct_keys_tl \l_tmpa_tl
+              }
+          }
+      }
+  }
+\cs_new_protected:Npn \__ltxtalk_if_slot_type_declared:nT #1 #2
+  {
+    \bool_set_false:N \l_tmpa_bool
+    \prop_map_inline:Nn \g__ltxtalk_slot_types_prop
+      {
+        \str_if_eq:nnT {##2} {#1}
+          { \prop_map_break:n { \bool_set_true:N \l_tmpa_bool } }
+      }
+    \bool_if:NT \l_tmpa_bool {#2}
+  }
+\cs_new_protected:Npn \__ltxtalk_hidden_frame_heading:n #1
+  {
+    \bool_if:NT \g__talk_frame_tag_bool
+      {
+        \str_case:nn {#1}
+          {
+            { frametitle }
+              {
+                \tl_if_empty:NF \g__talk_frame_title_tl
+                  {
+                    \__ltxtalk_if_slot_type_declared:nT { frametitle }
+                      {
+                        \__ltxtalk_hidden_struct:nn
+                          { \__ltxtalk_frame_title_struct_keys: }
+                          { \tl_use:N \g__talk_frame_title_tl }
+                      }
+                  }
+              }
+            { framesubtitle }
+              {
+                \tl_if_empty:NF \g__talk_frame_subtitle_tl
+                  {
+                    \__ltxtalk_hidden_slot_keys:n { framesubtitle }
+                    \tl_if_empty:NF \l__ltxtalk_hidden_struct_keys_tl
+                      {
+                        \__ltxtalk_hidden_struct:nn
+                          { \l__ltxtalk_hidden_struct_keys_tl }
+                          { \tl_use:N \g__talk_frame_subtitle_tl }
+                      }
+                  }
+              }
+          }
+      }
+  }
 % \ldeen{
 %   Inhalts-Slots gehören zum Textstrom des Frames und nicht zum Seitenlayout.
 %   Dieser schmale Adapter behält das Klassenkommando bei und fügt alle passenden 
@@ -4917,12 +5124,14 @@ theme.
 % }
 \cs_new_protected:Npn \__ltxtalk_render_content_slots:n #1
   {
+    \bool_set_false:N \l__ltxtalk_content_slot_found_bool
     \seq_map_inline:Nn \g__ltxtalk_content_slots_seq
       {
         \prop_get:NnNT \g__ltxtalk_slot_types_prop {##1} \l_tmpa_tl
           {
             \str_if_eq:VnT \l_tmpa_tl {#1}
               {
+                \bool_set_true:N \l__ltxtalk_content_slot_found_bool
                 \prop_get:NnNT \g__ltxtalk_slot_positions_prop {##1} \l_tmpb_tl
                   {
                     \exp_after:wN \__ltxtalk_render_content_slot_aux:w
@@ -4931,35 +5140,54 @@ theme.
               }
           }
       }
+    \bool_if:NF \l__ltxtalk_content_slot_found_bool
+      { \__ltxtalk_hidden_frame_heading:n {#1} }
   }
-% \ldeen{Kein führendes \cs{par}\cs{noindent} vor dem Slot-Inhalt: Für den
-%   Slot-Typ \code{frametitle} ruft \cs{__ltxtalk_slot_content:n} die
-%   klasseneigene Funktion \cs{__talk_frame_title:n} auf, die bei aktivem
-%   Tagging den Inhalt explizit taggt und dafür \cs{tagpdfparaOff} lokal
-%   setzt. Ein vorangehender \cs{par} löst jedoch bereits den
-%   automatischen Absatz-Tagging-Hook von tagpdf für einen (leeren) Absatz
-%   aus, bevor \cs{tagpdfparaOff} greift; dieser Hook bleibt dann
-%   unausgeglichen offen und tagpdf bricht den Lauf mit \emph{"the number
-%   of automatic begin and end text-unit para hooks differ"} fatal ab.
-%   Das schließende \cs{par} nach dem Inhalt bleibt nötig, damit der Slot
-%   sauber als eigener Absatz endet, bevor nachfolgender Frame-Inhalt
-%   beginnt.}{
-%   No leading \cs{par}\cs{noindent} before the slot content: for the
-%   \code{frametitle} slot type, \cs{__ltxtalk_slot_content:n} calls the
-%   class's own \cs{__talk_frame_title:n}, which explicitly tags the
-%   content when tagging is active and locally sets \cs{tagpdfparaOff}
-%   for that. A preceding \cs{par}, however, already fires tagpdf's
-%   automatic per-paragraph tagging hook for an (empty) paragraph before
-%   \cs{tagpdfparaOff} takes effect; that hook then stays unbalanced and
-%   tagpdf aborts the run fatally with \emph{"the number of automatic
-%   begin and end text-unit para hooks differ"}. The trailing \cs{par}
-%   after the content remains necessary so the slot cleanly ends its own
-%   paragraph before subsequent frame content begins.}
+% \ldeen{Kein führendes \cs{par}\cs{noindent} vor dem Slot-Inhalt: Ein
+%   vorangehender \cs{par} löste den automatischen Absatz-Tagging-Hook von
+%   tagpdf für einen (leeren) Absatz aus; dieser Hook bliebe unausgeglichen
+%   offen und tagpdf bräche den Lauf mit \emph{"the number of automatic
+%   begin and end text-unit para hooks differ"} fatal ab. Für jede Rolle
+%   außer \code{content} (und immer für den Slottyp \code{frametitle}) wird
+%   der Absatz-Hook schon \emph{hier}, vor dem Aufbau des Slots, für die
+%   ganze Slot-Gruppe abgeschaltet -- dieselbe Regel wie für Kopf-/Rand-/
+%   Fußslots in \cs{__ltxtalk_render_slot:nnnnn}. Ein erst im Inneren (in
+%   einer eigenen Gruppe) gesetztes \cs{tagpdfparaOff} wäre beim
+%   schließenden \cs{par} der Slot-Box bereits wieder aufgehoben; deren
+%   Absatzende schlösse dann zwei Strukturen, die nie geöffnet wurden, und
+%   nähme \code{frame} und \code{Sect} vom Stapel (\enquote{there is no open
+%   structure on the stack}). Das schließende \cs{par} nach dem Inhalt
+%   bleibt nötig, damit der Slot sauber als eigener Absatz endet, bevor
+%   nachfolgender Frame-Inhalt beginnt.}{
+%   No leading \cs{par}\cs{noindent} before the slot content: a preceding
+%   \cs{par} would fire tagpdf's automatic per-paragraph tagging hook for
+%   an (empty) paragraph; that hook would stay unbalanced and tagpdf would
+%   abort the run fatally with \emph{"the number of automatic begin and end
+%   text-unit para hooks differ"}. For every role except \code{content}
+%   (and always for the \code{frametitle} slot type) the paragraph hook is
+%   switched off already \emph{here}, before the slot is built, for the
+%   whole slot group -- the same rule as for header/margin/footer slots in
+%   \cs{__ltxtalk_render_slot:nnnnn}. A \cs{tagpdfparaOff} set only inside
+%   (in a group of its own) would already be reverted at the slot box's
+%   closing \cs{par}; that paragraph end would then close two structures
+%   that were never opened and take \code{frame} and \code{Sect} off the
+%   stack (\enquote{there is no open structure on the stack}). The trailing
+%   \cs{par} after the content remains necessary so the slot cleanly ends
+%   its own paragraph before subsequent frame content begins.}
 \cs_new_protected:Npn \__ltxtalk_render_content_slot_aux:w
   #1#2#3#4 \q_stop #5
   {
     \group_begin:
       \bool_set_true:N \l__ltxtalk_slot_flow_bool
+      \bool_if:NT \g__talk_frame_tag_bool
+        {
+          \__ltxtalk_slot_role:n {#5}
+          \prop_get:NnN \g__ltxtalk_slot_types_prop {#5} \l__ltxtalk_slot_type_tl
+          \bool_lazy_and:nnF
+            { \str_if_eq_p:Vn \l__ltxtalk_slot_role_tl { content } }
+            { ! \str_if_eq_p:Vn \l__ltxtalk_slot_type_tl { frametitle } }
+            { \tagpdfparaOff }
+        }
       \UseInstance {lttheme-slot}{#5}{\__ltxtalk_slot_content:n {#5}}
     \group_end:
     \par
