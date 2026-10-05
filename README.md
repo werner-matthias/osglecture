@@ -17,7 +17,7 @@ Currently, the following packages are included:
 * **tagpax**:  enables the semantic import of tagged PDFs (`./tagpax`)
 * **osgstyler** provides a template-based formatting (`./osgstyler`)
 * **ltxtalk-theme**: is a theme engine to allow easy and flexible design of themes for ltx-talk. 
-    It also include a few themes modeled after some Beamer themes (`./lttheme`)
+    It also includes a few themes modeled after some Beamer themes (`./lttheme`)
 * **ltxtalk-theme-tuc-2019** is (an unofficial version of) the presentation theme of TU Chemnitz for ltx-talk (`./lttheme-tuc-2019`)
 * **ansiterm**: ANSI-aware executable terminal windows  (`./ansiterm`)
 * **osglistings**: a `minted`-based code-listing front end (`./osglistings`)
