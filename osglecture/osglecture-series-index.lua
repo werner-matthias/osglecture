@@ -2,9 +2,9 @@
   Package: osglecture
   Module: osglecture-series-index.lua
   Date:
-  2026-08-15
+  2026-10-05
   Version:
-  v0.8.5-dev
+  v0.6.0
   Description:
   doctype-specific physical series index
 ]]

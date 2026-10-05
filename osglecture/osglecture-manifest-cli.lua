@@ -2,9 +2,9 @@
   Package: osglecture
   Module: osglecture-manifest-cli.lua
   Date:
-  2026-08-17
+  2026-10-05
   Version:
-  v0.8.5-dev
+  v0.6.0
   Description:
   texlua entry point for OLLM: exposes osglecture-manifest.lua and
   osglecture-series-index.lua as a line-oriented command, so OLLM calls the

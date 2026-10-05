@@ -2,9 +2,9 @@
   Package: osglecture
   Module: osglecture-manifest.lua
   Date:
-  2026-08-17
+  2026-10-05
   Version:
-  v0.8.5-dev
+  v0.6.0
   Description:
   shared project-manifest reader, used by osglecture and by OLLM via texlua
 ]]
