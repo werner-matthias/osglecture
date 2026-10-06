@@ -21,6 +21,10 @@ is $plan->{language}, 'de', 'legacy language option';
 is_deeply $plan->{latexmk_args}, ['-silent'], 'unknown minus option for latexmk';
 is $plan->{source}, 'main.tex', 'legacy source operand';
 
+$plan = OLLM::CLI->parse(qw(screen));
+is $plan->{target}, 'screen', 'supplied screen target is a bare word';
+ok $plan->{target_explicit}, 'bare screen target counts as explicit';
+
 $plan = OLLM::CLI->parse(qw(debug slides));
 is $plan->{debug}, 'tex', 'bare debug compatibility default';
 

@@ -166,7 +166,11 @@ ollm build script --language=de
 \end{verbatim}
 
 Die Kurzform \texttt{ollm script --language=de} ist gleichwertig. Die Targets
-\texttt{slides}, \texttt{handout} und \texttt{script} sind mitgeliefert.
+\texttt{slides}, \texttt{handout}, \texttt{screen} und \texttt{script} sind
+mitgeliefert. \texttt{screen} erzeugt die Vortragendenfassung der Folien: Jede
+Seite ist doppelt so breit und trägt rechts die Presenter-Seite der Klasse
+\texttt{osglecture}; das Target setzt ein Profil voraus, das den Dokumenttyp
+\texttt{screen} unterstützt (mitgeliefert: \texttt{ltx-talk}).
 
 \section{Projektaufbau}
 

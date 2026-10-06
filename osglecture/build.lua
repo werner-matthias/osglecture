@@ -23,6 +23,8 @@ installfiles = {
   "osglecture-presitemize.sty",
   "osglecture-twocolumns.sty",
   "osglecture-annotations.sty",
+  "osglecture-presenter.sty",
+  "osglecture-presenter.lua",
   "osglecture-series-index.lua",
   "osglecture-series.sty",
   "osglecture-toml.lua",
@@ -40,6 +42,7 @@ sourcefiles = {
   "osglecture-manifest.lua",
   "osglecture-manifest-cli.lua",
   "osglecture-integration.lua",
+  "osglecture-presenter.lua",
 }
 -- Only osglecture.dtx is self-extracting. It also unpacks
 -- the adapter.dtx and profile dtx.

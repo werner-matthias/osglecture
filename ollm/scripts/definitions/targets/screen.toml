@@ -1,0 +1,7 @@
+schema = 1
+kind = "target"
+name = "screen"
+version = "1.0"
+doctype = "screen"
+profile_class = "presentation"
+unit_scopes = ["b", "bs"]

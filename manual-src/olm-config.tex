@@ -154,7 +154,7 @@ the preset explains the build world to OLLM, whereas a profile later selects
 the concrete \LaTeX\ class and rendering.}
 
 \ldeen{Die mitgelieferten Targetdefinitionen registrieren
-\code{slides}, \code{handout} und \code{script}. Eine Definition legt
+\code{slides}, \code{handout}, \code{screen} und \code{script}. Eine Definition legt
 \option{doctype}, \option{profile\_class} und \option{unit\_scopes} fest. Das
 Preset bringt außerdem die Profil-Defaults \option{presentation\_profile} und
 \option{longform\_profile} mit. Profildefinitionen (\option{document-metadata},
@@ -162,7 +162,7 @@ Preset bringt außerdem die Profil-Defaults \option{presentation\_profile} und
 \code{definitions/profiles/}; projektlokale Definitionen können über
 \File{.ollmconfig.local.toml} ergänzt werden und ersetzen gleichnamige
 eingebaute nicht stillschweigend.}{The supplied target definitions register
-\code{slides}, \code{handout}, and \code{script}. A definition specifies
+\code{slides}, \code{handout}, \code{screen}, and \code{script}. A definition specifies
 \option{doctype}, \option{profile\_class}, and \option{unit\_scopes}. The
 preset also carries the profile defaults \option{presentation\_profile} and
 \option{longform\_profile}. Profile definitions (\option{document-metadata},
@@ -352,9 +352,9 @@ profiles are}:
     \option{presentation\_profile})}{for \code{slides} and
     \code{handout}; metadata before the class is forbidden (preset default for
     \option{presentation\_profile})}.
-  \item[\cls{ltx-talk}] \ldeen{für \code{slides} und \code{handout};
-    \cs{DocumentMetadata} ist erforderlich}{for \code{slides} and
-    \code{handout}; \cs{DocumentMetadata} is required}.
+  \item[\cls{ltx-talk}] \ldeen{für \code{slides}, \code{handout} und
+    \code{screen}; \cs{DocumentMetadata} ist erforderlich}{for \code{slides},
+    \code{handout}, and \code{screen}; \cs{DocumentMetadata} is required}.
   \item[\cls{book}] \ldeen{für \code{script} und \code{article} auf
     Basis der Standardklasse \cls{book}}{for \code{script} and
     \code{article}, based on the standard \cls{book} class}.

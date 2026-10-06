@@ -37,6 +37,7 @@
   \file{osglecture-presitemize.sty}{\from{osglecture.dtx}{presitemize}}
   \file{osglecture-twocolumns.sty}{\from{osglecture.dtx}{twocolumns}}
   \file{osglecture-annotations.sty}{\from{osglecture.dtx}{annotations}}
+  \file{osglecture-presenter.sty}{\from{osglecture.dtx}{presenter}}
   \file{osglecture-series.sty}{\from{osglecture.dtx}{series}}
   \file{osglecture-osgbeamer.code.tex}{\from{osglecture.dtx}{osgbeamer}}
   \file{osglecture-adapter-beamer.def}{\from{osglecture-adapters.dtx}{beamer}}
@@ -211,6 +212,46 @@
       \keyval{mode/\meta{Modus}/continuation/counters}{Zählerliste}
       \ldeen{gibt die fortzusetzenden Zähler an.}{specifies the counters to
       continue.}
+      \keyval{mode/\meta{Modus}/presenter}{Einstellungen}
+      \ldeen{konfiguriert die Presenter-Seite des Dokumenttyps \code{screen};
+      üblich ist \code{mode/screen}. Jede Seite ist dort doppelt so breit wie
+      die Folie: links die Folie, rechts die hier gewählten Bestandteile. In
+      anderen Dokumenttypen bleibt die Angabe folgenlos.}{configures the
+      presenter page of the \code{screen} document type; \code{mode/screen} is
+      the usual place. Every page there is twice as wide as the slide: the
+      slide on the left, the parts selected here on the right. The setting
+      has no effect in other document types.}
+      \keybool{mode/\meta{Modus}/presenter/current}\Default{true}
+      \ldeen{zeigt die aktuelle Folie verkleinert.}{shows the current slide
+      at reduced size.}
+      \keybool{mode/\meta{Modus}/presenter/next}\Default{true}
+      \ldeen{zeigt die nächste Seite (den nächsten Overlay-Schritt oder die
+      nächste Folie) verkleinert. Die Seitenzahl des vorigen Laufs bestimmt,
+      wo die Vorschau endet; nach Änderungen der Seitenzahl ist daher ein
+      weiterer Lauf nötig.}{shows the next page (the next overlay step or the
+      next slide) at reduced size. The page count of the previous run
+      determines where the preview ends; after the number of pages has
+      changed another run is therefore needed.}
+      \keybool{mode/\meta{Modus}/presenter/notes}\Default{true}
+      \ldeen{zeigt die mit \cs{Note} notierten Anmerkungen des
+      Frames.}{shows the remarks of the frame recorded with \cs{Note}.}
+      \keybool{mode/\meta{Modus}/presenter/clock}\Default{false}
+      \ldeen{blendet unten rechts eine laufende Uhr ein. Sie ist ein
+      PDF-Formularfeld, das ein JavaScript im Dokument jede Sekunde
+      aktualisiert, und läuft deshalb nur in Betrachtern mit
+      JavaScript-Unterstützung (etwa Adobe Acrobat); andere zeigen ein
+      leeres Feld. Das Feld ist nicht getaggt.}{adds a running clock at the
+      bottom right. It is a PDF form field that a script in the document
+      updates every second, so it runs only in viewers with JavaScript
+      support (Adobe Acrobat, for instance); others show an empty field.
+      The field is not tagged.}
+      \keyval{mode/\meta{Modus}/presenter/current-label}{Text}\default{}
+      \keyval{mode/\meta{Modus}/presenter/next-label}{Text}
+      \ldeen{überschreiben die Beschriftung der beiden Vorschaubilder.}{override
+      the captions of the two previews.}
+      \keyval{mode/\meta{Modus}/presenter/font}{Schriftbefehle}\Default{\cs{normalsize}}
+      \ldeen{setzt die Schrift der Anmerkungen.}{sets the font of the
+      remarks.}
     \end{options}
   \end{quote}
 
@@ -280,6 +321,17 @@
   \ldeen{deklariert die einzige Lehreinheit des Dokuments und erzeugt ihre
   profilabhängige Gliederung.}{declares the document's single course unit and
   creates its profile-dependent structural heading.}
+
+  \command{Note}[\marg{\ldeen{Anmerkung}{remark}}]
+  \ldeen{notiert eine Anmerkung für die Vortragenden. Der Aufruf gehört in
+  den Frame, zu dem die Anmerkung gehört. Im Dokumenttyp \code{screen}
+  erscheinen alle Anmerkungen eines Frames auf der Presenter-Seite jeder
+  seiner Seiten; mit \cls{beamer} wird an \cs{note} weitergereicht, sonst
+  wird die Anmerkung verworfen.}{records a remark for the presenter. The
+  call belongs inside the frame the remark refers to. In the \code{screen}
+  document type all remarks of a frame appear on the presenter page of each
+  of its pages; with \cls{beamer} the remark is forwarded to \cs{note},
+  otherwise it is discarded.}
 
   \command{includeunit}[\marg{Unit-ID}]
   \ldeen{fügt die gebaute Projektion einer Unit in ein Integrationsdokument
@@ -486,6 +538,8 @@ default gutter looks too tight with very unequal column shares.}
 \AutoDocInput{osglecture.dtx}{twocolumns}
 \subsection{\code{osglecture-annotations.sty}}
 \AutoDocInput{osglecture.dtx}{annotations}
+\subsection{\code{osglecture-presenter.sty}}
+\AutoDocInput{osglecture.dtx}{presenter}
 \subsection{\code{osglecture-series.sty}}
 \AutoDocInput{osglecture.dtx}{series}
 %\subsection{\code{osglecture-osgbeamer.code.tex}}
@@ -606,6 +660,14 @@ default gutter looks too tight with very unequal column shares.}
   {v0.6.0}
   {Tagged source credits and side annotations for osglecture}
 %</annotations>
+%<*presenter>
+\NeedsTeXFormat{LaTeX2e}[2022/06/01]
+\ProvidesExplPackage
+  {osglecture-presenter}
+  {2026-10-05}
+  {v0.6.0}
+  {Presenter page for the osglecture screen document type}
+%</presenter>
 %<*series>
 \NeedsTeXFormat{LaTeX2e}[2022/06/01]
 \ProvidesExplPackage
@@ -789,7 +851,8 @@ default gutter looks too tight with very unequal column shares.}
   {
     \str_case:VnF \l__osglecture_doctype_tl
       {{slides}{\tl_set:Nn \l__osglecture_target_profile_class_tl {presentation}}
-       {handout}{\tl_set:Nn \l__osglecture_target_profile_class_tl {presentation}}}
+       {handout}{\tl_set:Nn \l__osglecture_target_profile_class_tl {presentation}}
+       {screen}{\tl_set:Nn \l__osglecture_target_profile_class_tl {presentation}}}
       {\tl_set:Nn \l__osglecture_target_profile_class_tl {longform}}
   }
 
@@ -956,6 +1019,14 @@ default gutter looks too tight with very unequal column shares.}
 \DeclareModeBehaviorClass{longform}
 \AssignLectureModeBehavior{slides}{presentation-dynamic}
 \AssignLectureModeBehavior{handout}{presentation-static}
+% \ldeen{\code{screen} ist die Vortragendenfassung der Folien: Der Modus
+% erbt von \code{projector} (Alias \code{slides}), sodass alles, was für
+% \code{slides} oder \code{presentation} gilt, auch hier erscheint.}
+% {\code{screen} is the presenter's variant of the slides: the mode
+% inherits from \code{projector} (alias \code{slides}), so everything
+% that applies to \code{slides} or \code{presentation} appears here too.}
+\DeclareLectureMode[parents=projector]{screen}
+\AssignLectureModeBehavior{screen}{presentation-dynamic}
 \AssignLectureModeBehavior{script,article}{longform}
 \tl_set:Ne \l__osglecture_mode_setup_file_tl
   {
@@ -1185,6 +1256,16 @@ default gutter looks too tight with very unequal column shares.}
   { \exp_args:NV \file_input:n \l__osglecture_setup_file_tl }
 \osglecture_configuration_priority_set:n {30}
 \osglecture_project_apply_mode_setup:
+% \ldeen{Die Presenter-Seite gehört zum Dokumenttyp \code{screen}; ihre
+% Einstellungen stammen aus dem eben angewandten Setup-Bereich
+% \option{presenter}.}{The presenter page belongs to the \code{screen}
+% document type; its settings come from the \option{presenter} setup
+% area applied just above.}
+\str_if_eq:VnT \l__osglecture_doctype_tl {screen}
+  {
+    \__osglecture_require_package:n {osglecture-presenter}
+    \exp_args:NV \OsgLecturePresenterSetup \g__osglecture_presenter_setup_tl
+  }
 \exp_args:NV \osglecture_project_include_preambles:n
   \l__osglecture_base_class_tl
 
@@ -3550,6 +3631,26 @@ default gutter looks too tight with very unequal column shares.}
 \DeclareOsgLectureModeSetupArea{layout}
   {\__osglecture_handout_layout_setup:n}
 
+% \ldeen{Der Bereich \option{presenter} wird in jedem Build angenommen und
+% nur gespeichert; ausgewertet wird er erst, wenn die Klasse für den
+% Dokumenttyp \code{screen} das Paket \pkg*{osglecture-presenter} lädt. So
+% bleibt eine Angabe unter einem allgemeineren Modus (etwa
+% \code{mode/presentation}) in Folien- und Handout-Builds
+% folgenlos.}{The \option{presenter} area is accepted in every build and
+% merely stored; it is evaluated only when the class loads
+% \pkg*{osglecture-presenter} for the \code{screen} document type. A
+% setting under a more general mode (such as \code{mode/presentation})
+% therefore has no effect in slide and handout builds.}
+\tl_new:N \g__osglecture_presenter_setup_tl
+\cs_new_protected:Npn \__osglecture_presenter_setup_store:n #1
+  {
+    \tl_if_empty:NF \g__osglecture_presenter_setup_tl
+      { \tl_gput_right:Nn \g__osglecture_presenter_setup_tl { , } }
+    \tl_gput_right:Nn \g__osglecture_presenter_setup_tl {#1}
+  }
+\DeclareOsgLectureModeSetupArea{presenter}
+  {\__osglecture_presenter_setup_store:n}
+
 % \ldeen{@1 kann fehlen, wenn diese Build weder @2 noch @3 lädt (z.\,B. das
 %   @4-Profil, das @5 grundsätzlich verbietet); in dem Fall ist "Tagging
 %   aktiv" per Definition falsch, nicht ein Fehler.}{@1 can be absent when
@@ -5056,6 +5157,352 @@ default gutter looks too tight with very unequal column shares.}
   }
 
 %</annotations>
+%<*presenter>
+% \ldeen{Die Presenter-Seite des Dokumenttyps \code{screen}: Jede Seite
+% wird doppelt so breit wie die Folie. Links steht die unveränderte Folie,
+% rechts -- je nach Einstellung -- die verkleinerte aktuelle und nächste
+% Folie, die mit \cs{Note} gesammelten Anmerkungen des Frames und eine Uhr.
+% Bei erweitertem Desktop liegt die linke Hälfte auf dem Projektor, die
+% rechte auf dem Bildschirm der Vortragenden.}{The presenter page of the
+% \code{screen} document type: every page becomes twice as wide as the
+% slide. The unchanged slide is on the left; on the right -- depending on
+% the settings -- are the reduced current and next slide, the notes of
+% the frame collected with \cs{Note}, and a clock. With an extended
+% desktop the left half goes to the projector and the right half to the
+% presenter's screen.}
+% \ldeen{Die Vorschau der nächsten Folie ist ein Vorwärtsverweis innerhalb
+% derselben PDF-Datei: Jede Folie wird beim Ausgeben zusätzlich als
+% Form-XObject gesichert; die Seite davor zeichnet ein Objekt, dessen
+% Nummer vorab reserviert und erst mit der Folgeseite gefüllt wird. Ein
+% zweiter Lauf oder ein fremdes PDF ist dafür nicht nötig.}{The preview of
+% the next slide is a forward reference within the same PDF file: every
+% slide is additionally saved as a form XObject when it is shipped out;
+% the page before it paints an object whose number is reserved in advance
+% and filled only with the following page. Neither a second run nor
+% another PDF is needed for this.}
+\sys_if_engine_luatex:F
+  {
+    \msg_new:nnn { osglecture-presenter } { engine }
+      { The~presenter~page~requires~LuaLaTeX. }
+    \msg_critical:nn { osglecture-presenter } { engine }
+  }
+
+\msg_new:nnnn { osglecture-presenter } { clock-unavailable }
+  { The~presenter~clock~needs~the~PDF~management;~it~is~switched~off. }
+  { Load~the~document~with~\token_to_str:N \DocumentMetadata. }
+
+\lua_now:n
+  { osglecture_presenter = require ( "osglecture-presenter" ) }
+
+\bool_new:N \l__osglecture_presenter_current_bool
+\bool_new:N \l__osglecture_presenter_next_bool
+\bool_new:N \l__osglecture_presenter_notes_bool
+\bool_new:N \l__osglecture_presenter_clock_bool
+\tl_new:N \l__osglecture_presenter_current_label_tl
+\tl_new:N \l__osglecture_presenter_next_label_tl
+\tl_new:N \l__osglecture_presenter_font_tl
+\seq_new:N \g__osglecture_presenter_notes_seq
+\seq_new:N \g__osglecture_presenter_clock_seq
+\box_new:N \g__osglecture_presenter_slide_box
+\box_new:N \l__osglecture_presenter_current_box
+\box_new:N \l__osglecture_presenter_next_box
+\box_new:N \l__osglecture_presenter_panel_box
+\dim_new:N \l__osglecture_presenter_thumb_dim
+\int_new:N \g__osglecture_presenter_slide_int
+\int_new:N \g__osglecture_presenter_next_int
+
+\keys_define:nn { osglecture/presenter }
+  {
+    current .bool_set:N = \l__osglecture_presenter_current_bool,
+    current .default:n = true,
+    current .initial:n = true,
+    next .bool_set:N = \l__osglecture_presenter_next_bool,
+    next .default:n = true,
+    next .initial:n = true,
+    notes .bool_set:N = \l__osglecture_presenter_notes_bool,
+    notes .default:n = true,
+    notes .initial:n = true,
+    clock .bool_set:N = \l__osglecture_presenter_clock_bool,
+    clock .default:n = true,
+    clock .initial:n = false,
+    current-label .tl_set:N = \l__osglecture_presenter_current_label_tl,
+    next-label .tl_set:N = \l__osglecture_presenter_next_label_tl,
+    font .tl_set:N = \l__osglecture_presenter_font_tl,
+    font .initial:n = \normalsize,
+  }
+
+\NewDocumentCommand \OsgLecturePresenterSetup { m }
+  { \keys_set:nn { osglecture/presenter } {#1} }
+
+% A frame is typeset once per overlay, so the same note arrives repeatedly.
+\ProvideDocumentCommand \Note { +m } { }
+\RenewDocumentCommand \Note { +m }
+  {
+    \seq_if_in:NnF \g__osglecture_presenter_notes_seq {#1}
+      { \seq_gput_right:Nn \g__osglecture_presenter_notes_seq {#1} }
+  }
+\hook_gput_code:nnn { env/frame/before } { osglecture-presenter }
+  { \seq_gclear:N \g__osglecture_presenter_notes_seq }
+
+\hook_gput_code:nnn { begindocument/end } { osglecture-presenter }
+  { \dim_gset:Nn \tex_pagewidth:D { 2\paperwidth } }
+
+% TeX puts the upper left corner of the page box at
+% (1in+\hoffset, 1in+\voffset); the copy is brought to paper size before it
+% is turned into a form XObject.
+\cs_new_protected:Npn \__osglecture_presenter_capture:
+  {
+    \vbox_gset_to_ht:Nnn \g__osglecture_presenter_slide_box { \paperheight }
+      {
+        \skip_vertical:n { 1in + \voffset }
+        \box_move_right:nn { 1in + \hoffset } { \box_use:N \ShipoutBox }
+        \tex_vss:D
+      }
+    \box_gset_wd:Nn \g__osglecture_presenter_slide_box { \paperwidth }
+    \box_gset_dp:Nn \g__osglecture_presenter_slide_box { 0pt }
+    \lua_now:e
+      {
+        osglecture_presenter.strip
+          ( \int_use:N \g__osglecture_presenter_slide_box )
+      }
+    \tex_immediate:D \saveboxresource \g__osglecture_presenter_slide_box
+    \int_gset_eq:NN \g__osglecture_presenter_slide_int
+      \lastsavedboxresourceindex
+    \lua_now:e
+      {
+        osglecture_presenter.resolve
+          (
+            \int_use:N \g__osglecture_presenter_slide_int ,
+            \dim_to_decimal_in_sp:n { \paperwidth } ,
+            \dim_to_decimal_in_sp:n { \paperheight }
+          )
+      }
+    % The last page has no successor. Its number is only known from the
+    % previous run; a wrong guess yields an empty preview, never a broken file.
+    \int_gzero:N \g__osglecture_presenter_next_int
+    \bool_lazy_and:nnT
+      { \l__osglecture_presenter_next_bool }
+      { \int_compare_p:nNn { \g_shipout_readonly_int + 1 } < { \PreviousTotalPages } }
+      {
+        \hbox_set_to_wd:Nnn \l__osglecture_presenter_next_box { \paperwidth }
+          {
+            \tex_pdfextension:D literal { q~/Fm~Do~Q }
+            \tex_hss:D
+          }
+        \box_set_ht:Nn \l__osglecture_presenter_next_box { \paperheight }
+        \tex_immediate:D \saveboxresource
+          resources { /XObject~<<~/Fm~\lua_now:n { osglecture_presenter.reserve ( ) }~0~R~>> }
+          \l__osglecture_presenter_next_box
+        \int_gset_eq:NN \g__osglecture_presenter_next_int
+          \lastsavedboxresourceindex
+      }
+  }
+\hook_gput_code:nnn { shipout/before } { osglecture-presenter }
+  { \__osglecture_presenter_capture: }
+\hook_gset_rule:nnnn { shipout/before }
+  { osglecture-presenter } { before } { tagpdf/lua }
+\hook_gput_code:nnn { enddocument/afterlastpage } { osglecture-presenter }
+  {
+    \lua_now:e
+      {
+        osglecture_presenter.finish
+          (
+            \dim_to_decimal_in_sp:n { \paperwidth } ,
+            \dim_to_decimal_in_sp:n { \paperheight }
+          )
+      }
+    \__osglecture_presenter_clock_finish:
+  }
+
+\cs_new_protected:Npn \__osglecture_presenter_thumb:Nn #1#2
+  {
+    \hbox_set:Nn #1 { \useboxresource #2 }
+    \box_resize_to_wd:Nn #1 { \l__osglecture_presenter_thumb_dim }
+    \fbox { \box_use_drop:N #1 }
+  }
+\cs_new_protected:Npn \__osglecture_presenter_caption:n #1
+  {
+    \hbox_to_wd:nn { \l__osglecture_presenter_thumb_dim + 2\fboxrule }
+      { \footnotesize #1 \tex_hfil:D }
+  }
+\cs_new_protected:Npn \__osglecture_presenter_slot:nn #1#2
+  {
+    \bool_if:nTF {#1} {#2}
+      {
+        \skip_horizontal:n { \l__osglecture_presenter_thumb_dim + 2\fboxrule }
+      }
+  }
+\cs_new_protected:Npn \__osglecture_presenter_thumbs:
+  {
+    \noindent
+    \hbox:n
+      {
+        \bool_if:NT \l__osglecture_presenter_current_bool
+          {
+            \__osglecture_presenter_caption:n
+              { \l__osglecture_presenter_current_label_tl }
+            \skip_horizontal:n { 1em }
+          }
+        \bool_if:NT \l__osglecture_presenter_next_bool
+          {
+            \__osglecture_presenter_caption:n
+              { \l__osglecture_presenter_next_label_tl }
+          }
+      }
+    \par \nointerlineskip \skip_vertical:n { 2pt }
+    \noindent
+    \hbox:n
+      {
+        \bool_if:NT \l__osglecture_presenter_current_bool
+          {
+            \__osglecture_presenter_thumb:Nn
+              \l__osglecture_presenter_current_box
+              \g__osglecture_presenter_slide_int
+            \skip_horizontal:n { 1em }
+          }
+        \int_compare:nNnT { \g__osglecture_presenter_next_int } > { 0 }
+          {
+            \__osglecture_presenter_thumb:Nn
+              \l__osglecture_presenter_next_box
+              \g__osglecture_presenter_next_int
+          }
+      }
+    \par
+  }
+\cs_new_protected:Npn \__osglecture_presenter_notes:
+  {
+    \seq_if_empty:NF \g__osglecture_presenter_notes_seq
+      {
+        \begin{list}{\textbullet}
+          {
+            \leftmargin = 1.5em \scan_stop:
+            \labelwidth = 1em \scan_stop:
+            \labelsep = .5em \scan_stop:
+            \itemsep = .5ex \scan_stop:
+            \topsep = .5ex \scan_stop:
+          }
+          \item \seq_use:Nn \g__osglecture_presenter_notes_seq { \item }
+        \end{list}
+      }
+  }
+
+% The clock is a read-only text field with one widget per page; a
+% document-level script refreshes it every second. Viewers without
+% JavaScript show an empty field.
+\cs_new_protected:Npn \__osglecture_presenter_clock_setup:
+  {
+    \pdf_object_new:n { osglecture/presenter/clock }
+    \pdf_object_new:n { osglecture/presenter/font }
+    \pdf_object_write:nnn { osglecture/presenter/font } { dict }
+      { /Type/Font /Subtype/Type1 /BaseFont/Helvetica /Encoding/WinAnsiEncoding }
+    \pdf_object_new:n { osglecture/presenter/script }
+    \pdf_object_write:nnn { osglecture/presenter/script } { dict }
+      {
+        /S/JavaScript
+        /JS~(
+          var~osgLectureDoc~=~this;
+          function~osgLectureClock()~{
+            var~f~=~osgLectureDoc.getField("osglecture.clock");
+            if~(f)~f.value~=~util.printd("HH:MM:ss",~new~Date());
+          }
+          osgLectureClock();
+          app.setInterval("osgLectureClock()",~1000);
+        )
+      }
+    \pdfmanagement_add:nne { Catalog/Names/JavaScript } { osglecture.clock }
+      { \pdf_object_ref:n { osglecture/presenter/script } }
+    \pdfmanagement_add:nne { Catalog/AcroForm } { Fields }
+      { \pdf_object_ref:n { osglecture/presenter/clock } }
+    \pdfmanagement_add:nne { Catalog/AcroForm/DR/Font } { Helv }
+      { \pdf_object_ref:n { osglecture/presenter/font } }
+    \pdfmanagement_add:nnn { Catalog/AcroForm } { NeedAppearances } { true }
+  }
+\cs_new_protected:Npn \__osglecture_presenter_clock_widget:
+  {
+    \pdfannot_box:nnne { 7em } { 1.4em } { .4em }
+      {
+        /Subtype/Widget /F~4
+        /Parent~\pdf_object_ref:n { osglecture/presenter/clock }
+        /MK~<<~>>
+      }
+    \seq_gput_right:Ne \g__osglecture_presenter_clock_seq
+      { \pdfannot_box_ref_last: }
+  }
+\cs_new_protected:Npn \__osglecture_presenter_clock_finish:
+  {
+    \bool_if:NT \l__osglecture_presenter_clock_bool
+      {
+        \pdf_object_write:nne { osglecture/presenter/clock } { dict }
+          {
+            /FT/Tx /T~(osglecture.clock) /Ff~1 /Q~2 /V~()
+            /DA~(/Helv~14~Tf~0~g)
+            /Kids~[ \seq_use:Nn \g__osglecture_presenter_clock_seq { ~ } ]
+          }
+      }
+  }
+
+\cs_new_protected:Npn \__osglecture_presenter_panel:
+  {
+    \SuspendTagging { osglecture-presenter }
+    \vbox_set_top:Nn \l__osglecture_presenter_panel_box
+      {
+        \tex_hsize:D = \dim_eval:n { \paperwidth - 2em } \scan_stop:
+        \normalfont \l__osglecture_presenter_font_tl
+        \color { black } \raggedright
+        \fboxsep = 0pt \scan_stop:
+        \dim_set:Nn \l__osglecture_presenter_thumb_dim
+          { ( \tex_hsize:D - 1em ) / 2 - 2\fboxrule }
+        \skip_vertical:n { .5em }
+        \bool_lazy_or:nnT
+          { \l__osglecture_presenter_current_bool }
+          { \l__osglecture_presenter_next_bool }
+          { \__osglecture_presenter_thumbs: }
+        \bool_if:NT \l__osglecture_presenter_notes_bool
+          { \__osglecture_presenter_notes: }
+      }
+    \ResumeTagging { osglecture-presenter }
+    \put ( \dim_to_decimal:n { \paperwidth + 1em } , 0 )
+      { \box_use_drop:N \l__osglecture_presenter_panel_box }
+    \bool_if:NT \l__osglecture_presenter_clock_bool
+      {
+        \put
+          (
+            \dim_to_decimal:n { 2\paperwidth - 8em } ,
+            \dim_to_decimal:n { 1em - \paperheight }
+          )
+          { \__osglecture_presenter_clock_widget: }
+      }
+  }
+\hook_gput_code:nnn { shipout/foreground } { osglecture-presenter }
+  { \__osglecture_presenter_panel: }
+
+\hook_gput_code:nnn { begindocument } { osglecture-presenter }
+  {
+    \tl_if_empty:NT \l__osglecture_presenter_current_label_tl
+      {
+        \str_if_eq:eeTF { \tl_use:c { olsTargetLanguage } } { de }
+          { \tl_set:Nn \l__osglecture_presenter_current_label_tl { Aktuell } }
+          { \tl_set:Nn \l__osglecture_presenter_current_label_tl { Current } }
+      }
+    \tl_if_empty:NT \l__osglecture_presenter_next_label_tl
+      {
+        \str_if_eq:eeTF { \tl_use:c { olsTargetLanguage } } { de }
+          { \tl_set:Nn \l__osglecture_presenter_next_label_tl { Als~N\"achstes } }
+          { \tl_set:Nn \l__osglecture_presenter_next_label_tl { Next } }
+      }
+    \bool_if:NT \l__osglecture_presenter_clock_bool
+      {
+        \bool_lazy_and:nnTF
+          { \cs_if_exist_p:N \pdfmanagement_if_active_p: }
+          { \pdfmanagement_if_active_p: }
+          { \__osglecture_presenter_clock_setup: }
+          {
+            \msg_warning:nn { osglecture-presenter } { clock-unavailable }
+            \bool_set_false:N \l__osglecture_presenter_clock_bool
+          }
+      }
+  }
+%</presenter>
 %<*series>
 
 \ExplSyntaxOn

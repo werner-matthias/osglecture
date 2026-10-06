@@ -22,6 +22,7 @@ my %TARGET_ALIAS = (
   beamer       => 'slides',
   handout      => 'handout',
   presentation => 'slides',
+  screen       => 'screen',
   script       => 'script',
   slides       => 'slides',
 );
@@ -1168,6 +1169,7 @@ Usage:
 Targets:
   slides (aliases: beamer, presentation)
   handout
+  screen
   script (alias: article)
   Registered project targets can be selected with --target=NAME.
 

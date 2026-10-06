@@ -8,4 +8,4 @@ name = "ltx-talk"
 version = "1.0"
 profile_class = "presentation"
 document_metadata = "required"
-doctypes = ["slides", "handout"]
+doctypes = ["slides", "handout", "screen"]

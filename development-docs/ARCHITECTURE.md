@@ -84,7 +84,7 @@ Framebody an sich zu ziehen.
 Mitgeliefert werden zunächst:
 
 - `beamer` für `slides` und `handout`,
-- `ltx-talk` für `slides` und `handout`,
+- `ltx-talk` für `slides`, `handout` und `screen`,
 - `book` als Standard für `script` und `article`,
 - `scrbook` als alternativer KOMA-Script-Adapter für `script` und `article`.
 
@@ -394,7 +394,8 @@ Die derzeitigen Typen sind unterschiedlich reif:
 - `handout`: Präsentations-/Druckausgabe, derzeit über Beamer und `pgfpages`.
 - `script` und `article`: Longform-Ausgabe standardmäßig über `book`; `scrbook`
   bleibt als alternativer Adapter verfügbar.
-- `screen`: experimentelle Zweitbildschirm-Konfiguration.
+- `screen`: Vortragendenfassung der Folien mit Presenter-Seite (doppelte
+  Seitenbreite, `osglecture-presenter.sty`); derzeit nur über `ltx-talk`.
 - `web`: ausdrücklich nicht unterstützt.
 
 Ein zusätzlicher Dokumenttyp benötigt eine registrierte Targetdefinition, ein
@@ -672,6 +673,19 @@ PDF-Strukturelement solcher Nebeninhalt erscheint: zwischen Absätzen als
 ist. Das Paket ist modusunabhängig und hängt nur vom LaTeX-Kern ab; ohne
 tagpdf setzt es lediglich den Inhalt. Die Lesereihenfolge bestimmt die
 Aufrufstelle im Quelltext, nicht die Platzierung auf der Seite.
+
+Das Paket `osglecture-presenter.sty` lädt die Klasse nur für den Dokumenttyp
+`screen`. Es verdoppelt die Seitenbreite und setzt rechts neben die
+unveränderte Folie die Presenter-Seite: verkleinerte aktuelle und nächste
+Folie, die mit `\Note` gesammelten Anmerkungen des Frames und optional eine
+Uhr. Die Bestandteile wählt der Setup-Bereich `presenter`
+(`\OsgLectureSetup{mode/screen={presenter={...}}}`). Die Vorschau der nächsten
+Folie ist ein Vorwärtsverweis in derselben PDF-Datei: Jede Folie wird beim
+Ausgeben zusätzlich als Form-XObject gesichert, die Seite davor zeichnet ein
+vorab reserviertes Objekt (`osglecture-presenter.lua`). OLLM kennt für `screen`
+deshalb keine Sonderbehandlung und keine Abhängigkeit vom `slides`-Build. Die
+Presenter-Seite ist nicht getaggt; die Uhr ist ein Formularfeld mit
+Dokument-JavaScript und läuft nur in Betrachtern, die das unterstützen.
 
 ### 3.8 Paketgrenzen folgen semantischer Eigentümerschaft
 

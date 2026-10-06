@@ -16,11 +16,11 @@ ollm [globale Optionen] [Aktion] [Target] [Aktionsoptionen]
 \end{verbatim}
 
 \ldeen{Ohne Aktion wird \code{build} angenommen. Die mitgelieferten Targets
-\code{slides}, \code{handout} und \code{script} dürfen als nacktes Wort
-stehen; projektdefinierte Targets werden eindeutig mit
+\code{slides}, \code{handout}, \code{screen} und \code{script} dürfen als
+nacktes Wort stehen; projektdefinierte Targets werden eindeutig mit
 \keyis*{--target}{NAME} gewählt}{If no action is given, \code{build} is
-assumed. The supplied targets \code{slides}, \code{handout}, and
-\code{script} may be written as bare words; project-defined targets are
+assumed. The supplied targets \code{slides}, \code{handout}, \code{screen},
+and \code{script} may be written as bare words; project-defined targets are
 selected unambiguously with \keyis*{--target}{NAME}}:
 
 \begin{verbatim}
@@ -278,11 +278,11 @@ rejects options that would bypass the controlled build contract.}
 
 \paragraph{\ldeen{Targets und Aliase}{Targets and aliases}.}
 \ldeen{Die eingebauten nackten Targetnamen sind \code{slides} mit den Aliasen
-\code{beamer} und \code{presentation}, \code{handout} sowie \code{script} mit
-dem Alias \code{article}. Andere registrierte Targets werden mit
+\code{beamer} und \code{presentation}, \code{handout}, \code{screen} sowie
+\code{script} mit dem Alias \code{article}. Andere registrierte Targets werden mit
 \keyis*{--target}{TARGET} gewählt.}{The built-in bare target names are
 \code{slides}, with aliases \code{beamer} and \code{presentation},
-\code{handout}, and \code{script}, with alias \code{article}. Select other
+\code{handout}, \code{screen}, and \code{script}, with alias \code{article}. Select other
 registered targets with \keyis*{--target}{TARGET}.}
 
 \paragraph{\ldeen{Alle OLLM-Optionen}{All OLLM options}.}

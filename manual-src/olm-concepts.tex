@@ -446,6 +446,14 @@ you decide \emph{how} slides are typeset; in the course unit you only write
     Lehrveranstaltung}{screen-oriented presentation for teaching};
   \item[\code{handout}] \ldeen{druckorientierte Präsentationsfassung für das
     Publikum}{print-oriented presentation version for the audience};
+  \item[\code{screen}] \ldeen{Vortragendenfassung der Folien: Jede Seite ist
+    doppelt so breit und zeigt rechts neben der Folie wahlweise die aktuelle
+    und die nächste Folie, die mit \cs{Note} notierten Anmerkungen und eine
+    Uhr. Bei erweitertem Desktop liegt die linke Hälfte auf dem Projektor}{the
+    presenter's version of the slides: every page is twice as wide and shows,
+    to the right of the slide, optionally the current and the next slide, the
+    remarks recorded with \cs{Note}, and a clock. With an extended desktop the
+    left half goes to the projector};
   \item[\code{script}] \ldeen{zusammenhängende Langform, typischerweise als
     Kapitel oder Gesamtskript}{continuous long form, typically a chapter or
     complete set of lecture notes};
@@ -493,7 +501,7 @@ starting out, however, use the supplied types: they are already registered with
     \textbf{\ldeen{Dokumenttypen}{Document types}} & \textbf{\ldeen{Kennzeichen}{Characteristics}}\\
     \cls{beamer} & \cls{beamer} & \code{slides}, \code{handout} &
       \ldeen{große Theme-Auswahl}{large choice of themes}\\
-    \cls{ltx-talk} & \cls{ltx-talk} & \code{slides}, \code{handout} &
+    \cls{ltx-talk} & \cls{ltx-talk} & \code{slides}, \code{handout}, \code{screen} &
       \ldeen{Tagged PDF erforderlich}{Tagged PDF required}\\
     \cls{book} & \cls{book} & \code{script}, \code{article} &
       \ldeen{Standardklasse}{standard class}\\
