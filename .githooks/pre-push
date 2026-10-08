@@ -1,0 +1,14 @@
+#!/bin/sh
+# Warns (never blocks) when a module version or the bundle release date in
+# the sources has no matching git tag yet.  Enable once per clone with
+#   git config core.hooksPath .githooks
+
+command -v l3build >/dev/null 2>&1 || exit 0
+cd "$(git rev-parse --show-toplevel)" || exit 0
+
+report=$(l3build gittag --dry-run 2>&1 </dev/null) && exit 0
+
+echo "pre-push: git tags are behind the sources:" >&2
+echo "$report" | grep -v -e '^All git tags' -e '^Skipping ' | sed 's/^/  /' >&2
+echo "  Run 'l3build gittag' and push the tags (git push --follow-tags)." >&2
+exit 0

@@ -1,6 +1,8 @@
 = Helper Tool
 
 * `update-bundle-manifest.lua`: check and update package versions in the README
+* `bundle-versions.lua`: library reading the module versions from the sources; used by
+  `update-bundle-manifest.lua` and by `l3build gittag`
 * `legacy-osglecture-rewrites.lua`: rewrites osgbeamer-era lecture sources to the
   osglecture interfaces and reports what still needs a manual decision
 * `legacy-osglecture-rewrites.sh`: earlier, purely textual helper for the same

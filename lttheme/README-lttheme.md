@@ -2,9 +2,10 @@
 
 Theme selection, composition, and customization for the ltx-talk presentation class.
 
-The theme engine is tested with `ltx-talk` 0.5.3 (2026-08-05) and checks this
-compatibility range when it is loaded. An older class produces a targeted
-error instead of continuing with potentially incompatible layout interfaces;
+The theme engine was last tested with `ltx-talk` 0.6.9 (2026-10-06), requires
+at least 0.5.3 (2026-08-05), and checks both when it is loaded. An older class
+produces a targeted error instead of continuing with potentially incompatible
+layout interfaces;
 a newer class only produces a warning, since no known incompatibility exists
 yet. The class itself currently provides no LaTeX package rollback releases,
 so it cannot be replaced after `\documentclass` has loaded it.

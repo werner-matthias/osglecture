@@ -34,6 +34,8 @@ Currently, the following packages are included:
 > In other words: APIs are subject to change.
 
 ## Modules' version and compatibility
+The bundle as a whole is identified by its release date only
+(current: <!-- BUNDLE RELEASE DATE -->unreleased<!-- /BUNDLE RELEASE DATE -->).
 Each module keeps its own version and may has its own compatibility dependency.
 Whilst in general an up-to-date TeX installation is required, few modules are
 working with older distributions.

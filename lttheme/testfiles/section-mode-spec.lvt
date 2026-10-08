@@ -1,0 +1,66 @@
+\input regression-test.tex
+\DocumentMetadata{}
+\documentclass{ltx-talk}
+\usepackage{ltxtalk-theme-hawk}
+\useltxtalktheme{hawk}
+
+\ExplSyntaxOn
+\NewDocumentCommand \CHECKTITLE { m } {
+  \str_if_eq:eeTF {#1} { \g__talk_frame_title_tl }
+    { \TYPE { title:passed } }
+    { \TYPE { title:FAILED=\g__talk_frame_title_tl } }
+}
+\setltxtalkheadingbehavior{auto-section-title=true}
+\ExplSyntaxOff
+
+% Ein \section<...> ausserhalb eines Frames wird von ltx-talk (ab 0.6.9)
+% allein nach dem Modus-Anteil der Spezifikation entschieden; ein
+% Overlay-Anteil hat dort keine Bedeutung. Die Abschnittslogik des Themes
+% haengt am Hook section/begin und muss dieser Entscheidung folgen: nur ein
+% tatsaechlich gesetzter Abschnitt zaehlt weiter und wird zum Folientitel.
+\begin{document}
+\START
+
+\section{Basis}
+\begin{frame}
+  \frametitle{}
+  \CHECKTITLE{1 Basis}
+\end{frame}
+
+% Passender Modus: gesetzt.
+\section<projector>{Passender Modus}
+\begin{frame}
+  \frametitle{}
+  \CHECKTITLE{2 Passender Modus}
+\end{frame}
+
+% Fremder Modus: nicht gesetzt, der vorige Abschnitt bleibt aktuell.
+\section<handout>{Fremder Modus}
+\begin{frame}
+  \frametitle{Eigener Titel}
+  \CHECKTITLE{Eigener Titel}
+\end{frame}
+
+% Im aktuellen Modus ausdruecklich abgeschaltet: nicht gesetzt.
+\section<projector:0>{Abgeschaltet}
+\begin{frame}
+  \frametitle{Eigener Titel}
+  \CHECKTITLE{Eigener Titel}
+\end{frame}
+
+% Reine Overlay-Angabe: ausserhalb eines Frames ohne Wirkung, gesetzt.
+\section<2>{Nur Overlay}
+\begin{frame}
+  \frametitle{}
+  \CHECKTITLE{3 Nur Overlay}
+\end{frame}
+
+% Passender Modus mit Overlay-Angabe: gesetzt.
+\section<projector:2>{Modus mit Overlay}
+\begin{frame}
+  \frametitle{}
+  \CHECKTITLE{4 Modus mit Overlay}
+\end{frame}
+
+\END
+\end{document}

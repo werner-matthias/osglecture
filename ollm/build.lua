@@ -71,19 +71,7 @@ function update_tag(file, content, tagname, tagdate)
     return update_bundle_tag(file, content, tagname, tagdate)
   end
 
-  if not tagname then
-    local handle = io.popen("git describe --tags --abbrev=0")
-    tagname = handle:read("*a"):match("[^\n]+")
-    handle:close()
-    if not tagname then
-      print("No tag name given and no git tag found; " .. file .. " unchanged")
-      return content
-    end
-    print("Set tagname to '" .. tagname .. "'")
-  end
-  if not tagname:match("^v") then
-    tagname = "v" .. tagname
-  end
+  tagname = normalize_tagname(tagname)
 
   local updated, count = content:gsub(
     "(our%s+%$VERSION%s*=%s*['\"])[^'\"]*(['\"])",
