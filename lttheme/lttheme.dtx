@@ -102,16 +102,18 @@ describe areas and the elements placed in them, called \emph{slots} here.
 }
 \ldeen{
 Verwenden Sie für die Beispiele Lua\LaTeX\ und eine aktuelle Installation
-des Bundles einschließlich \pkg*{osgstyler}. Das Paket ist auf
-\cls{ltx-talk}~v0.5.3 vom 5.~August~2026 abgestimmt. Klassenstände vor dem 5.~August~2026 führen zu einem Fehler,
-Stände nach dem 17.~September~2026 zu einer Kompatibilitätswarnung. Die Klasse
+des Bundles einschließlich \pkg*{osgstyler}. Das Paket ist zuletzt mit
+\cls{ltx-talk}~v0.6.9 vom 6.~Oktober~2026 getestet und setzt mindestens
+v0.5.3 vom 5.~August~2026 voraus. Ältere Klassenstände führen zu einem Fehler,
+neuere als der getestete zu einer Kompatibilitätswarnung. Die Klasse
 und das Themesystem befinden sich noch in Entwicklung. Laden Sie die
 Klasse zuerst; Themenpakete ersetzen keine bereits geladene Klasse.
 }{
 Use Lua\LaTeX\ and a current bundle installation including \pkg*{osgstyler}
-for the examples. The package is matched to \cls{ltx-talk}~v0.5.3 dated
-5~August~2026. Class releases before 5~August~2026 cause an error; releases after
-17~September~2026 produce a compatibility warning. Both the class and the theme system are still under
+for the examples. The package was last tested with \cls{ltx-talk}~v0.6.9
+dated 6~October~2026 and requires at least v0.5.3 dated 5~August~2026. Older
+class releases cause an error; releases newer than the tested one produce a
+compatibility warning. Both the class and the theme system are still under
 development. Load the class first; theme packages do not replace a class
 that has already been loaded.
 }
@@ -2105,20 +2107,25 @@ theme.
 % A plain \def, not \tl_const:Nn: \ExplSyntaxOn is not active yet at
 % this point (\ProvidesExplPackage itself activates it for the rest
 % of the file), so a name with "_"/":" would not tokenize correctly.
-\def\ltxtalkversion{0.5.0}
+\def\ltxtalkversion{0.5.3}
 \ProvidesExplPackage{ltxtalk-theme}
 {2026-10-05}
 {v0.5.3}
 {Theme engine for ltx-talk}
 
-% The currently-declared ltx-talk compatibility window: a fixed point
-% recalibrated when the class is retested, not something meant to
-% track the class's own live version. Feeds both the actual
-% \@ifclasslater checks below and the two messages that describe them,
-% so the two cannot silently drift apart from each other.
+% The declared ltx-talk compatibility, as two independent facts that are
+% recalibrated by hand, not something meant to track the class's own live
+% version:
+% - the oldest class release the theme engine still supports; anything
+%   older is a fatal error;
+% - the class release the theme engine was last tested with; anything
+%   dated later is unexpectedly new and only produces a warning.
+% Each pair feeds both the check below and the message describing it, so
+% the two cannot silently drift apart from each other.
 \tl_const:Nn \c__ltxtalk_min_class_date_tl { 2026/08/05 }
-\tl_const:Nn \c__ltxtalk_max_class_date_tl { 2026/10/01 }
-\tl_const:Nn \c__ltxtalk_class_version_label_tl { 0.6.8 }
+\tl_const:Nn \c__ltxtalk_min_class_version_tl { 0.5.3 }
+\tl_const:Nn \c__ltxtalk_tested_class_date_tl { 2026/10/06 }
+\tl_const:Nn \c__ltxtalk_tested_class_version_tl { 0.6.9 }
 
 \RequirePackage{xcoffins}
 \RequirePackage{xcolor}
@@ -2172,8 +2179,8 @@ theme.
 \msg_new:nnnn { ltxtalk } { class-too-old }
   { Unsupported~ltx-talk~version }
   {
-    ltxtalk-theme~v\ltxtalkversion\space requires~ltx-talk~v\c__ltxtalk_class_version_label_tl\space
-    from~\c__ltxtalk_min_class_date_tl.~
+    ltxtalk-theme~v\ltxtalkversion\space requires~at~least~ltx-talk~
+    v\c__ltxtalk_min_class_version_tl\space from~\c__ltxtalk_min_class_date_tl.~
     Update~the~ltx-talk~document~class~before~loading~this~theme~engine.
   }
 % \ldeen*{@1 gibt nur die Kurzform aus, ohne interaktive Hilfeabfrage;
@@ -2184,14 +2191,29 @@ theme.
 \msg_new:nnnn { ltxtalk } { class-too-new }
   {
     Untested~ltx-talk~version:~loaded~class~is~newer~than~the~tested~
-    v\c__ltxtalk_class_version_label_tl.
+    v\c__ltxtalk_tested_class_version_tl.
   }
   {
-    ltxtalk-theme~v\ltxtalkversion\space was~tested~with~ltx-talk~v\c__ltxtalk_class_version_label_tl\space
-    from~\c__ltxtalk_min_class_date_tl.~This~is~only~a~warning,~since~an~
-    incompatibility~would~otherwise~already~have~failed~outright.~If~something~
+    ltxtalk-theme~v\ltxtalkversion\space was~last~tested~with~ltx-talk~
+    v\c__ltxtalk_tested_class_version_tl\space from~
+    \c__ltxtalk_tested_class_date_tl.~This~is~only~a~warning:~no~
+    incompatibility~with~the~loaded~class~is~known.~If~something~
     looks~wrong,~a~newer~theme-engine~release~may~be~available.
   }
+
+% \@ifclasslater also accepts an equal date, which fits the lower bound
+% but not "later than the tested release"; hence the numeric comparison.
+\str_new:N \l__ltxtalk_date_str
+\int_new:N \l__ltxtalk_class_date_int
+\int_new:N \l__ltxtalk_tested_date_int
+\cs_new_protected:Npn \__ltxtalk_date_to_int:nN #1#2
+  {
+    \str_set:Ne \l__ltxtalk_date_str { \str_range:nnn {#1} { 1 } { 10 } }
+    \str_replace_all:Nnn \l__ltxtalk_date_str { - } { }
+    \str_replace_all:Nnn \l__ltxtalk_date_str { / } { }
+    \int_set:Nn #2 { \l__ltxtalk_date_str }
+  }
+\cs_generate_variant:Nn \__ltxtalk_date_to_int:nN { e , V }
 
 % \ldeen*{Das Paket ist nur sinnvoll, wenn @1 geladen ist.}{
 %  The package is only useful, if @1 is loaded.
@@ -2201,9 +2223,13 @@ theme.
     \@ifclasslater{ltx-talk}{\c__ltxtalk_min_class_date_tl}
       {}
       {\msg_fatal:nn { ltxtalk } { class-too-old }}
-    \@ifclasslater{ltx-talk}{\c__ltxtalk_max_class_date_tl}
-      {\msg_warning:nn { ltxtalk } { class-too-new }}
-      {}
+    \__ltxtalk_date_to_int:eN { \use:c { ver@ltx-talk.cls } }
+      \l__ltxtalk_class_date_int
+    \__ltxtalk_date_to_int:VN \c__ltxtalk_tested_class_date_tl
+      \l__ltxtalk_tested_date_int
+    \int_compare:nNnT
+      { \l__ltxtalk_class_date_int } > { \l__ltxtalk_tested_date_int }
+      { \msg_warning:nn { ltxtalk } { class-too-new } }
   }
   { 
     \msg_error:nnnn { ltxtalk } { missing-class }

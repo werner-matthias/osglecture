@@ -4,9 +4,16 @@
 \usepackage[patch-overlays=false]{osglecture-modes}
 \begin{document}
 \START
-\lecturemode<slides>{\TYPE{PORTABLE COMMAND YES}}
-\mode<slides>{\TYPE{NATIVE MODE NO}}
-\only<slides>{\TYPE{NATIVE ONLY NO}}
-\only<projector>{\TYPE{NATIVE PROJECTOR YES}}
+% Die portablen Befehle arbeiten auch ohne Patch.
+\lecturemode<slides>{\TYPE{PORTABLE ACTIVE: SHOWN}}
+\lecturemode<longform>{\TYPE{PORTABLE INACTIVE: MUST NOT APPEAR}}
+% longform ist ein registrierter, hier aber inaktiver portabler Modus, den
+% ltx-talk selbst nicht kennt. Die ungepatchten nativen Befehle zeigen den
+% Inhalt deshalb an; uebernaehme osglecture-modes sie trotz
+% patch-overlays=false, bliebe er verborgen. (Mit slides liesse sich das
+% nicht unterscheiden: nativ und portabel zeigen den Inhalt beide an.)
+\mode<longform>{\TYPE{NATIVE MODE UNPATCHED: SHOWN}}
+\only<longform>{\TYPE{NATIVE ONLY UNPATCHED: SHOWN}}
+\only<projector>{\TYPE{NATIVE PROJECTOR: SHOWN}}
 \END
 \end{document}

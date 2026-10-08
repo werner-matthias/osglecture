@@ -1,0 +1,57 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+--- decoder parity outside a frame
+parity <slides> / <projector>: passed
+parity <longform> / <handout>: passed
+parity <slides:1> / <projector:1>: passed
+parity <slides:2> / <projector:2>: passed
+parity <slides:0> / <projector:0>: passed
+parity <longform:1> / <handout:1>: passed
+parity <longform:0> / <handout:0>: passed
+parity <slides|longform> / <projector|handout>: passed
+parity <slides:0|longform> / <projector:0|handout>: passed
+parity <2-|longform> / <2-|handout>: passed
+--- commands outside a frame
+mode<slides>: run
+section<longform>: counter=0
+section<slides>: counter=1
+subsection<longform>: counter=0
+--- decoder parity inside a frame
+parity <slides> / <projector>: passed
+parity <longform> / <handout>: passed
+parity <slides:1> / <projector:1>: passed
+parity <slides:2> / <projector:2>: passed
+parity <slides:0> / <projector:0>: passed
+parity <longform:1> / <handout:1>: passed
+parity <longform:0> / <handout:0>: passed
+parity <slides|longform> / <projector|handout>: passed
+parity <slides:0|longform> / <projector:0|handout>: passed
+parity <2-|longform> / <2-|handout>: passed
+--- commands inside a frame
+only<slides>: run
+alt<longform>: second
+alt<slides>: first
+temporal<longform>: before
+LaTeX Font Info:    Trying to load font information for TU+lmr-base on input line ....
+(../tulmr-base.fd
+File: tulmr-base.fd ....-..-.. v... LaTeX font definitions for Latin Modern in base mode
+) [1]
+--- decoder parity inside a frame
+parity <slides> / <projector>: passed
+parity <longform> / <handout>: passed
+parity <slides:1> / <projector:1>: passed
+parity <slides:2> / <projector:2>: passed
+parity <slides:0> / <projector:0>: passed
+parity <longform:1> / <handout:1>: passed
+parity <longform:0> / <handout:0>: passed
+parity <slides|longform> / <projector|handout>: passed
+parity <slides:0|longform> / <projector:0|handout>: passed
+parity <2-|longform> / <2-|handout>: passed
+--- commands inside a frame
+only<slides>: run
+alt<longform>: second
+alt<slides>: first
+temporal<longform>: before
+[2
+]
+--- done

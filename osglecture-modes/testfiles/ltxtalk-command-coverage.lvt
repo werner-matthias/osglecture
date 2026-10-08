@@ -1,0 +1,104 @@
+\input regression-test.tex
+\DocumentMetadata{}
+\documentclass{ltx-talk}
+\usepackage{osglecture-modes}
+\usepackage{graphicx}
+
+% Jeder ltx-talk-Befehl mit <...>-Angabe wertet sie ueber denselben Decoder
+% aus, den osglecture-modes umhuellt. Der Test sichert zweierlei ab:
+% 1. Der Decoder entscheidet einen portablen Modus genauso wie den
+%    entsprechenden nativen (slides wie projector, longform wie handout),
+%    auch in Verbindung mit Overlay-Angaben.
+% 2. Jeder dieser Befehle nimmt eine portable Modusangabe fehlerfrei an.
+\ExplSyntaxOn
+\tl_new:N \l__test_portable_tl
+\tl_new:N \l__test_native_tl
+\cs_new_protected:Npn \__test_verdict:nN #1#2
+  {
+    \__talk_if_overlay:nTF {#1}
+      { \tl_set:Nn #2 { overlay=yes } } { \tl_set:Nn #2 { overlay=no } }
+    % \__talk_if_mode:n gibt es erst ab ltx-talk 0.6.9.
+    \cs_if_exist:NT \__talk_if_mode:nTF
+      {
+        \__talk_if_mode:nTF {#1}
+          { \tl_put_right:Nn #2 { ,~mode=yes } }
+          { \tl_put_right:Nn #2 { ,~mode=no } }
+      }
+  }
+\NewDocumentCommand \PARITY { m m }
+  {
+    \__test_verdict:nN {#1} \l__test_portable_tl
+    \__test_verdict:nN {#2} \l__test_native_tl
+    \tl_if_eq:NNTF \l__test_portable_tl \l__test_native_tl
+      { \TYPE { parity~<#1>~/~<#2>:~passed } }
+      {
+        \TYPE
+          {
+            parity~<#1>~/~<#2>:~FAILED~
+            (\l__test_portable_tl\c_space_tl vs.~\l__test_native_tl)
+          }
+      }
+  }
+\ExplSyntaxOff
+\newcommand\ALLPARITY{%
+  \PARITY{slides}{projector}\PARITY{longform}{handout}%
+  \PARITY{slides:1}{projector:1}\PARITY{slides:2}{projector:2}%
+  \PARITY{slides:0}{projector:0}%
+  \PARITY{longform:1}{handout:1}\PARITY{longform:0}{handout:0}%
+  \PARITY{slides|longform}{projector|handout}%
+  \PARITY{slides:0|longform}{projector:0|handout}%
+  \PARITY{2-|longform}{2-|handout}%
+}
+
+\begin{document}
+\START
+\TYPE{--- decoder parity outside a frame}
+\ALLPARITY
+
+\TYPE{--- commands outside a frame}
+\mode<slides>{\TYPE{mode<slides>: run}}
+\mode<longform>{\TYPE{mode<longform>: MUST NOT RUN}}
+\section<longform>{S}\TYPE{section<longform>: counter=\arabic{section}}
+\section<slides>{S}\TYPE{section<slides>: counter=\arabic{section}}
+\subsection<longform>{S}\TYPE{subsection<longform>: counter=\arabic{subsection}}
+\subsubsection<longform>{S}
+\begin{frame}<longform>
+  \TYPE{frame<longform>: MUST NOT RUN}
+\end{frame}
+
+\begin{frame}<slides>[label=keep]
+  % Satzwarnungen der Platzhalterinhalte gehoeren nicht zur Aussage.
+  \hbadness=10000 \vbadness=10000
+  \TYPE{--- decoder parity inside a frame}
+  \ALLPARITY
+  \TYPE{--- commands inside a frame}
+  \frametitle<longform>{Wrong}\frametitle<slides>{Right}
+  \framesubtitle<longform>{Wrong}
+  \only<slides>{\TYPE{only<slides>: run}}
+  \only<longform>{\TYPE{only<longform>: MUST NOT RUN}}
+  \begin{onlyenv}<slides>o\end{onlyenv}
+  \begin{onlyenv}<longform>o\end{onlyenv}
+  \alt<longform>{\TYPE{alt<longform>: FIRST, WRONG}}{\TYPE{alt<longform>: second}}
+  \alt<slides>{\TYPE{alt<slides>: first}}{\TYPE{alt<slides>: SECOND, WRONG}}
+  \temporal<longform>{\TYPE{temporal<longform>: before}}
+    {\TYPE{temporal<longform>: DURING, WRONG}}
+    {\TYPE{temporal<longform>: AFTER, WRONG}}
+  \uncover<longform>{u}\visible<longform>{v}\invisible<longform>{i}
+  \onslide<longform> o \onslide<slides>
+  \alert<longform>{a}\begin{alertenv}<longform>a\end{alertenv}
+  \action<longform>{x}\begin{actionenv}<longform>x\end{actionenv}
+  \begin{itemize}\item<longform> one \item<slides> two\end{itemize}
+  \begin{block}<longform>{B}b\end{block}
+  \begin{columns}<longform>
+    \begin{column}<longform>{.4\textwidth}c\end{column}
+  \end{columns}
+  \footnote<longform>{f}
+  \includegraphics<longform>[width=1cm]{example-image}
+  \textcolor<longform>{red}{r}\color<longform>{red}
+  \label<longform>{lbl}
+\end{frame}
+\reuseframe<longform>{keep}
+\appendix<longform>
+\TYPE{--- done}
+\END
+\end{document}

@@ -32,6 +32,25 @@ installfiles = {
 
 dofile("../build.lua")
 
+-- \ltxtalkversion mirrors the package version as a bare number for messages
+-- issued before \ProvidesExplPackage has run; keep it in step when tagging.
+local update_bundle_tag = update_tag
+
+function update_tag(file, content, tagname, tagdate)
+  local updated = update_bundle_tag(file, content, tagname, tagdate)
+  if file == "lttheme.dtx" then
+    local bare_version = tagname:gsub("^v", "")
+    updated = updated:gsub(
+      "(\\def\\ltxtalkversion{)[^}]*(})",
+      function(opening, closing)
+        return opening .. bare_version .. closing
+      end,
+      1
+    )
+  end
+  return updated
+end
+
 -- Avoid l3build's io.popen() extraction path, which returns no output on the
 -- GitHub macOS runner. A regular test task extracts the same XML and places
 -- it in a minimal test-log section before l3build normalizes the raw log.
