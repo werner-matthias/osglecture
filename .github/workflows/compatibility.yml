@@ -155,6 +155,13 @@ jobs:
         with:
           python-version: '3.13'
 
+      # The "current" image is rebuilt only every few days; bring it to the
+      # CTAN state the regular test workflows run against.  The historic
+      # images are frozen on purpose and stay untouched.
+      - name: Update TeX Live packages
+        if: matrix.distribution.texlive == 'current'
+        run: tlmgr update --self --all
+
       - name: Resolve compatibility expectation
         id: expected
         shell: bash
