@@ -77,10 +77,17 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
 
+      # The image is rebuilt only every few days, while the macOS and Windows
+      # jobs install from CTAN directly.  Without this step the three
+      # platforms test against different package versions.
+      - name: Update TeX Live packages
+        run: tlmgr update --self --all
+
       - name: Show environment
         run: |
           lualatex --version
           l3build version
+          grep -m1 -o 'ProvidesExplClass.*' "$(kpsewhich ltx-talk.cls)" || true
 
       - name: Test ${{ matrix.module }}
         working-directory: ${{ matrix.module }}
