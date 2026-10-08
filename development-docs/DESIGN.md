@@ -1991,8 +1991,11 @@ Für `series` bestimmt der globale Wert `deployment.series`, doctypeweise durch
 oder beide deployt werden. `--all` bleibt davon unabhängig die Auswahl aller
 konfigurierten Dokumenttyp-/Sprachprojektionen.
 
-Schablonen kennen `{series}`, `{unit}`, `{ordinal}`, `{chapter}`, `{doctype}`,
-`{lang}` und `{role}`. `ordinal` ist die doctypegefilterte logische
+Schablonen kennen `{series}`, `{unit}`, `{slug}`, `{ordinal}`, `{chapter}`,
+`{doctype}`, `{lang}` und `{role}`. `slug` ist der beschreibende Teil des
+physischen Unit-Verzeichnisnamens ohne Nummer, Scope-Code und Rollenkürzel;
+er eignet sich, wenn die logische Unit-ID im Labelformat (`un:processes`)
+geschrieben ist. `ordinal` ist die doctypegefilterte logische
 Unit-Ordnungsnummer. `chapter` wird nach dem LaTeX-Lauf als tatsächliche kurze
 Kapitelnummer gemeldet; Autoren können sie mit
 `\OsgLectureDeploymentChapter{...}` ausdrücklich setzen. Rollen werden durch

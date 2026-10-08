@@ -57,4 +57,43 @@ function checkinit_hook()
   )
 --]]
 end
+
+-- ollm has no .dtx; its only version source is the Perl module, which the
+-- documentation reads at typesetting time.
+tagfiles = { "scripts/lib/OLLM/Version.pm" }
+
 dofile("../build.lua")
+
+local update_bundle_tag = update_tag
+
+function update_tag(file, content, tagname, tagdate)
+  if not file:match("%.pm$") then
+    return update_bundle_tag(file, content, tagname, tagdate)
+  end
+
+  if not tagname then
+    local handle = io.popen("git describe --tags --abbrev=0")
+    tagname = handle:read("*a"):match("[^\n]+")
+    handle:close()
+    if not tagname then
+      print("No tag name given and no git tag found; " .. file .. " unchanged")
+      return content
+    end
+    print("Set tagname to '" .. tagname .. "'")
+  end
+  if not tagname:match("^v") then
+    tagname = "v" .. tagname
+  end
+
+  local updated, count = content:gsub(
+    "(our%s+%$VERSION%s*=%s*['\"])[^'\"]*(['\"])",
+    function(opening, closing)
+      return opening .. tagname .. closing
+    end,
+    1
+  )
+  if count == 0 then
+    print("No $VERSION assignment found in " .. file)
+  end
+  return updated
+end

@@ -154,8 +154,11 @@ sub _filename {
     : ($result->{unit_role} // '') eq 'e' ? 'excursus'
     : ($result->{unit_role} // '') eq 'i' ? 'integration'
     : ($result->{unit_role} // 'content');
+  my ($slug) = ($result->{physical_unit} // '')
+    =~ /\A\d{3}[a-z]{0,2}-(?:[aei]-)?(.+)\z/;
   my %value = (
     series => $request->{series_id}, unit => $result->{unit_id},
+    slug => $slug,
     ordinal => $result->{ordinal}, chapter => $result->{chapter},
     doctype => $result->{doctype}, lang => $result->{language},
     role => $role{$semantic_role},

@@ -671,6 +671,9 @@ Schablonen kennen:
 \begin{description}
 \item[\texttt{\{series\}}] technische Projekt-ID;
 \item[\texttt{\{unit\}}] logische Unit-ID;
+\item[\texttt{\{slug\}}] beschreibender Teil des Unit-Verzeichnisnamens
+  ohne Nummer, Scope-Code und Rollenkürzel, etwa \texttt{processes} für
+  \texttt{030-processes} oder \texttt{010a-e-processes};
 \item[\texttt{\{ordinal\}}] logische Ordnungskennung;
 \item[\texttt{\{chapter\}}] von LaTeX gemeldete Kapitelrepräsentation;
 \item[\texttt{\{doctype\}}] Dokumenttyp;
@@ -973,8 +976,10 @@ Nutzerdokumentation:
 % overwrite = "explicit"
 % ```
 
-% Filename templates support `series`, `unit`, `ordinal`, `chapter`, `doctype`,
-% `lang`, and mapped `role` placeholders. Decimal values accept a minimum width,
+% Filename templates support `series`, `unit`, `slug`, `ordinal`, `chapter`,
+% `doctype`, `lang`, and mapped `role` placeholders. `slug` is the descriptive
+% part of the unit directory name, which is useful when the logical unit ID is
+% written as a label such as `un:processes`. Decimal values accept a minimum width,
 % for example `{ordinal:02}`. LaTeX reports the actual chapter representation;
 % `\OsgLectureDeploymentChapter{...}` overrides it explicitly. A generic
 % `newproject` file contains commented deployment examples. `convertproject`

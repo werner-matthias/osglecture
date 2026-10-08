@@ -84,6 +84,18 @@ is(OLLM::Deployment::_filename(
   '{ordinal:02}-{unit}.pdf', $request, \%appendix_result,
 ), '02ap1-appendix.pdf', 'zero padding preserves an appendix ordinal suffix');
 
+is(OLLM::Deployment::_filename(
+  '{slug}-{lang}.pdf', $request, $request->{results}[0],
+), 'collection-de.pdf', 'slug omits the number and role of the unit directory');
+my %labelled_result = (%excursus_result,
+  unit_id => 'un:extra', physical_unit => '020ab-e-extra-topic');
+is(OLLM::Deployment::_filename(
+  '{ordinal:02}-{slug}.pdf', $request, \%labelled_result,
+), '01e2-extra-topic.pdf', 'slug is independent of a label-style unit ID');
+ok !eval { OLLM::Deployment::_filename(
+  '{slug}.pdf', $request, { %labelled_result, physical_unit => 'odd' }); 1 },
+  'slug requires a regular unit directory name';
+
 my $target = File::Spec->catfile($destination, 'course-script-de.pdf');
 $request->{deployment}{types}{script}{paths} = [$destination];
 open my $existing, '>:raw', $target or die $!;
