@@ -1,0 +1,79 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+<QR code requested for "https://example.org/default" in version 0-M.>
+<Error-correction level increased from M to Q at no cost.>
+<Calculating QR code for "https://example.org/default" in version 3-Q.>
+<Splitting off block 1> <Splitting off block 2> <Making error block 1> <Making error block 2> <Interleaving datablocks of length 17\ and 18:  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, .> <Interleaving errorblocks of length 18:  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, .><Interleaving complete.> <Writing data... done.>
+<Applying Mask 0... done. Calculating penalty... penalty is 1357>
+<Applying Mask 1... done. Calculating penalty... penalty is 1274>
+<Applying Mask 2... done. Calculating penalty... penalty is 1307>
+<Applying Mask 3... done. Calculating penalty... penalty is 1369>
+<Applying Mask 4... done. Calculating penalty... penalty is 1183>
+<Applying Mask 5... done. Calculating penalty... penalty is 1382>
+<Applying Mask 6... done. Calculating penalty... penalty is 1238>
+<Applying Mask 7... done. Calculating penalty... penalty is 1294>
+<Selected Mask 4>
+<Encoding and writing format string... done.>
+<Encoding and writing version information... done.>
+<Saving QR code to memory... done.>
+<Writing QR code to aux file... done.>
+<Printing matrix...
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line ....
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line ....
+ done.>
+<QR code requested for "https://example.org/alt" in version 0-M.>
+<Calculating QR code for "https://example.org/alt" in version 2-M.>
+<Splitting off block 1> <Making error block 1> <Interleaving datablocks of length 28\ and 29:  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, .> <Interleaving errorblocks of length 16:  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, .><Interleaving complete.> <Writing data... done.>
+<Applying Mask 0... done. Calculating penalty... penalty is 1132>
+<Applying Mask 1... done. Calculating penalty... penalty is 1130>
+<Applying Mask 2... done. Calculating penalty... penalty is 1136>
+<Applying Mask 3... done. Calculating penalty... penalty is 1191>
+<Applying Mask 4... done. Calculating penalty... penalty is 1110>
+<Applying Mask 5... done. Calculating penalty... penalty is 1069>
+<Applying Mask 6... done. Calculating penalty... penalty is 1057>
+<Applying Mask 7... done. Calculating penalty... penalty is 1147>
+<Selected Mask 6>
+<Encoding and writing format string... done.>
+<Encoding and writing version information... done.>
+<Saving QR code to memory... done.>
+<Writing QR code to aux file... done.>
+<Printing matrix... done.>
+<QR code requested for "https://example.org/artifact" in version 0-M.>
+<Error-correction level increased from M to Q at no cost.>
+<Calculating QR code for "https://example.org/artifact" in version 3-Q.>
+<Splitting off block 1> <Splitting off block 2> <Making error block 1> <Making error block 2> <Interleaving datablocks of length 17\ and 18:  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, .> <Interleaving errorblocks of length 18:  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, .><Interleaving complete.> <Writing data... done.>
+<Applying Mask 0... done. Calculating penalty... penalty is 1199>
+<Applying Mask 1... done. Calculating penalty... penalty is 1235>
+<Applying Mask 2... done. Calculating penalty... penalty is 1281>
+<Applying Mask 3... done. Calculating penalty... penalty is 1253>
+<Applying Mask 4... done. Calculating penalty... penalty is 1215>
+<Applying Mask 5... done. Calculating penalty... penalty is 1247>
+<Applying Mask 6... done. Calculating penalty... penalty is 1244>
+<Applying Mask 7... done. Calculating penalty... penalty is 1322>
+<Selected Mask 0>
+<Encoding and writing format string... done.>
+<Encoding and writing version information... done.>
+<Saving QR code to memory... done.>
+<Writing QR code to aux file... done.>
+<Printing matrix... done.>
+<QR code requested for "WIFI:T:WPA;S:lecture;P:secret;;" in version 0-M.>
+<Error-correction level increased from M to Q at no cost.>
+<Calculating QR code for "WIFI:T:WPA;S:lecture;P:secret;;" in version 3-Q.>
+<Splitting off block 1> <Splitting off block 2> <Making error block 1> <Making error block 2> <Interleaving datablocks of length 17\ and 18:  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, .> <Interleaving errorblocks of length 18:  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, .><Interleaving complete.> <Writing data... done.>
+<Applying Mask 0... done. Calculating penalty... penalty is 1296>
+<Applying Mask 1... done. Calculating penalty... penalty is 1372>
+<Applying Mask 2... done. Calculating penalty... penalty is 1191>
+<Applying Mask 3... done. Calculating penalty... penalty is 1222>
+<Applying Mask 4... done. Calculating penalty... penalty is 1297>
+<Applying Mask 5... done. Calculating penalty... penalty is 1169>
+<Applying Mask 6... done. Calculating penalty... penalty is 1185>
+<Applying Mask 7... done. Calculating penalty... penalty is 1236>
+<Selected Mask 5>
+<Encoding and writing format string... done.>
+<Encoding and writing version information... done.>
+<Saving QR code to memory... done.>
+<Writing QR code to aux file... done.>
+<Printing matrix... done.>
+done

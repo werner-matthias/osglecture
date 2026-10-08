@@ -59,9 +59,12 @@ jobs:
       matrix:
         module:
           - ansiterm
+          - osglistings
           - ollm
           - osgdoc
           - langselect
+          - tagbridge
+          - tagdirtree
           - lttheme
           - lttheme-tuc-2019
           - osgstyler

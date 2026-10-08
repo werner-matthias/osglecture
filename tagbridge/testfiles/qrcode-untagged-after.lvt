@@ -1,0 +1,19 @@
+\input regression-test.tex
+\documentclass{article}
+% No tagging: the keys tag and alt must be known but inert
+% (tagbridge loaded after qrcode).
+\usepackage{qrcode}
+\usepackage{tagbridge}
+\begin{document}
+\START
+
+\qrcode{https://example.org/default}
+
+\qrcode[alt={Link to the course page}]{https://example.org/alt}
+
+\qrcode[tag=artifact]{https://example.org/artifact}
+
+\qrcode[tag=artifact,alt={ignored}]{WIFI:T:WPA;S:lecture;P:secret;;}
+
+\TYPE{done}
+\END

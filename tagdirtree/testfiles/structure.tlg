@@ -1,0 +1,411 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+depth after tree: 0
+[1
+]
+============================================================
+TEST 1: Show PDF Tags
+============================================================
+-------- structure.xml (start) ---------
+<PDF>
+ <StructTreeRoot>
+  <Document xmlns="http://iso.org/pdf2/ssn"
+     id="ID.00002"
+    >
+   <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+      id="ID.00006"
+      rolemaps-to="Part"
+     >
+    <itemize xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.00007"
+       xmlns:List="http://iso.org/pdf/ssn/List"
+       List:ListNumbering="Unordered"
+       rolemaps-to="L"
+      >
+     <item xmlns="https://www.latex-project.org/ns/dflt"
+        id="ID.00008"
+        rolemaps-to="LI"
+       >
+      <itemlabel xmlns="https://www.latex-project.org/ns/dflt"
+         id="ID.00009"
+         rolemaps-to="Lbl"
+        >
+       <?MarkedContent page="1" ?>•
+      </itemlabel>
+      <itembody xmlns="https://www.latex-project.org/ns/dflt"
+         id="ID.00010"
+         rolemaps-to="LBody"
+        >
+       <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+          id="ID.00011"
+          rolemaps-to="Part"
+         >
+        <text xmlns="https://www.latex-project.org/ns/dflt"
+           id="ID.00012"
+           xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+           Layout:TextAlign="Justify"
+           rolemaps-to="P"
+          >
+         <Span xmlns="http://iso.org/pdf2/ssn"
+            id="ID.00013"
+            alt="Directory: project -- root directory"
+           >
+          <?MarkedContent page="1" ?>project (root directory)
+         </Span>
+        </text>
+        <itemize xmlns="https://www.latex-project.org/ns/dflt"
+           id="ID.00014"
+           xmlns:List="http://iso.org/pdf/ssn/List"
+           List:ListNumbering="Unordered"
+           rolemaps-to="L"
+          >
+         <item xmlns="https://www.latex-project.org/ns/dflt"
+            id="ID.00015"
+            rolemaps-to="LI"
+           >
+          <itemlabel xmlns="https://www.latex-project.org/ns/dflt"
+             id="ID.00016"
+             rolemaps-to="Lbl"
+            >
+           <?MarkedContent page="1" ?>–
+          </itemlabel>
+          <itembody xmlns="https://www.latex-project.org/ns/dflt"
+             id="ID.00017"
+             rolemaps-to="LBody"
+            >
+           <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+              id="ID.00018"
+              rolemaps-to="Part"
+             >
+            <text xmlns="https://www.latex-project.org/ns/dflt"
+               id="ID.00019"
+               xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+               Layout:TextAlign="Justify"
+               rolemaps-to="P"
+              >
+             <Span xmlns="http://iso.org/pdf2/ssn"
+                id="ID.00020"
+                alt="Directory: src"
+               >
+              <?MarkedContent page="1" ?>src
+             </Span>
+            </text>
+            <itemize xmlns="https://www.latex-project.org/ns/dflt"
+               id="ID.00021"
+               xmlns:List="http://iso.org/pdf/ssn/List"
+               List:ListNumbering="Unordered"
+               rolemaps-to="L"
+              >
+             <item xmlns="https://www.latex-project.org/ns/dflt"
+                id="ID.00022"
+                rolemaps-to="LI"
+               >
+              <itemlabel xmlns="https://www.latex-project.org/ns/dflt"
+                 id="ID.00023"
+                 rolemaps-to="Lbl"
+                >
+               <?MarkedContent page="1" ?>∗
+              </itemlabel>
+              <itembody xmlns="https://www.latex-project.org/ns/dflt"
+                 id="ID.00024"
+                 rolemaps-to="LBody"
+                >
+               <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+                  id="ID.00025"
+                  rolemaps-to="Part"
+                 >
+                <text xmlns="https://www.latex-project.org/ns/dflt"
+                   id="ID.00026"
+                   xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+                   Layout:TextAlign="Justify"
+                   rolemaps-to="P"
+                  >
+                 <Span xmlns="http://iso.org/pdf2/ssn"
+                    id="ID.00027"
+                    alt="File: main.py -- entry point"
+                   >
+                  <?MarkedContent page="1" ?>main.py (entry point)
+                 </Span>
+                </text>
+               </text-unit>
+              </itembody>
+             </item>
+             <item xmlns="https://www.latex-project.org/ns/dflt"
+                id="ID.00028"
+                rolemaps-to="LI"
+               >
+              <itemlabel xmlns="https://www.latex-project.org/ns/dflt"
+                 id="ID.00029"
+                 rolemaps-to="Lbl"
+                >
+               <?MarkedContent page="1" ?>∗
+              </itemlabel>
+              <itembody xmlns="https://www.latex-project.org/ns/dflt"
+                 id="ID.00030"
+                 rolemaps-to="LBody"
+                >
+               <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+                  id="ID.00031"
+                  rolemaps-to="Part"
+                 >
+                <text xmlns="https://www.latex-project.org/ns/dflt"
+                   id="ID.00032"
+                   xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+                   Layout:TextAlign="Justify"
+                   rolemaps-to="P"
+                  >
+                 <Span xmlns="http://iso.org/pdf2/ssn"
+                    id="ID.00033"
+                    alt="File: util.py"
+                   >
+                  <?MarkedContent page="1" ?>util.py
+                 </Span>
+                </text>
+               </text-unit>
+              </itembody>
+             </item>
+            </itemize>
+           </text-unit>
+          </itembody>
+         </item>
+         <item xmlns="https://www.latex-project.org/ns/dflt"
+            id="ID.00034"
+            rolemaps-to="LI"
+           >
+          <itemlabel xmlns="https://www.latex-project.org/ns/dflt"
+             id="ID.00035"
+             rolemaps-to="Lbl"
+            >
+           <?MarkedContent page="1" ?>–
+          </itemlabel>
+          <itembody xmlns="https://www.latex-project.org/ns/dflt"
+             id="ID.00036"
+             rolemaps-to="LBody"
+            >
+           <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+              id="ID.00037"
+              rolemaps-to="Part"
+             >
+            <text xmlns="https://www.latex-project.org/ns/dflt"
+               id="ID.00038"
+               xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+               Layout:TextAlign="Justify"
+               rolemaps-to="P"
+              >
+             <Span xmlns="http://iso.org/pdf2/ssn"
+                id="ID.00039"
+                alt="Archive: data.zip -- raw data"
+               >
+              <?MarkedContent page="1" ?>data.zip (raw data)
+             </Span>
+            </text>
+           </text-unit>
+          </itembody>
+         </item>
+         <item xmlns="https://www.latex-project.org/ns/dflt"
+            id="ID.00040"
+            rolemaps-to="LI"
+           >
+          <itemlabel xmlns="https://www.latex-project.org/ns/dflt"
+             id="ID.00041"
+             rolemaps-to="Lbl"
+            >
+           <?MarkedContent page="1" ?>–
+          </itemlabel>
+          <itembody xmlns="https://www.latex-project.org/ns/dflt"
+             id="ID.00042"
+             rolemaps-to="LBody"
+            >
+           <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+              id="ID.00043"
+              rolemaps-to="Part"
+             >
+            <text xmlns="https://www.latex-project.org/ns/dflt"
+               id="ID.00044"
+               xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+               Layout:TextAlign="Justify"
+               rolemaps-to="P"
+              >
+             <Span xmlns="http://iso.org/pdf2/ssn"
+                id="ID.00045"
+                alt="File: README.md"
+               >
+              <?MarkedContent page="1" ?>README.md
+             </Span>
+            </text>
+           </text-unit>
+          </itembody>
+         </item>
+        </itemize>
+       </text-unit>
+      </itembody>
+     </item>
+    </itemize>
+   </text-unit>
+   <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+      id="ID.00046"
+      rolemaps-to="Part"
+     >
+    <itemize xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.00047"
+       xmlns:List="http://iso.org/pdf/ssn/List"
+       List:ListNumbering="Unordered"
+       rolemaps-to="L"
+      >
+     <item xmlns="https://www.latex-project.org/ns/dflt"
+        id="ID.00048"
+        rolemaps-to="LI"
+       >
+      <itemlabel xmlns="https://www.latex-project.org/ns/dflt"
+         id="ID.00049"
+         rolemaps-to="Lbl"
+        >
+       <?MarkedContent page="1" ?>•
+      </itemlabel>
+      <itembody xmlns="https://www.latex-project.org/ns/dflt"
+         id="ID.00050"
+         rolemaps-to="LBody"
+        >
+       <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+          id="ID.00051"
+          rolemaps-to="Part"
+         >
+        <text xmlns="https://www.latex-project.org/ns/dflt"
+           id="ID.00052"
+           xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+           Layout:TextAlign="Justify"
+           rolemaps-to="P"
+          >
+         <Span xmlns="http://iso.org/pdf2/ssn"
+            id="ID.00053"
+            alt="Verzeichnis: projekt"
+           >
+          <?MarkedContent page="1" ?>projekt
+         </Span>
+        </text>
+        <itemize xmlns="https://www.latex-project.org/ns/dflt"
+           id="ID.00054"
+           xmlns:List="http://iso.org/pdf/ssn/List"
+           List:ListNumbering="Unordered"
+           rolemaps-to="L"
+          >
+         <item xmlns="https://www.latex-project.org/ns/dflt"
+            id="ID.00055"
+            rolemaps-to="LI"
+           >
+          <itemlabel xmlns="https://www.latex-project.org/ns/dflt"
+             id="ID.00056"
+             rolemaps-to="Lbl"
+            >
+           <?MarkedContent page="1" ?>–
+          </itemlabel>
+          <itembody xmlns="https://www.latex-project.org/ns/dflt"
+             id="ID.00057"
+             rolemaps-to="LBody"
+            >
+           <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+              id="ID.00058"
+              rolemaps-to="Part"
+             >
+            <text xmlns="https://www.latex-project.org/ns/dflt"
+               id="ID.00059"
+               xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+               Layout:TextAlign="Justify"
+               rolemaps-to="P"
+              >
+             <Span xmlns="http://iso.org/pdf2/ssn"
+                id="ID.00060"
+                alt="Datei: haupt.py -- Einstieg"
+               >
+              <?MarkedContent page="1" ?>haupt.py (Einstieg)
+             </Span>
+            </text>
+           </text-unit>
+          </itembody>
+         </item>
+         <item xmlns="https://www.latex-project.org/ns/dflt"
+            id="ID.00061"
+            rolemaps-to="LI"
+           >
+          <itemlabel xmlns="https://www.latex-project.org/ns/dflt"
+             id="ID.00062"
+             rolemaps-to="Lbl"
+            >
+           <?MarkedContent page="1" ?>–
+          </itemlabel>
+          <itembody xmlns="https://www.latex-project.org/ns/dflt"
+             id="ID.00063"
+             rolemaps-to="LBody"
+            >
+           <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+              id="ID.00064"
+              rolemaps-to="Part"
+             >
+            <text xmlns="https://www.latex-project.org/ns/dflt"
+               id="ID.00065"
+               xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+               Layout:TextAlign="Justify"
+               rolemaps-to="P"
+              >
+             <Span xmlns="http://iso.org/pdf2/ssn"
+                id="ID.00066"
+                alt="Archiv: daten.zip"
+               >
+              <?MarkedContent page="1" ?>daten.zip
+             </Span>
+            </text>
+           </text-unit>
+          </itembody>
+         </item>
+        </itemize>
+       </text-unit>
+      </itembody>
+     </item>
+    </itemize>
+   </text-unit>
+   <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+      id="ID.00067"
+      rolemaps-to="Part"
+     >
+    <text xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.00068"
+       xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+       Layout:TextAlign="Center"
+       rolemaps-to="P"
+      >
+    </text>
+    <text xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.00069"
+       xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+       Layout:TextAlign="Justify"
+       rolemaps-to="P"
+      >
+     <Span xmlns="http://iso.org/pdf2/ssn"
+        id="ID.00070"
+        actualtext="LaTeX"
+        phoneme="[ˈlaːtɛx]"
+       >
+     </Span>
+    </text>
+   </text-unit>
+   <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+      id="ID.00071"
+      rolemaps-to="Part"
+     >
+    <text xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.00072"
+       xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+       Layout:TextAlign="Justify"
+       rolemaps-to="P"
+      >
+     <Span xmlns="http://iso.org/pdf2/ssn"
+        id="ID.00073"
+        actualtext="LaTeX"
+        phoneme="[ˈlaːtɛx]"
+       >
+     </Span>
+    </text>
+   </text-unit>
+  </Document>
+ </StructTreeRoot>
+</PDF>

@@ -256,6 +256,14 @@ content) can be set per call or via \cs{qrset} as usual;
       }
     \cs_new_protected:Npn \__tagbridge_qrcode_tag_begin:
       {
+        % qrcode's minipage would start the paragraph anyway, but only
+        % after paragraph tagging is switched off: the paragraph's end,
+        % outside qrcode's group, then closes a structure never opened.
+        \mode_leave_vertical:
+        % Close the surrounding marked content and reopen it afterwards;
+        % otherwise text following the code in the same paragraph is left
+        % unmarked.
+        \tag_mc_end_push:
         \tagpdfparaOff
         \__tagbridge_qrcode_check_critical_content:
         \tl_if_eq:NnTF \l__tagbridge_qrcode_tag_tl { artifact }
@@ -268,12 +276,18 @@ content) can be set per call or via \cs{qrset} as usual;
               }
             \exp_args:Ne \tagmcbegin { tag=\l__tagbridge_qrcode_tag_tl }
           }
+        % The code is one marked-content item: qrcode's minipage and its
+        % one paragraph per row must not add structures of their own
+        % (as artifact they would even end up as a Div below a P).
+        \tag_suspend:n { tagbridge/qrcode }
       }
     \cs_new_protected:Npn \__tagbridge_qrcode_tag_end:
       {
+        \tag_resume:n { tagbridge/qrcode }
         \tl_if_eq:NnTF \l__tagbridge_qrcode_tag_tl { artifact }
           { \tagmcend }
           { \tagmcend \tagstructend }
+        \tag_mc_begin_pop:n { }
       }
     \AddToHook { package/qrcode/after } [ tagbridge/qrcode-tagging ]
       {

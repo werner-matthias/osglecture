@@ -1,0 +1,84 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+WIFI without alt: error expected
+<QR code requested for "WIFI:T:WPA;S:lecture;P:secret;;" in version 0-M.>
+<Error-correction level increased from M to Q at no cost.>
+<Calculating QR code for "WIFI:T:WPA;S:lecture;P:secret;;" in version 3-Q.>
+<Splitting off block 1> <Splitting off block 2> <Making error block 1> <Making error block 2> <Interleaving datablocks of length 17\ and 18:  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, .> <Interleaving errorblocks of length 18:  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, .><Interleaving complete.> <Writing data... done.>
+<Applying Mask 0... done. Calculating penalty... penalty is 1296>
+<Applying Mask 1... done. Calculating penalty... penalty is 1372>
+<Applying Mask 2... done. Calculating penalty... penalty is 1191>
+<Applying Mask 3... done. Calculating penalty... penalty is 1222>
+<Applying Mask 4... done. Calculating penalty... penalty is 1297>
+<Applying Mask 5... done. Calculating penalty... penalty is 1169>
+<Applying Mask 6... done. Calculating penalty... penalty is 1185>
+<Applying Mask 7... done. Calculating penalty... penalty is 1236>
+<Selected Mask 5>
+<Encoding and writing format string... done.>
+<Encoding and writing version information... done.>
+<Saving QR code to memory... done.>
+<Writing QR code to aux file... done.>
+<Printing matrix...
+! Package tagbridge Error: This QR code's content starts with WIFI: or otpauth:// -- a format that typically carries a credential or secret (Wi-Fi password, one-time-password seed, ...). Falling back to the encoded text as the PDF alt text would leak it into the document's accessibility tree, where it is trivially extractable. Set the qrcode option alt={...} explicitly (describing the code without repeating the secret), or tag=artifact if nothing about it should be exposed at all.
+Type <return> to continue.
+ ...                                              
+l. ...\qrcode{WIFI:T:WPA;S:lecture;P:secret;;}
+LaTeX does not know anything more about this error, sorry.
+Try typing <return> to proceed.
+If that doesn't work, type X <return> to quit.
+done.>
+otpauth without alt: error expected
+<QR code requested for "otpauth://totp/demo?secret=JBSWY3DPEHPK3PXP" in version 0-M.>
+<Error-correction level increased from M to Q at no cost.>
+<Calculating QR code for "otpauth://totp/demo?secret=JBSWY3DPEHPK3PXP" in version 4-Q.>
+<Splitting off block 1> <Splitting off block 2> <Making error block 1> <Making error block 2> <Interleaving datablocks of length 24\ and 25:  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, .> <Interleaving errorblocks of length 26:  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, .><Interleaving complete.> <Writing data... done.>
+<Applying Mask 0... done. Calculating penalty... penalty is 1328>
+<Applying Mask 1... done. Calculating penalty... penalty is 1329>
+<Applying Mask 2... done. Calculating penalty... penalty is 1486>
+<Applying Mask 3... done. Calculating penalty... penalty is 1359>
+<Applying Mask 4... done. Calculating penalty... penalty is 1372>
+<Applying Mask 5... done. Calculating penalty... penalty is 1355>
+<Applying Mask 6... done. Calculating penalty... penalty is 1380>
+<Applying Mask 7... done. Calculating penalty... penalty is 1448>
+<Selected Mask 0>
+<Encoding and writing format string... done.>
+<Encoding and writing version information... done.>
+<Saving QR code to memory... done.>
+<Writing QR code to aux file... done.>
+<Printing matrix...
+! Package tagbridge Error: This QR code's content starts with WIFI: or otpauth:// -- a format that typically carries a credential or secret (Wi-Fi password, one-time-password seed, ...). Falling back to the encoded text as the PDF alt text would leak it into the document's accessibility tree, where it is trivially extractable. Set the qrcode option alt={...} explicitly (describing the code without repeating the secret), or tag=artifact if nothing about it should be exposed at all.
+Type <return> to continue.
+ ...                                              
+l. ......pauth://totp/demo?secret=JBSWY3DPEHPK3PXP}
+LaTeX does not know anything more about this error, sorry.
+Try typing <return> to proceed.
+If that doesn't work, type X <return> to quit.
+done.>
+WIFI with alt: no error
+<QR code requested for "WIFI:T:WPA;S:lecture;P:secret;;" in version 0-M.>
+<Error-correction level increased from M to Q at no cost.>
+<Copying the QR code for "WIFI:T:WPA;S:lecture;P:secret;;" in version 3-Q as previously calculated.>
+WIFI as artifact: no error
+<QR code requested for "WIFI:T:WPA;S:lecture;P:secret;;" in version 0-M.>
+<Error-correction level increased from M to Q at no cost.>
+<Copying the QR code for "WIFI:T:WPA;S:lecture;P:secret;;" in version 3-Q as previously calculated.>
+MECARD without alt: no error
+<QR code requested for "MECARD:N:Doe,Jane;;" in version 0-M.>
+<Error-correction level increased from M to Q at no cost.>
+<Calculating QR code for "MECARD:N:Doe,Jane;;" in version 2-Q.>
+<Splitting off block 1> <Making error block 1> <Interleaving datablocks of length 22\ and 23:  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, .> <Interleaving errorblocks of length 22:  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, .><Interleaving complete.> <Writing data... done.>
+<Applying Mask 0... done. Calculating penalty... penalty is 1048>
+<Applying Mask 1... done. Calculating penalty... penalty is 1120>
+<Applying Mask 2... done. Calculating penalty... penalty is 1065>
+<Applying Mask 3... done. Calculating penalty... penalty is 1151>
+<Applying Mask 4... done. Calculating penalty... penalty is 1209>
+<Applying Mask 5... done. Calculating penalty... penalty is 1115>
+<Applying Mask 6... done. Calculating penalty... penalty is 1160>
+<Applying Mask 7... done. Calculating penalty... penalty is 1066>
+<Selected Mask 0>
+<Encoding and writing format string... done.>
+<Encoding and writing version information... done.>
+<Saving QR code to memory... done.>
+<Writing QR code to aux file... done.>
+<Printing matrix... done.>
+done

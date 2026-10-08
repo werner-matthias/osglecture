@@ -1,0 +1,39 @@
+\input regression-test.tex
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}
+% tagbridge first: the qrcode patch has to wait for the package hook.
+\usepackage{tagbridge}
+\usepackage{qrcode}
+\usepackage{tikz}
+\begin{document}
+\START
+
+Default: a Figure whose alt text repeats the encoded text.
+
+\qrcode{https://example.org/default}
+
+Explicit alt text.
+
+\qrcode[alt={Link to the course page}]{https://example.org/alt}
+
+Artifact: no structure element at all.
+
+\qrcode[tag=artifact]{https://example.org/artifact}
+
+Same content again: printed from the saved matrix.
+
+\qrcode{https://example.org/default}
+
+Inline \qrcode{https://example.org/inline} with text after it.
+
+\parbox{3cm}{\qrcode[tag=artifact]{https://example.org/boxed}\\ caption}
+
+A tikzpicture with alt text.
+
+\begin{tikzpicture}[alt={A unit square}]
+  \draw (0,0) rectangle (1,1);
+\end{tikzpicture}
+
+\clearpage
+\SHOWPDFTAGS
+\end{document}

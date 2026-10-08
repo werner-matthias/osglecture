@@ -1,0 +1,31 @@
+\input regression-test.tex
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}
+\usepackage{tagdirtree}
+\begin{document}
+\START
+
+\begin{tagdirtree}
+  \dtdir{project}{root directory}{
+    \dtdir{src}{}{
+      \dtfile{main.py}{entry point}
+      \dtfile{util.py}{}
+    }
+    \dtarchive{data.zip}{raw data}
+    \dtfile{README.md}{}
+  }
+\end{tagdirtree}
+
+\TYPE{depth after tree: \tagdirtreedepth}
+
+\def\OsgLectureLanguage{de}
+\begin{tagdirtree}
+  \dtdir{projekt}{}{
+    \dtfile{haupt.py}{Einstieg}
+    \dtarchive{daten.zip}{}
+  }
+\end{tagdirtree}
+
+\clearpage
+\SHOWPDFTAGS
+\end{document}

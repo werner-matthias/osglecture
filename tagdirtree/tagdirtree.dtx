@@ -251,6 +251,7 @@ left, with no real benefit over \cs{OsgColorName} directly.)}
   {
     \cs_if_exist:NT \tagstructbegin
       {
+        \tag_mc_end_push:
         \exp_args:Ne \tagstructbegin
           { tag=\l__tagdirtree_tag_tl, alt={\l__tagdirtree_alt_tl} }
         \exp_args:Ne \tagmcbegin { tag=\l__tagdirtree_tag_tl }
@@ -259,7 +260,7 @@ left, with no real benefit over \cs{OsgColorName} directly.)}
 \cs_new_protected:Npn \__tagdirtree_tag_end:
   {
     \cs_if_exist:NT \tagstructend
-      { \tagmcend \tagstructend }
+      { \tagmcend \tagstructend \tag_mc_begin_pop:n { } }
   }
 
 % \ldeen*{Sprachwahl mit derselben Rückfallkette wie andernorts im
@@ -368,10 +369,12 @@ left, with no real benefit over \cs{OsgColorName} directly.)}
 
 \cs_new_protected:Npn \__tagdirtree_render:nnn #1#2#3
   {
-    \cs_if_exist:NT \tagmcbegin { \tagmcbegin{artifact} }
+    % Push and pop the entry's own marked content around the artifact:
+    % a plain \tagmcend would leave the name that follows unmarked.
+    \cs_if_exist:NT \tagmcbegin { \tag_mc_end_push: \tagmcbegin{artifact} }
     \tagdirtreeconnector
     \__tagdirtree_icon:n {#1}
-    \cs_if_exist:NT \tagmcend { \tagmcend }
+    \cs_if_exist:NT \tagmcend { \tagmcend \tag_mc_begin_pop:n { } }
     ~
     \str_case:nnF {#1}
       {

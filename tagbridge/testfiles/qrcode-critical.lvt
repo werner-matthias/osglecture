@@ -1,0 +1,26 @@
+\input regression-test.tex
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}
+% qrcode first: the patch is applied as soon as tagbridge is loaded.
+\usepackage{qrcode}
+\usepackage{tagbridge}
+\begin{document}
+\START
+
+\TYPE{WIFI without alt: error expected}
+\qrcode{WIFI:T:WPA;S:lecture;P:secret;;}
+
+\TYPE{otpauth without alt: error expected}
+\qrcode{otpauth://totp/demo?secret=JBSWY3DPEHPK3PXP}
+
+\TYPE{WIFI with alt: no error}
+\qrcode[alt={Wi-Fi access for the lecture hall}]{WIFI:T:WPA;S:lecture;P:secret;;}
+
+\TYPE{WIFI as artifact: no error}
+\qrcode[tag=artifact]{WIFI:T:WPA;S:lecture;P:secret;;}
+
+\TYPE{MECARD without alt: no error}
+\qrcode{MECARD:N:Doe,Jane;;}
+
+\TYPE{done}
+\END
