@@ -120,13 +120,13 @@ jobs:
             expect_current: pass
           - name: tagbridge
             directory: tagbridge
-            config: build
+            config: core
             expect_2024: pass
             expect_2025: pass
             expect_current: pass
           - name: tagdirtree
             directory: tagdirtree
-            config: build
+            config: core
             expect_2024: pass
             expect_2025: pass
             expect_current: pass
@@ -160,7 +160,19 @@ jobs:
       # images are frozen on purpose and stay untouched.
       - name: Update TeX Live packages
         if: matrix.distribution.texlive == 'current'
-        run: tlmgr update --self --all
+        # mirror.ctan.org picks a random mirror, and some are briefly out of
+        # sync; a retry gets another one.
+        run: |
+          for attempt in 1 2 3 4; do
+            if tlmgr update --self --all \
+                 --repository https://mirror.ctan.org/systems/texlive/tlnet; then
+              exit 0
+            fi
+            echo "::warning::tlmgr update failed (attempt $attempt), retrying"
+            sleep 15
+          done
+          echo "::error::TeX Live could not be updated; tests would run against a stale image."
+          exit 1
 
       - name: Resolve compatibility expectation
         id: expected
@@ -184,6 +196,7 @@ jobs:
 
       - name: Show environment
         if: steps.expected.outputs.value != 'n/a'
+        shell: bash
         run: |
           lualatex --version
           l3build version

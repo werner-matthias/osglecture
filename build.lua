@@ -81,6 +81,38 @@ end
 -- the shared documentation collection in doc/<tdsroot>/<bundle>.  Direct
 -- module installations retain l3build's normal per-module directory and see
 -- only the module-specific PDF names added above.
+-- l3build installs ollm below TEXMFHOME/scripts, which is never on PATH.
+-- A distribution creates the launcher itself; an installation from the
+-- repository has to be told how.
+local function ollm_path_hint()
+  if options["dry-run"] then
+    return
+  end
+  local windows = os_type == "windows"
+  local probe = windows and "where ollm >NUL 2>NUL" or "command -v ollm >/dev/null 2>&1"
+  if os.execute(probe) == 0 then
+    return
+  end
+  local texmfhome = options["texmfhome"]
+  if not texmfhome then
+    local handle = io.popen("kpsewhich -var-value TEXMFHOME")
+    texmfhome = handle and handle:read("*l") or "<TEXMFHOME>"
+    if handle then handle:close() end
+  end
+  local script_dir = texmfhome .. "/scripts/" .. bundle
+  print("")
+  print("Note: 'ollm' is installed in " .. script_dir)
+  print("      but is not on your PATH.  To call it as 'ollm', either")
+  if windows then
+    print("        - add that directory to PATH (it contains ollm.cmd), or")
+    print("        - call it as: perl \"" .. script_dir .. "/ollm\"")
+  else
+    print("        - link it into a directory on PATH, e.g.")
+    print("            ln -s \"" .. script_dir .. "/ollm\" ~/.local/bin/ollm")
+    print("        - or add that directory to PATH.")
+  end
+end
+
 if not is_module and target_list and target_list.install then
   target_list.install.bundle_func = function(names)
     if names then
@@ -95,8 +127,12 @@ if not is_module and target_list and target_list.install then
     module_options["full"] = nil
 
     local errorlevel = call(modules, "install", module_options)
-    if errorlevel ~= 0 or not options["full"] then
+    if errorlevel ~= 0 then
       return errorlevel
+    end
+    if not options["full"] then
+      ollm_path_hint()
+      return 0
     end
 
     local doc_options = { }
@@ -113,7 +149,11 @@ if not is_module and target_list and target_list.install then
     end
 
     moduledir = tdsroot .. "/" .. bundle
-    return install()
+    errorlevel = install()
+    if errorlevel == 0 then
+      ollm_path_hint()
+    end
+    return errorlevel
   end
 end
 

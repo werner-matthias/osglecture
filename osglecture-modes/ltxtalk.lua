@@ -1,6 +1,7 @@
 -- Keep the optional ltx-talk integration visible as a separate capability.
 includetests = {
   "ltxtalk-adapter",
+  "ltxtalk-command-coverage",
   "ltxtalk-native-compat-off",
   "ltxtalk-filter-profiles",
   "ltxtalk-ignore-non-frame",

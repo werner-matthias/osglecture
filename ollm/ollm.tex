@@ -125,6 +125,25 @@ load babel
   > l3build install
 \end{verbatim}
 \ldeen{
+Dabei landet das Skript in \code{TEXMFHOME/scripts/osglecture/}, das nicht im
+Suchpfad der Shell liegt. Unter Linux und macOS genügt ein einmaliger Link in
+ein Verzeichnis des Suchpfads:
+}{
+The script ends up in \code{TEXMFHOME/scripts/osglecture/}, which is not on the
+shell's search path. On Linux and macOS, link it once into a directory that is:
+}
+\begin{verbatim}
+  > ln -s "$(kpsewhich -var-value TEXMFHOME)/scripts/osglecture/ollm" ~/.local/bin/ollm
+\end{verbatim}
+\ldeen{
+Unter Windows nehmen Sie das Verzeichnis in \code{PATH} auf; es enthält den
+Starter \code{ollm.cmd}.
+}{
+On Windows, add that directory to \code{PATH}; it contains the launcher
+\code{ollm.cmd}.
+}
+
+\ldeen{
 \ollm{} benötigt für seine Ausführung Perl~5.30 oder neuer, \code{latexmk} und Lua\LaTeX. Eine
 vollständige Installation prüfen Sie mit:
 }{}

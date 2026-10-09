@@ -31,6 +31,15 @@ l3build check
 l3build -full install
 ```
 
+`l3build` installs the script into `TEXMFHOME/scripts/osglecture/`, which is not
+on `PATH`. On Linux and macOS, link it into a directory that is:
+
+```sh
+ln -s "$(kpsewhich -var-value TEXMFHOME)/scripts/osglecture/ollm" ~/.local/bin/ollm
+```
+
+On Windows, add that directory to `PATH`; it contains the launcher `ollm.cmd`.
+
 ## Documentation
 
 Please read `ollm-en.pdf` or `ollm-de.pdf` for documentation in English or German.

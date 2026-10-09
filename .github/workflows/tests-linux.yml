@@ -84,7 +84,19 @@ jobs:
       # jobs install from CTAN directly.  Without this step the three
       # platforms test against different package versions.
       - name: Update TeX Live packages
-        run: tlmgr update --self --all
+        # mirror.ctan.org picks a random mirror, and some are briefly out of
+        # sync; a retry gets another one.
+        run: |
+          for attempt in 1 2 3 4; do
+            if tlmgr update --self --all \
+                 --repository https://mirror.ctan.org/systems/texlive/tlnet; then
+              exit 0
+            fi
+            echo "::warning::tlmgr update failed (attempt $attempt), retrying"
+            sleep 15
+          done
+          echo "::error::TeX Live could not be updated; tests would run against a stale image."
+          exit 1
 
       - name: Show environment
         run: |

@@ -389,7 +389,11 @@ left, with no real benefit over \cs{OsgColorName} directly.)}
   {
     \item
     \leavevmode
-    \tl_set:Ne \l__tagdirtree_tag_tl { \UseStructureName{#2} }
+    % Structure names are a recent kernel interface; without it the
+    % role they map to is used directly.
+    \cs_if_exist:NTF \UseStructureName
+      { \tl_set:Ne \l__tagdirtree_tag_tl { \UseStructureName{#2} } }
+      { \tl_set:Nn \l__tagdirtree_tag_tl { Span } }
     \tl_if_empty:nTF {#4}
       { \tl_set:Ne \l__tagdirtree_alt_tl { \__tagdirtree_kind_word:n{#1}:~#3 } }
       {
