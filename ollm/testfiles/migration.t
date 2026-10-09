@@ -95,11 +95,25 @@ is_deeply $manifest->{deployment}{types}{handout}{paths},
 is $manifest->{deployment}{types}{handout}{filename},
   '{series}-{chapter}-{lang}.pdf', 'legacy filename variables are converted';
 
-eval { OLLM::Migration->execute(action => 'newproject', start_dir => $root) };
+eval { OLLM::Migration->execute(action => 'newproject', profiles => 'classic', start_dir => $root) };
 like $@, qr/already exists/, 'newproject does not overwrite an existing manifest';
 
 my $generic = tempdir(CLEANUP => 1);
-$result = OLLM::Migration->execute(action => 'newproject', start_dir => $generic);
+eval { OLLM::Migration->execute(action => 'newproject', start_dir => $generic) };
+like $@, qr/\Anewproject needs --profiles=taggable or --profiles=classic/,
+  'newproject refuses to choose the profiles itself';
+like $@, qr/--profiles=taggable\n.*ltx-talk.*Tagged PDF.*--profiles=classic\n.*beamer.*untagged/s,
+  'the refusal explains what either choice means';
+ok !-e File::Spec->catfile($generic, 'ollmconfig.toml'),
+  'a refused newproject writes nothing';
+eval {
+  OLLM::Migration->execute(
+    action => 'newproject', profiles => 'modern', start_dir => $generic,
+  );
+};
+like $@, qr/invalid --profiles 'modern'.*--profiles=classic/s,
+  'an unknown profile set is rejected with the same explanation';
+$result = OLLM::Migration->execute(action => 'newproject', profiles => 'classic', start_dir => $generic);
 ok !$result->{converted}, 'newproject reports generic generation';
 $manifest = OLLM::Config->load_manifest($result->{path});
 is $manifest->{languages}{default}, 'de', 'generic manifest has portable defaults';
@@ -121,13 +135,63 @@ unlike $generic_source, qr/^\s*longform-profile=/m,
 like $generic_source, qr/longform_profile in\s*% \[targets\.defaults\]/s,
   'newproject points at the manifest for the profile choice';
 
+
+# The generated manifest offers screen as a regular target that resolves
+# against the shipped definitions without further editing.
+my $generic_definitions = OLLM::Config->resolve_definitions(
+  manifest      => $manifest,
+  manifest_path => $result->{path},
+  project_root  => $generic,
+  bundle_path   => Cwd::abs_path('scripts/definitions'),
+);
+is_deeply [sort keys %{ $generic_definitions->{targets} }],
+  [qw(handout screen script slides)],
+  'newproject configures slides, handout, screen and script';
+is $generic_definitions->{targets}{screen}{profile}, 'beamer',
+  'the classic screen target builds with beamer';
+is $generic_definitions->{targets}{script}{profile}, 'scrbook',
+  'the classic script target builds with scrbook';
+is $manifest->{target_defaults}{presentation_profile}, 'beamer',
+  'the classic manifest states its profiles explicitly';
+ok !$result->{document_metadata_created}
+  && !-e $result->{document_metadata_path},
+  'a classic project gets no document metadata file';
+
+my $taggable = tempdir(CLEANUP => 1);
+$result = OLLM::Migration->execute(
+  action => 'newproject', profiles => 'taggable', start_dir => $taggable,
+);
+my $taggable_definitions = OLLM::Config->resolve_definitions(
+  manifest      => OLLM::Config->load_manifest($result->{path}),
+  manifest_path => $result->{path},
+  project_root  => $taggable,
+  bundle_path   => Cwd::abs_path('scripts/definitions'),
+);
+is_deeply {
+  map { $_ => $taggable_definitions->{targets}{$_}{profile} }
+    keys %{ $taggable_definitions->{targets} }
+}, { slides => 'ltx-talk', handout => 'ltx-talk', screen => 'ltx-talk',
+     script => 'book' },
+  'a taggable project builds with ltx-talk and book';
+is_deeply [
+  grep { $taggable_definitions->{targets}{$_}{document_metadata} ne 'enabled' }
+    keys %{ $taggable_definitions->{targets} }
+], [], 'every taggable target runs with document metadata';
+ok $result->{document_metadata_created},
+  'a taggable project reports its document metadata file';
+open my $taggable_metadata, '<:raw', $result->{document_metadata_path} or die $!;
+like do { local $/; <$taggable_metadata> },
+  qr/^\\DocumentMetadata\{.*tagging = on/ms,
+  'the generated document metadata switches tagging on';
+close $taggable_metadata;
+
 my $nested = tempdir(CLEANUP => 1);
 open $old, '>:raw', File::Spec->catfile($nested, 'ollmconfig.pl') or die $!;
 print {$old} "\$defaultlanguage = 'de';\n";
 close $old;
 my $unit = File::Spec->catdir($nested, '010-introduction');
 mkdir $unit or die $!;
-$result = OLLM::Migration->execute(action => 'newproject', start_dir => $unit);
+$result = OLLM::Migration->execute(action => 'newproject', profiles => 'classic', start_dir => $unit);
 is $result->{path}, File::Spec->catfile(Cwd::abs_path($nested), 'ollmconfig.toml'),
   'newproject discovers a legacy project from a unit directory';
 
@@ -168,7 +232,7 @@ my $before = do {
   open my $fh, '<:raw', File::Spec->catfile($resume, 'ollmconfig.toml') or die $!;
   local $/; <$fh>;
 };
-$result = OLLM::Migration->execute(action => 'newproject', start_dir => $resume);
+$result = OLLM::Migration->execute(action => 'newproject', profiles => 'classic', start_dir => $resume);
 ok $result->{manifest_kept}, 'an intact manifest is reported as kept';
 ok !$result->{converted}, 'a kept manifest is not a conversion';
 is do {
@@ -184,8 +248,10 @@ unlike $resume_source, qr/selectable=/,
   'the added projectconfig.tex leaves the language list to the kept manifest';
 like join("\n", @{ $result->{warnings} }), qr/kept the existing ollmconfig\.toml/,
   'newproject warns that the manifest was kept';
+like join("\n", @{ $result->{warnings} }), qr/--profiles=classic was ignored/,
+  'newproject reports that a kept manifest ignores --profiles';
 
-eval { OLLM::Migration->execute(action => 'newproject', start_dir => $resume) };
+eval { OLLM::Migration->execute(action => 'newproject', profiles => 'classic', start_dir => $resume) };
 like $@, qr/already exists/,
   'newproject still refuses when both files are present';
 
@@ -194,7 +260,7 @@ my $broken = tempdir(CLEANUP => 1);
 open my $stub, '>:raw', File::Spec->catfile($broken, 'ollmconfig.toml') or die $!;
 print {$stub} "schema = 1\n[project]\nid = \"x\"\n[unterminated\n";
 close $stub;
-$result = OLLM::Migration->execute(action => 'newproject', start_dir => $broken);
+$result = OLLM::Migration->execute(action => 'newproject', profiles => 'classic', start_dir => $broken);
 ok !$result->{manifest_kept}, 'a truncated manifest is not kept';
 my $repaired = OLLM::Config->load_manifest($result->{path});
 is $repaired->{languages}{default}, 'de',

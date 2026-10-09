@@ -66,6 +66,11 @@ sub run {
   if ($plan->{action} eq 'convertproject' || $plan->{action} eq 'newproject') {
     return $class->_migration($plan);
   }
+  if (defined $plan->{profiles}) {
+    print STDERR "ollm: --profiles is only valid for newproject or "
+      . "convertproject\n";
+    return 2;
+  }
 
   if ($plan->{action} eq 'deploy') {
     return $class->_deployment($plan);
@@ -331,6 +336,14 @@ sub parse {
       $plan{config} = _take_value($arg, \@argv);
       next;
     }
+    if ($arg =~ /^--profiles=(.*)$/) {
+      $plan{profiles} = $1;
+      next;
+    }
+    if ($arg eq '--profiles') {
+      $plan{profiles} = _take_value($arg, \@argv);
+      next;
+    }
     if ($arg =~ /^--project-root=(.+)$/) {
       $plan{project_root} = $1;
       next;
@@ -396,7 +409,8 @@ sub _migration {
   }
   if ($plan->{source_explicit} || defined $plan->{target_explicit}
       || defined $plan->{language} || @{ $plan->{latexmk_args} }) {
-    print STDERR "ollm: $plan->{action} accepts only --config and --project-root\n";
+    print STDERR "ollm: $plan->{action} accepts only --profiles, --config "
+      . "and --project-root\n";
     return 2;
   }
   require OLLM::Migration;
@@ -404,6 +418,7 @@ sub _migration {
     OLLM::Migration->execute(
       action => $plan->{action}, start_dir => getcwd(),
       config => $plan->{config}, project_root => $plan->{project_root},
+      profiles => $plan->{profiles},
     );
   };
   if (!$result) {
@@ -421,6 +436,8 @@ sub _migration {
   }
   print(($result->{project_config_created} ? 'Created ' : 'Kept '),
     "$result->{project_config_path}\n");
+  print "Created $result->{document_metadata_path}\n"
+    if $result->{document_metadata_created};
   print STDERR "ollm: conversion warning: $_\n" for @{ $result->{warnings} };
   return 0;
 }
@@ -1123,7 +1140,8 @@ sub _help {
   return <<'HELP';
 Usage:
   ollm [global options] [[+]build] [[+]target| | --target=<target>] [build options] [latexmk options]
-  ollm [global options] [+]<report|check|clean|prune|doctor|deploy|convertproject|newproject>
+  ollm [global options] [+]<report|check|clean|prune|doctor|deploy|convertproject>
+  ollm [global options] [+]newproject --profiles=taggable|classic
 
 Targets:
   slides (aliases: beamer, presentation)
@@ -1143,6 +1161,18 @@ Implemented commands:
   deploy                copy promoted PDF artifacts to configured targets
   convertproject        convert a legacy project configuration where possible
   newproject            create project configuration, converting legacy files when present
+
+Project creation options:
+  --profiles=taggable|classic
+                        required for newproject, optional for convertproject
+                        (default there: classic)
+                        taggable: ltx-talk + book, Tagged PDF, creates
+                          Include/documentmetadata.tex; needs a current TeX
+                          Live, no beamer themes or beamer-specific code
+                        classic:  beamer + scrbook, untagged PDF; for
+                          existing beamer material and beamer themes
+                        Single targets can be mixed later with profile = "..."
+                        in ollmconfig.toml.
 
 General options:
   --help                show this help

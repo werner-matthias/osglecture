@@ -93,6 +93,11 @@ is $plan->{source}, 'slides', 'bare target word becomes a source under enforceme
 $plan = OLLM::CLI->parse(qw(+convertproject));
 is $plan->{action}, 'convertproject', 'migration command accepts a plus prefix';
 
+$plan = OLLM::CLI->parse(qw(newproject --profiles=taggable));
+is $plan->{profiles}, 'taggable', 'newproject carries the profile set';
+$plan = OLLM::CLI->parse(qw(newproject --profiles classic));
+is $plan->{profiles}, 'classic', '--profiles accepts a separate value';
+
 eval { OLLM::CLI->parse(qw(clean --level=unknown)) };
 like $@, qr/invalid --level/, 'unknown clean level is rejected';
 

@@ -83,7 +83,7 @@ Framebody an sich zu ziehen.
 
 Mitgeliefert werden zunächst:
 
-- `beamer` für `slides` und `handout`,
+- `beamer` für `slides`, `handout` und `screen`,
 - `ltx-talk` für `slides`, `handout` und `screen`,
 - `book` als Standard für `script` und `article`,
 - `scrbook` als alternativer KOMA-Script-Adapter für `script` und `article`.

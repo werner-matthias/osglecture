@@ -156,12 +156,30 @@ Wechseln Sie zum Anlegen eines Projekts in dessen künftige Wurzel und führen
 Sie aus:
 
 \begin{verbatim}
-ollm newproject
+ollm newproject --profiles=taggable
 \end{verbatim}
 
-Der Befehl erzeugt \texttt{ollmconfig.toml}. Existiert dort bereits eine alte
-\texttt{ollmconfig.pl}, wird diese soweit möglich konvertiert. Ein vorhandenes
-TOML-Manifest wird niemals überschrieben.
+Der Befehl erzeugt \texttt{ollmconfig.toml}. Die Option \texttt{--profiles}
+ist Pflicht; ohne sie erklärt \texttt{newproject} beide Varianten und schreibt
+nichts:
+
+\begin{description}
+\item[\texttt{taggable}] \texttt{slides}, \texttt{handout} und
+  \texttt{screen} nutzen \texttt{ltx-talk}, \texttt{script} nutzt
+  \texttt{book}. Alle Targets laufen mit \verb|\DocumentMetadata| und
+  eingeschaltetem Tagging; \texttt{Include/documentmetadata.tex} wird
+  angelegt. Das setzt ein aktuelles \TeX\ Live voraus, und Beamer-Themes
+  sowie beamerspezifischer Code funktionieren nicht.
+\item[\texttt{classic}] \texttt{slides}, \texttt{handout} und
+  \texttt{screen} nutzen \texttt{beamer}, \texttt{script} nutzt
+  \texttt{scrbook}. Es entsteht kein Tagged PDF; davon abhängige Funktionen
+  wie das Handout-Layout \texttt{ruled} und die Presenter-Uhr fehlen.
+\end{description}
+
+Die Wahl steht danach in \texttt{[targets.defaults]}; einzelne Targets lassen
+sich dort mit \texttt{profile = "..."} von Hand mischen. Existiert bereits
+eine alte \texttt{ollmconfig.pl}, wird diese soweit möglich konvertiert. Ein
+vorhandenes TOML-Manifest wird niemals überschrieben.
 
 Eine kleine Serie kann so aufgebaut sein:
 
@@ -189,7 +207,9 @@ Die Kurzform \texttt{ollm script --language=de} ist gleichwertig. Die Targets
 mitgeliefert. \texttt{screen} erzeugt die Vortragendenfassung der Folien: Jede
 Seite ist doppelt so breit und trägt rechts die Presenter-Seite der Klasse
 \texttt{osglecture}; das Target setzt ein Profil voraus, das den Dokumenttyp
-\texttt{screen} unterstützt (mitgeliefert: \texttt{ltx-talk}).
+\texttt{screen} unterstützt (mitgeliefert: \texttt{beamer} und
+\texttt{ltx-talk}). \texttt{ollm newproject} konfiguriert es wie
+\texttt{slides} und \texttt{handout} direkt mit.
 
 \section{Projektaufbau}
 
@@ -797,7 +817,7 @@ das Target mit \texttt{--target=studyguide}.
 
 \begin{verbatim}
 ollm convertproject
-ollm newproject
+ollm newproject --profiles=classic
 \end{verbatim}
 
 \texttt{convertproject} sucht eine alte \texttt{ollmconfig.pl}, erzeugt
@@ -806,6 +826,8 @@ und übernimmt erkennbare Metadaten aus \texttt{Include/lectdates.tex} nach
 \texttt{Include/projectconfig.tex}. \texttt{newproject} erzeugt Manifest,
 Include-Verzeichnis und eine Projektkonfiguration mit Dummy-Metadaten oder
 verhält sich bei gefundenen Legacy-Dateien wie \texttt{convertproject}.
+\texttt{convertproject} verwendet ohne \texttt{--profiles} den Profilsatz
+\texttt{classic}, also die Klassen des alten Builds.
 Bestehende Konfigurationsdateien werden nicht überschrieben.
 
 Statisch erkennbare Sprachen, Shell-Escape-Einstellung, gemeinsames

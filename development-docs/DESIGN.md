@@ -2187,9 +2187,13 @@ nennt alle diese Punkte als nachzuarbeitende Warnungen. Eine vollständige,
 lesbare `ollmconfig.toml` wird niemals überschrieben — nur eine erkennbar
 unvollständige Datei aus einem abgebrochenen Lauf wird ersetzt (mit Warnung).
 
-`ollm newproject` erzeugt bei fehlender Konfiguration ein generisches
-Schema-2-Manifest, das Include-Verzeichnis und eine `projectconfig.tex` mit
-Dummy-Metadaten. Sprach- und Profilwahl stehen im Manifest; `projectconfig.tex`
+`ollm newproject` verlangt `--profiles=taggable|classic` (ohne die Option
+erklärt es beide Varianten und schreibt nichts) und erzeugt bei fehlender
+Konfiguration ein generisches Schema-2-Manifest, das Include-Verzeichnis und
+eine `projectconfig.tex` mit Dummy-Metadaten. `taggable` stellt `ltx-talk` +
+`book` mit `document_metadata = "enabled"` ein und legt
+`documentmetadata.tex` an; `classic` stellt `beamer` + `scrbook` ein.
+`convertproject` nimmt ohne die Option `classic`. Sprach- und Profilwahl stehen im Manifest; `projectconfig.tex`
 verweist nur darauf.
 Findet es beim Aufwärtssuchen eine alte Perl-Konfiguration, verhält es sich wie
 `convertproject`. Sind Manifest und `projectconfig.tex` bereits vorhanden,

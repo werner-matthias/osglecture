@@ -8,4 +8,4 @@ name = "beamer"
 version = "1.0"
 profile_class = "presentation"
 document_metadata = "forbidden"
-doctypes = ["slides", "handout"]
+doctypes = ["slides", "handout", "screen"]

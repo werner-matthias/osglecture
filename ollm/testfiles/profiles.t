@@ -78,8 +78,9 @@ my $resolved = OLLM::Config->resolve_definitions(
 is ref $resolved->{profiles}, 'HASH', 'resolved definitions carry profiles';
 is $resolved->{profiles}{'ltx-talk'}{document_metadata}, 'required',
   'ltx-talk profile projection is resolved';
-is_deeply $resolved->{profiles}{beamer}{doctypes}, ['slides', 'handout'],
-  'beamer profile doctypes are resolved';
+is_deeply $resolved->{profiles}{beamer}{doctypes},
+  ['slides', 'handout', 'screen'],
+  'beamer profile carries the screen document type';
 is_deeply $resolved->{profiles}{'ltx-talk'}{doctypes},
   ['slides', 'handout', 'screen'],
   'ltx-talk profile carries the screen document type';

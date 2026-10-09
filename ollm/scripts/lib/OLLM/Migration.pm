@@ -9,9 +9,60 @@ use File::Basename qw(basename dirname);
 use File::Path qw(make_path);
 use File::Spec;
 
+# The two profile sets a generated manifest can start from. 'taggable' pairs
+# the profiles that run with \DocumentMetadata and tagging; 'classic' is the
+# pair the legacy osgbeamer world produced.
+my %PROFILE_SET = (
+  taggable => {
+    presentation_profile => 'ltx-talk', longform_profile => 'book',
+    document_metadata => 'enabled',
+  },
+  classic => {
+    presentation_profile => 'beamer', longform_profile => 'scrbook',
+  },
+);
+
+# Shown instead of a bare "option missing": the choice changes which classes
+# the whole project builds with, so the message has to carry enough to decide
+# without the manual.
+sub profiles_help {
+  return <<'TEXT';
+newproject needs --profiles=taggable or --profiles=classic
+
+The choice decides which LaTeX classes the generated ollmconfig.toml builds
+with, and whether the PDFs are tagged (accessible):
+
+  --profiles=taggable
+      slides, handout, screen -> ltx-talk       script -> book
+      Every target runs with \DocumentMetadata and tagging switched on, so
+      the PDFs carry structure for screen readers (Tagged PDF).
+      Include/documentmetadata.tex is created for that.
+      Choose this for new material that should be accessible.
+      Consequences: needs a current TeX Live. ltx-talk is a young class with
+      few themes; beamer themes and beamer-specific code (\setbeamertemplate,
+      \usetheme, ...) do not work with it.
+
+  --profiles=classic
+      slides, handout, screen -> beamer         script -> scrbook
+      No \DocumentMetadata, no tagging: the PDFs are untagged.
+      Choose this for existing beamer material, for beamer themes, or for
+      an older TeX installation.
+      Consequences: no Tagged PDF. Features that depend on it are missing,
+      for example the 'ruled' handout layout and the presenter clock of the
+      screen target.
+
+Either way only [targets.defaults] in ollmconfig.toml is preset. You can mix
+later by hand: set profile = "..." in a single [targets.<name>] table.
+TEXT
+}
+
 sub execute {
   my ($class, %arg) = @_;
   my $action = $arg{action} // die "missing migration action";
+  my $profiles = $arg{profiles};
+  die "invalid --profiles '$profiles'; expected 'taggable' or 'classic'\n\n"
+    . $class->profiles_help
+    if defined $profiles && !exists $PROFILE_SET{$profiles};
   my $start = abs_path($arg{start_dir} // '.')
     // die "migration directory not found";
   my $root = defined $arg{project_root}
@@ -56,16 +107,28 @@ sub execute {
   }
 
   if (!$manifest_kept) {
+    die "legacy configuration not found: $perl"
+      if $action eq 'convertproject' && !-f $perl;
+    # newproject makes the author choose; convertproject keeps what the
+    # legacy build produced unless told otherwise.
+    die $class->profiles_help if !defined $profiles && $action eq 'newproject';
+    $profiles //= 'classic';
     if (-f $perl) {
-      ($source, my @convert_warnings) = $class->convert_source($perl, $root);
+      ($source, my @convert_warnings) =
+        $class->convert_source($perl, $root, $profiles);
       push @warnings, @convert_warnings;
-    }
-    elsif ($action eq 'convertproject') {
-      die "legacy configuration not found: $perl";
+      push @warnings, "the converted project builds its presentation targets "
+        . "with ltx-talk (--profiles=taggable); legacy beamer-specific code "
+        . "in the units needs manual conversion"
+        if $profiles eq 'taggable';
     }
     else {
-      $source = $class->generic_source($root);
+      $source = $class->generic_source($root, $profiles);
     }
+  }
+  elsif (defined $profiles) {
+    push @warnings, "--profiles=$profiles was ignored because the existing "
+      . "ollmconfig.toml was kept";
   }
 
   my $tex_directory = _manifest_tex_directory($source);
@@ -119,9 +182,26 @@ sub execute {
     close $tex_handle or die "cannot close '$project_config': $!";
   }
 
+  # Only a manifest generated just now is known to enable document metadata;
+  # a kept one decides that for itself.
+  my $document_metadata = File::Spec->catfile($include, 'documentmetadata.tex');
+  my $document_metadata_created = !$manifest_kept
+    && defined $PROFILE_SET{$profiles}{document_metadata}
+    && !-e $document_metadata;
+  if ($document_metadata_created) {
+    open my $metadata_handle, '>:raw', $document_metadata
+      or die "cannot create '$document_metadata': $!";
+    print {$metadata_handle} $class->generic_document_metadata
+      or die "cannot write '$document_metadata': $!";
+    close $metadata_handle or die "cannot close '$document_metadata': $!";
+  }
+
   return {
     path => $toml, project_config_path => $project_config,
     project_config_created => $project_config_created,
+    document_metadata_path => $document_metadata,
+    document_metadata_created => $document_metadata_created ? 1 : 0,
+    profiles => $manifest_kept ? undef : $profiles,
     manifest_kept => $manifest_kept ? 1 : 0,
     converted => (!$manifest_kept && -f $perl) ? 1 : 0,
     warnings => \@warnings,
@@ -166,9 +246,20 @@ sub _manifest_languages {
 sub _project_config_profiles {
   return <<'TEX';
 % Document profiles (beamer/ltx-talk, book/scrbook) are chosen in
-% ollmconfig.toml, not here. The bundle preset defaults to beamer + scrbook;
-% to change one, set presentation_profile / longform_profile in
+% ollmconfig.toml, not here. newproject presets them from --profiles; to
+% change one, set presentation_profile / longform_profile in
 % [targets.defaults], or profile on a single [targets.<name>].
+TEX
+}
+
+sub generic_document_metadata {
+  return <<'TEX';
+% Early \DocumentMetadata call for targets that run with document metadata.
+% OLLM inserts this file before \documentclass.
+\DocumentMetadata{
+  lang = \OsgLectureRequestedLanguage,
+  tagging = on
+}
 TEX
 }
 
@@ -363,7 +454,7 @@ sub _manifest_tex_directory {
 }
 
 sub convert_source {
-  my ($class, $path, $root) = @_;
+  my ($class, $path, $root, $profiles) = @_;
   open my $handle, '<:raw', $path or die "cannot read '$path': $!";
   local $/;
   my $perl = <$handle>;
@@ -403,6 +494,7 @@ sub convert_source {
     shell_escape => $shell, tex_directory => $tex_directory,
     deployment => $deployment,
     overwrite => ($deployment ne '' ? 'explicit' : undef),
+    profiles => $profiles,
   );
 
   push @warnings, "defaultlanguage could not be read; using 'de'"
@@ -424,10 +516,11 @@ sub convert_source {
 }
 
 sub generic_source {
-  my ($class, $root) = @_;
+  my ($class, $root, $profiles) = @_;
   return _manifest(
     root => $root, default => 'de', languages => [qw(de en)],
     shell_escape => 'restricted', tex_directory => 'Include',
+    profiles => $profiles,
   ) . <<'TOML';
 
 # Deployment copies promoted PDF artifacts. Enable and adapt these examples;
@@ -457,13 +550,18 @@ sub _manifest {
   my $security = "[security]\nshell_escape = " . _quote($arg{shell_escape}) . "\n";
   $security .= "overwrite = " . _quote($arg{overwrite}) . "\n"
     if defined $arg{overwrite};
+  my $set = $PROFILE_SET{ $arg{profiles} // 'classic' }
+    // die "unknown profile set '$arg{profiles}'";
+  my $profiles = join '', map { "$_ = " . _quote($set->{$_}) . "\n" }
+    grep { defined $set->{$_} }
+    qw(presentation_profile longform_profile document_metadata);
   return "schema = 2\nbundle_preset = \"OSG lecture/1\"\n\n"
     . "[project]\nid = " . _quote($id) . "\n"
     . "tex_directory = $tex_directory\n"
     . "tex_config = \"projectconfig.tex\"\n\n"
     . "[targets.defaults]\nlanguages = [$languages]\n"
-    . "default_language = $default\n\n"
-    . join('', map { "[targets.$_]\n\n" } qw(slides handout script))
+    . "default_language = $default\n$profiles\n"
+    . join('', map { "[targets.$_]\n\n" } qw(slides handout screen script))
     . "$security\n"
     . ($arg{deployment} // '');
 }

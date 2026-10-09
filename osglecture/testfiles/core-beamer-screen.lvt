@@ -1,0 +1,23 @@
+\input regression-test
+\documentclass[standalone,doctype=screen,profile=beamer]{osglecture}
+\OsgLecturePresenterSetup{current-label=Now,next-label=Then}
+\begin{document}
+\START
+\TYPE{doctype=\OsgLectureDocumentType}
+\TYPE{profile=\OsgLectureDocumentProfile}
+\TYPE{backend=\OsgLectureBackend}
+\IfLectureModeTF{screen}{\TYPE{mode screen}}{\TYPE{no mode screen}}
+\IfLectureModeTF{slides}{\TYPE{mode slides}}{\TYPE{no mode slides}}
+\IfLectureModeTF{presentation}{\TYPE{mode presentation}}{\TYPE{no mode presentation}}
+\IfLectureModeTF{handout}{\TYPE{mode handout}}{\TYPE{no mode handout}}
+\TYPE{pagewidth doubled=\ifdim\pagewidth=2\paperwidth yes\else no\fi}
+\begin{frame}
+\frametitle{One}
+Text\Note{First remark}\Note{First remark}\Note{Second remark}
+\end{frame}
+\begin{frame}
+\frametitle{Two}
+Text
+\end{frame}
+\END
+\end{document}
