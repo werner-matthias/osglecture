@@ -6,6 +6,11 @@
 \START
 % Tagging active, but no tree comparison: any tagpdf error or warning
 % about the structure shows up in the log.
+% Without the probe the test would also pass where \DocumentMetadata does
+% not understand tagging=on and the document is silently left untagged.
+\ExplSyntaxOn
+\TYPE{tagging~active:~\tag_if_active:TF{yes}{no}}
+\ExplSyntaxOff
 
 \begin{tagdirtree}
   \dtdir{project}{root directory}{
