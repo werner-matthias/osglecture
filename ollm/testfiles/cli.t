@@ -43,19 +43,14 @@ like $@, qr/invalid target/, 'non-portable explicit target is rejected';
 $plan = OLLM::CLI->parse(qw(--debug slides));
 is $plan->{debug}, 'tex', 'valueless new debug option defaults to TeX';
 
-$plan = OLLM::CLI->parse(qw(standalone classpath=../tex));
-is_deeply $plan->{legacy_args}, ['+standalone', '+classpath=../tex'],
-  'legacy standalone options are preserved';
+$plan = OLLM::CLI->parse(qw(standalone main.tex));
+ok $plan->{standalone}, 'standalone is recorded in the normalized plan';
 
-$plan = OLLM::CLI->parse(qw(script lang=en debug -silent main.tex));
-is_deeply(
-  [OLLM::CLI->_legacy_command($plan, '/tmp/ollm-legacy.rc')],
-  [
-    'latexmk', '-norc', '-r', '/tmp/ollm-legacy.rc',
-    '+script', '+lang=en', '+debug', '-silent', 'main.tex',
-  ],
-  'legacy build uses an argument list without shell interpolation',
-);
+for my $removed (qw(--legacy publish +verbose nosocket classpath=../tex)) {
+  eval { OLLM::CLI->parse($removed, 'slides') };
+  like $@, qr/removed ollmconfig\.pl build.*convertproject/,
+    "$removed is rejected with a pointer to convertproject";
+}
 
 eval { OLLM::CLI->parse(qw(slides script)) };
 like $@, qr/more than one document target/, 'conflicting targets rejected';
@@ -83,8 +78,7 @@ $plan = OLLM::CLI->parse(qw(check --target=script --language=de));
 is $plan->{action}, 'check', 'check is a first-class action';
 is $plan->{target}, 'script', 'check current target is parsed';
 
-$plan = OLLM::CLI->parse(qw(--legacy +build +script));
-ok $plan->{legacy}, '--legacy is explicit in the normalized plan';
+$plan = OLLM::CLI->parse(qw(+build +script));
 is $plan->{target}, 'script', 'plus-prefixed command and target are accepted';
 
 $plan = OLLM::CLI->parse(qw(--enforce+ +build +script));

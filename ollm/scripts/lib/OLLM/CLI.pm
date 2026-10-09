@@ -167,45 +167,8 @@ sub run {
     return $status;
   }
 
-  my @unsupported = grep { $plan->{$_} } qw(all resolve);
-  if (@unsupported) {
-    print STDERR
-      "ollm: this build requires the new build engine; use --dry-run to inspect it\n";
-    return 69;
-  }
-
-  my $rc = File::Spec->catfile($arg{script_dir}, 'ollm-legacy.rc');
-  if (!-f $rc) {
-    print STDERR "ollm: legacy latexmk configuration not found: $rc\n";
-    return 69;
-  }
-
-  my @command = $class->_legacy_command(
-    $plan, $rc, $resolved->{configuration}{path},
-  );
-  {
-    no warnings 'exec';
-    local $ENV{OLLM_VERSION} = $VERSION;
-    exec { $command[0] } @command;
-  }
-  print STDERR "ollm: cannot execute latexmk: $!\n";
-  return 69;
-}
-
-sub _legacy_command {
-  my ($class, $plan, $rc, $config_path) = @_;
-  my @legacy;
-  push @legacy, '+' . $plan->{target} if defined $plan->{target};
-  push @legacy, '+lang=' . $plan->{language} if defined $plan->{language};
-  push @legacy, '+debug' if defined $plan->{debug};
-  push @legacy, '+ollmconfig=' . ($config_path // $plan->{config})
-    if defined($config_path) || defined($plan->{config});
-  push @legacy, '+enforce+' if $plan->{enforce_plus};
-  push @legacy, '-gg' if $plan->{rebuild};
-  push @legacy, @{ $plan->{legacy_args} };
-  push @legacy, @{ $plan->{latexmk_args} };
-  push @legacy, $plan->{source} if defined $plan->{source};
-  return ('latexmk', '-norc', '-r', $rc, @legacy);
+  print STDERR "ollm: internal error: unresolved build context\n";
+  return 70;
 }
 
 sub parse {
@@ -220,7 +183,7 @@ sub parse {
     action       => 'build',
     color        => 'auto',
     format       => 'text',
-    legacy_args  => [],
+    standalone   => 0,
     latexmk_args => [],
     operands     => [],
     warnings     => 'important',
@@ -274,18 +237,14 @@ sub parse {
       next;
     }
 
-    if ($compat =~ /^(?:standalone|publish|verbose|nosocket)$/) {
-      push @{ $plan{legacy_args} }, '+' . $compat;
+    if ($compat eq 'standalone') {
+      $plan{standalone} = 1;
       next;
     }
-    if ($arg eq '--legacy') {
-      $plan{legacy} = 1;
-      next;
-    }
-    if ($compat =~ /^classpath=(.+)$/) {
-      push @{ $plan{legacy_args} }, '+classpath=' . $1;
-      next;
-    }
+    die "'$arg' belonged to the removed ollmconfig.pl build; run "
+      . "'ollm convertproject' to create ollmconfig.toml\n"
+      if $arg eq '--legacy'
+        || $compat =~ /^(?:publish|verbose|nosocket|classpath=.*)$/;
 
     if ($arg eq '--all') {
       $plan{all} = 1;
@@ -429,7 +388,7 @@ sub parse {
 
 sub _migration {
   my ($class, $plan) = @_;
-  for my $option (qw(all dry_run legacy level rebuild resolve scope stale_units)) {
+  for my $option (qw(all dry_run level rebuild resolve scope stale_units)) {
     if ($plan->{$option}) {
       print STDERR "ollm: --$option is not valid for $plan->{action}\n";
       return 2;
@@ -506,7 +465,7 @@ sub _start_dir {
 
 sub _deployment {
   my ($class, $plan) = @_;
-  for my $option (qw(dry_run legacy level rebuild resolve stale_units)) {
+  for my $option (qw(dry_run level rebuild resolve stale_units)) {
     if ($plan->{$option}) {
       print STDERR "ollm: --$option is not valid for deploy\n";
       return 2;
@@ -1193,7 +1152,6 @@ General options:
   --non-interactive
   +enforce+|--enforce+  require '+' on command and target words
   --overwrite           permit replacement when project policy is explicit
-  --legacy              explicitly build with ollmconfig.pl
 
 Build options:
   --target=TARGET       select a registered project target

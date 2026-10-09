@@ -25,7 +25,7 @@ sub resolve_request {
   my $start = _absolute_directory(
     $arg{start_dir} // getcwd(), 'request start directory',
   );
-  my $standalone = _has_legacy_arg($plan, '+standalone');
+  my $standalone = $plan->{standalone} ? 1 : 0;
   my $located =
       $standalone
       && !defined $plan->{config}
@@ -35,29 +35,16 @@ sub resolve_request {
         start_dir    => $start,
         config       => $plan->{config},
         project_root => $plan->{project_root},
-        legacy       => $plan->{legacy},
       );
 
   my $request = _base_request($plan, $standalone, $located);
 
-  die "--legacy was requested, but no ollmconfig.pl was found"
-    if $plan->{legacy} && !$standalone && $located->{kind} eq 'none';
-  die "legacy manifest found at $located->{path}; use --legacy to build it "
-    . "or run 'ollm convertproject' to create the project configuration"
-    if $located->{kind} eq 'legacy-unselected';
+  die "only a Perl configuration was found at $located->{path}; run "
+    . "'ollm convertproject' to create ollmconfig.toml\n"
+    if $located->{kind} eq 'unconverted';
 
   return $class->_resolve_none_request($request, $standalone, $start)
     if $located->{kind} eq 'none';
-
-  if ($located->{kind} eq 'legacy') {
-    return {
-      request => $request,
-      configuration => {
-        kind => 'legacy',
-        path => $located->{path},
-      },
-    };
-  }
 
   return $class->_resolve_toml_request($request, $located, $start, %arg);
 }
@@ -69,8 +56,7 @@ sub _base_request {
     all             => $plan->{all} ? 1 : 0,
     context         => $standalone
       ? 'standalone'
-      : $located->{kind} eq 'toml' ? 'series'
-      : $located->{kind} eq 'legacy' ? 'legacy' : 'none',
+      : $located->{kind} eq 'toml' ? 'series' : 'none',
     dry_run         => $plan->{dry_run} ? 1 : 0,
     latexmk_args    => [@{ $plan->{latexmk_args} }],
     non_interactive => $plan->{non_interactive} ? 1 : 0,
@@ -364,12 +350,7 @@ sub find_manifest {
   if (defined $arg{config}) {
     my $path = File::Spec->rel2abs($arg{config}, $start);
     die "configuration file not found: $path" if !-f $path;
-    if ($arg{legacy}) {
-      die "--legacy --config requires a Perl manifest, not '$path'"
-        if $path !~ /\.pl\z/i;
-      return { kind => 'legacy', path => _canonical_path($path) };
-    }
-    die "--config accepts only a TOML manifest; use --legacy for '$path'"
+    die "--config accepts only a TOML manifest, not '$path'"
       if $path !~ /\.toml\z/i;
     return { kind => 'toml', path => _canonical_path($path) };
   }
@@ -379,12 +360,12 @@ sub find_manifest {
       File::Spec->rel2abs($arg{project_root}, $start),
       'project root',
     );
-    return _manifest_in($root, 1, $arg{legacy});
+    return _manifest_in($root, 1);
   }
 
   my $directory = $start;
   while (1) {
-    my $found = _manifest_in($directory, 0, $arg{legacy});
+    my $found = _manifest_in($directory, 0);
     return $found if $found->{kind} ne 'none';
     my $parent = dirname($directory);
     last if $parent eq $directory;
@@ -1085,18 +1066,13 @@ sub _load_parser {
 }
 
 sub _manifest_in {
-  my ($directory, $required, $legacy) = @_;
+  my ($directory, $required) = @_;
   my $toml = File::Spec->catfile($directory, 'ollmconfig.toml');
   my $perl = File::Spec->catfile($directory, 'ollmconfig.pl');
-  if ($legacy) {
-    return { kind => 'legacy', path => _canonical_path($perl) } if -f $perl;
-    die "no ollmconfig.pl found in project root $directory" if $required;
-    return { kind => 'none' };
-  }
   return { kind => 'toml', path => _canonical_path($toml) } if -f $toml;
   die "no ollmconfig.toml found in project root $directory"
     if $required;
-  return { kind => 'legacy-unselected', path => _canonical_path($perl) }
+  return { kind => 'unconverted', path => _canonical_path($perl) }
     if -f $perl;
   return { kind => 'none' };
 }
@@ -1187,11 +1163,6 @@ sub _require_string_array {
       if ref $value || !defined $value || $value eq '';
   }
   return $values;
-}
-
-sub _has_legacy_arg {
-  my ($plan, $wanted) = @_;
-  return scalar grep { $_ eq $wanted } @{ $plan->{legacy_args} };
 }
 
 1;

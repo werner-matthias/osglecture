@@ -12,6 +12,7 @@ use Test::More;
 use lib 'scripts/vendor/TOML-Tiny-0.22/lib';
 use lib 'scripts/lib';
 
+use OLLM::Executor;
 use OLLM::State;
 
 my $root = tempdir(CLEANUP => 1);
@@ -112,6 +113,45 @@ like $registry_text, qr/reference[.]osgref/,
   'registry points at the promoted reference projection';
 like $registry_text, qr/document[.]pdf/,
   'registry points at the PDF from the same generation';
+unlike $registry_text, qr/^% export /m,
+  'a document does not depend on its own reference export';
+
+# Seen from another document of the series, the export is a dependency --
+# by content, not by generation.
+my $other_build = File::Spec->catdir(
+  $root, '.osglecture', 'build', '030-other', 'script', 'de',
+);
+make_path($other_build);
+my %other = (
+  %$spec,
+  job_id          => 'bs-030-script-de-other',
+  build_directory => $other_build,
+  physical_unit   => '030-other',
+);
+delete @other{qw(generation_id unit_id)};
+OLLM::State->start_attempt(\%other);
+open my $other_registry, '<:raw', $other{reference_registry} or die $!;
+my $other_text = do { local $/; <$other_registry> };
+close $other_registry;
+my ($export_digest) =
+  $other_text =~ /^% export processes script de ([0-9a-f]{64})$/m;
+ok defined $export_digest,
+  'registry records the content digest of another document\'s export';
+unlike $export_digest, qr/\A\Q$generation\E\z/,
+  'the digest is not the generation id';
+my @volatile = grep { $_ =~ /$OLLM::Executor::VOLATILE_LINE/ }
+  split /\n/, $other_text;
+is scalar(@volatile), 3,
+  'generation id and both generation paths are marked as volatile';
+ok !grep($_ =~ /^% export|unit=|type=|lang=/, @volatile),
+  'identity and export digest are not volatile';
+
+# The result on disk still belongs to the promoted generation, not to the
+# attempt started above: latexmk found nothing to do.
+is(OLLM::State->attempt_outcome(\%next), 'current',
+  'an untouched result of the promoted generation means up to date');
+is(OLLM::State->attempt_outcome($spec), 'built',
+  'a result carrying the attempt\'s own generation id was built');
 
 open my $bad_result, '>:raw',
   File::Spec->catfile($build, "$job.osgresult.aux") or die $!;

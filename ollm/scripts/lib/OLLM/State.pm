@@ -78,6 +78,17 @@ sub write_registry {
     my $generation = $class->_generation_directory($spec, $result);
     my $aux = File::Spec->catfile($generation, 'reference.osgref.aux');
     my $pdf = File::Spec->catfile($generation, 'document.pdf');
+    # latexmk is told to skip the generation-specific lines below when it
+    # hashes this file (see Executor::command_for_spec).  What a document
+    # really depends on is the content other documents export, so that is
+    # recorded in a comment latexmk does hash.  The document's own entry is
+    # left out: its export changes with every build of itself.
+    push @lines,
+      '% export ' . join(' ',
+        _tex_value($result->{unit_id}), $result->{doctype},
+        $result->{language}, _export_digest($aux, $result->{generation_id}),
+      )
+      if ($result->{job_id} // '') ne ($spec->{job_id} // '');
     push @lines,
       '\\OsgLectureReferenceDocument{',
       '  unit={' . _tex_value($result->{unit_id}) . '},',
@@ -304,6 +315,43 @@ sub _export_label {
   }
   close $handle or die "cannot close reference export '$path': $!\n";
   return;
+}
+
+# Digest of a promoted reference export without its generation id, which is
+# the only part that differs between two builds of unchanged sources.
+sub _export_digest {
+  my ($path, $generation_id) = @_;
+  open my $handle, '<:raw', $path or return 'missing';
+  local $/;
+  my $content = <$handle>;
+  close $handle or die "cannot close reference export '$path': $!\n";
+  $content =~ s/\Q$generation_id\E//g if defined $generation_id;
+  return sha256_hex($content);
+}
+
+# After a successful latexmk run: did LaTeX actually run for this attempt?
+# Returns 'built' if the result carries this attempt's generation id,
+# 'current' if latexmk found nothing to do and the result on disk is the
+# promoted generation, and 'unpromoted' if it is an older result that was
+# never promoted (an interrupted earlier build).
+sub attempt_outcome {
+  my ($class, $spec) = @_;
+  my $lock = _state_lock($spec);
+  my $result = _read_result(File::Spec->catfile(
+    $spec->{build_directory}, "$spec->{job_id}.osgresult.aux",
+  ));
+  return 'built'
+    if ($result->{generation_id} // '') eq ($spec->{generation_id} // '');
+  my $current = File::Spec->catfile(
+    $class->_projection_directory($spec, $result), 'current.tex',
+  );
+  open my $handle, '<:raw', $current or return 'unpromoted';
+  local $/;
+  my $content = <$handle>;
+  close $handle or die "cannot close state pointer '$current': $!\n";
+  my ($promoted) = $content =~ /\\OsgLectureCurrent\{\d+\}\{([0-9a-f]{64})\}/;
+  return defined($promoted) && $promoted eq $result->{generation_id}
+    ? 'current' : 'unpromoted';
 }
 
 sub _file_digest {

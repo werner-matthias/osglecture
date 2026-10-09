@@ -299,8 +299,6 @@ mit \texttt{--target=NAME} gewählt.
 \item[\texttt{--project-root=VERZEICHNIS}] verwendet die angegebene
   Projektwurzel.
 \item[\texttt{--non-interactive}] unterdrückt interaktive Rückfragen.
-\item[\texttt{--legacy}] aktiviert ausdrücklich den alten Buildpfad mit
-  \texttt{ollmconfig.pl}.
 \item[\texttt{--overwrite}] erlaubt bei \texttt{deploy} das Ersetzen einer
   abweichenden Zieldatei, wenn die Projektpolicy eine explizite Freigabe
   verlangt.
@@ -827,14 +825,9 @@ Kapitelnummernlogik müssen anhand der ausgegebenen Warnungen manuell übertrage
 werden. Eine automatisch erzeugte \texttt{projectconfig.tex} sollte früh
 einmal testweise übersetzt werden.
 
-Während der Migration dürfen beide Konfigurationsdateien nebeneinander liegen.
-Normale Aufrufe verwenden TOML. Nur \texttt{--legacy} aktiviert die alte
-Perl-Datei:
-
-\begin{verbatim}
-ollm --legacy slides
-ollm --legacy +lang=en script
-\end{verbatim}
+Während der Migration dürfen beide Konfigurationsdateien nebeneinander liegen;
+gebaut wird ausschließlich mit TOML. Liegt nur \texttt{ollmconfig.pl} vor,
+bricht \ollm{} mit einem Hinweis auf \texttt{convertproject} ab.
 
 \section{Exitcodes und CI}
 
@@ -957,8 +950,8 @@ Nutzerdokumentation:
 % ollm build script --project-root=/path/to/project --dry-run
 % ```
 
-% For migration, `ollmconfig.pl` may coexist with the TOML manifest. Normal
-% commands select TOML; `ollm --legacy ...` explicitly selects Perl. If only the
+% For migration, `ollmconfig.pl` may coexist with the TOML manifest; builds
+% use TOML only. If only the
 % Perl file exists, `ollm convertproject` creates a conservative TOML translation
 % without executing arbitrary Perl and imports recognizable metadata from
 % `Include/lectdates.tex` into `Include/projectconfig.tex`. `ollm newproject`

@@ -42,7 +42,6 @@ my $resolved = OLLM::Config->resolve_request(
     all             => 0,
     dry_run         => 0,
     latexmk_args    => ['-silent'],
-    legacy_args     => [],
     non_interactive => 1,
     rebuild         => 1,
     resolve         => 0,
@@ -125,6 +124,17 @@ for my $policy (
   ok grep($_ =~ /\Q$option\E/, @command),
     "$policy->[0] shell-escape policy maps to LuaLaTeX";
 }
+
+my @unit_command = OLLM::Executor->command_for_spec(
+  $resolved->{build_spec}, $resolved->{request},
+);
+ok grep($_ =~ /\A\$hash_calc_ignore_pattern\{tex\} = q!/, @unit_command),
+  'a unit build hides volatile generation lines from latexmk';
+my @integration_command = OLLM::Executor->command_for_spec(
+  { %{ $resolved->{build_spec} }, unit_role => 'i' }, $resolved->{request},
+);
+ok !grep($_ =~ /hash_calc_ignore_pattern/, @integration_command),
+  'an integration build keeps rebuilding on every request';
 
 my $spec = $resolved->{build_spec};
 my $build_file = File::Spec->catfile(

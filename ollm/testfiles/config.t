@@ -76,7 +76,6 @@ my $resolved = OLLM::Config->resolve_request(
     all => 0,
     dry_run => 1,
     latexmk_args => [],
-    legacy_args => [],
     non_interactive => 0,
     rebuild => 0,
     resolve => 0,
@@ -151,7 +150,6 @@ $resolved = OLLM::Config->resolve_request(
     all => 1,
     dry_run => 1,
     latexmk_args => [],
-    legacy_args => [],
     non_interactive => 0,
     rebuild => 0,
     resolve => 0,
@@ -202,7 +200,6 @@ my $scoped = OLLM::Config->resolve_request(
     all => 1,
     dry_run => 1,
     latexmk_args => [],
-    legacy_args => [],
     non_interactive => 0,
     rebuild => 0,
     resolve => 0,
@@ -244,7 +241,7 @@ sub _scope_plan {
   my (%override) = @_;
   return {
     action => 'build', all => 0, dry_run => 1, latexmk_args => [],
-    legacy_args => [], non_interactive => 0, rebuild => 0, resolve => 0,
+    non_interactive => 0, rebuild => 0, resolve => 0,
     source => 'main.tex', target => 'slides',
     %override,
   };
@@ -343,7 +340,7 @@ my $standalone = OLLM::Config->resolve_request(
     all             => 0,
     dry_run         => 1,
     latexmk_args    => [],
-    legacy_args     => ['+standalone'],
+    standalone      => 1,
     non_interactive => 0,
     rebuild         => 0,
     resolve         => 0,
@@ -367,7 +364,7 @@ eval {
     definitions_dir => abs_path('definitions'),
     plan => {
       action => 'build', all => 0, dry_run => 0, latexmk_args => [],
-      legacy_args => ['+standalone'], non_interactive => 0, rebuild => 0,
+      standalone  => 1, non_interactive => 0, rebuild => 0,
       resolve => 0, source => 'main.tex', target => 'script',
       target_explicit => 1,
     },
@@ -574,7 +571,7 @@ my $extended = OLLM::Config->resolve_request(
   definitions_dir => $definitions,
   plan => {
     action => 'build', all => 0, dry_run => 1, latexmk_args => [],
-    legacy_args => [], non_interactive => 0, rebuild => 0, resolve => 0,
+    non_interactive => 0, rebuild => 0, resolve => 0,
     source => 'main.tex', target => 'keynote', target_explicit => 1,
   },
 );
@@ -662,8 +659,10 @@ close $legacy;
 
 my $mixed = OLLM::Config->find_manifest(start_dir => $temporary);
 is $mixed->{kind}, 'toml', 'TOML wins when both manifest formats exist';
-$mixed = OLLM::Config->find_manifest(start_dir => $temporary, legacy => 1);
-is $mixed->{kind}, 'legacy', '--legacy explicitly selects the Perl manifest';
+unlink File::Spec->catfile($temporary, 'ollmconfig.toml') or die $!;
+$mixed = OLLM::Config->find_manifest(start_dir => $temporary);
+is $mixed->{kind}, 'unconverted',
+  'a lone Perl manifest is reported, never used';
 
 my $user_root = tempdir(CLEANUP => 1);
 my $user_config = File::Spec->catfile($user_root, 'config.toml');
@@ -683,7 +682,6 @@ close $user_handle;
       all => 0,
       dry_run => 1,
       latexmk_args => [],
-      legacy_args => [],
       non_interactive => 0,
       rebuild => 0,
       resolve => 0,

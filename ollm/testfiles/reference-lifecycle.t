@@ -119,7 +119,7 @@ my $resolved = OLLM::Config->resolve_request(
   definitions_dir => abs_path('scripts/definitions'),
   plan => {
     action => 'build', all => 0, dry_run => 0, latexmk_args => ['-silent'],
-    legacy_args => [], non_interactive => 1, rebuild => 0, resolve => 0,
+    non_interactive => 1, rebuild => 0, resolve => 0,
     source => 'main.tex', target => 'script',
   },
 );
@@ -200,7 +200,7 @@ my $consumer_resolved = OLLM::Config->resolve_request(
   definitions_dir => abs_path('scripts/definitions'),
   plan => {
     action => 'build', all => 0, dry_run => 0, latexmk_args => ['-silent'],
-    legacy_args => [], non_interactive => 1, rebuild => 0, resolve => 0,
+    non_interactive => 1, rebuild => 0, resolve => 0,
     source => 'main.tex', target => 'script',
   },
 );
@@ -250,7 +250,7 @@ my $unknown_resolved = OLLM::Config->resolve_request(
   definitions_dir => abs_path('scripts/definitions'),
   plan => {
     action => 'build', all => 0, dry_run => 0, latexmk_args => ['-silent'],
-    legacy_args => [], non_interactive => 1, rebuild => 0, resolve => 0,
+    non_interactive => 1, rebuild => 0, resolve => 0,
     source => 'main.tex', target => 'script',
   },
 );

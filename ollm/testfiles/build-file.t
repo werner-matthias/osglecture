@@ -27,7 +27,6 @@ my $resolved = OLLM::Config->resolve_request(
     all             => 0,
     dry_run         => 1,
     latexmk_args    => [],
-    legacy_args     => [],
     non_interactive => 1,
     rebuild         => 0,
     resolve         => 0,
@@ -160,7 +159,7 @@ my $slides_resolved = OLLM::Config->resolve_request(
   definitions_dir => abs_path('scripts/definitions'),
   plan => {
     action => 'build', all => 0, dry_run => 1, latexmk_args => [],
-    legacy_args => [], non_interactive => 1, rebuild => 0, resolve => 0,
+    non_interactive => 1, rebuild => 0, resolve => 0,
     source => 'main.tex', target => 'slides',
   },
 );

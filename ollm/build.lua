@@ -45,10 +45,6 @@ function checkinit_hook()
   if errorlevel ~= 0 then
     return errorlevel
   end
-  errorlevel = runcmd("perl -c ollm-legacy.rc", "scripts", { })
-  if errorlevel ~= 0 then
-    return errorlevel
-  end
   -- [[
   return runcmd(
     "prove -Iscripts/lib -Iscripts/vendor/TOML-Tiny-0.22/lib testfiles",

@@ -26,8 +26,24 @@ chdir $previous_directory
 is $outside_status, 2, 'a build outside a project is rejected as a usage error';
 like $outside_output, qr/no ollmconfig[.]toml project found/,
   'the diagnostic explains how to select a project or standalone mode';
-unlike $outside_output, qr/Legacy Mode/,
-  'a missing project never enters legacy mode implicitly';
+
+open my $perl_manifest, '>', "$outside/ollmconfig.pl"
+  or die "cannot create Perl manifest: $!";
+close $perl_manifest;
+chdir $outside or die "cannot enter temporary directory $outside: $!";
+my $unconverted_output = qx{$^X "$launcher" slides 2>&1};
+my $unconverted_status = $? >> 8;
+my $removed_output = qx{$^X "$launcher" --legacy slides 2>&1};
+my $removed_status = $? >> 8;
+chdir $previous_directory
+  or die "cannot restore working directory $previous_directory: $!";
+unlink "$outside/ollmconfig.pl" or die "cannot remove Perl manifest: $!";
+is $unconverted_status, 2, 'a project with only ollmconfig.pl is not built';
+like $unconverted_output, qr/only a Perl configuration.*convertproject/,
+  'the diagnostic points to convertproject';
+isnt $removed_status, 0, '--legacy is no longer accepted';
+like $removed_output, qr/removed ollmconfig\.pl build/,
+  'the removed option is named as such';
 
 open my $standalone_source, '>', "$outside/main.tex"
   or die "cannot create standalone test source: $!";
@@ -42,8 +58,6 @@ is $standalone_status, 0,
   'explicit standalone mode remains available outside a project';
 like $standalone_output, qr/^Context:\s+standalone$/m,
   'the explicit standalone invocation has standalone context';
-unlike $standalone_output, qr/Legacy Mode/,
-  'standalone mode is not reported as legacy mode';
 
 require OLLM::State;
 is $OLLM::State::VERSION, $OLLM::Version::VERSION,
@@ -91,13 +105,5 @@ my $wrapper = do { local $/; <$cmd> };
 close $cmd;
 like $wrapper, qr/perl "\%~dp0ollm" \%\*/,
   'Windows wrapper delegates to the shared Perl launcher';
-
-open my $legacy, '<', 'scripts/ollm-legacy.rc'
-  or die "cannot read scripts/ollm-legacy.rc: $!";
-my $legacy_source = do { local $/; <$legacy> };
-close $legacy;
-like $legacy_source,
-  qr/OLLM Version \$ollm_version, Legacy Mode, Version \$VERSION/,
-  'legacy greeting distinguishes the OLLM and legacy-engine versions';
 
 done_testing;

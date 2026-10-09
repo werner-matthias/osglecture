@@ -16,6 +16,13 @@ use OLLM::Path;
 use OLLM::State;
 use OLLM::Version qw($VERSION);
 
+# Lines OLLM writes into its generated TeX files that change with every
+# attempt without changing the document: the attempt's own generation id in
+# the build file, and generation id and generation paths in the registry.
+our $VOLATILE_LINE =
+    '^\s*(?:generation-id|generation)=\{[0-9a-f]{64}\},?\s*$'
+  . '|^\s*(?:aux|pdf)=\{[^{}]*generations.[0-9a-f]{64}.[^{}]*\},?\s*$';
+
 sub execute {
   my ($class, %arg) = @_;
   my $resolved = $arg{resolved} // die "missing resolved build request";
@@ -81,6 +88,20 @@ sub execute {
       if $action eq 'build' && !$arg{runner}
         && (!-f $spec->{artifact} || !-s _);
     if ($action eq 'build' && !$arg{runner}) {
+      my $outcome = OLLM::State->attempt_outcome($spec);
+      if ($outcome eq 'current') {
+        print "ollm: $spec->{job_id} is up to date\n";
+        next;
+      }
+      if ($outcome eq 'unpromoted') {
+        # latexmk considers the output current, but it belongs to an
+        # attempt that never reached the promoted state.  Build it again
+        # so that result and state agree.
+        die "build '$spec->{job_id}' produced no result for this attempt\n"
+          if $spec->{force_run};
+        $spec->{force_run} = 1;
+        redo;
+      }
       if (($spec->{target} // '') eq 'handout') {
         my $result = OLLM::State->read_result($spec);
         my $layout = $result->{handout_layout} // '';
@@ -322,7 +343,16 @@ sub command_for_spec {
     # above) to a bare "%O %P" -- silently discarding --halt-on-error and
     # the other engine flags.
     "-pretex=$pretex",
-    ($request->{rebuild} ? ('-gg') : ()),
+    # Every attempt gets a fresh generation id, and the registry names the
+    # promoted generations by id and path.  For a unit these lines must not
+    # count as a source change, or no build would ever be up to date; the
+    # registry's "% export" lines carry the real dependency.  Integration
+    # documents include the promoted PDFs themselves and keep the old
+    # behaviour: they are rebuilt on every request.
+    (($spec->{unit_role} // '') ne 'i'
+      ? ('-e', '$hash_calc_ignore_pattern{tex} = q!' . $VOLATILE_LINE . '!;')
+      : ()),
+    ($request->{rebuild} || $spec->{force_run} ? ('-gg') : ()),
     @{ $request->{latexmk_args} // [] },
     $spec->{source},
   );
