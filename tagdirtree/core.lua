@@ -1,5 +1,6 @@
--- The tagging test compares the tag tree of the current distribution;
--- older ones are checked for untagged use only.
+-- The tag tree has a different shape in older distributions, so the tree
+-- comparison is left to the current one.  tagged-smoke stays in: it runs
+-- with tagging active and needs no tree.
 excludetests = {
   "structure",
 }

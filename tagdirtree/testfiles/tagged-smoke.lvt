@@ -1,0 +1,22 @@
+\input regression-test.tex
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}
+\usepackage{tagdirtree}
+\begin{document}
+\START
+% Tagging active, but no tree comparison: any tagpdf error or warning
+% about the structure shows up in the log.
+
+\begin{tagdirtree}
+  \dtdir{project}{root directory}{
+    \dtdir{src}{}{
+      \dtfile{main.py}{entry point}
+    }
+    \dtarchive{data.zip}{raw data}
+    \dtfile{README.md}{}
+  }
+\end{tagdirtree}
+
+\TYPE{depth after tree: \tagdirtreedepth}
+\TYPE{done}
+\END
