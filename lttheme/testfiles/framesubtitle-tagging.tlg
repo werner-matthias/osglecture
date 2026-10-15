@@ -1,0 +1,176 @@
+<PDF>
+ <StructTreeRoot>
+  <Document xmlns="http://iso.org/pdf2/ssn"
+     id="ID.002"
+    >
+   <frame xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+      id="ID.006"
+      rolemaps-to="Sect"
+     >
+    <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+       id="ID.007"
+       title="Inhalts-Slot"
+       rolemaps-to="H4"
+      >
+     <?MarkedContent page="1" ?>Inhalts-Slot
+    </frametitle>
+    <H3 xmlns="http://iso.org/pdf2/ssn"
+       id="ID.008"
+      >
+     <?MarkedContent page="1" ?>Untertitel am Anfang
+    </H3>
+    <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.009"
+       rolemaps-to="Part"
+      >
+     <text xmlns="https://www.latex-project.org/ns/dflt"
+        id="ID.010"
+        xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+        Layout:TextAlign="Start"
+        rolemaps-to="P"
+       >
+      <?MarkedContent page="1" ?>Ein Absatz nach dem Untertitel.
+     </text>
+    </text-unit>
+    <Note xmlns="http://iso.org/pdf/ssn"
+       id="ID.011"
+      >
+     <?MarkedContent page="1" ?>Untertitel-Test
+    </Note>
+    <Note xmlns="http://iso.org/pdf/ssn"
+       id="ID.012"
+      >
+    </Note>
+    <Note xmlns="http://iso.org/pdf/ssn"
+       id="ID.013"
+      >
+     <?MarkedContent page="1" ?>Ada Beispiel
+    </Note>
+   </frame>
+   <frame xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+      id="ID.014"
+      rolemaps-to="Sect"
+     >
+    <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+       id="ID.015"
+       title="Inhalts-Slot im Absatz"
+       rolemaps-to="H4"
+      >
+     <?MarkedContent page="2" ?>Inhalts-Slot im Absatz
+    </frametitle>
+    <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.016"
+       rolemaps-to="Part"
+      >
+     <text xmlns="https://www.latex-project.org/ns/dflt"
+        id="ID.017"
+        xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+        Layout:TextAlign="Start"
+        rolemaps-to="P"
+       >
+      <?MarkedContent page="2" ?>Flie^^dftext vor dem Untertitel
+     </text>
+    </text-unit>
+    <H3 xmlns="http://iso.org/pdf2/ssn"
+       id="ID.018"
+      >
+     <?MarkedContent page="2" ?>Untertitel im Absatz
+    </H3>
+    <Note xmlns="http://iso.org/pdf/ssn"
+       id="ID.019"
+      >
+     <?MarkedContent page="2" ?>Untertitel-Test
+    </Note>
+    <Note xmlns="http://iso.org/pdf/ssn"
+       id="ID.020"
+      >
+    </Note>
+    <Note xmlns="http://iso.org/pdf/ssn"
+       id="ID.021"
+      >
+     <?MarkedContent page="2" ?>Ada Beispiel
+    </Note>
+   </frame>
+   <frame xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+      id="ID.022"
+      rolemaps-to="Sect"
+     >
+    <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+       id="ID.023"
+       title="Kopf-Slot"
+       rolemaps-to="H4"
+      >
+     <?MarkedContent page="3" ?>Kopf-Slot
+    </frametitle>
+    <H3 xmlns="http://iso.org/pdf2/ssn"
+       id="ID.024"
+      >
+     <?MarkedContent page="3" ?>Untertitel im Kopf
+    </H3>
+    <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.025"
+       rolemaps-to="Part"
+      >
+     <text xmlns="https://www.latex-project.org/ns/dflt"
+        id="ID.026"
+        xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+        Layout:TextAlign="Start"
+        rolemaps-to="P"
+       >
+      <?MarkedContent page="3" ?>Ein Absatz nach dem Untertitel.
+     </text>
+    </text-unit>
+    <Note xmlns="http://iso.org/pdf/ssn"
+       id="ID.027"
+      >
+     <?MarkedContent page="3" ?>Ada Beispiel ()
+    </Note>
+    <Note xmlns="http://iso.org/pdf/ssn"
+       id="ID.028"
+      >
+     <?MarkedContent page="3" ?>Untertitel-Test
+    </Note>
+   </frame>
+   <frame xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+      id="ID.029"
+      rolemaps-to="Sect"
+     >
+    <frametitle xmlns="https://www.latex-project.org/ns/local/ltx-talk"
+       id="ID.030"
+       title="Kopf-Slot im Absatz"
+       rolemaps-to="H4"
+      >
+     <?MarkedContent page="4" ?>Kopf-Slot im Absatz
+    </frametitle>
+    <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.031"
+       rolemaps-to="Part"
+      >
+     <text xmlns="https://www.latex-project.org/ns/dflt"
+        id="ID.032"
+        xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+        Layout:TextAlign="Start"
+        rolemaps-to="P"
+       >
+      <?MarkedContent page="4" ?>Flie^^dftext vor dem Untertitel 
+     </text>
+    </text-unit>
+    <H3 xmlns="http://iso.org/pdf2/ssn"
+       id="ID.033"
+      >
+     <?MarkedContent page="4" ?>Kopf-Untertitel im Absatz
+    </H3>
+    <Note xmlns="http://iso.org/pdf/ssn"
+       id="ID.034"
+      >
+     <?MarkedContent page="4" ?>Ada Beispiel ()
+    </Note>
+    <Note xmlns="http://iso.org/pdf/ssn"
+       id="ID.035"
+      >
+     <?MarkedContent page="4" ?>Untertitel-Test
+    </Note>
+   </frame>
+  </Document>
+ </StructTreeRoot>
+</PDF>

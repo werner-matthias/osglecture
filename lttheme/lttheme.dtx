@@ -103,15 +103,15 @@ describe areas and the elements placed in them, called \emph{slots} here.
 \ldeen{
 Verwenden Sie für die Beispiele Lua\LaTeX\ und eine aktuelle Installation
 des Bundles einschließlich \pkg*{osgstyler}. Das Paket ist zuletzt mit
-\cls{ltx-talk}~v0.6.9 vom 6.~Oktober~2026 getestet und setzt mindestens
+\cls{ltx-talk}~v0.6.10 vom 13.~Oktober~2026 getestet und setzt mindestens
 v0.5.3 vom 5.~August~2026 voraus. Ältere Klassenstände führen zu einem Fehler,
 neuere als der getestete zu einer Kompatibilitätswarnung. Die Klasse
 und das Themesystem befinden sich noch in Entwicklung. Laden Sie die
 Klasse zuerst; Themenpakete ersetzen keine bereits geladene Klasse.
 }{
 Use Lua\LaTeX\ and a current bundle installation including \pkg*{osgstyler}
-for the examples. The package was last tested with \cls{ltx-talk}~v0.6.9
-dated 6~October~2026 and requires at least v0.5.3 dated 5~August~2026. Older
+for the examples. The package was last tested with \cls{ltx-talk}~v0.6.10
+dated 13~October~2026 and requires at least v0.5.3 dated 5~August~2026. Older
 class releases cause an error; releases newer than the tested one produce a
 compatibility warning. Both the class and the theme system are still under
 development. Load the class first; theme packages do not replace a class
@@ -2124,8 +2124,8 @@ theme.
 % the two cannot silently drift apart from each other.
 \tl_const:Nn \c__ltxtalk_min_class_date_tl { 2026/08/05 }
 \tl_const:Nn \c__ltxtalk_min_class_version_tl { 0.5.3 }
-\tl_const:Nn \c__ltxtalk_tested_class_date_tl { 2026/10/06 }
-\tl_const:Nn \c__ltxtalk_tested_class_version_tl { 0.6.9 }
+\tl_const:Nn \c__ltxtalk_tested_class_date_tl { 2026/10/13 }
+\tl_const:Nn \c__ltxtalk_tested_class_version_tl { 0.6.10 }
 
 \RequirePackage{xcoffins}
 \RequirePackage{xcolor}
@@ -2215,6 +2215,19 @@ theme.
   }
 \cs_generate_variant:Nn \__ltxtalk_date_to_int:nN { e , V }
 
+% ltx-talk v0.6.10 (2026-10-13) renamed the titlepage template key
+% framestyle to frame-style without keeping the old name; the key name is
+% chosen once the class is known, so the themes need not care.
+\tl_new:N \g__ltxtalk_titlepage_style_key_tl
+\cs_new_protected:Npn \__ltxtalk_titlepage_defaults:n #1
+  {
+    \use:e
+      {
+        \exp_not:n { \EditTemplateDefaults { titlepage } { talk } }
+          { \g__ltxtalk_titlepage_style_key_tl = lttheme , \exp_not:n {#1} }
+      }
+  }
+
 % \ldeen*{Das Paket ist nur sinnvoll, wenn @1 geladen ist.}{
 %  The package is only useful, if @1 is loaded.
 % }{\cls*{ltx-talk}}
@@ -2223,6 +2236,9 @@ theme.
     \@ifclasslater{ltx-talk}{\c__ltxtalk_min_class_date_tl}
       {}
       {\msg_fatal:nn { ltxtalk } { class-too-old }}
+    \@ifclasslater{ltx-talk}{2026/10/13}
+      { \tl_gset:Nn \g__ltxtalk_titlepage_style_key_tl { frame-style } }
+      { \tl_gset:Nn \g__ltxtalk_titlepage_style_key_tl { framestyle } }
     \__ltxtalk_date_to_int:eN { \use:c { ver@ltx-talk.cls } }
       \l__ltxtalk_class_date_int
     \__ltxtalk_date_to_int:VN \c__ltxtalk_tested_class_date_tl
@@ -5044,6 +5060,7 @@ theme.
 %   at all: what is visible nowhere is not tagged either.}
 \bool_new:N \l__ltxtalk_content_slot_found_bool
 \tl_new:N \l__ltxtalk_hidden_struct_keys_tl
+\box_new:N \l__ltxtalk_hidden_struct_box
 \cs_new_protected:Npn \__ltxtalk_hidden_struct:nn #1 #2
   {
     \mode_if_vertical:TF
@@ -5055,8 +5072,11 @@ theme.
         \tex_prevdepth:D = \l_tmpa_dim
       }
       {
-        \hbox_overlap_right:n
-          { \tex_smash:D { \hbox:n { \__ltxtalk_hidden_struct_aux:nn {#1} {#2} } } }
+        \hbox_set:Nn \l__ltxtalk_hidden_struct_box
+          { \__ltxtalk_hidden_struct_aux:nn {#1} {#2} }
+        \box_set_ht:Nn \l__ltxtalk_hidden_struct_box { 0pt }
+        \box_set_dp:Nn \l__ltxtalk_hidden_struct_box { 0pt }
+        \hbox_overlap_right:n { \box_use_drop:N \l__ltxtalk_hidden_struct_box }
       }
   }
 \cs_new_protected:Npn \__ltxtalk_hidden_struct_aux:nn #1 #2
@@ -5195,7 +5215,10 @@ theme.
 %   schließenden \cs{par} der Slot-Box bereits wieder aufgehoben; deren
 %   Absatzende schlösse dann zwei Strukturen, die nie geöffnet wurden, und
 %   nähme \code{frame} und \code{Sect} vom Stapel (\enquote{there is no open
-%   structure on the stack}). Das schließende \cs{par} nach dem Inhalt
+%   structure on the stack}). Steht der Aufruf mitten in einem Absatz (etwa
+%   \cs{framesubtitle} nach Fließtext), wird dieser zuvor regulär beendet;
+%   sonst landete der Slot in einem offenen Absatz, dessen Hooks danach
+%   nicht mehr aufgehen. Das schließende \cs{par} nach dem Inhalt
 %   bleibt nötig, damit der Slot sauber als eigener Absatz endet, bevor
 %   nachfolgender Frame-Inhalt beginnt.}{
 %   No leading \cs{par}\cs{noindent} before the slot content: a preceding
@@ -5210,12 +5233,16 @@ theme.
 %   (in a group of its own) would already be reverted at the slot box's
 %   closing \cs{par}; that paragraph end would then close two structures
 %   that were never opened and take \code{frame} and \code{Sect} off the
-%   stack (\enquote{there is no open structure on the stack}). The trailing
+%   stack (\enquote{there is no open structure on the stack}). If the call
+%   sits in the middle of a paragraph (\cs{framesubtitle} after running
+%   text, say), that paragraph is ended properly first; otherwise the slot
+%   would land in an open paragraph whose hooks no longer balance. The trailing
 %   \cs{par} after the content remains necessary so the slot cleanly ends
 %   its own paragraph before subsequent frame content begins.}
 \cs_new_protected:Npn \__ltxtalk_render_content_slot_aux:w
   #1#2#3#4 \q_stop #5
   {
+    \mode_if_horizontal:T { \par }
     \group_begin:
       \bool_set_true:N \l__ltxtalk_slot_flow_bool
       \bool_if:NT \g__talk_frame_tag_bool
@@ -5743,8 +5770,7 @@ theme.
       }
     \AssignSocketPlug { lttheme/page/background } { magpie-title }
     \AssignSocketPlug { lttheme/page/foreground } { magpie-title }
-    \EditTemplateDefaults {titlepage}{talk}
-      {framestyle=lttheme,vertical-alignment=top}
+    \__ltxtalk_titlepage_defaults:n {vertical-alignment=top}
     \EditInstance {titlepage-element}{title}
       {color=white,font=\Large,before-skip=1.35cm,after-skip=0.1em}
     \EditInstance {titlepage-element}{subtitle}
@@ -5820,7 +5846,7 @@ theme.
     \styleltxtalkslot{hawk-framesubtitle}{font=\small,color=ltxtalk-secondary,align=right}
     \decorateltxtalkarea{left}{background=ltxtalk-primary!20,artifact-type=layout}
     \AssignSocketPlug { lttheme/area/left } { hawk }
-    \EditTemplateDefaults {titlepage}{talk}{framestyle=lttheme,vertical-alignment=center}
+    \__ltxtalk_titlepage_defaults:n {vertical-alignment=center}
     \EditInstance {titlepage-element}{title}
       {color=ltxtalk-primary,font=\Large,after-skip=0.15em}
     \EditInstance {titlepage-element}{subtitle}
@@ -5889,7 +5915,7 @@ theme.
     \decorateltxtalkarea{footer}{frame=top,rule-color=ltxtalk-primary!50,
       rule-thickness=1pt,background=ltxtalk-primary!5,artifact-type=layout}
     \AssignSocketPlug { lttheme/page/foreground } { sparrow-bars }
-    \EditTemplateDefaults {titlepage}{talk}{framestyle=lttheme,vertical-alignment=center}
+    \__ltxtalk_titlepage_defaults:n {vertical-alignment=center}
     \EditInstance {titlepage-element}{title}
       {color=ltxtalk-primary,font=\Large,after-skip=0.15em}
     \EditInstance {titlepage-element}{subtitle}
@@ -6038,7 +6064,7 @@ theme.
     \decorateltxtalkarea{footer}{artifact-type=layout}
 
     % --- native title page ---
-    \EditTemplateDefaults{titlepage}{talk}{framestyle=lttheme,vertical-alignment=center}
+    \__ltxtalk_titlepage_defaults:n {vertical-alignment=center}
     \EditInstance{titlepage-element}{title}
       {color=ltxtalk-primary,font=\LARGE\bfseries,after-skip=0.15em}
     \EditInstance{titlepage-element}{subtitle}
@@ -6165,7 +6191,7 @@ theme.
        right-margin=false,content-inset-right=0pt}
 
     % --- native title page ---
-    \EditTemplateDefaults{titlepage}{talk}{framestyle=lttheme,vertical-alignment=center}
+    \__ltxtalk_titlepage_defaults:n {vertical-alignment=center}
     \EditInstance{titlepage-element}{title}
       {color=ltxtalk-primary,font=\LARGE\bfseries,after-skip=0.15em}
     \EditInstance{titlepage-element}{subtitle}

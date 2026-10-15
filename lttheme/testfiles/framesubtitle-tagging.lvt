@@ -1,0 +1,43 @@
+\input regression-test.tex
+\DocumentMetadata{tagging=on,lang=de-DE}
+\documentclass{ltx-talk}
+
+% \framesubtitle in beiden Darstellungswegen: als Inhalts-Slot im Textstrom
+% (minimal) und als Kopf-Slot mit unsichtbar getaggtem Text (magpie), jeweils
+% am Folienanfang und mitten in einem Absatz.
+\usepackage{ltxtalk-theme-minimal}
+\usepackage{ltxtalk-theme-magpie}
+\useltxtalktheme{minimal}
+
+\title{Untertitel-Test}
+\author{Ada Beispiel}
+
+\begin{document}
+
+\begin{frame}
+  \frametitle{Inhalts-Slot}
+  \framesubtitle{Untertitel am Anfang}
+  Ein Absatz nach dem Untertitel.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Inhalts-Slot im Absatz}
+  Fließtext vor dem Untertitel \framesubtitle{Untertitel im Absatz}
+\end{frame}
+
+\useltxtalktheme{magpie}
+\begin{frame}
+  \frametitle{Kopf-Slot}
+  \framesubtitle{Untertitel im Kopf}
+  Ein Absatz nach dem Untertitel.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Kopf-Slot im Absatz}
+  Fließtext vor dem Untertitel \framesubtitle{Kopf-Untertitel im Absatz}
+\end{frame}
+
+\clearpage
+\SHOWPDFTAGS
+
+\end{document}

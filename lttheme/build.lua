@@ -57,6 +57,7 @@ end
 local tagging_tests = {
   ["accessibility-roles"] = true,
   ["auto-section-title"] = true,
+  ["framesubtitle-tagging"] = true,
   ["tagging-slots"] = true,
 }
 

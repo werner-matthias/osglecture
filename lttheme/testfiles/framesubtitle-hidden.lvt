@@ -1,0 +1,28 @@
+\DocumentMetadata{tagging=on,lang=de-DE}
+\input regression-test.tex
+\documentclass{ltx-talk}
+
+% Ein Untertitel, den magpie nur im Kopf zeigt, wird im Textstrom unsichtbar
+% getaggt. Mitten in einem Absatz läuft das über die Box ohne Höhe neben der
+% Zeile; dieser Pfad darf keine Fehler erzeugen. Die Tagging-Tests vergleichen
+% nur den Strukturbaum und sähen einen solchen Fehler nicht.
+\usepackage{ltxtalk-theme-magpie}
+\useltxtalktheme{magpie}
+
+\begin{document}
+\START
+
+\begin{frame}
+  \frametitle{Kopf-Slot}
+  Fließtext vor dem Untertitel \framesubtitle{Untertitel im Absatz}
+\end{frame}
+\TYPE{hidden-subtitle-in-paragraph:done}
+
+\begin{frame}
+  \frametitle{Kopf-Slot}
+  \framesubtitle{Untertitel am Anfang}
+  Ein Absatz nach dem Untertitel.
+\end{frame}
+\TYPE{hidden-subtitle-vertical:done}
+
+\END
