@@ -1,8 +1,9 @@
- \documentclass[]{osgdoc}
+\documentclass[]{osgdoc}
 
 \usepackage{enumitem}
 \usepackage{fontspec}
-\usepackage{dirtreex}
+\usepackage{fontawesome5}
+\usepackage{tagdirtree}
 \usepackage[
 languages={de,en},
 map={de=german,en=english},
@@ -13,11 +14,38 @@ load babel
 \usepackage{subcaption}
 %\usepackage{osgdoc}
 
+\setlength\emergencystretch{3em}
+
 \newarg{\aarg}{<}{>}
 \newarg[\code]{\Aarg}{<}{>}
 \colorlet{linkblue}{blue!50!black}
 \newcommand{\osglecture}{\textcolor{teal!75!black}{OSG Lecture}}
 \newcommand{\OLLM}{\textcolor{teal!75!black}{\sffamily OLLM}}
+\RenewDocumentCommand \tagdirtreedirectoryicon { }
+  {\makebox[1.25em][c]{\textcolor{blue!65!black}{\faFolder}}}
+\RenewDocumentCommand \tagdirtreefileicon { }
+  {\makebox[1.25em][c]{\textcolor{blue!45!black}{\faFile}}}
+\RenewDocumentCommand \tagdirtreearchiveicon { }
+  {\makebox[1.25em][c]{\textcolor{blue!65!black}{\faFileArchive}}}
+\RenewDocumentCommand \tagdirtreefilename { m }
+  {\texttt{#1}}
+\RenewDocumentCommand \tagdirtreedirectoryname { m }
+  {\texttt{\bfseries #1}}
+\RenewDocumentCommand \tagdirtreearchivename { m }
+  {\texttt{\itshape #1}}
+\RenewDocumentCommand \tagdirtreeannotation { m }
+  {\hfill\textcolor{black!55}{\normalfont #1}}
+\NewDocumentCommand \manualdirtreeellipsis { m }
+  {\item[]\makebox[1.25em][c]{\textcolor{black!45}{\ldots}}%
+   \hfill\textcolor{black!45}{\normalfont #1}}
+\NewDocumentEnvironment{manualdirtree}{}
+  {\begin{tcolorbox}[
+     colback=blue!2,colframe=blue!60!black,boxrule=.5pt,
+     arc=0pt,left=6pt,right=6pt,top=5pt,bottom=5pt]
+   \begingroup\footnotesize
+   \setlist[itemize]{nosep,leftmargin=1.7em,label={}}
+   \begin{tagdirtree}}
+  {\end{tagdirtree}\endgroup\end{tcolorbox}}
 
 \hypersetup{
   pdftitle  = {OSG Lecture Bundle - Benutzerhandbuch},

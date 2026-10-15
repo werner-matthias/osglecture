@@ -45,6 +45,7 @@ typesetdeps = {
   "../osglecture-modes",
   "../osglecture",
   "../osgstyler",
+  "../tagdirtree",
 }
 
 dofile("../build.lua")

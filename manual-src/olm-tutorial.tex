@@ -118,16 +118,14 @@ touch 010-Memory/main.tex
 
 \ldeen{Noch ist das Ergebnis nicht besonders eindrucksvoll}{The result is not
 particularly impressive yet}:
-\begin{dirtreex}[elbow radius=3pt,fontsize=\footnotesize,
-  box={true,corners=0pt,border color=blue!60,border width=.5pt,
-  background color=blue!2,margin=6pt}]
-  \dir{Noras-os}{\emph{\ldeen{Projektwurzel}{project root}}}{
-    \dir{Include}{\emph{\ldeen{gemeinsame Angaben}{shared settings}}}{}
-    \dir{010-Memory}{\emph{\ldeen{erste Lehreinheit}{first course unit}}}{
-        \file{main.tex}{}
+\begin{manualdirtree}
+  \dtdir{Noras-os}{\ldeen{Projektwurzel}{project root}}{
+    \dtdir{Include}{\ldeen{gemeinsame Angaben}{shared settings}}{}
+    \dtdir{010-Memory}{\ldeen{erste Lehreinheit}{first course unit}}{
+      \dtfile{main.tex}{}
     }
   }
-\end{dirtreex}
+\end{manualdirtree}
 
 \ldeen{Immerhin ist nun klar, was zum gesamten Kurs und was nur zur Einheit
 "`Virtueller Speicher"' gehört.}{At least it is now clear what belongs to the

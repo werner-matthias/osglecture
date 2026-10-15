@@ -4,7 +4,7 @@
 
 \ldeen*{Dabei ist zu beachten, dass der Name @1 in diesem Bundle zwei Bedeutungen hat: Zum einen bezeichnet er das gesamte Bundle, zum anderen dessen Hauptklasse. Zur besseren Unterscheidung wird in diesem Manual für den ersten Fall die Schreibweise @2 verwendet, für den zweiten dagegen @3.}{The name @1 has two meanings in this bundle: it denotes both the bundle as a whole and its main class. To distinguish the two, @2 is used below for the bundle and @3 for the class.}{"`Osglecture"'}{\osglecture}{\cls{osglecture}}
 
-%\begin{infobox}{}\sffamily
+%\begin{infobox}{\ldeen{Hinweis}{Hint}}
 %\ldeen{Ab diesem Abschnitt ist das Manual zugleich Nachschlagewerk. Die
 %Grundbegriffe werden hier eingeführt; vollständige Schnittstellenübersichten
 %finden Sie bei den jeweiligen Themen: Inhalte und Modi in
@@ -103,32 +103,27 @@ a lot. At the OSG, there are a number of typical teaching scenarios
   The following shows a possible directory structure for a simple scenario
 }:\medskip
 
-\begin{dirtreex}[elbow radius=3pt,fontsize=\footnotesize,
-  box={true, corners=0pt, border color=blue!60,
-  border width=0.5pt, background color=blue!2,
-  margin=6pt}]
-  \dir{Operating\_Systems}{\emph{\ldeen{Root-Verzeichnis}{root}}}{
-    \file{ollmconfig.toml}{\ldeen{Manifest}{manifest}}
-    \dir{000-Intro}{\emph{\ldeen{1. Lehreinheit}{1st unit}}}{
-      \file{main.tex}{}
-      \file{picture.png}{}
-      \file{}{}
-      \file{\hspace{2em}\smash{\raisebox{.6ex}{$\vdots$}}}{}
+\begin{manualdirtree}
+  \dtdir{Operating\_Systems}{\ldeen{Root-Verzeichnis}{root}}{
+    \dtfile{ollmconfig.toml}{\ldeen{Manifest}{manifest}}
+    \dtdir{000-Intro}{\ldeen{1. Lehreinheit}{1st unit}}{
+      \dtfile{main.tex}{}
+      \dtfile{picture.png}{}
+      \manualdirtreeellipsis{\ldeen{weitere Dateien}{additional files}}
     }
-    \dir{010-Design}{\emph{\ldeen{2. Lehreinheit}{2nd unit}}}{
-      \file{main.tex}{}
+    \dtdir{010-Design}{\ldeen{2. Lehreinheit}{2nd unit}}{
+      \dtfile{main.tex}{}
     }
-    \dir{020-Process}{\emph{\ldeen{3. Lehreinheit}{3rd unit}}}{
-      \file{main.tex}{}
+    \dtdir{020-Process}{\ldeen{3. Lehreinheit}{3rd unit}}{
+      \dtfile{main.tex}{}
     }
-    \file{}{}
-    \file{\hspace{1em}\smash{\raisebox{.6ex}{$\vdots$}}}{}
-    \dir{Include}{\emph{\ldeen{gemeinsame Daten}{common data}}}{
-      \file{projectconfig.tex}{\emph{\ldeen{Kurs-Metadaten}{course's meta data}}}
-      \file{$\cdots$}{}
+    \manualdirtreeellipsis{\ldeen{weitere Lehreinheiten}{additional units}}
+    \dtdir{Include}{\ldeen{gemeinsame Daten}{common data}}{
+      \dtfile{projectconfig.tex}{\ldeen{Kurs-Metadaten}{course's meta data}}
+      \manualdirtreeellipsis{\ldeen{weitere gemeinsame Dateien}{additional shared files}}
     }
   }
-\end{dirtreex}
+\end{manualdirtree}
 
 \ldeen{Der Verzeichnisname einer Lehreinheit besteht mindestens aus einer dreistelligen Nummer
   und einer durch einen Bindestrich abgetrennten Themenbeschreibung.}{

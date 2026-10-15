@@ -365,13 +365,13 @@ profiles are}:
 \end{description}
 
 \ldeen{Das Profil wird im Manifest gewählt (\option{profile} am Target oder
-\option{presentation\_profile}/\option{longform\_profile} in
+\option{presentation\_profile}\slash \option{longform\_profile} in
 \code{[targets.defaults]}), nicht in \File{projectconfig.tex} -- denn sein
 \cs{DocumentMetadata}-Vertrag muss feststehen, bevor die Klasse überhaupt
 läuft. Für ein Standalone-Dokument ohne Manifest wählt die Klassenoption
 \keyis{profile}{\meta{name}}.}{The profile is chosen in the manifest
 (\option{profile} on the target, or
-\option{presentation\_profile}/\option{longform\_profile} in
+\option{presentation\_profile}\slash\option{longform\_profile} in
 \code{[targets.defaults]}), not in \File{projectconfig.tex} -- its
 \cs{DocumentMetadata} contract has to be fixed before the class runs at all.
 For a standalone document without a manifest the class option
@@ -562,8 +562,6 @@ should not pre-empt them.}
   \item[\keyis{patch-overlays}{true|false}] \ldeen{portable Modi in native
     Overlaybefehle integrieren}{integrate portable modes into native overlay
     commands}.
-  \item[\option{osgbeamer}] \ldeen{wirkungsloser Kompatibilitätsschalter für
-    alte Quellen}{no-op compatibility switch for legacy sources}.
 \end{description}
 
 \paragraph{\cs{LectureProjectSetup}\marg{key-value list}.}
@@ -600,33 +598,34 @@ automatically supplies \cs{OsgLectureLanguage}. An explicit value overrides
 this convention.}
 
 \paragraph{\ldeen{Weitere Projektbefehle}{Other project commands}.}
-\begin{description}
-  \item[\cs{OsgLectureSetup}\marg{areas}] \ldeen{weist Basisklassenoptionen zu,
+\begin{commands}
+  \command{OsgLectureSetup}[\marg{areas}]
+    \ldeen{weist Basisklassenoptionen zu,
     adressiert nach Klassenname (\code{class/NAME}) oder aktivem Modus
     (\code{class/<MODE>}), und mit \code{mode/NAME} osglecture-eigene
     modusabhängige Einstellungen}{assigns base-class options addressed by class
     name (\code{class/NAME}) or active mode (\code{class/<MODE>}), and
     osglecture mode-dependent settings with \code{mode/NAME}}.
-  \item[\cs{LectureTargetSetup}\marg{target}\marg{settings}]
+  \command{LectureTargetSetup}[\marg{target}\marg{settings}]
     \ldeen{akzeptiert \option{filecolor}; \option{profile} wird für
     \OLLM-Builds ignoriert (Profilwahl im Manifest)}{accepts \option{filecolor};
     \option{profile} is ignored for \OLLM\ builds (profile selection in the
     manifest)}.
-  \item[\cs{IncludeOsgLecturePreamble}\sarg\aarg{modes}\oarg{class=list}
-    \marg{name}] \ldeen{registriert ein bedingtes Präambelfragment; die
+  \command{IncludeOsgLecturePreamble}[\sarg\aarg{modes}\oarg{class=list}\marg{name}]
+    \ldeen{registriert ein bedingtes Präambelfragment; die
     Sternform lädt sofort und erlaubt deshalb keine Bedingungen}{registers a
     conditional preamble fragment; the starred form loads immediately and
     therefore permits no conditions}.
-  \item[\cs{LectureProjectEnforce}\marg{settings}]
+  \command{LectureProjectEnforce}[\marg{settings}]
     \ldeen{setzt Projekt-Policies mit erzwungener Priorität}{sets project
     policies with enforced priority}.
-  \item[\cs{EnforceLectureProjectConfiguration}\marg{code}]
+  \command{EnforceLectureProjectConfiguration}[\marg{code}]
     \ldeen{führt beliebigen Konfigurationscode mit erzwungener Priorität aus}{runs
     arbitrary configuration code with enforced priority}.
-  \item[\cs{DeclareOsgLectureMetadataField}\marg{name}]
+  \command{DeclareOsgLectureMetadataField}[\marg{name}]
     \ldeen{deklariert ein Metadatenfeld samt Setter und Abfragebefehlen}{declares
     a metadata field together with its setter and query commands}.
-\end{description}
+\end{commands}
 
 \ldeen{Vordefinierte Metadatenfelder sind \code{title}, \code{subtitle},
 \code{author}, \code{institute}, \code{date}, \code{course} und

@@ -104,7 +104,9 @@ ollm doctor
 
 ## Documentation
 See `osglecture-manual-en.pdf` or `osglecture-manual-de.pdf` for a user documentation
-in English, or German, repectively. (Well, not ready yet :shrug:)
+in English, or German, repectively. 
+
+To generate both without a `--full` installation, run `l3build doc` in the `manual-src` directory.
 
 Beside, the most packages have their own documentation.
 

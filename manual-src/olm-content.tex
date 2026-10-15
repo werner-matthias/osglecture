@@ -3,12 +3,12 @@
 \subsection{\ldeen{Titelei und Metadaten}{Titles and Metadata}}
 \ldeen{Auch wenn jede Lehreinheit \emph{physisch} in einem eigenen Verzeichnis ist, gibt es einen Befehl für die \emph{logische} Gliederung}{Even though each teaching unit is \emph{physically} located in its own directory, there is a command for the \emph{logical} structure}:
 
-\begin{description}
-  \item[\cs{lecture}\oarg{\ldeen{Kurzname}{short name}}\marg{\ldeen{Name}{name}}\marg{Label}]
+\begin{commands}
+  \command{lecture}[\oarg{\ldeen{Kurzname}{short name}}\marg{\ldeen{Name}{name}}\marg{Label}]
     \ldeen{Beginnt eine logisch benannte Lehreinheit und erzeugt in
     Präsentationsformen deren Titelfolie.}{Starts a logically named teaching
     unit and creates its title slide in presentation forms.}
-\end{description}
+\end{commands}
 \ldeen{\cs{lecture} legt in der Kurzform eine Titelfolie an, in der typischerweise neben dem Namen der Vorlesungseinheit auch die Metadaten noch einmal wiedergegeben werden. Die genaue Gestaltung hängt vom Präsentationsthema ab, falls
 Sie ein solches verwenden.
 }{In presentation forms, \cs{lecture} creates a title slide that normally
@@ -23,14 +23,14 @@ project belong to the same course and therefore share the course name, the
 author or authors, and possibly further metadata. To avoid repeating these for
 every unit, store them in \File{Include/projectconfig.tex}. The following
 commands are available:}
-\begin{description}
-  \item[\cs{course}\aarg{\ldeen{Modus}{mode}}\oarg{\ldeen{Kurzname}{short name}}\marg{\ldeen{Name}{name}}]
+\begin{commands}
+  \command{course}[\aarg{\ldeen{Modus}{mode}}\oarg{\ldeen{Kurzname}{short name}}\marg{\ldeen{Name}{name}}]
     \ldeen{Setzt den Kursnamen für alle oder für den angegebenen Modus.}{Sets
     the course name for all modes or for the specified mode.}
-  \item[\cs{event}\aarg{\ldeen{Modus}{mode}}\oarg{\ldeen{Kurzname}{short name}}\marg{\ldeen{Name}{name}}]
+  \command{event}[\aarg{\ldeen{Modus}{mode}}\oarg{\ldeen{Kurzname}{short name}}\marg{\ldeen{Name}{name}}]
     \ldeen{Setzt den Veranstaltungsnamen für alle oder für den angegebenen
     Modus.}{Sets the event name for all modes or for the specified mode.}
-\end{description}
+\end{commands}
 
 \ldeen{Dieselben Signaturen besitzen \cs{title}, \cs{subtitle}, \cs{author},
 \cs{institute} und \cs{date}. Das Profil entscheidet über
@@ -229,7 +229,7 @@ particularly useful for technical terms, cross-references, and numbers. If a
 language requires a different word order, simply put the same placeholder in the
 appropriate position.}
 
-\begin{warnbox}{}
+\begin{warnbox}{\ldeen{Achtung}{Attention}}
 \ldeen{Starten Sie Builds über OLLM und wählen Sie die Sprache mit
 \option{--language}. Setzen Sie die Zielsprache \textbf{nicht} zusätzlich von Hand im
 Quelldokument; sonst können Manifest, Name der Ausgabedatei und tatsächlich gesetzte
@@ -401,7 +401,7 @@ clearer. As a rule of thumb: if only the linguistic connection changes,
 \pkg{presitemize} is sufficient; if the didactic structure changes, use
 \cs{lecturemode}.}
 
-\begin{infobox}{}
+\begin{infobox}{\ldeen{Hinweis}{Hint}}
 \ldeen{Die automatische Fließtextverknüpfung von \pkg{presitemize} besitzt
 derzeit Sprachprofile für Deutsch, Englisch und Französisch einschließlich
 üblicher Varianten wie \code{ngerman}, \code{british} und
@@ -485,21 +485,6 @@ at least once and its reference export promoted. After changing dependent
 units, \code{ollm build --resolve} is the easiest way to rebuild producers
 and consumers to a consistent state.}
 
-\begin{warnbox}{}
-\ldeen{Seitenangaben über Dokumentgrenzen hinweg sind zwar technisch möglich,
-aber häufig keine stabile Leseführung: Die Leserin hat das andere PDF womöglich
-nicht geöffnet, und dessen Seitenzahl kann sich unabhängig ändern. Bevorzugen
-Sie für solche Verweise \cs{olref} oder
-\cs{olautoref}. Entfernungsabhängige Befehle wie
-\cs{vpageref} sind nur innerhalb des aktuellen Dokuments
-sinnvoll.}{Page references across document boundaries are technically
-possible, but often provide poor navigation: the reader may not have the other
-PDF open, and its pagination can change independently. Prefer
-\cs{olref} or \cs{olautoref} for such references.
-Distance-sensitive commands such as \cs{vpageref} are meaningful
-only within the current document.}
-\end{warnbox}
-
 \subsection{\ldeen{Befehlsreferenz}{Command Reference}}
 \label{sec:content-command-reference}
 
@@ -514,45 +499,52 @@ Section~\ref{sec:configuration-reference}; they are not needed when writing
 ordinary course units.}
 
 \paragraph{\ldeen{Lehreinheit und Metadaten}{Course unit and metadata}.}
-\begin{description}
-  \item[\cs{lecture}\oarg{short title}\marg{title}\marg{unit ID}]
+\begin{commands}
+  \command{lecture}[\oarg{short title}\marg{title}\marg{unit ID}]
     \ldeen{beginnt die logisch identifizierte Lehreinheit}{starts the logically
     identified course unit}.
-  \item[\cs{course}, \cs{event}, \cs{title}, \cs{subtitle}, \cs{author},
-    \cs{institute}, \cs{date}]
-    \aarg{mode}\oarg{short value}\marg{long value}\quad
+  \command{course}[\aarg{mode}\oarg{short value}\marg{long value}]\default{}
+  \command{event}[\aarg{mode}\oarg{short value}\marg{long value}]\default{}
+  \command{title}[\aarg{mode}\oarg{short value}\marg{long value}]\default{}
+  \command{subtitle}[\aarg{mode}\oarg{short value}\marg{long value}]\default{}
+  \command{author}[\aarg{mode}\oarg{short value}\marg{long value}]\default{}
+  \command{institute}[\aarg{mode}\oarg{short value}\marg{long value}]\default{}
+  \command{date}[\aarg{mode}\oarg{short value}\marg{long value}]
+    %\aarg{mode}\oarg{short value}\marg{long value}\quad
     \ldeen{setzen ein Metadatenfeld; Modus und Kurzform sind optional}{set a
     metadata field; mode and short form are optional}.
-  \item[\cs{OsgLectureSet}\meta{Field}\aarg{mode}\oarg{short value}
+  \command{OsgLectureSet}[\meta{Field}\aarg{mode}\oarg{short value}%
     \marg{long value}]
     \ldeen{einheitlicher Settername für jedes vordefinierte oder deklarierte
     Metadatenfeld}{uniform setter name for every predefined or declared
     metadata field}.
-  \item[\cs{OsgLecture}\meta{Field}, \cs{OsgLectureShort}\meta{Field}]
+  \command{OsgLecture}[\meta{Field}]\default{}
+  \command{OsgLectureShort}[\meta{Field}]
     \ldeen{expandierbare Abfrage des Lang- beziehungsweise Kurzwerts}{expandable
     query of the long or short value, respectively}.
-\end{description}
+\end{commands}
 
 \paragraph{\ldeen{Modi und bedingte Inhalte}{Modes and conditional content}.}
-\begin{description}
-  \item[\cs{lecturemode}\aarg{mode expression}\marg{content}]
+\begin{commands}
+  \command{lecturemode}[\aarg{mode expression}\marg{content}]
     \ldeen{gibt den Inhalt aus, wenn mindestens einer der mit Komma oder
     \code{||} getrennten Modi aktiv ist; ohne Modusausdruck wird der Inhalt
     immer ausgegeben}{emits the content if at least one mode separated by a
     comma or \code{||} is active; without a mode expression it always emits the
     content}.
-  \item[\cs{IfLectureModeTF}\marg{expression}\marg{true}\marg{false}]
+  \command{IfLectureModeTF}[\marg{expression}\marg{true}\marg{false}]
     \ldeen{vollständige Verzweigung}{full conditional}.
-  \item[\cs{IfLectureModeT}\marg{expression}\marg{true}]
+  \command{IfLectureModeT}[\marg{expression}\marg{true}]
     \ldeen{nur der Wahr-Zweig}{true branch only}.
-  \item[\cs{IfLectureModeF}\marg{expression}\marg{false}]
+  \command{IfLectureModeF}[\marg{expression}\marg{false}]
     \ldeen{nur der Falsch-Zweig}{false branch only}.
-  \item[\cs{LectureModes}, \cs{ActiveLectureModes}]
+  \command{LectureModes}\default{}
+  \command{ActiveLectureModes}
     \ldeen{expandierbare kommaseparierte Listen der gewählten Blattmodi
     beziehungsweise ihrer vollständigen Elternhülle}{expandable comma-separated
     lists of the selected leaf modes and their complete parent closure,
     respectively}.
-\end{description}
+\end{commands}
 
 \ldeen{Die Befehle zur Erweiterung des Modusgraphen sind in
 Abschnitt~\ref{sec:configuration-mode-extensions} zusammengefasst; sie gehören
@@ -562,8 +554,8 @@ Section~\ref{sec:configuration-mode-extensions}; they belong to project and
 profile configuration rather than ordinary unit authoring.}
 
 \paragraph{\ldeen{Präsentationslisten}{Presentation lists}.}
-\begin{description}
-  \item[\env{presitemize}\oarg{language, punctuation, whitespace}]
+\begin{environments}
+  \environment{presitemize}[\oarg{language, punctuation, whitespace}]
     \ldeen{erzeugt in Präsentationen eine Liste und in Langformen einen
     grammatisch verbundenen Absatz. \option{language} überschreibt die
     erkannte Sprache; \option{punctuation} akzeptiert \code{auto} oder
@@ -574,43 +566,51 @@ profile configuration rather than ordinary unit authoring.}
     \option{punctuation} accepts \code{auto} or \code{manual} and preserves
     existing punctuation in \code{auto} mode; \option{whitespace} accepts
     \code{normalize} (the default) or \code{preserve}}.
-  \item[\cs{presitem}\oarg{relation, initial}\aarg{overlay}\oarg{label}]
+\end{environments}
+\begin{commands}
+  \command{presitem}[\oarg{relation, initial}\aarg{overlay}\oarg{label}]
     \option{relation}: \code{sentence}, \code{and}, \code{but},
     \code{therefore}, \code{comma}, \code{colon}; \option{initial}:
     \code{auto}, \code{keep}.
-  \item[\cs{anditem}, \cs{butitem}, \cs{thereforeitem}, \cs{commaitem},
-    \cs{colonitem}\aarg{overlay}\oarg{label}]
+  \command{anditem}[\aarg{overlay}\oarg{label}]\default{}
+  \command{butitem}[\aarg{overlay}\oarg{label}]\default{}
+  \command{thereforeitem}[\aarg{overlay}\oarg{label}]\default{}
+  \command{commaitem}[\aarg{overlay}\oarg{label}]\default{}
+  \command{colonitem}[\aarg{overlay}\oarg{label}]
     \ldeen{Kurzformen für die entsprechenden Relationen; jede Form akzeptiert
     eine Overlayangabe und ein optionales Label wie \cs{item}}{short forms for
     the corresponding relations; each accepts an overlay specification and an
     optional label like \cs{item}}.
-  \item[\cs{finite}\marg{text}]
+  \command{finite}[\marg{text}]
     \ldeen{markiert den finiten Teil einer untergeordnet angeschlossenen
     Formulierung}{marks the finite part of a subordinately joined clause}.
-  \item[\cs{prespar}]
+  \command{prespar}
     \ldeen{beginnt in der Langform einen neuen Absatz und schließt den
     laufenden Satz ab; in Präsentationen wirkungslos}{starts a new paragraph
     in long-form output and closes the running sentence; no effect in
     presentations}.
-  \item[\cs{longform}, \cs{slides}, \cs{longslides}, \cs{prescase},
-    \cs{preskeepcase}]
+  \command{longform}\default{}
+  \command{slides}\default{}
+  \command{longslides}\default{}
+  \command{prescase}\default{}
+  \command{preskeepcase}
     \ldeen{niedrigstufige Auswahl- und Großschreibungshelfer für eigene
     Listenmakros}{low-level selection and capitalization helpers for custom
     list macros}.
-\end{description}
+\end{commands}
 
 \paragraph{\ldeen{Verweise}{References}.}
-\begin{description}
-  \item[\cs{olref}\sarg\oarg{address}\marg{label}]
+\begin{commands}
+  \command{olref}[\sarg\oarg{address}\marg{label}]
     \ldeen{Nummer wie \cs{ref}}{number like \cs{ref}}.
-  \item[\cs{olpageref}\sarg\oarg{address}\marg{label}]
+  \command{olpageref}[\sarg\oarg{address}\marg{label}]
     \ldeen{Seite wie \cs{pageref}}{page like \cs{pageref}}.
-  \item[\cs{olnameref}\sarg\oarg{address}\marg{label}]
+  \command{olnameref}[\sarg\oarg{address}\marg{label}]
     \ldeen{Name wie \cs{nameref}}{name like \cs{nameref}}.
-  \item[\cs{olautoref}\sarg\oarg{address}\marg{label}]
+  \command{olautoref}[\sarg\oarg{address}\marg{label}]
     \ldeen{automatischer Verweis wie \cs{autoref}}{automatic reference like
     \cs{autoref}}.
-\end{description}
+\end{commands}
 \ldeen{Die Adresse besteht aus einer schlüssellosen Unit-ID und optional
 \keyis{type}{doctype} sowie \keyis{lang}{language}. Ohne Adresse bleiben alle
 vier Befehle lokal. Die Sternform unterdrückt wie bei den entsprechenden

@@ -22,3 +22,6 @@ examples/**/*-osglecture-integration.registry
 /doc/*.pdf
 /doc/ollm/
 /legacy
+# l3build ctan/upload artifacts (rebuilt for every release)
+*-ctan.zip
+*-ctan.curlopt
