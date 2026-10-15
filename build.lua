@@ -29,6 +29,11 @@ if not is_module then
    }
 end
 
+-- CTAN submission data for "l3build upload", kept in its own file.
+if not is_module then
+  dofile("ctan/upload.lua")
+end
+
 -- A module is only ever packaged as part of the bundle; say so instead of
 -- failing on the missing module list.
 if is_module and target_list and target_list.ctan then

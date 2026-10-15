@@ -1,0 +1,30 @@
+Notes for the CTAN team and the TeX distribution maintainers
+
+1. Executable script ollm
+   The bundle contains the build manager ollm, a Perl script (Perl 5.30 or
+   later). Please install it as a user command:
+   - script:   scripts/osglecture/ollm  (no file extension)
+   - libraries: scripts/osglecture/lib, scripts/osglecture/vendor,
+     scripts/osglecture/definitions, scripts/osglecture/ollm-latexmk.rc;
+     ollm finds them relative to its own location (FindBin), so only the
+     script itself needs a link in the binary directory.
+   - Windows: scripts/osglecture/ollm.cmd is the launcher for manual
+     installations. For TeX Live's runscript wrapper the script may need a
+     .pl extension; please tell us if you prefer it renamed.
+   ollm calls latexmk and lualatex.
+
+2. Manual page
+   doc/man/man1/ollm.1 is the manual page of ollm.
+
+3. Vendored third-party code
+   - scripts/osglecture/vendor/TOML-Tiny-0.22: the unchanged parser part of
+     the CPAN distribution TOML-Tiny 0.22 (same terms as Perl 5); upstream
+     LICENSE included.
+   - tex/luatex/osglecture/osglecture/osglecture-toml.lua: toml2lua (MIT),
+     unchanged copy from TeX Live's expltools.
+   Details in ollm/THIRD_PARTY.md and osglecture/THIRD_PARTY.md.
+
+4. Engine
+   The bundle requires LuaLaTeX; a few packages work in a reduced mode
+   without Lua, see the compatibility table at
+   https://github.com/werner-matthias/osglecture#modules-version-and-compatibility

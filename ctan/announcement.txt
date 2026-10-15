@@ -1,0 +1,14 @@
+The osglecture bundle generates lecture materials: several documents
+from one LaTeX source, in different formats and in several languages.
+Document classes (ltx-talk or beamer, book or scrbook) are
+selected through profiles, so the source stays class-independent; the
+build manager ollm builds single lecture units as well as whole lecture
+series while maintaining cross-unit references.
+
+The bundle also aims at accessible, tagged PDF. Several of its packages may
+be useful on their own, among them langselect (language versions from one
+source), tagpax (import of tagged PDFs), and ltxtalk-theme (a theme
+engine for ltx-talk).
+
+The bundle requires LuaLaTeX and a current TeX Live; it is under active
+development and its interfaces may still change.
