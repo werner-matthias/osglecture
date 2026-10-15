@@ -2,23 +2,42 @@ bundle   = "osglecture"
 ctanpkg  = bundle
 maindir  = maindir or "."
 
-modules = {
-   "ansiterm",
-   "osglistings",
-   "ollm",
-   "osgdoc",
-   "langselect",
-   "tagbridge",
-   "tagdirtree",
-   "lttheme",
-   "lttheme-tuc-2019",
-   "osgstyler",
-   "osglecture-modes",
-   "osglecture",
-   "tagpax",
-   "semcat",
-   "manual-src",
- }
+local is_module = type(module) == "string" and module ~= ""
+
+-- Only the bundle root lists its modules.  l3build's ctan target in a module
+-- that belongs to a bundle calls bundlecheck/bundlectan for every entry of
+-- `modules`; inherited from here, a module would run those targets for the
+-- whole bundle list from inside its own directory (the "cd <module>" fails,
+-- the command continues in the module) and rebuild itself over and over.
+if not is_module then
+  modules = {
+     "ansiterm",
+     "osglistings",
+     "ollm",
+     "osgdoc",
+     "langselect",
+     "tagbridge",
+     "tagdirtree",
+     "lttheme",
+     "lttheme-tuc-2019",
+     "osgstyler",
+     "osglecture-modes",
+     "osglecture",
+     "tagpax",
+     "semcat",
+     "manual-src",
+   }
+end
+
+-- A module is only ever packaged as part of the bundle; say so instead of
+-- failing on the missing module list.
+if is_module and target_list and target_list.ctan then
+  target_list.ctan.func = function()
+    print("'" .. module .. "' is packaged as part of the " .. bundle
+      .. " bundle: run 'l3build ctan' in the bundle root.")
+    return 1
+  end
+end
 
 textfiles = textfiles or { 
   "README-*.md"
@@ -35,7 +54,6 @@ typesetexe = "lualatex"
 typesetopts = "-interaction=nonstopmode -shell-escape --synctex=10"
 maxruns    = 3
 
-local is_module = type(module) == "string" and module ~= ""
 
 sourcefiles = sourcefiles or { "*.dtx" }
 typesetfiles = typesetfiles or (

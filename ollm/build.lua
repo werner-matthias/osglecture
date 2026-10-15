@@ -14,6 +14,7 @@ tdsdirs = {
   ["scripts/definitions"] = "scripts/osglecture/definitions",
   ["scripts/lib"] = "scripts/osglecture/lib",
   ["scripts/vendor"] = "scripts/osglecture/vendor",
+  ["man"] = "doc/man/man1",
 }
 
 sourcefiles = {
@@ -56,13 +57,28 @@ end
 
 -- ollm has no .dtx; its only version source is the Perl module, which the
 -- documentation reads at typesetting time.
-tagfiles = { "scripts/lib/OLLM/Version.pm" }
+tagfiles = { "scripts/lib/OLLM/Version.pm", "man/ollm.1" }
 
 dofile("../build.lua")
 
 local update_bundle_tag = update_tag
 
 function update_tag(file, content, tagname, tagdate)
+  if file:match("%.1$") then
+    -- .TH OLLM 1 "<date>" "ollm <version>" "osglecture bundle"
+    local updated, count = content:gsub(
+      '(%.TH OLLM 1 ")[^"]*(" "ollm )[^"]*(")',
+      function(opening, middle, closing)
+        return opening .. tagdate:gsub("/", "-") .. middle
+          .. normalize_tagname(tagname) .. closing
+      end,
+      1
+    )
+    if count == 0 then
+      print("No .TH line found in " .. file)
+    end
+    return updated
+  end
   if not file:match("%.pm$") then
     return update_bundle_tag(file, content, tagname, tagdate)
   end

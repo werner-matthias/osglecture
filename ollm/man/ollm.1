@@ -1,0 +1,400 @@
+.\" Manual page for ollm, the build manager of the osglecture bundle.
+.\" Version and date in the .TH line are updated by "l3build tag".
+.TH OLLM 1 "2026-10-15" "ollm v0.15.0" "osglecture bundle"
+.SH NAME
+ollm \- build manager for osglecture lecture series
+.SH SYNOPSIS
+.B ollm
+.RI [ global-options ]
+.RB [[ + ] build ]
+.RB [[ + ]\c
+.IR target " | " \c
+.BI \-\-target= target\c
+]
+.RI [ build-options ]
+.RI [ latexmk-options ]
+.br
+.B ollm
+.RI [ global-options ]
+.RB [ + ]\c
+.BR report " | " check " | " clean " | " prune " | " doctor " | " deploy " | " convertproject
+.RI [ options ]
+.br
+.B ollm
+.RI [ global-options ]
+.RB [ + ] newproject
+.B \-\-profiles=taggable\c
+.RB | classic
+.br
+.B ollm standalone
+.RI [ options ]
+.I file.tex
+.SH DESCRIPTION
+.B ollm
+builds the documents of a lecture series written with the
+.B osglecture
+class.
+A series is a project directory with an
+.I ollmconfig.toml
+manifest and one subdirectory per unit
+(for example
+.IR 010-introduction ).
+From the same unit source,
+.B ollm
+produces several targets, such as slides, handouts, a presenter version, and
+a long-form script, in every configured language.
+.PP
+Each build runs
+.BR latexmk (1)
+with LuaLaTeX in an isolated build directory and promotes the successful
+result into the project state below
+.IR .osglecture .
+The promoted state carries cross-unit references, counter continuation, and
+the inputs of integration units, so that units can refer to each other
+without knowing build paths.
+.PP
+Without a command word,
+.B build
+is assumed.
+Built-in target names may be given as a bare word or with a historical
+.B +
+prefix; project-defined targets are selected with
+.BR \-\-target .
+.SH COMMANDS
+.TP
+.B build
+Build the selected target, language, and scope.
+.TP
+.B standalone
+Build a single document without a series manifest.
+Document type and language come from the class options of the document;
+.BR \-\-target ,
+.BR \-\-language ,
+and
+.B \-\-all
+are not allowed.
+.TP
+.B report
+Describe the discovered units, promoted projections, artifacts, generations,
+and dependencies.
+Findings do not change the exit status as long as the state is readable.
+.TP
+.B check
+Validate the same data as
+.BR report ,
+but treat inconsistencies as errors (exit status 3).
+Nothing is built; this is the command intended for CI.
+.TP
+.B clean
+Remove build or state data selected by
+.B \-\-level
+and
+.BR \-\-scope .
+.TP
+.B prune
+Remove abandoned temporary states and superseded generations.
+.TP
+.B doctor
+Inspect Perl,
+.BR latexmk ,
+LuaLaTeX,
+.BR kpsewhich ,
+the TOML parser, and the required TeX packages; inside a project also the
+manifest, definitions, project files, and stored state.
+.TP
+.B deploy
+Copy already promoted PDFs to the targets configured in the manifest.
+It does not build and does not create target directories.
+.TP
+.B newproject
+Create
+.I ollmconfig.toml
+in the current directory, converting a legacy
+.I ollmconfig.pl
+where present.
+An existing TOML manifest is never overwritten.
+.TP
+.B convertproject
+Convert a legacy project configuration where possible.
+.SH TARGETS
+The bundle defines the following targets:
+.TP
+.BR slides " (aliases " beamer ", " presentation )
+the slides for projection.
+.TP
+.B handout
+a static handout version of the slides.
+.TP
+.B screen
+the presenter version: every page is twice as wide and carries the presenter
+page on the right.
+.TP
+.BR script " (alias " article )
+the long-form version.
+.PP
+Whether a target uses
+.BR ltx-talk ,
+.BR beamer ,
+.BR book ,
+or
+.B scrbook
+is decided by the document profile selected in the manifest, not by the
+target.
+Projects can register further targets in a definitions directory; see
+.I .ollmconfig.local.toml
+below.
+.SH OPTIONS
+.SS General options
+.TP
+.B \-\-help
+Show a short usage summary and exit.
+.TP
+.B \-\-version
+Show the version and exit.
+.TP
+.BR \-\-format=text | json
+Select human-readable or machine-readable output.
+Use
+.B json
+for CI and tools.
+.TP
+.BR \-\-color=auto | always | never
+Control coloured terminal output.
+.TP
+.BI \-\-config= file
+Use the given project manifest.
+.TP
+.BI \-\-project\-root= dir
+Use the given project root.
+.TP
+.B \-\-non\-interactive
+Never ask questions.
+.TP
+.B \-\-overwrite
+Let
+.B deploy
+replace a differing target file where the project policy requires an
+explicit permission.
+.TP
+.BR +enforce+ ", " \-\-enforce+
+Require the
+.B +
+prefix on command and built-in target words, so that a file named like a
+target is not taken for one.
+.B +force+
+is a deprecated alias.
+.SS Build options
+.TP
+.BI \-\-target= target
+Select a target, including project-registered ones.
+.TP
+.BI \-\-language= lang\c
+.RB ", " lang=\c
+.I lang
+Select a configured language.
+Without it, the project's default language is used if the target supports
+it, otherwise the target's first language.
+.TP
+.BI \-\-source= file
+Select the main TeX source (default:
+.IR main.tex ).
+.TP
+.BR \-\-scope=current | unit | series | collection
+Select the units the command acts on.
+.B current
+(the default inside a unit) builds the selected target and language of the
+current unit;
+.B unit
+builds every permitted target and language of the current unit;
+.B series
+builds the selected target for every applicable unit;
+.B collection
+builds the integration unit matching the target's document type, from any
+directory of the project.
+.TP
+.B \-\-all
+Extend the target and language selection of the chosen scope to every
+combination provided by the manifest.
+.TP
+.B \-\-resolve
+Follow the dependencies reported by LaTeX and rebuild stale producers and
+consumers up to a fixpoint.
+.TP
+.B \-\-rebuild
+Force a complete
+.B latexmk
+rebuild.
+.TP
+.B \-\-dry\-run
+Print the normalized request (or, for
+.B clean
+and
+.BR prune ,
+the removal plan) without acting on it.
+.TP
+.BR \-\-debug=tex | ollm | tex+ollm
+Enable diagnostic output for the given layer.
+.TP
+.BR \-\-warnings=all | important | none
+Select which warnings are shown.
+.PP
+Unknown options starting with a minus sign are passed on to
+.B latexmk
+when they are compatible with the controlled build; additional RC files and
+options that would bypass it are rejected.
+.SS Maintenance options
+.TP
+.BR \-\-level=aux | build | state | all
+What
+.B clean
+removes: auxiliary files (default, keeps the local PDF), the isolated build
+directory, the promoted state, or both build and state.
+.TP
+.B \-\-stale\-units
+Let
+.B prune
+also remove the states of physical units that no longer exist.
+.SS Project creation options
+.TP
+.BR \-\-profiles=taggable | classic
+Required for
+.BR newproject ,
+optional for
+.B convertproject
+(default there:
+.BR classic ).
+.B taggable
+uses
+.B ltx-talk
+and
+.B book
+with Tagged PDF and creates
+.IR Include/documentmetadata.tex ;
+.B classic
+uses
+.B beamer
+and
+.B scrbook
+without tagging.
+Single targets can be changed later with
+.B profile
+in the manifest.
+.SH FILES
+.TP
+.I ollmconfig.toml
+The project manifest in the project root.
+.B ollm
+finds it from any unit directory.
+.TP
+.I .ollmconfig.local.toml
+Optional, usually unversioned additional search paths for target and
+profile definitions.
+.TP
+.I Include/projectconfig.tex
+Project-wide TeX configuration read by the
+.B osglecture
+class.
+.TP
+.I .osglecture/
+Build directories and promoted state.
+If no
+.B ollm
+or
+.B latexmk
+process is running, the whole directory may be deleted as a last-resort
+repair; units then have to be built directly again.
+.TP
+.IR $XDG_CONFIG_HOME/ollm/config.toml ", " ~/.config/ollm/config.toml
+Personal configuration (preferred bundle preset) on Unix.
+.TP
+.I %APPDATA%\(rsollm\(rsconfig.toml
+Personal configuration on Windows.
+.SH ENVIRONMENT
+.TP
+.B OLLM_USER_CONFIG
+Path of the personal configuration file; overrides the default locations.
+.TP
+.B XDG_CONFIG_HOME
+Base directory of the personal configuration on Unix.
+.TP
+.B APPDATA
+Base directory of the personal configuration on Windows.
+.SH EXIT STATUS
+.TP
+.B 0
+Success, or a readable report.
+.TP
+.B 1
+Build, deployment, or state error.
+.TP
+.B 2
+Invalid invocation or configuration.
+.TP
+.B 3
+.B check
+found an inconsistency.
+.TP
+.B 69
+A required program or execution feature is unavailable.
+.TP
+.B 70
+Internal error.
+.TP
+.B 128+\c
+.I signal
+Termination by a signal on POSIX systems, in particular 130 for Ctrl-C.
+.SH EXAMPLES
+Build the German slides of the unit in the current directory:
+.PP
+.RS
+.nf
+ollm slides \-\-language=de
+.fi
+.RE
+.PP
+Build a project-registered target in English:
+.PP
+.RS
+.nf
+ollm build \-\-target=solutions \-\-language=en
+.fi
+.RE
+.PP
+Build the script of every unit, then the collected script:
+.PP
+.RS
+.nf
+ollm script \-\-scope=series
+ollm script \-\-scope=collection
+.fi
+.RE
+.PP
+Validate the project state in CI:
+.PP
+.RS
+.nf
+ollm check \-\-format=json
+.fi
+.RE
+.PP
+Start a new tagged project:
+.PP
+.RS
+.nf
+ollm newproject \-\-profiles=taggable
+.fi
+.RE
+.SH SEE ALSO
+.BR latexmk (1),
+.BR lualatex (1)
+.PP
+The full user manual is available as
+.I ollm-en.pdf
+and
+.I ollm-de.pdf
+(run
+.B texdoc ollm\-en
+or
+.BR "texdoc ollm\-de" ).
+.SH AUTHOR
+Matthias Werner.
