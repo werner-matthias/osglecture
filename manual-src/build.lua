@@ -9,6 +9,7 @@ sourcefiles = {
   "olm-*.tex",
   "polymorphy-*.tex",
   "styler-*.tex",
+  "tutorial-output-*.tex",
 }
 
 local manual_example_files = {
@@ -17,11 +18,15 @@ local manual_example_files = {
   "polymorphy-script-de.tex",
   "styler-screen.tex",
   "styler-print.tex",
+  "tutorial-output-slides.tex",
+  "tutorial-output-screen.tex",
+  "tutorial-output-script.tex",
 }
 
 local manual_source_files = {
   "polymorphy-source.tex",
   "styler-source.tex",
+  "tutorial-output-source.tex",
 }
 
 typesetfiles = {

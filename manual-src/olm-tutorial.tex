@@ -324,6 +324,13 @@ point than twenty pages with a missing closing brace.}
   \Note{\ldeen{Hier an die Analogie mit Zimmernummern erinnern.}
                {Recall the analogy with room numbers here.}}
 \end{frame}
+
+\begin{frame}
+  \frametitle{\ldeen{Seitentabellen}{Page tables}}
+  \ldeen{Eine Seitentabelle ordnet virtuelle Seiten physischen
+         Seitenrahmen zu.}
+        {A page table maps virtual pages to physical page frames.}
+\end{frame}
 \end{document}
 \end{verbatim}
 
@@ -427,6 +434,41 @@ zusätzliche Presenter-Seite ist jedoch eine Bedienhilfe für Nora und gehört
 nicht zur Lesereihenfolge der eigentlichen Folie.}{This instance is also built
 with tagging enabled. The additional presenter page is an aid for Nora,
 however, and is not part of the reading order of the slide itself.}
+
+\begin{minipage}{\linewidth}
+  \captionsetup{type=figure}
+  \centering
+  \begin{subcaptiongroup}
+    \begin{minipage}[t]{.48\linewidth}
+      \fbox{\includegraphics[page=1,width=\linewidth]{tutorial-output-slides.pdf}}
+      \caption{\ldeen{Die Folienfassung zeigt jeweils eine Folie.}{The slide
+      version shows one slide at a time.}}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{.48\linewidth}
+      \fbox{\includegraphics[page=1,width=\linewidth,
+        trim=18mm 176mm 18mm 18mm,clip]{tutorial-output-script.pdf}}
+      \caption{\ldeen{Im Skript werden die Inhalte nacheinander gesetzt.}{In
+      the lecture notes, the contents are typeset consecutively.}}
+    \end{minipage}
+
+    \begin{minipage}[t]{.96\linewidth}
+      \fbox{\includegraphics[page=1,width=\linewidth]{tutorial-output-screen.pdf}}
+      \caption{\ldeen{Die Vortragendenfassung ergänzt rechts Vorschau und
+      Anmerkung.}{The presenter's version adds the preview and remark on the
+      right.}}
+    \end{minipage}
+  \end{subcaptiongroup}
+  \caption{\label{fig:tutorial-document-instances}\ldeen{Drei
+  Dokumentinstanzen aus derselben Quelle.}{Three document instances from the
+  same source.}}
+\end{minipage}
+
+\ldeen{Abbildung~\ref{fig:tutorial-document-instances} macht den Unterschied
+der drei Targets sichtbar. Die Anmerkung gehört ausschließlich in Noras
+Vortragendenfassung; das Skript übernimmt dagegen beide Frames als fortlaufenden
+Text.}{Figure~\ref{fig:tutorial-document-instances} shows the difference
+between the three targets. The remark belongs exclusively in Nora's presenter
+version, while the lecture notes typeset both frames as continuous text.}
 
 \paragraph{\ldeen{Von Stichpunkten zu einem Satz}{From Bullet Points to a Sentence}}
 \ldeen{Nora ergänzt zwei weitere Aussagen. Eine gewöhnliche \code{itemize}-Liste
