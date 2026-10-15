@@ -1,42 +1,14 @@
 # tagpax
 
-`tagpax` extracts, reconstructs, and reimports the logical structure of fully
-tagged PDFs to allow the assembly of tagged PDF documents.
-It is LuaLaTeX-only.
+`tagpax` imports complete, tagged PDF documents into a new tagged PDF while
+reconstructing their logical structure. It is intended for assembling
+independently produced contributions without reducing their pages to
+inaccessible graphics.
 
-The public commands are:
+Alongside the structure tree, the package preserves relevant links and named
+destinations and can transfer headings to the table of contents and PDF
+outline. Its current scope is complete, linear documents imported as whole
+pages. `tagpax` requires LuaLaTeX.
 
-```latex
-\tagpaxextract[paper.tagpax]{paper.pdf}
-\tagpaxinclude[ir=paper.tagpax]{paper.pdf}
-```
-
-It currently only supports complete linear documents, one fresh Form XObject per
-source page, page-content MCIDs, and a new `Part` wrapper. Explicit nested
-`/Stm` source Forms remain represented in the IR but are rejected by the native
-writer until a reliable nested-XObject mapping is available.
-
-Named destinations and `/Link` annotations with `GoTo`, `URI`, and `GoToR`
-actions are imported. Internal destination views and coordinates are
-transformed to the scaled whole page; remote named and page targets are
-retained.
-Extracted headings are added to the master table of contents and, when the
-`bookmark` interface is available, to the master PDF outline according to
-`toc-depth`, `bookmark-depth`, and `heading-map`.
-
-## Build
-
-```sh
-l3build install
-```
-
-## Regression Test
-
-```sh
-l3build check
-l3build check -c roundtrip
-```
-
-The roundtrip test compiles a tagged contribution, extracts it, imports it with
-the native path, extracts the master PDF, and compares the semantic trees,
-including MCR/OBJR order and precise internal destinations.
+For the full interface, supported PDF features, and current limitations, run
+`texdoc tagpax`.

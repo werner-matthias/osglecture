@@ -1,92 +1,17 @@
 # osglistings
 
-`osglistings` is a `minted`-based code-listing front end for LuaLaTeX: an
-`osglisting` environment for inline source and an `\osglistinginput` command
-for external files, three selectable box styles, an independent color
-palette for syntax highlighting, and optional links into external online
-editors.
+`osglistings` is a `minted`-based code-listing front end for LuaLaTeX. It
+provides a common interface for inline source and external files, with visual
+styles suited to plain listings, printed code sheets, and editor-like windows.
 
-```tex
-\usepackage{osglistings}
+The package adds independently themeable syntax colours, Unicode-capable code
+fonts, tagged-PDF support, and annotations for explaining or highlighting
+exact source positions. Listings can optionally link to an online editor or
+display that link as a QR code.
 
-\begin{osglisting}[style=editor, title={main.rs}, link=https://...]{rust}
-fn main() {
-    println!("hi");
-}
-\end{osglisting}
+External source may also be taken from GitHub or a Gist and cached locally.
+This optional feature requires `--shell-escape`, performs network access with
+the permissions of the TeX process, and is intended only for trusted
+documents and source locations.
 
-\osglistinginput[style=paper, firstline=3, lastline=9]{c}{src/foo.c}
-```
-
-Box styles (`style=plain|paper|editor`): `plain` is a minimal rule frame,
-`paper` is a torn-edge "printer paper" look with no title bar (and no
-support for breaking across a page), `editor` is a title-bar "editor
-window" with a language badge and, when `link` is set, an edit-link icon.
-
-Any key `osglistings` doesn't recognize (`firstline`, `lastline`,
-`breaklines`, ...) is forwarded to `minted` unchanged.
-
-Colors come from a named palette, declared with `\DeclareOsgListingsPalette`
-and activated with `\UseOsgListingsPalette` (or per call via the `palette`
-key). Slots left unspecified inherit their value from the built-in
-`osglistings-default` palette:
-
-```tex
-\DeclareOsgListingsPalette{my-theme}{
-  keyword = {model=HTML, value=8A2BE2},
-  string  = {alias=keyword},
-}
-\UseOsgListingsPalette{my-theme}
-```
-
-Code is set in `DejaVu Sans Mono` (falling back to `\ttfamily` with a
-warning if that font isn't installed) rather than `minted`/`fvextra`'s
-default Latin Modern Mono, which silently drops any glyph it doesn't
-cover — Cyrillic, chess symbols, and most other non-Latin or symbol text
-in source comments/strings would otherwise just vanish from the output.
-
-When LaTeX is started with `\DocumentMetadata{tagging=on}`, the source is
-tagged as structure `Code` (structure name `osglistings/code`, remappable
-with `\NewStructureName`/`\AssignStructureRole`); switch it off per call
-with `tag=false`.
-
-`\osglistinginput`'s file argument also accepts a `gist:owner/gist-id/file`
-or `github:owner/repo@ref/path` locator instead of a local path; the source
-is fetched once and cached under `\jobname.osglistings-cache/`, and an
-editor link is derived automatically when none is given explicitly. This
-requires LuaLaTeX and `--shell-escape`, and — since it invokes `curl` with
-the compiling process's own permissions — should only be used with
-trusted documents/locators. `texlua osglistings-check-updates.lua
-[--refresh] <cache-dir>` checks a cache for staleness outside LaTeX;
-`remote-check=compile` does the same automatically at the end of a
-compile run.
-
-`\osglistingsmark{name}` drops a named, invisible `tikz` node at an exact
-character position in inline source (needs `escapeinside` on); a later
-`tikzpicture[remember picture, overlay]` can then draw to or from it,
-resolving after a second compile run like any such overlay. The `marks`
-key on `\osglistinginput` does the same for external sources, addressing
-positions either by `name at line:col` or by a literal text search
-(`name after/before "text" [occurrence=n]`) — no manual `escapeinside`
-needed there. A third mode, `around` (`name around "text"`, or two
-`\osglistingsmark`s named `name-begin`/`name-end` for inline source),
-brackets the text instead of pointing at one spot; `\osglistingshighlight{name}`
-then draws a highlight box between the pair with no manual
-`xshift`/`yshift` tuning, since the box's height/depth is measured from
-the mark itself. Adding `desc="text"` to an `around` entry (or calling
-`\osglistingsmarkspanbegin{name}{text}`/`\osglistingsmarkspanend{name}`
-directly for inline source) additionally tags that span as `alt` text
-when `\DocumentMetadata{tagging=on}` is active, and `\osglistingshighlight`
-tags its own overlay as an `Artifact` so assistive technology skips the
-decoration and reads `desc` instead — the rest of a listing's source
-isn't otherwise exposed as readable text, so `desc` is usually the only
-thing actually read aloud for a marked span. `link-display=qrcode`
-renders the link as a QR code below the box instead of a title-bar icon
-or text label.
-
-## Build
-
-```sh
-l3build check
-l3build install
-```
+For the complete interface and examples, run `texdoc osglistings`.

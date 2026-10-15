@@ -1,89 +1,15 @@
 # ltxtalk-theme — Themes for ltx-talk
 
-Theme selection, composition, and customization for the ltx-talk presentation class.
+`ltxtalk-theme` is a theme engine for the `ltx-talk` presentation class. It
+separates layouts, colours, and fonts so that complete designs can be selected,
+combined, and adapted without tying document content to a particular visual
+theme.
 
-The theme engine was last tested with `ltx-talk` 0.6.9 (2026-10-06), requires
-at least 0.5.3 (2026-08-05), and checks both when it is loaded. An older class
-produces a targeted error instead of continuing with potentially incompatible
-layout interfaces;
-a newer class only produces a warning, since no known incompatibility exists
-yet. The class itself currently provides no LaTeX package rollback releases,
-so it cannot be replaced after `\documentclass` has loaded it.
-
-## Quick Start
-
-```latex
-\DocumentMetadata{}
-\documentclass{ltx-talk}
-\usepackage{ltxtalk-theme-magpie}
-\useltxtalktheme{magpie}
-
-\title{My Presentation}
-\author{John Doe}
-
-\begin{document}
-\begin{frame}{First Slide}
-  Content here
-\end{frame}
-\end{document}
-```
-
-## Manuals
+The package includes several ready-to-use presentation layouts, colour-only
+themes, and coordinated font themes. Its slot-based layout and semantic colour
+and font roles also support project-specific themes and accessible tagged
+output.
 
 The [German manual](../doc/lttheme-de.pdf) and
-[English manual](../doc/lttheme-en.pdf) cover theme selection, layering,
-customization, slot names, a complete custom theme, and the command and
-option reference. Build both with `l3build doc` in this directory.
-
-Activate the layout theme first, add colour and font themes, then apply
-custom settings. Grid and slot changes are global; ending a frame does not
-undo them. With tagging enabled, slot options `role` and `alt-text` control the
-semantic role and alternative text. The default role is `artifact`;
-frame-title tagging is handled by the class. See the manual for the
-accessibility options and their exceptions.
-
-## Tests
-
-Run the API and PDF-based visual regression tests with `l3build check`.
-The `visual-*.pvt` tests contain the same fixed two-slide presentation for
-each bundled theme. Their normalized PDF references are stored in the matching
-`.tpf` files. After an intentional visual change, inspect the PDFs in
-`../build/test/` and update the affected reference explicitly, for example
-with `l3build save visual-magpie`.
-
-The bundled layout themes are `minimal`, `magpie` (inspired by Beamer
-Madrid), `hawk` (Hannover), `sparrow` (Szeged), `bluebird` (Berlin), and `goose`
-(Goettingen). `bluebird` and `goose` exercise the navigation renderers
-(`\LTXTalkNavigation`): `bluebird` runs `section-list`, `section-dots`, and
-`section-progress` in the header and adds the `bluebird/band` title layout and
-the chrome-free `bluebird/plain` layout; `goose` puts the `toc` renderer in a
-right sidebar and offers `goose/wide` to drop it. The colour-only themes
-`anchovy` (AnnArbor colours) and `carp` (CambridgeUS colours) are layered on
-top of a layout theme with `\addltxtalktheme{anchovy}` or
-`\addltxtalktheme{carp}`. They change semantic colours only and leave the
-layout and tagged reading order untouched.
-
-Font-only themes are layered the same way. In addition to the simple
-`font-sans`, `font-serif`, and `font-mixed` choices, `font-libertinus`,
-`font-newcm`, and `font-texgyre` provide coordinated families for body copy,
-supporting text, headings, emphasis, code, mathematics, and symbols. Load,
-for example, `ltxtalk-theme-font-libertinus` and call
-`\addltxtalktheme{font-libertinus}` after the layout theme.
-
-Slot styles can use the semantic roles `body`, `support`, `heading`,
-`emphasis`, `code`, `math`, and `symbol`. The portable palette names `main`,
-`companion`, `display`, `accent`, and `mono` remain supported. Select a role
-with `font-slot=heading` or `\UseLTXTalkFont{heading}`; a font theme can thus
-change families without changing layout, size, or emphasis.
-
-The engine also controls the inner theme. `\setltxtalkcolors` accepts the
-semantic colours `structure`, `alert`, and `example`; `\styleltxtalkblock`
-styles the `block`, `alertblock`, and `exampleblock` template instances; and
-`\setltxtalkitemize` selects the marker for each of the four list levels.
-The fallback alert/example environments reuse ltx-talk's block implementation,
-including its overlay and tagging behaviour, and are only defined when the
-class has not supplied environments of the same names.
-
-The `tagging-slots` test additionally compares the XML representation of the
-tagged PDF structure. It requires the `show-pdf-tags` program distributed with
-TeX Live.
+[English manual](../doc/lttheme-en.pdf) describe the bundled themes,
+customization, accessibility options, and complete interface.

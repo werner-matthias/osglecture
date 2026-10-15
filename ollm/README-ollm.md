@@ -1,71 +1,15 @@
 # OLLM
 
-OLLM (OSG LaTeX Lecture Maker) is the build frontend of the `osglecture`
-bundle. It selects document and language variants and delegates individual
-LaTeX builds to `latexmk`.
+OLLM (OSG LaTeX Lecture Maker) is the build front end of the `osglecture`
+bundle. It turns a lecture project into its requested document and language
+variants and delegates the individual LaTeX runs to `latexmk`.
 
-## For Users of OSGBeamer
+OLLM keeps generated artifacts below `.osglecture/build`, separate from the
+source material. Projects are described in TOML, allowing targets, languages,
+profiles, and deployment steps to be managed consistently across a complete
+series of teaching materials.
 
-There are a few conceptual differences between the OSGLecture and OSGBeamer
-build models from a user's perspective:
+For users migrating from OSGBeamer, OLLM can convert the former Perl-based
+project configuration; the result should be reviewed afterwards.
 
-- The configuration format has changed from Perl to TOML. Accordingly, the
-  configuration file is no longer `ollmconfig.pl`, but `ollmconfig.toml`. In
-  addition, settings can be configured in more places. Old Perl-based
-  configurations can be converted with `ollm convertproject`; however, a
-  follow-up check is recommended.
-- Resulting artifacts (PDFs) are no longer stored in the unit directories, but
-  in subdirectories of `.osglecture/build` in the project root. This has two
-  advantages:
-  - Input materials are clearly separated from output materials, improving
-    overall clarity.
-  - If the build reaches an invalid state, entire output directories can be
-    deleted as a last resort without risking the removal of input files.
-
-## Installation
-
-Run these commands from this directory:
-
-```sh
-l3build check
-l3build -full install
-```
-
-`l3build` installs the script into `TEXMFHOME/scripts/osglecture/`, which is not
-on `PATH`. On Linux and macOS, link it into a directory that is:
-
-```sh
-ln -s "$(kpsewhich -var-value TEXMFHOME)/scripts/osglecture/ollm" ~/.local/bin/ollm
-```
-
-On Windows, add that directory to `PATH`; it contains the launcher `ollm.cmd`.
-
-## Documentation
-
-Please read `ollm-en.pdf` or `ollm-de.pdf` for documentation in English or German.
-
-## TL;DR: A Few Examples
-
-### Build the Script Chapter in English
-
-```sh
-ollm build script --language=en
-```
-
-or
-
-```sh
-ollm script lang=en
-```
-
-### Check Installation and Environment
-
-```sh
-ollm doctor
-```
-
-### Getting Help
-
-```sh
-ollm --help
-```
+See `ollm-en.pdf` or `ollm-de.pdf` for the English or German documentation.
