@@ -1,0 +1,20 @@
+% Exercise and solution environments for the exercise unit. Solutions are
+% typeset only in the solutions mode (target solutions); every other target
+% drops them, so one source yields both the exercise sheet and its key.
+\newcounter{exercise}[chapter]
+\renewcommand\theexercise{\thechapter.\arabic{exercise}}
+\NewDocumentEnvironment{exercise}{}
+  {%
+    \par\addvspace{\medskipamount}%
+    \refstepcounter{exercise}%
+    \noindent\textbf{\lende{Exercise}{Aufgabe}~\theexercise.}\ %
+  }
+  {\par}
+\NewDocumentEnvironment{solution}{+b}
+  {%
+    \mode<solutions>{%
+      \par\addvspace{\smallskipamount}%
+      \noindent\textit{\lende{Solution}{Lösung}.}\ #1\par
+    }%
+  }
+  {}

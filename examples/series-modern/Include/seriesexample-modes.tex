@@ -1,0 +1,6 @@
+% Project modes, read in every target (\LectureProjectSetup{mode-setup-file}).
+% solutions is the script plus everything marked for solutions; it has to be
+% declared here and not in the solutions profile, because the shared source
+% names it in every target -- it is only *active* in the solutions target.
+\DeclareLectureMode[parents=script]{solutions}
+\AssignLectureModeBehavior{solutions}{longform}

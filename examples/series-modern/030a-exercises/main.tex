@@ -1,0 +1,42 @@
+\documentclass{osglecture}
+\input{seriesexample-exercises}
+
+\begin{document}
+\lecture[\lende{Exercises}{Übungen}]
+  {\lende{Exercises on the shared source}{Übungen zur gemeinsamen Quelle}}
+  {exercises}
+
+\section{\lende{Exercises}{Aufgaben}}
+\IfLectureModeTF{solutions}
+  {\lende{This version contains the solutions.}%
+    {Diese Fassung enthält die Lösungen.}}
+  {\lende{The solutions are published separately.}%
+    {Die Lösungen werden gesondert veröffentlicht.}}
+
+\begin{exercise}
+  \lende{Name the two documents that the target \emph{script} and the target
+    \emph{slides} produce from the unit introduced in
+    Section}{Nennen Sie die beiden Dokumente, die die Targets \emph{script}
+    und \emph{slides} aus der in Abschnitt}~\olref[introduction]{sec:shared-source}%
+  \lende{.}{\ eingeführten Unit erzeugen.}
+\end{exercise}
+\begin{solution}
+  \lende{A long-form report and a presentation, both from the same
+    source.}{Eine Langform und eine Präsentation, beide aus derselben
+    Quelle.}
+\end{solution}
+
+\begin{exercise}
+  \lende{Why does this unit build neither \emph{slides} nor a presentation
+    at all?}{Warum baut diese Unit weder \emph{slides} noch sonst eine
+    Präsentation?}
+\end{exercise}
+\begin{solution}
+  \lende{Its directory carries the scope code \texttt{a}; OLLM builds it
+    only for targets whose \texttt{unit\_scopes} contain \texttt{a}, here
+    \emph{script} and \emph{solutions}.}{Ihr Verzeichnis trägt den
+    Scope-Code \texttt{a}; OLLM baut sie nur für Targets, deren
+    \texttt{unit\_scopes} \texttt{a} enthalten, hier \emph{script} und
+    \emph{solutions}.}
+\end{solution}
+\end{document}

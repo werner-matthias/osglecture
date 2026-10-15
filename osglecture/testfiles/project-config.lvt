@@ -19,6 +19,10 @@
 \TYPE{project-preamble-class=\ProjectPreambleScrbook}
 \TYPE{project-preamble-installed=\ProjectPreambleInstalled}
 \TYPE{active-modes=\ActiveLectureModes}
+% A project mode is declared in every target, but only active in its own.
+\IfLectureModeTF{solutions}
+  {\TYPE{project-mode-solutions=active}}
+  {\TYPE{project-mode-solutions=inactive}}
 \TYPE{continuation-counters=\OsgLectureContinuationCounters}
 \TYPE{project-author=\OsgLectureAuthor}
 \TYPE{project-short-author=\OsgLectureShortAuthor}

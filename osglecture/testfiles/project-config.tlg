@@ -7,6 +7,7 @@ project-preamble-projector=skipped
 project-preamble-class=loaded
 project-preamble-installed=loaded
 active-modes=longform,print,article,script
+project-mode-solutions=inactive
 continuation-counters=section,figure
 project-author=Longform Author
 project-short-author=L.~Author

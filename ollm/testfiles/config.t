@@ -616,12 +616,16 @@ my $bundle_definitions = OLLM::Config->resolve_definitions(
 );
 is $bundle_definitions->{bundle_preset}{reference}, 'OSG lecture/1',
   'bundle-level example resolves its bundled preset';
-is $bundle_definitions->{targets}{talk}{profile}, 'series-ltx-talk',
-  'example resolves its project-local presentation profile';
-is $bundle_definitions->{targets}{talk}{document_metadata}, 'enabled',
+is $bundle_definitions->{targets}{slides}{profile}, 'ltx-talk',
+  'example selects ltx-talk for slides through presentation_profile';
+is $bundle_definitions->{targets}{slides}{document_metadata}, 'enabled',
   'an ltx-talk target resolves to an enabled metadata policy';
 is $bundle_definitions->{targets}{script}{document_metadata}, 'enabled',
   'the example enables document metadata for its script target';
+is $bundle_definitions->{targets}{solutions}{profile}, 'series-solutions',
+  'example resolves its project-local solutions profile';
+is_deeply $bundle_definitions->{targets}{solutions}{unit_scopes}, ['a', 'as'],
+  'the project-local solutions target is scoped like script';
 
 my $resolve_manifest = File::Spec->catfile(tempdir(CLEANUP => 1), 'ollmconfig.toml');
 my $write_resolve = sub {

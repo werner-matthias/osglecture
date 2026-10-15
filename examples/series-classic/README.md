@@ -7,9 +7,10 @@ logical unit builds as a Beamer presentation (`slides`) and a KOMA-Script
 long-form report (`script`, using `scrbook`). The second unit refers to a
 labelled section in the first one.
 
-For the newer, `\DocumentMetadata`-based style (`ltx-talk` + `book`, plus a
-`tagpax`-tagged integration unit and a worked example of adding a
-project-local target), see the sibling example `../series-modern`.
+For the newer, `\DocumentMetadata`-based style (`ltx-talk` + `book`, selected
+through the same built-in targets, plus a `tagpax`-tagged integration unit and
+a project-local `solutions` target for exercises), see the sibling example
+`../series-modern`.
 
 ## Structure
 

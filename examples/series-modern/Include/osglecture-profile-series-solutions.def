@@ -1,0 +1,13 @@
+\ProvidesFile{osglecture-profile-series-solutions.def}
+  [2026/10/15 v0.1.0 series example solutions profile]
+\DeclareOsgLectureProfile{series-solutions}
+  {
+    backend = book,
+    adapter = book,
+    capabilities = {longform,print},
+    class = book,
+    doctypes = {solutions},
+    document-metadata = supported,
+    course-target = none,
+    event-target = none
+  }

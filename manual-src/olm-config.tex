@@ -506,6 +506,26 @@ configuration and content evaluated. Declarations and changes after
 finalization are errors. This ensures that every subsequent query sees the
 same validated, acyclic graph.}
 
+\ldeen{Die \option{mode-setup-file} eines Profils wird nur für dessen
+Dokumenttypen gelesen. Nennt gemeinsamer Quelltext einen projekteigenen Modus
+-- etwa \code{\string\mode<solutions>} in einer Unit, die auch als
+\code{script} gebaut wird --, muss der Modus in jedem Target bekannt sein, denn
+ein unbekannter Modus ist ein Fehler. Dafür liest
+\cs{LectureProjectSetup}\code{\{mode-setup-file=\meta{Datei}\}} in
+\File{projectconfig.tex} eine Datei in jedem Target, vor der des Profils.
+Aktiv wird der Modus weiterhin nur dort, wo Dokumenttyp oder Profil ihn
+wählen. Das Beispiel \File{examples/series-modern} nutzt das für ein
+Übungsblatt mit Lösungsfassung.}{A profile's \option{mode-setup-file} is
+read only for its document types. If shared source names a project mode --
+such as \code{\string\mode<solutions>} in a unit that is also built as
+\code{script} -- the mode has to be known in every target, since an unknown
+mode is an error. For that,
+\cs{LectureProjectSetup}\code{\{mode-setup-file=\meta{file}\}} in
+\File{projectconfig.tex} reads a file in every target, before the profile's.
+The mode still becomes active only where the document type or profile selects
+it. The example \File{examples/series-modern} uses this for an exercise sheet
+with a solutions version.}
+
 \ldeen{\cs{DeclareLectureModeParents}\marg{mode}\marg{parents} ergänzt oder
 ersetzt die Elternangabe getrennt von der Deklaration;
 \cs{DeclareLectureModeAlias}\marg{alias}\marg{mode} stellt einen alternativen
@@ -550,6 +570,9 @@ should not pre-empt them.}
 \begin{description}
   \item[\option{class-options}] \ldeen{gemeinsame Basisklassenoptionen}{shared
     base-class options}.
+  \item[\keyis{mode-setup-file}{file}] \ldeen{Moduldeklarationen, die in
+    jedem Target vor der Moduldatei des Profils gelesen werden}{mode
+    declarations read in every target, before the profile's mode file}.
   \item[\option{presentation-profile}, \option{longform-profile},
     \option{identity-profile}] \ldeen{Profile für Standalone-Dokumente ohne
     Manifest; für \OLLM-Builds ist die Profilwahl abgekündigt und kommt aus dem

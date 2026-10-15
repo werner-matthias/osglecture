@@ -1,0 +1,9 @@
+# Capability projection of the project-local series-solutions profile
+# (Include/osglecture-profile-series-solutions.def).
+schema = 1
+kind = "profile"
+name = "series-solutions"
+version = "1.0"
+profile_class = "longform"
+document_metadata = "supported"
+doctypes = ["solutions"]

@@ -150,6 +150,11 @@
       \keyval{class-options}{Optionen}
       \ldeen{setzt gemeinsame Optionen der Basisklasse.}{sets shared base-class
       options.}
+      \keyval{mode-setup-file}{Datei}
+      \ldeen{liest die Datei in jedem Target vor der Moduldatei des Profils;
+      sie deklariert projekteigene Modi, die gemeinsamer Quelltext
+      nennt.}{reads the file in every target, before the profile's mode file;
+      it declares project modes that shared source mentions.}
       \keyval{presentation-profile}{Profil}
       \ldeen{wählt das Präsentationsprofil.}{selects the presentation profile.}
       \keyval{longform-profile}{Profil}
@@ -1028,6 +1033,21 @@ default gutter looks too tight with very unequal column shares.}
 \DeclareLectureMode[parents=projector]{screen}
 \AssignLectureModeBehavior{screen}{presentation-dynamic}
 \AssignLectureModeBehavior{script,article}{longform}
+% \ldeen{Die Moduldatei des Projekts wird für \emph{jedes} Target gelesen,
+%   die des Profils nur für dessen Doctypes. Ein projekteigener Modus, den
+%   gemeinsamer Quelltext nennt (\code{\string\mode<solutions>},
+%   \cs{IfLectureModeTF}), muss daher in der Projektdatei deklariert werden:
+%   In allen anderen Targets bliebe er sonst unbekannt, und jede Nennung wäre
+%   ein Fehler. Die Projektdatei kommt zuerst, damit eine Profildatei auf
+%   ihre Modi aufbauen kann.}{The project's mode file is read for
+%   \emph{every} target, the profile's only for its doctypes. A project
+%   mode that shared source mentions (\code{\string\mode<solutions>},
+%   \cs{IfLectureModeTF}) must therefore be declared in the project file:
+%   in all other targets it would otherwise stay unknown, and every mention
+%   would be an error. The project file comes first so that a profile file
+%   can build on its modes.}
+\tl_if_empty:NF \g__osglecture_project_mode_setup_file_tl
+  { \exp_args:NV \file_input:n \g__osglecture_project_mode_setup_file_tl }
 \tl_set:Ne \l__osglecture_mode_setup_file_tl
   {
     \osglecture_profile_value:Vn
@@ -1468,6 +1488,7 @@ default gutter looks too tight with very unequal column shares.}
 \int_new:N \g__osglecture_configuration_priority_int
 \bool_new:N \g__osglecture_configuration_enforced_bool
 \tl_new:N \g__osglecture_project_class_options_tl
+\tl_new:N \g__osglecture_project_mode_setup_file_tl
 \prop_new:N \g__osglecture_project_policy_prop
 \prop_new:N \g__osglecture_project_policy_priority_prop
 \prop_new:N \g__osglecture_project_policy_enforced_prop
@@ -1680,6 +1701,7 @@ default gutter looks too tight with very unequal column shares.}
 \keys_define:nn { osglecture/project }
   {
     class-options .tl_gset:N = \g__osglecture_project_class_options_tl,
+    mode-setup-file .tl_gset:N = \g__osglecture_project_mode_setup_file_tl,
     presentation-profile .code:n =
       { \__osglecture_policy_set:nn {presentation-profile}{#1} },
     longform-profile .code:n =

@@ -2,15 +2,17 @@
 
 This example is a small end-to-end case study for the current OLLM and
 `osglecture` contracts, built entirely on document types that require
-`\DocumentMetadata`. It contains two logical units and one integration unit.
-Each logical unit builds as an extended `ltx-talk` presentation (`talk`) and a
-long-form report (`script`), both with `\DocumentMetadata` active, and each in
-German and English via `langselect`. The second unit refers to a labelled
-section in the first one; the integration unit combines both German `script`
-PDFs with `tagpax`.
+`\DocumentMetadata`. It contains two content units, one exercise unit, and one
+integration unit. Each content unit builds as an `ltx-talk` presentation
+(`slides`) and a long-form report (`script`), both with `\DocumentMetadata`
+active, and each in German and English via `langselect`. The exercise unit
+builds as an exercise sheet (`script`) and, through a project-local target, as
+the same sheet with solutions (`solutions`). The second and third units refer
+to a labelled section in the first one; the integration unit combines the
+German `script` PDFs with `tagpax`.
 
-Between the project-local target/profile extension, the multilingual source,
-and the tagged integration, this variant is meant to sketch how far a single
+Between the profile-driven class selection, the project-local target, the
+multilingual source, and the tagged integration, this variant is meant to sketch how far a single
 source tree can go with OLLM and `osglecture` -- not as a complete tour of
 every bundle capability, but as a base other examples or real projects can
 extend in the same direction.
@@ -25,15 +27,17 @@ series-modern/
 ├── .ollmconfig.local.toml
 ├── ollmconfig.toml
 ├── Definitions/
-│   ├── profiles/series-ltx-talk.toml
-│   └── targets/talk.toml
+│   ├── profiles/series-solutions.toml
+│   └── targets/solutions.toml
 ├── Include/
 │   ├── documentmetadata.tex
-│   ├── osglecture-profile-series-ltx-talk.def
+│   ├── osglecture-profile-series-solutions.def
 │   ├── projectconfig.tex
-│   └── seriesexample-talk-modes.tex
+│   ├── seriesexample-exercises.tex
+│   └── seriesexample-modes.tex
 ├── 010-introduction/main.tex
 ├── 020-application/main.tex
+├── 030a-exercises/main.tex
 └── 900-i-collection/main.tex
 ```
 
@@ -42,40 +46,75 @@ live in `Include`; there is deliberately no TeX material in the project root.
 The manifest uses the default directory and configuration filenames
 explicitly, so the relevant build contract remains visible in this example.
 
-## Extending OSGLecture: a project-local target and profile
+## Selecting the classes through profiles
 
-`talk` is not one of OSGLecture's built-in targets -- this example defines it
-itself, which is the mechanism to reach for whenever a project needs a
-document type the bundle does not ship. Three small, cooperating pieces make
-this work:
-
-- `.ollmconfig.local.toml` registers `Definitions` as a search path for
-  project-local OLLM definitions.
-- `Definitions/targets/talk.toml` declares `talk` as a new target kind:
-  `doctype = "talk"`, `profile_class = "presentation"`.
-- `Include/osglecture-profile-series-ltx-talk.def` declares a project-local
-  osglecture profile `series-ltx-talk` that reuses the built-in `ltx-talk`
-  backend/adapter/class, but additionally loads
-  `seriesexample-talk-modes.tex` as an early `mode-setup-file`, which
-  declares `talk` as a presentation mode derived from `presentation`.
-- `Definitions/profiles/series-ltx-talk.toml` is the capability projection
-  OLLM reads before the run: `document_metadata = "required"`,
-  `doctypes = ["talk"]`. It mirrors the `.def` for the fields OLLM needs
-  before LaTeX starts.
-
-The manifest then selects this profile for the `talk` target with
-`profile = "series-ltx-talk"` in `[targets.talk]`. Everything else about
-`talk` -- its `frame`/`frametitle` handling, its column and list behaviour --
-comes for free from the `presentation` mode it derives from. A project that
-only needs a differently named target with the same behaviour as an existing
-one can stop here; deeper customization (new layout primitives, a different
-title page, additional mode-specific behavior) would extend
-`seriesexample-talk-modes.tex` instead of touching the bundle.
+The content units use only OLLM's built-in `slides` and `script` targets. The
+choice between `ltx-talk` and
+Beamer is made entirely by the profile, here with
+`presentation_profile = "ltx-talk"` in `[targets.defaults]` (the bundle preset
+would otherwise default to `beamer`). The unit sources stay the same; they
+contain nothing specific to either class. `series-classic` builds the same
+kind of sources with Beamer just by selecting a different profile.
 
 The long-form `script` target uses the built-in standard `book` profile,
 selected with `longform_profile = "book"` in `[targets.defaults]` (the bundle
 preset would otherwise default to `scrbook`). No project-local profile is
 needed for it.
+
+## A project-local target: exercises with solutions
+
+Built-in targets cover the usual documents; a project-local target is worth
+adding when the same source has to yield a document whose *content* differs.
+Here that is an exercise sheet with and without solutions. The exercise unit
+marks its solutions once:
+
+```tex
+\begin{exercise} ... \end{exercise}
+\begin{solution} ... \end{solution}
+```
+
+`Include/seriesexample-exercises.tex` defines `solution` so that its body is
+typeset only under `\mode<solutions>`, and the unit additionally uses
+`\IfLectureModeTF{solutions}` for a sentence that differs between the two
+versions. `ollm build script` then yields the sheet for students,
+`ollm build --target=solutions` the key. Five small pieces make the target
+work:
+
+- `.ollmconfig.local.toml` registers `Definitions` as a search path for
+  project-local OLLM definitions.
+- `Definitions/targets/solutions.toml` declares the target:
+  `doctype = "solutions"`, `profile_class = "longform"`, and
+  `unit_scopes = ["a", "as"]` like the built-in `script`.
+- `Include/osglecture-profile-series-solutions.def` declares the osglecture
+  profile `series-solutions`. It is the built-in `book` profile with
+  `doctypes = {solutions}`: a profile lists the doctypes it serves, and
+  `book` only serves `script` and `article`.
+- `Definitions/profiles/series-solutions.toml` is the capability projection
+  of that profile which OLLM reads before LaTeX starts. The manifest selects
+  the profile with `profile = "series-solutions"` in `[targets.solutions]`.
+- `Include/seriesexample-modes.tex` declares the mode `solutions` as a child
+  of `script`, so the solutions version contains everything the script does.
+  `projectconfig.tex` registers it with
+  `\LectureProjectSetup{mode-setup-file = seriesexample-modes.tex}`, which
+  reads it in *every* target. That matters: the shared source names
+  `solutions` in every build, and an undeclared mode is an error. A profile's
+  own `mode-setup-file` is only read for that profile's doctypes, so it is the
+  place for modes that nothing outside those doctypes mentions.
+
+The exercise unit lives in `030a-exercises`. The scope code `a` restricts it
+to targets whose `unit_scopes` contain `a` -- `script` and `solutions`, but
+not `slides` -- so `ollm build slides` is refused there. The content units
+carry no scope code and accept every target, including `solutions`.
+
+Cross-unit references and counter continuation are keyed by target, like
+everything OLLM promotes. The exercise unit's `\olref` to the first unit
+therefore needs a `solutions` projection of that unit; building `solutions`
+for all units, as in the build sequence below, yields a complete solutions
+edition of the series whose references stay within that edition.
+
+The same mechanism serves other variants, for example a tagged `ltx-talk`
+and an untagged Beamer version of the same slides side by side: a target
+with its own doctype and a profile that serves it.
 
 ## Multilingual content with langselect
 
@@ -129,11 +168,12 @@ automatically.
 
 ## Document metadata
 
-Both targets in this example end up with `\DocumentMetadata` active. For
-`talk` it is forced: the `series-ltx-talk` profile declares
+All targets in this example end up with `\DocumentMetadata` active. For
+`slides` it is forced: the `ltx-talk` profile declares
 `document_metadata = "required"`. For `script` it is a choice: the `book`
 profile only `supports` metadata, and `[targets.defaults].document_metadata =
-"enabled"` in the manifest turns it on. OLLM inputs the user-owned
+"enabled"` in the manifest turns it on; the same holds for `solutions`, whose
+profile mirrors `book`. OLLM inputs the user-owned
 `Include/documentmetadata.tex` early whenever the derived policy is `enabled`,
 which enables tagging. osglecture validates the resulting kernel state against
 the profile's capability -- setting `document_metadata = "disabled"` against a
@@ -173,33 +213,40 @@ promoted reference export.
 
 ```sh
 cd 010-introduction
-ollm build --target=talk
+ollm build slides
 ollm build script
+ollm build --target=solutions
 
 cd ../020-application
-ollm build --target=talk
+ollm build slides
 ollm build script
+ollm build --target=solutions
+
+cd ../030a-exercises
+ollm build script
+ollm build --target=solutions
 
 cd ../900-i-collection
 ollm build script
 ```
 
-`talk` needs the `--target=` form (not the bare `ollm build talk` used for
-`script`/`slides` above): it is a project-registered target, not one of
-OLLM's built-in target aliases, which are the only ones resolvable
-positionally. This builds the default language (German, per
+`solutions` needs the `--target=` form: it is a project-registered target,
+and only OLLM's built-in targets can be named positionally.
+
+This builds the default language (German, per
 `[targets.defaults].default_language` in `ollmconfig.toml`). Add
 `--language=en` to any of the unit
 builds above to get the English versions, e.g.
-`ollm build --target=talk --language=en`; both
+`ollm build slides --language=en`; both
 languages can coexist since OLLM keys promoted projections by language along
 with target and unit. The integration unit above stays German-only (see
 "Multilingual content" and "Document metadata"); building it in English too
 would just mean adding `--language=en` there as well, once both source units
 have an English `script` projection.
 
-The second unit then links to the matching `introduction` projection: `talk`
-and `script` each refer to the same target and language in the first unit.
+The second and third units then link to the matching `introduction`
+projection: `slides`, `script`, and `solutions` each refer to the same target
+and language in the first unit.
 Rebuilding the second unit may be necessary after changing a label in the
 first unit. Automated dependency-fixpoint builds are available through `ollm
 build --resolve`; the explicit order above remains useful for showing the
@@ -213,7 +260,11 @@ role comes from the directory name `900-i-collection`. It selects promoted
 ```tex
 \includeunit{introduction}
 \includeunit{application}
+\includeunit{exercises}
 ```
+
+The exercises therefore enter the collection in their student version; the
+solutions edition stays a separate document.
 
 Command order is output order. `osglecture-integration` resolves each ID
 against the job-bound registry, lets `tagpax` extract and import the tagged
@@ -232,15 +283,17 @@ To inspect the BuildSpecs without invoking LaTeX, run `ollm build --all
 
 | Target | Profile class | Concrete profile | Behaviour |
 |---|---|---|---|
-| `talk` | `presentation` | `series-ltx-talk` → `ltx-talk` | extended presentation mode with required document metadata |
+| `slides` | `presentation` | `ltx-talk` | presentation mode with required document metadata |
 | `script` | `longform` | `book` | sections, connected prose, column contents in sequence |
+| `solutions` | `longform` | `series-solutions` (project-local, `book`) | like `script`, plus content marked for `solutions` |
 
 The profile selection lives in the manifest:
 
 ```toml
 [targets.defaults]
+presentation_profile = "ltx-talk"
 longform_profile = "book"
 
-[targets.talk]
-profile = "series-ltx-talk"
+[targets.solutions]
+profile = "series-solutions"
 ```

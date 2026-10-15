@@ -9,13 +9,16 @@ tex_config = "projectconfig.tex"
 [targets.defaults]
 languages = ["en", "de"]
 default_language = "de"
+presentation_profile = "ltx-talk"
 longform_profile = "book"
 document_metadata = "enabled"
 
-[targets.talk]
-profile = "series-ltx-talk"
+[targets.slides]
 
 [targets.script]
+
+[targets.solutions]
+profile = "series-solutions"
 
 [security]
 shell_escape = "restricted"

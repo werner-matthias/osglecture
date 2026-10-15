@@ -1,6 +1,0 @@
-schema = 1
-kind = "target"
-name = "talk"
-version = "1.0"
-doctype = "talk"
-profile_class = "presentation"
