@@ -1,0 +1,28 @@
+\input regression-test
+\documentclass[standalone,doctype=script,profile=book]{osglecture}
+\LectureProjectSetup{bibliography={resources=bibliography-test.bib}}
+\usepackage{osglecture-bibliography}
+\begin{document}
+% Line breaking of the full entries is not under test.
+\hfuzz=\maxdimen
+\START
+% Citations resolve after the biber run (no undefined-citation warnings).
+Standard works are \cite{Knu:Art-1:1969} and \cite{Sed:AlgorithmsC:1990}.
+
+\begin{literaturelist}
+  \litgroup{Design}
+  \litentry{Ski:AlgorithmDesign:2008}
+  \litcomment[Note]{Readable.}
+\end{literaturelist}
+
+% Only these two are printed; the reading-list entry is cited, too, but a
+% check keeps it out, so its citations must not link.
+\defbibcheck{osgtest}{%
+  \iffieldequalstr{entrykey}{Ski:AlgorithmDesign:2008}{\skipentry}{}}
+\printbibliography[check=osgtest]
+\ExplSyntaxOn
+\prop_map_inline:Nn \g__osglecture_bibliography_printed_prop
+  { \TYPE{printed=#1} }
+\ExplSyntaxOff
+% No \END: biblatex completes its .bcf only at a regular \end{document}.
+\end{document}

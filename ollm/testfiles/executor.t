@@ -61,6 +61,7 @@ my $status = OLLM::Executor->execute(
       command => [@$command],
       job_id  => $spec->{job_id},
       texinputs => $ENV{TEXINPUTS},
+      bibinputs => $ENV{BIBINPUTS},
     };
     return 0;
   },
@@ -92,6 +93,9 @@ my $texinputs_separator = $^O eq 'MSWin32' ? ';' : ':';
 like $calls[0]{texinputs},
   qr/\Q$expected_spec->{build_directory}$texinputs_separator$expected_spec->{shared_tex_directory}$texinputs_separator\E/,
   'TEXINPUTS searches the build directory and shared TeX directory first';
+like $calls[0]{bibinputs},
+  qr/\A\Q$expected_spec->{shared_tex_directory}$texinputs_separator\E/,
+  'BIBINPUTS lets biber find databases in the shared TeX directory first';
 my %metadata_spec = (
   %{ $resolved->{build_spec} },
   document_metadata => {

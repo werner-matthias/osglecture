@@ -525,6 +525,72 @@ at least once and its reference export promoted. After changing dependent
 units, \code{ollm build --resolve} is the easiest way to rebuild producers
 and consumers to a consistent state.}
 
+\subsection{\ldeen{Literatur}{Literature}}
+\ldeen{Für Literaturangaben nutzt \osglecture\ \pkg{biblatex} mit
+\code{biber}. Die Literaturverwaltung wird in
+\File{Include/projectconfig.tex} eingeschaltet; die Datenbank liegt
+üblicherweise ebenfalls in \File{Include}, wo \OLLM\ sie für \code{biber}
+auffindbar macht:}{For literature references, \osglecture\ uses
+\pkg{biblatex} with \code{biber}. Bibliography management is enabled in
+\File{Include/projectconfig.tex}; the database usually lives in
+\File{Include} as well, where \OLLM\ makes it available to \code{biber}:}
+
+\begin{verbatim}
+\LectureProjectSetup{
+  bibliography = {resources = lecture.bib}
+}
+\end{verbatim}
+
+\ldeen{Der voreingestellte Stil \code{alphabetic} erzeugt Labels wie
+[Knu69]; \option{style} wählt einen anderen \pkg{biblatex}-Stil,
+\option{options} reicht weitere Ladeoptionen weiter. Zitiert wird mit den
+üblichen Befehlen wie \cs{cite}. Ein Literaturverzeichnis gibt
+\cs{printbibliography} aus; welche Dokumenttypen eines erhalten, steuern Sie
+wie alles andere über Modi, etwa nur im Skript:}{The default style
+\code{alphabetic} produces labels such as [Knu69]; \option{style} selects
+another \pkg{biblatex} style, and \option{options} passes further load
+options on. Cite with the usual commands such as \cs{cite}.
+\cs{printbibliography} prints a bibliography; which document types receive
+one is controlled through modes like everything else, for example only in the
+script:}
+
+\begin{verbatim}
+\mode<longform>{\printbibliography}
+\end{verbatim}
+
+\ldeen{Ein Zitat verlinkt nur dann auf das Literaturverzeichnis, wenn dieses
+den Eintrag im selben Dokument tatsächlich ausgibt. In Folien ohne
+Verzeichnis bleibt das Label daher reiner Text statt eines Links ins Leere.
+Themen- oder kapitelweise Verzeichnisse erhalten Sie mit den Filtern von
+\pkg{biblatex}, etwa \code{keyword=}, \code{type=} oder
+\code{category=}.}{A citation links to the bibliography only if it
+actually prints the entry in the same document. In slides without a
+bibliography, the label therefore remains plain text rather than a link to
+nowhere. Bibliographies by topic or chapter are available through the
+\pkg{biblatex} filters, such as \code{keyword=}, \code{type=}, or
+\code{category=}.}
+
+\ldeen{Eine kommentierte Leseliste stellt ausgewählte Einträge vollständig
+dar, gegliedert in Gruppen:}{An annotated reading list shows selected entries
+in full, organized in groups:}
+
+\begin{verbatim}
+\begin{literaturelist}
+  \litgroup{Grundlagen}
+  \litentry{Knu:Art-1:1969}
+  \litcomment{Das Standardwerk; umfassend, aber anspruchsvoll.}
+  \litgroup{Entwurf von Algorithmen}
+  \litentry{Ski:AlgorithmDesign:2008}
+\end{literaturelist}
+\end{verbatim}
+
+\ldeen{\cs{litcomment} kommentiert die vorangehenden Einträge; ein optionales
+Argument setzt ein Label vor den Kommentar. Das optionale Argument der
+Umgebung legt die Breite der Labelspalte fest.}{\cs{litcomment} comments on
+the preceding entries; an optional argument puts a label in front of the
+comment. The optional argument of the environment sets the width of the
+label column.}
+
 \subsection{\ldeen{Befehlsreferenz}{Command Reference}}
 \label{sec:content-command-reference}
 
@@ -673,3 +739,25 @@ Standardbefehlen den Hyperlink.}{The address consists of a keyless unit ID and
 optional \keyis{type}{doctype} and \keyis{lang}{language}. Without an address,
 all four commands remain local. As with the corresponding standard commands,
 the starred form suppresses the hyperlink.}
+
+\paragraph{\ldeen{Literatur}{Literature}.}
+\begin{environments}
+  \environment{literaturelist}[\oarg{label width}]
+    \ldeen{kommentierte Leseliste; verfügbar, wenn die Literaturverwaltung
+    eingeschaltet ist}{annotated reading list; available when bibliography
+    management is enabled}.
+\end{environments}
+\begin{commands}
+  \command{litentry}[\marg{key}]
+    \ldeen{vollständiger Eintrag mit Zitatlabel}{full entry with citation
+    label}.
+  \command{litgroup}[\marg{title}]
+    \ldeen{beginnt eine Gruppe mit Überschrift}{starts a group with a
+    heading}.
+  \command{litcomment}[\oarg{label}\marg{text}]
+    \ldeen{Kommentar zu den vorangehenden Einträgen}{comment on the preceding
+    entries}.
+\end{commands}
+\ldeen{Zitier- und Verzeichnisbefehle sind die von \pkg{biblatex}, etwa
+\cs{cite} und \cs{printbibliography}.}{Citation and bibliography commands
+are those of \pkg{biblatex}, such as \cs{cite} and \cs{printbibliography}.}

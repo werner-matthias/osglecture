@@ -39,6 +39,7 @@
   \file{osglecture-annotations.sty}{\from{osglecture.dtx}{annotations}}
   \file{osglecture-presenter.sty}{\from{osglecture.dtx}{presenter}}
   \file{osglecture-series.sty}{\from{osglecture.dtx}{series}}
+  \file{osglecture-bibliography.sty}{\from{osglecture.dtx}{bibliography}}
   \file{osglecture-adapter-beamer.def}{\from{osglecture-adapters.dtx}{beamer}}
   \file{osglecture-adapter-book.def}{\from{osglecture-adapters.dtx}{book}}
   \file{osglecture-adapter-ltx-talk.def}{\from{osglecture-adapters.dtx}{ltx-talk}}
@@ -151,6 +152,24 @@
       sie deklariert projekteigene Modi, die gemeinsamer Quelltext
       nennt.}{reads the file in every target, before the profile's mode file;
       it declares project modes that shared source mentions.}
+      \keyval{bibliography}{Einstellungen}
+      \ldeen{richtet die Literaturverwaltung mit \pkg*{biblatex} und
+      \code{biber} ein und lädt dazu \pkg*{osglecture-bibliography}; ohne
+      diesen Schlüssel lädt \cls{osglecture} kein Literaturpaket.}{sets up
+      bibliography management with \pkg*{biblatex} and \code{biber}, loading
+      \pkg*{osglecture-bibliography}; without this key \cls{osglecture}
+      loads no bibliography package.}
+      \keyval{bibliography/resources}{Dateiliste}
+      \ldeen{Literaturdatenbanken, etwa \code{lecture.bib}; in
+      \code{ollm}-Builds werden sie auch in \code{Include} gesucht.}{bibliography
+      databases, such as \code{lecture.bib}; in \code{ollm} builds they are also
+      looked up in \code{Include}.}
+      \keyval{bibliography/style}{Stil}\Default{alphabetic}
+      \ldeen{\pkg*{biblatex}-Stil.}{\pkg*{biblatex} style.}
+      \keyval{bibliography/options}{Optionen}
+      \ldeen{weitere Ladeoptionen für \pkg*{biblatex}, etwa
+      \code{sorting=ynt}.}{further load options for \pkg*{biblatex}, such
+      as \code{sorting=ynt}.}
       \keyval{presentation-profile}{Profil}
       \ldeen{wählt das Präsentationsprofil.}{selects the presentation profile.}
       \keyval{longform-profile}{Profil}
@@ -507,6 +526,30 @@ default gutter looks too tight with very unequal column shares.}
     Einträge.}{provide further projection-dependent selections within items.}
   \end{quote}
 
+\environment{literaturelist}[\oarg{Labelbreite}]\Default{5.5em}
+  \ldeen{setzt eine Leseliste: ausgewählte Einträge vollständig, in Gruppen
+  und mit Kommentaren. Sie steht zur Verfügung, wenn
+  \pkg*{osglecture-bibliography} geladen ist (siehe \option{bibliography}
+  bei \cs{LectureProjectSetup}).}{typesets a reading list: selected
+  entries in full, in groups, and with comments. It is available when
+  \pkg*{osglecture-bibliography} is loaded (see \option{bibliography} for
+  \cs{LectureProjectSetup}).}
+  \begin{quote}
+    \cs{litentry}\marg{key} \ldeen{gibt den Eintrag mit seinem Zitatlabel
+    vollständig aus.}{prints the entry in full with its citation label.}
+    \cs{litgroup}\marg{Titel} \ldeen{beginnt eine Gruppe mit eigener
+    Überschrift.}{starts a group with its own heading.}
+    \cs{litcomment}\oarg{Label}\marg{Text} \ldeen{fügt einen Kommentar zu
+    den vorangehenden Einträgen hinzu.}{adds a comment on the preceding
+    entries.}
+  \end{quote}
+  \ldeen{Ein Zitat oder Listenlabel verlinkt nur dann auf ein
+  Literaturverzeichnis, wenn das Dokument den Eintrag dort tatsächlich
+  ausgibt; ohne Verzeichnis, etwa in Folien, bleibt es reiner Text.}{A
+  citation or list label links to a bibliography only if the document
+  actually prints the entry there; without a bibliography, for example in
+  slides, it remains plain text.}
+
 \end{environments}
 
 
@@ -543,6 +586,8 @@ default gutter looks too tight with very unequal column shares.}
 \AutoDocInput{osglecture.dtx}{presenter}
 \subsection{\code{osglecture-series.sty}}
 \AutoDocInput{osglecture.dtx}{series}
+\subsection{\code{osglecture-bibliography.sty}}
+\AutoDocInput{osglecture.dtx}{bibliography}
 \subsection{\code{osglecture-adapter-beamer.def}}
 \AutoDocInput{osglecture-adapters.dtx}{beamer}
 \subsection{\code{osglecture-adapter-book.def}}
@@ -673,6 +718,14 @@ default gutter looks too tight with very unequal column shares.}
   {v0.6.0}
   {Series index bridge for osglecture}
 %</series>
+%<*bibliography>
+\NeedsTeXFormat{LaTeX2e}[2022/06/01]
+\ProvidesExplPackage
+  {osglecture-bibliography}
+  {2026-10-05}
+  {v0.6.0}
+  {Bibliography and reading lists for osglecture}
+%</bibliography>
 %<*class>
 
 \RequirePackage{iftex}
@@ -1238,6 +1291,13 @@ default gutter looks too tight with very unequal column shares.}
 \__osglecture_require_package:n {osglecture-structure}
 \__osglecture_require_package:n {osglecture-references}
 \__osglecture_require_package:n {osglecture-continuation}
+% \ldeen{\pkg*{biblatex} wird nur geladen, wenn das Projekt eine
+%   Literaturverwaltung konfiguriert; andere Projekte bleiben frei, selbst
+%   ein Literaturpaket zu wählen.}{\pkg*{biblatex} is loaded only when the
+%   project configures a bibliography; other projects remain free to choose
+%   a bibliography package themselves.}
+\bool_if:NT \g__osglecture_bibliography_bool
+  { \__osglecture_require_package:n {osglecture-bibliography} }
 \OsgLectureBuildLoadedTF
   {
     \directlua{ require("osglecture-series-index").current_unit_tex() }
@@ -1469,6 +1529,11 @@ default gutter looks too tight with very unequal column shares.}
 \bool_new:N \g__osglecture_configuration_enforced_bool
 \tl_new:N \g__osglecture_project_class_options_tl
 \tl_new:N \g__osglecture_project_mode_setup_file_tl
+\bool_new:N \g__osglecture_bibliography_bool
+\clist_new:N \g__osglecture_bibliography_resources_clist
+\tl_new:N \g__osglecture_bibliography_style_tl
+\tl_gset:Nn \g__osglecture_bibliography_style_tl { alphabetic }
+\tl_new:N \g__osglecture_bibliography_options_tl
 \prop_new:N \g__osglecture_project_policy_prop
 \prop_new:N \g__osglecture_project_policy_priority_prop
 \prop_new:N \g__osglecture_project_policy_enforced_prop
@@ -1678,10 +1743,22 @@ default gutter looks too tight with very unequal column shares.}
       { \__osglecture_language_setup_append:nn {unified~shorthands}{#1} },
   }
 
+\keys_define:nn { osglecture/project/bibliography }
+  {
+    resources .clist_gset:N = \g__osglecture_bibliography_resources_clist,
+    style .tl_gset:N = \g__osglecture_bibliography_style_tl,
+    options .tl_gset:N = \g__osglecture_bibliography_options_tl,
+  }
+
 \keys_define:nn { osglecture/project }
   {
     class-options .tl_gset:N = \g__osglecture_project_class_options_tl,
     mode-setup-file .tl_gset:N = \g__osglecture_project_mode_setup_file_tl,
+    bibliography .code:n =
+      {
+        \bool_gset_true:N \g__osglecture_bibliography_bool
+        \keys_set:nn { osglecture/project/bibliography } {#1}
+      },
     presentation-profile .code:n =
       { \__osglecture_policy_set:nn {presentation-profile}{#1} },
     longform-profile .code:n =
@@ -5620,3 +5697,189 @@ default gutter looks too tight with very unequal column shares.}
 
 \ExplSyntaxOff
 %</series>
+%<*bibliography>
+
+\RequirePackage{osglecture-project}
+
+\ExplSyntaxOn
+
+% \ldeen{Literaturverwaltung über \pkg*{biblatex} und \code{biber}. Ein
+%   externer Lauf stört in \code{ollm}-Builds nicht: \code{latexmk} startet
+%   \code{biber} selbst, und zwar nur, wenn sich zitierte Schlüssel oder
+%   Literaturdatenbanken geändert haben. Die Datenbanken liegen
+%   üblicherweise in \file{Include}; \code{ollm} nimmt dieses Verzeichnis in
+%   \code{BIBINPUTS} auf. Stil und weitere Optionen kommen aus
+%   \cs{LectureProjectSetup}\code{\{bibliography=\ldots\}}; \pkg*{biblatex}
+%   muss deshalb hier und nicht in \file{projectconfig.tex} geladen
+%   werden.}{Bibliography management through \pkg*{biblatex} and
+%   \code{biber}. The external run does no harm in \code{ollm} builds:
+%   \code{latexmk} starts \code{biber} itself, and only when cited keys or
+%   bibliography databases have changed. The databases usually live in
+%   \file{Include}; \code{ollm} adds that directory to \code{BIBINPUTS}. Style and
+%   further options come from
+%   \cs{LectureProjectSetup}\code{\{bibliography=\ldots\}}; \pkg*{biblatex}
+%   therefore has to be loaded here rather than in \file{projectconfig.tex}.}
+\tl_set:Ne \l_tmpa_tl
+  {
+    backend = biber ,
+    style = \g__osglecture_bibliography_style_tl
+    \tl_if_empty:NF \g__osglecture_bibliography_options_tl
+      { , \exp_not:V \g__osglecture_bibliography_options_tl }
+  }
+\cs_new_protected:Npn \__osglecture_bibliography_load:n #1
+  {
+    \ExplSyntaxOff
+    \RequirePackage [ #1 ] { biblatex }
+    \ExplSyntaxOn
+  }
+\exp_args:NV \__osglecture_bibliography_load:n \l_tmpa_tl
+\clist_map_inline:Nn \g__osglecture_bibliography_resources_clist
+  { \addbibresource {#1} }
+
+% \ldeen{Eine Leseliste stellt ausgewählte Einträge vollständig dar, in
+%   Gruppen mit eigener Überschrift und mit Kommentaren. Die Namen
+%   \cs{litentry}, \cs{litgroup} und \cs{litcomment} vermeiden das
+%   \cs{bibitem} des Vorgängers, das mit dem gleichnamigen
+%   \LaTeX-Standardbefehl kollidierte. Die Einträge bilden eine echte
+%   Liste; eine Gruppenüberschrift schließt die laufende Liste, damit jede
+%   Gruppe als eigene Liste getaggt wird.}{A reading list shows selected
+%   entries in full, in groups with their own heading and with comments.
+%   The names \cs{litentry}, \cs{litgroup}, and \cs{litcomment} avoid the
+%   predecessor's \cs{bibitem}, which clashed with the standard \LaTeX\
+%   command of that name. The entries form a real list; a group heading
+%   closes the running list so that every group is tagged as a list of its
+%   own.}
+\bool_new:N \l__osglecture_litlist_active_bool
+\bool_new:N \l__osglecture_litlist_open_bool
+\dim_new:N \l__osglecture_litlist_label_dim
+
+\msg_new:nnn { osglecture } { litlist-outside }
+  { \iow_char:N \\#1~can~only~be~used~inside~a~literaturelist~environment. }
+
+\cs_new_protected:Npn \__osglecture_litlist_check:n #1
+  {
+    \bool_if:NF \l__osglecture_litlist_active_bool
+      { \msg_error:nnn { osglecture } { litlist-outside } {#1} }
+  }
+\cs_new_protected:Npn \__osglecture_litlist_open:
+  {
+    \bool_if:NF \l__osglecture_litlist_open_bool
+      {
+        \bool_set_true:N \l__osglecture_litlist_open_bool
+        \begin{list}{}
+          {
+            \dim_set_eq:NN \labelwidth \l__osglecture_litlist_label_dim
+            \dim_set:Nn \leftmargin { \labelwidth + \labelsep }
+            \cs_set:Npn \makelabel ##1 { ##1 \hfil }
+          }
+      }
+  }
+\cs_new_protected:Npn \__osglecture_litlist_close:
+  {
+    \bool_if:NT \l__osglecture_litlist_open_bool
+      {
+        \end{list}
+        \bool_set_false:N \l__osglecture_litlist_open_bool
+      }
+  }
+
+% \ldeen{Ein Zitat verlinkt nur dann auf sein Literaturverzeichnis, wenn
+%   ein Verzeichnis im Dokument den Eintrag tatsächlich ausgibt. Sonst bliebe
+%   der Link ohne Ziel, etwa in Folien, die zitieren, deren Verzeichnis aber
+%   nur in der Langform steht, oder bei einer Leseliste ohne Verzeichnis.
+%   Jeder ausgegebene Eintrag wird dazu mit seiner \code{refsection} in die
+%   \file{.aux}-Datei geschrieben; \cs{bibhyperref}, das \pkg*{biblatex} in
+%   seinen Kontexten als \cs{blx@imc@bibhyperref} bereitstellt, setzt den
+%   Link nur für bekannte Einträge. Wie bei \cs{ref} gilt das ab dem
+%   nächsten Lauf, den \code{latexmk} ohnehin ausführt.}{A citation links
+%   to its bibliography only if a bibliography in the document actually
+%   prints the entry. Otherwise the link would have no target, for instance
+%   in slides that cite but whose bibliography is printed only in the long
+%   form, or for a reading list without a bibliography. Every printed entry
+%   is therefore written to the \file{.aux} file together with its
+%   \code{refsection}; \cs{bibhyperref}, which \pkg*{biblatex} provides in
+%   its contexts as \cs{blx@imc@bibhyperref}, sets the link only for known
+%   entries. As with \cs{ref}, this takes effect from the next run, which
+%   \code{latexmk} performs anyway.}
+\prop_new:N \g__osglecture_bibliography_printed_prop
+\cs_generate_variant:Nn \prop_if_in:NnTF { Ne }
+\cs_new_protected:cpn { osglecture@bibprinted } #1
+  { \prop_gput:Nnn \g__osglecture_bibliography_printed_prop {#1} { } }
+\AtEveryBibitem
+  {
+    \iow_now:Ne \@auxout
+      {
+        \token_to_str:c { osglecture@bibprinted }
+          { \int_use:c { c@refsection } @ \abx@field@entrykey }
+      }
+  }
+\cs_new_eq:NN \__osglecture_bibliography_link:w \blx@imc@bibhyperref
+\cs_new_protected:Npn \__osglecture_bibliography_hyperref:nn #1#2
+  {
+    \prop_if_in:NeTF \g__osglecture_bibliography_printed_prop
+      { \int_use:c { c@refsection } @ #1 }
+      { \__osglecture_bibliography_link:w [#1] {#2} }
+      {#2}
+  }
+\cs_new_protected:Npn \__osglecture_bibliography_hyperref_opt:w [ #1 ]
+  { \__osglecture_bibliography_hyperref:nn {#1} }
+\cs_set_protected:Npn \blx@imc@bibhyperref
+  {
+    \peek_charcode:NTF [
+      { \__osglecture_bibliography_hyperref_opt:w }
+      { \exp_args:NV \__osglecture_bibliography_hyperref:nn \abx@field@entrykey }
+  }
+
+% \ldeen{Ein Listeneintrag ist der vollständige Eintrag, abgeschlossen wie
+%   im Literaturverzeichnis. \cs{fullcite} lässt den Schlusspunkt bewusst
+%   weg, weil es für den Fließtext gedacht ist.}{A list entry is the full
+%   entry, closed as in the bibliography. \cs{fullcite} deliberately omits
+%   the final full stop because it is meant for running text.}
+\DeclareCiteCommand { \__osglecture_litlist_fullcite:n }
+  { \defcounter { maxnames } { \blx@maxbibnames } }
+  {
+    \usedriver { \DeclareNameAlias { sortname } { default } }
+      { \thefield { entrytype } }
+    \finentry
+  }
+  { \multicitedelim }
+  { }
+
+\NewDocumentEnvironment { literaturelist } { O{ 5.5em } }
+  {
+    \par
+    \bool_set_true:N \l__osglecture_litlist_active_bool
+    \bool_set_false:N \l__osglecture_litlist_open_bool
+    \dim_set:Nn \l__osglecture_litlist_label_dim {#1}
+  }
+  { \__osglecture_litlist_close: }
+
+\NewDocumentCommand \litentry { m }
+  {
+    \__osglecture_litlist_check:n { litentry }
+    \__osglecture_litlist_open:
+    \item [ \cite {#1} ] \__osglecture_litlist_fullcite:n {#1}
+  }
+\NewDocumentCommand \litcomment { O{} +m }
+  {
+    \__osglecture_litlist_check:n { litcomment }
+    \__osglecture_litlist_open:
+    \item [#1] #2
+  }
+\NewDocumentCommand \litgroup { m }
+  {
+    \__osglecture_litlist_check:n { litgroup }
+    \__osglecture_litlist_close:
+    \par
+    \addvspace { \medskipamount }
+    \noindent \textbf {#1} \par
+    \nobreak
+    % \ldeen{Wie nach einer Abschnittsüberschrift: Der folgende Listenbeginn
+    %   darf die Überschrift nicht allein am Seitenende lassen.}{As after a
+    %   section heading: the following list start must not leave the heading
+    %   alone at the bottom of a page.}
+    \legacy_if_gset_true:n { @nobreak }
+  }
+
+\ExplSyntaxOff
+%</bibliography>

@@ -1,0 +1,11 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+[1
+] [2
+]
+printed=0@Knu:Art-1:1969
+printed=0@Sed:AlgorithmsC:1990
+[3] (bibliography-basic.aux)
+Package rerunfilecheck Info: File `bibliography-basic.out' has not changed.
+(rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
+Package logreq Info: Writing requests to 'bibliography-basic.run.xml'.

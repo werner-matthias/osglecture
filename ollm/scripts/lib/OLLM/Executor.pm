@@ -66,6 +66,11 @@ sub execute {
       $spec->{build_directory},
       $spec->{shared_tex_directory},
       ($ENV{TEXINPUTS} // '');
+    # biber looks up databases it cannot find locally through kpsewhich,
+    # i.e. BIBINPUTS; shared .bib files live next to projectconfig.tex.
+    local $ENV{BIBINPUTS} = join $separator,
+      $spec->{shared_tex_directory},
+      ($ENV{BIBINPUTS} // '');
     my $status;
     if ($arg{runner}) {
       $status = $arg{runner}->(\@command, $spec);

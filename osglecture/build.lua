@@ -26,6 +26,7 @@ installfiles = {
   "osglecture-presenter.lua",
   "osglecture-series-index.lua",
   "osglecture-series.sty",
+  "osglecture-bibliography.sty",
   "osglecture-toml.lua",
   "osglecture-manifest.lua",
   "osglecture-manifest-cli.lua",
@@ -72,5 +73,8 @@ function checkinit_hook()
     "lualatex -interaction=nonstopmode -halt-on-error untagged-unit.tex",
     testdir, { "TEXINPUTS", "LUAINPUTS" })
 end
+
+-- Bibliography tests run biber between LaTeX runs; see config-bibliography.lua.
+checkconfigs = { "build", "config-bibliography" }
 
 dofile("../build.lua")

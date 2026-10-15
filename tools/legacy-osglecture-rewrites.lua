@@ -10,7 +10,7 @@
 --   --check            only analyse INPUT and print the report; write nothing
 --   --rules=a,b,...    restrict to the named rule groups (default: all)
 --                      modes, sections, frames, columns, figures, semcat,
---                      listings, terminals, references, class
+--                      listings, terminals, references, bibliography, class
 --   --chapter=N        force the unit number: adds
 --                      \OsgLectureDeploymentChapter{N} before \lecture.
 --                      Normally not needed: in a series the number is
@@ -193,6 +193,27 @@ do
     pos = e + 1
   end
 end
+-- reading lists of the legacy osgbeamerbib: only there \bibitem is its
+-- entry command; elsewhere it is the standard LaTeX command
+local litlist_ranges = {}
+do
+  local pos = 1
+  while true do
+    local b = text:find("\\begin{literaturelist}", pos)
+    if not b then break end
+    local e = text:find("\\end{literaturelist}", b, true)
+    if not e then break end
+    litlist_ranges[#litlist_ranges + 1] = { b, e }
+    pos = e + 1
+  end
+end
+local function in_litlist(pos)
+  for _, r in ipairs(litlist_ranges) do
+    if pos > r[1] and pos < r[2] then return true end
+  end
+  return false
+end
+
 local function in_frame(pos)
   for _, r in ipairs(frame_ranges) do
     if pos >= r[1] and pos <= r[2] then return true end
@@ -429,7 +450,6 @@ local REPORT_ENV = {
   task = "project theorem; declare with osgstyler (NewOsgStyledEnvironment) in the project setup",
   chapabstract = "project box; declare with osgstyler in the project setup",
   lessonslearned = "project box; declare with osgstyler in the project setup",
-  literaturelist = "legacy bibliography list; use the bibliography of the profile",
   borrowrules = "chapter-local environment",
   subfigure = "kept; needs subcaption in the project setup",
   wrapfigure = "kept; rarely survives a change of text width",
@@ -761,8 +781,9 @@ function H.documentclass(s, i, base)
   if not args or trim(args[2]) ~= "osgbeamer" then return nil end
   if args[1] and trim(args[1]) ~= "" then
     note(base + i, "class options of osgbeamer dropped",
-      "(" .. trim(args[1]:gsub("%s+", " ")) .. ") -- configure target, profile and "
-        .. "bibliography in ollmconfig.toml / projectconfig.tex")
+      "(" .. trim(args[1]:gsub("%s+", " ")) .. ") -- configure target and profile in "
+        .. "ollmconfig.toml, a bibliography with \\LectureProjectSetup{bibliography={...}} "
+        .. "in projectconfig.tex")
   end
   count("\\documentclass{osgbeamer} -> \\documentclass{osglecture}")
   return "\\documentclass{osglecture}", e
@@ -969,6 +990,34 @@ function E.figure(s, i, base, env)
     return rewrite(body, base + bs), after
   end
   return nil
+end
+
+-- bibliography: the osgbeamerbib reading list
+-- \bibprolog -> \litgroup, \bibitem -> \litentry, \bibcomment -> \litcomment.
+-- Renamed one by one, so that the other rules still apply inside the list.
+-- \bibitem is renamed only inside a literaturelist: elsewhere it is the
+-- standard LaTeX command of thebibliography.
+local function litlist_rename(old, new)
+  return function(s, i, base)
+    if not enabled("bibliography") then return nil end
+    if not in_litlist(base + i) then return nil end
+    if old == "bibitem" and s:find("^%s*%[", i) then
+      note(base + i, "\\bibitem with an optional argument",
+        "left unchanged; \\litentry takes only the key")
+      return nil
+    end
+    count("literaturelist: \\" .. old .. " -> \\" .. new)
+    return "\\" .. new, i
+  end
+end
+H.bibprolog = litlist_rename("bibprolog", "litgroup")
+H.bibitem = litlist_rename("bibitem", "litentry")
+H.bibcomment = litlist_rename("bibcomment", "litcomment")
+
+function H.PrintBibliography(s, i, base)
+  if not enabled("bibliography") then return nil end
+  count("\\PrintBibliography -> \\printbibliography")
+  return "\\printbibliography", i
 end
 
 -- terminals

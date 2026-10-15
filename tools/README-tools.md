@@ -38,6 +38,9 @@ Rule groups (`--rules=modes,figures,...`; default: all):
 single listing -> `style=paper`
 |`terminals` |`terminal` -> `ansiterm`, `termexec` -> `ansitermexec`
 |`references` |`\xref` -> `\olref`, `\xarticleref`/`\xpresentationref` -> `\olref[type=..]`
+|`bibliography` |in `literaturelist`: `\bibprolog`/`\bibitem`/`\bibcomment` -> `\litgroup`/`\litentry`/`\litcomment`;
+`\PrintBibliography` -> `\printbibliography`. The class option `bib=` is reported; configure
+`\LectureProjectSetup{bibliography={...}}` instead
 |`class` |`\documentclass[..]{osgbeamer}` -> `\documentclass{osglecture}`; after `\lecture` a
 title page (`\maketitle`, at the top level). The unit
 number is continued from the previous unit of the series; `--chapter=N` forces one
