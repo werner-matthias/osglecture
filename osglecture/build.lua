@@ -19,7 +19,6 @@ installfiles = {
   "osglecture-adapter-*.def",
   "osglecture-profiles.sty",
   "osglecture-profile-*.def",
-  "osglecture-osgbeamer.code.tex",
   "osglecture-presitemize.sty",
   "osglecture-twocolumns.sty",
   "osglecture-annotations.sty",

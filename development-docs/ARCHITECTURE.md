@@ -11,27 +11,29 @@ Die bundleweit verbindlichen Kurzdefinitionen stehen im
 
 Die Aussagen beziehen sich auf die laufende Neustrukturierung von
 `osglecture/osglecture.cls` und die begleitenden Dateien im Repository. Seit
-Version 0.7.0 ist die Klasse standardmäßig ein schlanker Orchestrator. Die
-unveröffentlichte historische Implementierung bleibt während der Migration nur
-noch über die explizite Klassenoption `osgbeamer` erreichbar.
+Version 0.7.0 ist die Klasse ein schlanker Orchestrator. Die unveröffentlichte
+historische Implementierung (früher über die Klassenoption `osgbeamer`
+erreichbar) ist entfernt.
 
 > **Kernaussage:** `osglecture` soll eine gemeinsame fachliche Quelle in mehrere didaktische Darstellungen überführen. Die Klasse sollte deshalb künftig primär Moduswahl und Integration koordinieren; fachlich unabhängige Dienste und Darstellungsdetails sollten in getrennten Paketen liegen.
 
-### Gegenwärtige Migrationsgrenze
+### Abgeschlossene Migration
 
-Der Standardpfad von `osglecture.cls` enthält nur noch Engineprüfung,
+`osglecture.cls` enthält nur noch Engineprüfung,
 Auftragsdatei- und Optionsauswertung, Basisklassenwahl sowie die Initialisierung
 von `osglecture-modes`, Dokumentprofil und generischer Metadatenhaltung. Er
 lädt insbesondere keine historische Typografie, Farben, Themes, Literatur-
 oder Referenzpakete.
 
-Mit `\documentclass[osgbeamer,...]{osglecture}` wird stattdessen
-`osglecture-osgbeamer.code.tex` geladen. Diese Datei kapselt den bisherigen
-Gesamtstand einschließlich seiner Formatierungen und seiner Abhängigkeiten.
-Die Option ist eine bewusst explizite Migrationsbrücke, kein Bestandteil des
-neuen Kerns. Eine weitere Zerlegung dieses konservierten Codes kann später
-entlang fachlicher Paketgrenzen erfolgen, ohne den Standardpfad erneut zu
-belasten.
+Die frühere Migrationsbrücke `\documentclass[osgbeamer,...]{osglecture}`,
+die den konservierten Gesamtstand `osglecture-osgbeamer.code.tex` lud, ist
+entfernt. Deren Aufgaben sind in eigene Pakete übergegangen:
+`osgbeamerref` im Referenzsystem von `osglecture` (`osglecture-references`),
+`osgbeamerlanguage` in `langselect`; `osgbeamerbib`-ähnliche Funktionen sollen
+später im Referenzsystem folgen. Als Konvertierungshilfe für alte Quellen
+bleiben nur die Verweisaliase `\xref` und Verwandte (Option `legacy` von
+`osglecture-references`) sowie `tools/legacy-osglecture-rewrites.lua`. Eine
+alte Option `osgbeamer` meldet LaTeX nun als ungenutzte globale Option.
 
 ### Dokumentprofile
 
@@ -908,7 +910,7 @@ Optionen für die Basisklasse müssen vor `\LoadClass` feststehen; andere Option
 
 ### 5.3 Die Klasse setzt nicht vorhandene Nachbarpakete voraus
 
-Die aktuelle Datei lädt unter anderem `osgbeamerref`, `osgbeamerlanguage`, `osgbeamerbib`, `beamerarticleosg` und das Theme `osg`. Ein Teil davon liegt nur unter `oldcode`, anderes ist im sichtbaren Baum nicht vorhanden. Dadurch ist die Klasse im aktuellen Repositoryzustand nicht als geschlossenes Produkt testbar.
+*Erledigt:* Die historische Implementierung lud unter anderem `osgbeamerref`, `osgbeamerlanguage`, `osgbeamerbib`, `beamerarticleosg` und das Theme `osg`, die im Repository nicht oder nur unter `oldcode` vorhanden waren. Mit ihrer Entfernung setzt die Klasse keine solchen Pakete mehr voraus.
 
 **Leitlinie:** Jede Abhängigkeit benötigt einen eindeutigen Besitzer, eine installierbare Quelle, eine minimale Versionsanforderung und einen Test. Optionale Funktionen müssen auch technisch optional sein.
 
