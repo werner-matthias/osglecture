@@ -155,6 +155,17 @@ not read it out a second time.}
 \RenewDocumentCommand \tagdirtreearchiveicon { } { \faFileArchive }
 \end{verbatim}
 
+\ldeen{Auch die Darstellung der Namen und Anmerkungen lässt sich ohne
+Änderung ihrer für das Tagging verwendeten Texte anpassen. Dazu dienen
+\cs{tagdirtreefilename}, \cs{tagdirtreedirectoryname},
+\cs{tagdirtreearchivename} und \cs{tagdirtreeannotation}; alle erhalten
+den jeweiligen Text als einziges Argument.}{The presentation of names
+and notes can likewise be changed without affecting the text used for
+tagging. The corresponding commands are \cs{tagdirtreefilename},
+\cs{tagdirtreedirectoryname}, \cs{tagdirtreearchivename}, and
+\cs{tagdirtreeannotation}; each receives the respective text as its
+only argument.}
+
 \ldeen{Mit \pkg*{osgstyler} lassen sich Icons stattdessen in einer
 Themefarbe statt einer festen Farbe setzen, über das öffentliche
 \cs{OsgColorName}. (\pkg*{osgstyler}s \code{affix}-Decoration selbst
@@ -329,6 +340,10 @@ left, with no real benefit over \cs{OsgColorName} directly.)}
 \NewDocumentCommand \tagdirtreefileicon { } { [F] }
 \NewDocumentCommand \tagdirtreedirectoryicon { } { [D] }
 \NewDocumentCommand \tagdirtreearchiveicon { } { [A] }
+\NewDocumentCommand \tagdirtreefilename { m } { #1 }
+\NewDocumentCommand \tagdirtreedirectoryname { m } { \textbf{#1} }
+\NewDocumentCommand \tagdirtreearchivename { m } { \textit{#1} }
+\NewDocumentCommand \tagdirtreeannotation { m } { \space (#1) }
 
 % \ldeen*{@1 zählt die umgebenden Verzeichnisse mit (0 auf oberster
 % Ebene); es ist ein reiner Zähler, keine Positionsinformation
@@ -378,11 +393,11 @@ left, with no real benefit over \cs{OsgColorName} directly.)}
     ~
     \str_case:nnF {#1}
       {
-        { directory } { \textbf{#2} }
-        { archive }   { \textit{#2} }
+        { directory } { \tagdirtreedirectoryname{#2} }
+        { archive }   { \tagdirtreearchivename{#2} }
       }
-      { #2 }
-    \tl_if_empty:nF {#3} { \space (#3) }
+      { \tagdirtreefilename{#2} }
+    \tl_if_empty:nF {#3} { \tagdirtreeannotation{#3} }
   }
 
 \cs_new_protected:Npn \__tagdirtree_entry:nnnn #1#2#3#4
@@ -412,11 +427,14 @@ left, with no real benefit over \cs{OsgColorName} directly.)}
 \NewDocumentCommand \dtdir { m m +m }
   {
     \__tagdirtree_entry:nnnn {directory} {tagdirtree/directory} {#1}{#2}
-    \int_gincr:N \g__tagdirtree_depth_int
-    \begin{itemize}
-      #3
-    \end{itemize}
-    \int_gdecr:N \g__tagdirtree_depth_int
+    \tl_if_blank:nF {#3}
+      {
+        \int_gincr:N \g__tagdirtree_depth_int
+        \begin{itemize}
+          #3
+        \end{itemize}
+        \int_gdecr:N \g__tagdirtree_depth_int
+      }
   }
 
 \NewDocumentEnvironment{tagdirtree}{}

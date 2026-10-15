@@ -7,6 +7,7 @@
 
 \begin{tagdirtree}
   \dtdir{project}{root directory}{
+    \dtdir{empty}{}{}
     \dtdir{src}{}{
       \dtfile{main.py}{entry point}
       \dtfile{util.py}{}
