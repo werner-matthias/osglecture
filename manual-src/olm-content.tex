@@ -81,10 +81,10 @@ following section for portable content selection.}
 registrierten Modi in die nativen Modus- und Overlaybefehle von \cls{beamer}
 und \cls{ltx-talk} ein. Eine Spezifikation wie \code{<longform>} oder
 \code{<slides||handout>} wird dann portabel ausgewertet; bei \code{<slides:2->}
-wertet \osglecture\ den Modusteil aus und reicht dem Backend nur den
+wertet \osglecture\ den Modusteil aus und reicht der Präsentationsklasse nur den
 Overlaybereich \code{<2->}. Eine rein numerische Spezifikation wie \code{<2->}
-bleibt ein natives Overlay. \code{|} und \code{,} innerhalb von \code{<...>}
-sind stets Backendsyntax; \code{||} ist der portable Oder-Operator. Unbekannte
+bleibt ein klassenabhängiges Overlay. \code{|} und \code{,} innerhalb von \code{<...>}
+gehören stets zur Syntax der Präsentationsklasse; \code{||} ist der portable Oder-Operator. Unbekannte
 Ausdrücke werden unverändert an die Basisklasse weitergereicht. Wer diese
 Integration nicht möchte, setzt \option{patch-overlays=false}; \cs{lecturemode}
 und \cs{IfLectureModeTF} funktionieren weiterhin.}{By default,
@@ -92,13 +92,63 @@ und \cs{IfLectureModeTF} funktionieren weiterhin.}{By default,
 modes into the native mode and overlay commands of \cls{beamer} and
 \cls{ltx-talk}. A specification such as \code{<longform>} or
 \code{<slides||handout>} is then evaluated portably; for \code{<slides:2->}
-\osglecture\ evaluates the mode part and hands the backend only the overlay
+\osglecture\ evaluates the mode part and hands the presentation class only the overlay
 range \code{<2->}. A purely numeric specification such as \code{<2->} remains a
-native overlay. \code{|} and \code{,} inside \code{<...>} are always backend
-syntax; \code{||} is the portable disjunction operator. Unknown expressions are
+class-specific overlay. \code{|} and \code{,} inside \code{<...>} always belong
+to the presentation class's syntax; \code{||} is the portable disjunction operator. Unknown expressions are
 delegated unchanged to the base class. Set \option{patch-overlays=false} to
 disable this integration; \cs{lecturemode} and \cs{IfLectureModeTF} continue to
 work.}
+\subsection{\ldeen{Anmerkungen und Quellenangaben}{Remarks and Source Credits}}
+\ldeen{Mit \cs{Note}\marg{Anmerkung} kann zu einem Frame ein Hinweis für die
+Vortragenden notiert werden. In einer Dokumentinstanz des Typs \code{screen}
+erscheinen die Anmerkungen neben der Folie; auf den Folien für das Publikum und
+in Langformen werden sie nicht gesetzt. Der Aufruf steht innerhalb des Frames,
+auf den sich die Anmerkung bezieht.}{The command
+\cs{Note}\marg{remark} records a remark for the presenter. In a document
+instance of type \code{screen}, remarks appear beside the slide; they are not
+typeset on audience slides or in long forms. Place the command inside the frame
+to which the remark belongs.}
+
+\begin{verbatim}
+\begin{frame}
+  \frametitle{Virtueller Speicher}
+  Seitentabellen ordnen virtuelle Seiten physischen Seitenrahmen zu.
+  \Note{Hier die Abbildung schrittweise erläutern.}
+\end{frame}
+\end{verbatim}
+
+\ldeen{Quellenangaben, etwa unmittelbar unter einer Abbildung, werden mit
+\cs{sourceref} gesetzt. Das optionale Argument enthält den Bezeichner, das
+Pflichtargument die Quelle. Der Bezeichner lautet
+sprachabhängig zunächst "`Quelle"' beziehungsweise "`Source"'; ein leeres
+optionales Argument unterdrückt ihn. Die Sternform setzt eine eigene
+Quellenzeile rechtsbündig. In einem getaggten Dokument ist die Quellenangabe
+regulärer Inhalt und bleibt Teil der Lesereihenfolge.}{Source credits, for
+example directly below a figure, are typeset with \cs{sourceref}. Its optional
+argument contains the label and its mandatory argument the source. The language-dependent default label
+is "`Quelle"' or "`Source"'; an empty optional argument suppresses it. The
+starred form produces a separate, flush-right source line. In a tagged
+document, the source credit is regular content and remains part of the reading
+order.}
+
+\begin{verbatim}
+\includegraphics[width=.7\linewidth]{page-table}
+\sourceref{Eigene Darstellung}
+\end{verbatim}
+
+\ldeen{Für einen Einwurf neben dem eigentlichen Textstrom steht
+\cs{osgannotation}\marg{Inhalt} zur Verfügung. Typischerweise enthält das
+Argument eine mit TikZ über die Folie gelegte handschriftliche Anmerkung. Der
+Aufruf gehört im Quelltext an die Stelle, an der die Anmerkung gelesen werden
+soll: Diese Stelle bestimmt bei getaggter Ausgabe die Lesereihenfolge, nicht
+die gezeichnete Lage auf der Seite.}{For a remark beside the main text flow,
+use \cs{osgannotation}\marg{content}. Its argument will typically contain a
+handwritten annotation placed over the slide with TikZ. Put the call at the
+position in the source where the annotation should be read: in tagged output,
+this position, rather than its drawn position on the page, determines the
+reading order.}
+
 \subsection{\ldeen{Mehrsprachige Dokumente}{Multilingual Documents}}
 \ldeen{In einem \osglecture-Projekt können mehrere Sprachfassungen eines
 Inhalts erstellt werden. Dabei teilen sich OLLM und das Paket \pkg{langselect}
@@ -182,18 +232,18 @@ appropriate position.}
 \begin{warnbox}{}
 \ldeen{Starten Sie Builds über OLLM und wählen Sie die Sprache mit
 \option{--language}. Setzen Sie die Zielsprache \textbf{nicht} zusätzlich von Hand im
-Quelldokument; sonst können Manifest, Artefaktname und tatsächlich gesetzte
+Quelldokument; sonst können Manifest, Name der Ausgabedatei und tatsächlich gesetzte
 Sprache auseinanderlaufen.}{Start builds through OLLM and select the language
 with \option{--language}. \textbf{Do not} additionally hard-code the target language in
-the source; otherwise the manifest, artifact name, and actually typeset language
+the source; otherwise the manifest, output file name, and actually typeset language
 can disagree.}
 \end{warnbox}
 
 \ldeen{Ob eine Übersetzung vollständig ist, prüfen Sie am zuverlässigsten mit
-der gesamten Buildmatrix der Einheit. Ein erfolgreicher deutscher Build sagt
+aller vorgesehenen Dokumentinstanzen der Einheit. Eine erfolgreiche deutsche Fassung sagt
 nichts darüber aus, ob im englischen Zweig ein Argument oder ein Befehl fehlt.}{
-The most reliable way to check whether a translation is complete is to build the
-entire matrix for the unit. A successful German build does not tell you whether
+The most reliable way to check whether a translation is complete is to typeset
+every intended document instance of the unit. A successful German version does not tell you whether
 an argument or command is missing in the English branch.}
 \begin{verbatim}
 ollm build --all

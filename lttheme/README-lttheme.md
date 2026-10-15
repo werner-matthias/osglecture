@@ -10,6 +10,5 @@ themes, and coordinated font themes. Its slot-based layout and semantic colour
 and font roles also support project-specific themes and accessible tagged
 output.
 
-The [German manual](../doc/lttheme-de.pdf) and
-[English manual](../doc/lttheme-en.pdf) describe the bundled themes,
-customization, accessibility options, and complete interface.
+For a (English and German) description of the bundled themes,
+customization, accessibility options, and complete interface, run `texdoc lttheme`.

@@ -9,6 +9,4 @@ Besides conditional passages, the package provides mode-dependent values and
 commands as well as integration with overlay-aware presentation classes.
 Optional source filtering is available with LuaLaTeX.
 
-See the [German manual](../doc/osglecture-modes-de.pdf) or
-[English manual](../doc/osglecture-modes-en.pdf) for examples and the complete
-interface.
+For the complete (English or German) documentation, run `texdoc osglecture-modes`.

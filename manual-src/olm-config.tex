@@ -18,8 +18,8 @@ lowest layer at which it applies to all affected documents.}
     Bundle-Preset}{selects personal defaults, currently in particular the
     preferred bundle preset}.
   \item[\File{ollmconfig.toml}]
-    \ldeen{definiert Identität, Buildmatrix, Sicherheit, Auflösung und
-    Deployment des Projekts}{defines the project's identity, build matrix,
+    \ldeen{definiert Identität, Dokumentinstanzen, Sicherheit, Auflösung und
+    Deployment des Projekts}{defines the project's identity, document instances,
     security, resolution, and deployment}.
   \item[\ldeen{Preset- und Targetdefinitionen}{Preset and target definitions}]
     \ldeen{geben den Namen eines Targets seine Bedeutung: Dokumenttyp,
@@ -47,10 +47,10 @@ lowest layer at which it applies to all affected documents.}
 
 \ldeen{Die Datei \File{ollmconfig.toml} markiert die Projektwurzel. \OLLM\ 
 sucht sie vom Arbeitsverzeichnis aus nach oben. Das Manifest beschreibt eine
-Buildmatrix und enthält keinen Lehrtext. Ein kompaktes Projekt mit zwei
+zu erzeugenden Dokumentinstanzen und enthält keinen Lehrtext. Ein kompaktes Projekt mit zwei
 Sprachen und drei Targets beginnt beispielsweise so}{The file
 \File{ollmconfig.toml} marks the project root. \OLLM\  searches upwards for it
-from the working directory. The manifest describes a build matrix and contains
+from the working directory. The manifest describes the document instances to be generated and contains
 no teaching content. A compact project with two languages and three targets
 might begin as follows}:
 
@@ -157,16 +157,16 @@ the concrete \LaTeX\ class and rendering.}
 \code{slides}, \code{handout}, \code{screen} und \code{script}. Eine Definition legt
 \option{doctype}, \option{profile\_class} und \option{unit\_scopes} fest. Das
 Preset bringt außerdem die Profil-Defaults \option{presentation\_profile} und
-\option{longform\_profile} mit. Profildefinitionen (\option{document-metadata},
-\option{doctypes} und mehr) liefert eine mitgelieferte Projektion unter
+\option{longform\_profile} mit. Profilbeschreibungen (\option{document-metadata},
+\option{doctypes} und mehr) liegen im mitgelieferten Verzeichnis
 \code{definitions/profiles/}; projektlokale Definitionen können über
 \File{.ollmconfig.local.toml} ergänzt werden und ersetzen gleichnamige
 eingebaute nicht stillschweigend.}{The supplied target definitions register
 \code{slides}, \code{handout}, \code{screen}, and \code{script}. A definition specifies
 \option{doctype}, \option{profile\_class}, and \option{unit\_scopes}. The
 preset also carries the profile defaults \option{presentation\_profile} and
-\option{longform\_profile}. Profile definitions (\option{document-metadata},
-\option{doctypes}, and more) come from a supplied projection under
+\option{longform\_profile}. Profile descriptions (\option{document-metadata},
+\option{doctypes}, and more) are supplied under
 \code{definitions/profiles/}; project-local definitions can be added through
 \File{.ollmconfig.local.toml} and do not silently replace built-in ones with
 the same name.}
@@ -201,14 +201,14 @@ unit_scopes = ["a", "as"]
 \ldeen{Erst diese Definition gibt dem Namen \code{studyguide} eine Bedeutung:
 Er ist eine Langform und gilt für die angegebenen Unit-Scopes. Danach kann das
 Manifest \code{[targets.studyguide]} aufnehmen. Zusätzlich benötigt \LaTeX\ ein
-Profil, das den neuen Dokumenttyp unterstützt; dessen Fähigkeitsprojektion legt
+Profil, das den neuen Dokumenttyp unterstützt; dessen Profilbeschreibung legt
 Nora als \File{Definitions/profiles/\meta{name}.toml} neben die \code{.def}.
 Ein neuer Name allein genügt also absichtlich nicht; Buildauswahl und Satz
 müssen denselben Vertrag verstehen.}{Only this definition gives the name
 \code{studyguide} a meaning: it is a long form and applies to the listed unit
 scopes. The manifest may then add \code{[targets.studyguide]}. \LaTeX\ also
-needs a profile supporting the new document type; Nora places its capability
-projection as \File{Definitions/profiles/\meta{name}.toml} next to the
+needs a profile supporting the new document type; Nora places its profile
+description as \File{Definitions/profiles/\meta{name}.toml} next to the
 \code{.def}. A new name alone is deliberately insufficient; build selection and
 typesetting must understand the same contract.}
 
@@ -338,11 +338,11 @@ the manifest sets \keyis{document\_metadata}{enabled}. Symbols such as
 \subsection{\ldeen{Dokumentenprofile}{Document Profiles}}
 
 \ldeen{Ein Dokumentprofil verbindet einen fachlichen Dokumenttyp mit einer
-technischen Satzumgebung. Es benennt Basisklasse, Backendadapter, unterstützte
+technischen Satzumgebung. Es benennt Basisklasse, Klassenanbindung, unterstützte
 Dokumenttypen, zusätzliche Modi, Klassenoptionen und den
 \cs{DocumentMetadata}-Vertrag. Mitgeliefert werden}{A document profile
 connects a conceptual document type to a technical typesetting environment. It
-names the base class, backend adapter, supported document types, additional
+names the base class, class integration, supported document types, additional
 modes, class options, and the \cs{DocumentMetadata} contract. The supplied
 profiles are}:
 
@@ -379,12 +379,12 @@ For a standalone document without a manifest the class option
 
 \ldeen{Ein eigenes Profil liegt üblicherweise als
 \File{osglecture-profile-NAME.def} im TeX-Suchpfad. Es kann ein vorhandenes
-Backend und dessen Adapter wiederverwenden; eine neue Basisklasse benötigt
-zusätzlich einen passenden Adapter. Die drei Pflichtangaben sind
+eine vorhandene Klassenanbindung wiederverwenden; eine neue Basisklasse benötigt
+zusätzlich eine passende Anbindung. Die drei Pflichtangaben sind
 \option{backend}, \option{class} und \option{doctypes}}{A custom profile is
 normally provided as \File{osglecture-profile-NAME.def} on the TeX search
-path. It may reuse an existing backend and its adapter; a new base class also
-requires a suitable adapter. The three required entries are \option{backend},
+path. It may reuse an existing class integration; a new base class also
+requires a suitable integration. The three required entries are \option{backend},
 \option{class}, and \option{doctypes}}:
 
 \begin{verbatim}
@@ -405,10 +405,10 @@ requires a suitable adapter. The three required entries are \option{backend},
 \end{verbatim}
 
 \ldeen{Damit \OLLM\ den \cs{DocumentMetadata}-Vertrag schon vor dem Lauf kennt,
-liegt neben der \code{.def} eine Fähigkeitsprojektion
+liegt neben der \code{.def} eine maschinenlesbare Profilbeschreibung
 \File{osglecture-profile-mybook.toml} (bzw. unter
 \code{Definitions/profiles/})}{So that \OLLM\ knows the \cs{DocumentMetadata}
-contract before the run, a capability projection
+contract before the run, a machine-readable profile description
 \File{osglecture-profile-mybook.toml} sits next to the \code{.def} (or under
 \code{Definitions/profiles/})}:
 

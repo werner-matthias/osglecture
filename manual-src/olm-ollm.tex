@@ -91,15 +91,15 @@ ollm build script --language=de --resolve
 
 \ldeen{\code{report}, \code{check} und \code{doctor} beantworten drei
 verschiedene Fragen. \code{report} beschreibt den bekannten Zustand:
-Units, Dokumentinstanzen, Generationen, Artefakte und Abhängigkeiten. Befunde ändern
+Units, Dokumentinstanzen, Fassungen, Ausgabedateien und Abhängigkeiten. Befunde ändern
 seinen Exitstatus nicht, solange der Zustand lesbar ist. \code{check} liest
 dieselben Daten, bewertet Inkonsistenzen aber als Fehler und eignet sich daher
-als Freigabegate. Beide Befehle bauen nichts.}{\code{report},
+für eine Freigabeprüfung. Beide Befehle bauen nichts.}{\code{report},
 \code{check}, and \code{doctor} answer three different questions.
-\code{report} describes the known state: units, document instances, generations,
-artifacts, and dependencies. Findings do not change its exit status as long as
+\code{report} describes the known state: units, document instances, versions,
+output files, and dependencies. Findings do not change its exit status as long as
 the state is readable. \code{check} reads the same data but treats
-inconsistencies as errors and is therefore suitable as a release gate. Neither
+inconsistencies as errors and is therefore suitable for a release check. Neither
 command builds anything.}
 
 \ldeen{Ein typischer Fehler macht den Unterschied greifbar: Fehlt auf einem
@@ -142,15 +142,15 @@ ollm doctor --project-root=/path/to/project --format=json
 
 \subsection{\ldeen{Aufräumen und Zustände pflegen}{Cleaning and Maintaining State}}
 
-\ldeen{OLLM trennt Buildverzeichnisse von promoviertem Serienzustand.
+\ldeen{OLLM trennt Buildverzeichnisse von den in die Serie übernommenen Dokumentinstanzen.
 \code{clean --level=aux} entfernt Hilfsdateien, behält aber das lokale PDF;
 \code{build} entfernt das isolierte Buildverzeichnis; \code{state}
-entfernt promovierte Dokumentinstanzen; \code{all} kombiniert die letzten beiden.
+entfernt diese Dokumentinstanzen; \code{all} kombiniert die letzten beiden.
 Mit \option{--dry-run} sehen Sie zuerst den Löschplan. Scopes sind hier
 \code{current}, \code{unit} und \code{series}.}{OLLM separates build
-directories from promoted series state. \code{clean --level=aux} removes
+directories from document instances retained for the series. \code{clean --level=aux} removes
 auxiliary files but retains the local PDF; \code{build} removes the isolated
-build directory; \code{state} removes promoted projections; and
+build directory; \code{state} removes these document instances; and
 \code{all} combines the last two. Use \option{--dry-run} to inspect the
 deletion plan first. The available scopes here are \code{current},
 \code{unit}, and \code{series}.}
@@ -259,8 +259,8 @@ rejects options that would bypass the controlled build contract.}
     ihrer Klassenoptionen}{builds a manifest-free source file from its class
     options}.
   \item[\code{report}] \ldeen{beschreibt Units, Instanzen, Generationen,
-    Artefakte und Abhängigkeiten, ohne sie zu bewerten}{describes units,
-    instances, generations, artifacts, and dependencies without validating
+    Ausgabedateien und Abhängigkeiten, ohne sie zu bewerten}{describes units,
+    instances, versions, output files, and dependencies without validating
     them}.
   \item[\code{check}] \ldeen{prüft denselben Zustand und liefert bei
     Inkonsistenzen einen Fehlerstatus}{validates the same state and returns a

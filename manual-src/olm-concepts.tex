@@ -202,22 +202,30 @@ a lot. At the OSG, there are a number of typical teaching scenarios
 \ldeen{Dagegen sollten private \File{.sty}-Dateien oder andere Materialien, die in \emph{allen} Lehreinheiten benötigt werden, im \path{Include}-Verzeichnis stehen.}{By contrast, private \File{.sty} files or other material needed by \emph{all} course units should be placed in the \path{Include} directory.}
 
 \subsection{Modi}
-\ldeen{Wer schon einmal mit \cls{beamer} oder \cls{ltx-talk} gearbeitet hat, kennt Modi 
-und Overlayspezifikationen. Man kann beides auch wieder als Ansätze zur Polymorphie
-betrachten.
-}{}
+\label{sec:concept-modes-overlays}
+\ldeen{Wer schon einmal mit \cls{beamer} oder \cls{ltx-talk} gearbeitet hat, kennt Modi
+und Overlayspezifikationen. Beide erlauben es, aus derselben Quelle unterschiedliche
+Darstellungen zu setzen, beantworten aber verschiedene Fragen.
+}{Anyone who has worked with \cls{beamer} or \cls{ltx-talk} will know modes
+and overlay specifications. Both allow different presentations to be typeset from the
+same source, but they answer different questions.}
 
 \ldeen{Für alle, die noch nicht damit gearbeitet haben: Beides wird (auch gemischt) in spitzen Klammern
 als erstes Argument eines Befehls angegeben.
-Ein \emph{Modus} entscheidet beim der Übersetzung, ob der Befehl und damit 
-sein Inhalt mit übersetzt wird. So kann Textmaterial, das nur auf den Folien aber 
-z.\,B.\ nicht auf den Handouts stehen solle, entsprechend gekennzeichnet
-werden.}{}
+Ein \emph{Modus} entscheidet bei der Übersetzung, ob der Befehl und damit
+sein Inhalt mit übersetzt wird. So kann Textmaterial, das nur auf den Folien, aber
+z.\,B.\ nicht im Skript stehen soll, entsprechend gekennzeichnet werden.}{For readers
+new to these concepts: both may appear, even together, in angle brackets as the first
+argument of a command. A \emph{mode} decides during compilation whether the command and
+therefore its content is included. Text intended for slides but not, for example, for the
+lecture notes can thus be marked accordingly.}
 \ldeen{Bei Overlays können aus einer gestalteten Folie mehrere Seiten im PDF erzeugt
 werden, die alle leicht unterschiedlich aussehen, aber die gleiche Foliennummer
-haben. Damit können z.\,B.\ Animationen wie das zeilenweise Ausdacken oder
+haben. Damit können z.\,B.\ Animationen wie das zeilenweise Aufdecken oder
 Markieren von Inhalt erreicht werden. 
-}{}
+}{Overlays can produce several PDF pages from one designed slide. They differ slightly
+but carry the same slide number. This supports effects such as revealing or highlighting
+content step by step.}
 \ldeen{Angenommen, eine Folie zeigt zunächst nur eine Frage und nach dem
 nächsten Klick auch die Antwort. Das ist ein Overlay: Beide Ansichten gehören
 zum selben PDF, Target und Sprachbuild. Soll die ausführliche Begründung dagegen
@@ -225,14 +233,17 @@ nur im Skript stehen und auf Folien ganz fehlen, ist das eine Modusentscheidung.
 Sie führt zu unterschiedlichem Inhalt verschiedener Dokumentinstanzen.}{Suppose
 a slide initially shows only a question and reveals the answer after the next
 click. That is an overlay: both views belong to the same PDF, target, and
-language build. If the detailed reasoning should instead appear only in the
+language version. If the detailed reasoning should instead appear only in the
 lecture notes and be absent from slides altogether, that is a mode decision.
 It produces different content in different document instances.}
 
 \ldeen{Modi und Overlays werden mitunter verwechselt, was auch daran liegt, dass sie 
 bei \cls{beamer}/\cls{ltx-talk} häufig gemischt eingesetzt werden und eine gemeinsame
-Syntax hat.
-Tabelle~\ref{tbl:overlay-modus} stellt die Unterschiede noch einmal kompakt dar.}{}
+Syntax haben.
+Tabelle~\ref{tbl:overlay-modus} stellt die Unterschiede noch einmal kompakt dar.}{Modes
+and overlays are sometimes confused, partly because \cls{beamer} and \cls{ltx-talk}
+often combine them and use related syntax. Table~\ref{tbl:overlay-modus} summarizes
+the distinction.}
 
 \begin{center}
 \captionof{table}{Overlay und Modus\label{tbl:overlay-modus}}
@@ -246,19 +257,13 @@ Overlay & \code{<2->}
 \end{tabular}
 \end{center}
 
-\ldeen{Die Klasse \cls{beamer} kennt die folgenden Modi:}{}
-\begin{itemize}
-  \item \code{beamer}~-- \ldeen{Modus für Dokumente für einen Beamer}{} 
-  \item \code{trans}~-- \ldeen{Modus für Dokumente für einen Overheadprojektor}{} 
-  \item \code{second}~-- \ldeen{Modus für Dokument(teile), die auf einem zweiten Schirm angezeigt werden sollen}{}
-  \item \code{handout}~-- \ldeen{Modus für Handout der Folien}{}
-  \item \code{presentation}~-- \ldeen{Modus, der alle vier vorgenannten Modi umfasst}{}
-  \item \code{article}~-- \ldeen{Modus für Skripte}{}
-  \item \code{all}~-- \ldeen{Modus, der alle vorgenannten Modi umfasst}{}
-\end{itemize}
-
-Das Paket \pkg{osglecture-modus} stellt ebenfalls ein Modussystem zur Verfügung, das unabhängig
-von \cls{beamer} und \cls{ltx-talk} genutzt werden kann.
+\ldeen{Das Paket \pkg{osglecture-modes} stellt das gemeinsame Modussystem bereit,
+das unabhängig von \cls{beamer} und \cls{ltx-talk} genutzt werden kann. Die konkreten
+Modi der Präsentationsklassen bleiben verfügbar, sollten aber nur abgefragt werden, wenn
+tatsächlich eine Besonderheit dieser Klasse gemeint ist.}{The \pkg{osglecture-modes}
+package supplies the common mode system, which can be used independently of \cls{beamer}
+and \cls{ltx-talk}. The presentation classes' own modes remain available, but should only
+be queried when a feature specific to that class is actually intended.}
 
 \ldeen{Bei \cs{lecturemode}\code{<longform>} ist es ein Modus. Bei einem von
 der Basisklasse bereitgestellten \cs{item}\code{<2->} ist es ein Overlay. Ein
@@ -305,15 +310,15 @@ also supply additional modes and a mode setup file. They can thus extend the
 capabilities of a typesetting environment without replacing the meaning of the
 document type.}
 
-\ldeen{Overlays bleiben dagegen Aufgabe der gewählten Präsentationsklasse und
-ihres Adapters. \osglecture\ kann gebräuchliche Overlaybefehle anbinden, aber
+\ldeen{Overlays bleiben dagegen Aufgabe der gewählten Präsentationsklasse.
+\osglecture\ kann gebräuchliche Overlaybefehle anbinden, aber
 es verspricht nicht, dass jede klassen- oder themespezifische Animation einen
 Profilwechsel überlebt. Wer Portabilität zwischen \cls{beamer} und
 \cls{ltx-talk} benötigt, sollte den gemeinsamen Strukturwortschatz verwenden
 und Overlays auf die von beiden Profilen unterstützte Teilmenge begrenzen. Die
 konkrete Inhaltsauswahl wird in Abschnitt~\ref{sec:content-osglecture-modes}
 fortgesetzt.}{Overlays, by contrast, remain the responsibility of the selected
-presentation class and its adapter. \osglecture\ can integrate common overlay
+presentation class. \osglecture\ can integrate common overlay
 commands, but it does not promise that every class- or theme-specific animation
 survives a profile switch. Authors requiring portability between \cls{beamer}
 and \cls{ltx-talk} should use the common structural vocabulary and restrict
@@ -326,7 +331,7 @@ könnte beispielsweise den Typ \code{studyguide} mit eigenen aktiven Modi und
 einem Langformprofil einführen. Ein bloßer Wechsel von \cls{book} zu
 \cls{scrbook} benötigt dagegen nur ein anderes Profil für den vorhandenen Typ
 \code{script}. Diese Unterscheidung verhindert, dass technische
-Satzentscheidungen die Buildmatrix unnötig vergrößern. Das vollständige
+Satzentscheidungen unnötig viele Dokumentinstanzen erzeugen. Das vollständige
 Profilbeispiel steht in Abschnitt~\ref{sec:project-configuration}; neue
 OLLM-Targets werden über die dort beschriebenen Targetdefinitionen
 registriert.}{Extensibility is useful when a project needs a semantically new
@@ -335,7 +340,7 @@ might introduce a \code{studyguide} type with its own active modes and a
 long-form profile. Merely switching from \cls{book} to \cls{scrbook}, by
 contrast, only requires another profile for the existing \code{script} type.
 This distinction prevents technical typesetting decisions from needlessly
-expanding the build matrix. The complete profile example is in
+creating additional document instances. The complete profile example is in
 Section~\ref{sec:project-configuration}; new OLLM targets are registered using
 the target definitions described there.}
 

@@ -2,16 +2,18 @@
 \ldeen{Dieses Tutorial begleitet Nora. Nora hält im kommenden Semester erstmals
 die Vorlesung "`Betriebssysteme"'.
 Die erste Unterrichtseinheit soll über Speicher gehen. Nora will sofort
-Speichervirualisierung behandeln.
+Speichervirtualisierung behandeln.
 Die ist vielleicht etwas optimistisch, aber das soll uns hier nicht aufhalten.
 
 Der Studiengang, in dem der Kurs stattfindet, ist zwar deutschsprachig, aber Nora weiß,
 dass viele Gaststudenten teilnehmen werden, die besser Englisch als Deutsch beherrschen.
 Daher will sie Folien jeweils in beiden Sprachen vorbereiten.
 Außerdem hat sie versprochen, ein kurzes Skript bereitzustellen.
+Für die Lehrveranstaltung selbst möchte sie außerdem eine Vortragendenfassung
+mit der aktuellen und der nächsten Folie sowie eigenen Anmerkungen verwenden.
 
-Drei Dokumente für zunächst eine einzige Stunde Lehre:
-Nora ahnt bereits, dass drei getrennte Quelldateien keine besonders gute Idee
+Mehrere Dokumentinstanzen für zunächst eine einzige Stunde Lehre:
+Nora ahnt bereits, dass getrennte Quelldateien keine besonders gute Idee
 wären.}{This tutorial follows Nora.
 Next semester, Nora will be teaching
 the lecture "`Operating Systems"' for the first time.
@@ -22,22 +24,24 @@ Although the degree program in which the course is offered is German-language, N
 that many visiting students will be attending who are more comfortable with English than with German.
 That’s why she wants the slides to be in both languages.
 She has also promised to provide a short set of lecture notes.
+For the lecture itself she also wants a presenter's version showing the current
+and next slide together with her own remarks.
 
-Three documents for what is initially just a single hour of instruction:
-Nora already suspects that having three separate source files wouldn’t be
+Several document instances for what is initially just a single hour of instruction:
+Nora already suspects that having separate source files wouldn’t be
 a particularly good idea.}
 
 \ldeen*{Das Tutorial beschreibt nicht jede Möglichkeit von \osglecture. Es zeigt vielmehr
 die Dinge, die Nora für ihren ersten kleinen Kurs tatsächlich benötigt.\footnote{%
   Wer lieber sofort in die Details gehen will, kann auch direkt im Abschnitt~@1 weiterlesen.
 }%
- Am Ende werden aus einem einzelnen Quelldokument einer Lehreinheit drei sichtbar
-verschiedene PDFs entstehen.}{The
+ Am Ende entstehen aus einem einzelnen Quelldokument einer Lehreinheit Folien,
+eine Vortragendenfassung und ein Skript, jeweils in zwei Sprachen.}{The
 tutorial does not describe every option in the bundle. Instead, it shows the
 things Nora actually needs for her first small course.\footnote{%
   If you'd rather get right into the details, you can continue reading directly in section~@1.
-} At the end, one course
-unit will produce three visibly different PDFs.}{\ref{sec:concepts}}
+} At the end, one course unit will produce slides, a presenter's version, and
+lecture notes, each in two languages.}{\ref{sec:concepts}}
 
 \paragraph{\ldeen{Noras Problem}{Nora's Problem}.}
 \ldeen{Nora beginnt so, wie man vermutlich intuitiv ohne \osglecture\ beginnen
@@ -45,7 +49,7 @@ würde. Sie legt \File{slides-de.tex} an, füllt es mit Inhalt, kopiert die Date
 \File{slides-en.tex} und beginnt mit der Übersetzung. Für das Skript fügt sie
 später noch \File{script-de.tex} hinzu. Das funktioniert.
 Allerdings fällt kurze Zeit später ein, dass sie bei der Beschreibung des Unterschieds
-zwischen \emph{Paging} und \emph{Sementierung} etwas Wichtiges vergessen hat.
+zwischen \emph{Paging} und \emph{Segmentierung} etwas Wichtiges vergessen hat.
 Jedoch klingelt bei der Bearbeitung ihr Telefon, und nach dem Anruf muss Nora überlegen,
 in welche der Dateien sie die Korrektur übernommen hat.}{Nora starts off the way one would probably intuitively begin without \osglecture.
 She creates \File{slides-de.tex}, copies the file to
@@ -109,7 +113,7 @@ seems unnecessarily generous. Later, however, she can insert a new unit named
 \begin{verbatim}
 mkdir -p Noras-os/Include Noras-os/010-Memory
 cd Noras-os
-touch main.tex
+touch 010-Memory/main.tex
 \end{verbatim}
 
 \ldeen{Noch ist das Ergebnis nicht besonders eindrucksvoll}{The result is not
@@ -180,14 +184,18 @@ id = "os-in-60"
 [targets.defaults]
 languages = ["de", "en"]
 default_language = "de"
+presentation_profile = "ltx-talk"
+longform_profile = "book"
+document_metadata = "enabled"
 
 [targets.slides]
+[targets.screen]
 [targets.script]
 \end{verbatim}
 
 \ldeen{Nora ist versucht, hier auch Titel, Autorin und Übersetzungen einzutragen.
 TOML kann schließlich Text speichern. Sie lässt es dennoch bleiben: Das Manifest
-beschreibt die Buildmatrix, nicht den Inhalt des Dokuments. Titel und
+beschreibt die zu erzeugenden Dokumentinstanzen, nicht den Inhalt des Dokuments. Titel und
 Sprachabbildung sind \LaTeX-Angelegenheiten und folgen im nächsten Schritt.}{Nora
 is tempted to add the title, author, and translations here as well. After all,
 TOML can store text. She resists the temptation: the manifest describes the build
@@ -202,7 +210,7 @@ ollm check
 
 \ldeen{Bei ihrem ersten Versuch hatte sie \option{language} statt
 \option{languages} geschrieben. \OLLM\ weist den unbekannten Schlüssel zurück.
-Das ist Nora lieber als stillschweigend Kursmatierial in der falschen Sprache zu erhalten.
+Das ist Nora lieber als stillschweigend Kursmaterial in der falschen Sprache zu erhalten.
 Nachdem sie den Tippfehler korrigiert hat, ist das Manifest gültig.
 Auch falls ihre Buildumgebung selbst Probleme bereitet, schließlich erwartet
 \osglecture\ eine relativ moderne \LaTeX-Installation, kann \OLLM\ helfen:
@@ -217,30 +225,25 @@ Even if her build environment itself is causing problems,
 
 \paragraph{\ldeen{Was für alle Lehreinheiten gilt}{What Applies to Every Unit}.}
 \ldeen{Nora möchte ihren Namen und den Kurstitel nicht in jeder späteren Einheit
-wiederholen. Sie legt deshalb \File{Include/projectconfig.tex} an. Hier
-entscheidet sie außerdem, dass Präsentationen mit Beamer und das Skript mit
-KOMA-Scripts \cls{scrbook} gesetzt werden.
-Einen Moment lang überlegt sie, ob sie nicht doch lieber die modernere Präsentationsklasse
-\cls{ltx-talk} nehmen soll, um damit ihre Dokumente barrierefrei anbieten zu können,
-aber sie schreckt davor zurück, da \cls{ltx-talk} noch nicht als stabil gilt.
-Außerdem möchte sie die Folien im offiziellen Layout ihrer Universität anbieten,
-und das gibt es für \cls{ltx-talk} noch nicht.
+wiederholen. Sie legt deshalb \File{Include/projectconfig.tex} an. Im Manifest
+hat sie für Präsentationen bereits \cls{ltx-talk} und für das Skript die
+Standardklasse \cls{book} gewählt. Beide Profile arbeiten mit der neuen
+PDF-Verwaltung von \LaTeX; damit kann Nora ihre Dokumente als Tagged PDF
+bereitstellen. Das passende Präsentationsthema kann sie unabhängig davon
+auswählen.
 
 Die Wahl der Klassen ist eine Projektentscheidung;
-die einzelnen Fachtexte in der den Lehreinheiten müssen von diesen Klassennamen nichts wissen.
+die einzelnen Fachtexte in den Lehreinheiten müssen von diesen Klassennamen nichts wissen.
 Außerdem lernt Nora, dass Dokumente, die nicht zu den Präsentationen oder Handouts
 gehören, in \osglecture\ "`Langformen"' genannt werden. Ihr Skript ist eine solche
 Langform.
 }{Nora does not want
 to repeat her name and the course title in every future unit. She therefore
-creates \File{Include/projectconfig.tex}. Here she also decides that
-presentations will use Beamer and the script will use KOMA-Script's
-\cls{scrbook}.
-For a moment, she considers whether she might prefer to use the more modern presentation class
-\cls{ltx-talk} so she can make her documents accessible,
-but she hesitates because \cls{ltx-talk} is not yet considered stable.
-In addition, she wants to present the slides in her university’s official layout,
-and that isn’t available for \cls{ltx-talk} yet.
+creates \File{Include/projectconfig.tex}. In the manifest she has already
+selected \cls{ltx-talk} for presentations and the standard \cls{book} class
+for the lecture notes. Both profiles use \LaTeX's new PDF management, allowing
+Nora to provide her documents as Tagged PDF. She can select a suitable
+presentation theme independently.
 
 The choice of classes is a project-level decision;
 the individual subject-specific texts within the teaching units do not need to be aware of these class names.
@@ -262,15 +265,28 @@ long form.}
 }
 \end{verbatim}
 
-\ldeen{Die Klassen \cls{beamer} und \cls{scrbook} sind bereits die Vorgaben des
-Bundle-Presets; wollte Nora stattdessen \cls{ltx-talk}, käme
-\keyis{presentation\_profile}{ltx-talk} in \code{[targets.defaults]} des
-Manifests, nicht hierher. Denn die Klassenwahl muss feststehen, bevor die
-Klasse überhaupt startet.}{The classes \cls{beamer} and \cls{scrbook} are
-already the bundle preset's defaults; if Nora wanted \cls{ltx-talk} instead,
-\keyis{presentation\_profile}{ltx-talk} would go into the manifest's
-\code{[targets.defaults]}, not here -- the class choice has to be fixed before
-the class even starts.}
+\ldeen{Die Profilwahl steht im Manifest und nicht in
+\File{projectconfig.tex}, weil die Basisklasse und ihr Bedarf an
+\cs{DocumentMetadata} feststehen müssen, bevor die Klasse überhaupt startet.
+Für die frühe PDF-Konfiguration legt Nora deshalb zusätzlich
+\File{Include/documentmetadata.tex} an}{The profile selection belongs in the
+manifest rather than \File{projectconfig.tex}, because the base class and its
+need for \cs{DocumentMetadata} must be known before the class starts. Nora
+therefore also creates \File{Include/documentmetadata.tex} for the early PDF
+configuration}:
+
+\begin{verbatim}
+\DocumentMetadata{
+  lang = \OsgLectureRequestedLanguage,
+  tagging = on
+}
+\end{verbatim}
+
+\ldeen{\OLLM\ bindet diese Datei bei allen drei Targets vor
+\cs{documentclass} ein. Die sichtbaren Dokumentangaben bleiben dagegen in
+\File{projectconfig.tex}.}{\OLLM\ includes this file before
+\cs{documentclass} for all three targets. Visible document metadata remains in
+\File{projectconfig.tex}.}
 
 \ldeen{Die verbleibende Sprachkonfiguration enthält zwei verschiedene Arten von
 Namen. \OLLM\ arbeitet mit den kurzen, portablen Kennungen \code{de} und
@@ -305,6 +321,8 @@ point than twenty pages with a missing closing brace.}
   \frametitle{\ldeen{Warum virtueller Speicher?}{Why virtual memory?}}
   \ldeen{Jeder Prozess sieht einen eigenen Adressraum.}
         {Each process sees a private address space.}
+  \Note{\ldeen{Hier an die Analogie mit Zimmernummern erinnern.}
+               {Recall the analogy with room numbers here.}}
 \end{frame}
 \end{document}
 \end{verbatim}
@@ -318,7 +336,7 @@ title, and the optional argument is the short title.}
 Dieses etabliert die Identität der Einheit. Nora darf den sichtbaren
 Titel später verbessern und sogar das Verzeichnis umbenennen. Die Identität
 sollte sie aber dabei nicht beiläufig ändern; Querverweise und Buildzustand verwenden
- diesen Wert, um die richtige Lehreinheit zu finden.}{The third argument of \cs{lecture}, here
+ diesen Wert, um die richtige Lehreinheit zu finden.}{The second mandatory argument of \cs{lecture}, here
 \code{lec:memory}, is the label of the unit. It constitutes the unit's stable identity.
 Nora may improve the visible title later and may even rename the directory.
 She should not casually change the identity while doing so; cross-references and build state use this
@@ -336,6 +354,14 @@ seen the \cs{ldeen} command before. Even a quick \code{grep} search of her
 \LaTeX\ directory finds no package defining it. Nevertheless, its purpose is
 intuitively clear to her: it places the two requested language variants side
 by side.}
+
+\ldeen{\cs{Note} enthält dagegen eine Anmerkung für Nora selbst. Sie gehört in
+den Frame, auf den sie sich bezieht. Auf den gewöhnlichen Folien und im Skript
+erscheint sie nicht; die Vortragendenfassung sammelt sie später auf ihrer
+Presenter-Seite.}{\cs{Note}, by contrast, contains a remark for Nora herself.
+It belongs inside the frame to which it refers. It does not appear on the
+ordinary slides or in the lecture notes; the presenter's version later
+collects it on its presenter page.}
 
 \paragraph{\ldeen{Der erste Build}{The First Build}.}
 \ldeen{Nora wechselt in die Lehreinheit und versucht aus alter Gewohnheit zuerst
@@ -374,6 +400,33 @@ ollm build slides --language=en
 Genau das wollte Nora erreichen.}{Only the selected
 wording changes. The structure and formula remain the same.
 That is precisely what Nora wanted to achieve.}
+
+\paragraph{\ldeen{Eine Fassung für Nora}{A Version for Nora}.}
+\ldeen{Für die Lehrveranstaltung baut Nora außerdem das Target
+\code{screen}}{For the lecture Nora also builds the \code{screen} target}:
+
+\begin{verbatim}
+ollm build screen --language=de
+\end{verbatim}
+
+\ldeen{Diese Dokumentinstanz verwendet dieselben Folien, macht jede Seite aber
+doppelt so breit. Links liegt die Folie für den Projektor; rechts sieht Nora
+die aktuelle und die nächste Folie sowie ihre mit \cs{Note} notierte
+Erinnerung. Bei einem erweiterten Desktop kann sie die beiden Hälften auf
+Projektor und eigenen Bildschirm verteilen. Die Vortragendenfassung bleibt
+damit Teil derselben Quelle, ohne selbst eine Fassung für die Studierenden zu
+sein.}{This document instance uses the same slides but makes every page twice
+as wide. The slide for the projector is on the left; on the right Nora sees
+the current and next slide together with the reminder recorded using
+\cs{Note}. With an extended desktop she can distribute the two halves between
+the projector and her own screen. The presenter's version thus remains part
+of the same source without itself becoming a version for the students.}
+
+\ldeen{Auch diese Instanz wird mit eingeschaltetem Tagging gebaut. Die
+zusätzliche Presenter-Seite ist jedoch eine Bedienhilfe für Nora und gehört
+nicht zur Lesereihenfolge der eigentlichen Folie.}{This instance is also built
+with tagging enabled. The additional presenter page is an aid for Nora,
+however, and is not part of the reading order of the slide itself.}
 
 \paragraph{\ldeen{Von Stichpunkten zu einem Satz}{From Bullet Points to a Sentence}}
 \ldeen{Nora ergänzt zwei weitere Aussagen. Eine gewöhnliche \code{itemize}-Liste
@@ -457,11 +510,11 @@ ollm build script --language=de
 
 \ldeen{Beim Vergleich sieht sie erstmals die beiden Dimensionen unabhängig
 voneinander: \option{--language} wählt die Sprache, das Target
-\code{slides} oder \code{script} die Dokumentgestalt. Beides verändert die
+\code{slides}, \code{screen} oder \code{script} die Dokumentgestalt. Beides verändert die
 Ausgabe, aber keines verlangt eine Kopie der Lehreinheit.}{When comparing the
 results, she sees the two dimensions independently for the first time:
-\option{--language} selects the language, while the \code{slides} or
-\code{script} target selects the document form. Both change the output, but
+\option{--language} selects the language, while the \code{slides},
+\code{screen}, or \code{script} target selects the document form. Both change the output, but
 neither requires a copy of the course unit.}
 
 \paragraph{\ldeen{Hat Nora wirklich an alles gedacht?}{Did Nora Really Think of Everything?}}
@@ -481,14 +534,16 @@ ollm build --all
 \end{verbatim}
 
 \paragraph{\ldeen{Vom Build zur Veröffentlichung}{From Build to Publication}.}
-\ldeen{Vier erfolgreiche Dokumentinstanzen im Buildverzeichnis sind erfreulich,
-aber Noras Studierende wissen davon noch nichts. Nora möchte die PDFs in ein
+\ldeen{Sechs erfolgreiche Dokumentinstanzen im Buildverzeichnis sind erfreulich,
+aber Noras Studierende wissen davon noch nichts. Die beiden
+Vortragendenfassungen bleiben bei Nora; Folien und Skripte möchte sie in ein
 Verzeichnis \code{release} kopieren, das später etwa von der Lernplattform
 oder einem Webserver übernommen werden kann. Sie könnte die Dateien von Hand
 kopieren und umbenennen. Nach dem dritten Termin würde sie dabei vermutlich
-mindestens einmal die englische Fassung unter dem deutschen Namen ablegen.}{Four
+mindestens einmal die englische Fassung unter dem deutschen Namen ablegen.}{Six
 successful document instances in the build directory are gratifying, but
-Nora's students still know nothing about them. Nora wants to copy the PDFs to a
+Nora's students still know nothing about them. The two presenter's versions
+remain with Nora; she wants to copy the slides and lecture notes to a
 \code{release} directory that can later be picked up by a learning platform
 or web server. She could copy and rename the files by hand. By the third session,
 she would probably have placed the English version under the German name at
@@ -704,7 +759,7 @@ check does not build anything; among other things, it reports missing or stale
 reference and integration state. In a real project, Nora would of course run
 the same steps for the English script instance. Section~\ref{sec:content-command-reference}
 describes all variants of the reference commands; the rules for integration
-and standalone operation are in Section~\ref{sec:series-standalone}, and the
+are in Section~\ref{sec:series}, and the
 complete build options are in Section~\ref{sec:ollm-reference}.}
 
 \ldeen{Damit ist der kleine Kurs natürlich noch nicht fertig. Nora fehlen etwa

@@ -121,9 +121,9 @@ In computer science or chemistry, this concept is also known as \emph{polymorphi
 
 \begin{itemize}
   \item \ldeen{
-    \cls{osglecture} ist eine Metaklasse, die die meiste Arbeit an andere Klassen deligiert, so wie es z.\,B.{} auch \needpackage{beamerswitch} macht. Darüber hinaus stellt \cls{osglecture} aber
-    auch einige Dinge selbst bereit, wie ein dokumentübergreifenden Referenzsystem und sogar einige 
-    Fromatierungsumgebungen.
+    \cls{osglecture} ist eine Metaklasse, die die meiste Arbeit an andere Klassen delegiert, so wie es z.\,B.{} auch \needpackage{beamerswitch} macht. Darüber hinaus stellt \cls{osglecture} aber
+    auch eigene Funktionen bereit, etwa ein dokumentübergreifendes Referenzsystem, gemeinsame
+    Dokumentbefehle und einige Formatierungsumgebungen.
   }{
     \cls{osglecture} is a metaclass that delegates most of the work to other classes, much like 
     \needpackage{beamerswitch}, for example. In addition, \cls{osglecture} itself provides several features,
@@ -139,32 +139,32 @@ In computer science or chemistry, this concept is also known as \emph{polymorphi
   \item \ldeen{
     \pkg{osglecture-modes} generalisiert die Idee von Darstellungsmodi, wie man sie aus \needpackage{beamer} 
     oder \needpackage{ltx-talk} kennt, macht also etwas ähnliches wie \pkg{langselect}, aber nicht auf
-    Sprach- sondern auf Strukturebene. Damit können Modi in der aus \pkg{Peamer} oder \pkg{ltx-talk} 
-    gewohnten \texttt{<>}-Syntay auch außerhalb von Präsentationen genutzt werden.
+    Sprach- sondern auf Strukturebene. Damit können Modi in der aus \pkg{beamer} oder \pkg{ltx-talk}
+    gewohnten \texttt{<>}-Syntax auch außerhalb von Präsentationen genutzt werden.
   }{
     \pkg{osglecture-modes} generalizes the concept of presentation modes familiar from \needpackage{beamer} 
     or \needpackage{ltx-talk}. It therefore does something similar to \pkg{langselect}, but at the structural 
     rather than the language level. This makes it possible to use modes outside presentations, too, with the 
     familiar \texttt{<>} syntax of \pkg{beamer} or \pkg{ltx-talk}.}
   \item \ldeen{
-    \pkg{tagpax} dient dazu, getaggte PDF-Dokumente zu einem wiederum getaggten PDF-Dokument zu vereinen. 
-    Es hat lange nicht soviel Möglichkeiten wie \needpackage{pdfpages} und baut auf den Ideen von 
-    \needpackage{pax}/\needpackage{newpax} auf, behält aber nicht nur Annotationen sondern auch die 
-    Taggingstruktur bei. Im Kontext von \osglecture{} dient es dazu, unabhängige Übersetzungen 
+    \pkg{tagpax} dient dazu, vollständige Seiten getaggter PDF-Dokumente in ein wiederum
+    getaggtes PDF-Dokument zu übernehmen. Dabei bleiben neben der Taggingstruktur auch
+    Verknüpfungen, Sprungziele und Annotationen erhalten. Im Kontext von \osglecture{} dient es
+    dazu, unabhängige Übersetzungen
     z.\,B.\ einzelner Skriptkapitel zu einem Gesamtskript zu ermöglichen, ohne einen "`großen"' 
     Übersetzungslauf\footnote{Bei meinem Lehrskripten kann so ein großer Lauf durchaus auch mal über 
     eine Stunde dauern.} durchführen zu müssen.
   }{
-    \pkg{tagpax} combines tagged PDF documents into a PDF document that is itself tagged. It provides far
-    fewer features than \needpackage{pdfpages} and builds on the ideas of \needpackage{pax}/\needpackage{newpax}, 
-    but preserves not only annotations, but also the tagging structure. In the context of \osglecture{}, it makes 
+    \pkg{tagpax} imports complete pages from tagged PDF documents into a PDF document that is
+    itself tagged. Besides the tag structure, links, destinations, and annotations are retained.
+    In the context of \osglecture{}, it makes
     it possible to compile, for example, individual lecture notes chapters independently and combine them into 
     a complete set of lecture notes without having to perform one "`large"' compilation run.\footnote{For my lecture
     notes, such a large run can sometimes take more than an hour.}
     }
   \item \ldeen{
     \OLLM{} ist ein weiteres \LaTeX-Build-Tool, aber speziell auf \osglecture{} zugeschnitten. Es
-    arbeitet eng mit \cls{osglecture} und den anderen genannten Paketen zusammen. Intern ruft \OLLM{} intern 
+    arbeitet eng mit \cls{osglecture} und den anderen genannten Paketen zusammen. Intern ruft \OLLM{}
     \File{latexmk} auf (es ist aus einem rc-File für \File{latexmk} entstanden), das die meiste Arbeit erledigt.
   }{
     \OLLM{}: yet another \LaTeX build tool that is tailored specifically to \osglecture{}. It works closely with 
@@ -187,31 +187,49 @@ In computer science or chemistry, this concept is also known as \emph{polymorphi
   }{\pkg{osgstyler} seeks to reinforce the core \LaTeX{} principle of separating content from presentation 
     through a central semantic configuration. This makes elements such as colors, fonts, spacing, highlighting, 
     and blocks easier to design consistently as well as easier to replace. It works well in conjunction with \pkg{osglecture-modes}.}
-  \item \ldeen{\pkg{ltxtalk-theme} ist eine experimentelle Theme-Engine für \cls{ltx-talk}. Für "`innere"'
-    Gestaltungsaspekte wird \pkg{osgstyler} genutzt. Vermutlich wird \pkg{ltxtalk-theme} mit der weiteren Entwicklung
-    von \cls{ltx-talk} irgendwann überflüssig.}{\pkg{ltxtalk-theme} is an experimental theme engine for 
-    \cls{ltx-talk}. It uses \pkg{osgstyler} for inner design aspects. As \cls{ltx-talk} continues to evolve, 
-    \pkg{ltxtalk-theme} will probably become obsolete eventually.}
+  \item \ldeen{\pkg{ltxtalk-theme} stellt ein gemeinsames Gerüst für Themen der Klasse
+    \cls{ltx-talk} bereit. Für Gestaltungsaspekte innerhalb der Folien nutzt es \pkg{osgstyler}.
+  }{\pkg{ltxtalk-theme} provides a common framework for themes of the \cls{ltx-talk}
+    class. It uses \pkg{osgstyler} for design within slides.}
   \item \ldeen{\pkg{lttheme-tuc-2019} ist die (inoffizielle) Umsetzung des offiziellen Präsentationslayout meiner
     Universität für \pkg{ltx-talk}. Es nutzt \pkg{ltxtalk-theme}.
   }{\pkg{lttheme-tuc-2019} is the unofficial implementation of my university's official presentation layout 
     for \pkg{ltx-talk}. It uses \pkg{ltxtalk-theme}.}
-  \item \ldeen{\pkg{semcat} dient zur einfacheren semantischen Markierung (z.\,B.\ von Kategorien wie
-    "`Hintergründe"',  "`technische Details"' oder "`Wiederholung"') von Textteilen oder QR-Codes.
-  }{\pkg{semcat} facilitates the semantic labeling of passages of text or QR codes, for example with categories 
-    such as "`background"', "`technical details"', or "`review"'.}
+  \item \ldeen{\pkg{semcat} markiert Inhalte mit frei festlegbaren semantischen Kategorien,
+    etwa "`Hintergrund"', "`technische Details"' oder "`Wiederholung"'. Kategorien können
+    im Fließtext, als eigener Absatz oder als hervorgehobener Block erscheinen und durch
+    Farben, Symbole oder QR-Codes kenntlich gemacht werden.
+  }{\pkg{semcat} marks content with freely configurable semantic categories such as
+    "`background"', "`technical details"', or "`review"'. Categories may appear inline,
+    as separate paragraphs, or as highlighted blocks and may be indicated by colours,
+    symbols, or QR codes.}
   \item \ldeen{\pkg{ansiterm} stellt zwei semiverbatim Umgebungen für die Darstellung von Computerterminalfenstern zur
     Verfügung, die ANSI-Escapesequenz\footnote{Siehe z.\,B.\ \url{https://de.wikipedia.org/wiki/ANSI-Escapesequenz}}
-    interpretieren können. Eine davon führt zur Übersetzungszeit den Inhalt in einer Shell aus und liest die
-    Ergebnisse zurück, simuliert also ein "`echtes"' Terminal.
+    interpretieren können. Terminalmitschnitte können vorgegeben oder zur Übersetzungszeit
+    in einer Shell erzeugt und für weitere Übersetzungen zwischengespeichert werden. Auch in
+    getaggten Dokumenten bleibt der dargestellte Text zugänglich.
   }{\pkg{ansiterm} provides two semiverbatim environments for displaying computer terminal windows that can 
     interpret ANSI escape sequences\footnote{See, for example, \url{https://en.wikipedia.org/wiki/ANSI_escape_code}.}. 
-    One of them executes its contents in a shell at compilation time and reads back the results, thus simulating a 
-    "`real"' terminal.}
-  \item \ldeen{\pkg{osglistings} stellt ein Frontend für \needpackage{minted} zur Verfügung mit erweiterten 
-    Möglichkeiten der Quellcodemarkierung, Einbindung von Gists und Repositories und verschiedenen Darstellungen.
-  }{\pkg{osglistings} provides a front end for \needpackage{minted}, offering advanced source-code highlighting, the 
-    inclusion of gists and repositories, and various presentation styles.}
+    Terminal transcripts may be supplied directly or produced in a shell at compilation time
+    and cached for later runs. Their text remains accessible in tagged documents.}
+  \item \ldeen{\pkg{osglistings} setzt Quellcode auf der Grundlage von \needpackage{minted}.
+    Es unterstützt verschiedene Darstellungen, externe Quellen sowie inhaltliche Markierungen
+    und Erläuterungen im Code; die Ausgabe kann auch in getaggten Dokumenten verwendet werden.
+  }{\pkg{osglistings} typesets source code using \needpackage{minted}. It supports several
+    presentations, external sources, and semantic marks and explanations within code; its
+    output can also be used in tagged documents.}
+  \item \ldeen{\pkg{tagbridge} ergänzt Tagging-Unterstützung für verwendete Fremdpakete,
+    solange diese selbst noch keine ausreichende PDF/UA-Unterstützung besitzen. Derzeit betrifft
+    dies insbesondere QR-Codes und TikZ-Grafiken.
+  }{\pkg{tagbridge} supplies tagging support for third-party packages while they do not yet
+    provide sufficient PDF/UA support themselves. This currently concerns QR codes and TikZ
+    graphics in particular.}
+  \item \ldeen{\pkg{tagdirtree} setzt Verzeichnisbäume als echte verschachtelte Listen statt
+    als Grafik. Dateien, Verzeichnisse und Archive bleiben dadurch lesbarer Text, und ihre
+    Hierarchie steht auch unterstützender Technik zur Verfügung.
+  }{\pkg{tagdirtree} typesets directory trees as genuine nested lists rather than as graphics.
+    Files, directories, and archives thus remain readable text, and their hierarchy is available
+    to assistive technology.}
 \end{itemize}
 
 \subsection{\ldeen{Polymorphie}{Polymorphism} in \osglecture}
