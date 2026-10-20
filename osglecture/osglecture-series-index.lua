@@ -135,6 +135,45 @@ local function describe_entry(name, allowed)
     bytes(name))
 end
 
+-- \ldeen{Logische Ordnungskennung einer Unit, mit denselben Regeln wie
+-- \code{OLLM::BuildFile::\_logical\_ordinal}: Integrationsunits zählen
+-- nicht und haben keine Kennung; ein Exkurs hängt sich mit \code{e} und
+-- einer lokalen Folge an die vorige Content-Unit (\code{2e1}); ein Anhang
+-- führt den regulären Zähler weiter und ergänzt \code{ap} mit einer
+-- eigenen Folge (\code{3ap1}). Sie ist nicht dasselbe wie die
+-- Listenposition, die Integrationsunits, Exkurse und Anhänge
+-- mitzählt.}{Logical ordinal of a unit, with the same rules as
+-- \code{OLLM::BuildFile::\_logical\_ordinal}: integration units do not
+-- count and have no ordinal; an excursus attaches itself to the preceding
+-- content unit with \code{e} and a local sequence (\code{2e1}); an
+-- appendix continues the regular counter and adds \code{ap} with a
+-- sequence of its own (\code{3ap1}). It is not the same as the list
+-- position, which counts integration units, excursuses, and appendices.}
+local function logical_ordinal(units, position)
+  local ordinal, excursus, appendix = 0, 0, 0
+  for index, unit in ipairs(units) do
+    local value
+    if unit.role == "i" then
+      value = ""
+    elseif unit.role == "e" then
+      if ordinal == 0 then
+        return nil, "excursus '" .. unit.name .. "' has no preceding content unit"
+      end
+      excursus = excursus + 1
+      value = ordinal .. "e" .. excursus
+    elseif unit.role == "a" then
+      ordinal = ordinal + 1
+      appendix = appendix + 1
+      value = ordinal .. "ap" .. appendix
+    else
+      ordinal = ordinal + 1
+      excursus, appendix = 0, 0
+      value = tostring(ordinal)
+    end
+    if index == position then return value end
+  end
+end
+
 function series_index.analyze(entries, current_name, context)
   if type(entries) ~= "table" then return nil, "directory entries must be a table" end
   if type(context) ~= "table" or type(context.doctype) ~= "string"
@@ -170,6 +209,8 @@ function series_index.analyze(entries, current_name, context)
       .. tostring(current_name) .. "; observed entries: "
       .. (#observed > 0 and table.concat(observed, "; ") or "<none>")
   end
+  local ordinal, ordinal_error = logical_ordinal(units, position)
+  if not ordinal then return nil, ordinal_error end
   local previous_continuation
   for index = position - 1, 1, -1 do
     if units[index].role ~= "i" then
@@ -182,6 +223,7 @@ function series_index.analyze(entries, current_name, context)
     unit_scopes = context.unit_scopes or {},
     units = units,
     position = position,
+    ordinal = ordinal,
     current = units[position],
     previous = units[position - 1],
     previous_continuation = previous_continuation,
@@ -361,6 +403,7 @@ function series_index.initialize_tex(start_path, context)
   end
   set("OsgLectureSeriesAvailableFlag", "1")
   set("OsgLectureSeriesPosition", result.position)
+  set("OsgLectureSeriesOrdinal", result.ordinal)
   set("OsgLectureSeriesCurrentPhysicalUnit", result.current.name)
   set("OsgLectureSeriesCurrentRole", result.current.role)
   set("OsgLectureSeriesPreviousPhysicalUnit",

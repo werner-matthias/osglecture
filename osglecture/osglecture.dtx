@@ -170,6 +170,11 @@
       \ldeen{weitere Ladeoptionen für \pkg*{biblatex}, etwa
       \code{sorting=ynt}.}{further load options for \pkg*{biblatex}, such
       as \code{sorting=ynt}.}
+      \keyval{bibliography/series-target}{Unit-ID}
+      \ldeen{Unit, deren Literaturverzeichnis Zitate anderer Units als Ziel
+      ihrer Links nutzen, wenn das eigene Dokument den Eintrag nicht
+      ausgibt.}{unit whose bibliography other units' citations link to when
+      their own document does not print the entry.}
       \keyval{presentation-profile}{Profil}
       \ldeen{wählt das Präsentationsprofil.}{selects the presentation profile.}
       \keyval{longform-profile}{Profil}
@@ -543,14 +548,29 @@ default gutter looks too tight with very unequal column shares.}
     den vorangehenden Einträgen hinzu.}{adds a comment on the preceding
     entries.}
   \end{quote}
-  \ldeen{Ein Zitat oder Listenlabel verlinkt nur dann auf ein
-  Literaturverzeichnis, wenn das Dokument den Eintrag dort tatsächlich
-  ausgibt; ohne Verzeichnis, etwa in Folien, bleibt es reiner Text.}{A
-  citation or list label links to a bibliography only if the document
-  actually prints the entry there; without a bibliography, for example in
-  slides, it remains plain text.}
+  \ldeen{Ein Zitat oder Listenlabel verlinkt auf das Literaturverzeichnis im
+  selben Dokument, wenn dieses den Eintrag ausgibt, sonst auf das der Unit,
+  die \option{series-target} nennt; gibt auch diese ihn nicht aus, bleibt
+  es reiner Text.}{A citation or list label links to the bibliography in
+  the same document if it prints the entry, otherwise to that of the unit
+  named by \option{series-target}; if that one does not print it either,
+  it remains plain text.}
 
 \end{environments}
+
+\begin{commands}
+\command{printseriesbibliography}[\oarg{Optionen}]
+  \ldeen{gibt alle Einträge aus, die irgendeine Unit der Serie mit gleichem
+  Dokumenttyp und gleicher Sprache zitiert, zusammen mit den eigenen
+  Zitaten. Die \meta{Optionen} gehen an \cs{printbibliography}, dessen
+  Filter also gelten. \code{ollm check} meldet das Verzeichnis als
+  veraltet, sobald eine Unit Neues zitiert; \code{ollm build --resolve}
+  baut es neu.}{prints all entries that any unit of the series with the same
+  document type and language cites, together with the own citations. The
+  \meta{Optionen} go to \cs{printbibliography}, so its filters apply.
+  \code{ollm check} reports the bibliography as stale as soon as a unit
+  cites something new; \code{ollm build --resolve} rebuilds it.}
+\end{commands}
 
 
 \section{Implementation}
@@ -1534,6 +1554,7 @@ default gutter looks too tight with very unequal column shares.}
 \tl_new:N \g__osglecture_bibliography_style_tl
 \tl_gset:Nn \g__osglecture_bibliography_style_tl { alphabetic }
 \tl_new:N \g__osglecture_bibliography_options_tl
+\tl_new:N \g__osglecture_bibliography_series_target_tl
 \prop_new:N \g__osglecture_project_policy_prop
 \prop_new:N \g__osglecture_project_policy_priority_prop
 \prop_new:N \g__osglecture_project_policy_enforced_prop
@@ -1748,6 +1769,7 @@ default gutter looks too tight with very unequal column shares.}
     resources .clist_gset:N = \g__osglecture_bibliography_resources_clist,
     style .tl_gset:N = \g__osglecture_bibliography_style_tl,
     options .tl_gset:N = \g__osglecture_bibliography_options_tl,
+    series-target .tl_gset:N = \g__osglecture_bibliography_series_target_tl,
   }
 
 \keys_define:nn { osglecture/project }
@@ -2482,6 +2504,7 @@ default gutter looks too tight with very unequal column shares.}
   { }
 
 \prop_new:N \g__olref_documents_prop
+\prop_new:N \g__olref_units_prop
 \prop_new:N \g__olref_imported_prop
 \prop_new:N \g__olref_used_prop
 \clist_new:N \g__olref_replace_clist
@@ -2682,6 +2705,11 @@ default gutter looks too tight with very unequal column shares.}
         {\tl_to_str:N \l__olref_pdf_tl}
         {\exp_not:V \l__olref_generation_tl}
       }
+    \tl_set:Ne \l_tmpa_tl { \l__olref_type_tl / \l__olref_lang_tl }
+    \prop_get:NVNF \g__olref_units_prop \l_tmpa_tl \l_tmpb_tl
+      { \tl_clear:N \l_tmpb_tl }
+    \clist_put_right:NV \l_tmpb_tl \l__olref_unit_tl
+    \prop_gput:NVV \g__olref_units_prop \l_tmpa_tl \l_tmpb_tl
     \tl_set:Ne \l__olref_prefix_tl
       { olr-\str_mdfive_hash:e {\l__olref_identity_tl}: }
     \__olref_import_now:
@@ -2720,6 +2748,91 @@ default gutter looks too tight with very unequal column shares.}
     \prop_get:NVN \g__olref_documents_prop \l__olref_identity_tl #4
     \tl_set:Ne #4
       { \exp_after:wN \__olref_document_generation:nnn #4 }
+  }
+
+% \ldeen{Schnittstelle für andere \osglecture-Module, die exportierte
+%   Labels anderer Units nutzen, ohne die internen Variablen dieses Moduls
+%   zu kennen (etwa die serienweite Literatur): eine Einheit ist durch ihre
+%   Unit-ID gegeben, Dokumenttyp und Sprache sind die des laufenden
+%   Dokuments.}{Interface for other \osglecture\ modules that use labels
+%   exported by other units without knowing this module's internal
+%   variables (for instance the series-wide bibliography): a unit is given
+%   by its unit ID; document type and language are those of the running
+%   document.}
+\cs_new_protected:Npn \__olref_context_set:n #1
+  {
+    \__olref_address_parse:n {#1}
+    \tl_set:Ne \l__olref_identity_tl
+      {
+        \__olref_identity:nnn
+          {\l__olref_unit_tl}{\l__olref_type_tl}{\l__olref_lang_tl}
+      }
+    \tl_set:Ne \l__olref_prefix_tl
+      { olr-\str_mdfive_hash:e {\l__olref_identity_tl}: }
+    \tl_clear:N \l__olref_generation_tl
+    \prop_get:NVNT \g__olref_documents_prop \l__olref_identity_tl \l_tmpa_tl
+      { \exp_after:wN \__olref_generation_set:nnn \l_tmpa_tl }
+  }
+% \ldeen{Bildet \meta{code} über alle registrierten Units mit dem
+%   Dokumenttyp und der Sprache des laufenden Dokuments ab, ohne die eigene
+%   Unit; \code{\#1} ist die Unit-ID.}{Maps \meta{code} over all
+%   registered units with the document type and language of the running
+%   document, excluding the own unit; \code{\#1} is the unit ID.}
+\cs_new_protected:Npn \osglecture_references_map_units:n #1
+  {
+    \tl_set:Ne \l_tmpa_tl
+      { \__olref_current_type: / \__olref_current_lang: }
+    \prop_get:NVNT \g__olref_units_prop \l_tmpa_tl \l_tmpb_tl
+      {
+        \cs_set_protected:Npn \__olref_map_unit:n ##1 {#1}
+        \clist_map_inline:Nn \l_tmpb_tl
+          {
+            \OsgLectureBuildLoadedTF
+              {
+                \str_if_eq:eeF { ##1 } { \OsgLectureBuildValue{unit-id} }
+                  { \__olref_map_unit:n {##1} }
+              }
+              { \__olref_map_unit:n {##1} }
+          }
+      }
+  }
+\cs_new_protected:Npn \__olref_map_unit:n #1 { }
+% \ldeen{Stellt das von \meta{unit} exportierte Label \meta{label} als
+%   lokalen Labelnamen in \meta{tl} bereit (leer, wenn es nicht existiert),
+%   und vermerkt die Nutzung für \OLLM\ mit \meta{property}.}{Provides the
+%   label \meta{label} exported by \meta{unit} as a local label name in
+%   \meta{tl} (empty if it does not exist), and records the use for \OLLM\
+%   with \meta{property}.}
+\cs_new_protected:Npn \osglecture_references_use:nnnN #1#2#3#4
+  {
+    \__olref_context_set:n {#1}
+    \cs_if_exist:cTF { r@ \l__olref_prefix_tl #2 }
+      {
+        \tl_set:Ne #4 { \l__olref_prefix_tl #2 }
+        \__olref_use_write:nn {#2} {#3}
+      }
+      { \tl_clear:N #4 }
+  }
+% \ldeen{Setzt \meta{text} als Link auf das Ziel des von \meta{unit}
+%   exportierten Labels \meta{label} in dessen PDF; ohne Ziel bleibt es
+%   reiner Text.}{Typesets \meta{text} as a link to the target of label
+%   \meta{label} exported by \meta{unit}, in that unit's PDF; without a
+%   target it remains plain text.}
+\cs_new_protected:Npn \osglecture_references_link:nnn #1#2#3
+  {
+    \__olref_context_set:n {#1}
+    \cs_if_exist:cTF { r@ \l__olref_prefix_tl #2 }
+      {
+        \tl_set_eq:Nc \l_tmpa_tl { r@ \l__olref_prefix_tl #2 }
+        \exp_after:wN \__olref_link_fields:nnnnnn \l_tmpa_tl {#3}
+      }
+      {#3}
+  }
+\cs_new_protected:Npn \__olref_link_fields:nnnnnn #1#2#3#4#5#6
+  {
+    \bool_lazy_or:nnTF { \tl_if_empty_p:n {#5} } { \tl_if_empty_p:n {#4} }
+      {#6}
+      { \__olref_link_goToR:nnnn {#5}{#4}{#2}{#6} }
   }
 
 \NewDocumentCommand \OsgLectureWriteReferenceExport { m }
@@ -3876,7 +3989,7 @@ default gutter looks too tight with very unequal column shares.}
               }
             \bool_if:NT \g__osglecture_unit_valid_bool
               {
-                \tl_set:Ne \l_tmpb_tl { \OsgLectureSeriesPosition }
+                \tl_set:Ne \l_tmpb_tl { \OsgLectureSeriesOrdinal }
                 % \ldeen*{Integrationsunits (Rolle @1) haben keine eigene
                 % logische Unit-Id, kein eigenes Kapitel und keine eigene
                 % Serienposition -- sie bündeln nur andere Units. Diese
@@ -5588,6 +5701,7 @@ default gutter looks too tight with very unequal column shares.}
 
 \cs_new:Npn \OsgLectureSeriesAvailableFlag { 0 }
 \cs_new:Npn \OsgLectureSeriesPosition { }
+\cs_new:Npn \OsgLectureSeriesOrdinal { }
 \cs_new:Npn \OsgLectureSeriesCurrentPhysicalUnit { }
 \cs_new:Npn \OsgLectureSeriesCurrentRole { }
 \cs_new:Npn \OsgLectureSeriesPreviousPhysicalUnit { }
@@ -5805,6 +5919,7 @@ default gutter looks too tight with very unequal column shares.}
 \cs_generate_variant:Nn \prop_if_in:NnTF { Ne }
 \cs_new_protected:cpn { osglecture@bibprinted } #1
   { \prop_gput:Nnn \g__osglecture_bibliography_printed_prop {#1} { } }
+\prop_new:N \g__osglecture_bibliography_exported_prop
 \AtEveryBibitem
   {
     \iow_now:Ne \@auxout
@@ -5812,14 +5927,88 @@ default gutter looks too tight with very unequal column shares.}
         \token_to_str:c { osglecture@bibprinted }
           { \int_use:c { c@refsection } @ \abx@field@entrykey }
       }
+    \__osglecture_bibliography_export_entry:V \abx@field@entrykey
   }
+% \ldeen{Jeder ausgegebene Eintrag wird zusätzlich als Label
+%   \code{osglecture@bib@}\meta{key} exportiert, dessen Anker das Ziel von
+%   \pkg*{biblatex} ist. Eine andere Unit kann damit auf den Eintrag in
+%   diesem Dokument verlinken (siehe \option{series-target}). Seite und Text
+%   bleiben leer: Die Exportzeile ändert sich so nur, wenn sich das Ziel
+%   ändert, und \code{ollm} baut zitierende Units nicht bei jeder
+%   Seitenverschiebung neu.}{Every printed entry is also exported as label
+%   \code{osglecture@bib@}\meta{key}, whose anchor is the \pkg*{biblatex}
+%   target. Another unit can thus link to the entry in this document (see
+%   \option{series-target}). Page and text stay empty: the export line then
+%   changes only when the target changes, and \code{ollm} does not rebuild
+%   citing units on every page shift.}
+\cs_new_protected:Npn \__osglecture_bibliography_export_entry:n #1
+  {
+    \prop_if_in:NnF \g__osglecture_bibliography_exported_prop {#1}
+      {
+        \prop_gput:Nnn \g__osglecture_bibliography_exported_prop {#1} { }
+        \exp_args:Ne \OsgLectureWriteReferenceExport
+          {
+            \token_to_str:N \newlabel { osglecture@bib@#1 }
+              { { } { } { } { cite. \int_use:c { c@refsection } @#1 } { } }
+          }
+      }
+  }
+\cs_generate_variant:Nn \__osglecture_bibliography_export_entry:n { V }
 \cs_new_eq:NN \__osglecture_bibliography_link:w \blx@imc@bibhyperref
 \cs_new_protected:Npn \__osglecture_bibliography_hyperref:nn #1#2
   {
     \prop_if_in:NeTF \g__osglecture_bibliography_printed_prop
       { \int_use:c { c@refsection } @ #1 }
       { \__osglecture_bibliography_link:w [#1] {#2} }
+      { \__osglecture_bibliography_series_link:nn {#1} {#2} }
+  }
+% \ldeen{Fehlt der Eintrag im eigenen Dokument, verlinkt das Zitat auf das
+%   Literaturverzeichnis der Unit, die \option{series-target} nennt, sofern
+%   diese den Eintrag ausgibt; der Link läuft wie bei \cs{olref} und wird
+%   bei der Integration intern.}{If the own document lacks the entry, the
+%   citation links to the bibliography of the unit named by
+%   \option{series-target}, provided that unit prints the entry; the link
+%   works like \cs{olref} and becomes internal on integration.}
+\tl_new:N \l__osglecture_bibliography_label_tl
+% \ldeen{Die Ziel-Unit selbst verlinkt nie über diese Regel: Ein Eintrag,
+%   den sie (noch) nicht ausgibt, verwiese sonst auf ihre eigene vorige
+%   Generation.}{The target unit itself never links through this rule: an
+%   entry it does not print (yet) would otherwise point to its own previous
+%   generation.}
+\bool_new:N \l__osglecture_bibliography_skip_bool
+\prg_new_protected_conditional:Npnn \__osglecture_bibliography_if_target: { T }
+  {
+    \OsgLectureBuildLoadedTF
+      {
+        \str_if_eq:eeTF
+          { \OsgLectureBuildValue{unit-id} }
+          { \g__osglecture_bibliography_series_target_tl }
+          { \prg_return_true: } { \prg_return_false: }
+      }
+      { \prg_return_false: }
+  }
+\cs_new_protected:Npn \__osglecture_bibliography_series_link:nn #1#2
+  {
+    \bool_set_false:N \l__osglecture_bibliography_skip_bool
+    \tl_if_empty:NT \g__osglecture_bibliography_series_target_tl
+      { \bool_set_true:N \l__osglecture_bibliography_skip_bool }
+    \__osglecture_bibliography_if_target:T
+      { \bool_set_true:N \l__osglecture_bibliography_skip_bool }
+    \bool_if:NTF \l__osglecture_bibliography_skip_bool
       {#2}
+      {
+        \exp_args:NV \osglecture_references_use:nnnN
+          \g__osglecture_bibliography_series_target_tl
+          { osglecture@bib@#1 } { citation }
+          \l__osglecture_bibliography_label_tl
+        \tl_if_empty:NTF \l__osglecture_bibliography_label_tl
+          {#2}
+          {
+            \exp_args:NV \osglecture_references_link:nnn
+              \g__osglecture_bibliography_series_target_tl
+              { osglecture@bib@#1 } {#2}
+          }
+      }
   }
 \cs_new_protected:Npn \__osglecture_bibliography_hyperref_opt:w [ #1 ]
   { \__osglecture_bibliography_hyperref:nn {#1} }
@@ -5844,6 +6033,110 @@ default gutter looks too tight with very unequal column shares.}
   }
   { \multicitedelim }
   { }
+
+% \ldeen{Serienweites Literaturverzeichnis: Jede Unit exportiert die
+%   sortierte Liste ihrer zitierten Schlüssel als Label
+%   \code{osglecture@bibliography}. \cs{printseriesbibliography} vereinigt
+%   die Listen aller Units mit Dokumenttyp und Sprache des laufenden
+%   Dokuments und die eigenen Zitate, zitiert sie in einer eigenen
+%   \code{refsection} per \cs{nocite} und gibt sie aus; das optionale
+%   Argument geht an \cs{printbibliography}, dessen Filter also gelten. Die
+%   Nutzung der fremden Listen wird für \code{ollm} vermerkt: Zitiert eine
+%   Unit Neues, meldet \code{ollm check} das Verzeichnis als veraltet, und
+%   \code{ollm build --resolve} baut es neu. Die eigenen Schlüssel kommen
+%   aus dem laufenden und dem vorigen Lauf, damit das Verzeichnis auch vor
+%   den eigenen Zitaten stehen darf.}{Series-wide bibliography: every unit
+%   exports the sorted list of its cited keys as label
+%   \code{osglecture@bibliography}. \cs{printseriesbibliography} unites the
+%   lists of all units with the document type and language of the running
+%   document and the own citations, cites them in a refsection of its own
+%   via \cs{nocite}, and prints them; the optional argument goes to
+%   \cs{printbibliography}, so its filters apply. The use of the other
+%   lists is recorded for \code{ollm}: if a unit cites something new,
+%   \code{ollm check} reports the bibliography as stale, and
+%   \code{ollm build --resolve} rebuilds it. The own keys come from the
+%   current and the previous run, so that the bibliography may also precede
+%   the own citations.}
+\seq_new:N \g__osglecture_bibliography_cited_seq
+\clist_new:N \g__osglecture_bibliography_previous_clist
+\seq_new:N \l__osglecture_bibliography_series_seq
+\cs_new_protected:cpn { osglecture@bibcited } #1
+  { \clist_gset:Nn \g__osglecture_bibliography_previous_clist {#1} }
+% \ldeen{Schlüssel werden als Zeichenketten geführt: Aus der
+%   \file{.aux}-Datei gelesene und von \pkg*{biblatex} gelieferte Schlüssel
+%   unterscheiden sich sonst in den Kategoriecodes und gälten nicht als
+%   gleich.}{Keys are kept as strings: keys read from the \file{.aux} file
+%   and keys supplied by \pkg*{biblatex} would otherwise differ in their
+%   category codes and not count as equal.}
+\AtEveryCitekey
+  {
+    \seq_gput_right:Ne \g__osglecture_bibliography_cited_seq
+      { \tl_to_str:V \abx@field@entrykey }
+  }
+
+\cs_new_protected:Npn \__osglecture_bibliography_export_cited:
+  {
+    \seq_gremove_duplicates:N \g__osglecture_bibliography_cited_seq
+    \seq_gsort:Nn \g__osglecture_bibliography_cited_seq
+      {
+        \str_compare:nNnTF {##1} > {##2}
+          { \sort_return_swapped: } { \sort_return_same: }
+      }
+    \tl_set:Ne \l_tmpa_tl
+      { \seq_use:Nn \g__osglecture_bibliography_cited_seq { , } }
+    \exp_args:Ne \OsgLectureWriteReferenceExport
+      {
+        \token_to_str:N \newlabel { osglecture@bibliography }
+          { { \l_tmpa_tl } { } { } { } { } }
+      }
+    \iow_now:Ne \@auxout
+      { \token_to_str:c { osglecture@bibcited } { \l_tmpa_tl } }
+  }
+\AddToHook { enddocument/afterlastpage } [ osglecture-bibliography ]
+  { \__osglecture_bibliography_export_cited: }
+\DeclareHookRule { enddocument/afterlastpage }
+  { osglecture-bibliography } { before } { osglecture-references/export }
+
+\cs_new_protected:Npn \__osglecture_bibliography_collect_unit:n #1
+  {
+    \osglecture_references_use:nnnN {#1} { osglecture@bibliography }
+      { bibliography } \l__osglecture_bibliography_label_tl
+    \tl_if_empty:NF \l__osglecture_bibliography_label_tl
+      {
+        \tl_set_eq:Nc \l_tmpa_tl
+          { r@ \l__osglecture_bibliography_label_tl }
+        \tl_set:Ne \l_tmpb_tl
+          { \exp_after:wN \use_i:nnnnn \l_tmpa_tl }
+        \clist_map_inline:Nn \l_tmpb_tl
+          {
+            \seq_put_right:Ne \l__osglecture_bibliography_series_seq
+              { \tl_to_str:n {##1} }
+          }
+      }
+  }
+\NewDocumentCommand \printseriesbibliography { O{} }
+  {
+    \seq_clear:N \l__osglecture_bibliography_series_seq
+    \osglecture_references_map_units:n
+      { \__osglecture_bibliography_collect_unit:n {##1} }
+    \clist_map_inline:Nn \g__osglecture_bibliography_previous_clist
+      {
+        \seq_put_right:Ne \l__osglecture_bibliography_series_seq
+          { \tl_to_str:n {##1} }
+      }
+    \seq_concat:NNN \l__osglecture_bibliography_series_seq
+      \l__osglecture_bibliography_series_seq
+      \g__osglecture_bibliography_cited_seq
+    \seq_remove_duplicates:N \l__osglecture_bibliography_series_seq
+    \begin{refsection}
+      \seq_if_empty:NF \l__osglecture_bibliography_series_seq
+        {
+          \exp_args:Ne \nocite
+            { \seq_use:Nn \l__osglecture_bibliography_series_seq { , } }
+        }
+      \printbibliography [#1]
+    \end{refsection}
+  }
 
 \NewDocumentEnvironment { literaturelist } { O{ 5.5em } }
   {

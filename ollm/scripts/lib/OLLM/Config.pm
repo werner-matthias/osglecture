@@ -18,6 +18,9 @@ our $USER_SCHEMA = 1;
 our $PARSER_NAME = 'TOML::Tiny::Parser';
 our $PARSER_ERROR;
 our $PARSER_LOADED;
+# Boolean keys of deployment permissions tables; `print` is the only
+# non-boolean key. OLLM::Deployment maps them onto qpdf options.
+our @PERMISSION_FLAGS = qw(extract modify annotate form assemble);
 
 sub resolve_request {
   my ($class, %arg) = @_;
@@ -582,6 +585,8 @@ sub _normalize_manifest {
         if defined $deployment->{filename};
       $rule->{collection_filename} //= $deployment->{collection_filename}
         if defined $deployment->{collection_filename};
+      $rule->{permissions} //= { %{ $deployment->{permissions} } }
+        if ref $deployment->{permissions} eq 'HASH';
     }
   }
 }
@@ -627,7 +632,7 @@ sub _validate_deployment {
   my $deployment = $manifest->{deployment};
   die "$path: deployment must be a table" if ref $deployment ne 'HASH';
   _known_keys($deployment,
-    [qw(series roles types paths filename collection_filename)],
+    [qw(series roles types paths filename collection_filename permissions)],
     $path, $lines, 'deployment');
   if (exists $deployment->{series}) {
     my $series = _require_string($deployment, 'series', "$path: deployment");
@@ -654,6 +659,8 @@ sub _validate_deployment {
     if exists $deployment->{filename};
   _require_string($deployment, 'collection_filename', "$path: deployment")
     if exists $deployment->{collection_filename};
+  _validate_permissions($deployment, $path, $lines, 'deployment')
+    if exists $deployment->{permissions};
   my $types = _require_table($deployment, 'types', "$path: deployment");
   for my $doctype (sort keys %$types) {
     die "$path: invalid deployment document type '$doctype'"
@@ -661,8 +668,11 @@ sub _validate_deployment {
     my $rule = $types->{$doctype};
     die "$path: deployment.types.$doctype must be a table"
       if ref $rule ne 'HASH';
-    _known_keys($rule, [qw(paths filename collection_filename series units)], $path, $lines,
-      "deployment.types.$doctype");
+    _known_keys($rule,
+      [qw(paths filename collection_filename series units permissions)],
+      $path, $lines, "deployment.types.$doctype");
+    _validate_permissions($rule, $path, $lines, "deployment.types.$doctype")
+      if exists $rule->{permissions};
     if (exists $rule->{paths}) {
       my $paths = _require_string_array(
         $rule, 'paths', "$path: deployment.types.$doctype",
@@ -704,6 +714,35 @@ sub _validate_deployment {
       _require_string($override, 'filename',
         "$path: deployment.types.$doctype.units.$unit");
     }
+  }
+}
+
+# PDF permissions applied to deployed copies. Absent keys grant the
+# permission; the values are normalized in place to 'full'|'low'|'none' and
+# 1|0 so that OLLM::Deployment never sees TOML boolean objects.
+sub _validate_permissions {
+  my ($table, $path, $lines, $prefix) = @_;
+  my $permissions = $table->{permissions};
+  die "$path: $prefix.permissions must be a table"
+    if ref $permissions ne 'HASH';
+  _known_keys($permissions, [@PERMISSION_FLAGS, 'print'], $path, $lines,
+    "$prefix.permissions");
+  if (exists $permissions->{print}) {
+    my $print = _require_string($permissions, 'print',
+      "$path: $prefix.permissions");
+    die "$path: invalid $prefix.permissions.print '$print'; "
+      . "expected full, low, or none"
+      if $print !~ /\A(?:full|low|none)\z/;
+  }
+  for my $flag (grep { exists $permissions->{$_} } @PERMISSION_FLAGS) {
+    my $value = $permissions->{$flag};
+    my $boolean = ref $value
+      ? eval { $value->isa('JSON::PP::Boolean')
+          || $value->isa('Types::Serialiser::Boolean') }
+      : defined($value) && $value =~ /\A[01]\z/;
+    _fail_at($path, $lines, "$prefix.permissions.$flag",
+      "$prefix.permissions.$flag must be true or false") if !$boolean;
+    $permissions->{$flag} = $value ? 1 : 0;
   }
 }
 

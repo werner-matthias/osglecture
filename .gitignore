@@ -11,6 +11,7 @@ test/standalone/main.synctex.gz
 *.so
 **/*.aux
 !osglecture/testfiles/support/reference-source.osgref.aux
+!osglecture/testfiles/support/bibliography-source.osgref.aux
 **/*.toc
 **/*.synctex.gz
 **/*.code

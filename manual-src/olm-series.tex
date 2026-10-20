@@ -4,13 +4,13 @@
 \ldeen{Eine Serie ist mehr als eine Menge von Verzeichnissen. Ihre Einheiten
 können voneinander abhängen: Kapitelnummern sollen fortlaufen, ein Querverweis
 benötigt ein Ziel aus einer anderen Unit, und ein Gesamtdokument benötigt die
-gebauten Einzelkapitel. \OLLM\ hält dafür promovierte Zustände vor und kann
+gebauten Einzelkapitel. \OLLM\ speichert dafür den Zustand erfolgreicher Builds und kann
 veraltete Produzenten mit \option{--resolve} neu bauen. Ohne diesen
 Serienzustand könnte ein lokaler \LaTeX-Lauf nur die aktuelle Quelldatei sehen.}{A
 series is more than a set of directories. Its units may depend on one another:
 chapter numbers should continue, a cross-reference needs a target from another
 unit, and a combined document needs the built individual chapters. \OLLM\ keeps
-promoted state for these purposes and can rebuild stale producers with
+the state of successful builds for these purposes and can rebuild stale producers with
 \option{--resolve}. Without this series state, a local \LaTeX\ run could only
 see the current source file.}
 
@@ -167,12 +167,12 @@ integration unit for the document type, or more than one, the selection is
 ambiguous and the build fails.}
 
 \ldeen{Jede einzubindende Dokumentinstanz muss zuvor mindestens einmal gebaut sein.
-Der Integrationslauf protokolliert die tatsächlich verwendete Generation als
+Der Integrationslauf protokolliert den tatsächlich verwendeten Buildstand als
 Abhängigkeit. Nach Änderungen genügt deshalb normalerweise ein erneuter Lauf
 mit \option{--resolve}. Die Reihenfolge der
 \cs{includeunit}-Befehle ist die Reihenfolge im Ergebnis; sie wird
 nicht aus den Verzeichnisnummern erraten.}{Every document instance to be included must
-have been built at least once. The integration run records the generation
+have been built at least once. The integration run records the build
 actually used as a dependency. After changes, another run with
 \option{--resolve} is therefore normally sufficient. The order of the
 \cs{includeunit} commands is the order in the result; it is not
@@ -226,12 +226,12 @@ therefore both higher quality and more predictable.}
 \end{commands}
 
 \ldeen{Integration ist nur in einer Serie mit genau einer passenden Unit der
-Rolle \code{i} pro Dokumenttyp verfügbar. Sie setzt promovierte
+Rolle \code{i} pro Dokumenttyp verfügbar. Sie setzt erfolgreich gebaute
 Quelldokumente voraus. Serienübergreifende Referenzen, Counter-Fortsetzung und
 Integration werden über OLLMs Zustands- und Abhängigkeitsmodell aufgelöst;
 lokale LaTeX-Läufe ohne diesen Zustand können sie nicht rekonstruieren.}{
 Integration is available only in a series with exactly one matching unit of
-role \code{i} per document type. It requires promoted source documents.
+role \code{i} per document type. It requires successfully built source documents.
 Cross-unit references, counter continuation, and integration are resolved
 through OLLM's state and dependency model; local LaTeX runs without that state
 cannot reconstruct them.}

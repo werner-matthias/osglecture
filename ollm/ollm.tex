@@ -322,6 +322,13 @@ mit \texttt{--target=NAME} gewählt.
 \item[\texttt{--overwrite}] erlaubt bei \texttt{deploy} das Ersetzen einer
   abweichenden Zieldatei, wenn die Projektpolicy eine explizite Freigabe
   verlangt.
+\item[\texttt{--permissions=all|KEY=WERT,...}] ersetzt bei \texttt{deploy}
+  die konfigurierten PDF-Rechte aller Dokumenttypen, etwa
+  \texttt{--permissions=print=none}; \texttt{all} deployt ohne
+  Einschränkungen.
+\item[\texttt{--owner-password=KENNWORT}] legt bei \texttt{deploy} das
+  Kennwort fest, mit dem sich die PDF-Einschränkungen aufheben lassen; ohne
+  Angabe ist es zufällig und wird nicht gespeichert.
 \item[\texttt{+enforce+}, \texttt{--enforce+}] verlangt das Pluspräfix bei
   Aktions- und eingebauten Targetwörtern. Das verhindert, dass ein Dateiname
   wie \texttt{slides} als Target interpretiert wird. \texttt{+force+} ist ein
@@ -346,7 +353,7 @@ Angabe gilt die Projektstandardsprache, sofern das Target sie unterstützt,
 ansonsten die erste Sprache des Targets. \texttt{--source} ist standardmäßig
 \texttt{main.tex}.
 
-\texttt{--scope} bestimmt, auf welche Units und Projektionen der Build wirkt:
+\texttt{--scope} bestimmt, auf welche Units und Dokumentinstanzen der Build wirkt:
 
 \begin{description}
 \item[\texttt{current}] ist der Default und baut genau das ausdrücklich
@@ -403,7 +410,7 @@ ollm build script --resolve
 
 Zyklen sind erlaubt. Noch nie direkt gebaute logische Units kann OLLM nicht
 aus Verzeichnisnamen erraten; bauen Sie eine solche Unit zunächst einmal in
-der benötigten Projektion. Die Höchstzahl der Fixpunktrunden wird in
+der benötigten Kombination aus Dokumenttyp und Sprache. Die Höchstzahl der Fixpunktrunden wird in
 \verb|[build.resolve]| konfiguriert.
 
 \subsection{Standalone-Modus}
@@ -423,8 +430,8 @@ zulässig.
 
 \subsection{Report}
 
-\texttt{report} beschreibt Units, vorhandene Projektionen, Artefakte,
-Generationen, Kapitel- und Ordnungsnummern, Konfigurationssignaturen und
+\texttt{report} beschreibt Units, vorhandene Dokumentinstanzen,
+Ausgabedateien, den jeweils gültigen Buildstand, Kapitel- und Ordnungsnummern, Konfigurationssignaturen und
 Abhängigkeiten. Befunde ändern seinen Exitstatus nicht, solange der Zustand
 lesbar ist.
 
@@ -484,7 +491,7 @@ Default-Level ist \texttt{aux}, der Default-Scope \texttt{current}.
 \begin{description}
 \item[\texttt{--level=aux}] entfernt Hilfsdateien, behält aber das lokale PDF.
 \item[\texttt{--level=build}] entfernt das isolierte Buildverzeichnis.
-\item[\texttt{--level=state}] entfernt promovierte Zustandsprojektionen.
+\item[\texttt{--level=state}] entfernt den gespeicherten Projektzustand.
 \item[\texttt{--level=all}] kombiniert \texttt{build} und \texttt{state}.
 \end{description}
 
@@ -500,8 +507,8 @@ ollm clean --level=state --scope=series
 
 \subsection{Prune}
 
-\texttt{prune} entfernt aufgegebene temporäre Zustände und ersetzte
-Generationen. Zustände von inzwischen fehlenden physischen Units werden nur
+\texttt{prune} entfernt aufgegebene temporäre Zustände und ersetzte ältere
+Buildstände. Zustände von inzwischen fehlenden physischen Units werden nur
 mit \texttt{--stale-units} entfernt:
 
 \begin{verbatim}
@@ -516,7 +523,7 @@ Units müssen anschließend wieder direkt gebaut werden.
 
 \section{Deployment}
 
-\texttt{deploy} kopiert bereits erfolgreich promovierte PDFs. Es startet
+\texttt{deploy} kopiert bereits erfolgreich gebaute PDFs. Es startet
 keinen Build und legt keine Zielverzeichnisse an.
 
 \begin{verbatim}
@@ -527,7 +534,7 @@ ollm deploy --all --overwrite
 \end{verbatim}
 
 In der Projektwurzel gilt standardmäßig \texttt{series}, in einer Unit
-\texttt{current}. \texttt{unit} wählt alle vorhandenen Projektionen der Unit;
+\texttt{current}. \texttt{unit} wählt alle vorhandenen Dokumentinstanzen der Unit;
 \texttt{collection} wählt die Integrationsdatei des Dokumenttyps unabhängig
 vom Arbeitsverzeichnis. Bei Serien-Deployment entscheidet
 \verb|deployment.series|, ob Einzelunits, Collection oder beide kopiert
@@ -537,6 +544,29 @@ Fehlt ein Zielpfad, meldet OLLM einen Fehler und überspringt weitere Versuche
 mit demselben Pfad. Andere konfigurierte Ziele werden weiter bearbeitet. Eine
 vorhandene identische Datei bleibt unverändert. Ob eine abweichende Datei
 \texttt{--overwrite} verlangt, bestimmt \verb|security.deployment.overwrite|.
+
+Deployte Kopien können eingeschränkte PDF-Rechte tragen, etwa keine
+Druckerlaubnis. \verb|[deployment.permissions]| ist der Default aller
+Dokumenttypen, \verb|[deployment.types.DOCTYPE.permissions]| ersetzt ihn
+vollständig; nicht genannte Rechte bleiben erlaubt:
+
+\begin{verbatim}
+[deployment.permissions]
+print = "none"     # full | low | none
+extract = false    # Text und Grafik kopieren
+modify = false     # Seiteninhalt ändern
+annotate = false   # kommentieren
+form = false       # Formulare ausfüllen und signieren
+assemble = false   # Seiten einfügen, löschen, drehen
+\end{verbatim}
+
+Eingeschränkte Kopien erzeugt OLLM mit dem externen Programm \texttt{qpdf}
+(AES-256, ohne Öffnungskennwort, mit zufälligem oder per
+\texttt{--owner-password} angegebenem Eigentümerkennwort). Fehlt
+\texttt{qpdf}, fragt \texttt{deploy} im Terminal, ob ohne Einschränkungen
+kopiert werden soll; mit \texttt{--non-interactive} oder ohne Terminal bricht
+es mit Exitcode~69 ab. Die Einschränkungen sind leicht zu entfernen und daher ein
+Hinweis an die Lesenden, keine Zugriffskontrolle.
 
 \section{Das Projektmanifest \texttt{ollmconfig.toml}}
 

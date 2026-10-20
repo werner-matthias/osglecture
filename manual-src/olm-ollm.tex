@@ -105,16 +105,16 @@ command builds anything.}
 \ldeen{Ein typischer Fehler macht den Unterschied greifbar: Fehlt auf einem
 neuen Rechner das Paket \pkg{tagpax}, hilft \code{doctor}, weil die
 Werkzeugkette unvollständig ist. Wurde dagegen \code{020-processes} nach einem
-erfolgreichen Build verändert und das Gesamtskript verwendet noch dessen alte
-Generation, meldet \code{check} den veralteten Projektzustand. \code{report}
-eignet sich zuvor zur Ursachenforschung, weil es die beteiligten Generationen
+erfolgreichen Build verändert und das Gesamtskript verwendet noch dessen alten
+Buildstand, meldet \code{check} den veralteten Projektzustand. \code{report}
+eignet sich zuvor zur Ursachenforschung, weil es die beteiligten Buildstände
 und Abhängigkeiten zeigt, ohne den Befund als Freigabefehler zu werten.}{A
 typical failure makes the distinction concrete: if the \pkg{tagpax} package is
 missing on a new machine, \code{doctor} helps because the toolchain is
 incomplete. If, on the other hand, \code{020-processes} was changed after a
-successful build and the combined notes still use its old generation,
+successful build and the combined notes still use its old build,
 \code{check} reports stale project state. \code{report} is useful for
-investigating the cause first because it shows the generations and dependencies
+investigating the cause first because it shows the builds and dependencies
 involved without treating the finding as a release failure.}
 
 \begin{verbatim}
@@ -162,11 +162,11 @@ ollm clean --level=state --scope=series
 \end{verbatim}
 
 \ldeen{\code{prune} beseitigt aufgegebene temporäre Zustände und ersetzte
-Generationen. Zustände physisch entfernter Units werden nur mit
+ältere Buildstände. Zustände physisch entfernter Units werden nur mit
 \option{--stale-units} einbezogen. Das ist absichtlich vorsichtiger als ein
 pauschales Löschen von \code{.osglecture}, bei dem auch die bekannten
 Zuordnungen logischer Unit-IDs verloren gehen.}{\code{prune} removes
-abandoned temporary states and superseded generations. State belonging to
+abandoned temporary states and older, replaced build results. State belonging to
 physically removed units is included only with \option{--stale-units}. This is
 deliberately more cautious than deleting \code{.osglecture} wholesale,
 which also loses known mappings of logical unit IDs.}
@@ -178,12 +178,12 @@ ollm prune --stale-units
 
 \subsection{\ldeen{Bereitstellen}{Deployment}}
 
-\ldeen{\code{deploy} kopiert bereits erfolgreich promovierte PDFs an die im
+\ldeen{\code{deploy} kopiert bereits erfolgreich gebaute PDFs an die im
 Manifest konfigurierten Zielorte. Es startet keinen Build und legt keine
 Zielverzeichnisse an. Verwenden Sie daher zuerst \code{build} oder
 \code{build --resolve} und danach \code{deploy}. In der Projektwurzel gilt
 standardmäßig Scope \code{series}, in einer Unit \code{current}.}{
-\code{deploy} copies already successfully promoted PDFs to destinations
+\code{deploy} copies already successfully built PDFs to destinations
 configured in the manifest. It neither starts a build nor creates destination
 directories. Therefore run \code{build} or \code{build --resolve} first,
 then \code{deploy}. The default scope is \code{series} at the project root
@@ -204,6 +204,60 @@ other values, the series ID, unit ID, ordinal, chapter, document type,
 language, and role. An existing identical file remains untouched. Whether a
 different existing file requires \option{--overwrite} is controlled by
 \option{security.overwrite}.}
+
+\ldeen{Die bereitgestellten Kopien können mit eingeschränkten PDF-Rechten
+versehen werden, etwa ohne Druckerlaubnis. Die Einschränkungen stehen in
+\code{[deployment.permissions]} als Default für alle Dokumenttypen oder in
+\code{[deployment.types.\meta{doctype}.permissions]}; eine eigene Tabelle eines
+Dokumenttyps ersetzt den Default vollständig, \code{permissions = \{\}} hebt
+ihn also auf. Nicht genannte Rechte bleiben erlaubt.}{Deployed copies can
+carry restricted PDF permissions, for example without permission to print.
+The restrictions are set in \code{[deployment.permissions]} as the default for
+all document types or in
+\code{[deployment.types.\meta{doctype}.permissions]}; a document type's own
+table replaces the default completely, so \code{permissions = \{\}} lifts it.
+Permissions that are not mentioned remain granted.}
+
+\begin{verbatim}
+[deployment.permissions]
+print = "none"     # full | low | none
+extract = false    # copy text and graphics
+modify = false     # change page content
+annotate = false   # add comments
+form = false       # fill in forms and sign
+assemble = false   # insert, delete, rotate pages
+
+[deployment.types.handout]
+permissions = {}   # handouts are meant to be printed
+\end{verbatim}
+
+\ldeen{\option{--permissions} ersetzt für einen Lauf die konfigurierten Rechte
+aller Dokumenttypen, etwa \keyis*{--permissions}{print=none,extract=false};
+\keyis*{--permissions}{all} deployt ohne Einschränkungen.}{\option{--permissions}
+replaces the configured permissions of all document types for one run, for
+example \keyis*{--permissions}{print=none,extract=false};
+\keyis*{--permissions}{all} deploys without restrictions.}
+
+\ldeen{Für eingeschränkte Kopien benötigt \OLLM\ das externe Programm
+\code{qpdf}; \code{ollm doctor} meldet, ob es gefunden wird. Die Kopie wird
+mit AES-256 verschlüsselt und öffnet ohne Kennwort; das Eigentümerkennwort ist
+zufällig und wird nicht gespeichert, sofern Sie nicht mit
+\keyis*{--owner-password}{KENNWORT} selbst eines angeben. Das gebaute Original
+bleibt unverändert. Solche Einschränkungen lassen sich mit üblichen Werkzeugen leicht
+entfernen; sie sind ein Hinweis an die Lesenden, keine Zugriffskontrolle.}{For
+restricted copies, \OLLM\ needs the external program \code{qpdf};
+\code{ollm doctor} reports whether it is found. The copy is encrypted with
+AES-256 and opens without a password; the owner password is random and is not
+stored unless you set one yourself with
+\keyis*{--owner-password}{PASSWORD}. The built original remains unrestricted. Common tools remove such
+restrictions easily; they are a hint to readers, not access control.}
+
+\ldeen{Fehlt \code{qpdf}, fragt \code{deploy} im Terminal, ob die PDFs ohne
+Einschränkungen kopiert werden sollen. Mit \option{--non-interactive} oder ohne
+Terminal, etwa in CI, bricht es dagegen mit Exitcode~69 ab.}{If \code{qpdf} is
+missing, \code{deploy} asks in the terminal whether to copy the PDFs without
+restrictions. With \option{--non-interactive} or without a terminal, for
+example in CI, it stops with exit code~69 instead.}
 
 \subsection{\ldeen{Projekt anlegen und allgemeine Optionen}{Creating a Project and General Options}}
 
@@ -258,7 +312,7 @@ rejects options that would bypass the controlled build contract.}
   \item[\code{standalone}] \ldeen{baut eine manifestfreie Quelldatei anhand
     ihrer Klassenoptionen}{builds a manifest-free source file from its class
     options}.
-  \item[\code{report}] \ldeen{beschreibt Units, Instanzen, Generationen,
+  \item[\code{report}] \ldeen{beschreibt Units, Instanzen, Buildstände,
     Ausgabedateien und Abhängigkeiten, ohne sie zu bewerten}{describes units,
     instances, versions, output files, and dependencies without validating
     them}.
@@ -268,14 +322,14 @@ rejects options that would bypass the controlled build contract.}
   \item[\code{clean}] \ldeen{entfernt Daten gemäß \option{--level} und
     \option{--scope}}{removes data selected by \option{--level} and
     \option{--scope}}.
-  \item[\code{prune}] \ldeen{entfernt ersetzte Generationen und optional den
-    Zustand fehlender Units}{removes superseded generations and optionally the
+  \item[\code{prune}] \ldeen{entfernt ersetzte ältere Buildstände und optional den
+    Zustand fehlender Units}{removes older, replaced build results and optionally the
     state of missing units}.
   \item[\code{doctor}] \ldeen{prüft Werkzeugkette und, innerhalb eines
     Projekts, dessen grundlegende Konfiguration}{checks the toolchain and,
     inside a project, its basic configuration}.
-  \item[\code{deploy}] \ldeen{kopiert bereits promovierte PDFs nach den
-    Deploymentregeln}{copies already promoted PDFs according to the deployment
+  \item[\code{deploy}] \ldeen{kopiert bereits gebaute PDFs nach den
+    Deploymentregeln}{copies already built PDFs according to the deployment
     rules}.
   \item[\code{convertproject}] \ldeen{konvertiert ein altes
     \File{ollmconfig.pl} nach TOML und übernimmt erkennbare Metadaten aus

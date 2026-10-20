@@ -53,6 +53,19 @@ jobs:
             dejavu
             newcomputermodern
 
+      # qpdf is not part of TeX Live; ollm deploy needs it to restrict PDF
+      # permissions, and its tests skip the real encryption without it. The
+      # Chocolatey package does not put qpdf on PATH for later steps.
+      - name: Install qpdf
+        shell: pwsh
+        run: |
+          choco install qpdf --no-progress -y
+          $qpdf = Get-ChildItem "$env:ProgramFiles" -Recurse -Filter qpdf.exe -ErrorAction SilentlyContinue |
+            Select-Object -First 1
+          if (-not $qpdf) { throw "qpdf.exe was not found after installation" }
+          $qpdf.DirectoryName | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          & $qpdf.FullName --version
+
       - name: Show environment
         run: |
           lualatex --version

@@ -54,6 +54,24 @@
   report("missing-observed", message:match("observed entries") ~= nil)
   report("missing-bytes", message:match("bytes=30 31 30 2D") ~= nil)
 
+  % Same table as ollm's build-file.t: the logical ordinal is not the list
+  % position as soon as excursuses, appendices or integration units exist.
+  local ordinal_entries = {
+    "010-first", "011-e-first", "012-e-second", "020-second",
+    "090-a-one", "091-a-two", "099-i-all"
+  }
+  for _, name in ipairs(ordinal_entries) do
+    local ordered = assert(series_index.analyze(ordinal_entries, name, {
+      doctype = "script", unit_scopes = {}
+    }))
+    report("ordinal-" .. name, ordered.ordinal)
+  end
+  local early, early_message = series_index.analyze(
+    {"005-e-early", "010-first"}, "010-first",
+    {doctype = "script", unit_scopes = {}})
+  report("ordinal-early-excursus", early == nil
+    and early_message:match("no preceding content unit") ~= nil)
+
   local fake_lfs = {
     attributes = function() return "directory" end,
     currentdir = function() return "/course/015-e-background/sections" end,

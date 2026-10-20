@@ -53,7 +53,8 @@ sub run {
     return 0;
   }
 
-  if ($plan->{action} ne 'deploy' && $plan->{overwrite}) {
+  if ($plan->{action} ne 'deploy' && ($plan->{overwrite}
+      || defined $plan->{permissions} || defined $plan->{owner_password})) {
     print STDERR "ollm: deployment options are only valid for deploy\n";
     return 2;
   }
@@ -307,6 +308,19 @@ sub parse {
       $plan{overwrite} = 1;
       next;
     }
+    if ($arg =~ /^--permissions(?:=(.*))?$/) {
+      my $spec = $1 // _take_value($arg, \@argv);
+      die "--permissions specified twice\n" if defined $plan{permissions};
+      require OLLM::Deployment;
+      $plan{permissions} = OLLM::Deployment->parse_permissions($spec);
+      next;
+    }
+    if ($arg =~ /^--owner-password(?:=(.*))?$/) {
+      my $password = $1 // _take_value($arg, \@argv);
+      die "--owner-password must not be empty\n" if $password eq '';
+      $plan{owner_password} = $password;
+      next;
+    }
 
     if ($arg =~ /^(?:--language=|\+?lang=)(.+)$/) {
       $plan{language} = $1;
@@ -509,6 +523,25 @@ sub _deployment {
     my $error = $@ || 'invalid deployment request'; chomp $error;
     print STDERR "ollm: $error\n"; return 2;
   }
+  if (OLLM::Deployment->requires_qpdf($request)) {
+    $request->{qpdf} = _find_program('qpdf');
+    if (!$request->{qpdf}) {
+      if ($plan->{non_interactive} || !-t STDIN) {
+        print STDERR "ollm: the PDF permissions cannot be restricted because "
+          . "qpdf was not found on PATH; install qpdf or deploy with "
+          . "--permissions=all\n";
+        return 69;
+      }
+      print STDERR "qpdf was not found on PATH, so the PDF permissions "
+        . "cannot be restricted. Copy the PDFs without restrictions? [y/j/N] ";
+      my $answer = <STDIN> // '';
+      if ($answer !~ /\A\s*(?:y|yes|j|ja)\s*\z/i) {
+        print STDERR "ollm: deploy cancelled\n";
+        return 69;
+      }
+      $request->{permissions} = {};
+    }
+  }
   my $report = eval { OLLM::Deployment->execute($request) };
   if (!$report) {
     my $error = $@ || 'deployment failed'; chomp $error;
@@ -523,8 +556,10 @@ sub _deployment {
   } else {
     for my $item (@{ $report->{items} }) {
       my $message = defined $item->{message} ? ": $item->{message}" : '';
+      my $restricted = defined $item->{restrictions}
+        ? " [$item->{restrictions}]" : '';
       print uc($item->{status}), " ", ($item->{path} // $item->{source}),
-        "$message\n";
+        "$restricted$message\n";
     }
   }
   return $report->{ok} ? 0 : 1;
@@ -875,6 +910,13 @@ sub _doctor {
     (!$ltxtalk_ok ? (remediation =>
       'Update/install the TeX Live packages ltx-talk and newcomputermodern (tlmgr install ltx-talk newcomputermodern).') : ()),
   });
+  my $qpdf = _program_doctor_check('qpdf');
+  push @capabilities, {
+    name => 'pdf-permissions', required => JSON::PP::false,
+    ok => $qpdf->{ok}, checks => [$qpdf],
+    (!$qpdf->{ok} ? (remediation =>
+      'Install qpdf (https://qpdf.sourceforge.io/) and ensure it is available on PATH; it is only needed to deploy PDFs with restricted permissions.') : ()),
+  };
 
   my $project;
   my $located = eval {
@@ -928,6 +970,17 @@ sub _doctor {
         my $metadata = File::Spec->catfile($shared, 'documentmetadata.tex');
         push @project_checks, { name => 'document-metadata',
           ok => (-f $metadata ? JSON::PP::true : JSON::PP::false), path => $metadata };
+      }
+      my $deployment = $manifest->{deployment} // {};
+      require OLLM::Deployment;
+      my @restricting = sort grep {
+        OLLM::Deployment::restrictions($deployment->{types}{$_}{permissions} // {}) ne ''
+      } keys %{ $deployment->{types} // {} };
+      if (@restricting) {
+        push @project_checks, { name => 'pdf-permissions', ok => $qpdf->{ok},
+          doctypes => \@restricting,
+          (!$qpdf->{ok} ? (message =>
+            'deployment restricts PDF permissions, but qpdf is unavailable') : ()) };
       }
       my $state_directory = File::Spec->catdir($root, '.osglecture', 'state');
       if (-e $state_directory) {
@@ -1153,12 +1206,12 @@ Targets:
 Implemented commands:
   build                 execute a series build
   standalone            execute a manifest-free build
-  report                describe discovered units and promoted projections
-  check                 validate required projection dependencies
+  report                describe the units and their built documents
+  check                 validate dependencies between built documents
   clean                 remove selected OLLM build or state data
-  prune                 remove superseded OLLM state generations
+  prune                 remove older, replaced build results
   doctor                inspect the local Perl and TeX toolchain
-  deploy                copy promoted PDF artifacts to configured targets
+  deploy                copy built PDFs to the configured destinations
   convertproject        convert a legacy project configuration where possible
   newproject            create project configuration, converting legacy files when present
 
@@ -1182,6 +1235,14 @@ General options:
   --non-interactive
   +enforce+|--enforce+  require '+' on command and target words
   --overwrite           permit replacement when project policy is explicit
+  --permissions=all|KEY=VALUE[,...]
+                        PDF permissions of deployed copies, replacing the
+                        configured ones; keys: print=full|low|none,
+                        extract, modify, annotate, form, assemble=true|false;
+                        restrictions require qpdf
+  --owner-password=PASSWORD
+                        password that lifts the PDF restrictions of deployed
+                        copies (default: random and not stored)
 
 Build options:
   --target=TARGET       select a registered project target

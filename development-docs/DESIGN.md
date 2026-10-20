@@ -2018,6 +2018,44 @@ sie bevorzugt atomar durch Umbenennen. Unterstützt das Zielsystem kein
 atomares Ersetzen, darf OLLM zugunsten eines erfolgreichen Deployments auf
 ein nichtatomares Ersetzen zurückfallen.
 
+Deployte Kopien können eingeschränkte PDF-Rechte tragen. `[deployment.permissions]`
+ist der Default für alle Dokumenttypen; eine eigene
+`[deployment.types.<type>.permissions]`-Tabelle ersetzt ihn wie `paths` und
+`filename` vollständig (`permissions = {}` hebt ihn auf). Nicht genannte Rechte
+bleiben erlaubt:
+
+```toml
+[deployment.permissions]
+print = "none"     # full | low | none
+extract = false
+modify = false
+annotate = false
+form = false
+assemble = false
+```
+
+`--permissions=all|KEY=VALUE,...` ersetzt für einen Lauf die konfigurierten
+Rechte aller Dokumenttypen. Unit-Overrides kennen weiterhin nur `filename`.
+OLLM schränkt die Rechte über das externe `qpdf` ein (AES-256, leeres
+Benutzerkennwort); das promovierte Artefakt bleibt unverändert. Das
+Eigentümerkennwort ist zufällig und wird nicht gespeichert, sofern
+`--owner-password` keines angibt; ein Manifestschlüssel dafür ist bewusst nicht
+vorgesehen, damit kein Kennwort versioniert wird. Fehlt `qpdf`, fragt
+`deploy` im Terminal vor dem ersten Kopieren, ob ohne Einschränkungen kopiert
+werden soll; mit `--non-interactive` oder ohne Terminal (CI) bricht es mit
+Exitcode 69 ab, statt still uneingeschränkte Kopien auszuliefern. Das Accessibility-Bit wird nicht angeboten, weil `qpdf` es bei
+256-Bit-Verschlüsselung ignoriert.
+
+**Rationale:** Die Rechte sind eine bewusste Hürde gegen gedankenloses Drucken,
+keine Zugriffskontrolle; jeder verbreitete Viewer oder `qpdf --decrypt` hebt
+sie auf. Ein gespeichertes Eigentümerkennwort brächte daher keinen Schutz,
+wohl aber ein Geheimnis im Manifest. Weil Verschlüsselung zufällige Salts und
+IVs verwendet, gilt eine eingeschränkte Kopie als unverändert, wenn
+Verschlüsselungsparameter (`R`, `P`) und die entschlüsselte, mit `qpdf`
+normalisierte Form übereinstimmen; mit `--owner-password` muss sich die
+vorhandene Kopie zusätzlich mit diesem Kennwort als Eigentümer öffnen lassen. So bleibt der Vergleich zustandslos und
+funktioniert auch, wenn mehrere Rechner auf dasselbe Ziel deployen.
+
 `convertproject` übernimmt statisch erkennbare Legacylisten aus
 `deploy_path` und Namensschablonen aus `deploy_file`; nicht sicher abbildbare
 dynamische Regeln, PDF-Restriktionen und Kennwörter werden gemeldet.

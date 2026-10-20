@@ -514,14 +514,14 @@ from slides to the detailed derivation in the script}:
 \ldeen{Ein schlüsselloser Eintrag der Adresse ist stets die Unit-ID. Verwenden
 Sie stabile logische IDs statt Verzeichnisnamen; OLLM löst die gewünschte
 Kombination aus Unit, Dokumenttyp und Sprache über seinen Referenz-Snapshot
-auf. Das Zieldokument muss mindestens einmal erfolgreich gebaut und sein
-Referenzexport promoviert worden sein. Nach Änderungen an abhängigen Units ist
+auf. Das Zieldokument muss mindestens einmal erfolgreich gebaut worden sein;
+erst dann stehen seine Referenzen anderen Units zur Verfügung. Nach Änderungen an abhängigen Units ist
 \code{ollm build --resolve} der bequemste Weg, Produzenten und Konsumenten
 bis zu einem konsistenten Zustand neu zu bauen.}{A keyless address entry is
 always the unit ID. Use stable logical IDs rather than directory names; OLLM
 resolves the requested combination of unit, document type, and language through
 its reference snapshot. The target document must have been built successfully
-at least once and its reference export promoted. After changing dependent
+at least once; only then are its references available to other units. After changing dependent
 units, \code{ollm build --resolve} is the easiest way to rebuild producers
 and consumers to a consistent state.}
 
@@ -569,6 +569,32 @@ bibliography, the label therefore remains plain text rather than a link to
 nowhere. Bibliographies by topic or chapter are available through the
 \pkg{biblatex} filters, such as \code{keyword=}, \code{type=}, or
 \code{category=}.}
+
+\ldeen{Ein serienweites Literaturverzeichnis gibt
+\cs{printseriesbibliography} aus: alle Einträge, die irgendeine Unit der Serie
+mit gleichem Dokumenttyp und gleicher Sprache zitiert, gefiltert wie bei
+\cs{printbibliography}. Es kann in jeder Unit stehen, etwa in einer eigenen
+Literatur-Unit oder am Ende eines Kapitels. Zitiert eine Unit Neues, meldet
+\code{ollm check} das Verzeichnis als veraltet; \code{ollm build --resolve}
+baut es neu. Nennt die Projektkonfiguration diese Unit als
+\option{series-target}, verlinken Zitate anderer Units auf ihre Einträge,
+wenn das zitierende Dokument kein eigenes Verzeichnis mit dem Eintrag hat;
+bei der Integration werden diese Links intern:}{A series-wide bibliography
+is printed by \cs{printseriesbibliography}: all entries cited by any unit of
+the series with the same document type and language, filtered as with
+\cs{printbibliography}. It can stand in any unit, for example in a
+literature unit of its own or at the end of a chapter. If a unit cites
+something new, \code{ollm check} reports the bibliography as stale;
+\code{ollm build --resolve} rebuilds it. If the project configuration names
+this unit as \option{series-target}, citations in other units link to its
+entries whenever the citing document has no bibliography of its own with the
+entry; on integration these links become internal:}
+
+\begin{verbatim}
+\LectureProjectSetup{
+  bibliography = {resources = lecture.bib, series-target = literature}
+}
+\end{verbatim}
 
 \ldeen{Eine kommentierte Leseliste stellt ausgewählte Einträge vollständig
 dar, gegliedert in Gruppen:}{An annotated reading list shows selected entries
@@ -748,6 +774,10 @@ the starred form suppresses the hyperlink.}
     management is enabled}.
 \end{environments}
 \begin{commands}
+  \command{printseriesbibliography}[\oarg{options}]
+    \ldeen{serienweites Literaturverzeichnis; \meta{options} wie bei
+    \cs{printbibliography}}{series-wide bibliography; \meta{options} as for
+    \cs{printbibliography}}.
   \command{litentry}[\marg{key}]
     \ldeen{vollständiger Eintrag mit Zitatlabel}{full entry with citation
     label}.

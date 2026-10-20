@@ -1380,8 +1380,14 @@ Duplikation, statt neue Komplexität einzuführen.
      `series_index.current_unit` (reine Namensinterpretation des aktuellen
      Verzeichnisses, ohne auf einen Serienwurzel-Fund angewiesen zu sein)
      statt über die Auftragsdatei; `logical-ordinal` kommt über
-     `\OsgLectureSeriesPosition`, dieselbe Größe, die die Serienanzeige
-     bereits berechnet.
+     `\OsgLectureSeriesOrdinal`, das `series_index.analyze` nach denselben
+     Regeln wie `OLLM::BuildFile::_logical_ordinal` berechnet. Ursprünglich
+     wurde hier `\OsgLectureSeriesPosition` gemeldet, in der Annahme, beide
+     seien dieselbe Größe; die Listenposition zählt aber Integrationsunits,
+     Exkurse und Anhänge mit, sodass ollm jeden Exkurs und jeden Anhang mit
+     „LaTeX result ordinal … does not match BuildSpec“ ablehnte. Beide
+     Implementierungen werden mit derselben Falltabelle getestet
+     (`ollm/testfiles/build-file.t`, `osglecture/testfiles/series-index.lvt`).
    - **Dabei gefunden und behoben:** `\ExplSyntaxOn` setzt Leerzeichen auf
      Katcode~9 (ignoriert), nicht Katcode~10 wie normales LaTeX. Lua-Code mit
      mehreren Anweisungen (`local x = ...`, `if ... then`) direkt im

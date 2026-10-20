@@ -98,6 +98,15 @@ jobs:
           echo "::error::TeX Live could not be updated; tests would run against a stale image."
           exit 1
 
+      # qpdf is not part of TeX Live; ollm deploy needs it to restrict PDF
+      # permissions, and its tests skip the real encryption without it.
+      - name: Install qpdf
+        if: matrix.module == 'ollm'
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends qpdf
+          qpdf --version
+
       - name: Show environment
         run: |
           lualatex --version

@@ -46,10 +46,10 @@ a long-form script, in every configured language.
 .PP
 Each build runs
 .BR latexmk (1)
-with LuaLaTeX in an isolated build directory and promotes the successful
-result into the project state below
+with LuaLaTeX in an isolated build directory and, if the run succeeds, saves
+the result in the project state below
 .IR .osglecture .
-The promoted state carries cross-unit references, counter continuation, and
+This saved state carries cross-unit references, counter continuation, and
 the inputs of integration units, so that units can refer to each other
 without knowing build paths.
 .PP
@@ -75,8 +75,8 @@ and
 are not allowed.
 .TP
 .B report
-Describe the discovered units, promoted projections, artifacts, generations,
-and dependencies.
+Describe the discovered units, their built documents and output files, the
+build each one comes from, and the dependencies.
 Findings do not change the exit status as long as the state is readable.
 .TP
 .B check
@@ -92,7 +92,7 @@ and
 .BR \-\-scope .
 .TP
 .B prune
-Remove abandoned temporary states and superseded generations.
+Remove abandoned temporary states and older, replaced build results.
 .TP
 .B doctor
 Inspect Perl,
@@ -103,8 +103,21 @@ the TOML parser, and the required TeX packages; inside a project also the
 manifest, definitions, project files, and stored state.
 .TP
 .B deploy
-Copy already promoted PDFs to the targets configured in the manifest.
+Copy already built PDFs to the destinations configured in the manifest.
 It does not build and does not create target directories.
+.B deploy
+can restrict the PDF permissions of the copies (for example printing) as
+configured in
+.B [deployment.permissions]
+or
+.BR [deployment.types.\fIdoctype\fP.permissions] ;
+this requires
+.BR qpdf (1).
+If qpdf is missing,
+.B deploy
+asks whether to copy without restrictions; with
+.B \-\-non\-interactive
+or without a terminal it exits with status 69.
 .TP
 .B newproject
 Create
@@ -175,6 +188,35 @@ Let
 .B deploy
 replace a differing target file where the project policy requires an
 explicit permission.
+.TP
+.BI \-\-permissions= spec
+Let
+.B deploy
+use these PDF permissions for all document types instead of the configured
+ones.
+.I spec
+is
+.B all
+(no restrictions) or a comma-separated list of
+.IB key = value
+entries:
+.BR print=full|low|none ,
+and
+.BR extract ,
+.BR modify ,
+.BR annotate ,
+.BR form ,
+.B assemble
+with
+.BR true " or " false .
+Restrictions require
+.BR qpdf (1).
+.TP
+.BI \-\-owner\-password= password
+Let
+.B deploy
+use this password to lift the PDF restrictions of the copies.
+Without it, a random password is used and not stored.
 .TP
 .BR +enforce+ ", " \-\-enforce+
 Require the
@@ -248,7 +290,7 @@ options that would bypass it are rejected.
 What
 .B clean
 removes: auxiliary files (default, keeps the local PDF), the isolated build
-directory, the promoted state, or both build and state.
+directory, the saved project state, or both build and state.
 .TP
 .B \-\-stale\-units
 Let
@@ -296,7 +338,7 @@ Project-wide TeX configuration read by the
 class.
 .TP
 .I .osglecture/
-Build directories and promoted state.
+Build directories and saved project state.
 If no
 .B ollm
 or

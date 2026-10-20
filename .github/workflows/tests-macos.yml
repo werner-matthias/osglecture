@@ -47,6 +47,13 @@ jobs:
             dejavu
             newcomputermodern
 
+      # qpdf is not part of TeX Live; ollm deploy needs it to restrict PDF
+      # permissions, and its tests skip the real encryption without it.
+      - name: Install qpdf
+        run: |
+          brew install qpdf
+          qpdf --version
+
       - name: Show environment
         run: |
           lualatex --version

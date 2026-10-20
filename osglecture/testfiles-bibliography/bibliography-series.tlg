@@ -1,0 +1,19 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+\blx@maxsegment@1=\count...
+\blx@sectionciteorder@1=\count...
+Package biblatex Info: Reference section=1 on input line ....
+Package biblatex Info: Setting label 'refsection:1' on input line ....
+[1
+] [2
+]
+Package biblatex Info: Reference section=0 on input line ....
+series-key=Knu:Art-1:1969
+series-key=Sed:AlgorithmsC:1990
+series-key=Ski:AlgorithmDesign:2008
+target-printed=yes
+target-not-printed=no
+[3] (bibliography-series.aux)
+Package rerunfilecheck Info: File `bibliography-series.out' has not changed.
+(rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
+Package logreq Info: Writing requests to 'bibliography-series.run.xml'.

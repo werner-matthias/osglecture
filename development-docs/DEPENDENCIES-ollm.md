@@ -17,6 +17,15 @@ Modern text and math fonts without making plain `osglecture-modes` unusable
 when that optional stack is absent or too old. Failed checks name the relevant
 TeX Live package and an appropriate `tlmgr install` command.
 
+## Optional programs
+
+- `qpdf` is needed only by `ollm deploy` when the manifest or
+  `--permissions` restricts the PDF permissions of deployed copies. It is not
+  part of TeX Live; install it from the system's package manager or from
+  <https://qpdf.sourceforge.io/>. `ollm doctor` reports it as the optional
+  `pdf-permissions` capability and, inside a project that restricts
+  permissions, as a failing project check when it is missing.
+
 ## TOML parsers
 
 There are two TOML readers, for two different slices of the same manifest

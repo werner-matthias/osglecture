@@ -5,14 +5,24 @@ use strict;
 use warnings;
 
 use Cwd qw(abs_path);
+use Digest::SHA ();
 use File::Basename qw(basename dirname);
 use File::Copy qw(copy);
 use File::Spec;
-use File::Temp qw(tempfile);
+use File::Temp qw(tempdir tempfile);
 
+use OLLM::Config;
 use OLLM::Digest;
 use OLLM::Path;
 use OLLM::State;
+
+# qpdf option for each boolean permission of OLLM::Config::PERMISSION_FLAGS.
+# The accessibility bit is missing on purpose: qpdf ignores it for 256-bit
+# encryption, so offering it would promise a restriction that is not set.
+my %QPDF_OPTION = (
+  extract => 'extract', modify => 'modify-other', annotate => 'annotate',
+  form => 'form', assemble => 'assemble',
+);
 
 sub prepare {
   my ($class, %arg) = @_;
@@ -78,16 +88,18 @@ sub prepare {
     $collections{$result->{doctype}}{$result->{physical_unit}} = 1;
   }
   for my $doctype (keys %collections) {
-    die "more than one integration unit is promoted for $doctype"
+    die "more than one integration unit provides a $doctype collection"
       if keys(%{ $collections{$doctype} }) > 1;
   }
-  die "no promoted artifact matches deployment scope '$scope'"
+  die "no built PDF matches deployment scope '$scope'"
     if !@results;
   return {
     project_root => $root, series_id => $manifest->{project}{id},
     scope => $scope, deployment => $deployment,
     overwrite_policy => $manifest->{security}{overwrite} // 'explicit',
     overwrite => $plan->{overwrite} ? 1 : 0,
+    permissions => $plan->{permissions},
+    owner_password => $plan->{owner_password},
     results => [sort {
          $a->{physical_unit} cmp $b->{physical_unit}
       || $a->{doctype} cmp $b->{doctype}
@@ -96,9 +108,53 @@ sub prepare {
   };
 }
 
+# --permissions=all grants everything; otherwise a comma-separated list of
+# KEY=VALUE entries with the same keys as a manifest permissions table.
+sub parse_permissions {
+  my ($class, $spec) = @_;
+  return {} if $spec eq 'all';
+  die "--permissions needs 'all' or KEY=VALUE entries\n" if $spec eq '';
+  my %flag = map { $_ => 1 } @OLLM::Config::PERMISSION_FLAGS;
+  my %permissions;
+  for my $entry (split /,/, $spec, -1) {
+    my ($key, $value) = $entry =~ /\A\s*([a-z]+)\s*=\s*([a-z]+)\s*\z/
+      or die "invalid --permissions entry '$entry'; expected KEY=VALUE or 'all'\n";
+    die "--permissions sets '$key' more than once\n"
+      if exists $permissions{$key};
+    if ($key eq 'print') {
+      die "invalid --permissions value print=$value; expected full, low, or none\n"
+        if $value !~ /\A(?:full|low|none)\z/;
+      $permissions{print} = $value;
+    } elsif ($flag{$key}) {
+      die "invalid --permissions value $key=$value; expected true or false\n"
+        if $value !~ /\A(?:true|false|yes|no)\z/;
+      $permissions{$key} = $value =~ /\A(?:true|yes)\z/ ? 1 : 0;
+    } else {
+      die "unknown --permissions key '$key'; expected "
+        . join(', ', 'print', @OLLM::Config::PERMISSION_FLAGS) . "\n";
+    }
+  }
+  return \%permissions;
+}
+
+# An explicit --permissions value replaces the configured permissions of
+# every document type for this run.
+sub permissions_for {
+  my ($class, $request, $result) = @_;
+  return $request->{permissions}
+    // $request->{deployment}{types}{$result->{doctype}}{permissions} // {};
+}
+
+sub requires_qpdf {
+  my ($class, $request) = @_;
+  return scalar grep {
+    restrictions($class->permissions_for($request, $_)) ne ''
+  } @{ $request->{results} };
+}
+
 sub execute {
   my ($class, $request) = @_;
-  my (@items, %unavailable);
+  my (@items, %unavailable, $workspace);
   for my $result (@{ $request->{results} }) {
     my $rule = $request->{deployment}{types}{$result->{doctype}};
     my $override = ($rule->{units} // {})->{$result->{unit_id}};
@@ -110,9 +166,28 @@ sub execute {
     my $source = File::Spec->catfile($generation, 'document.pdf');
     if (!-f $source || !-s _) {
       push @items, { status => 'failed', source => $source,
-        message => 'promoted PDF artifact is missing or empty' };
+        message => 'the built PDF is missing or empty' };
       next;
     }
+    my $permissions = $class->permissions_for($request, $result);
+    my $restrictions = restrictions($permissions);
+    my ($artifact, $same) = ($source, undef);
+    if ($restrictions ne '') {
+      $workspace //= tempdir('ollm-deploy-XXXXXX', TMPDIR => 1, CLEANUP => 1);
+      my $restricted = eval {
+        _restrict($request->{qpdf}, $source, $permissions, $workspace,
+          $request->{owner_password});
+      };
+      if (!$restricted) {
+        my $error = $@ || 'cannot apply PDF permissions'; chomp $error;
+        push @items, { status => 'failed', source => $source,
+          restrictions => $restrictions, message => $error };
+        next;
+      }
+      $artifact = $restricted->{path};
+      $same = sub { _same_restricted($request->{qpdf}, $restricted, shift) };
+    }
+    my %restricted = $restrictions ne '' ? (restrictions => $restrictions) : ();
     for my $configured (@{ $rule->{paths} }) {
       my $directory = File::Spec->rel2abs($configured, $request->{project_root});
       my $key = File::Spec->canonpath($directory);
@@ -129,16 +204,16 @@ sub execute {
       }
       my $destination = File::Spec->catfile($directory, $filename);
       my $status = eval {
-        _copy_one($source, $destination, $request->{overwrite_policy},
-          $request->{overwrite});
+        _copy_one($artifact, $destination, $request->{overwrite_policy},
+          $request->{overwrite}, $same);
       };
       if (!defined $status) {
         my $error = $@ || 'unknown copy error'; chomp $error;
         push @items, { status => 'failed', path => $destination,
-          message => $error };
+          %restricted, message => $error };
       } else {
         push @items, { status => $status, path => $destination,
-          source => $source };
+          source => $source, %restricted };
       }
     }
   }
@@ -194,9 +269,10 @@ sub _placeholder {
 }
 
 sub _copy_one {
-  my ($source, $destination, $policy, $overwrite) = @_;
+  my ($source, $destination, $policy, $overwrite, $same) = @_;
   if (-f $destination) {
-    return 'unchanged' if _digest($source) eq _digest($destination);
+    return 'unchanged' if $same ? $same->($destination)
+      : _digest($source) eq _digest($destination);
     die "destination exists; use --overwrite"
       if $policy eq 'explicit' && !$overwrite;
   } elsif (-e $destination) {
@@ -223,6 +299,100 @@ sub _copy_one {
     die $error;
   };
   return 'copied';
+}
+
+# Canonical text of the permissions that are actually withheld; empty when
+# the copy needs no encryption at all.
+sub restrictions {
+  my ($permissions) = @_;
+  my @restricted;
+  push @restricted, "print=$permissions->{print}"
+    if ($permissions->{print} // 'full') ne 'full';
+  push @restricted, map { "$_=false" }
+    grep { exists $permissions->{$_} && !$permissions->{$_} }
+      @OLLM::Config::PERMISSION_FLAGS;
+  return join ',', @restricted;
+}
+
+# The deployed copy opens without a password (empty user password). Unless
+# --owner-password names one, the owner password is random and discarded: the
+# restrictions are a deliberate speed bump for readers, not access control,
+# and the unrestricted original stays in the project state.
+sub _restrict {
+  my ($qpdf, $source, $permissions, $workspace, $password) = @_;
+  die "PDF permissions require qpdf, which was not found on PATH\n"
+    if !$qpdf;
+  my (undef, $path) = tempfile('restricted-XXXXXX', DIR => $workspace,
+    SUFFIX => '.pdf', OPEN => 0);
+  my $owner = $password // substr(
+    Digest::SHA::sha256_hex(join ':', time, $$, rand, $source), 0, 32);
+  my @options = ('--print=' . ($permissions->{print} // 'full'),
+    map { "--$QPDF_OPTION{$_}=" . (($permissions->{$_} // 1) ? 'y' : 'n') }
+      @OLLM::Config::PERMISSION_FLAGS);
+  _qpdf($qpdf, '--encrypt', '', $owner, '256', @options, '--',
+    $source, $path);
+  return { path => $path, workspace => $workspace, password => $password };
+}
+
+# Encryption uses random salts and IVs, so two restricted copies of the same
+# artifact never agree byte for byte. They are the same deployment when their
+# encryption parameters match and their decrypted, qpdf-normalized forms do.
+# This relies on qpdf keeping the source's document ID, which LuaLaTeX always
+# writes; a source without one is merely reported as different every time.
+# With an explicit owner password, a copy locked with another one differs.
+sub _same_restricted {
+  my ($qpdf, $restricted, $destination) = @_;
+  my $password = $restricted->{password};
+  $restricted->{encryption} //=
+    _encryption($qpdf, $restricted->{path}, $password);
+  my $encryption = eval { _encryption($qpdf, $destination, $password) };
+  return 0 if !defined($encryption) || $encryption ne $restricted->{encryption};
+  $restricted->{normalized} //= _normalized_digest($qpdf, $restricted->{path},
+    $restricted->{workspace});
+  my $normalized = eval {
+    _normalized_digest($qpdf, $destination, $restricted->{workspace});
+  };
+  return defined($normalized) && $normalized eq $restricted->{normalized};
+}
+
+sub _encryption {
+  my ($qpdf, $path, $password) = @_;
+  open my $handle, '-|', $qpdf,
+    (defined $password ? "--password=$password" : ()),
+    '--show-encryption', $path
+    or die "cannot run qpdf: $!\n";
+  my @lines = grep { /\A(?:R = |P = |Supplied password is )/ } <$handle>;
+  close $handle;
+  _qpdf_status();
+  return join '', @lines;
+}
+
+sub _normalized_digest {
+  my ($qpdf, $path, $workspace) = @_;
+  my (undef, $normalized) = tempfile('normalized-XXXXXX', DIR => $workspace,
+    SUFFIX => '.pdf', OPEN => 0);
+  my $digest = eval {
+    _qpdf($qpdf, '--static-id', '--decrypt', $path, $normalized);
+    _digest($normalized);
+  };
+  my $error = $@;
+  unlink $normalized;
+  die $error if !defined $digest;
+  return $digest;
+}
+
+sub _qpdf {
+  my ($qpdf, @arguments) = @_;
+  my $status = system { $qpdf } $qpdf, @arguments;
+  die "cannot run qpdf: $!\n" if $status == -1;
+  _qpdf_status();
+}
+
+# qpdf exits with 3 when it succeeded with warnings.
+sub _qpdf_status {
+  die "qpdf was terminated by signal " . ($? & 127) . "\n" if $? & 127;
+  my $code = $? >> 8;
+  die "qpdf failed with exit code $code\n" if $code != 0 && $code != 3;
 }
 
 sub _digest {

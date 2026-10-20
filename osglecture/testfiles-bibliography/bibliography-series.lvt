@@ -1,0 +1,33 @@
+\input regression-test
+\documentclass[standalone,doctype=script,profile=book,lang=de]{osglecture}
+\LectureProjectSetup{bibliography={resources=bibliography-test.bib,
+  series-target=literature}}
+\usepackage{osglecture-bibliography}
+% Another unit of the series: it cites two entries and prints one of them.
+\OsgLectureReferenceDocument{
+  unit=literature,
+  type=script,
+  lang=de,
+  generation=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb,
+  aux=bibliography-source.osgref,
+  pdf=bibliography-source.pdf
+}
+\begin{document}
+\hfuzz=\maxdimen
+\START
+Own citation: \cite{Ski:AlgorithmDesign:2008}.
+\printseriesbibliography
+\ExplSyntaxOn
+% The series bibliography unites the other unit's keys with the own ones.
+\seq_map_inline:Nn \l__osglecture_bibliography_series_seq
+  { \TYPE{series-key=#1} }
+% A citation not printed here links into the series target, if it prints it.
+\osglecture_references_use:nnnN {literature} {osglecture@bib@Knu:Art-1:1969}
+  {citation} \l_tmpa_tl
+\TYPE{target-printed=\tl_if_empty:NTF\l_tmpa_tl{no}{yes}}
+\osglecture_references_use:nnnN {literature} {osglecture@bib@Sed:AlgorithmsC:1990}
+  {citation} \l_tmpa_tl
+\TYPE{target-not-printed=\tl_if_empty:NTF\l_tmpa_tl{no}{yes}}
+\ExplSyntaxOff
+% No \END: biblatex completes its .bcf only at a regular \end{document}.
+\end{document}
