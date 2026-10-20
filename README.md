@@ -23,7 +23,7 @@ Currently, the following packages are included:
 * **osglistings**: a `minted`-based code-listing front end (`./osglistings`)
 * **semcat**: generalized semantic-category markup (inline, margin, box) with optional QR-code annotations (`./semcat`)
 * **tagdirtree**: taggable directory tree
-* **tagbride**: transition package to patch few third party package w/o own native PDF/UA support.
+* **tagbridge**: transition package to patch few third party package w/o own native PDF/UA support.
 * **osgdoc** is a small wrapper for cnltx and provides some further support for documentation (`./osgdoc`) 
 
 > [!WARNING]
