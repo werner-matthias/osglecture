@@ -2,6 +2,9 @@
 \documentclass{article}
 \begin{document}
 \START
+% The ordinal_entries table below is the same as in ollm's build-file.t:
+% the logical ordinal is not the list position as soon as excursuses,
+% appendices or integration units exist.
 \directlua{
   local series_index = require("osglecture-series-index")
   local function report(key, value)
@@ -54,8 +57,6 @@
   report("missing-observed", message:match("observed entries") ~= nil)
   report("missing-bytes", message:match("bytes=30 31 30 2D") ~= nil)
 
-  % Same table as ollm's build-file.t: the logical ordinal is not the list
-  % position as soon as excursuses, appendices or integration units exist.
   local ordinal_entries = {
     "010-first", "011-e-first", "012-e-second", "020-second",
     "090-a-one", "091-a-two", "099-i-all"
