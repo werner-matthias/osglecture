@@ -980,7 +980,9 @@ sub _doctor {
         push @project_checks, { name => 'pdf-permissions', ok => $qpdf->{ok},
           doctypes => \@restricting,
           (!$qpdf->{ok} ? (message =>
-            'deployment restricts PDF permissions, but qpdf is unavailable') : ()) };
+            'the deployment restricts PDF permissions, which requires qpdf; '
+            . 'install it from https://qpdf.sourceforge.io/ and make it '
+            . 'available on PATH') : ()) };
       }
       my $state_directory = File::Spec->catdir($root, '.osglecture', 'state');
       if (-e $state_directory) {
@@ -1064,6 +1066,8 @@ sub _doctor {
       for my $check (@{ $project->{checks} // [] }) {
         print "Project:   $check->{name} ", $check->{ok} ? 'OK' : 'FAILED',
           defined($check->{path}) ? " ($check->{path})" : '', "\n";
+        print "  $check->{message}\n"
+          if !$check->{ok} && defined $check->{message};
       }
     } else {
       print "Project:   none (global checks only)\n";

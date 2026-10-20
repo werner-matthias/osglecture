@@ -616,6 +616,24 @@ my $bundle_definitions = OLLM::Config->resolve_definitions(
 );
 is $bundle_definitions->{bundle_preset}{reference}, 'OSG lecture/1',
   'bundle-level example resolves its bundled preset';
+{
+  # doctor, report, and check resolve definitions without the build path, so
+  # the bundle_preset default has to apply there as well.
+  local $ENV{OLLM_USER_CONFIG};
+  local $ENV{XDG_CONFIG_HOME} = tempdir(CLEANUP => 1);
+  local $ENV{HOME} = $ENV{XDG_CONFIG_HOME};
+  local $ENV{APPDATA} = $ENV{XDG_CONFIG_HOME};
+  my %without_preset = %$bundle_data;
+  delete $without_preset{bundle_preset};
+  my $defaulted = OLLM::Config->resolve_definitions(
+    manifest      => \%without_preset,
+    manifest_path => $bundle_manifest->{path},
+    project_root  => $bundle_example,
+    bundle_path   => $definitions,
+  );
+  is $defaulted->{bundle_preset}{reference}, 'OSG lecture/1',
+    'a manifest without bundle_preset resolves the built-in default';
+}
 is $bundle_definitions->{targets}{slides}{profile}, 'ltx-talk',
   'example selects ltx-talk for slides through presentation_profile';
 is $bundle_definitions->{targets}{slides}{document_metadata}, 'enabled',

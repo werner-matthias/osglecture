@@ -122,8 +122,6 @@ sub _resolve_toml_request {
   my ($class, $request, $located, $start, %arg) = @_;
   my $manifest = $class->load_manifest($located->{path});
   my $user_defaults = $class->load_user_defaults;
-  $manifest->{bundle_preset} //=
-    $user_defaults->{bundle_preset} // 'OSG lecture/1';
   my $root = dirname($located->{path});
   my $structure = $class->structure_snapshot(project_root => $root);
   my $definitions = $class->resolve_definitions(
@@ -827,6 +825,11 @@ sub resolve_definitions {
     }
   }
 
+  # A manifest without bundle_preset uses the personal default, then the
+  # built-in one. Every caller (build, report/check, doctor) resolves through
+  # here, and later build steps read the filled-in value from the manifest.
+  $manifest->{bundle_preset} //=
+    $class->load_user_defaults->{bundle_preset} // 'OSG lecture/1';
   my $preset_name = $manifest->{bundle_preset};
   if (!exists $preset{$preset_name}) {
     my $available = keys(%preset)
