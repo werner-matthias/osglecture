@@ -10,7 +10,7 @@ tex_config = "projectconfig.tex"
 languages = ["de", "en"]
 default_language = "de"
 presentation_profile = "beamer"
-longform_profile = "scrbook"
+longform_profile = "book"
 
 [targets.slides]
 languages = ["de"]

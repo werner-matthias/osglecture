@@ -55,7 +55,7 @@ is_deeply $spec->{applicable_unit_scopes}, ['a', 'as'],
   'target unit scopes reach the build specification';
 is $spec->{document_metadata_policy}, 'enabled',
   'a supported profile plus the project document_metadata choice enables it';
-is $spec->{profile}, 'scrbook', 'the resolved document profile reaches the spec';
+is $spec->{profile}, 'book', 'the resolved document profile reaches the spec';
 is $spec->{shared_tex_directory},
   abs_path(File::Spec->catdir($fixture, 'Include')),
   'shared TeX directory is resolved from the project manifest';
@@ -218,7 +218,7 @@ like $content, qr/job-id=\{bs-020-script-de-processes\}/,
   'rendered build file binds itself to the job id';
 like $content, qr/profile-class=\{longform\}/,
   'rendered build file contains the target profile class';
-like $content, qr/profile=\{scrbook\}/,
+like $content, qr/profile=\{book\}/,
   'rendered build file names the resolved document profile';
 like $content, qr/applicable-unit-scopes=\{a,as\}/,
   'rendered build file contains the doctype-specific unit scopes';

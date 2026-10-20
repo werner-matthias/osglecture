@@ -634,6 +634,25 @@ is $bundle_definitions->{bundle_preset}{reference}, 'OSG lecture/1',
   is $defaulted->{bundle_preset}{reference}, 'OSG lecture/1',
     'a manifest without bundle_preset resolves the built-in default';
 }
+
+# KOMA-Script stops with a fatal error on \DocumentMetadata, so OLLM rejects
+# the combination before LaTeX runs.
+{
+  my %scrbook_metadata = %$bundle_data;
+  $scrbook_metadata{targets} = { %{ $bundle_data->{targets} },
+    script => { %{ $bundle_data->{targets}{script} },
+      profile => 'scrbook', document_metadata => 'enabled' } };
+  eval {
+    OLLM::Config->resolve_definitions(
+      manifest      => \%scrbook_metadata,
+      manifest_path => $bundle_manifest->{path},
+      project_root  => $bundle_example,
+      bundle_path   => $definitions,
+    );
+  };
+  like $@, qr/profile 'scrbook' forbids document metadata/,
+    'scrbook rejects document metadata before LaTeX runs';
+}
 is $bundle_definitions->{targets}{slides}{profile}, 'ltx-talk',
   'example selects ltx-talk for slides through presentation_profile';
 is $bundle_definitions->{targets}{slides}{document_metadata}, 'enabled',

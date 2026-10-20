@@ -359,9 +359,12 @@ profiles are}:
     Basis der Standardklasse \cls{book}}{for \code{script} and
     \code{article}, based on the standard \cls{book} class}.
   \item[\cls{scrbook}] \ldeen{für \code{script} und \code{article}
-    auf Basis von KOMA-Script (Preset-Default für
-    \option{longform\_profile})}{for \code{script} and \code{article}, based
-    on KOMA-Script (preset default for \option{longform\_profile})}.
+    auf Basis von KOMA-Script; \cs{DocumentMetadata} ist verboten, weil
+    KOMA-Script es noch nicht unterstützt, es entsteht also kein Tagged PDF
+    (Preset-Default für \option{longform\_profile})}{for \code{script} and
+    \code{article}, based on KOMA-Script; \cs{DocumentMetadata} is forbidden
+    because KOMA-Script does not support it yet, so no Tagged PDF is produced
+    (preset default for \option{longform\_profile})}.
 \end{description}
 
 \ldeen{Das Profil wird im Manifest gewählt (\option{profile} am Target oder

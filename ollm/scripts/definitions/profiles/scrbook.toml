@@ -2,10 +2,12 @@
 # The authoritative definition is \DeclareOsgLectureProfile in
 # osglecture-profiles.dtx; only the fields OLLM needs before the class runs
 # are mirrored here. definitions/profiles.t cross-checks the two.
+# KOMA-Script stops with a fatal error on any \DocumentMetadata (still so in
+# v3.49.3), so the profile forbids document metadata until it supports it.
 schema = 1
 kind = "profile"
 name = "scrbook"
 version = "1.0"
 profile_class = "longform"
-document_metadata = "supported"
+document_metadata = "forbidden"
 doctypes = ["script", "article"]
