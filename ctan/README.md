@@ -85,3 +85,9 @@ Even though the individual packages vary considerably in terms of maturity,
 the bundle as a whole should definitely be considered experimental.
 As such, it certainly still has lots of bugs.
 Please report any bug you find [here](https://github.com/werner-matthias/osglecture/issues).
+
+## License
+The bundle is released under the LaTeX Project Public License, version 1.3c
+or later (see [LICENSE](LICENSE)). Excepted are the vendored third-party
+components described in [ollm/THIRD_PARTY-ollm.md](ollm/THIRD_PARTY-ollm.md)
+and [osglecture/THIRD_PARTY-osglecture-cls.md](osglecture/THIRD_PARTY-osglecture-cls.md).

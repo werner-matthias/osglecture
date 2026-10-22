@@ -76,6 +76,8 @@ end
 if not is_module then
   packtdszip = true
   excludefiles = { "*~" }
+  -- l3build drops the executable bit unless a file is listed here.
+  exefiles = { "ollm" }
 end
 
 --[[
@@ -84,11 +86,11 @@ end
   files (sources, l3build files, tests, README-<module>.md) and its
   documentation PDFs, so "l3build check/doc/install" also work there.
   The repository-only README.md links are git symlinks and stay behind;
-  so do development-docs/, doc/, examples/, tools/ and ctan/, which no
-  module copies.  The top-level build.lua, the logos used by the
+  so do development-docs/, doc/, tools/ and ctan/, which no module copies.
+  The top-level build.lua and LICENSE, the logos used by the
   lttheme-tuc-2019 tests and example, and the examples come along with
-  every module (the copies are identical).  The examples are documentation
-  and also go to doc/<tdsroot>/<bundle>/examples in the TDS tree.
+  every module (the copies are identical).  LICENSE and the examples also
+  go to doc/<tdsroot>/<bundle> in the TDS tree.
   Hidden files are left out: CTAN does not accept them.
 --]]
 local function git_tracked_files(dir)
@@ -138,6 +140,8 @@ if is_module then
       + copy_tracked(maindir .. "/examples",
           tdsdir .. "/doc/" .. tdsroot .. "/" .. bundle .. "/examples")
       + cp("build.lua", maindir, pkgdir)
+      + cp("LICENSE", maindir, pkgdir)
+      + cp("LICENSE", maindir, tdsdir .. "/doc/" .. tdsroot .. "/" .. bundle)
     for _, files in ipairs({ docfiles, pdffiles, typesetlist }) do
       for _, pattern in ipairs(files or { }) do
         if pattern:match("%.pdf$") then
