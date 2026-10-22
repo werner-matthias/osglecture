@@ -5,10 +5,32 @@ selected through profiles, so the source stays class-independent; the
 build manager ollm builds single lecture units as well as whole lecture
 series while maintaining cross-unit references.
 
-The bundle also aims at accessible, tagged PDF. Several of its packages may
-be useful on their own, among them langselect (language versions from one
-source), tagpax (import of tagged PDFs), and ltxtalk-theme (a theme
-engine for ltx-talk).
+The bundle also aims at accessible, tagged PDF. Several of its packages
+may be useful on their own.
 
-The bundle requires LuaLaTeX and a current TeX Live; it is under active
-development and its interfaces may still change.
+The bundle requires LuaLaTeX, a current TeX Live, and, if ltx-talk is
+used, ltx-talk 0.5.3 or later. It is under active development and its
+interfaces may still change.
+
+The bundle currently contains:
+- osglecture: document class that produces slides, script, handouts, and
+  other materials from a common source
+- ollm (OSG LaTeX Lecture Maker): latexmk-based build manager for
+  creating and deploying lecture materials
+- osglecture-modes: portable document modes in the style of
+  beamer/ltx-talk for arbitrary classes
+- langselect: several language versions of a document from a common
+  source
+- tagpax: semantic import of tagged PDFs
+- osgstyler: template-based formatting
+- ltxtalk-theme: theme engine for ltx-talk, with a few themes modelled
+  after Beamer themes
+- ltxtalk-theme-tuc-2019: unofficial version of the TU Chemnitz
+  presentation theme for ltx-talk
+- ansiterm: ANSI-aware, optionally executable terminal windows
+- osglistings: minted-based code-listing front end
+- semcat: semantic-category markup 
+- tagdirtree: taggable directory trees
+- tagbridge: transitional patches for a few third-party packages that
+  lack native tagging (PDF/UA) support
+- osgdoc: small wrapper for cnltx with further support for documentation

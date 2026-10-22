@@ -10,8 +10,6 @@ test/standalone/main.synctex.gz
 *.safe
 *.so
 **/*.aux
-!osglecture/testfiles/support/reference-source.osgref.aux
-!osglecture/testfiles/support/bibliography-source.osgref.aux
 **/*.toc
 **/*.synctex.gz
 **/*.code

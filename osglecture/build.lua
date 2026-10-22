@@ -57,13 +57,23 @@ typesetfiles = {
   "osglecture.dtx"
 }
 checksuppfiles = {
-  "reference-source.osgref.aux",
+  "reference-source.osgref.aux.in",
 }
 
 -- Untagged PDF fixture for the osglecture-integration fallback path.
 -- Copying plain support .tex files seems not to be 
 -- reliable, thus write directly to testdir.
 function checkinit_hook()
+  -- Reference fixtures are kept as *.osgref.aux.in: CTAN rejects .aux files
+  -- as leftovers of a build.
+  for _, name in ipairs(filelist(testdir, "*.osgref.aux.in")) do
+    local input = assert(io.open(testdir .. "/" .. name, "rb"))
+    local output = assert(io.open(testdir .. "/" .. name:gsub("%.in$", ""), "wb"))
+    output:write(input:read("a"))
+    input:close()
+    output:close()
+  end
+
   local source = assert(io.open(testdir .. "/untagged-unit.tex", "w"))
   source:write(table.concat({
     "\\documentclass{article}",

@@ -17,21 +17,21 @@ The bundle serves two main purposes:
 * To support accessibility (tagging)  
 
 Currently, the following packages are included:
-* The **osglecture** class to generate different materials (slides, script) from a common source (`./osglecture`)
-* **OSG LaTeX Lecture Maker** is a latexmk-based build script to support creation and deploying of lecture materials (`./ollm`)
-* **osglecture-modes** provides a generalization of portable document modes in the style of beamer/ltx-talk (`./osglecture-modes`)
-* **langselect**: supports the generation of different language versions from a common source (`./langselect`)
-* **tagpax**:  enables the semantic import of tagged PDFs (`./tagpax`)
-* **osgstyler** provides a template-based formatting (`./osgstyler`)
-* **ltxtalk-theme**: is a theme engine to allow easy and flexible design of themes for ltx-talk. 
+* **osglecture**: class to generate different materials (slides, script) from a common source (`./osglecture`)
+* **OSG LaTeX Lecture Maker** (ollm): latexmk-based build script to support creation and deploying of lecture materials (`./ollm`)
+* **osglecture-modes**: generalization of portable document modes in the style of beamer/ltx-talk (`./osglecture-modes`)
+* **langselect**:  generation of different language versions from a common source (`./langselect`)
+* **tagpax**: semantic import of tagged PDFs (`./tagpax`)
+* **osgstyler**: template-based formatting (`./osgstyler`)
+* **ltxtalk-theme**: theme engine to allow easy and flexible design of themes for ltx-talk. 
     It also includes a few themes modeled after some Beamer themes (`./lttheme`)
-* **ltxtalk-theme-tuc-2019** is (an unofficial version of) the presentation theme of TU Chemnitz for ltx-talk (`./lttheme-tuc-2019`)
+* **ltxtalk-theme-tuc-2019**: (an unofficial version of) the presentation theme of TU Chemnitz for ltx-talk (`./lttheme-tuc-2019`)
 * **ansiterm**: ANSI-aware executable terminal windows  (`./ansiterm`)
-* **osglistings**: a `minted`-based code-listing front end (`./osglistings`)
-* **semcat**: generalized semantic-category markup (inline, margin, box) with optional QR-code annotations (`./semcat`)
-* **tagdirtree**: taggable directory tree
-* **tagbridge**: transition package to patch few third party package w/o own native PDF/UA support.
-* **osgdoc** is a small wrapper for cnltx and provides some further support for documentation (`./osgdoc`) 
+* **osglistings**: `minted`-based code-listing front end (`./osglistings`)
+* **semcat**: generalized semantic-category markup (`./semcat`)
+* **tagdirtree**: taggable directory tree (`./tagdirtree`)
+* **tagbridge**: transition package to patch few third party package w/o own native PDF/UA support (`./tagbridge`)
+* **osgdoc**: small wrapper for cnltx with some further support for documentation (`./osgdoc`) 
 
 > [!WARNING]
 > Although the bundle is currently in active use (or perhaps precisely because

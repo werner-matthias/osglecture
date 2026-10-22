@@ -11,21 +11,21 @@ The bundle serves two main purposes:
 * To support accessibility (tagging)
 
 Currently, the following packages are included:
-* The **osglecture** class to generate different materials (slides, script) from a common source
-* **OSG LaTeX Lecture Maker** is a latexmk-based build script to support creation and deploying of lecture materials
-* **osglecture-modes** provides a generalization of portable document modes in the style of beamer/ltx-talk
-* **langselect**: supports the generation of different language versions from a common source
-* **tagpax**:  enables the semantic import of tagged PDFs
-* **osgstyler** provides a template-based formatting
-* **ltxtalk-theme**: is a theme engine to allow easy and flexible design of themes for ltx-talk.
+* **osglecture**: class to generate different materials (slides, script) from a common source
+* **OSG LaTeX Lecture Maker** (ollm): latexmk-based build script to support creation and deploying of lecture materials
+* **osglecture-modes**: generalization of portable document modes in the style of beamer/ltx-talk
+* **langselect**:  generation of different language versions from a common source
+* **tagpax**: semantic import of tagged PDFs
+* **osgstyler**: template-based formatting
+* **ltxtalk-theme**: theme engine to allow easy and flexible design of themes for ltx-talk.
     It also includes a few themes modeled after some Beamer themes
-* **ltxtalk-theme-tuc-2019** is (an unofficial version of) the presentation theme of TU Chemnitz for ltx-talk
+* **ltxtalk-theme-tuc-2019**: (an unofficial version of) the presentation theme of TU Chemnitz for ltx-talk
 * **ansiterm**: ANSI-aware executable terminal windows
-* **osglistings**: a `minted`-based code-listing front end
-* **semcat**: generalized semantic-category markup (inline, margin, box) with optional QR-code annotations
+* **osglistings**: `minted`-based code-listing front end
+* **semcat**: generalized semantic-category markup
 * **tagdirtree**: taggable directory tree
-* **tagbridge**: transition package to patch few third party package w/o own native PDF/UA support.
-* **osgdoc** is a small wrapper for cnltx and provides some further support for documentation
+* **tagbridge**: transition package to patch few third party package w/o own native PDF/UA support
+* **osgdoc**: small wrapper for cnltx with some further support for documentation
 
 > **Warning**
 > Although the bundle is currently in active use (or perhaps precisely because

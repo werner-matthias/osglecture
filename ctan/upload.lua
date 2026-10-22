@@ -58,7 +58,7 @@ uploadconfig = {
   summary  = "Lecture materials from one source: slides, script, and tagged PDF",
 
   description = [[
-The osglecture bundle supports the generation of lecture materials.  
+<p>The osglecture bundle supports the generation of lecture materials.
 It can produce several documents from one LaTeX source: slides,
 handouts, a presenter version, or script, each in several
 languages. The class osglecture selects the actual document class
@@ -66,15 +66,28 @@ languages. The class osglecture selects the actual document class
 through document profiles, so the source contains nothing class-specific.
 The build manager ollm builds whole lecture series, carries cross-references
 and counters between units, and collects units into one document.
+In addition, the bundle aims at accessible, tagged PDFs.</p>
 
-The bundle aims at accessible, tagged PDF and includes further packages
-that may be useful on their own: langselect (language versions from one
-source), tagpax (semantic import of tagged PDFs), osgstyler (template-based
-formatting), ltxtalk-theme (a theme engine for ltx-talk, with themes modelled
-after Beamer themes), osglecture-modes (portable document modes), semcat,
-osglistings, ansiterm, tagdirtree, tagbridge, and osgdoc.
+<p>Several of the bundle's packages can also be used on their own.
+The bundle currently contains:</p>
+<ul>
+<li>osglecture: document class that produces slides, script, handouts, and other materials from a common source</li>
+<li>ollm (OSG LaTeX Lecture Maker): latexmk-based build manager for creating and deploying lecture materials</li>
+<li>osglecture-modes: portable document modes in the style of beamer/ltx-talk for arbitrary classes</li>
+<li>langselect: several language versions of a document from a common source</li>
+<li>tagpax: semantic import of tagged PDFs</li>
+<li>osgstyler: template-based formatting</li>
+<li>ltxtalk-theme: theme engine for ltx-talk, with a few themes modelled after Beamer themes</li>
+<li>ltxtalk-theme-tuc-2019: unofficial version of the TU Chemnitz presentation theme for ltx-talk</li>
+<li>ansiterm: ANSI-aware, optionally executable terminal windows</li>
+<li>osglistings: minted-based code-listing front end</li>
+<li>semcat: semantic-category markup</li>
+<li>tagdirtree: taggable directory trees</li>
+<li>tagbridge: transitional patches for a few third-party packages that lack native tagging (PDF/UA) support</li>
+<li>osgdoc: small wrapper for cnltx with further support for documentation</li>
+</ul>
 
-The bundle requires LuaLaTeX and is under active development.]],
+<p>The bundle requires LuaLaTeX and is under active development.</p>]],
 
   topic    = { "presentation", "course-material", "subdocs", "accessible", "tagged-pdf", "multilingual" },
 

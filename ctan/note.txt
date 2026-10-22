@@ -12,8 +12,8 @@ Notes for the CTAN team and the TeX distribution maintainers
    osglecture/osglecture-profiles.dtx: all other .dtx files are
    self-extracting (there are no .ins files), and osglecture.dtx also
    extracts those two.
-   examples/ contains complete example projects; the TDS tree installs
-   them as doc/luatex/osglecture/examples.
+   The example projects in examples/ are installed as
+   doc/luatex/osglecture/examples.
 
 2. Executable script ollm
    The bundle contains the build manager ollm, a Perl script (Perl 5.30 or
@@ -31,16 +31,11 @@ Notes for the CTAN team and the TeX distribution maintainers
 3. Manual page
    doc/man/man1/ollm.1 is the manual page of ollm.
 
-4. Vendored third-party code
-   - scripts/osglecture/vendor/TOML-Tiny-0.22: the unchanged parser part of
-     the CPAN distribution TOML-Tiny 0.22 (same terms as Perl 5); upstream
-     LICENSE included.
-   - tex/luatex/osglecture/osglecture/osglecture-toml.lua: toml2lua (MIT),
-     unchanged copy from TeX Live's expltools.
-   Details in ollm/THIRD_PARTY-ollm.md and
-   osglecture/THIRD_PARTY-osglecture-cls.md.
+4. Vendored third-party code (unchanged copies)
+   - TOML-Tiny 0.22 (CPAN; same terms as Perl 5) and toml2lua (MIT, from
+     expltools). Details: ollm/THIRD_PARTY-ollm.md and
+     osglecture/THIRD_PARTY-osglecture-cls.md.
 
 5. Engine
-   The bundle requires LuaLaTeX; a few packages work in a reduced mode
-   without Lua, see the compatibility table at
+   The bundle generally requires LuaLaTeX; for details see
    https://github.com/werner-matthias/osglecture#modules-version-and-compatibility
