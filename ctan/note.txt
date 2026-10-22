@@ -1,6 +1,21 @@
 Notes for the CTAN team and the TeX distribution maintainers
 
-1. Executable script ollm
+1. Package layout and installation
+   osglecture.tds.zip contains the complete installation tree; all paths
+   in items 2 to 4 refer to it.
+   The package directory mirrors the development repository: one
+   directory per module with its sources, documentation (PDF), tests, and
+   l3build file, plus the top-level build.lua. In the unpacked package,
+   "l3build install", "l3build doc", and "l3build check" therefore work
+   as in the repository. Without l3build, run "luatex <file>.dtx" on every
+   .dtx file except osglecture/osglecture-adapters.dtx and
+   osglecture/osglecture-profiles.dtx: all other .dtx files are
+   self-extracting (there are no .ins files), and osglecture.dtx also
+   extracts those two.
+   examples/ contains complete example projects; the TDS tree installs
+   them as doc/luatex/osglecture/examples.
+
+2. Executable script ollm
    The bundle contains the build manager ollm, a Perl script (Perl 5.30 or
    later). Please install it as a user command:
    - script:   scripts/osglecture/ollm  (no file extension)
@@ -13,19 +28,19 @@ Notes for the CTAN team and the TeX distribution maintainers
      .pl extension; please tell us if you prefer it renamed.
    ollm calls latexmk and lualatex.
 
-2. Manual page
+3. Manual page
    doc/man/man1/ollm.1 is the manual page of ollm.
 
-3. Vendored third-party code
+4. Vendored third-party code
    - scripts/osglecture/vendor/TOML-Tiny-0.22: the unchanged parser part of
      the CPAN distribution TOML-Tiny 0.22 (same terms as Perl 5); upstream
      LICENSE included.
    - tex/luatex/osglecture/osglecture/osglecture-toml.lua: toml2lua (MIT),
      unchanged copy from TeX Live's expltools.
-   Details in THIRD_PARTY-ollm.md and THIRD_PARTY-osglecture-cls.md
-   (top level of the upload).
+   Details in ollm/THIRD_PARTY-ollm.md and
+   osglecture/THIRD_PARTY-osglecture-cls.md.
 
-4. Engine
+5. Engine
    The bundle requires LuaLaTeX; a few packages work in a reduced mode
    without Lua, see the compatibility table at
    https://github.com/werner-matthias/osglecture#modules-version-and-compatibility

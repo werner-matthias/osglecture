@@ -4,6 +4,7 @@ use warnings;
 
 use Cwd qw(abs_path);
 use File::Copy qw(copy);
+use File::Find qw(find);
 use File::Path qw(make_path);
 use File::Spec;
 use File::Temp qw(tempdir);
@@ -601,7 +602,24 @@ eval {
 like $@, qr/name 'mismatch' and doctype 'different' differ/,
   'schema 1 rejects a silent target/doctype mismatch';
 
-my $bundle_example = abs_path('../examples/series-modern');
+# The example ships its local configuration as a template (CTAN accepts no
+# hidden files); activate it in a copy, as its README tells users to.
+my $bundle_example = abs_path(tempdir(CLEANUP => 1));
+{
+  my $source = abs_path('../examples/series-modern');
+  find({ no_chdir => 1, wanted => sub {
+    my $relative = File::Spec->abs2rel($File::Find::name, $source);
+    my $target = File::Spec->catfile($bundle_example, $relative);
+    if (-d $_) {
+      make_path($target);
+    } else {
+      copy($_, $target) or die "copy $_: $!";
+    }
+  } }, $source);
+  copy(File::Spec->catfile($bundle_example, 'ollmconfig.local.toml.example'),
+    File::Spec->catfile($bundle_example, '.ollmconfig.local.toml'))
+    or die "activate local configuration: $!";
+}
 my $bundle_chapter = File::Spec->catdir($bundle_example, '010-introduction');
 my $bundle_manifest = OLLM::Config->find_manifest(start_dir => $bundle_chapter);
 is $bundle_manifest->{path},

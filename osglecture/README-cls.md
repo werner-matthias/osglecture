@@ -17,13 +17,12 @@ of complete documents. The class and its companion packages are designed for
 accessible, tagged-PDF output. OLLM, the bundle's build front end, coordinates
 the variants of a complete project; the class can also be used directly.
 
-The bundle's repository contains two end-to-end examples:
+The bundle contains two end-to-end examples:
 
-- [`series-classic`](https://github.com/werner-matthias/osglecture/tree/main/examples/series-classic)
-  combines Beamer and `scrbook` output.
-- [`series-modern`](https://github.com/werner-matthias/osglecture/tree/main/examples/series-modern)
-  demonstrates multilingual, tagged output, cross-unit references, and
-  document integration.
+- [`series-classic`](../examples/series-classic/) combines Beamer and
+  `scrbook` output.
+- [`series-modern`](../examples/series-modern/) demonstrates multilingual,
+  tagged output, cross-unit references, and document integration.
 
 See `osglecture-manual-en.pdf` or `osglecture-manual-de.pdf` for the full user
 documentation. The package is under active development and requires LuaLaTeX.

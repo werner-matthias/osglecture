@@ -24,7 +24,7 @@ no tagged integration), see the sibling example `../series-classic`.
 
 ```text
 series-modern/
-├── .ollmconfig.local.toml
+├── ollmconfig.local.toml.example
 ├── ollmconfig.toml
 ├── Definitions/
 │   ├── profiles/series-solutions.toml
@@ -81,7 +81,10 @@ versions. `ollm build script` then yields the sheet for students,
 work:
 
 - `.ollmconfig.local.toml` registers `Definitions` as a search path for
-  project-local OLLM definitions.
+  project-local OLLM definitions. A local configuration is deliberately
+  not part of a distribution, so the example ships it as
+  `ollmconfig.local.toml.example`; copy it to `.ollmconfig.local.toml`
+  before building (see below).
 - `Definitions/targets/solutions.toml` declares the target:
   `doctype = "solutions"`, `profile_class = "longform"`, and
   `unit_scopes = ["a", "as"]` like the built-in `script`.
@@ -207,7 +210,13 @@ The sources additionally exercise:
 
 ## Build sequence
 
-Run the following commands from the named unit directories. The producing
+First activate the local configuration in the project root:
+
+```sh
+cp ollmconfig.local.toml.example .ollmconfig.local.toml
+```
+
+Then run the following commands from the named unit directories. The producing
 unit must be built before the consuming unit so that OLLM can register its
 promoted reference export.
 

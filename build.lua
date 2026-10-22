@@ -29,8 +29,9 @@ if not is_module then
    }
 end
 
--- CTAN submission data for "l3build upload", kept in its own file.
-if not is_module then
+-- CTAN submission data for "l3build upload", kept in its own file.  The
+-- CTAN copy of the bundle has no ctan/ directory; it is only built there.
+if not is_module and fileexists("ctan/upload.lua") then
   dofile("ctan/upload.lua")
 end
 
@@ -47,12 +48,93 @@ end
 -- The GitHub README.md is not distributed: CTAN gets the snapshot
 -- ctan/README.md derived from it (tools/make-ctan-readme.lua).  Modules
 -- distribute their README-<module>.md, never the README.md link to it.
+-- In the CTAN copy the snapshot already is the top-level README.md.
 if not is_module then
-  textfiledir = "ctan"
+  textfiledir = fileexists("ctan/README.md") and "ctan" or "."
   textfiles = { "README.md" }
 end
 
-textfiles = textfiles or { 
+-- The upload carries the ready-made TDS tree (osglecture.tds.zip) for
+-- installation.  The package directory itself mirrors the repository, so
+-- that the l3build files below work there as well: build.lua and
+-- config-*.lua must therefore not be excluded.
+if not is_module then
+  packtdszip = true
+  excludefiles = { "*~" }
+end
+
+--[[
+  The CTAN package directory mirrors the repository rather than l3build's
+  flat collection: each module gets its own directory with its tracked
+  files (sources, l3build files, tests, README-<module>.md) and its
+  documentation PDFs, so "l3build check/doc/install" also work there.
+  The repository-only README.md links are git symlinks and stay behind;
+  so do development-docs/, doc/, examples/, tools/ and ctan/, which no
+  module copies.  The top-level build.lua, the logos used by the
+  lttheme-tuc-2019 tests and example, and the examples come along with
+  every module (the copies are identical).  The examples are documentation
+  and also go to doc/<tdsroot>/<bundle>/examples in the TDS tree.
+  Hidden files are left out: CTAN does not accept them.
+--]]
+local function git_tracked_files(dir)
+  local handle = io.popen("git -C " .. dir .. " ls-files -s -- . 2>" .. os_null)
+  local files = { }
+  for line in handle:lines() do
+    local mode, path = line:match("^(%d+) %x+ %d+\t(.+)$")
+    if mode and mode ~= "120000" then
+      if path:match("^%.[^/]") or path:match("/%.[^/]") then
+        print("copyctan: hidden file " .. dir .. "/" .. path
+          .. " is not distributed")
+      else
+        table.insert(files, path)
+      end
+    end
+  end
+  handle:close()
+  return files
+end
+
+local function copy_tracked(sourcedir, targetdir)
+  local files = git_tracked_files(sourcedir)
+  if #files == 0 then
+    print("copyctan: no tracked files in " .. sourcedir)
+    return 1
+  end
+  for _, path in ipairs(files) do
+    local dir, name = splitpath(path)
+    mkdir(targetdir .. "/" .. dir)
+    local errorlevel = cp(name, sourcedir .. "/" .. dir, targetdir .. "/" .. dir)
+    if errorlevel ~= 0 then
+      return errorlevel
+    end
+  end
+  return 0
+end
+
+if is_module then
+  function copyctan()
+    local pkgdir = ctandir .. "/" .. ctanpkg
+    local moduledir = lfs.currentdir():match("([^/\\]+)$")
+    local targetdir = pkgdir .. "/" .. moduledir
+    mkdir(targetdir)
+    local errorlevel = copy_tracked(".", targetdir)
+      + copy_tracked(maindir .. "/images/logos", pkgdir .. "/images/logos")
+      + copy_tracked(maindir .. "/examples", pkgdir .. "/examples")
+      + copy_tracked(maindir .. "/examples",
+          tdsdir .. "/doc/" .. tdsroot .. "/" .. bundle .. "/examples")
+      + cp("build.lua", maindir, pkgdir)
+    for _, files in ipairs({ docfiles, pdffiles, typesetlist }) do
+      for _, pattern in ipairs(files or { }) do
+        if pattern:match("%.pdf$") then
+          cp(pattern, docfiledir, targetdir)
+        end
+      end
+    end
+    return errorlevel
+  end
+end
+
+textfiles = textfiles or {
   "README-*.md"
  }
 
@@ -434,7 +516,8 @@ function tag_hook(tagname, tagdate)
 end
 
 -- Never package a CTAN README that no longer matches README.md.
-if not is_module and target_list and target_list.ctan then
+if not is_module and target_list and target_list.ctan
+  and fileexists("tools/make-ctan-readme.lua") then
   local stdctan = target_list.ctan.bundle_func
   target_list.ctan.bundle_func = function(names)
     local errorlevel = run(maindir, "texlua tools/make-ctan-readme.lua --check")
