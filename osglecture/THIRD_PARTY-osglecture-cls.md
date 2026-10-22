@@ -26,6 +26,6 @@ install:** relying on `expltools`'s copy at its TeX Live path would tie
 `osglecture` to a specific companion package's internal file layout, which
 is not a stable public interface and is not guaranteed present in a minimal
 installation. Vendoring, as `ollm` already does for `TOML::Tiny` (see
-`ollm/THIRD_PARTY.md`), keeps the dependency self-contained and portable
+`ollm/THIRD_PARTY-ollm.md`), keeps the dependency self-contained and portable
 under the same constraint: no dependency on anything beyond a normal TeX
 Live install, and no dependency on another package's unversioned internals.

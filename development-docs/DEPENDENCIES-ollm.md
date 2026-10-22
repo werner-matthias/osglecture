@@ -64,7 +64,7 @@ Both files live in the `osglecture` package, not in `ollm`, since
   discovery it needs (reusing `osglecture-series-index.lua`'s path
   utilities).
 - `osglecture/osglecture-toml.lua`: the vendored TOML 1.0 reader; see
-  `osglecture/THIRD_PARTY.md` for provenance and license.
+  `osglecture/THIRD_PARTY-osglecture-cls.md` for provenance and license.
 
 OLLM does not call this module yet (see `HISTORY.md`); once it does,
 `ollm doctor` will report name, version, and origin of both parsers, the
@@ -99,4 +99,4 @@ TEXLIVE_WINDOWS_TRY_EXTERNAL_PERL = 1
 This fallback is only relevant for an incomplete or deliberately unbundled
 OLLM installation. A normal OLLM installation does not require CPAN access.
 
-See [`THIRD_PARTY.md`](THIRD_PARTY.md) for provenance and licensing.
+See [`ollm/THIRD_PARTY-ollm.md`](../ollm/THIRD_PARTY-ollm.md) for provenance and licensing.

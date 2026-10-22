@@ -5,6 +5,11 @@ maindir=".."
 
 checkdeps = { "../osglecture-modes", "../tagpax", "../langselect", "../tagbridge" }
 
+textfiles = {
+  "README-cls.md",
+  "THIRD_PARTY-osglecture-cls.md",
+}
+
 installfiles = {
   "osglecture.cls",
   "osglecture-config.sty",

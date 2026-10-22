@@ -50,8 +50,8 @@ uploadconfig = {
   ctanPath = "/macros/luatex/latex/osglecture",
 
   -- Bundle code is LPPL 1.3c.  Vendored third-party code: toml2lua (MIT,
-  -- osglecture/THIRD_PARTY.md) and the TOML::Tiny parser (same terms as
-  -- Perl 5: Artistic 1.0 or GPL 1 or later, ollm/THIRD_PARTY.md).
+  -- osglecture/THIRD_PARTY-osglecture-cls.md) and the TOML::Tiny parser (same terms as
+  -- Perl 5: Artistic 1.0 or GPL 1 or later, ollm/THIRD_PARTY-ollm.md).
   -- Keys as listed by https://ctan.org/json/2.0/licenses.
   license  = { "lppl1.3c", "mit", "artistic", "gpl1+" },
 

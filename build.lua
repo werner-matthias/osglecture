@@ -44,6 +44,14 @@ if is_module and target_list and target_list.ctan then
   end
 end
 
+-- The GitHub README.md is not distributed: CTAN gets the snapshot
+-- ctan/README.md derived from it (tools/make-ctan-readme.lua).  Modules
+-- distribute their README-<module>.md, never the README.md link to it.
+if not is_module then
+  textfiledir = "ctan"
+  textfiles = { "README.md" }
+end
+
 textfiles = textfiles or { 
   "README-*.md"
  }
@@ -415,9 +423,26 @@ function update_tag(file, content, tagname, tagdate)
 end
 
 -- The module table in README.md mirrors the versions in the sources, so
--- every tagging run refreshes it.  The tool expects the bundle root.
+-- every tagging run refreshes it, and then the CTAN snapshot of README.md.
+-- The tools expect the bundle root.
 function tag_hook(tagname, tagdate)
-  return run(maindir, "texlua tools/update-bundle-manifest.lua")
+  local errorlevel = run(maindir, "texlua tools/update-bundle-manifest.lua")
+  if errorlevel ~= 0 then
+    return errorlevel
+  end
+  return run(maindir, "texlua tools/make-ctan-readme.lua")
+end
+
+-- Never package a CTAN README that no longer matches README.md.
+if not is_module and target_list and target_list.ctan then
+  local stdctan = target_list.ctan.bundle_func
+  target_list.ctan.bundle_func = function(names)
+    local errorlevel = run(maindir, "texlua tools/make-ctan-readme.lua --check")
+    if errorlevel ~= 0 then
+      return errorlevel
+    end
+    return stdctan(names)
+  end
 end
 
 --[[

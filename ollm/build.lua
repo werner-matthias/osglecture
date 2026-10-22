@@ -31,7 +31,7 @@ typesetfiles = {
 
 textfiles = {
   "README-ollm.md",
-  "THIRD_PARTY.md",
+  "THIRD_PARTY-ollm.md",
 }
 
 -- The functional test suite will grow with the new implementation.  Keeping

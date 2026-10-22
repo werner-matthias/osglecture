@@ -1,9 +1,9 @@
 --[[
   Package: tagpax
   Date:
-  2026-07-23
+  2026-10-22
   Version:
-  v0.8.5-dev
+  v0.8.6
   Description:
   controlled LuaTeX page Form-XObject import
 ]]

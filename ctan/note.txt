@@ -22,7 +22,8 @@ Notes for the CTAN team and the TeX distribution maintainers
      LICENSE included.
    - tex/luatex/osglecture/osglecture/osglecture-toml.lua: toml2lua (MIT),
      unchanged copy from TeX Live's expltools.
-   Details in ollm/THIRD_PARTY.md and osglecture/THIRD_PARTY.md.
+   Details in THIRD_PARTY-ollm.md and THIRD_PARTY-osglecture-cls.md
+   (top level of the upload).
 
 4. Engine
    The bundle requires LuaLaTeX; a few packages work in a reduced mode

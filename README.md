@@ -1,8 +1,15 @@
 # OSG Lecture
 
+<!-- BEGIN GITHUB ONLY -->
 [![Linux](https://github.com/werner-matthias/osglecture/actions/workflows/tests-linux.yml/badge.svg)](https://github.com/werner-matthias/osglecture/actions/workflows/tests-linux.yml)
 [![macOS](https://github.com/werner-matthias/osglecture/actions/workflows/tests-macos.yml/badge.svg)](https://github.com/werner-matthias/osglecture/actions/workflows/tests-macos.yml)
 [![Windows](https://github.com/werner-matthias/osglecture/actions/workflows/tests-windows.yml/badge.svg)](https://github.com/werner-matthias/osglecture/actions/workflows/tests-windows.yml)
+<!-- END GITHUB ONLY -->
+<!-- CTAN ONLY
+This README describes the CTAN release @RELEASEDATE@ of the bundle.
+Sources, tests, examples, and the current development state are available at
+<https://github.com/werner-matthias/osglecture>.
+-->
 
 LaTeX bundle for generating lecture materials at the Operating Systems Group at the TU Chemnitz.
 The bundle serves two main purposes:
@@ -35,7 +42,7 @@ Currently, the following packages are included:
 
 ## Modules' version and compatibility
 The bundle as a whole is identified by its release date only
-(current: <!-- BUNDLE RELEASE DATE -->unreleased<!-- /BUNDLE RELEASE DATE -->).
+(current: <!-- BUNDLE RELEASE DATE -->2026-10-22<!-- /BUNDLE RELEASE DATE -->).
 Each module keeps its own version and may has its own compatibility dependency.
 Whilst in general an up-to-date TeX installation is required, few modules are
 working with older distributions.
@@ -46,7 +53,7 @@ degrated mode ( :first_quarter_moon: ) or don't require Lua at all ( :new_moon: 
  - files generated from the same docstrip source (one `.dtx`) are expected to share one version and date. 
  - `ollm` is Perl rather than a docstripped LaTeX package, so it keeps its version as the single `$VERSION` in `OLLM::Version` instead.
  -->
- The following table lists versions and compatibility, the TL ...` columns show compatibility with
+ The following table lists versions and compatibility, the `TL ...` columns show compatibility with
 recent TeXLive/MacTeX distributions ("current" = latest available image).
 <!-- tested by the manually triggered
 [*Distribution compatibility*](.github/workflows/compatibility.yml)
@@ -70,7 +77,7 @@ The `TL ...` columns are read from the expectations in the workflow above;
 | osglecture-modes | v0.5.1 | 2026-09-27 | 2 | :full_moon: | :red_circle: | :green_circle: | :green_circle: |
 | ltx-talk support (osglecture + osglecture-modes) | n/a | n/a | n/a | :full_moon: | :red_circle: | :red_circle: | :green_circle: |
 | ollm | v0.15.0 | n/a | 1 | :white_circle: | :white_circle: | :green_circle: | :green_circle: |
-| tagpax | v0.8.5-dev | 2026-07-23 | 2 | :full_moon: | :red_circle: | :green_circle: | :green_circle: |
+| tagpax | v0.8.6 | 2026-10-22 | 2 | :full_moon: | :red_circle: | :green_circle: | :green_circle: |
 | tagbridge | v0.1.0 | 2026-09-14 | 1 | :new_moon: | :red_circle: | :green_circle: | :green_circle: |
 | tagdirtree[^1] | v0.1.0 | 2026-09-14 | 1 | :new_moon: | :red_circle: | :green_circle: | :green_circle: |
 | langselect | v1.1.3 | 2026-09-18 | 1 | :full_moon: | :green_circle: | :green_circle: | :green_circle: |
@@ -86,6 +93,7 @@ The `TL ...` columns are read from the expectations in the workflow above;
 <!-- END MODULE VERSIONS -->
 
 ## Installation
+<!-- BEGIN GITHUB ONLY -->
 ```
 l3build check
 l3build install --full 
@@ -101,12 +109,22 @@ it contains the launcher `ollm.cmd`. Afterwards check the installation with
 ```
 ollm doctor
 ```
+<!-- END GITHUB ONLY -->
+<!-- CTAN ONLY
+Install the bundle with the package manager of your TeX distribution.
+The build tool `ollm` is installed as a user command; check the installation with
+```
+ollm doctor
+```
+-->
 
 ## Documentation
 See `osglecture-manual-en.pdf` or `osglecture-manual-de.pdf` for a user documentation
 in English, or German, respectively. 
 
+<!-- BEGIN GITHUB ONLY -->
 To generate both without a `--full` installation, run `l3build doc` in the `manual-src` directory.
+<!-- END GITHUB ONLY -->
 
 Beside, the most packages have their own documentation.
 

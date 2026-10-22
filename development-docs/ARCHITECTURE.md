@@ -1321,7 +1321,7 @@ Duplikation, statt neue Komplexität einzuführen.
    siehe „Schritt 1: verifizierter Schlüsselsatz" oben.
 2. [x] Das gemeinsame Modul (TOML-Lesen, Discovery, Namensinterpretation)
    aufbauen -- `osglecture-manifest.lua`, mit vendoriertem TOML-1.0-Leser
-   `osglecture-toml.lua` (siehe `osglecture/THIRD_PARTY.md`), Discovery
+   `osglecture-toml.lua` (siehe `osglecture/THIRD_PARTY-osglecture-cls.md`), Discovery
    durch Wiederverwendung von `osglecture-series-index.lua` (dessen
    Pfad-Grundfunktionen dafür jetzt exportiert sind). Getestet über
    `testfiles/manifest.lvt` mit derselben Testdisziplin wie
