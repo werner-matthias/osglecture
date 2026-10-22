@@ -7,7 +7,7 @@
 <!-- END GITHUB ONLY -->
 <!-- CTAN ONLY
 This README describes the CTAN release @RELEASEDATE@ of the bundle.
-Sources, tests, examples, and the current development state are available at
+Sources and the current development state are available at
 <https://github.com/werner-matthias/osglecture>.
 -->
 

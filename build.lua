@@ -45,6 +45,21 @@ if is_module and target_list and target_list.ctan then
   end
 end
 
+-- The same holds for the upload.  l3build's upload target has no bundle
+-- function, so in the bundle root it would run in every module and look
+-- for the zip file there; run it in the root itself instead.
+if target_list and target_list.upload then
+  if is_module then
+    target_list.upload.func = function()
+      print("'" .. module .. "' is uploaded as part of the " .. bundle
+        .. " bundle: run 'l3build upload' in the bundle root.")
+      return 1
+    end
+  else
+    target_list.upload.bundle_func = function(names) return upload(names) end
+  end
+end
+
 -- The GitHub README.md is not distributed: CTAN gets the snapshot
 -- ctan/README.md derived from it (tools/make-ctan-readme.lua).  Modules
 -- distribute their README-<module>.md, never the README.md link to it.

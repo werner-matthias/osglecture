@@ -2,7 +2,7 @@
 # OSG Lecture
 
 This README describes the CTAN release 2026-10-22 of the bundle.
-Sources, tests, examples, and the current development state are available at
+Sources and the current development state are available at
 <https://github.com/werner-matthias/osglecture>.
 
 LaTeX bundle for generating lecture materials at the Operating Systems Group at the TU Chemnitz.
