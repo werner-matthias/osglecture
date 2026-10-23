@@ -1,34 +1,34 @@
 Notes for the CTAN team and the TeX distribution maintainers
 
 1. Package layout and installation
-   osglecture.tds.zip contains the complete installation tree (paths in
-   items 2 to 4 refer to it); source/luatex/osglecture mirrors the
-   package tree with tests and build files.
-   The package directory mirrors the repository: one directory per
-   module with sources, PDFs, tests, and build.lua. In the unpacked package,
-   "l3build install", "l3build doc", and "l3build check" therefore work
-   as in the repository. Without l3build, run "luatex <file>.dtx" on every
-   .dtx file except osglecture/osglecture-adapters.dtx and
+   The package directory mirrors the development repository: one
+   directory per module with sources, PDFs, tests, and build.lua, plus the
+   top-level build.lua. In the unpacked package, "l3build install" puts
+   the run-time files, ollm, and its man page where they belong
+   (tex/luatex/osglecture, scripts/osglecture, doc/man/man1);
+   "l3build doc" and "l3build check" work as well.
+   Without l3build, run "luatex <file>.dtx" on every .dtx file except
+   osglecture/osglecture-adapters.dtx and
    osglecture/osglecture-profiles.dtx: all other .dtx files are
-   self-extracting, and osglecture.dtx also extracts those two.
-   The example projects in examples/ are installed as
-   doc/luatex/osglecture/examples.
+   self-extracting, and osglecture.dtx also extracts those two. The .lua
+   files next to the sources are installed unchanged. The example
+   projects in examples/ belong to the documentation.
 
 2. Executable script ollm
    The bundle contains the build manager ollm, a Perl script (Perl 5.30 or
-   later). Please install it as a user command:
-   - script:   scripts/osglecture/ollm  (no file extension)
-   - libraries: scripts/osglecture/lib, scripts/osglecture/vendor,
-     scripts/osglecture/definitions, scripts/osglecture/ollm-latexmk.rc;
-     ollm finds them relative to its own location (FindBin), so only the
-     script itself needs a link in the binary directory.
-   - Windows: scripts/osglecture/ollm.cmd is the launcher for manual
-     installations. For TeX Live's runscript wrapper the script may need a
-     .pl extension; please tell us if you prefer it renamed.
+   later), in ollm/scripts. Please install it as a user command:
+   - script: ollm/scripts/ollm (no file extension), installed as
+     scripts/osglecture/ollm
+   - libraries: lib/, vendor/, definitions/, and ollm-latexmk.rc next to
+     it; ollm finds them relative to its own location (FindBin), so only
+     the script itself needs a link in the binary directory.
+   - Windows: ollm.cmd is the launcher for manual installations. For TeX
+     Live's runscript wrapper the script may need a .pl extension; please
+     tell us if you prefer it renamed.
    ollm calls latexmk and lualatex.
 
 3. Manual page
-   doc/man/man1/ollm.1 is the manual page of ollm.
+   ollm/man/ollm.1 is the manual page of ollm.
 
 4. Vendored third-party code (unchanged copies)
    - TOML-Tiny 0.22 (CPAN; same terms as Perl 5) and toml2lua (MIT, from

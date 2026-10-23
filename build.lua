@@ -69,12 +69,13 @@ if not is_module then
   textfiles = { "README.md" }
 end
 
--- The upload carries the ready-made TDS tree (osglecture.tds.zip) for
--- installation.  The package directory itself mirrors the repository, so
--- that the l3build files below work there as well: build.lua and
--- config-*.lua must therefore not be excluded.
+-- The package directory mirrors the repository, so that the l3build files
+-- work there as well: build.lua and config-*.lua must therefore not be
+-- excluded.  CTAN prefers uploads without a TDS archive; l3build still
+-- builds the TDS tree (see copyctan below), and setting packtdszip adds
+-- osglecture.tds.zip to the upload again should it ever be wanted.
 if not is_module then
-  packtdszip = true
+  packtdszip = false
   excludefiles = { "*~" }
   -- l3build drops the executable bit unless a file is listed here.
   exefiles = { "ollm" }
@@ -92,23 +93,32 @@ end
   The top-level build.lua and LICENSE, the shared test support files, the
   logos used by the lttheme-tuc-2019 tests and example, and the examples
   come along with every module (the copies are identical).
-  Hidden files are left out: CTAN does not accept them.
+  Hidden files are left out: CTAN does not accept them.  So are the
+  PDF-based visual tests (*.pvt, *.tpf): their normalised reference PDFs
+  are rejected by CTAN's checks, and CTAN asked to leave them out.  They
+  remain part of the repository and its CI.
 
-  CTAN requires the TDS archive to hold every file of the package tree.
-  Documentation (PDFs, README files, LICENSE, examples) goes to
-  doc/<tdsroot>/<bundle>, everything else to source/<tdsroot>/<bundle>,
-  which therefore mirrors the package tree.
+  If a TDS archive is uploaded, CTAN requires it to hold every file of the
+  package tree.  Documentation (PDFs, README files, LICENSE, examples)
+  goes to doc/<tdsroot>/<bundle>, everything else to
+  source/<tdsroot>/<bundle>, which therefore mirrors the package tree.
 --]]
+local ctan_excluded = { "%.pvt$", "%.tpf$" }
+
 local function git_tracked_files(dir)
   local handle = io.popen("git -C " .. dir .. " ls-files -s -- . 2>" .. os_null)
   local files = { }
   for line in handle:lines() do
     local mode, path = line:match("^(%d+) %x+ %d+\t(.+)$")
     if mode and mode ~= "120000" then
+      local excluded = false
+      for _, pattern in ipairs(ctan_excluded) do
+        excluded = excluded or path:match(pattern) ~= nil
+      end
       if path:match("^%.[^/]") or path:match("/%.[^/]") then
         print("copyctan: hidden file " .. dir .. "/" .. path
           .. " is not distributed")
-      else
+      elseif not excluded then
         table.insert(files, path)
       end
     end
@@ -242,11 +252,21 @@ else
   )
 end
 
--- A full installation from the bundle root has two phases.  Modules install
--- their run-time files without documentation; afterwards the root installs
--- the shared documentation collection in doc/<tdsroot>/<bundle>.  Direct
--- module installations retain l3build's normal per-module directory and see
--- only the module-specific PDF names added above.
+-- A full installation from the bundle root installs every module with its
+-- documentation in doc/<tdsroot>/<bundle>/<module> (PDFs, README and
+-- THIRD_PARTY files), as in the TDS tree of the CTAN package; the root then
+-- adds README.md, LICENSE, and the examples to doc/<tdsroot>/<bundle>.
+-- The relative links between these files depend on that layout.
+local function texmfhome_dir()
+  local texmfhome = options["texmfhome"]
+  if not texmfhome then
+    local handle = io.popen("kpsewhich -var-value TEXMFHOME")
+    texmfhome = handle and handle:read("*l")
+    if handle then handle:close() end
+  end
+  return texmfhome
+end
+
 -- l3build installs ollm below TEXMFHOME/scripts, which is never on PATH.
 -- A distribution creates the launcher itself; an installation from the
 -- repository has to be told how.
@@ -259,13 +279,7 @@ local function ollm_path_hint()
   if os.execute(probe) == 0 then
     return
   end
-  local texmfhome = options["texmfhome"]
-  if not texmfhome then
-    local handle = io.popen("kpsewhich -var-value TEXMFHOME")
-    texmfhome = handle and handle:read("*l") or "<TEXMFHOME>"
-    if handle then handle:close() end
-  end
-  local script_dir = texmfhome .. "/scripts/" .. bundle
+  local script_dir = (texmfhome_dir() or "<TEXMFHOME>") .. "/scripts/" .. bundle
   print("")
   print("Note: 'ollm' is installed in " .. script_dir)
   print("      but is not on your PATH.  To call it as 'ollm', either")
@@ -279,43 +293,47 @@ local function ollm_path_hint()
   end
 end
 
+-- README.md, LICENSE, and the examples (without hidden files such as an
+-- activated .ollmconfig.local.toml).
+local function install_bundle_docs()
+  local texmfhome = texmfhome_dir()
+  if not texmfhome then
+    print("Cannot determine TEXMFHOME for the bundle documentation")
+    return 1
+  end
+  local docdir = texmfhome .. "/doc/" .. tdsroot .. "/" .. bundle
+  local files = { { "README.md", textfiledir }, { "LICENSE", "." } }
+  for _, p in ipairs(tree("examples", "**")) do
+    local path = p.src:gsub("^%./", "")
+    if lfs.attributes(p.cwd, "mode") == "file"
+      and not path:match("^%.") and not path:match("/%.") then
+      local dir, name = splitpath(path)
+      table.insert(files, { name, "examples/" .. dir, "examples/" .. dir })
+    end
+  end
+  local errorlevel = 0
+  for _, file in ipairs(files) do
+    local name, sourcedir, targetdir = file[1], file[2], file[3] or "."
+    if options["dry-run"] then
+      print("- doc/" .. tdsroot .. "/" .. bundle .. "/" .. targetdir .. "/" .. name)
+    else
+      mkdir(docdir .. "/" .. targetdir)
+      errorlevel = errorlevel + cp(name, sourcedir, docdir .. "/" .. targetdir)
+    end
+  end
+  return errorlevel
+end
+
 if not is_module and target_list and target_list.install then
   target_list.install.bundle_func = function(names)
     if names then
       print("Bundle installation does not accept file names")
       return 1
     end
-
-    local module_options = { }
-    for key, value in pairs(options) do
-      module_options[key] = value
+    local errorlevel = call(modules, "install", options)
+    if errorlevel == 0 and options["full"] then
+      errorlevel = install_bundle_docs()
     end
-    module_options["full"] = nil
-
-    local errorlevel = call(modules, "install", module_options)
-    if errorlevel ~= 0 then
-      return errorlevel
-    end
-    if not options["full"] then
-      ollm_path_hint()
-      return 0
-    end
-
-    local doc_options = { }
-    for key, value in pairs(options) do
-      doc_options[key] = value
-    end
-    doc_options["full"] = nil
-    doc_options["dry-run"] = nil
-    doc_options["texmfhome"] = nil
-
-    errorlevel = call(modules, "doc", doc_options)
-    if errorlevel ~= 0 then
-      return errorlevel
-    end
-
-    moduledir = tdsroot .. "/" .. bundle
-    errorlevel = install()
     if errorlevel == 0 then
       ollm_path_hint()
     end
