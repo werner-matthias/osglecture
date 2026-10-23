@@ -1,7 +1,7 @@
 <!-- Generated from README.md by tools/make-ctan-readme.lua; do not edit. -->
 # OSG Lecture
 
-This README describes the CTAN release 2026-10-22 of the bundle.
+This README describes the CTAN release 2026-10-23 of the bundle.
 Sources and the current development state are available at
 <https://github.com/werner-matthias/osglecture>.
 
@@ -36,7 +36,7 @@ Currently, the following packages are included:
 
 ## Modules' version and compatibility
 The bundle as a whole is identified by its release date only
-(current: 2026-10-22).
+(current: 2026-10-23).
 Each module keeps its own version and may has its own compatibility dependency.
 
 In addition, OSG Lecture is a LuaLaTeX bundle ( 🌕 ). That said, there are few package that can work without Lua in a

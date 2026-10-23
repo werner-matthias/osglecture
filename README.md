@@ -42,7 +42,7 @@ Currently, the following packages are included:
 
 ## Modules' version and compatibility
 The bundle as a whole is identified by its release date only
-(current: <!-- BUNDLE RELEASE DATE -->2026-10-22<!-- /BUNDLE RELEASE DATE -->).
+(current: <!-- BUNDLE RELEASE DATE -->2026-10-23<!-- /BUNDLE RELEASE DATE -->).
 Each module keeps its own version and may has its own compatibility dependency.
 <!-- BEGIN GITHUB ONLY -->
 Whilst in general an up-to-date TeX installation is required, few modules are
