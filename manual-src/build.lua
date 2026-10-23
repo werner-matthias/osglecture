@@ -3,8 +3,6 @@ module = "osglecture-manual"
 maindir = ".."
 
 sourcefiles = {
-  "osglecture-manual-en.tex",
-  "osglecture-manual-de.tex",
   "osglecture-manual.tex",
   "olm-*.tex",
   "polymorphy-*.tex",
@@ -29,10 +27,10 @@ local manual_source_files = {
   "tutorial-output-source.tex",
 }
 
-typesetfiles = {
-  "osglecture-manual-en.tex",
-  "osglecture-manual-de.tex",
-}
+-- Typeset twice, as osglecture-manual-en and -de (see bilingualfiles in
+-- ../build.lua).
+typesetfiles = { "osglecture-manual.tex" }
+bilingualfiles = { "osglecture-manual.tex" }
 
 docfiles = {
   "osglecture-manual-en.pdf",

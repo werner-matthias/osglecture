@@ -9,6 +9,9 @@ textfiles = {
 
 installfiles = { "tagbridge.sty" }
 
+-- Shared helper of the tagging tests, kept once in <maindir>/support.
+checksuppfiles = { "insert-pdf-tags.lua" }
+
 dofile("../build.lua")
 
 -- Avoid l3build's io.popen() extraction path, which returns no output on the

@@ -9,6 +9,9 @@ sourcefiles = { "osglistings.dtx", "osglistings.lua", "osglistings-check-updates
 unpackfiles = { "osglistings.dtx" }
 typesetfiles = { "osglistings.dtx" }
 
+-- Shared helper of the tagging tests, kept once in <maindir>/support.
+checksuppfiles = { "insert-pdf-tags.lua" }
+
 dofile("../build.lua")
 
 checkengines = { "luatex" }

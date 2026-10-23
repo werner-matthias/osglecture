@@ -1,17 +1,16 @@
 Notes for the CTAN team and the TeX distribution maintainers
 
 1. Package layout and installation
-   osglecture.tds.zip contains the complete installation tree; all paths
-   in items 2 to 4 refer to it.
-   The package directory mirrors the development repository: one
-   directory per module with its sources, documentation (PDF), tests, and
-   l3build file, plus the top-level build.lua. In the unpacked package,
+   osglecture.tds.zip contains the complete installation tree (paths in
+   items 2 to 4 refer to it); source/luatex/osglecture mirrors the
+   package tree with tests and build files.
+   The package directory mirrors the repository: one directory per
+   module with sources, PDFs, tests, and build.lua. In the unpacked package,
    "l3build install", "l3build doc", and "l3build check" therefore work
    as in the repository. Without l3build, run "luatex <file>.dtx" on every
    .dtx file except osglecture/osglecture-adapters.dtx and
    osglecture/osglecture-profiles.dtx: all other .dtx files are
-   self-extracting (there are no .ins files), and osglecture.dtx also
-   extracts those two.
+   self-extracting, and osglecture.dtx also extracts those two.
    The example projects in examples/ are installed as
    doc/luatex/osglecture/examples.
 

@@ -19,15 +19,12 @@ tdsdirs = {
 
 sourcefiles = {
   "ollm.tex",
-  "ollm-en.tex",
-  "ollm-de.tex",
   "scripts/lib/OLLM/Version.pm"
 }
 
-typesetfiles = { 
-  "ollm-en.tex",
-  "ollm-de.tex"
-}
+-- Typeset twice, as ollm-en and ollm-de (see bilingualfiles in ../build.lua).
+typesetfiles = { "ollm.tex" }
+bilingualfiles = { "ollm.tex" }
 
 textfiles = {
   "README-ollm.md",

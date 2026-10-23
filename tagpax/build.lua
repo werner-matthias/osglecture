@@ -24,7 +24,6 @@ textfiles = {
 }
 
 docfiles = {
-  "README-tagpax.md",
   "*.tikz"
 }
 

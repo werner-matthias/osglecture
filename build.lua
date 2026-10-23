@@ -86,12 +86,18 @@ end
   files (sources, l3build files, tests, README-<module>.md) and its
   documentation PDFs, so "l3build check/doc/install" also work there.
   The repository-only README.md links are git symlinks and stay behind;
-  so do development-docs/, doc/, tools/ and ctan/, which no module copies.
-  The top-level build.lua and LICENSE, the logos used by the
-  lttheme-tuc-2019 tests and example, and the examples come along with
-  every module (the copies are identical).  LICENSE and the examples also
-  go to doc/<tdsroot>/<bundle> in the TDS tree.
+  so do development-docs/, doc/, tools/, ctan/, and images/ apart from
+  images/logos (the other images serve osglecture projects, not the
+  bundle), which no module copies.
+  The top-level build.lua and LICENSE, the shared test support files, the
+  logos used by the lttheme-tuc-2019 tests and example, and the examples
+  come along with every module (the copies are identical).
   Hidden files are left out: CTAN does not accept them.
+
+  CTAN requires the TDS archive to hold every file of the package tree.
+  Documentation (PDFs, README files, LICENSE, examples) goes to
+  doc/<tdsroot>/<bundle>, everything else to source/<tdsroot>/<bundle>,
+  which therefore mirrors the package tree.
 --]]
 local function git_tracked_files(dir)
   local handle = io.popen("git -C " .. dir .. " ls-files -s -- . 2>" .. os_null)
@@ -111,18 +117,20 @@ local function git_tracked_files(dir)
   return files
 end
 
-local function copy_tracked(sourcedir, targetdir)
+local function copy_tracked(sourcedir, ...)
   local files = git_tracked_files(sourcedir)
   if #files == 0 then
     print("copyctan: no tracked files in " .. sourcedir)
     return 1
   end
-  for _, path in ipairs(files) do
-    local dir, name = splitpath(path)
-    mkdir(targetdir .. "/" .. dir)
-    local errorlevel = cp(name, sourcedir .. "/" .. dir, targetdir .. "/" .. dir)
-    if errorlevel ~= 0 then
-      return errorlevel
+  for _, targetdir in ipairs({ ... }) do
+    for _, path in ipairs(files) do
+      local dir, name = splitpath(path)
+      mkdir(targetdir .. "/" .. dir)
+      local errorlevel = cp(name, sourcedir .. "/" .. dir, targetdir .. "/" .. dir)
+      if errorlevel ~= 0 then
+        return errorlevel
+      end
     end
   end
   return 0
@@ -131,22 +139,48 @@ end
 if is_module then
   function copyctan()
     local pkgdir = ctandir .. "/" .. ctanpkg
-    local moduledir = lfs.currentdir():match("([^/\\]+)$")
-    local targetdir = pkgdir .. "/" .. moduledir
+    local tdsdocdir = tdsdir .. "/doc/" .. tdsroot .. "/" .. bundle
+    local tdssourcedir = tdsdir .. "/source/" .. tdsroot .. "/" .. bundle
+    local dirname = lfs.currentdir():match("([^/\\]+)$")
+    local targetdir = pkgdir .. "/" .. dirname
     mkdir(targetdir)
-    local errorlevel = copy_tracked(".", targetdir)
-      + copy_tracked(maindir .. "/images/logos", pkgdir .. "/images/logos")
-      + copy_tracked(maindir .. "/examples", pkgdir .. "/examples")
+    -- The mirror replaces l3build's own, flattened source directory.
+    rmdir(tdsdir .. "/source/" .. moduledir)
+    local errorlevel = copy_tracked(".", targetdir, tdssourcedir .. "/" .. dirname)
+      + copy_tracked(maindir .. "/support",
+          pkgdir .. "/support", tdssourcedir .. "/support")
+      + copy_tracked(maindir .. "/images/logos",
+          pkgdir .. "/images/logos", tdssourcedir .. "/images/logos")
       + copy_tracked(maindir .. "/examples",
-          tdsdir .. "/doc/" .. tdsroot .. "/" .. bundle .. "/examples")
+          pkgdir .. "/examples", tdsdocdir .. "/examples")
       + cp("build.lua", maindir, pkgdir)
+      + cp("build.lua", maindir, tdssourcedir)
       + cp("LICENSE", maindir, pkgdir)
-      + cp("LICENSE", maindir, tdsdir .. "/doc/" .. tdsroot .. "/" .. bundle)
+      + cp("LICENSE", maindir, tdsdocdir)
     for _, files in ipairs({ docfiles, pdffiles, typesetlist }) do
       for _, pattern in ipairs(files or { }) do
         if pattern:match("%.pdf$") then
           cp(pattern, docfiledir, targetdir)
         end
+      end
+    end
+    return errorlevel
+  end
+
+  -- l3build looks for the text files (README-<module>.md, THIRD_PARTY-*.md)
+  -- in docfiledir when installing, where they never are; install them from
+  -- the module directory instead.
+  local std_install_files = install_files
+  function install_files(target, full, dry_run)
+    local errorlevel = std_install_files(target, full, dry_run)
+    if errorlevel ~= 0 or not full or dry_run then
+      return errorlevel
+    end
+    local docdir = target .. "/doc/" .. moduledir
+    mkdir(docdir)
+    for _, pattern in ipairs(textfiles) do
+      for _, name in ipairs(filelist(textfiledir, pattern)) do
+        errorlevel = errorlevel + cp(name, textfiledir, docdir)
       end
     end
     return errorlevel
@@ -321,19 +355,30 @@ tdsroot = "luatex"
 The documentation is in two languages, English and German.
 I.e., each .dtx file has to be compiled twice.
 We use langselect and get the target language from jobname.
-Thus, we need a special typeset function.
+Thus, we need a special typeset function.  Other bilingual sources (the
+manuals of ollm and of the bundle) are listed in 'bilingualfiles' and get
+<name>-en and <name>-de as jobnames in the same way.
 --]]
+bilingualfiles = bilingualfiles or { }
 
 function typeset(file, dir, cmd)
    dir = dir or "."
    local jobnames
    local ext = file:match("%.([^.]*)$")
+   local stem = file:match("([^/]+)%.[^.]*$")
+   local bilingual = false
+   for _, name in ipairs(bilingualfiles) do
+      if name == file:match("([^/]+)$") then
+         bilingual = true
+      end
+   end
    print(" typeset called")
    if ext == 'dtx' then 
       jobnames = {module.."-en", module.."-de"}
+   elseif bilingual then
+      jobnames = {stem.."-en", stem.."-de"}
    else
-      local jobname = file:match("([^/]+)%.[^.]*$")
-      jobnames = {jobname}
+      jobnames = {stem}
    end
    for _, job in ipairs(jobnames) do
       local errorlevel

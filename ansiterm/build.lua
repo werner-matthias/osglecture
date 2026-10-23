@@ -11,6 +11,9 @@ installfiles = { "ansiterm.sty", "ansiterm.lua" }
 -- never call it, fatal for exec-tagging, which does.
 sourcefiles = { "ansiterm.dtx", "ansiterm.lua" }
 
+-- Shared helper of the tagging tests, kept once in <maindir>/support.
+checksuppfiles = { "insert-pdf-tags.lua" }
+
 dofile("../build.lua")
 
 -- Both environments are checked under LuaTeX, since the package needs it

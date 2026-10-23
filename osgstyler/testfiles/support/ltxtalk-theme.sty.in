@@ -1,3 +1,8 @@
+% Test double, not the real ltxtalk-theme: it lacks
+% \LtxtalkUsesOsgstylerNatively, so osgstyler takes its reactive
+% integration path.  build.lua installs it as ltxtalk-theme.sty in the
+% test directory; kept as .sty.in so that it is not taken for the file
+% generated from lttheme.dtx.
 \NeedsTeXFormat{LaTeX2e}[2024-06-01]
 \ProvidesExplPackage{ltxtalk-theme}{2026-08-23}{v0.0.0}{Test stub}
 \RequirePackage{xcolor}

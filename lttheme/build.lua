@@ -30,6 +30,9 @@ installfiles = {
     "ltxtalk-theme-font-texgyre.sty",
 }
 
+-- Shared helper of the tagging tests, kept once in <maindir>/support.
+checksuppfiles = { "insert-pdf-tags.lua" }
+
 dofile("../build.lua")
 
 -- \ltxtalkversion mirrors the package version as a bare number for messages

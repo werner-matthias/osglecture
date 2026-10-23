@@ -1,0 +1,1 @@
+Placeholder: keeps the directory 010-introduction for testfiles/manifest.lvt.

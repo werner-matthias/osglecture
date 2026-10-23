@@ -1,6 +1,8 @@
 = Helper Tool
 
 * `update-bundle-manifest.lua`: check and update package versions in the README
+* `generate-placeholder-logos.py`: generated the fictional TUC placeholder logos in
+  `images/logos` (needs reportlab; only for regenerating them)
 * `make-ctan-readme.lua`: derives the CTAN README (`ctan/README.md`) from `README.md`;
   run by `l3build tag`, checked by `l3build ctan` (`--check`)
 * `bundle-versions.lua`: library reading the module versions from the sources; used by

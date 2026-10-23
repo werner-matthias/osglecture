@@ -94,21 +94,21 @@ jobs:
             expect_current: pass
           - name: osglecture-modes-core
             directory: osglecture-modes
-            config: core
+            config: config-core
             expect_2024: fail
             expect_2025: pass
             expect_current: pass
           - name: ltx-talk support (osglecture + osglecture-modes)
             directory: osglecture-modes
-            config: ltxtalk
+            config: config-ltxtalk
             companion_directory: ../osglecture
-            companion_config: ltxtalk
+            companion_config: config-ltxtalk
             expect_2024: fail
             expect_2025: fail
             expect_current: pass
           - name: osglecture
             directory: osglecture
-            config: core
+            config: config-core
             expect_2024: fail
             expect_2025: pass
             expect_current: pass
@@ -120,13 +120,13 @@ jobs:
             expect_current: pass
           - name: tagbridge
             directory: tagbridge
-            config: core
+            config: config-core
             expect_2024: fail
             expect_2025: pass
             expect_current: pass
           - name: tagdirtree
             directory: tagdirtree
-            config: core
+            config: config-core
             expect_2024: fail
             expect_2025: pass
             expect_current: pass

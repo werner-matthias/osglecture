@@ -38,34 +38,28 @@ Currently, the following packages are included:
 The bundle as a whole is identified by its release date only
 (current: 2026-10-22).
 Each module keeps its own version and may has its own compatibility dependency.
-Whilst in general an up-to-date TeX installation is required, few modules are
-working with older distributions.
 
 In addition, OSG Lecture is a LuaLaTeX bundle ( 🌕 ). That said, there are few package that can work without Lua in a
 degrated mode ( 🌓 ) or don't require Lua at all ( 🌑 ).
 
- The following table lists versions and compatibility, the `TL ...` columns show compatibility with
-recent TeXLive/MacTeX distributions ("current" = latest available image).
+The following table lists the versions of the modules and their use of Lua.
 
-| Module | Version | Date | Files | Lua | TL 2024 | TL 2025 | TL current |
-|---|---|---|---|:---:|:---:|:---:|:---:|
-| osglecture | v0.6.0 | 2026-10-05 | 24 | 🌕 | 🔴 | 🟢 | 🟢 |
-| osglecture-modes | v0.5.1 | 2026-09-27 | 2 | 🌕 | 🔴 | 🟢 | 🟢 |
-| ltx-talk support (osglecture + osglecture-modes) | n/a | n/a | n/a | 🌕 | 🔴 | 🔴 | 🟢 |
-| ollm | v0.15.0 | n/a | 1 | ⚪ | ⚪ | 🟢 | 🟢 |
-| tagpax | v0.8.6 | 2026-10-22 | 2 | 🌕 | 🔴 | 🟢 | 🟢 |
-| tagbridge | v0.1.0 | 2026-09-14 | 1 | 🌑 | 🔴 | 🟢 | 🟢 |
-| tagdirtree[^1] | v0.1.0 | 2026-09-14 | 1 | 🌑 | 🔴 | 🟢 | 🟢 |
-| langselect | v1.1.3 | 2026-09-18 | 1 | 🌕 | 🟢 | 🟢 | 🟢 |
-| osgstyler | v0.2.0 | 2026-08-24 | 2 | 🌓 | 🔴 | 🔴 | 🟢 |
-| lttheme | v0.5.3 | 2026-10-05 | 15 | 🌑 | 🔴 | 🔴 | 🟢 |
-| lttheme-tuc-2019 | v0.5.1 | 2026-08-24 | 1 | 🌑 | 🔴 | 🔴 | 🟢 |
-| ansiterm[^2] | v0.2.1 | 2026-08-26 | 1 | 🌕 | 🔴 | 🔴 | 🟢 |
-| osglistings | v0.1.0 | 2026-08-28 | 1 | 🌕 | 🟢 | 🟢 | 🟢 |
-| semcat | v0.3.0 | 2026-08-31 | 1 | 🌕 | 🟢 | 🟢 | 🟢 |
-| osgdoc | v0.5.0 | 2026-09-08 | 2 | 🌓 | 🟢 | 🟢 | 🟢 |
-[^1]: The incompatibility for TL 2024 refers to tagging only; the untagged tree is okay.
-[^2]: The incompatibility for TL 2025 refers to tagging only; the basis features are okay.
+| Module | Version | Date | Files | Lua |
+| --- | --- | --- | --- | :---: |
+| osglecture | v0.6.0 | 2026-10-05 | 24 | 🌕 |
+| osglecture-modes | v0.5.1 | 2026-09-27 | 2 | 🌕 |
+| ollm | v0.15.0 | n/a | 1 | ⚪ |
+| tagpax | v0.8.6 | 2026-10-22 | 2 | 🌕 |
+| tagbridge | v0.1.0 | 2026-09-14 | 1 | 🌑 |
+| tagdirtree | v0.1.0 | 2026-09-14 | 1 | 🌑 |
+| langselect | v1.1.3 | 2026-09-18 | 1 | 🌕 |
+| osgstyler | v0.2.0 | 2026-08-24 | 2 | 🌓 |
+| lttheme | v0.5.3 | 2026-10-05 | 15 | 🌑 |
+| lttheme-tuc-2019 | v0.5.1 | 2026-08-24 | 1 | 🌑 |
+| ansiterm | v0.2.1 | 2026-08-26 | 1 | 🌕 |
+| osglistings | v0.1.0 | 2026-08-28 | 1 | 🌕 |
+| semcat | v0.3.0 | 2026-08-31 | 1 | 🌕 |
+| osgdoc | v0.5.0 | 2026-09-08 | 2 | 🌓 |
 
 ## Installation
 Install the bundle with the package manager of your TeX distribution.

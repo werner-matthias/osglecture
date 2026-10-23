@@ -27,6 +27,20 @@ typesetfiles = {
     "osgstyler.dtx",
 }
 
+-- The lttheme-* tests need a stand-in for ltxtalk-theme, see the head of
+-- testfiles/support/ltxtalk-theme.sty.in.
+function checkinit_hook()
+  local input = assert(io.open(testdir .. "/ltxtalk-theme.sty.in", "rb"))
+  local output = assert(io.open(testdir .. "/ltxtalk-theme.sty", "wb"))
+  output:write(input:read("a"))
+  input:close()
+  output:close()
+  return 0
+end
+
+-- Shared helper of the tagging tests, kept once in <maindir>/support.
+checksuppfiles = { "insert-pdf-tags.lua" }
+
 dofile("../build.lua")
 
 -- Avoid l3build's io.popen() extraction path, which returns no output on the

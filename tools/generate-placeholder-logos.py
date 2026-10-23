@@ -6,7 +6,7 @@ from pathlib import Path
 from reportlab.pdfgen import canvas
 
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent / "images" / "logos"
 
 PAGE_SIZES = {
     "tuc": ((397.299, 199.840), (571.798, 374.333)),

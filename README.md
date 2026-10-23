@@ -44,8 +44,10 @@ Currently, the following packages are included:
 The bundle as a whole is identified by its release date only
 (current: <!-- BUNDLE RELEASE DATE -->2026-10-22<!-- /BUNDLE RELEASE DATE -->).
 Each module keeps its own version and may has its own compatibility dependency.
+<!-- BEGIN GITHUB ONLY -->
 Whilst in general an up-to-date TeX installation is required, few modules are
 working with older distributions.
+<!-- END GITHUB ONLY -->
 
 In addition, OSG Lecture is a LuaLaTeX bundle ( :full_moon: ). That said, there are few package that can work without Lua in a
 degrated mode ( :first_quarter_moon: ) or don't require Lua at all ( :new_moon: ).
@@ -53,8 +55,13 @@ degrated mode ( :first_quarter_moon: ) or don't require Lua at all ( :new_moon: 
  - files generated from the same docstrip source (one `.dtx`) are expected to share one version and date. 
  - `ollm` is Perl rather than a docstripped LaTeX package, so it keeps its version as the single `$VERSION` in `OLLM::Version` instead.
  -->
+<!-- BEGIN GITHUB ONLY -->
  The following table lists versions and compatibility, the `TL ...` columns show compatibility with
 recent TeXLive/MacTeX distributions ("current" = latest available image).
+<!-- END GITHUB ONLY -->
+<!-- CTAN ONLY
+The following table lists the versions of the modules and their use of Lua.
+-->
 <!-- tested by the manually triggered
 [*Distribution compatibility*](.github/workflows/compatibility.yml)
 workflow.

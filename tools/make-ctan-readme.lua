@@ -14,7 +14,11 @@
 --   - GitHub alerts ("> [!WARNING]") become a bold label,
 --   - GitHub emoji shortcodes become UTF-8 emoji; an unknown shortcode
 --     is an error, so a new icon cannot slip through unnoticed,
---   - repository paths after a module name (" (`./ollm`)") are removed.
+--   - repository paths after a module name (" (`./ollm`)") are removed,
+--   - the module table loses its "TL ..." columns, their footnotes, and
+--     the rows that only state a compatibility (version "n/a"): they
+--     describe installations from the repository on older TeX Live
+--     releases, while a distribution ships the bundle for the current one.
 
 local SOURCE = "README.md"
 local TARGET = "ctan/README.md"
@@ -36,6 +40,48 @@ local function fail(message)
   os.exit(1)
 end
 
+local function split_row(line)
+  local cells = { }
+  for cell in line:gsub("^|", ""):gsub("|%s*$", ""):gmatch("([^|]*)|?") do
+    table.insert(cells, (cell:gsub("^%s+", ""):gsub("%s+$", "")))
+  end
+  if cells[#cells] == "" then
+    table.remove(cells)
+  end
+  return cells
+end
+
+local function strip_compatibility(content)
+  local lines, keep = { }, nil
+  for line in (content .. "\n"):gmatch("([^\n]*)\n") do
+    if line:match("^| Module |") then
+      keep = { }
+      for i, cell in ipairs(split_row(line)) do
+        keep[i] = not cell:match("^TL ")
+      end
+    end
+    if keep and line:match("^|") then
+      local cells, kept = split_row(line), { }
+      for i, cell in ipairs(cells) do
+        if keep[i] then
+          table.insert(kept, (cell:gsub("%[%^%d+%]", "")))
+        end
+      end
+      if kept[2] ~= "n/a" then
+        table.insert(lines, "| " .. table.concat(kept, " | ") .. " |")
+      end
+    elseif keep and line:match("^%[%^%d+%]:") then
+      -- footnote of a compatibility entry
+    else
+      if keep and not line:match("^|") then
+        keep = nil
+      end
+      table.insert(lines, line)
+    end
+  end
+  return table.concat(lines, "\n")
+end
+
 local function generate(content)
   local release_date = content:match(
     "<!%-%- BUNDLE RELEASE DATE %-%->(.-)<!%-%- /BUNDLE RELEASE DATE %-%->"
@@ -50,6 +96,7 @@ local function generate(content)
     return (body:gsub("@RELEASEDATE@", release_date))
   end)
   content = content:gsub("<!%-%-.-%-%->", "")
+  content = strip_compatibility(content)
 
   content = content:gsub("\n>%s*%[!(%u+)%]%s*\n", function(kind)
     return "\n> **" .. kind:sub(1, 1) .. kind:sub(2):lower() .. "**\n"
