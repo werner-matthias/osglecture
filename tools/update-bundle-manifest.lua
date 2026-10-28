@@ -26,7 +26,7 @@ local capabilities_after = {
   },
 }
 
-local versions = dofile("tools/bundle-versions.lua")
+local versions = dofile("tools/packages.lua")
 local read_file = versions.read_file
 
 local function unquote(value)

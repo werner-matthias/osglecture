@@ -32,7 +32,7 @@ local EMOJI = {
   green_circle       = "🟢",
 }
 
-local versions = dofile("tools/bundle-versions.lua")
+local versions = dofile("tools/packages.lua")
 local read_file = versions.read_file
 
 local function fail(message)

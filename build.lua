@@ -638,7 +638,7 @@ local function gittag()
     return 1
   end
 
-  local versions = dofile("tools/bundle-versions.lua")
+  local versions = dofile("tools/packages.lua")
   local wanted = { }
   local errorlevel = 0
 
