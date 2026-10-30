@@ -113,13 +113,13 @@ harte Input-Stack-Grenze (hier: 10000).
 
 ## 3. Bestehende Lua-Precedent (und warum sie nicht direkt reicht)
 
-`osglecture-modes-ltxtalk.lua` (eingebettet in `osglecture-modes.dtx`,
+`osglecture-modes-lttalk.lua` (eingebettet in `osglecture-modes.dtx`,
 `%<*lua>`-Block, Ende der Datei) registriert `process_input_buffer`
 (LuaTeX-Callback) und ersetzt **ganze Quelltextzeilen** durch `""`, bis
 eine Zeile auf `\end{<env>}` matcht:
 
 ```lua
-function osglecture_modes_ltxtalk.start_raw_skip(env) ... end
+function osglecture_modes_lttalk.start_raw_skip(env) ... end
 -- process_input_buffer liefert "" für jede Zeile, bis \end{env} auftaucht
 ```
 
@@ -169,9 +169,9 @@ lange weiterliest, bis sie auf etwas Behaltenes stößt.
 1. **Registrierung spiegeln -- erledigt (Phase 1):** Name, Handler-Name
    und optionale `mode=`-Bindung jedes behaltenen Befehls/jeder
    behaltenen Umgebung liegen in
-   `osglecture_modes_ltxtalk.keep_cmds`/`.keep_envs` vor.
+   `osglecture_modes_lttalk.keep_cmds`/`.keep_envs` vor.
 2. **Aktivmodus-Zustand -- erledigt (Phase 1):**
-   `osglecture_modes_ltxtalk.active_modes`/`.is_mode_active(name)`
+   `osglecture_modes_lttalk.active_modes`/`.is_mode_active(name)`
    spiegelt den tatsächlichen, einzigen Änderungspunkt
    (`\osglecture_modes_visit:n`, das sowohl vom Graphdurchlauf in
    `\osglecture_modes_finalize:` als auch von der direkten
@@ -179,7 +179,7 @@ lange weiterliest, bis sie auf etwas Behaltenes stößt.
    d.\,h. der Schalterform `\mode<name>` selbst -- benutzt wird) und den
    zugehörigen Clear-Punkt. Verifiziert: `\mode<solutions>` setzt
    `is_mode_active("solutions")` sofort auf `true`.
-3. **Scan-Kern, Lua-seitig (`osglecture_modes_ltxtalk.scan()`):**
+3. **Scan-Kern, Lua-seitig (`osglecture_modes_lttalk.scan()`):**
    Läuft in einer `while`-Schleife über `token.get_next()`:
    - Token ist `\begin`: nächstes balanciertes Gruppenargument als
      Umgebungsname lesen (`token.scan_string()` oder händisches
@@ -217,7 +217,7 @@ lange weiterliest, bis sie auf etwas Behaltenes stößt.
    \cs_set_protected:Npn \osglecture_modes_scan:
      {
        \sys_if_engine_luatex:TF
-         { \directlua{ osglecture_modes_ltxtalk.scan() } }
+         { \directlua{ osglecture_modes_lttalk.scan() } }
          { <bisheriger TeX-Level-Körper, unverändert> }
      }
    ```
@@ -315,8 +315,8 @@ Originalinhalt statt 1:1-Kopie (Lizenz/Umfang).
 
 - [x] Phase 0: Mechanismus verstanden und dokumentiert.
 - [x] Phase 1: Interface-Design + Spiegel-Infrastruktur. Umgesetzt:
-  `osglecture_modes_ltxtalk.keep_cmds`/`.keep_envs` in
-  `osglecture-modes-ltxtalk.lua`, gefüllt über neue `\directlua`-Aufrufe
+  `osglecture_modes_lttalk.keep_cmds`/`.keep_envs` in
+  `osglecture-modes-lttalk.lua`, gefüllt über neue `\directlua`-Aufrufe
   in `\osglecture_modes_declare_allowed_command:nn`,
   `\osglecture_modes_register_command:nnn` und
   `\osglecture_modes_declare_keep_environment:nn`. Verifiziert per
@@ -326,7 +326,7 @@ Originalinhalt statt 1:1-Kopie (Lizenz/Umfang).
   `mode=nil`, modusgebundene Einträge mit korrektem Modusnamen. Alle 15
   bestehenden Tests weiterhin grün (rein additiv, keine
   Verhaltensänderung).
-- [x] Phase 2: Scan-Kern implementiert -- `osglecture_modes_ltxtalk.scan()`
+- [x] Phase 2: Scan-Kern implementiert -- `osglecture_modes_lttalk.scan()`
   im `%<*lua>`-Block von `osglecture-modes.dtx` (nach
   `register_keep_env`): `\begin`/`\end`/Controlword-Dispatch gegen
   `keep_cmds`/`keep_envs`/`raw_skip_envs`/`active_modes`, inklusive
@@ -433,7 +433,7 @@ werden muss.
 
 Die für Abschnitt 4 vorgesehene Architektur ruft die Scan-Logik als
 **Funktion aus der separat geladenen `.lua`-Datei** auf
-(`\directlua{osglecture_modes_ltxtalk.scan()}`) -- diese Aufrufzeile
+(`\directlua{osglecture_modes_lttalk.scan()}`) -- diese Aufrufzeile
 selbst enthält kein `#`. Die `.lua`-Datei wird über `require(...)` direkt
 vom Dateisystem gelesen, **vollständig außerhalb von TeX' Tokenisierung
 und Expansion** -- jedes `#` in den dortigen Funktionsdefinitionen
@@ -445,7 +445,7 @@ geladen und mit dem schlichten Aufruf `\directlua{myhelper.make_begin_foo()}`
 aufgerufen (kein Catcode-Trick nötig) -- Ergebnis: `FOO-BEGAN`,
 `\@currenvir` korrekt `foo`, `FOO-ENDED`, keine Fehler.
 
-**Konsequenz:** Der komplette `osglecture_modes_ltxtalk.scan()`-Kern
+**Konsequenz:** Der komplette `osglecture_modes_lttalk.scan()`-Kern
 gehört in die `.lua`-Datei (den `%<*lua>`-Block in
 `osglecture-modes.dtx`), nicht inline in ein `\directlua{...}`. Für
 zukünftiges Debugging inline im `.tex`/`.dtx`-Kontext (etwa
@@ -456,7 +456,7 @@ ungruppierten globalen `\catcode`-Zuweisungen wie in 8.2 arbeiten.
 ### 8.4 Stand der Implementierung (Phase 2/3 abgeschlossen)
 
 Die Erkenntnisse aus 8.2/8.3 sind mittlerweile in `osglecture-modes.dtx`
-eingearbeitet: `osglecture_modes_ltxtalk.scan()` existiert im
+eingearbeitet: `osglecture_modes_lttalk.scan()` existiert im
 `%<*lua>`-Block (nach `register_keep_env`), implementiert die
 Scan-Schleife gemäß Abschnitt 4, Punkt 3 (`token.get_next()`-Schleife,
 Fallunterscheidung `\begin`/`\end`/Controlword/Einzelzeichen anhand
@@ -494,7 +494,7 @@ umgekehrt) vor die weitere Eingabe ein.
 Nach Implementierung von `scan()` (Abschnitt 8.4) und der
 Engine-Weiche (Abschnitt 9.3) schlugen 3 der 15 bestehenden Tests fehl:
 `filter-mode-article`, `filter-mode-article-off`,
-`ltxtalk-filter-profiles`. Diff in allen drei Fällen identisch im Muster:
+`lttalk-filter-profiles`. Diff in allen drei Fällen identisch im Muster:
 das neue (Lua-)Log zeigt *zusätzlich* einen echten Seitenumbruch
 (`[1] (....aux)`) und die Standard-Erstlauf-Warnung
 `LaTeX Warning: Label(s) may have changed`, die im alten, eingefrorenen
@@ -507,7 +507,7 @@ Lua-Scanner architekturbedingt nicht hat. Erster Reflex war, die drei
 anzuheben -- **das war der falsche Fix** und wurde wieder verworfen
 (siehe 9.4): richtig ist, die drei Testdateien um dieselbe, bereits an
 anderer Stelle im Testkorpus etablierte `\END`-Registrierung zu ergänzen
-(siehe `ltxtalk-ignore-non-frame.lvt`), wonach alle 15 Tests wieder
+(siehe `lttalk-ignore-non-frame.lvt`), wonach alle 15 Tests wieder
 gegen ihre **unveränderten Original-`.tlg`** grün sind -- sowohl mit dem
 neuen Lua-Scanner als auch mit dem unveränderten TeX-Scanner (beides
 verifiziert).
@@ -550,7 +550,7 @@ In allen drei betroffenen Testdateien endet das Dokument mit exakt
 diesem Muster: einer nicht beibehaltenen bzw. modusinaktiven Umgebung
 unmittelbar vor `\END`/`\end{document}` (z.\,B.
 `\begin{unregisteredenv}...\end{unregisteredenv}` in
-`ltxtalk-filter-profiles.lvt`). Dadurch lief der bare `\END`
+`lttalk-filter-profiles.lvt`). Dadurch lief der bare `\END`
 (regression-test.tex) *ungefiltert direkt*, statt (wie eigentlich
 korrekt) vom Scanner als unbekannter Befehl verworfen zu werden, sodass
 erst das echte, textuelle `\end{document}` danach greift und den
@@ -589,7 +589,7 @@ Separater Folgeauftrag.
 ### 9.3 Engine-Weiche (Phase 3, Abschnitt 4 Punkt 4)
 
 `\osglecture_modes_scan:` selbst entscheidet jetzt per
-`\sys_if_engine_luatex:TF`, ob `\directlua{osglecture_modes_ltxtalk.scan()}`
+`\sys_if_engine_luatex:TF`, ob `\directlua{osglecture_modes_lttalk.scan()}`
 (ein einziger Aufruf, der den kompletten Scan-Lauf in einer Lua-Schleife
 durchführt) oder der unveränderte TeX-Zweig läuft. Da jeder
 Wiederaufsetzpunkt -- sowohl der initiale Scan-Start als auch die
@@ -607,7 +607,7 @@ Aux-Dateien zu schreiben, nur weil eine Testdatei ihr `\END` nicht
 korrekt registriert -- unnötiger Overhead und ein unsauberer, an eine
 konkrete Scanner-Implementierung gekoppelter Testabgleich.
 
-`ltxtalk-ignore-non-frame.lvt` (bereits im Testkorpus vorhanden, war die
+`lttalk-ignore-non-frame.lvt` (bereits im Testkorpus vorhanden, war die
 ganze Zeit über grün) zeigt das korrekte Muster: `\END` explizit per
 `\DeclareLectureKeepCommand`-Infrastruktur als beizubehaltender Befehl
 registrieren, mit einem Handler, der `\END` direkt (bare) aufruft:
@@ -624,7 +624,7 @@ Damit läuft `\END`s Testabschluss-Nachricht *immer* bare/direkt (egal ob
 TeX- oder Lua-Scanner, egal ob der in 9.2 beschriebene Bug greift oder
 nicht) -- exakt das ursprünglich gewollte, saubere, seitenlose Testende.
 Die drei betroffenen Dateien (`filter-mode-article.lvt`,
-`filter-mode-article-off.lvt`, `ltxtalk-filter-profiles.lvt`) hatten
+`filter-mode-article-off.lvt`, `lttalk-filter-profiles.lvt`) hatten
 diese Registrierung schlicht vergessen; ergänzt, unter Beibehaltung der
 **unveränderten Original-`.tlg`-Dateien** (`git checkout` auf die
 vorherige `save`-Änderung). Verifiziert: `l3build clean && l3build
@@ -659,7 +659,7 @@ eine Klammergruppe folgt; ohne folgende Gruppe direkt
 `\osglecture_modes_switch:n` aufrufen, das selbst fürs Weiterscannen
 sorgt -- kein zusätzlicher `\osglecture_modes_scan:`-Aufruf danach, sonst
 würde das eigene Wiederaufsetz-Token als unbekannter Befehl verworfen).
-Neuer Test: `osglecture-modes/testfiles/ltxtalk-mode-then-section.lvt`
+Neuer Test: `osglecture-modes/testfiles/lttalk-mode-then-section.lvt`
 (gegen den unbehobenen Stand verifiziert -- schlägt dort mit sichtbarer
 Zeichen-Korruption fehl). Alle jetzt 16 Tests grün.
 

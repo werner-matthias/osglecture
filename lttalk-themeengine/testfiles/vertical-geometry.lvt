@@ -1,0 +1,67 @@
+\DocumentMetadata{}
+\input regression-test.tex
+\documentclass{ltx-talk}
+\usepackage{lttalk-themeengine}
+
+\begin{document}
+\START
+\ExplSyntaxOn
+
+\dim_set:Nn \l_tmpa_dim {\textheight}
+
+\lttalksetup
+  {header=true,header-height=14mm,footer=true,footer-height=12mm}
+
+\dim_compare:nNnTF {\use:c{Gm@tmargin}} = {14mm+\headsep}
+  {\TYPE{header-margin:passed}}
+  {\TYPE{header-margin:FAILED}}
+\dim_compare:nNnTF {\use:c{Gm@bmargin}} = {12mm}
+  {\TYPE{footer-margin:passed}}
+  {\TYPE{footer-margin:FAILED}}
+\dim_compare:nNnTF {\textheight} = {\paperheight-14mm-\headsep-12mm}
+  {\TYPE{textheight:passed}}
+  {\TYPE{textheight:FAILED}}
+\dim_compare:nNnTF {\topmargin} = {14mm-1in-\headheight}
+  {\TYPE{topmargin:passed}}
+  {\TYPE{topmargin:FAILED}}
+\dim_compare:nNnTF {\use:c{@colht}} = {\textheight}
+  {\TYPE{colht:passed}}
+  {\TYPE{colht:FAILED}}
+
+% Title layouts carry their own spacing and retain the class text geometry.
+\bool_set_true:N \l__lttalk_title_page_bool
+\lttalksetup
+  {header=true,header-height=24mm,footer=true,footer-height=12mm}
+\dim_compare:nNnTF {\use:c{Gm@tmargin}} = {\LTXTalkBaseTopMargin}
+  {\TYPE{title-top:passed}}
+  {\TYPE{title-top:FAILED}}
+\dim_compare:nNnTF {\use:c{Gm@bmargin}} = {\LTXTalkBaseBottomMargin}
+  {\TYPE{title-bottom:passed}}
+  {\TYPE{title-bottom:FAILED}}
+\bool_set_false:N \l__lttalk_title_page_bool
+
+% Shallow theme areas must not reduce the class's original whitespace.
+\lttalksetup
+  {header=true,header-height=1mm,footer=true,footer-height=1mm}
+\dim_compare:nNnTF {\use:c{Gm@tmargin}} = {\LTXTalkBaseTopMargin}
+  {\TYPE{shallow-header:passed}}
+  {\TYPE{shallow-header:FAILED}}
+\dim_compare:nNnTF {\use:c{Gm@bmargin}} = {\LTXTalkBaseBottomMargin}
+  {\TYPE{shallow-footer:passed}}
+  {\TYPE{shallow-footer:FAILED}}
+
+% Disabling both areas restores the complete original vertical geometry.
+\lttalksetup{header=false,footer=false}
+\dim_compare:nNnTF {\use:c{Gm@tmargin}} = {\LTXTalkBaseTopMargin}
+  {\TYPE{restore-top:passed}}
+  {\TYPE{restore-top:FAILED}}
+\dim_compare:nNnTF {\use:c{Gm@bmargin}} = {\LTXTalkBaseBottomMargin}
+  {\TYPE{restore-bottom:passed}}
+  {\TYPE{restore-bottom:FAILED}}
+\dim_compare:nNnTF {\textheight} = {\l_tmpa_dim}
+  {\TYPE{restore-height:passed}}
+  {\TYPE{restore-height:FAILED}}
+
+\ExplSyntaxOff
+\END
+\end{document}

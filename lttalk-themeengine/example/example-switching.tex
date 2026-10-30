@@ -1,0 +1,87 @@
+% example-switching.tex
+% Theme switching example
+
+\DocumentMetadata{}
+\documentclass{ltx-talk}
+
+% Mehrere Themes laden
+\usepackage{lttalk-theme-magpie}
+\usepackage{lttalk-theme-hawk}
+\usepackage{lttalk-theme-sparrow}
+\usepackage{lttalk-theme-anchovy}
+\usepackage{lttalk-theme-minimal}
+\ExplSyntaxOn
+\cs_new_protected:Npn \example_progress_theme:
+  {
+    \lttalksetup{right-margin=true,margin-width=2.2cm}
+    \definelttalkslot{example-progress}{right}{custom}
+      { role = navigation }
+    \setlttalkslotcontent{example-progress}
+      {Start\\\textbf{Themen}\\Abschluss}
+    \positionlttalkslot{example-progress}{center}{4cm}{2cm}{2.5cm}
+    \stylelttalkslot{example-progress}
+      {font=\scriptsize\sffamily,color=lttalk-accent,align=left}
+  }
+\RegisterLTXTalkTheme{progress}{\example_progress_theme:}
+\ExplSyntaxOff
+\uselttalktheme{magpie}
+\addlttalktheme{progress}
+\addlttalktheme{anchovy}
+
+\title{Theme-Wechsel Demonstration}
+\author{Max Mustermann}
+\date{\today}
+
+\begin{document}
+
+% Start mit Magpie und dem Nur-Farb-Theme Anchovy
+\begin{frame}
+  \frametitle{Magpie Theme mit Anchovy-Farben}
+  Diese Folie verwendet das von Madrid inspirierte Magpie-Theme.
+  \begin{itemize}
+    \item Header mit Titel und Navigation
+    \item Linke Seitenleiste mit Logo
+    \item Footer mit Institut und Datum
+    \item Additives Teiltheme mit eigener Pfadnavigation
+  \end{itemize}
+\end{frame}
+
+% Wechsel zu Hawk
+\uselttalktheme{hawk}
+
+\begin{frame}
+  \frametitle{Hawk Theme}
+  Diese Folie verwendet das von Hannover inspirierte Hawk-Theme.
+  \begin{itemize}
+    \item Linke Navigationsleiste
+    \item Rechtsbündiger Folientitel
+    \item Semantisch ausgezeichnete Navigation
+  \end{itemize}
+\end{frame}
+
+% Wechsel zu Sparrow
+\uselttalktheme{sparrow}
+
+\begin{frame}
+  \frametitle{Sparrow Theme}
+  Diese Folie verwendet das von Szeged inspirierte Sparrow-Theme.
+  \begin{itemize}
+    \item Nur das Nötigste
+    \item Dezente Linien
+    \item Keine Ablenkungen
+  \end{itemize}
+\end{frame}
+
+% Zurück zum Default
+\uselttalktheme{default}
+
+\begin{frame}
+  \frametitle{Default ltx-talk}
+  Diese Folie verwendet das Standard-Layout von ltx-talk.
+  \begin{itemize}
+    \item Kein Theme aktiv
+    \item Originales ltx-talk-Verhalten
+  \end{itemize}
+\end{frame}
+
+\end{document}

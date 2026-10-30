@@ -414,7 +414,7 @@ local STYLED = {
 
 local REPORT_ONLY = {
   contframetitle = { "\\contframetitle",
-    "kept; the theme provides it (ltxtalk-theme)" },
+    "kept; the theme provides it (lttalk-theme)" },
   dictum = { "\\dictum", "KOMA-Script only; guard with \\lecturemode<longform>" },
   includeChapterNo = { "\\includeChapterNo",
     "combined script; replaced by OLLM series/integration units (\\includeunit)" },

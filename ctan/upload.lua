@@ -77,8 +77,8 @@ The bundle currently contains:</p>
 <li>langselect: several language versions of a document from a common source</li>
 <li>tagpax: semantic import of tagged PDFs</li>
 <li>osgstyler: template-based formatting</li>
-<li>ltxtalk-theme: theme engine for ltx-talk, with a few themes modelled after Beamer themes</li>
-<li>ltxtalk-theme-tuc-2019: unofficial version of the TU Chemnitz presentation theme for ltx-talk</li>
+<li>lttalk-theme: theme engine for ltx-talk, with a few themes modelled after Beamer themes</li>
+<li>lttalk-theme-tuc-2019: unofficial version of the TU Chemnitz presentation theme for ltx-talk</li>
 <li>ansiterm: ANSI-aware, optionally executable terminal windows</li>
 <li>osglistings: minted-based code-listing front end</li>
 <li>semcat: semantic-category markup</li>

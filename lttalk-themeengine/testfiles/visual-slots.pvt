@@ -1,0 +1,242 @@
+\DocumentMetadata{}
+\ExplSyntaxOn
+\pdfmeta_set_regression_data:
+\ExplSyntaxOff
+\documentclass{ltx-talk}
+
+\usepackage{lttalk-themeengine}
+
+\ExplSyntaxOn
+\cs_new_protected:Npn \__lttheme_test_slot_showcase:
+  {
+    \lttalksetup
+      {
+        header = true,
+        header-height = 2cm,
+        header-rows = 2,
+        header-columns = { 0.25, 0.5, 0.25 },
+        left-margin = true,
+        right-margin = true,
+        footer = true,
+        footer-height = 0.8cm,
+        footer-columns = { 0.4, 0.4, 0.2 },
+        margin-width = 2cm
+      }
+    \setlttalkcolors
+      {
+        primary = {model=HTML,value=174A5B},
+        secondary = {model=HTML,value=376B73},
+        accent = {model=HTML,value=D17A22},
+        text = {model=HTML,value=202A2E},
+        background = {model=HTML,value=F4F7F7}
+      }
+    \setlttalktitleplacement
+      { frametitle = header, section = header }
+
+    \definelttalkslot{show-title}{header}{title}
+      { role = heading, heading-level = 1 }
+    \definelttalkslot{show-section}{header}{section}
+      { role = navigation }
+    \definelttalkslot{show-page}{header}{pagenumber}
+      { role = navigation }
+    \definelttalkslot{show-author}{left}{author}
+      { role = note }
+    \definelttalkslot{show-frame-title}{content}{frametitle}
+      {
+        role = heading,
+        heading-level = 2
+      }
+    \definelttalkslot{show-frame-subtitle}{content}{framesubtitle}
+      { role = heading, heading-level = 3 }
+    \definelttalkslot{show-subsection}{right}{subsection}
+      { role = navigation }
+    \definelttalkslot{show-institute}{footer}{institute}
+      { role = note }
+    \definelttalkslot{show-date}{footer}{date}
+      { role = note }
+    \definelttalkslot{show-footer-page}{footer}{pagenumber}
+      { role = navigation }
+
+    \positionlttalkslot{show-title}{center}{0.25cm}{0.5\paperwidth}{0.7cm}
+    \positionlttalkslot{show-section}{0.25cm}{1.15cm}{0.3\paperwidth}{0.5cm}
+    \positionlttalkslot{show-page}
+      {\dim_eval:n{\paperwidth-1.25cm}}{1.15cm}{1cm}{0.5cm}
+    \positionlttalkslot{show-author}{0.25cm}{0.12cm}{1.2cm}{1cm}
+    \positionlttalkslot{show-frame-title}{left}{top}{0.7\paperwidth}{1cm}
+    \positionlttalkslot{show-frame-subtitle}{left}{1cm}{0.7\paperwidth}{0.7cm}
+    \positionlttalkslot{show-subsection}{center}{top}{1.5cm}{1cm}
+    \positionlttalkslot{show-institute}{0.25cm}{bottom}{0.4\paperwidth}{0.5cm}
+    \positionlttalkslot{show-date}{center}{bottom}{0.3\paperwidth}{0.5cm}
+    \positionlttalkslot{show-footer-page}
+      {\dim_eval:n{\paperwidth-1.25cm}}{bottom}{1cm}{0.5cm}
+
+    \stylelttalkslot{show-title}
+      {
+        font = \Large\bfseries\sffamily,
+        color = white,
+        align = center,
+        uppercase = false
+      }
+    \stylelttalkslot{show-section}
+      { font = \small\bfseries, color = white, align = left }
+    \stylelttalkslot{show-page}
+      { font = \small, color = white, align = right }
+    \stylelttalkslot{show-author}
+      {
+        font = \footnotesize\itshape,
+        color = lttalk-secondary,
+        background = lttalk-primary!5,
+        frame = box,
+        rule-color = lttalk-accent,
+        rule-thick = 0.8pt,
+        padding = 3pt,
+        align = center,
+        shadow = true
+      }
+    \stylelttalkslot{show-frame-title}
+      {
+        font = \LARGE\bfseries,
+        color = lttalk-primary,
+        frame = bottom,
+        rule-color = lttalk-accent,
+        rule-thick = 2pt,
+        padding = 5pt,
+        align = left
+      }
+    \stylelttalkslot{show-frame-subtitle}
+      {
+        font = \large\itshape,
+        color = lttalk-secondary,
+        opacity = 0.9
+      }
+    \stylelttalkslot{show-subsection}
+      {
+        font = \scriptsize\bfseries,
+        color = lttalk-accent,
+        align = center,
+        rotate = 0
+      }
+    \stylelttalkslot{show-institute}
+      { font = \tiny, color = lttalk-secondary, align = left }
+    \stylelttalkslot{show-date}
+      { font = \tiny, color = lttalk-secondary, align = center }
+    \stylelttalkslot{show-footer-page}
+      { font = \tiny\bfseries, color = lttalk-primary, align = right }
+
+    \decoratelttalkarea{header}
+      {
+        frame = bottom,
+        rule-color = lttalk-accent,
+        rule-thickness = 3pt,
+        background = lttalk-primary,
+        background-opacity = 1,
+        padding = 3pt,
+        artifact-type = layout
+      }
+    \decoratelttalkarea{left}
+      {
+        frame = right,
+        rule-color = lttalk-secondary!40,
+        rule-thickness = 0.5pt,
+        background = lttalk-primary!5,
+        shadow = true,
+        shadow-color = black!20,
+        shadow-offset = 2pt,
+        artifact-type = decorative
+      }
+    \decoratelttalkarea{right}
+      {
+        frame = left,
+        rule-color = lttalk-accent,
+        rule-thickness = 1pt,
+        background = lttalk-accent!5,
+        artifact-type = decorative
+      }
+    \decoratelttalkarea{footer}
+      {
+        frame = topbottom,
+        rule-color = lttalk-primary!30,
+        rule-thickness = 0.5pt,
+        background = lttalk-bg,
+        margin-top = 2pt,
+        margin-bottom = 2pt,
+        artifact-type = layout
+      }
+  }
+
+% A partial theme is additive: it contributes a previously unknown element
+% without copying or replacing the base theme.
+\cs_new_protected:Npn \__lttheme_test_tree_navigation:
+  {
+    \definelttalkslot{show-tree}{right}{custom}
+      { role = navigation }
+    \setlttalkslotcontent{show-tree}
+      {Grundlagen\\\quad Slots\\\qquad \textbf{Sichttest}}
+    \positionlttalkslot{show-tree}{center}{3cm}{1.7cm}{3cm}
+    \stylelttalkslot{show-tree}
+      {
+        font = \scriptsize\sffamily,
+        color = lttalk-primary,
+        align = left,
+        frame = left,
+        rule-color = lttalk-accent,
+        rule-thick = 1.5pt,
+        padding = 3pt
+      }
+  }
+
+% Slot styling and area decoration are validated by \stylelttalkslot and
+% \decoratelttalkarea themselves (they \EditInstance the stored keys).
+% Only the accessibility options are merely stored, so re-parse those here:
+% the test then fails when an a11y key regresses.
+\cs_new_protected:Npn \__lttheme_test_validate_slot_setup:
+  {
+    \prop_map_inline:Nn \g__lttalk_slot_accessibility_prop
+      { \keys_set:nn { lttalk / a11y } { ##2 } }
+  }
+
+\RegisterLTXTalkTheme{slot-showcase}{\__lttheme_test_slot_showcase:}
+\RegisterLTXTalkTheme{tree-navigation}{\__lttheme_test_tree_navigation:}
+\uselttalktheme{slot-showcase}
+\addlttalktheme{tree-navigation}
+\__lttheme_test_validate_slot_setup:
+\ExplSyntaxOff
+
+\title[Slot-Test]{Das Slot-System im Sichttest}
+\subtitle{Bereiche, Positionen, Stile und Semantik}
+\author[A. Beispiel]{Ada Beispiel}
+\institute{Beispiel-Institut}
+\date{3. Juli 2026}
+
+\begin{document}
+
+\begin{frame}
+  \maketitle
+\end{frame}
+
+\section{Bereiche und Slots}
+\subsection{Gestaltung}
+
+\begin{frame}
+  \frametitle{Konfigurierte Inhaltsfolie}
+  \framesubtitle{Titel, Navigation und Fußzeile}
+  Diese Folie bildet die visuelle Referenz für ein selbst definiertes Theme.
+  \begin{itemize}
+    \item zehn Slots in fünf Bereichen
+    \item eigene Farben und Bereichsdekorationen
+    \item Rollen und Überschriftenebenen
+  \end{itemize}
+  \begin{block}{Block}
+    Auch Block, Formel $\int_0^1 x^2\,dx=\frac13$ und \alert{Hervorhebung}
+    bleiben Teil des Vergleichs.
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Weitere konfigurierte Inhaltsfolie}
+  \framesubtitle{Erneute Belegung der Inhalts-Slots}
+  Die dritte Seite prüft die wiederholte Ausgabe der konfigurierten
+  Titel- und Navigations-Slots.
+\end{frame}
+
+\end{document}

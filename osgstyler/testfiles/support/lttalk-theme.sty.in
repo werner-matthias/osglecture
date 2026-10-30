@@ -1,0 +1,24 @@
+% Test double, not the real lttalk-theme: it lacks
+% \LtxtalkUsesOsgstylerNatively, so osgstyler takes its reactive
+% integration path.  build.lua installs it as lttalk-theme.sty in the
+% test directory; kept as .sty.in so that it is not taken for the file
+% generated from lttheme.dtx.
+\NeedsTeXFormat{LaTeX2e}[2024-06-01]
+\ProvidesExplPackage{lttalk-theme}{2026-08-23}{v0.0.0}{Test stub}
+\RequirePackage{xcolor}
+\ExplSyntaxOn
+\color_set:nnn { lttalk-primary }   { RGB } { 10,20,30 }
+\color_set:nnn { lttalk-secondary } { RGB } { 40,50,60 }
+\color_set:nnn { lttalk-accent }    { RGB } { 70,80,90 }
+\color_set:nnn { lttalk-text }      { RGB } { 20,20,20 }
+\color_set:nnn { lttalk-bg }        { RGB } { 250,250,250 }
+\color_set:nnn { lttalk-structure } { RGB } { 10,20,30 }
+\color_set:nnn { lttalk-alert }     { RGB } { 150,20,20 }
+\color_set:nnn { lttalk-example }   { RGB } { 20,120,60 }
+\NewDocumentCommand \uselttalktheme { m }
+  { \color_set:nnn { lttalk-primary } { RGB } { 11,22,33 } }
+\NewDocumentCommand \addlttalktheme { m }
+  { \color_set:nnn { lttalk-accent } { RGB } { 77,88,99 } }
+\NewDocumentCommand \setlttalkcolors { m }
+  { \color_set:nnn { lttalk-alert } { RGB } {#1} }
+\ExplSyntaxOff

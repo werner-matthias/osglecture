@@ -23,9 +23,9 @@ The bundle currently contains:
   source
 - tagpax: semantic import of tagged PDFs
 - osgstyler: template-based formatting
-- ltxtalk-theme: theme engine for ltx-talk, with a few themes modelled
+- lttalk-theme: theme engine for ltx-talk, with a few themes modelled
   after Beamer themes
-- ltxtalk-theme-tuc-2019: unofficial version of the TU Chemnitz
+- lttalk-theme-tuc-2019: unofficial version of the TU Chemnitz
   presentation theme for ltx-talk
 - ansiterm: ANSI-aware, optionally executable terminal windows
 - osglistings: minted-based code-listing front end

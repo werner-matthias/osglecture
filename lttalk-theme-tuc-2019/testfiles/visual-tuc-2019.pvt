@@ -1,0 +1,63 @@
+\DocumentMetadata{}
+\ExplSyntaxOn
+\pdfmeta_set_regression_data:
+\ExplSyntaxOff
+\documentclass{ltx-talk}
+
+\usepackage[chemnitz2025,funccolor=uniq]{lttalk-theme-tuc-2019}
+\settucthemelogo{../../images/logos/tuc_white.pdf}
+\settucthemetitlelogo{../../images/logos/osg.png}
+\uselttalktheme{tuc-2019}
+
+\title{Echtzeitsysteme}
+\subtitle{0. Kapitel\\Organisatorisches}
+\author{Prof. Matthias Werner}
+\institute{Professur Betriebssysteme}
+\date{Sommersemester 2026}
+
+\begin{document}
+\maketitle[osg]
+
+\section{Organisatorisches}
+\subsection{Regularien}
+\begin{frame}
+  \frametitle{0.1 Regularien}
+  \framesubtitle{Willkommen zur Lehrveranstaltung}
+  \begin{itemize}
+    \item Informationen und Materialien auf der Lernplattform
+    \item Übungen vertiefen die Inhalte der Vorlesung
+    \item Fragen sind ausdrücklich willkommen
+  \end{itemize}
+  \begin{block}{Hinweis}
+    Die Fußzeile zeigt Autor, Foliennummer und Webadresse.
+  \end{block}
+\end{frame}
+
+\settucthemeheader{section}
+\tucthreeheader
+\settucthemeleftlogos{../../images/logos/osg.png,../../images/logos/tuckhs_color.pdf}
+\tucnarrowframe
+\begin{frame}
+  \frametitle{Schmaler Inhaltsbereich}
+  Logos stehen skaliert in der linken Fläche; der Inhalt beginnt in der
+  Fluchtlinie der Kopftexte.
+\end{frame}
+
+\tucwideframe
+\tuctwoheader
+\settucthemeheaderlines{Eigene Zeile 1}{Eigene Zeile 2}{}
+\begin{frame}
+  \frametitle{Breiter Inhaltsbereich}
+  Der folgende Frame kann wieder die volle Inhaltsbreite verwenden.
+\end{frame}
+
+\settucthemetitlelogo{../../images/logos/osg.png}
+\maketitle[talk]
+
+\settucthemetitleimage[center]{../../images/logos/osg.png}
+\maketitle[image]
+\settucthemetitleimage[top]{../../images/logos/osg.png}
+\maketitle[image]
+\settucthemetitleimage[bottom]{../../images/logos/osg.png}
+\maketitle[image]
+\end{document}

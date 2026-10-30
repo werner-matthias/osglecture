@@ -28,15 +28,15 @@ Matthias Werner.
     {\from{osglecture-modes.dtx}{package}}
   \file{osglecture-modes-overlays.code.tex}
     {\from{osglecture-modes.dtx}{overlays}}
-  \file{osglecture-modes-ltxtalk.sty}
-    {\from{osglecture-modes.dtx}{ltxtalk}}
+  \file{osglecture-modes-lttalk.sty}
+    {\from{osglecture-modes.dtx}{lttalk}}
 }
 % Lua cannot parse the TeX-style %% lines emitted by docstrip's default
 % preamble and postamble.  Generate the helper separately without either.
 \nopreamble
 \nopostamble
 \generate{
-  \file{osglecture-modes-ltxtalk.lua}
+  \file{osglecture-modes-lttalk.lua}
     {\from{osglecture-modes.dtx}{lua}}
 }
 \expandafter\endbatchfile
@@ -154,13 +154,13 @@ von \cls*{osglecture}, OLLM und Projektverzeichnissen verwendet werden.
 Laden Sie es gewöhnlich nach der Dokumentklasse. Ohne explizite Moduswahl
 erkennt es Beamer und \pkg*{ltx-talk}; bei anderen Klassen wählt es
 \code{article}. Nur die portablen Textfilter aus
-Abschnitt~\ref{sec:ltxtalk-filter} benötigen Lua\LaTeX.
+Abschnitt~\ref{sec:lttalk-filter} benötigen Lua\LaTeX.
 }{
 The core package needs a current \LaTeX\ kernel. It works independently of
 \cls*{osglecture}, OLLM, and project directories. Normally, load it after the
 document class. Without an explicit mode selection it detects Beamer and
 \pkg*{ltx-talk}; for other classes it selects \code{article}. Only the
-portable text filters in Section~\ref{sec:ltxtalk-filter} require Lua\LaTeX.
+portable text filters in Section~\ref{sec:lttalk-filter} require Lua\LaTeX.
 }
 
 \section{\ldeen{Modi und Vererbung}{Modes and inheritance}}
@@ -197,11 +197,11 @@ direct parents.
 \ldeen{
 \code{slides} ist ein Alias für \code{projector}, kein zusätzlicher Modus.
 \code{all} ist eine stets wahre Abfrage. Der Modus \code{*} dient der
-Textfilterung (Abschnitt~\ref{sec:ltxtalk-filter}).
+Textfilterung (Abschnitt~\ref{sec:lttalk-filter}).
 }{
 \code{slides} is an alias for \code{projector}, not a separate mode.
 \code{all} is an always-true query. Mode \code{*} is used for text filtering
-(Section~\ref{sec:ltxtalk-filter}).
+(Section~\ref{sec:lttalk-filter}).
 }
 
 \subsection{\ldeen{Eigene Modi und mehrere aktive Modi}{Custom and simultaneous modes}}
@@ -244,7 +244,7 @@ erledigt dies bei Bedarf automatisch; spätestens vor
 \cs{begin}\Marg{document} wird abgeschlossen.
 Danach sind Deklarationen, \cs{SetLectureModes} und \cs{AddLectureModes}
 nicht mehr zulässig. Die Aktivierung bereits deklarierter Filtermodi im
-Dokument ist ein eigener Vorgang, siehe Abschnitt~\ref{sec:ltxtalk-filter}.
+Dokument ist ein eigener Vorgang, siehe Abschnitt~\ref{sec:lttalk-filter}.
 }{
 Declare modes, parents, and aliases and select the active modes before the
 first query.
@@ -257,7 +257,7 @@ if necessary; finalization takes place before \cs{begin}\Marg{document}
 at the latest. Afterwards, further declarations and changes to the mode selection are
 no longer allowed. Activating previously declared
 filter modes in the document is a separate operation; see
-Section~\ref{sec:ltxtalk-filter}.
+Section~\ref{sec:lttalk-filter}.
 }
 
 \section{\ldeen{Inhalte und Werte auswählen}{Selecting content and values}}
@@ -383,10 +383,10 @@ Naming the option without a value means \code{true}.}
 \keyval{raw-skip-envs}{list}
 \ldeen{Ersetzt die Liste der beim Filtern wörtlich zu überspringenden
 Umgebungen. Vorgabe: \env{verbatim}, \env{Verbatim}, \env{lstlisting}, \env{minted}, \env{comment}.
-Siehe Abschnitt~\ref{sec:ltxtalk-filter}.}
+Siehe Abschnitt~\ref{sec:lttalk-filter}.}
 {Replaces the list of environments to skip verbatim while filtering.
 Default: \env{verbatim}, \env{Verbatim}, \env{lstlisting}, \env{minted}, \env{comment}.
-See Section~\ref{sec:ltxtalk-filter}.}
+See Section~\ref{sec:lttalk-filter}.}
 \keybool{deferred}\Default{false}
 \ldeen{Für Klassenautoren: unterdrückt die automatische Moduswahl und
 Overlayintegration beim Laden. Die Klasse wählt den Modus selbst und ruft
@@ -564,7 +564,7 @@ Text\\<slides>[3ex]
 \end{example}
 
 \section{\ldeen{Filtermodi}{Filter modes}}
-\label{sec:ltxtalk-filter}
+\label{sec:lttalk-filter}
 
 \ldeen{
   \thepkg\ verallgemeinert Beamers eigenes \cs{mode*} zu einem portablen
@@ -654,7 +654,7 @@ Text\\<slides>[3ex]
   außerdem ein unmittelbar folgendes
   \cs{label}; ein \cs{label} an anderer Stelle verschwindet dagegen
   mit dem verworfenen Text. Der optionale, weiterhin
-  \pkg*{ltx-talk}-spezifische Adapter \pkg*{osglecture-modes-ltxtalk}
+  \pkg*{ltx-talk}-spezifische Adapter \pkg*{osglecture-modes-lttalk}
   ergänzt \cs{lecture} als weitere allgemeine Ausnahme und setzt die
   Filterung nach jedem \cs{lecture} fort.
 }{
@@ -666,7 +666,7 @@ Text\\<slides>[3ex]
   \cs{maketitle} pass through the scanner unchanged; the structural
   commands also preserve an immediately following \cs{label}, while a \cs{label} elsewhere in
   dropped text vanishes along with it. The optional, still
-  \pkg*{ltx-talk}-specific adapter \pkg*{osglecture-modes-ltxtalk} adds
+  \pkg*{ltx-talk}-specific adapter \pkg*{osglecture-modes-lttalk} adds
   \cs{lecture} as a further exception and resumes filtering after every
   \cs{lecture}.
 }
@@ -766,7 +766,7 @@ exceptions. The package currently provides no portable deactivation command.
 \subsection{\ldeen{Zusatzpaket für ltx-talk}{Additional package for ltx-talk}}
 \begin{example}[code-only,gobble=0]
 \documentclass{ltx-talk}
-\usepackage[ignorenonframetext]{osglecture-modes-ltxtalk}
+\usepackage[ignorenonframetext]{osglecture-modes-lttalk}
 \end{example}
 \ldeen{
 Das Zusatzpaket lädt das Kernpaket und ergänzt \cs{lecture} als Ausnahme.
@@ -1039,9 +1039,9 @@ the full profile and target configuration.
 \section{\ldeen{Implementierung}{Implementation}}
 \subsection{\pkg*{osglecture-modes.sty}}
 \AutoDocInput{osglecture-modes.dtx}{package}
-\subsection{\pkg*{osglecture-modes-ltxtalk.sty}}
-\AutoDocInput{osglecture-modes.dtx}{ltxtalk}
-\subsection{\code{osglecture-modes-ltxtalk.lua}}
+\subsection{\pkg*{osglecture-modes-lttalk.sty}}
+\AutoDocInput{osglecture-modes.dtx}{lttalk}
+\subsection{\code{osglecture-modes-lttalk.lua}}
 \AutoDocInput{osglecture-modes.dtx}{lua}
 
 \end{document}
@@ -1076,14 +1076,14 @@ the full profile and target configuration.
 \clist_new:N \g_osglecture_modes_raw_skip_envs_clist
 
 % \ldeen{Spiegelt \cs{g_osglecture_modes_raw_skip_envs_clist} vollständig
-% nach Lua (Datei \file{osglecture-modes-ltxtalk.lua}), damit der
+% nach Lua (Datei \file{osglecture-modes-lttalk.lua}), damit der
 % Lua-native Scanner (siehe \cs{osglecture_modes_scan:}) dieselben
 % Umgebungen roh überspringt wie der TeX-Scanner über
 % \cs{osglecture_modes_lua_raw_skip:n}. \code{raw-skip-envs} ist ein
 % vollständiges \code{clist_gset:N}, kein inkrementelles Hinzufügen, daher
 % wird hier bei jeder Änderung die komplette Lua-Tabelle neu
 % aufgebaut.}{Fully mirrors \cs{g_osglecture_modes_raw_skip_envs_clist}
-% into Lua (file \file{osglecture-modes-ltxtalk.lua}), so the Lua-native
+% into Lua (file \file{osglecture-modes-lttalk.lua}), so the Lua-native
 % scanner (see \cs{osglecture_modes_scan:}) raw-skips the same
 % environments as the TeX scanner does via
 % \cs{osglecture_modes_lua_raw_skip:n}. \code{raw-skip-envs} is a full
@@ -1114,7 +1114,7 @@ the full profile and target configuration.
 \cs_new_protected:Npn \osglecture_modes_lua_register_raw_skip_env:n #1
   {
     \directlua{
-      osglecture_modes_ltxtalk.register_raw_skip_env(
+      osglecture_modes_lttalk.register_raw_skip_env(
         "\luaescapestring{#1}")
     }
   }
@@ -1122,8 +1122,8 @@ the full profile and target configuration.
   {
     \sys_if_engine_luatex:T
       {
-        \directlua{ require("osglecture-modes-ltxtalk.lua") }
-        \directlua{ osglecture_modes_ltxtalk.clear_raw_skip_envs() }
+        \directlua{ require("osglecture-modes-lttalk.lua") }
+        \directlua{ osglecture_modes_lttalk.clear_raw_skip_envs() }
         \clist_map_function:NN \g_osglecture_modes_raw_skip_envs_clist
           \osglecture_modes_lua_register_raw_skip_env:n
       }
@@ -1340,7 +1340,7 @@ the full profile and target configuration.
                 \sys_if_engine_luatex:T
                   {
                     \directlua{
-                      osglecture_modes_ltxtalk.add_active_mode(
+                      osglecture_modes_lttalk.add_active_mode(
                         "\luaescapestring{#1}")
                     }
                   }
@@ -1385,7 +1385,7 @@ the full profile and target configuration.
         \osglecture_modes_validate_aliases:
         \prop_gclear:N \g_osglecture_modes_active_prop
         \sys_if_engine_luatex:T
-          { \directlua{ osglecture_modes_ltxtalk.clear_active_modes() } }
+          { \directlua{ osglecture_modes_lttalk.clear_active_modes() } }
         \seq_gclear:N \g_osglecture_modes_active_order_seq
         \prop_clear:N \l_osglecture_modes_visiting_prop
         \prop_clear:N \l_osglecture_modes_visited_prop
@@ -2294,14 +2294,14 @@ the full profile and target configuration.
   }
 
 \sys_if_engine_luatex:T
-  { \directlua{require("osglecture-modes-ltxtalk.lua")} }
+  { \directlua{require("osglecture-modes-lttalk.lua")} }
 
 \cs_new_protected:Npn \osglecture_modes_lua_raw_skip:n #1
   {
     \sys_if_engine_luatex:T
       {
         \directlua{
-          osglecture_modes_ltxtalk.start_raw_skip("\luaescapestring{#1}")
+          osglecture_modes_lttalk.start_raw_skip("\luaescapestring{#1}")
         }
       }
   }
@@ -2325,8 +2325,8 @@ the full profile and target configuration.
   }
 
 % \ldeen{Auf LuaTeX übernimmt der token-basierte Lua-Scanner
-% (\cs{osglecture_modes_ltxtalk.scan}, Datei
-% \file{osglecture-modes-ltxtalk.lua}) den kompletten Scan-Lauf in einer
+% (\cs{osglecture_modes_lttalk.scan}, Datei
+% \file{osglecture-modes-lttalk.lua}) den kompletten Scan-Lauf in einer
 % einzigen \cs{directlua}-Schleife, statt wie der TeX-Zweig unten sich
 % selbst rekursiv über den TeX-Eingabestapel aufzurufen; siehe
 % \file{development-docs/osglecture-modes-lua-scan.md} für die
@@ -2334,8 +2334,8 @@ the full profile and target configuration.
 % ebenso wie die Fortsetzung nach einem beibehaltenen Befehl -- über genau
 % diesen einen Befehl läuft, genügt die Weiche hier an einer einzigen
 % Stelle.}{On LuaTeX, the token-based Lua scanner
-% (\cs{osglecture_modes_ltxtalk.scan}, file
-% \file{osglecture-modes-ltxtalk.lua}) drives the entire scan run inside
+% (\cs{osglecture_modes_lttalk.scan}, file
+% \file{osglecture-modes-lttalk.lua}) drives the entire scan run inside
 % one \cs{directlua} loop, instead of recursing through the TeX input
 % stack the way the TeX branch below does; see
 % \file{development-docs/osglecture-modes-lua-scan.md} for the
@@ -2345,7 +2345,7 @@ the full profile and target configuration.
 \cs_new_protected:Npn \osglecture_modes_scan:
   {
     \sys_if_engine_luatex:TF
-      { \directlua{ osglecture_modes_ltxtalk.scan() } }
+      { \directlua{ osglecture_modes_lttalk.scan() } }
       {
         \peek_remove_spaces:n
           {
@@ -2452,7 +2452,7 @@ the full profile and target configuration.
     \sys_if_engine_luatex:T
       {
         \directlua{
-          osglecture_modes_ltxtalk.register_keep_env(
+          osglecture_modes_lttalk.register_keep_env(
             "\luaescapestring{#1}", "\luaescapestring{#2}")
         }
       }
@@ -2493,12 +2493,12 @@ the full profile and target configuration.
 % knows about.}
 % \ldeen{Spiegelt Name (und, falls gesetzt, Modusbindung) jedes behaltenen
 %   Befehls zusätzlich nach Lua (siehe
-%   \file{osglecture-modes-ltxtalk.lua}) -- rein additiv, Vorarbeit für
+%   \file{osglecture-modes-lttalk.lua}) -- rein additiv, Vorarbeit für
 %   einen künftigen Token-Level-Scanner in Lua (siehe
 %   development-docs/osglecture-modes-lua-scan.md); ändert das aktuelle
 %   TeX-Scan-Verhalten nicht.}{Also mirrors each kept command's name (and,
 %   if set, its mode binding) into Lua (see
-%   \file{osglecture-modes-ltxtalk.lua}) -- purely additive, groundwork
+%   \file{osglecture-modes-lttalk.lua}) -- purely additive, groundwork
 %   for a future Lua-side token-level scanner (see
 %   development-docs/osglecture-modes-lua-scan.md); does not change
 %   current TeX scanning behaviour.}
@@ -2508,7 +2508,7 @@ the full profile and target configuration.
     \sys_if_engine_luatex:T
       {
         \directlua{
-          osglecture_modes_ltxtalk.register_keep_cmd(
+          osglecture_modes_lttalk.register_keep_cmd(
             "\luaescapestring{#1}", "\luaescapestring{#2}", "")
         }
       }
@@ -2524,7 +2524,7 @@ the full profile and target configuration.
         \sys_if_engine_luatex:T
           {
             \directlua{
-              osglecture_modes_ltxtalk.register_keep_cmd(
+              osglecture_modes_lttalk.register_keep_cmd(
                 "\luaescapestring{#1}", "", "\luaescapestring{#3}")
             }
           }
@@ -3262,8 +3262,8 @@ the full profile and target configuration.
   { \NewDocumentCommand \temporal { d<> +m +m +m } {#3} }
 %</overlays>
 
-%<*ltxtalk>
-\ProvidesExplPackage{osglecture-modes-ltxtalk}
+%<*lttalk>
+\ProvidesExplPackage{osglecture-modes-lttalk}
 {2026-09-27}
 {v0.5.1}
 {ltx-talk adapter: lecture-specific baseline exceptions}
@@ -3288,7 +3288,7 @@ the full profile and target configuration.
 % after \cs{lecture} -- \cs{frame}/\cs{frame*} are already detected and
 % registered by the core package once they exist.}
 
-\keys_define:nn { osglecture_modes_ltxtalk }
+\keys_define:nn { osglecture_modes_lttalk }
   {
     mode .code:n =
       { \SetLectureModes{#1} },
@@ -3305,14 +3305,14 @@ the full profile and target configuration.
       },
   }
 
-\ProcessKeyOptions [ osglecture_modes_ltxtalk ]
+\ProcessKeyOptions [ osglecture_modes_lttalk ]
 
 \sys_if_engine_luatex:F
   {
     \bool_if:NT \g_osglecture_modes_ignorenonframetext_bool
       {
         \PackageWarning
-          {osglecture_modes_ltxtalk}
+          {osglecture_modes_lttalk}
           {ignorenonframetext with raw-skip support needs LuaLaTeX}
       }
   }
@@ -3348,22 +3348,22 @@ the full profile and target configuration.
     \osglecture_modes_start_scan:
   }
 
-%</ltxtalk>
+%</lttalk>
 
 %<*lua>
-osglecture_modes_ltxtalk = osglecture_modes_ltxtalk or {}
+osglecture_modes_lttalk = osglecture_modes_lttalk or {}
 
-osglecture_modes_ltxtalk.raw_skip_env = nil
+osglecture_modes_lttalk.raw_skip_env = nil
 
 -- Mirror of the TeX-side keep registries (see
 -- \osglecture_modes_declare_allowed_command:nn,
 -- \osglecture_modes_register_command:nnn,
 -- \osglecture_modes_declare_keep_environment:nn in osglecture-modes.dtx),
--- kept in sync so osglecture_modes_ltxtalk.scan() (below) can decide
+-- kept in sync so osglecture_modes_lttalk.scan() (below) can decide
 -- keep/discard without crossing back into TeX for every token. mode == nil
 -- means "baseline" (always kept, no mode check needed).
-osglecture_modes_ltxtalk.keep_cmds = {}
-osglecture_modes_ltxtalk.keep_envs = {}
+osglecture_modes_lttalk.keep_cmds = {}
+osglecture_modes_lttalk.keep_envs = {}
 
 -- Mirror of \g_osglecture_modes_raw_skip_envs_clist
 -- (\osglecture_modes_sync_raw_skip_envs_lua: in osglecture-modes.dtx).
@@ -3371,14 +3371,14 @@ osglecture_modes_ltxtalk.keep_envs = {}
 -- their content and closing \end are blanked at the input-line level by
 -- the raw_skip_line callback further below, exactly as the pre-Lua
 -- \osglecture_modes_lua_raw_skip:n path already relied on.
-osglecture_modes_ltxtalk.raw_skip_envs = {}
+osglecture_modes_lttalk.raw_skip_envs = {}
 
-function osglecture_modes_ltxtalk.clear_raw_skip_envs()
-  osglecture_modes_ltxtalk.raw_skip_envs = {}
+function osglecture_modes_lttalk.clear_raw_skip_envs()
+  osglecture_modes_lttalk.raw_skip_envs = {}
 end
 
-function osglecture_modes_ltxtalk.register_raw_skip_env(name)
-  osglecture_modes_ltxtalk.raw_skip_envs[name] = true
+function osglecture_modes_lttalk.register_raw_skip_env(name)
+  osglecture_modes_lttalk.raw_skip_envs[name] = true
 end
 
 local function nil_if_empty(s)
@@ -3395,32 +3395,32 @@ end
 -- the direct single-mode runtime activation used by \mode<name>
 -- (\osglecture_modes_activate_runtime:n), which does not go through
 -- \osglecture_modes_finalize: at all.
-osglecture_modes_ltxtalk.active_modes = {}
+osglecture_modes_lttalk.active_modes = {}
 
-function osglecture_modes_ltxtalk.clear_active_modes()
-  osglecture_modes_ltxtalk.active_modes = {}
+function osglecture_modes_lttalk.clear_active_modes()
+  osglecture_modes_lttalk.active_modes = {}
 end
 
-function osglecture_modes_ltxtalk.add_active_mode(name)
-  osglecture_modes_ltxtalk.active_modes[name] = true
+function osglecture_modes_lttalk.add_active_mode(name)
+  osglecture_modes_lttalk.active_modes[name] = true
 end
 
-function osglecture_modes_ltxtalk.is_mode_active(name)
-  return osglecture_modes_ltxtalk.active_modes[name] == true
+function osglecture_modes_lttalk.is_mode_active(name)
+  return osglecture_modes_lttalk.active_modes[name] == true
 end
 
-function osglecture_modes_ltxtalk.register_keep_cmd(name, handler, mode)
-  local entry = osglecture_modes_ltxtalk.keep_cmds[name]
+function osglecture_modes_lttalk.register_keep_cmd(name, handler, mode)
+  local entry = osglecture_modes_lttalk.keep_cmds[name]
   if not entry then
     entry = {}
-    osglecture_modes_ltxtalk.keep_cmds[name] = entry
+    osglecture_modes_lttalk.keep_cmds[name] = entry
   end
   entry.handler = nil_if_empty(handler) or entry.handler
   entry.mode = nil_if_empty(mode)
 end
 
-function osglecture_modes_ltxtalk.register_keep_env(name, mode)
-  osglecture_modes_ltxtalk.keep_envs[name] = { mode = nil_if_empty(mode) }
+function osglecture_modes_lttalk.register_keep_env(name, mode)
+  osglecture_modes_lttalk.keep_envs[name] = { mode = nil_if_empty(mode) }
 end
 
 -- Token-level filter-mode scanner (see development-docs/
@@ -3435,10 +3435,10 @@ end
 -- mangles a literal catcode-6 "#" (Lua's length operator) -- see the
 -- plan document, section 8, for the debugging detour that took to find
 -- this. Calling this function via a plain, "#"-free
--- \directlua{osglecture_modes_ltxtalk.scan()} avoids the issue entirely.
+-- \directlua{osglecture_modes_lttalk.scan()} avoids the issue entirely.
 
 local function is_entry_active(entry)
-  return entry.mode == nil or osglecture_modes_ltxtalk.is_mode_active(entry.mode)
+  return entry.mode == nil or osglecture_modes_lttalk.is_mode_active(entry.mode)
 end
 
 -- Reads a "{...}" group already known to consist of ordinary
@@ -3491,13 +3491,13 @@ local function skip_environment(name)
   end
 end
 
-function osglecture_modes_ltxtalk.scan()
+function osglecture_modes_lttalk.scan()
   while true do
     local t = token.get_next()
     local csname = t.csname
     if csname == "begin" then
       local name = read_braced_name()
-      local entry = osglecture_modes_ltxtalk.keep_envs[name]
+      local entry = osglecture_modes_lttalk.keep_envs[name]
       if entry then
         if is_entry_active(entry) then
           push_env_call("begin", name)
@@ -3505,10 +3505,10 @@ function osglecture_modes_ltxtalk.scan()
         else
           skip_environment(name)
         end
-      elseif osglecture_modes_ltxtalk.raw_skip_envs[name] then
+      elseif osglecture_modes_lttalk.raw_skip_envs[name] then
         -- Content and closing \end{name} are blanked at the input-line
         -- level (see raw_skip_line below); nothing left to token-skip.
-        osglecture_modes_ltxtalk.start_raw_skip(name)
+        osglecture_modes_lttalk.start_raw_skip(name)
       else
         skip_environment(name)
       end
@@ -3521,7 +3521,7 @@ function osglecture_modes_ltxtalk.scan()
       -- stray \end outside a kept environment: ignore, keep scanning
       -- (mirrors \osglecture_modes_scan_end_aux:n).
     elseif csname ~= nil and csname ~= "" then
-      local entry = osglecture_modes_ltxtalk.keep_cmds[csname]
+      local entry = osglecture_modes_lttalk.keep_cmds[csname]
       if entry and is_entry_active(entry) and entry.handler then
         token.put_next({ token.create(entry.handler) })
         return
@@ -3541,12 +3541,12 @@ local function escape_pattern(s)
   return (s:gsub("([^%w])", "%%%1"))
 end
 
-function osglecture_modes_ltxtalk.start_raw_skip(env)
-  osglecture_modes_ltxtalk.raw_skip_env = env
+function osglecture_modes_lttalk.start_raw_skip(env)
+  osglecture_modes_lttalk.raw_skip_env = env
 end
 
 local function raw_skip_line(line)
-  local env = osglecture_modes_ltxtalk.raw_skip_env
+  local env = osglecture_modes_lttalk.raw_skip_env
   if not env then
     return nil
   end
@@ -3555,7 +3555,7 @@ local function raw_skip_line(line)
     "^%s*\\end%s*{%s*" .. escape_pattern(env) .. "%s*}"
 
   if line:match(pattern) then
-    osglecture_modes_ltxtalk.raw_skip_env = nil
+    osglecture_modes_lttalk.raw_skip_env = nil
   end
 
   return ""
@@ -3578,6 +3578,6 @@ end
 luatexbase.add_to_callback(
   "process_input_buffer",
   process_input_buffer,
-  "osglecture-modes-ltxtalk raw skip"
+  "osglecture-modes-lttalk raw skip"
 )
 %</lua>

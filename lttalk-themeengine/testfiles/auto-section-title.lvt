@@ -1,0 +1,134 @@
+\input regression-test.tex
+\DocumentMetadata{tagging=on,lang=de-DE}
+\documentclass{ltx-talk}
+\usepackage{lttalk-theme-hawk}
+\uselttalktheme{hawk}
+
+\title{Auto-Section-Title-Test}
+\author{A. Beispiel}
+\date{\today}
+
+\ExplSyntaxOn
+\NewDocumentCommand \CHECKTITLE { m } {
+  \str_if_eq:eeTF {#1} { \g__talk_frame_title_tl }
+    { \TYPE { title:passed } }
+    { \TYPE { title:FAILED=\g__talk_frame_title_tl } }
+}
+\NewDocumentCommand \CHECKSUBTITLE { m } {
+  \str_if_eq:eeTF {#1} { \g__talk_frame_subtitle_tl }
+    { \TYPE { subtitle:passed } }
+    { \TYPE { subtitle:FAILED=\g__talk_frame_subtitle_tl } }
+}
+\ExplSyntaxOff
+
+\begin{document}
+\START
+
+% Vor dem Einschalten: unveraendertes Verhalten, keine Uebernahme.
+\section{Unberuehrt}
+\begin{frame}
+  \frametitle{Eigener Titel}
+  \CHECKTITLE{Eigener Titel}
+  \CHECKSUBTITLE{}
+\end{frame}
+
+\ExplSyntaxOn
+\setlttalkheadingbehavior{auto-section-title=true}
+\ExplSyntaxOff
+
+% Abschnittstitel ohne gegebenen Frametitel: wird zum Titel (mit
+% schlichter Abschnittsnummer als Prefix), kein Subtitel.
+\section{Erster Abschnitt}
+\begin{frame}
+  \frametitle{}
+  \CHECKTITLE{2 Erster Abschnitt}
+  \CHECKSUBTITLE{}
+\end{frame}
+
+% Folgefolie im selben Abschnitt: Merker ist verbraucht, normales Verhalten.
+\begin{frame}
+  \frametitle{Zweite Folie}
+  \CHECKTITLE{Zweite Folie}
+  \CHECKSUBTITLE{}
+\end{frame}
+
+% Abschnitt und Unterabschnitt ohne Folie dazwischen: der Unterabschnitt
+% (der speziellere, zuletzt genannte) gewinnt. Prefix ist
+% Abschnitt.Unterabschnitt (schlicht, nicht Kapitel-prefixiert).
+\section{Zweiter Abschnitt}
+\subsection{Ein Unterabschnitt}
+\begin{frame}
+  \frametitle{Gegebener Titel}
+  \CHECKTITLE{3.1 Ein Unterabschnitt}
+  \CHECKSUBTITLE{Gegebener Titel}
+\end{frame}
+
+% Gegebener Titel UND Subtitel: der eigene Subtitel entfaellt, weil der
+% demotierte Titel den Subtitel-Platz schon belegt.
+\section{Titel und Subtitel zugleich}
+\begin{frame}
+  \frametitle{Gegebener Titel}
+  \framesubtitle{Eigener Subtitel}
+  \CHECKTITLE{4 Titel und Subtitel zugleich}
+  \CHECKSUBTITLE{Gegebener Titel}
+\end{frame}
+
+% Ein framesubtitle in einer normalen (nicht-Abschnittsanfangs-)Folie bleibt
+% unangetastet.
+\begin{frame}
+  \frametitle{Normale Folie}
+  \framesubtitle{Normaler Subtitel}
+  \CHECKTITLE{Normale Folie}
+  \CHECKSUBTITLE{Normaler Subtitel}
+\end{frame}
+
+% Mehrseitige Folie (Overlays/\pause): die demotierte Ueberschrift und
+% ihr Subtitel muessen auf JEDEM Folienschritt stehen, nicht nur auf dem
+% ersten -- \frametitle laeuft pro Schritt erneut, das
+% "vorgemerkt"-Flag ist aber nur beim ersten Durchlauf aktiv.
+\section{Mehrseitiger Abschnitt}
+\begin{frame}
+  \frametitle{Eigene Folie}
+  \CHECKTITLE{5 Mehrseitiger Abschnitt}
+  \CHECKSUBTITLE{Eigene Folie}
+  \pause
+  \CHECKTITLE{5 Mehrseitiger Abschnitt}
+  \CHECKSUBTITLE{Eigene Folie}
+  \pause
+  \CHECKTITLE{5 Mehrseitiger Abschnitt}
+  \CHECKSUBTITLE{Eigene Folie}
+\end{frame}
+
+% \contframetitle: explizite Fortsetzungsfolien (separate \begin{frame}
+% Bloecke), unabhaengig vom auto-section-title-Schalter -- daher hier
+% bewusst mit ausgeschaltetem Schalter getestet.
+\ExplSyntaxOn
+\setlttalkheadingbehavior{auto-section-title=false}
+\ExplSyntaxOff
+\section{Fortsetzungsabschnitt}
+\begin{frame}
+  \frametitle{Erste Folie}
+  \CHECKTITLE{Erste Folie}
+  \CHECKSUBTITLE{}
+\end{frame}
+
+% Bare \contframetitle: wiederholt die numerierte Abschnittsueberschrift
+% mit sprachabhaengigem Suffix, kein Subtitel. Kein babel geladen, daher
+% englisches Sprachdefault-Verhalten ("(cont.)").
+\begin{frame}
+  \contframetitle
+  \CHECKTITLE{6 Fortsetzungsabschnitt (cont.)}
+  \CHECKSUBTITLE{}
+\end{frame}
+
+% \contframetitle[...]: wie oben, aber mit explizitem Subtitel.
+\begin{frame}
+  \contframetitle[Weiterer Subtitel]
+  \CHECKTITLE{6 Fortsetzungsabschnitt (cont.)}
+  \CHECKSUBTITLE{Weiterer Subtitel}
+\end{frame}
+
+\clearpage
+\SHOWPDFTAGS
+
+\end{document}

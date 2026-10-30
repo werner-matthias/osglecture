@@ -27,11 +27,11 @@ typesetfiles = {
     "osgstyler.dtx",
 }
 
--- The lttheme-* tests need a stand-in for ltxtalk-theme, see the head of
--- testfiles/support/ltxtalk-theme.sty.in.
+-- The lttheme-* tests need a stand-in for lttalk-theme, see the head of
+-- testfiles/support/lttalk-theme.sty.in.
 function checkinit_hook()
-  local input = assert(io.open(testdir .. "/ltxtalk-theme.sty.in", "rb"))
-  local output = assert(io.open(testdir .. "/ltxtalk-theme.sty", "wb"))
+  local input = assert(io.open(testdir .. "/lttalk-theme.sty.in", "rb"))
+  local output = assert(io.open(testdir .. "/lttalk-theme.sty", "wb"))
   output:write(input:read("a"))
   input:close()
   output:close()

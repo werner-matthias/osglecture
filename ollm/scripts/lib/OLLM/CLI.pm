@@ -892,22 +892,22 @@ sub _doctor {
   my ($lualatex_check) = grep { $_->{program} eq 'lualatex' } @checks;
   my $runtime = _lualatex_doctor_probe($lualatex_check->{found}, 'article');
   $ok = 0 if !$runtime->{ok};
-  my @ltxtalk_checks = (
+  my @lttalk_checks = (
     _kpsewhich_check('ltx-talk.cls', 0, $kpsewhich, 'ltx-talk'),
     _kpsewhich_check('NewCMSans10-Regular.otf', 0, $kpsewhich, 'newcomputermodern'),
     _kpsewhich_check('NewCMSansMath-Regular.otf', 0, $kpsewhich, 'newcomputermodern'),
   );
-  my $ltxtalk_files_ok = !grep { !$_->{ok} } @ltxtalk_checks;
-  my $ltxtalk_runtime = $ltxtalk_files_ok
+  my $lttalk_files_ok = !grep { !$_->{ok} } @lttalk_checks;
+  my $lttalk_runtime = $lttalk_files_ok
     ? _lualatex_doctor_probe($lualatex_check->{found}, 'ltx-talk')
     : { ok => JSON::PP::false, skipped => JSON::PP::true,
         message => 'required ltx-talk files are unavailable' };
-  my $ltxtalk_ok = $ltxtalk_files_ok && $ltxtalk_runtime->{ok};
+  my $lttalk_ok = $lttalk_files_ok && $lttalk_runtime->{ok};
   my @capabilities = ({
     name => 'ltx-talk-adapter', required => JSON::PP::false,
-    ok => $ltxtalk_ok ? JSON::PP::true : JSON::PP::false,
-    checks => \@ltxtalk_checks, runtime => $ltxtalk_runtime,
-    (!$ltxtalk_ok ? (remediation =>
+    ok => $lttalk_ok ? JSON::PP::true : JSON::PP::false,
+    checks => \@lttalk_checks, runtime => $lttalk_runtime,
+    (!$lttalk_ok ? (remediation =>
       'Update/install the TeX Live packages ltx-talk and newcomputermodern (tlmgr install ltx-talk newcomputermodern).') : ()),
   });
   my $qpdf = _program_doctor_check('qpdf');

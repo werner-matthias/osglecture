@@ -29,7 +29,7 @@ Featurewünsche.
   außerhalb jeder Makrodefinition stehender `:n`-Helfer mit ungedoppeltem
   `#1`, aufgerufen über `\clist_map_function:NN` statt
   `\clist_map_inline:Nn`. Laufzeitverhalten manuell verifiziert (Lua-Tabelle
-  `osglecture_modes_ltxtalk.raw_skip_envs` enthält nach dem Umbau exakt
+  `osglecture_modes_lttalk.raw_skip_envs` enthält nach dem Umbau exakt
   dieselben Einträge wie zuvor) -- kein bestehender Test deckt
   `raw-skip-envs` direkt ab. Alle 16 Tests weiterhin grün, Lint jetzt
   sauber.
@@ -93,29 +93,29 @@ Featurewünsche.
   unterscheiden).
 
 # ltthemer + Co
-* [x] Section/Title: `\setltxtalkheadingbehavior{auto-section-title=true}`
+* [x] Section/Title: `\setlttalkheadingbehavior{auto-section-title=true}`
   übernimmt Section/Subsection wieder als Frametitle (lttheme.dtx).
 * [x] Kleinerer Folgefix (2026-09-26): Titel-zu-Subtitel-Demotion in
   `\frametitle` rendert bei gegebenem Folientext zwei Content-Slots
   (frametitle, framesubtitle) hintereinander; das dazwischenliegende
   `\par` konnte bei aktivem Tagging (`tagging=on`) tagpdfs automatischen
   Absatz-Tagging-Hook erneut auslösen (siehe
-  `__ltxtalk_render_content_slots:n`s eigene Dokumentation zum exakt
+  `__lttalk_render_content_slots:n`s eigene Dokumentation zum exakt
   selben Mechanismus mit umgekehrter Ursache) -- reproduziert als
   `! Package tagpdf Error: ... para hooks differ`. Fix: gemeinsamer
   `tagpdfparaOff`-Wrap um beide Renderaufrufe (lttheme.dtx).
 * [x] Tieferliegender Tagging-Bug gefunden und behoben (2026-09-26):
-  `\__ltxtalk_render_slot:nnnnn` (Kopf-/Rand-/Fuß-Slots aller Themes,
+  `\__lttalk_render_slot:nnnnn` (Kopf-/Rand-/Fuß-Slots aller Themes,
   nicht nur TUC-2019) setzt seinen Inhalt immer über eine `\parbox`, die
   intern stets mit einem impliziten `\par` schließt. Für Rollen ohne
   automatisches Tagging (`navigation`, `artifact`, aber auch `note`/
   `heading`/`H1`-`H3`, die zwar ein echtes Struct bekommen, aber
   \emph{zusätzlich} den automatischen Absatz-Tagging-Hook unterdrücken
   müssen) reichte das bisherige `tagpdfparaOff` in
-  `__ltxtalk_accessibility_artifact:n`/`__ltxtalk_accessibility_struct:nn`
+  `__lttalk_accessibility_artifact:n`/`__lttalk_accessibility_struct:nn`
   nicht: es steht in einer eigenen, lokalen Gruppe, die \emph{vor} dem
   impliziten `\par` der umschließenden `\parbox` schon wieder schließt.
-  Fix: `tagpdfparaOff` jetzt in `\__ltxtalk_render_slot:nnnnn` selbst,
+  Fix: `tagpdfparaOff` jetzt in `\__lttalk_render_slot:nnnnn` selbst,
   \emph{vor} dem `\hcoffin_set:Nn`-Aufruf, für jede Rolle außer
   `content` -- ohne umschließende Gruppe (die würde den lokal gesetzten
   Koffer-Inhalt vor `\coffin_join:` verwerfen), stattdessen explizit mit
@@ -192,10 +192,10 @@ Featurewünsche.
   Abschnittstitel` (über `\thesection`, das `osglecture` bereits als
   `Kapitel.Abschnitt` definiert), sobald eine `\section` gelaufen ist,
   sonst weiterhin die Subsection-Metadaten wie zuvor
-  (`lttheme-tuc-2019.dtx`: `\__ltxtalk_tuc_teaching_unit_title:` für die
-  obere, `\__ltxtalk_tuc_teaching_section_line:` für die untere Zeile;
+  (`lttheme-tuc-2019.dtx`: `\__lttalk_tuc_teaching_unit_title:` für die
+  obere, `\__lttalk_tuc_teaching_section_line:` für die untere Zeile;
   der erste Rollout hatte beides fälschlich in eine einzige,
-  umschaltende Zeile gemischt). `\__ltxtalk_tuc_if_section_active:TF`
+  umschaltende Zeile gemischt). `\__lttalk_tuc_if_section_active:TF`
   liest weiterhin direkt `\l__talk_section_tl` -- bewusst \emph{nicht}
   über `\LTXTalkMetadata{section}`/`\insertsection`, das ein reiner
   Beamer-Befehl ist und ohne Beamer nicht existiert, `teaching` aber
@@ -224,7 +224,7 @@ Featurewünsche.
   Klammergruppe folgt, bevor \code{+m}-artig danach gegriffen wird; ohne
   folgende Gruppe direkt `\osglecture_modes_switch:n` aufrufen, das
   bereits selbst fürs Weiterscannen sorgt). Neuer Regressionstest
-  `osglecture-modes/testfiles/ltxtalk-mode-then-section.lvt` (gegen den
+  `osglecture-modes/testfiles/lttalk-mode-then-section.lvt` (gegen den
   unbehobenen Stand verifiziert: schlägt dort mit sichtbarer
   Zeichen-Korruption fehl). Alle jetzt 16 `osglecture-modes`-Tests grün.
 
@@ -240,7 +240,7 @@ Featurewünsche.
   Bisektion hatte `\mode<presentation>` + darauffolgende `\section`-Aufrufe
   im Testkontext, genau das Muster, das den Bug auslöst -- eine
   korrumpierte `\section`-Kopie hätte über
-  `\g__ltxtalk_pending_heading_title_tl` direkt in die demotierte
+  `\g__lttalk_pending_heading_title_tl` direkt in die demotierte
   Frametitle und damit in hyperrefs Bookmark-Erzeugung geflossen sein
   können. Erneut mit dem Fix installiert getestet: `auto-section-title`
   wieder als Default für `teaching` aktiviert
@@ -270,9 +270,9 @@ Featurewünsche.
     `section.subsection` (via `\int_use:N`), direkt vor den
     unveränderten Abschnittstitel gesetzt (`\tl_gput_right:NV`, erhält
     Formatierung im Titel).
-  - `lttheme-tuc-2019.dtx`, `\__ltxtalk_tuc_teaching_section_line:`
+  - `lttheme-tuc-2019.dtx`, `\__lttalk_tuc_teaching_section_line:`
     (Kopfzeile): Prefix jetzt explizit aus
-    `\__ltxtalk_tuc_lecture_number:` (dieselbe Quelle wie die
+    `\__lttalk_tuc_lecture_number:` (dieselbe Quelle wie die
     Lecture-Nummer in der Zeile darüber) + `.` + `\int_use:N \c@section`
     zusammengesetzt, \emph{nicht} mehr über `\thesection`.
   - **Nebenbefund:** `\thesection` liefert in der realen Deployment
@@ -309,13 +309,13 @@ Featurewünsche.
   auf normales, undemotiertes Verhalten zurück und überschrieb den
   demotierten Titel mit dem ursprünglich gegebenen Text (der Subtitel
   ging dabei ganz verloren). Fix (`lttheme.dtx`): neuer Merker
-  `\g__ltxtalk_auto_title_frame_int` (spiegelt exakt das Muster, das
-  `\g__ltxtalk_auto_subtitle_frame_int` bereits für einen benachbarten
+  `\g__lttalk_auto_title_frame_int` (spiegelt exakt das Muster, das
+  `\g__lttalk_auto_subtitle_frame_int` bereits für einen benachbarten
   Zweck nutzte) -- merkt sich, für welche Foliennummer die Demotion
   zuletzt griff, und wendet sie bei jedem weiteren `\frametitle`-Aufruf
   \emph{derselben} Folie erneut an, statt nur beim ersten. Die
   gemeinsame Anwendungslogik wurde dafür in
-  `\__ltxtalk_apply_auto_title:n` ausgelagert. Dabei erneut derselbe
+  `\__lttalk_apply_auto_title:n` ausgelagert. Dabei erneut derselbe
   Tilde-Bug wie oben angetroffen -- war hier gar nicht relevant (schon
   vorher `\c_space_tl`). Neuer Regressionstest in
   `lttheme/testfiles/auto-section-title.lvt` (dreiseitige Folie mit
@@ -340,13 +340,13 @@ Featurewünsche.
     Klammern) setzt zusätzlich einen Subtitel.
   - Bewusst \emph{unabhängig} vom `auto-section-title`-Schalter: die
     zugrundeliegende Merker-Variable
-    (`\g__ltxtalk_pending_heading_title_tl`) wird jetzt in
+    (`\g__lttalk_pending_heading_title_tl`) wird jetzt in
     `\AddToHook{section/begin}`/`{subsection/begin}` immer aktualisiert,
     nur das \emph{automatische} Verbrauchen durch `\frametitle` bleibt
     hinter dem Schalter -- `\contframetitle` ist ja ein bewusster,
     expliziter Aufruf.
   - Gemeinsame Render-Logik (Slot-Rendering inkl.\ `tagpdfparaOff`-Hülle)
-    aus `\frametitle`s Demotions-Pfad nach `\__ltxtalk_apply_frame_heading:Nn`
+    aus `\frametitle`s Demotions-Pfad nach `\__lttalk_apply_frame_heading:Nn`
     ausgelagert, von beiden Aufrufern genutzt -- keine dritte Kopie des
     tagpdf-kritischen Codes.
   - **Gefundener Fehler beim ersten Implementierungsversuch:** die
@@ -403,7 +403,7 @@ Featurewünsche.
   Regressionstests: `lttheme-tuc-2019/testfiles/teaching-lecture-number.lvt`
   (erweitert, prüft Kopfzeilen-Logik + dass `auto-section-title`
   weiterhin opt-in bleibt) und
-  `osglecture-modes/testfiles/ltxtalk-mode-then-section.lvt` (neu, prüft
+  `osglecture-modes/testfiles/lttalk-mode-then-section.lvt` (neu, prüft
   den `\mode`-dann-`\section`-Bug direkt). Per `pdftotext` am
   gerenderten PDF verifiziert -- sowohl an Kurztests als auch am
   **vollständigen, ungekürzten Realdokument** (51 Seiten, `ollm build

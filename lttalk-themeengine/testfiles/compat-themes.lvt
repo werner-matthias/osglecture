@@ -1,0 +1,60 @@
+\DocumentMetadata{}
+\input regression-test.tex
+\documentclass{ltx-talk}
+\usepackage{lttalk-theme-magpie}
+\usepackage{lttalk-theme-minimal}
+\usepackage{lttalk-theme-hawk}
+\usepackage{lttalk-theme-sparrow}
+\usepackage{lttalk-theme-bluebird}
+\usepackage{lttalk-theme-goose}
+\usepackage{lttalk-theme-anchovy}
+\usepackage{lttalk-theme-carp}
+\usepackage{lttalk-theme-font-sans}
+\usepackage{lttalk-theme-font-serif}
+\usepackage{lttalk-theme-font-mixed}
+\usepackage{lttalk-theme-font-libertinus}
+\usepackage{lttalk-theme-font-newcm}
+\usepackage{lttalk-theme-font-texgyre}
+\uselttalktheme{magpie}
+\title{Compatibility test}
+\author{Test author}
+\date{2026-07-21}
+\begin{document}
+\ExplSyntaxOn
+\clist_map_inline:nn { magpie, minimal, hawk, sparrow, bluebird, goose }
+  {
+    \uselttalktheme{#1}
+    \section{Section for #1}
+    \begin{frame}
+      \frametitle{#1 theme}
+      Test content.
+    \end{frame}
+  }
+\uselttalktheme{magpie}
+\addlttalktheme{anchovy}
+\addlttalktheme{carp}
+\addlttalktheme{font-sans}
+\addlttalktheme{font-serif}
+\addlttalktheme{font-mixed}
+\addlttalktheme{font-libertinus}
+\addlttalktheme{font-newcm}
+\addlttalktheme{font-texgyre}
+\UseLTXTalkFont{body}
+\UseLTXTalkFont{support}
+\UseLTXTalkFont{heading}
+\UseLTXTalkFont{emphasis}
+\UseLTXTalkFont{code}
+\START
+\TYPE{compat-anchovy:passed}
+\TYPE{compat-carp:passed}
+\TYPE{compat-magpie:passed}
+\TYPE{compat-minimal:passed}
+\TYPE{compat-hawk:passed}
+\TYPE{compat-sparrow:passed}
+\TYPE{compat-bluebird:passed}
+\TYPE{compat-goose:passed}
+\TYPE{compat-font-themes:passed}
+\TYPE{compat-font-families:passed}
+\ExplSyntaxOff
+\END
+\end{document}

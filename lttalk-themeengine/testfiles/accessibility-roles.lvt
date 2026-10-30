@@ -1,0 +1,53 @@
+\input regression-test.tex
+\DocumentMetadata{tagging=on,lang=de-DE}
+\documentclass{ltx-talk}
+\usepackage{lttalk-themeengine}
+
+\ExplSyntaxOn
+\RegisterLTXTalkTheme { role-test }
+  {
+    \lttalksetup { header = true, header-height = 3cm,
+      footer = true, footer-height = 1cm }
+    \definelttalkslot { rt-heading } { header } { custom }
+      { role = heading, heading-level = 2 }
+    \setlttalkslotcontent { rt-heading } { A~Heading }
+    \positionlttalkslot { rt-heading } { 0pt } { 0pt } { \textwidth } { 0.5cm }
+    \definelttalkslot { rt-note } { header } { custom } { role = note }
+    \setlttalkslotcontent { rt-note } { A~Note }
+    \positionlttalkslot { rt-note } { 0pt } { 0.5cm } { \textwidth } { 0.5cm }
+    \definelttalkslot { rt-artifact } { header } { custom } { role = artifact }
+    \setlttalkslotcontent { rt-artifact } { An~Artifact }
+    \positionlttalkslot { rt-artifact } { 0pt } { 1cm } { \textwidth } { 0.5cm }
+    \definelttalkslot { rt-nav } { header } { custom } { role = navigation }
+    \setlttalkslotcontent { rt-nav } { Nav~Chrome }
+    \positionlttalkslot { rt-nav } { 0pt } { 1.5cm } { \textwidth } { 0.5cm }
+    \definelttalkslot { rt-content } { header } { custom } { role = content }
+    \setlttalkslotcontent { rt-content } { Plain~Content }
+    \positionlttalkslot { rt-content } { 0pt } { 2cm } { \textwidth } { 0.5cm }
+    \definelttalkslot { rt-alt } { header } { custom }
+      { role = artifact, alt-text = { A~decorative~mark } }
+    \setlttalkslotcontent { rt-alt } { *** }
+    \positionlttalkslot { rt-alt } { 0pt } { 2.5cm } { \textwidth } { 0.5cm }
+    \definelttalkslot { rt-blank } { footer } { custom } { role = heading, heading-level = 3 }
+    \setlttalkslotcontent { rt-blank } { }
+    \positionlttalkslot { rt-blank } { 0pt } { 0pt } { \textwidth } { 1cm }
+  }
+\ExplSyntaxOn
+\uselttalktheme { role-test }
+\ExplSyntaxOff
+
+\title{Role-Test}
+\author{A. Beispiel}
+\date{\today}
+
+\begin{document}
+\START
+
+\begin{frame}
+  \frametitle{Egal}
+\end{frame}
+
+\clearpage
+\SHOWPDFTAGS
+
+\end{document}

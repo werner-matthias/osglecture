@@ -1512,7 +1512,7 @@ load babel
   own theme/color commands are called. This happens fully automatically
   -- a document using @3 together with \osgstyler{} does not need to do
   anything for this.}{\pkg*{lttheme}}{\ref{sec:alternatives}}
-  {\pkg{ltxtalk-theme}}
+  {\pkg{lttalk-theme}}
 \ldeen*{Für @1-interne Zwecke: ein Paket, das @2 vor dem eigenen @3
   definiert (@1 selbst tut dies), zeigt damit an, dass es seine
   Themefarben bereits selbst über \cs{DeclareOsgColorPalette}/\cs{UseOsgColorPalette}
@@ -5674,12 +5674,12 @@ load babel
 % its own colors in and activates the osgstyler palette @3 while doing so
 % (cf.\ @4) makes this section recognize itself as redundant, via the
 % active palette, and do nothing.}{\cs{DeclareOsgColorPalette}}
-% {\cs{UseOsgColorPalette}}{\code{ltxtalk}}{\cs{setltxtalkcolors}}
+% {\cs{UseOsgColorPalette}}{\code{lttalk}}{\cs{setlttalkcolors}}
 \bool_new:N \g__osgstyler_lttheme_integrated_bool
 
 \cs_new_protected:Npn \__osgstyler_lttheme_sync_colors:
   {
-    \str_if_eq:VnF \g__osgstyler_color_palette_tl { ltxtalk }
+    \str_if_eq:VnF \g__osgstyler_color_palette_tl { lttalk }
       {
     \clist_map_inline:Nn \c__osgstyler_color_slots_clist
       {
@@ -5687,7 +5687,7 @@ load babel
           { \tl_set:Nn \l_tmpa_tl { bg } }
           { \tl_set:Nn \l_tmpa_tl {##1} }
         \exp_args:Ne \color_export:nnN
-          { ltxtalk-\l_tmpa_tl } { HTML } \l_tmpb_tl
+          { lttalk-\l_tmpa_tl } { HTML } \l_tmpb_tl
         \prop_gput:Nnn \g__osgstyler_color_palette_prop
           { lttheme / ##1 / kind } { resource }
         \prop_gput:Nnn \g__osgstyler_color_palette_prop
@@ -5711,13 +5711,13 @@ load babel
     \bool_if:NF \g__osgstyler_lttheme_integrated_bool
       {
         \bool_gset_true:N \g__osgstyler_lttheme_integrated_bool
-        \AddToHook { cmd/useltxtalktheme/after }
+        \AddToHook { cmd/uselttalktheme/after }
           [ osgstyler/lttheme/theme ]
           { \__osgstyler_lttheme_sync_colors: }
-        \AddToHook { cmd/addltxtalktheme/after }
+        \AddToHook { cmd/addlttalktheme/after }
           [ osgstyler/lttheme/add-theme ]
           { \__osgstyler_lttheme_sync_colors: }
-        \AddToHook { cmd/setltxtalkcolors/after }
+        \AddToHook { cmd/setlttalkcolors/after }
           [ osgstyler/lttheme/colors ]
           { \__osgstyler_lttheme_sync_colors: }
         \__osgstyler_lttheme_sync_colors:
@@ -5745,9 +5745,9 @@ load babel
 % {\cs{DeclareOsgColorPalette}}{\cs{UseOsgColorPalette}}
 \cs_if_exist:NF \LtxtalkUsesOsgstylerNatively
   {
-    \AddToHook { package/ltxtalk-theme/after } [ osgstyler/lttheme ]
+    \AddToHook { package/lttalk-theme/after } [ osgstyler/lttheme ]
       { \__osgstyler_lttheme_integrate: }
-    \IfPackageLoadedTF { ltxtalk-theme }
+    \IfPackageLoadedTF { lttalk-theme }
       { \__osgstyler_lttheme_integrate: } { }
   }
 

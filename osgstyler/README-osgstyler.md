@@ -12,7 +12,7 @@ binding them to one particular way of rendering.
 
 Inline styles combine these resources with semantic roles and can be attached
 to familiar author commands. Optional integration connects styles to
-`osglecture-modes`, `ltxtalk-theme`, and LuaLaTeX-based decoration rendering.
+`osglecture-modes`, `lttalk-theme`, and LuaLaTeX-based decoration rendering.
 
 `osgstyler` is part of the `osglecture` bundle but can be used independently.
 Its public interface is still pre-1.0 and may change before the first stable

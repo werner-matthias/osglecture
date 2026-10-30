@@ -1,0 +1,16 @@
+\DocumentMetadata{}
+\ExplSyntaxOn
+\pdfmeta_set_regression_data:
+\ExplSyntaxOff
+\documentclass{ltx-talk}
+\usepackage[english]{babel}
+\usepackage[chemnitz2025]{lttalk-theme-tuc-2019}
+\uselttalktheme{tuc-2019}
+\title[Short title]{English presentation}
+\subtitle{Subtitle}
+\author{Author}
+\institute{Institute}
+\date{2026}
+\begin{document}
+\maketitle[talk]
+\end{document}

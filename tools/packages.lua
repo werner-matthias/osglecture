@@ -86,13 +86,19 @@ local modules = {
     files = { "osgstyler/osgstyler.dtx" },
     lua = ':first_quarter_moon:',
     deps = { check = { "osglecture-modes" } } },
-  { name = "lttheme",          ctanpkg = "lttalk-themeengine",
-    files = { "lttheme/lttheme.dtx" },
-    lua = ':new_moon:',
+  -- Neither lttheme nor lttheme-tuc-2019 touches Lua in its own code, but
+  -- each unconditionally \RequirePackage{}s a package that only degrades
+  -- without Lua (osgstyler directly; lttheme-tuc-2019 transitively through
+  -- lttheme) -- a hard dependency's Lua requirement is the using
+  -- package's own, so both carry :first_quarter_moon: rather than
+  -- :new_moon: here (development-docs/CTAN-SPLIT.md, Abschnitt 6).
+  { name = "lttalk-themeengine",          ctanpkg = "lttalk-themeengine",
+    files = { "lttalk-themeengine/lttalk-themeengine.dtx" },
+    lua = ':first_quarter_moon:',
     deps = { run = { "osgstyler" }, check = { "osgstyler" } } },
-  { name = "lttheme-tuc-2019", ctanpkg = "lttalk-theme-tuc2019",
-    files = { "lttheme-tuc-2019/lttheme-tuc-2019.dtx" },
-    lua = ':new_moon:',
+  { name = "lttalk-theme-tuc-2019", ctanpkg = "lttalk-theme-tuc2019",
+    files = { "lttalk-theme-tuc-2019/lttalk-theme-tuc-2019.dtx" },
+    lua = ':first_quarter_moon:',
     -- Images used only by this theme's example and tests; it is the sole
     -- owner of images/logos for the purposes of a CTAN export (see
     -- development-docs/CTAN-SPLIT.md, Abschnitt 12).

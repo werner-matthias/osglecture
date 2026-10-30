@@ -1,0 +1,1635 @@
+%<*driver>
+\def\nameofplainTeX{plain}
+\ifx\fmtname\nameofplainTeX
+\input l3docstrip.tex
+\keepsilent
+\askforoverwritefalse
+\preamble
+
+========================================================================
+ lttalk-theme - themes for lttalk
+
+ (C) 2026 Matthias Werner
+ E-mail: matthias.werner@informatik.tu-chemnitz.de
+
+ Released under the LaTeX Project Public License v1.3c or later
+ See http://www.latex-project.org/lppl.txt
+======================================================================== 
+
+\endpreamble
+\postamble
+
+ This work is "maintained" (as per LPPL maintenance status) by
+ Matthias Werner.
+\endpostamble
+
+\generate{
+  \file{lttalk-theme-tuc-2019.sty}{\from{lttheme-tuc-2019.dtx}{pkg}}
+}
+  \expandafter\endbatchfile
+\fi
+
+\documentclass[add-bib=false]{osgdoc}
+
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage[
+languages={de,en},
+map={de=german,en=english},
+targetlang={job=4},
+load babel
+]{langselect}
+
+\def\pkgname{lttalk-theme-tuc-2019}
+\def\thepkg{\pkg{\pkgname}}
+
+\makeindex
+\setcnltx{
+  package  =  lttalk-theme-tuc-2019,
+  version  = \UseVersionOf{lttalk-theme-tuc-2019.sty},
+  date     = \UseDateOf{lttalk-theme-tuc-2019.sty},
+  title    = {TUC 2019 Theme \ldeen{für}{for} Ltx-Talk},
+  info     = {Ltx-Talk\ldeen{ Thema mit dem Corporate
+          Design der TU Chemnitz}{ theme with the corporate
+          design of the Chemnitz University of Technology}},
+  authors  = {Matthias Werner[matthias.werner@informatik.tu-chemnitz.de]},
+  abstract={
+  \ldeen{
+    Dies ist ein Thema für die Präsentationsklasse \cls{ltx-talk} 
+    und bildet (in etwa) das Corporate Design 2019 der TU Chemnitz nach. 
+    Das Paket benötigt die Themenengine \pkg{lttalk-themeengine}.
+    }{
+    This is a theme for the \cls{ltx-talk} presentation class 
+    and (roughly) replicates the 2019 corporate design of 
+    Chemnitz University of Technology. 
+    The package requires the \pkg{lttalk-themeengine} theme engine.
+    }
+  },
+  url      =https://github.com/werner-matthias/osglecture,
+  build-title
+}
+\begin{document}
+\newcommand*\tucdocslide[1]{%
+  \begin{center}
+    \IfFileExists{example-tuc-2019.pdf}
+      {\fbox{\includegraphics[page=#1,width=.82\linewidth]
+        {example-tuc-2019.pdf}}}
+      {\fbox{\parbox[c][.30\textheight][c]{.80\linewidth}{\centering
+        \ldeen{Beispielpräsentation zuerst übersetzen.}
+        {Compile the example presentation first.}}}}
+  \end{center}}
+
+\section{\ldeen{Schnellstart}{Quick start}}
+
+\ldeen{Das Theme wird nach der Klasse geladen und anschließend aktiviert.
+Paketoptionen gehören an \cs*{usepackage}; alle späteren Umschaltungen gelten
+ab dem jeweils folgenden Frame.}{Load the theme after the class and activate
+it. Package options belong on \cs*{usepackage}; subsequent switches apply to
+the next frame.}
+
+\begin{sourcecode}
+  \DocumentMetadata{}
+  \documentclass{ltx-talk}
+  \usepackage[fakcolor=if,funccolor=adapted]{lttalk-theme-tuc-2019}
+  \uselttalktheme{tuc-2019}
+
+  \title[Kurztitel]{Titel der Präsentation}
+  \subtitle{Untertitel}
+  \author{Vorname Nachname}
+  \institute{Institut oder Professur}
+  \date{5. August 2026}
+
+  \begin{document}
+  \maketitle[osg]
+  \begin{frame}
+    \frametitle{Erste Folie}
+    Inhalt
+  \end{frame}
+  \end{document}
+\end{sourcecode}
+
+\subsection{\ldeen{Roboto-Schriftbündel}{Roboto font bundle}}
+
+\ldeen{
+Das optionale Bündel hält das Corporate Design bewusst vollständig in Roboto:
+Fließtext, Begleittext, Überschriften und Hervorhebungen unterscheiden sich
+durch Größe, Schnitt und Farbe, nicht durch eine zusätzliche Slab-Serif.
+Inconsolata ergänzt Roboto als platzsparende Codeschrift. Ihre schmaleren
+Glyphen bringen auf einer typischen Codezeile merklich mehr Zeichen unter als
+Roboto Mono, ohne die offene Formensprache zu verlassen. Fira Math ist eine
+vollständige serifenlose Unicode-Mathematikschrift mit ähnlich sachlichem,
+humanistischem Duktus. Die Option setzt die Mathematikschrift beim Aktivieren
+des Themes über das von \cls*{ltx-talk} geladene \pkg*{lua-unicode-math}; nur
+wo dieses fehlt, lädt sie dafür \pkg*{unicode-math}.
+}{
+The optional bundle deliberately keeps the corporate design entirely in
+Roboto: body copy, supporting text, headings, and emphasis are distinguished
+by size, weight, and colour rather than by an additional slab serif.
+Inconsolata complements Roboto as a space-efficient code face. Its narrower
+glyphs fit noticeably more characters on a typical source line than Roboto
+Mono without abandoning the open shapes. Fira Math is a complete sans-serif
+Unicode mathematics face with a similarly matter-of-fact, humanist character.
+The option selects the mathematics face when the theme is activated, via the
+\pkg*{lua-unicode-math} loaded by \cls*{ltx-talk}; only where that is absent
+does it load \pkg*{unicode-math} for the purpose.
+}
+
+\begin{sourcecode}
+  \usepackage[fonts=roboto]{lttalk-theme-tuc-2019}
+  \uselttalktheme{tuc-2019}
+
+  % Für eigene Slots stehen semantische Rollen zur Verfügung:
+  \stylelttalkslot{mein-code}{font-slot=code,font=\small}
+\end{sourcecode}
+
+\subsection{\ldeen{Paketoptionen}{Package options}}
+
+\begin{description}[style=nextline,leftmargin=3.5cm]
+  \item[\code{fakcolor=...}] \code{tuc}, \code{natwi}, \code{ma},
+    \code{mb}, \code{etit}, \code{if}, \code{wiwi}, \code{phil} oder
+    \code{hsw}; Vorgabe ist \code{tuc}.
+  \item[\code{funccolor=...}] \code{original}, \code{adapted} oder
+    \code{uniq}; Vorgabe ist \code{adapted}.
+  \item[\code{chemnitz2025}] Verwendet das Jubiläumslogo. Bei englischer
+    Dokumentsprache wird automatisch \code{tuckhseng\_white} gewählt.
+  \item[\code{fonts=...}] \code{default} belässt die Schriften der Klasse;
+    \code{roboto} aktiviert das TUC-Schriftbündel aus Roboto für Text und
+    Überschriften, Inconsolata für Code und Fira Math für Mathematik.
+\end{description}
+
+\begin{sourcecode}
+  % Fakultät Informatik, angepasste Funktionsfarben, Jubiläumslogo
+  \usepackage[
+    fakcolor=if,
+    funccolor=adapted,
+    fonts=roboto,
+    chemnitz2025
+  ]{lttalk-theme-tuc-2019}
+\end{sourcecode}
+
+\section{\ldeen{Farben auswählen}{Selecting colors}}
+
+\ldeen{Die Fakultätsfarbe wird ausschließlich über \code{fakcolor}
+gewählt. Das Theme stellt sie zusätzlich als \code{tuccolor},
+\code{lttalk-primary} und \code{structure} bereit; die aufgehellte Farbe
+heißt \code{lttalk-secondary}.}{Select the faculty color with
+\code{fakcolor}. The theme also exposes it as \code{tuccolor},
+\code{lttalk-primary}, and \code{structure}; the light variant is
+\code{lttalk-secondary}.}
+
+\definecolor{tucdoc-tuc}{RGB}{0,95,80}
+\definecolor{tucdoc-natwi}{RGB}{112,112,111}
+\definecolor{tucdoc-ma}{RGB}{161,11,112}
+\definecolor{tucdoc-mb}{RGB}{18,51,117}
+\definecolor{tucdoc-etit}{RGB}{228,3,45}
+\definecolor{tucdoc-if}{RGB}{74,130,70}
+\definecolor{tucdoc-wiwi}{RGB}{157,7,54}
+\definecolor{tucdoc-phil}{RGB}{198,83,6}
+\definecolor{tucdoc-hsw}{RGB}{0,117,191}
+\newcommand*\tucswatch[3]{\colorbox{#2}{\rule{1.8cm}{0pt}\rule{0pt}{1.1em}}%
+  \quad\code{#1}\quad\texttt{#3}}
+
+\begin{center}\small
+\begin{tabular}{@{}ll@{}}
+\tucswatch{tuc}{tucdoc-tuc}{0,95,80} &
+\tucswatch{natwi}{tucdoc-natwi}{112,112,111}\\[2pt]
+\tucswatch{ma}{tucdoc-ma}{161,11,112} &
+\tucswatch{mb}{tucdoc-mb}{18,51,117}\\[2pt]
+\tucswatch{etit}{tucdoc-etit}{228,3,45} &
+\tucswatch{if}{tucdoc-if}{74,130,70}\\[2pt]
+\tucswatch{wiwi}{tucdoc-wiwi}{157,7,54} &
+\tucswatch{phil}{tucdoc-phil}{198,83,6}\\[2pt]
+\tucswatch{hsw}{tucdoc-hsw}{0,117,191} &
+\end{tabular}
+\end{center}
+
+\subsection{\ldeen{Fakultätsschemata mit adapted}
+  {Faculty schemes with adapted}}
+
+\ldeen{Jedes Schema zeigt die tatsächlich verwendeten Farben für
+\code{structure}, \code{lttalk-secondary}, \code{tuccolor@info},
+\code{tuccolor@warning} und \code{tuccolor@danger}.}{Each scheme shows the
+colors actually used for \code{structure}, \code{lttalk-secondary},
+\code{tuccolor@info}, \code{tuccolor@warning}, and
+\code{tuccolor@danger}.}
+
+\newcommand*\tucfacultyscheme[6]{%
+  \definecolor{tucdoc-#1-structure}{RGB}{#2}%
+  \definecolor{tucdoc-#1-secondary}{RGB}{#3}%
+  \definecolor{tucdoc-#1-info}{RGB}{#4}%
+  \definecolor{tucdoc-#1-warning}{RGB}{#5}%
+  \definecolor{tucdoc-#1-danger}{RGB}{#6}%
+  \parbox[t]{.30\linewidth}{\centering\small\textbf{\code{#1}}\par\medskip
+    \begin{tabular}{@{}ll@{}}\scriptsize
+      structure & \colorbox{tucdoc-#1-structure}{\rule{1.15cm}{0pt}\rule{0pt}{1em}}\\[2pt]
+      2nd & \colorbox{tucdoc-#1-secondary}{\rule{1.15cm}{0pt}\rule{0pt}{1em}}\\[2pt]
+      info & \colorbox{tucdoc-#1-info}{\rule{1.15cm}{0pt}\rule{0pt}{1em}}\\[2pt]
+      warning & \colorbox{tucdoc-#1-warning}{\rule{1.15cm}{0pt}\rule{0pt}{1em}}\\[2pt]
+      danger & \colorbox{tucdoc-#1-danger}{\rule{1.15cm}{0pt}\rule{0pt}{1em}}
+    \end{tabular}}}
+
+\begin{center}
+\tucfacultyscheme{tuc}{0,95,80}{98,170,160}{70,85,82}{230,180,40}{180,35,45}\hfill
+\tucfacultyscheme{natwi}{112,112,111}{170,170,168}{80,80,80}{215,170,60}{170,45,45}\hfill
+\tucfacultyscheme{ma}{161,11,112}{205,125,185}{90,70,85}{230,175,70}{150,20,60}
+
+\medskip
+\tucfacultyscheme{mb}{18,51,117}{110,145,205}{60,70,90}{235,180,60}{175,40,55}\hfill
+\tucfacultyscheme{etit}{228,3,45}{245,120,145}{95,70,75}{255,185,0}{140,0,35}\hfill
+\tucfacultyscheme{if}{74,130,70}{145,195,140}{70,85,70}{220,180,55}{170,40,45}
+
+\medskip
+\tucfacultyscheme{wiwi}{157,7,54}{205,110,140}{90,70,75}{235,175,55}{120,10,35}\hfill
+\tucfacultyscheme{phil}{198,83,6}{235,170,105}{90,80,70}{255,195,40}{170,45,35}\hfill
+\tucfacultyscheme{hsw}{0,117,191}{120,190,235}{65,85,100}{235,185,50}{180,35,50}
+\end{center}
+
+\ldeen{Für Hinweise, Warnungen und Gefahren kann zwischen den unveränderten
+Originalfarben, fakultätsabhängigen Farben und einem einheitlichen,
+harmonisierten Satz gewählt werden. Im Inhalt sind die Resultate als
+\code{tuccolor@info}, \code{tuccolor@warning}, \code{tuccolor@danger},
+\code{example} und \code{alert} verfügbar.}{For notices, warnings and danger,
+choose the original colors, faculty-specific colors, or one harmonized set.
+The results are available as \code{tuccolor@info},
+\code{tuccolor@warning}, \code{tuccolor@danger}, \code{example}, and
+\code{alert}.}
+
+\definecolor{tucdoc-info-original}{RGB}{85,85,85}
+\definecolor{tucdoc-warning-original}{RGB}{255,153,0}
+\definecolor{tucdoc-danger-original}{RGB}{255,0,0}
+\definecolor{tucdoc-info-uniq}{RGB}{79,89,99}
+\definecolor{tucdoc-warning-uniq}{RGB}{221,161,0}
+\definecolor{tucdoc-danger-uniq}{RGB}{173,28,44}
+\begin{center}\small
+\begin{tabular}{@{}llll@{}}
+& \textbf{Info} & \textbf{Warnung} & \textbf{Gefahr}\\
+\code{original} & \colorbox{tucdoc-info-original}{\rule{1.15cm}{0pt}\rule{0pt}{1em}}
+ & \colorbox{tucdoc-warning-original}{\rule{1.15cm}{0pt}\rule{0pt}{1em}}
+ & \colorbox{tucdoc-danger-original}{\rule{1.15cm}{0pt}\rule{0pt}{1em}}\\[2pt]
+\code{uniq} & \colorbox{tucdoc-info-uniq}{\rule{1.15cm}{0pt}\rule{0pt}{1em}}
+ & \colorbox{tucdoc-warning-uniq}{\rule{1.15cm}{0pt}\rule{0pt}{1em}}
+ & \colorbox{tucdoc-danger-uniq}{\rule{1.15cm}{0pt}\rule{0pt}{1em}}
+\end{tabular}
+\end{center}
+
+\ldeen{Die Blockumgebungen \env{block}, \env{alertblock} und
+\env{exampleblock} bekommen ein durchgehendes Kopfband -- \env{block} in der
+Fakultätsfarbe, \env{alertblock} in \code{warning}, \env{exampleblock} in
+\code{info} -- über einem eingerückten, im Textfluss gesetzten Körper. Das
+Kopfband greift die Seitenkopfzeile auf und baut keine Box, sodass das
+PDF-Tagging dem der Klasse \cls{ltx-talk} entspricht.}{The block environments
+\env{block}, \env{alertblock} and \env{exampleblock} get a solid header band
+-- \env{block} in the faculty colour, \env{alertblock} in \code{warning},
+\env{exampleblock} in \code{info} -- above an indented body set in the text
+stream. The band echoes the page header and builds no box, so PDF tagging
+matches that of the \cls{ltx-talk} class.}
+
+\clearpage
+\begin{sourcecode}
+  \begin{block}{Information} ... \end{block}
+  \begin{alertblock}{Achtung} ... \end{alertblock}
+  \begin{exampleblock}{Beispiel} ... \end{exampleblock}
+  {\color{example} Beispieltext}
+  {\color{alert} Warntext}
+\end{sourcecode}
+
+\section{\ldeen{Kopfzeile konfigurieren}{Configuring the header}}
+
+\ldeen{Zuerst wird eine Inhaltsinstanz gewählt, danach die Zeilenzahl. Beide
+Befehle können unmittelbar vor einem Frame stehen.}{First select a content
+instance, then the number of lines. Both commands may appear immediately
+before a frame.}
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\textbf{Instanz} & \textbf{zwei Zeilen} & \textbf{drei Zeilen}\\\hline
+\code{title} & Titel / Untertitel & Titel / Untertitel / Institut\\
+\code{section} & Section / Subsection & Titel / Section / Subsection\\
+\code{teaching} & Kurs--Vorlesung / Section & Kurs / Vorlesung / Section\\
+\code{custom} & Zeile 1 / Zeile 2 & Zeile 1 / Zeile 2 / Zeile 3
+\end{tabular}
+\end{center}
+
+\ldeen{
+Mit \code{teaching} und einer über \pkg{osglecture} gesetzten
+Vorlesungs-/Kapitelnummer (\cs*{OsgLectureDeploymentChapter} oder ein von
+der Basisklasse übernommenes \cs*{thechapter}) zeigen drei Stellen
+übereinstimmend dieselbe Nummer: die Titelseite stellt ihr
+\enquote{\meta{Nummer}.~Kapitel:~} vor den Lecturetitel, die Kopfzeile
+setzt \enquote{\meta{Nummer}.~} vor den Lecturetitel, und der Fuß zeigt
+\enquote{\meta{Nummer}~--~\meta{Foliennummer}} statt \enquote{Foliennummer
+von Gesamtzahl}. Beim ersten Wechsel zu \code{teaching} wird \code{chapter}
+außerdem zur Liste der über \pkg{osglecture} fortzuführenden Zähler
+hinzugefügt, ohne eine bereits gesetzte Liste zu ersetzen. Ohne gesetzte
+Nummer (oder ganz ohne \pkg{osglecture}) bleiben alle drei Stellen
+unverändert.
+}{
+With \code{teaching} and a lecture/chapter number set through
+\pkg{osglecture} (\cs*{OsgLectureDeploymentChapter}, or a \cs*{thechapter}
+adopted from the base class), three spots consistently show the same
+number: the title page prefixes \enquote{\meta{number}.~Chapter:~} to the
+lecture title, the header prefixes \enquote{\meta{number}.~} to the lecture
+title, and the footer shows \enquote{\meta{number}~--~\meta{frame number}}
+instead of \enquote{frame number of total count}. On first switching to
+\code{teaching}, \code{chapter} is also added to the list of counters
+continued through \pkg{osglecture}, without replacing an already-set list.
+Without a number set (or without \pkg{osglecture} at all), all three spots
+stay unchanged.
+}
+
+\begin{sourcecode}
+  \settucthemeheader{section}
+  \tucthreeheader
+  \begin{frame}
+    \frametitle{Dreizeiliger Section-Header}
+  \end{frame}
+
+  \settucthemeheaderlines{Projektname}{Arbeitspaket 2}{Statusbericht}
+  \tucthreeheader
+  \begin{frame}
+    \frametitle{Explizite Kopfzeilen}
+  \end{frame}
+\end{sourcecode}
+
+\tucdocslide{3}
+
+\section{\ldeen{Inhaltsbreite und linke Logos}{Content width and left logos}}
+
+\ldeen{\cs*{tucwideframe} aktiviert die volle Breite. Mit
+\cs*{tucnarrowframe} beginnt der Inhalt auf der Fluchtlinie des Titelblocks.
+Die Logos für die linke Fläche werden als kommaseparierte Dateiliste gesetzt;
+\cs*{addtucthemeleftlogo} ergänzt ein einzelnes Logo.}{Use
+\cs*{tucwideframe} for full width. With \cs*{tucnarrowframe}, content starts
+on the title block's alignment line. Set left-area logos as a comma-separated
+file list; \cs*{addtucthemeleftlogo} appends one logo.}
+
+\begin{sourcecode}
+  \settucthemeleftlogos{
+    images/logos/osg.png,
+    images/logos/project.pdf
+  }
+  \tucnarrowframe
+  \begin{frame}
+    \frametitle{Projektfolie mit Logos}
+    Schmaler Inhalt
+  \end{frame}
+
+  \tucwideframe
+  \begin{frame}
+    \frametitle{Die nächste Folie nutzt wieder die volle Breite}
+  \end{frame}
+\end{sourcecode}
+
+\tucdocslide{4}
+
+\section{\ldeen{Logos und Fußzeile}{Logos and footer}}
+
+\ldeen{Ohne \cs*{settucthemelogo} wählt das Theme das Universitätslogo aus
+der Paketoption und der Dokumentsprache. Ein explizit gesetztes Logo hat
+Vorrang. Dateipfade sind relativ zur Hauptdatei.}{Without
+\cs*{settucthemelogo}, the theme selects the university
+logo from the package option and document language. An explicit logo takes
+precedence. Paths follow \cs*{includegraphics} and are relative to the main
+document.}
+
+\begin{sourcecode}
+  \settucthemelogo{images/logos/eigenes-headerlogo.pdf}
+  \settucthemetitlelogo{images/logos/veranstaltung.pdf}
+  \settucthemetitlelogoraise{0pt}
+  \settucthemeurl{\url{https://www.tu-chemnitz.de/}}
+\end{sourcecode}
+
+\section{\ldeen{Titelseiten}{Title pages}}
+
+\ldeen{Die Instanz kann dauerhaft mit \cs*{settucthemetitle} oder direkt im
+optionalen Argument von \cs*{maketitle} gewählt werden. \cs*{maketitle} steht
+außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
+\cs*{settucthemetitle}, or directly through the optional argument of
+\cs*{maketitle}. Use \cs*{maketitle} outside a \code{frame} environment.}
+
+\subsection{\code{osg}}
+\begin{sourcecode}
+  \settucthemetitlelogo{images/logos/osg.png}
+  \settucthemetitlelogoraise{0.21cm}
+  \maketitle[osg]
+\end{sourcecode}
+\tucdocslide{1}
+
+\subsection{\code{talk}}
+\begin{sourcecode}
+  \settucthemetitlelogo{images/logos/conference.pdf}
+  \maketitle[talk]
+\end{sourcecode}
+\tucdocslide{5}
+
+\subsection{\code{image}}
+\begin{sourcecode}
+  % top, center oder bottom bestimmt die vertikale Beschnittkante
+  \settucthemetitleimage[center]{images/title-photo.jpg}
+  \maketitle[image]
+\end{sourcecode}
+\tucdocslide{6}
+
+\section{\ldeen{Befehlsreferenz}{Command reference}}
+
+\begin{commands}
+  \command{settucthemelogo}[\marg{Datei}]
+  \ldeen{Überschreibt die automatische Logoauswahl. Weglassen, wenn
+    \code{chemnitz2025} und die Dokumentsprache das Logo bestimmen sollen.}
+    {Overrides automatic logo selection. Omit it when \code{chemnitz2025}
+    and the document language should select the logo.}
+
+  \command{settucthemetitlelogo}[\marg{Datei}]
+  \ldeen{Legt das zusätzliche Logo für die Instanzen \code{osg} und
+    \code{talk} fest.}{Sets the additional logo for the \code{osg} and
+    \code{talk} instances.}
+
+  \command{settucthemetitlelogoraise}[\marg{Länge}]
+  \ldeen{Korrigiert transparente Ränder einer Logodatei. Für das OSG-Logo ist
+    \code{0.21cm}, für eng beschnittene Dateien gewöhnlich \code{0pt}
+    passend.}{Compensates for transparent margins in a logo file. Use
+    \code{0.21cm} for the OSG logo and usually \code{0pt} for tightly cropped
+    files.}
+
+  \command{settucthemeurl}[\marg{Webadresse}]
+  \ldeen{Konfiguriert die Webadresse. Für einen anklickbaren Link
+    \cs*{url}\marg{Adresse} übergeben.}{Configures the web address. Pass
+    \cs*{url}\marg{address} to make it clickable.}
+
+  \command{maketitle}[\oarg{osg|talk|image}]
+  \command{maketuctitle}
+  \ldeen{Außerhalb einer \code{frame}-Umgebung aufrufen. Das optionale
+    Argument wählt die Instanz. Der Kompatibilitätsbefehl verwendet die zuvor
+    gewählte Instanz.}{Use outside a \code{frame} environment. The optional
+    argument selects the instance. The compatibility command uses the
+    previously selected instance.}
+
+  \command{settucthemeheader}[\marg{Instanz}]
+  \command{settucthemeheaderlines}[\marg{Zeile 1}\marg{Zeile 2}\marg{Zeile 3}]
+  \ldeen{\code{title}, \code{section}, \code{teaching} oder explizite
+    Kopfzeilen mit der Instanz \code{custom}.}{Selects the header instance or
+    sets the three lines of the \code{custom} instance.}
+
+  \command{tuctwoheader}
+  \command{tucthreeheader}
+  \ldeen{Schaltet unmittelbar vor einem Frame zwischen zwei und drei
+    Kopfzeilen um.}{Switches between two and three header lines before a frame.}
+
+  \command{tucwideframe}
+  \command{tucnarrowframe}
+  \command{settucthemeleftlogos}[\marg{kommaseparierte Dateien}]
+  \ldeen{Schaltet den Inhaltsbereich um und belegt die linke Fläche der
+    schmalen Variante mit einem oder mehreren Logos.}{Switches the content
+    width and fills the narrow layout's left area with one or more logos.}
+
+  \command{settucthemetitle}[\marg{Instanz}]
+  \command{settucthemetitleimage}[\oarg{Beschnitt}\marg{Datei}]
+  \ldeen{Wählt \code{osg}, \code{talk} oder \code{image}. Alternativ kann die
+    Instanz auch direkt im optionalen Argument von \cs*{maketitle} gewählt
+    werden. Für \code{Beschnitt} sind \code{top}, \code{center} und
+    \code{bottom} zulässig.}{Selects the
+    \code{osg}, \code{talk}, or \code{image} title page. The optional image
+    argument controls vertical cropping.}
+\end{commands}
+
+
+% --------------------------------------------------------------------------
+% Implementation
+% --------------------------------------------------------------------------
+
+\section{Implementation}
+
+% \AutoDocInput{lttheeme-tuc-2019.dtx}{pkg} % comment out to during text development to speed up latex
+
+\end{document}
+
+%</driver>
+%<*pkg>
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage{lttalk-theme-tuc-2019}
+{2026-08-24}
+{v0.5.1}
+{TU Chemnitz presentation design introduced in 2019}
+
+% \ldeen{Primärfarben laut offiziellen CI der TUC}{Primary colors according to the TUC's official CI}.
+\color_set:nnn{tuccolor@tuc}{RGB}{0,95,80}
+\color_set:nnn{tuccolor@natwi}{RGB}{112,112,111}
+\color_set:nnn{tuccolor@ma}{RGB}{161,11,112}
+\color_set:nnn{tuccolor@mb}{RGB}{18,51,117}
+\color_set:nnn{tuccolor@etit}{RGB}{228,3,45}
+\color_set:nnn{tuccolor@if}{RGB}{74,130,70}
+\color_set:nnn{tuccolor@wiwi}{RGB}{157,7,54}
+\color_set:nnn{tuccolor@phil}{RGB}{198,83,6}
+\color_set:nnn{tuccolor@hsw}{RGB}{0,117,191}
+% \ldeen{Als Sekundärfarben wird ein 40--60\% aufgehellte Variante der Primärfarben gewählt.
+% }{
+% Secondary colors are chosen as versions of the primary colors that have been lightened by 40–60\%.
+% }
+\color_set:nnn{tuccolor@scnd@tuc}{RGB}{98,170,160}
+\color_set:nnn{tuccolor@scnd@natwi}{RGB}{170,170,168}
+\color_set:nnn{tuccolor@scnd@ma}{RGB}{205,125,185}
+\color_set:nnn{tuccolor@scnd@mb}{RGB}{110,145,205}
+\color_set:nnn{tuccolor@scnd@etit}{RGB}{245,120,145}
+\color_set:nnn{tuccolor@scnd@if}{RGB}{145,195,140}
+\color_set:nnn{tuccolor@scnd@wiwi}{RGB}{205,110,140}
+\color_set:nnn{tuccolor@scnd@phil}{RGB}{235,170,105}
+\color_set:nnn{tuccolor@scnd@hsw}{RGB}{120,190,235}
+
+% \ldeen{Fakultätsunabhängige Farben.}{Faculty-Independent colors.}
+\color_set:nnn {tuccolor@black}{RGB}{0,0,0}
+\color_set:nnn{tuccolor@gold}{RGB}{141,104,49}
+\color_set:nnn{tuccolor@silver}{RGB}{157,156,156}
+
+% \ldeen*{Auch die Funktionsfarben sind in der Vorlage @1 fakultätsunabhängig und werden hier übernommen.}{
+% The function colors in the @1 template are also faculty-independent and are carried over here
+% }{\texttt{beamerthemetuc2019.sty}}
+\color_set:nnn{tuccolor@info@original}{RGB}{85,85,85}
+\color_set:nnn{tuccolor@warning@original}{RGB}{255,153,0}
+\color_set:nnn{tuccolor@danger@original}{RGB}{255,0,0}
+
+% \ldeen{Jedoch passen sie nicht bei jeder Fakultät zu den Fakultärsfarben.
+% Daher werden zwei Alternativen zur Verfügung gestellt:
+% Einerseits fakultätsindividuelle Funktionsfarben,
+% }{
+% However, they do not match the faculty colors for every faculty.
+% Therefore, two alternatives are provided:
+% On the one hand, faculty-specific functional colors; }
+\color_set:nnn{tuccolor@info@tuc}{RGB}{70,85,82}
+\color_set:nnn{tuccolor@info@natwi}{RGB}{80,80,80}
+\color_set:nnn{tuccolor@info@ma}{RGB}{90,70,85}
+\color_set:nnn{tuccolor@info@mb}{RGB}{60,70,90}
+\color_set:nnn{tuccolor@info@etit}{RGB}{95,70,75}
+\color_set:nnn{tuccolor@info@if}{RGB}{70,85,70}
+\color_set:nnn{tuccolor@info@wiwi}{RGB}{90,70,75}
+\color_set:nnn{tuccolor@info@phil}{RGB}{90,80,70}
+\color_set:nnn{tuccolor@info@hsw}{RGB}{65,85,100}
+
+\color_set:nnn{tuccolor@warning@tuc}{RGB}{230,180,40}
+\color_set:nnn{tuccolor@warning@natwi}{RGB}{215,170,60}
+\color_set:nnn{tuccolor@warning@ma}{RGB}{230,175,70}
+\color_set:nnn{tuccolor@warning@mb}{RGB}{235,180,60}
+\color_set:nnn{tuccolor@warning@etit}{RGB}{255,185,0}
+\color_set:nnn{tuccolor@warning@if}{RGB}{220,180,55}
+\color_set:nnn{tuccolor@warning@wiwi}{RGB}{235,175,55}
+\color_set:nnn{tuccolor@warning@phil}{RGB}{255,195,40}
+\color_set:nnn{tuccolor@warning@hsw}{RGB}{235,185,50}
+
+\color_set:nnn{tuccolor@danger@tuc}{RGB}{180,35,45}
+\color_set:nnn{tuccolor@danger@natwi}{RGB}{170,45,45}
+\color_set:nnn{tuccolor@danger@ma}{RGB}{150,20,60}
+\color_set:nnn{tuccolor@danger@mb}{RGB}{175,40,55}
+\color_set:nnn{tuccolor@danger@etit}{RGB}{140,0,35}
+\color_set:nnn{tuccolor@danger@if}{RGB}{170,40,45}
+\color_set:nnn{tuccolor@danger@wiwi}{RGB}{120,10,35}
+\color_set:nnn{tuccolor@danger@phil}{RGB}{170,45,35}
+\color_set:nnn{tuccolor@danger@hsw}{RGB}{180,35,50}
+% \ldots\ldeen{andererseits eine etwas besser passende einheitliche
+% Funktionsfarben.}{on the other hand, a uniform set of functional
+%  colors that are a slightly better match.}
+\color_set:nnn{tuccolor@info@uniq}{RGB}{79,89,99}
+\color_set:nnn{tuccolor@warning@uniq}{RGB}{221,161,0}
+\color_set:nnn{tuccolor@danger@uniq}{RGB}{173,28,44}
+
+% \ldeen*{Auf das cmyk-Farbmodell (wie in @1) wird (zunächst?) verzichtet,
+% da für Druck ohnehin ein gerätespezifisches Farbprofil genutzt werden sollte.
+% }{
+% The CMYK color model (as in @1) is (for now?) not used,
+% since a device-specific color profile should be used for printing anyway.
+% }{\texttt{beamerthemetuc2019.sty}}
+
+\msg_new:nnnn { tuc-2019 } { unknown-choice }
+  { Unknown~value~'#3'~for~key~'#1'. }
+  { Valid~values~are~#2. }
+
+\tl_new:N \g_lttalk_tuc_fak_color
+\tl_new:N \g_lttalk_tuc_func_color
+\bool_new:N \g_lttalk_chemnitz_bool
+\tl_new:N \g__lttalk_tuc_fonts_tl
+
+\DeclareKeys{
+  fakcolor .choices:nn = {
+    tuc, natwi, ma, mb, etit, if, wiwi, phil, hsw
+  }{
+    \tl_gset:Ne \g_lttalk_tuc_fak_color \l_keys_choice_str
+  },
+  fakcolor / inf .code:n =
+    { \tl_gset:Nn \g_lttalk_tuc_fak_color {if} },
+  fakcolor / unknown .code:n = 
+   \msg_error:nneee { tuc-2019 } { unknown-choice }
+   { fakcolor } { tuc, natwi, ma, mb, etit, if, wiwi, phil, hsw } % Valid choices
+   { \exp_not:n {#1} } % Name of choice key
+  ,
+  fakcolor .initial:n = tuc,
+  funccolor .choice:,
+  funccolor/original .code:n =
+  {
+    \tl_gset:Ne \g_lttalk_tuc_func_color {original}
+  },
+  funccolor/uniq .code:n =
+  {
+    \tl_gset:Ne \g_lttalk_tuc_func_color \g_lttalk_tuc_fak_color
+  },
+  funccolor/adapted .code:n =
+  {
+    \tl_gset:Ne \g_lttalk_tuc_func_color {uniq}
+  },
+
+  funccolor / unknown .code:n =
+   \msg_error:nneee { tuc-2019 } { unknown-choice }
+   { funccolor } { original, adapted, uniq } % Valid choices
+   { \exp_not:n {#1} } % Name of choice key
+  ,
+  funccolor .initial:n = adapted,
+  chemnitz2025 .bool_gset:N = \g_lttalk_chemnitz_bool,
+  chemnitz2025 .default:n = true,
+  chemnitz2025 .initial:n = false,
+  fonts .choices:nn = { default, roboto }
+    { \tl_gset:Ne \g__lttalk_tuc_fonts_tl \l_keys_choice_str },
+  fonts / unknown .code:n =
+    \msg_error:nneee { tuc-2019 } { unknown-choice }
+      { fonts } { default, roboto } { \exp_not:n {#1} },
+  fonts .initial:n = default
+}
+\ProcessKeyOptions\relax
+
+\RequirePackage{lttalk-themeengine}
+\RequirePackage{tikz}
+
+% \ldeen{\cls*{ltx-talk} lädt unter Lua\LaTeX{} bereits
+%   \pkg*{lua-unicode-math}, das \cs{setmathfont} selbst bereitstellt und
+%   ein zusätzlich angefordertes \pkg*{unicode-math} mit einer Warnung
+%   abschaltet. \pkg*{unicode-math} wird deshalb nur noch geladen, wenn
+%   \pkg*{lua-unicode-math} fehlt.}{Under Lua\LaTeX{} \cls*{ltx-talk}
+%   already loads \pkg*{lua-unicode-math}, which provides \cs{setmathfont}
+%   itself and disables an additionally requested \pkg*{unicode-math} with
+%   a warning. \pkg*{unicode-math} is therefore only loaded when
+%   \pkg*{lua-unicode-math} is absent.}
+\str_if_eq:VnT \g__lttalk_tuc_fonts_tl { roboto }
+  {
+    \@ifpackageloaded { lua-unicode-math }
+      { }
+      { \RequirePackage{unicode-math} }
+    \DeclareLTXTalkFontPalette { lttalk-tuc-roboto }
+      {
+        main =
+          { font = { Roboto }, description = { TUC corporate text } },
+        companion = { alias = main },
+        display = { alias = main },
+        accent = { alias = main },
+        mono =
+          { font = { InconsolataN }, description = { compact source code } },
+        math =
+          { font = { Fira Math }, description = { sans mathematics } },
+        symbol = { alias = main }
+      }
+  }
+
+\tl_new:N \g__lttalk_tuc_logo_tl
+\tl_new:N \g__lttalk_tuc_title_logo_tl
+\seq_new:N \g__lttalk_tuc_left_logos_seq
+\tl_new:N \g__lttalk_tuc_url_tl
+\tl_new:N \g__lttalk_tuc_header_instance_tl
+\tl_new:N \g__lttalk_tuc_title_instance_tl
+\tl_new:N \g__lttalk_tuc_header_line_one_tl
+\tl_new:N \g__lttalk_tuc_header_line_two_tl
+\tl_new:N \g__lttalk_tuc_header_line_three_tl
+\tl_new:N \g__lttalk_tuc_title_image_tl
+\tl_new:N \g__lttalk_tuc_title_image_crop_tl
+\dim_new:N \g__lttalk_tuc_title_logo_raise_dim
+\bool_new:N \g__lttalk_tuc_teaching_continuation_bool
+\dim_new:N \l__lttalk_tuc_crop_x_dim
+\dim_new:N \l__lttalk_tuc_crop_bottom_dim
+\dim_new:N \l__lttalk_tuc_crop_top_dim
+
+% \ldeen{Geometrische Grundmaße der Kopfzeile: die Zeilenhöhe von
+%   \cs{footnotesize}\cs{sffamily} in dieser Klasse (gemessen als
+%   \cs{baselineskip}), der horizontale Randabstand (Seitenrand zu Logo,
+%   und Logo zu Trennstrich), der Abstand zwischen Trennstrich und Text
+%   sowie die Strichstärke des Trennstrichs. Logo, Trennstrich und
+%   Navigationstext werden ausschließlich aus diesen Maßen abgeleitet,
+%   damit sie zwangsläufig konsistent zueinander stehen.}{
+%   Basic header geometry: the line height of \cs{footnotesize}\cs{sffamily}
+%   in this class (measured as \cs{baselineskip}), the horizontal margin
+%   (page edge to logo, and logo to divider), the gap between the divider
+%   and the text, and the divider's rule thickness. The logo, divider, and
+%   navigation text are derived exclusively from these measures so they
+%   are necessarily consistent with one another.}
+\dim_const:Nn \c__lttalk_tuc_header_line_dim {11pt}
+\dim_const:Nn \c__lttalk_tuc_header_margin_dim {0.4cm}
+\dim_const:Nn \c__lttalk_tuc_header_text_gap_dim {0.4cm}
+\dim_const:Nn \c__lttalk_tuc_header_rule_thickness_dim {0.4pt}
+% \ldeen{Höhe des Navigationstextblocks: die Zeilenzahl mal die
+%   Zeilenhöhe, ohne Zuschlag. Logo und Trennstrich übernehmen exakt diese
+%   Höhe, damit ihre Ober- und Unterkante mit der obersten und untersten
+%   Textzeile fluchten.}{
+%   Height of the navigation text block: the line count times the line
+%   height, with no further padding. The logo and divider take on exactly
+%   this height, so that their top and bottom edges align with the
+%   topmost and bottommost text line.}
+\cs_new:Npn \__lttalk_tuc_header_content_height:
+  {\dimexpr \c__lttalk_tuc_header_line_dim*\LTXTalkHeaderRows \relax}
+% \ldeen{Der obere (und wegen der Zentrierung gleich große untere)
+%   Abstand des Kopfzeilenmaterials zur Kopfzeilenfläche. Deren interner
+%   Nullpunkt liegt auf der sichtbaren Oberkante und ihre volle Höhe ist
+%   \cs{l__lttalk_header_height_dim}; das Material wird also schlicht darin
+%   zentriert.}{
+%   The top (and, by centering, equally sized bottom) distance of the
+%   header material from the header area. That area's internal origin is on
+%   its visible top edge and its full height is
+%   \cs{l__lttalk_header_height_dim}, so the material is simply centered
+%   within it.}
+\cs_new:Npn \__lttalk_tuc_header_margin_y:
+  {
+    \dimexpr
+      (
+        \l__lttalk_header_height_dim
+        -\__lttalk_tuc_header_content_height:
+      )/2
+    \relax
+  }
+% \ldeen{Y-Position von Logo, Trennstrich und oberster Textzeile innerhalb
+%   der Kopfzeilenfläche, gezählt ab deren Oberkante.}{
+%   Y position of the logo, divider, and topmost text line within the
+%   header area, counted from its top edge.}
+\cs_new:Npn \__lttalk_tuc_header_y_offset:
+  {\__lttalk_tuc_header_margin_y:}
+% \ldeen{Ermittelt die aktuell zu verwendende Logodatei (explizit gesetzt,
+%   Jubiläumslogo oder Standardlogo) in \cs{l__lttalk_tuc_logo_file_tl}.
+%   Sowohl die Anzeige des Logos als auch die Vermessung seiner Breite
+%   nutzen diese eine Stelle, damit beide nie auseinanderlaufen.}{
+%   Determines the logo file currently in effect (explicit override,
+%   anniversary logo, or default logo) into \cs{l__lttalk_tuc_logo_file_tl}.
+%   Both displaying the logo and measuring its width use this single
+%   place so the two can never diverge.}
+\tl_new:N \l__lttalk_tuc_logo_file_tl
+\cs_new_protected:Npn \__lttalk_tuc_set_logo_file:
+  {
+    \tl_if_blank:VTF \g__lttalk_tuc_logo_tl
+      {
+        \bool_if:NTF \g_lttalk_chemnitz_bool
+          {
+            \str_if_eq:eeTF {\languagename}{english}
+              {\tl_set:Nn \l__lttalk_tuc_logo_file_tl {tuckhseng_white.pdf}}
+              {\tl_set:Nn \l__lttalk_tuc_logo_file_tl {tuckhs_white.pdf}}
+          }
+          {\tl_set:Nn \l__lttalk_tuc_logo_file_tl {tuc_white.pdf}}
+      }
+      {\tl_set_eq:NN \l__lttalk_tuc_logo_file_tl \g__lttalk_tuc_logo_tl}
+  }
+% \ldeen{Vermisst die Breite, mit der das aktuelle Logo bei der aktuellen
+%   Höhe des Navigationstextblocks tatsächlich gesetzt wird, und legt sie
+%   in \cs{g__lttalk_tuc_header_logo_width_dim} ab. Trennstrich, Text und
+%   die linke Logospalte im schmalen Layout richten sich nach diesem Wert,
+%   damit sie unabhängig vom Seitenverhältnis des jeweiligen Logos
+%   zueinander passen.}{
+%   Measures the width at which the current logo is actually set at the
+%   current navigation-text-block height, and stores it in
+%   \cs{g__lttalk_tuc_header_logo_width_dim}. The divider, the text, and
+%   the left logo column in the narrow layout are all derived from this
+%   value, so they stay consistent regardless of the aspect ratio of
+%   whichever logo is in effect.}
+% \ldeen{Die Messbox wird nie gesetzt; trotzdem legte \cs{includegraphics}
+%   bei aktivem Tagging sofort ein \code{Figure}-Strukturelement an -- in
+%   der Präambel (über \cs{uselttalktheme}) noch vor \code{Document}, also
+%   direkt an der Wurzel (\enquote{Parent-Child 'StructTreeRoot' -->
+%   'Figure'}), auf der Titelfolie als leeres \code{Figure} im
+%   \code{frame}. Das Tagging wird deshalb für die Dauer der Messung
+%   ausgesetzt; in Kopfbereichen ist es ohnehin schon suspendiert, das Paar
+%   ist dort wirkungslos.}{The measuring box is never typeset; even so,
+%   with tagging active \cs{includegraphics} immediately created a
+%   \code{Figure} structure element -- in the preamble (via
+%   \cs{uselttalktheme}) before \code{Document} exists, i.e. directly at
+%   the root (\enquote{Parent-Child 'StructTreeRoot' --> 'Figure'}), and on
+%   the title frame as an empty \code{Figure} in the \code{frame}. Tagging
+%   is therefore suspended for the duration of the measurement; in header
+%   areas it is suspended already, where the pair has no effect.}
+\dim_new:N \g__lttalk_tuc_header_logo_width_dim
+\cs_new_protected:Npn \__lttalk_tuc_measure_header_logo_width:
+  {
+    \__lttalk_tuc_set_logo_file:
+    \tag_suspend:n { tuc-logo-measure }
+    \hbox_set:Nn \l_tmpa_box
+      {
+        \file_if_exist:VTF \l__lttalk_tuc_logo_file_tl
+          {
+            \includegraphics
+              [height=\__lttalk_tuc_header_content_height:,
+               keepaspectratio,
+               alt={TU Chemnitz Logo}]
+              {\l__lttalk_tuc_logo_file_tl}
+          }
+          {\sffamily\bfseries TU~CHEMNITZ}
+      }
+    \tag_resume:n { tuc-logo-measure }
+    \dim_gset:Nn \g__lttalk_tuc_header_logo_width_dim {\box_wd:N \l_tmpa_box}
+  }
+% \ldeen{X-Position des Trennstrichs bzw.\ Startpunkt des Navigationstexts:
+%   Randabstand, Logobreite, nochmals Randabstand (Trennstrich), dann noch
+%   Strichstärke und Textabstand (Text). So ist der Abstand vom linken Rand
+%   zum Logo per Konstruktion gleich dem Abstand vom Logo zum Trennstrich.}{
+%   X position of the divider, and the starting point of the navigation
+%   text: margin, logo width, margin again (divider), then also rule
+%   thickness and text gap (text). This makes the distance from the left
+%   edge to the logo equal, by construction, to the distance from the logo
+%   to the divider.}
+\cs_new:Npn \__lttalk_tuc_header_rule_x:
+  {
+    \dimexpr
+      \c__lttalk_tuc_header_margin_dim
+      +\g__lttalk_tuc_header_logo_width_dim
+      +\c__lttalk_tuc_header_margin_dim
+    \relax
+  }
+\cs_new:Npn \__lttalk_tuc_header_text_x:
+  {
+    \dimexpr
+      \__lttalk_tuc_header_rule_x:
+      +\c__lttalk_tuc_header_rule_thickness_dim
+      +\c__lttalk_tuc_header_text_gap_dim
+    \relax
+  }
+\tl_gclear:N \g__lttalk_tuc_logo_tl
+\tl_gset:Nn \g__lttalk_tuc_title_logo_tl {}
+\tl_gset:Nn \g__lttalk_tuc_title_logo_alt_tl {}
+\tl_gset:Nn \g__lttalk_tuc_url_tl {https://www.tu-chemnitz.de/}
+\tl_gset:Nn \g__lttalk_tuc_header_instance_tl {title}
+\tl_gset:Nn \g__lttalk_tuc_title_instance_tl {osg}
+\tl_gset:Nn \g__lttalk_tuc_title_image_crop_tl {center}
+\dim_gset:Nn \g__lttalk_tuc_title_logo_raise_dim {0.21cm}
+
+\NewDocumentCommand \settucthemelogo {m}
+  {\tl_gset:Nn \g__lttalk_tuc_logo_tl {#1}}
+\NewDocumentCommand \settucthemetitlelogo {O{#2} m}
+  {\tl_gset:Nn \g__lttalk_tuc_title_logo_tl {#2}
+   \tl_gset:Nn \g__lttalk_tuc_title_logo_alt_tl {#1}
+  }
+\NewDocumentCommand \settucthemetitlelogoraise {m}
+  {\dim_gset:Nn \g__lttalk_tuc_title_logo_raise_dim {#1}}
+\NewDocumentCommand \settucthemeurl {m}
+  {\tl_gset:Nn \g__lttalk_tuc_url_tl {#1}}
+\NewDocumentCommand \settucthemeleftlogos {m}
+  {\seq_gset_from_clist:Nn \g__lttalk_tuc_left_logos_seq {#1}}
+\NewDocumentCommand \addtucthemeleftlogo {m}
+  {\seq_gput_right:Nn \g__lttalk_tuc_left_logos_seq {#1}}
+% \ldeen{Ein unbekannter Instanzname fiel bisher stillschweigend auf die
+%   Rückfallzeilen (Titel/Untertitel/Institut, unabhängig von der
+%   Zeilenzahl) zurück, was leicht als ignorierter Aufruf missverstanden
+%   werden kann. Ungültige Werte werden deshalb jetzt zurückgewiesen.}{
+%   An unrecognized instance name used to silently fall back to the
+%   default lines (title/subtitle/institute, regardless of the row
+%   count), which is easily mistaken for an ignored call. Invalid values
+%   are therefore now rejected.}
+% \ldeen{Beim ersten Wechsel zu \code{teaching} wird \code{chapter} -- sofern
+%   noch nicht enthalten -- zur Liste der fortzuführenden Zähler
+%   hinzugefügt, statt sie (wie ein direkter \cs*{OsgLectureSetup}\Marg{...}
+%   -Aufruf) zu ersetzen: eine bereits von der Projektkonfiguration gesetzte
+%   Liste (etwa \code{page,section}) bleibt erhalten, nur \code{chapter}
+%   kommt hinzu. Ohne einen tatsächlich existierenden \code{chapter}-Zähler
+%   bewirkt das nichts -- \pkg{osglecture}s Fortführungsmechanismus
+%   überspringt unbekannte Zähler mit einer Warnung; die auf der Titelseite,
+%   in der Kopfzeile und im Fuß angezeigte Nummer kommt unabhängig davon
+%   weiterhin aus \cs{OsgLectureDeploymentChapter} beziehungsweise
+%   \cs{thechapter}.}{On first switching to \code{teaching}, \code{chapter}
+%   is added to the list of counters to continue -- unless already present
+%   -- rather than replacing it (as a direct
+%   \cs*{OsgLectureSetup}\Marg{...} call would): a list already set by the
+%   project configuration (say, \code{page,section}) is preserved, only
+%   \code{chapter} is appended. Without an actually existing \code{chapter}
+%   counter this has no effect -- \pkg{osglecture}'s continuation mechanism
+%   skips unknown counters with a warning; the number shown on the title
+%   page, in the header, and in the footer still comes from
+%   \cs{OsgLectureDeploymentChapter} or \cs{thechapter} regardless.}
+\NewDocumentCommand \settucthemeheader {m}
+  {
+    \str_case:nnF {#1}
+      {{title}{}{section}{}{teaching}{}{custom}{}}
+      {
+        \msg_error:nneee { tuc-2019 } { unknown-choice }
+          { settucthemeheader } { title, section, teaching, custom } {#1}
+      }
+    \tl_gset:Nn \g__lttalk_tuc_header_instance_tl {#1}
+    \str_if_eq:nnT {#1} {teaching}
+      {
+        \bool_if:NF \g__lttalk_tuc_teaching_continuation_bool
+          {
+            \bool_gset_true:N \g__lttalk_tuc_teaching_continuation_bool
+            \cs_if_exist:NT \g__osglecture_continuation_counters_clist
+              {
+                \clist_if_in:NnF \g__osglecture_continuation_counters_clist
+                  {chapter}
+                  {
+                    \clist_gput_right:Nn
+                      \g__osglecture_continuation_counters_clist {chapter}
+                  }
+              }
+          }
+        \bool_if:NF \g__lttalk_auto_section_title_explicit_bool
+          { \bool_gset_true:N \g__lttalk_auto_section_title_bool }
+      }
+  }
+\NewDocumentCommand \settucthemeheaderlines {m m m}
+  {
+    \tl_gset:Nn \g__lttalk_tuc_header_instance_tl {custom}
+    \tl_gset:Nn \g__lttalk_tuc_header_line_one_tl {#1}
+    \tl_gset:Nn \g__lttalk_tuc_header_line_two_tl {#2}
+    \tl_gset:Nn \g__lttalk_tuc_header_line_three_tl {#3}
+  }
+\NewDocumentCommand \settucthemetitle {m}
+  {
+    \tl_gset:Nn \g__lttalk_tuc_title_instance_tl {#1}
+    \UseLTXTalkTitleLayout{tuc-2019/#1}
+  }
+\NewDocumentCommand \settucthemetitleimage {O{center} m}
+  {
+    \tl_gset:Nn \g__lttalk_tuc_title_image_crop_tl {#1}
+    \tl_gset:Nn \g__lttalk_tuc_title_image_tl {#2}
+  }
+\NewDocumentCommand \tucwideframe {}
+  {\UseLTXTalkLayout{tuc-2019-wide}}
+% \ldeen{Die Logobreite wird neu vermessen, bevor das schmale Layout die
+%   linke Spaltenbreite aus \cs{g__lttalk_tuc_header_logo_width_dim}
+%   übernimmt, damit sie auch bei einer zwischenzeitlich gewechselten
+%   Kopfzeilenhöhe oder einem anderen Logo aktuell ist.}{
+%   The logo width is re-measured before the narrow layout adopts the
+%   left column width from \cs{g__lttalk_tuc_header_logo_width_dim}, so it
+%   is current even after an intervening header-height or logo change.}
+\NewDocumentCommand \tucnarrowframe {}
+  {
+    \__lttalk_tuc_measure_header_logo_width:
+    \UseLTXTalkLayout{tuc-2019-narrow}
+  }
+\NewDocumentCommand \tuctwoheader {}
+  {
+    \UseLTXTalkLayout{tuc-2019-header-two}
+    \__lttalk_tuc_measure_header_logo_width:
+  }
+\NewDocumentCommand \tucthreeheader {}
+  {
+    \UseLTXTalkLayout{tuc-2019-header-three}
+    \__lttalk_tuc_measure_header_logo_width:
+  }
+
+% \ldeen{Vermisst die Logobreite bei jeder Darstellung neu, statt sich auf
+%   einen zuvor (etwa von \cs{tucnarrowframe}) eingetragenen Wert zu
+%   verlassen: Titelseiten setzen Kopfzeilenhöhe und Zeilenzahl über einen
+%   eigenen Mechanismus, ohne die Breite eigens neu zu berechnen. Ohne
+%   diese Vermessung stünde der Trennstrich auf Titelseiten zu weit links
+%   und würde in ein (bei drei Zeilen) breiteres Logo hineinragen.}{
+%   Re-measures the logo width on every display instead of relying on a
+%   value entered earlier (say, by \cs{tucnarrowframe}): title pages set
+%   the header height and row count through their own mechanism, without
+%   separately recomputing the width. Without this measurement, the
+%   divider on title pages would sit too far left and intrude into a (with
+%   three rows) wider logo.}
+\cs_new_protected:Npn \__lttalk_tuc_logo:
+  {
+    \__lttalk_tuc_measure_header_logo_width:
+    \file_if_exist:VTF \l__lttalk_tuc_logo_file_tl
+      {
+        \includegraphics
+          [height=\__lttalk_tuc_header_content_height:,
+           keepaspectratio]
+          {\l__lttalk_tuc_logo_file_tl}
+      }
+      {\sffamily\bfseries TU~CHEMNITZ}
+  }
+\cs_new_protected:Npn \__lttalk_tuc_title_logo:
+  {
+    \file_if_exist:VTF \g__lttalk_tuc_title_logo_tl
+      {
+        \includegraphics[width=2.485cm,
+          alt={\g__lttalk_tuc_title_logo_alt_tl}]{\g__lttalk_tuc_title_logo_tl}
+      }{
+        \rule{2.485cm}{0pt}
+      }
+  }
+% \ldeen{Wie bei \code{section} entscheidet \cs{LTXTalkHeaderRows} über
+%   zwei oder drei Zeilen; ohne diese Abfrage würde \code{title} bei
+%   gesetztem Untertitel stets die dritte Zeile befüllen und sie damit
+%   auch im Zweizeilenmodus über den unteren Rand der Kopfzeile
+%   hinausschieben.}{
+%   As with \code{section}, \cs{LTXTalkHeaderRows} decides between two and
+%   three lines; without this check, \code{title} would always populate
+%   the third line whenever a subtitle is set, pushing it past the
+%   header's bottom edge even in two-line mode.}
+\cs_new_protected:Npn \__lttalk_tuc_header_line:n #1
+  {
+    \str_case:VnF \g__lttalk_tuc_header_instance_tl
+      {
+        {title}
+          {\int_compare:nNnTF {\LTXTalkHeaderRows} = {3}
+            {\int_case:nnF {#1}
+              {
+                {1}{\UseLTXTalkMetadata[lines=1]{short-title}}
+                {2}{\tl_if_blank:eTF{\LTXTalkMetadata{short-subtitle}}
+                      {\UseLTXTalkMetadata[lines=1]{short-institute}}
+                      {\UseLTXTalkMetadata[lines=1]{short-subtitle}}}
+                {3}{\tl_if_blank:eF{\LTXTalkMetadata{short-subtitle}}
+                      {\UseLTXTalkMetadata[lines=1]{short-institute}}}
+              }{}}
+            {\int_case:nnF {#1}
+              {
+                {1}{\UseLTXTalkMetadata[lines=1]{short-title}}
+                {2}{\UseLTXTalkMetadata[lines=1]{short-subtitle}}
+              }{}}}
+        {section}
+          {\int_compare:nNnTF {\LTXTalkHeaderRows} = {3}
+            {\int_case:nn {#1}
+              {{1}{\UseLTXTalkMetadata[lines=1]{short-title}}
+               {2}{\UseLTXTalkMetadata[lines=1]{section}}
+               {3}{\UseLTXTalkMetadata[lines=1]{subsection}}}}
+            {\int_case:nn {#1}
+              {{1}{\UseLTXTalkMetadata[lines=1]{section}}
+               {2}{\UseLTXTalkMetadata[lines=1]{subsection}}}}}
+        {teaching}{\__lttalk_tuc_teaching_header_line:n {#1}}
+        {custom}
+          {\int_case:nn {#1}
+            {{1}{\tl_use:N \g__lttalk_tuc_header_line_one_tl}
+             {2}{\tl_use:N \g__lttalk_tuc_header_line_two_tl}
+             {3}{\tl_use:N \g__lttalk_tuc_header_line_three_tl}}}
+      }
+      {\int_case:nn {#1}
+        {{1}{\UseLTXTalkMetadata[lines=1]{short-title}}
+         {2}{\UseLTXTalkMetadata[lines=1]{short-subtitle}}
+         {3}{\UseLTXTalkMetadata[lines=1]{short-institute}}}}
+  }
+% \ldeen{Gemeinsame Quelle für die Vorlesungs-/Kapitelnummer, die
+%   Titelseite, Kopfzeile und Fuß der \code{teaching}-Kopfzeileninstanz
+%   übereinstimmend verwenden. \cs{g__osglecture_deployment_chapter_tl}
+%   speichert genau diesen Wert -- von Autoren gesetzt über
+%   \cs{OsgLectureDeploymentChapter} oder automatisch aus \cs{thechapter}
+%   übernommen, falls die Basisklasse einen Kapitelzähler kennt -- und wird
+%   sonst am Dokumentende in \file{osgresult.aux} für OLLMs
+%   Deployment-Dateinamen exportiert. Ohne \pkg{osglecture} oder ohne
+%   gesetzte Nummer bleiben alle drei Stellen unverändert (Titel ohne
+%   Präfix, Kopfzeile ohne Nummer, Fuß beim bisherigen
+%   \enquote{Foliennummer von Gesamtzahl}).}{Shared source for the
+%   lecture/chapter number that the title page, header, and footer of the
+%   \code{teaching} header instance use consistently.
+%   \cs{g__osglecture_deployment_chapter_tl} stores exactly this value --
+%   set by authors via \cs{OsgLectureDeploymentChapter} or picked up
+%   automatically from \cs{thechapter} if the base class has a chapter
+%   counter -- and is otherwise exported at the end of the document to
+%   \file{osgresult.aux} for OLLM's deployment filenames. Without
+%   \pkg{osglecture}, or without a number set, all three spots stay
+%   unchanged (title with no prefix, header with no number, footer at the
+%   previous \enquote{frame number of total count}).}
+\cs_new:Npn \__lttalk_tuc_lecture_number:
+  {
+    \cs_if_exist:NT \g__osglecture_deployment_chapter_tl
+      { \tl_use:N \g__osglecture_deployment_chapter_tl }
+  }
+% \ldeen{Verschachtelt statt als boolescher Ausdruck: Letzterer würde den
+%   zweiten Operanden auch dann noch (e-)expandieren, wenn der erste bereits
+%   falsch ist -- ohne \pkg{osglecture} existiert
+%   \cs{g__osglecture_deployment_chapter_tl} gar nicht, und dessen
+%   Expansion bräche dann mit \enquote{Undefined control sequence} ab.}{
+%   Nested rather than a Boolean expression: the latter would still
+%   (e-)expand the second operand even when the first is already false --
+%   without \pkg{osglecture}, \cs{g__osglecture_deployment_chapter_tl} does
+%   not exist at all, and expanding it would then abort with
+%   \enquote{Undefined control sequence}.}
+\cs_new_protected:Npn \__lttalk_tuc_if_lecture_number:TF #1#2
+  {
+    \cs_if_exist:NTF \g__osglecture_deployment_chapter_tl
+      {
+        \tl_if_blank:eTF { \g__osglecture_deployment_chapter_tl }
+          {#2} {#1}
+      }
+      {#2}
+  }
+\cs_new_protected:Npn \__lttalk_tuc_if_lecture_number:T #1
+  { \__lttalk_tuc_if_lecture_number:TF {#1} { } }
+\cs_new_protected:Npn \__lttalk_tuc_if_lecture_number:F #1
+  { \__lttalk_tuc_if_lecture_number:TF { } {#1} }
+% \ldeen{Ob gerade ein Abschnitt läuft, entscheidet der echte, von
+%   \cls{ltx-talk} selbst gepflegte Wert -- Existenz- und
+%   Leerprüfung spiegeln \cs{__lttalk_nav_sec_title:} (weiter oben in
+%   dieser Datei), die denselben Wert für die Navigationsleiste liest.
+%   Bewusst \emph{nicht} über \cs{LTXTalkMetadata}\Arg{section}
+%   (\cs{insertsection}): das ist ein reiner Beamer-Befehl, den
+%   \cls{ltx-talk} nur bei geladenem \pkg{beamer} bereitstellt --
+%   \code{teaching} soll aber auch ohne Beamer (z.\,B. im
+%   Artikel-/Skriptmodus) funktionieren.}{Whether a section is currently
+%   running is decided by the real value \cls{ltx-talk} itself maintains
+%   -- the existence and blank checks mirror
+%   \cs{__lttalk_nav_sec_title:} (further up in this file), which reads
+%   the same value for the navigation bar. Deliberately \emph{not} via
+%   \cs{LTXTalkMetadata}\Arg{section} (\cs{insertsection}): that is a
+%   pure Beamer command that \cls{ltx-talk} only provides when
+%   \pkg{beamer} is loaded -- but \code{teaching} should also work
+%   without Beamer (e.g.\ in article/script mode).}
+\cs_new_protected:Npn \__lttalk_tuc_if_section_active:TF #1#2
+  {
+    \tl_if_exist:cTF { l__talk_section_tl }
+      {
+        \tl_if_blank:eTF { \tl_to_str:c { l__talk_section_tl } }
+          {#2} {#1}
+      }
+      {#2}
+  }
+% \ldeen{Immer -- unabhängig vom Abschnittsstatus -- Vorlesungsnummer
+%   und Einheitstitel (bzw.\ Metadaten-Rückfall); bildet in beiden
+%   Zeilenmodi die \emph{obere} der beiden \code{teaching}-spezifischen
+%   Zeilen (Zeile~1 nach dem Trennstrich im Zweizeilenmodus, Zeile~2 im
+%   Dreizeilenmodus).}{Always -- independent of section status --
+%   lecture number and unit title (or metadata fallback); forms the
+%   \emph{upper} of the two \code{teaching}-specific lines in both row
+%   modes (line~1 after the separator dash in two-row mode, line~2 in
+%   three-row mode).}
+\cs_new_protected:Npn \__lttalk_tuc_teaching_unit_title:
+  {
+    \__lttalk_tuc_if_lecture_number:T
+      {\__lttalk_tuc_lecture_number: .~}
+    \cs_if_exist:NTF \g__osglecture_unit_title_tl
+       {\tl_use:N \g__osglecture_unit_title_tl}
+       {\UseLTXTalkMetadata[lines=1]{section}}
+  }
+% \ldeen{Sobald ein Abschnitt läuft, ersetzt
+%   \enquote{Vorlesungsnummer.Abschnittsnummer Abschnittstitel} die
+%   bisherige Subsection-Zeile; vor dem ersten Abschnitt bleibt das
+%   bisherige Verhalten (Subsection-Metadaten) unverändert. Bildet die
+%   \emph{untere} der beiden \code{teaching}-spezifischen Zeilen.
+%   Die Nummer wird bewusst \emph{nicht} über \cs{thesection} gebildet
+%   (das würde in dieser Kopfzeile korrekt \enquote{Kapitel.Abschnitt}
+%   liefern, tut es in der Praxis aber nicht zuverlässig: die
+%   Vorlesungsnummer aus \cs{OsgLectureDeploymentChapter} landet in
+%   \cs{g__osglecture_deployment_chapter_tl}, einer von \cs{thechapter}
+%   \emph{unabhängigen} Anzeige-Zeichenkette -- \cs{thesection} liefert
+%   dadurch oft nur die bloße Abschnittsnummer). Stattdessen wird die
+%   Vorlesungsnummer genau wie in \cs{__lttalk_tuc_teaching_unit_title:}
+%   (Zeile darüber) über \cs{__lttalk_tuc_lecture_number:} geholt und mit
+%   der schlichten Abschnittsnummer (\cs{c@section}) kombiniert.
+%   \cs{c_space_tl} statt \code{~}: eine aktive Tilde direkt nach der
+%   Nummer wurde in diesem Slot stillschweigend verschluckt -- per
+%   \file{pdftotext} an der gerenderten Kopfzeile bestätigt, Ursache
+%   nicht weiter verfolgt -- während die feste Leerzeichen-Tokenliste
+%   korrekt rendert.}{\enquote{lecture-number.section-number
+%   section-title} replaces the previous subsection line; before the
+%   first section, the previous behavior (subsection metadata) is
+%   unchanged. Forms the \emph{lower} of the two \code{teaching}-specific
+%   lines. The number is deliberately \emph{not} built via
+%   \cs{thesection} (which would correctly give \enquote{chapter.section}
+%   in this header, but in practice does not reliably: the lecture
+%   number from \cs{OsgLectureDeploymentChapter} lands in
+%   \cs{g__osglecture_deployment_chapter_tl}, a display string
+%   \emph{independent} of \cs{thechapter} -- so \cs{thesection} often
+%   yields only the bare section number). Instead, the lecture number is
+%   fetched the same way as in \cs{__lttalk_tuc_teaching_unit_title:}
+%   (the line above) via \cs{__lttalk_tuc_lecture_number:} and combined
+%   with the plain section number (\cs{c@section}).
+%   \cs{c_space_tl} rather than \code{~}: an active-character tie
+%   directly after the number was silently swallowed in this slot --
+%   confirmed via \file{pdftotext} on the rendered header, cause not
+%   tracked down further -- while the constant space token list renders
+%   correctly.}
+% \ldeen{Unnummerierte Abschnitte (\cs{section*}) erscheinen nur mit ihrem
+%   Titel; \pkg{lttheme} führt dazu \cs{g__lttalk_section_numbered_bool}
+%   nach.}{Unnumbered sections (\cs{section*}) appear with their title
+%   only; \pkg{lttheme} maintains \cs{g__lttalk_section_numbered_bool} for
+%   that purpose.}
+\cs_new_protected:Npn \__lttalk_tuc_teaching_section_line:
+  {
+    \__lttalk_tuc_if_section_active:TF
+      {
+        \bool_if:NT \g__lttalk_section_numbered_bool
+          {
+            \__lttalk_tuc_if_lecture_number:T
+              {\__lttalk_tuc_lecture_number: .}
+            \int_use:N \c@section \c_space_tl
+          }
+        \tl_use:c { l__talk_section_tl }
+      }
+      { \UseLTXTalkMetadata[lines=1]{subsection} }
+  }
+\cs_new_protected:Npn \__lttalk_tuc_teaching_header_line:n #1
+  {
+    \int_compare:nNnTF {\LTXTalkHeaderRows} = {3}
+      {\int_case:nn {#1}
+        {{1}{\cs_if_exist:NTF \OsgLectureShortCourse
+                {\OsgLectureShortCourse}
+                {\UseLTXTalkMetadata[lines=1]{short-title}}}
+         {2}{\__lttalk_tuc_teaching_unit_title:}
+         {3}{\__lttalk_tuc_teaching_section_line:}}}
+      {\int_case:nn {#1}
+        {{1}{\cs_if_exist:NTF \OsgLectureShortCourse
+                {\OsgLectureShortCourse}
+                {\UseLTXTalkMetadata[lines=1]{short-title}}
+              {}~--~
+              \__lttalk_tuc_teaching_unit_title:}
+         {2}{\__lttalk_tuc_teaching_section_line:}}}
+  }
+
+% \ldeen{Nur in der \code{teaching}-Kopfzeileninstanz und nur bei gesetzter
+%   Nummer erscheint \enquote{Vorlesungsnummer~--~Foliennummer}; sonst
+%   bleibt es bei \enquote{Foliennummer von Gesamtzahl} -- das behebt
+%   zugleich den zuvor hartkodierten Platzhalter \enquote{N}, der nie durch
+%   einen echten Wert ersetzt wurde.}{Only in the \code{teaching} header
+%   instance and only with a number set does \enquote{lecture
+%   number~--~frame number} appear; otherwise it stays at \enquote{frame
+%   number of total count} -- this also fixes the previously hard-coded
+%   \enquote{N} placeholder, which was never replaced by a real value.}
+\cs_new_protected:Npn \__lttalk_tuc_page_footer:
+  {
+    \str_if_eq:VnTF \g__lttalk_tuc_header_instance_tl {teaching}
+      {
+        \__lttalk_tuc_if_lecture_number:TF
+          { \__lttalk_tuc_lecture_number:~--~\LTXTalkMetadata{framenumber} }
+          { \LTXTalkMetadata{framenumber}\ von~\LTXTalkMetadata{totalframes} }
+      }
+      { \LTXTalkMetadata{framenumber}\ von~\LTXTalkMetadata{totalframes} }
+  }
+
+\cs_new_protected:Npn \__lttalk_tuc_theme_setup:
+  {
+    \str_if_eq:VnT \g__lttalk_tuc_fonts_tl { roboto }
+      {
+        \UseLTXTalkFontPalette { lttalk-tuc-roboto }
+        \setsansfont { Roboto }
+        \setmonofont { InconsolataN }
+        \setmathfont { Fira Math }
+      }
+    \DeclareLTXTalkLayout{tuc-2019-wide}
+      {left-margin=false}
+    % \ldeen{Breite und Content-Einzug der schmalen Spalte folgen der
+    %   vermessenen Logobreite (\cs{__lttalk_tuc_header_rule_x:} bzw.\
+    %   \cs{__lttalk_tuc_header_text_x:}), damit die Logos der linken
+    %   Spalte per Konstruktion links- und rechtsbündig zum Kopfzeilenlogo
+    %   stehen.}{
+    %   The narrow column's width and content inset follow the measured
+    %   logo width (\cs{__lttalk_tuc_header_rule_x:} and
+    %   \cs{__lttalk_tuc_header_text_x:} respectively), so the left
+    %   column's logos are, by construction, left- and right-aligned with
+    %   the header logo.}
+    \DeclareLTXTalkLayout{tuc-2019-narrow}
+      {
+        left-margin=true,
+        left-area-width=\__lttalk_tuc_header_rule_x:,
+        content-inset-left=\__lttalk_tuc_header_text_x:
+      }
+    \DeclareLTXTalkLayout{tuc-2019-header-two}
+      {header-height=1.45cm,header-rows=2}
+    \DeclareLTXTalkLayout{tuc-2019-header-three}
+      {header-height=2cm,header-rows=3}
+    \lttalksetup
+      {
+        header = true,
+        header-height = 1.45cm,
+        header-rows = 2,
+        left-margin = false,
+        right-margin = false,
+        footer = true,
+        footer-height = 0.52cm
+      }
+    % \ldeen{Logo, Trennstrich und Navigationszeilen der Kopfzeile werden
+    %   nicht mehr über ein Raster positioniert (siehe unten), aber
+    %   \cs{MakeLTXTalkTitle} der Themenengine erwartet dennoch einen
+    %   Eintrag für \code{header} in der internen Zeilenzahl-Property, um
+    %   ihn für die Dauer der Titelseite zu sichern und danach
+    %   wiederherzustellen. Ein einmaliger Platzhalterwert genügt dafür.}{
+    %   The logo, divider, and navigation lines of the header are no
+    %   longer positioned via a grid (see below), but the theme engine's
+    %   \cs{MakeLTXTalkTitle} still expects a \code{header} entry in the
+    %   internal row-count property, to save and restore it for the
+    %   duration of the title page. A one-time placeholder value is
+    %   sufficient for that.}
+    \SetLTXTalkAreaGridRows{header}{2}
+    \__lttalk_tuc_measure_header_logo_width:
+
+    % lttheme's \setlttalkcolors is a full redeclaration since it
+    % delegates to osgstyler (see __lttalk_colors_apply:n in
+    % lttheme.dtx); its mandatory 'primary' slot needs some resolvable
+    % value here even though this call's own primary is immediately
+    % superseded below by the faculty-dependent \color_set:nn -- the
+    % placeholder is never actually rendered.
+    \setlttalkcolors
+      {
+        primary = {model=HTML,value=000000},
+        secondary = {model=HTML,value=333333},
+        accent = {model=HTML,value=F07D00},
+        text = {model=RGB,value={0,0,0}},
+        background = {model=RGB,value={255,255,255}}
+      }
+
+    \exp_args:Nne   \color_set:nn {lttalk-primary}   { tuccolor@ \g_lttalk_tuc_fak_color }
+    \exp_args:Nne   \color_set:nn {tuccolor}          { tuccolor@ \g_lttalk_tuc_fak_color }
+    \exp_args:Nne   \color_set:nn {lttalk-secondary} { tuccolor@scnd@ \g_lttalk_tuc_fak_color  }
+    \exp_args:Nne   \color_set:nn { structure }       { tuccolor@ \g_lttalk_tuc_fak_color  }
+    \exp_args:Nne   \color_set:nn { tuccolor@info }   { tuccolor@info@  \g_lttalk_tuc_func_color }
+    \exp_args:Nne   \color_set:nn { tuccolor@warning }{ tuccolor@warning@  \g_lttalk_tuc_func_color }
+    \exp_args:Nne   \color_set:nn { tuccolor@danger } { tuccolor@danger@  \g_lttalk_tuc_func_color }
+    \color_set:nn {alert} {tuccolor@warning}
+    \color_set:nn {example} {tuccolor@info}
+    % \ldeen{Die Themenengine spiegelt \code{structure}/\code{alert}/%
+    %   \code{example} beim \cs{setlttalkcolors} auf die osgstyler-Farbslots
+    %   (die \pkg{osgstyler-block} auflöst). Da hier stattdessen direkt
+    %   \cs{color_set:nn} gesetzt wird, muss dieselbe Spiegelung von Hand
+    %   nachgezogen werden.}{The engine mirrors \code{structure}/\code{alert}/%
+    %   \code{example} onto the osgstyler colour slots (which
+    %   \pkg{osgstyler-block} resolves) during \cs{setlttalkcolors}. Since
+    %   this uses \cs{color_set:nn} directly instead, the same mirroring has
+    %   to be redone by hand.}
+    \exp_args:Nne \color_set:nn { osgstyler-structure } { tuccolor@ \g_lttalk_tuc_fak_color }
+    \color_set:nn { osgstyler-alert }   { tuccolor@warning }
+    \color_set:nn { osgstyler-example } { tuccolor@info }
+    
+    \setlttalktitleplacement{frametitle=content,section=none}
+
+    % \ldeen{Logo, Trennstrich und Navigationszeilen werden nicht mehr über
+    %   ein Zeilenraster, sondern über explizite, aus der Logobreite und
+    %   der Höhe des Textblocks berechnete Positionen gesetzt. Das erzwingt
+    %   die fünf Ausrichtungsbedingungen (Ober-/Unterkante von Logo,
+    %   Trennstrich und Text; horizontale Ränder; vertikale Zentrierung
+    %   gegenüber der sichtbaren Kopfzeilenfläche) durch Konstruktion statt
+    %   durch Annäherung.}{
+    %   The logo, divider, and navigation lines are no longer positioned
+    %   via a row grid but via explicit positions computed from the logo
+    %   width and the text block's height. This enforces the five
+    %   alignment requirements (top/bottom edges of the logo, divider, and
+    %   text; horizontal margins; vertical centering against the visible
+    %   header area) by construction rather than by approximation.}
+    \definelttalkslot{tuc-header-logo}{header}{custom}{role=artifact}
+    \setlttalkslotcontent{tuc-header-logo}{\__lttalk_tuc_logo:}
+    \positionlttalkslot{tuc-header-logo}
+      {\c__lttalk_tuc_header_margin_dim}
+      {\__lttalk_tuc_header_y_offset:}
+      {\g__lttalk_tuc_header_logo_width_dim}
+      {\__lttalk_tuc_header_content_height:}
+    \stylelttalkslot{tuc-header-logo}{align=left,color=white}
+
+    \definelttalkslot{tuc-header-rule}{header}{custom}{role=artifact}
+    \setlttalkslotcontent{tuc-header-rule}
+      {\color{white}\rule{\c__lttalk_tuc_header_rule_thickness_dim}
+        {\__lttalk_tuc_header_content_height:}}
+    \positionlttalkslot{tuc-header-rule}
+      {\__lttalk_tuc_header_rule_x:}
+      {\__lttalk_tuc_header_y_offset:}
+      {\c__lttalk_tuc_header_rule_thickness_dim}
+      {\__lttalk_tuc_header_content_height:}
+    \stylelttalkslot{tuc-header-rule}{align=center,color=white}
+
+    \int_step_inline:nn {3}
+      {
+        \definelttalkslot{tuc-header-##1}{header}{custom}{role=navigation}
+        \setlttalkslotcontent{tuc-header-##1}
+          {\__lttalk_tuc_header_line:n {##1}}
+        \positionlttalkslot{tuc-header-##1}
+          {\__lttalk_tuc_header_text_x:}
+          {\dimexpr
+            \__lttalk_tuc_header_y_offset:
+            +\c__lttalk_tuc_header_line_dim*(##1-1)
+           \relax}
+          {\dimexpr
+            \paperwidth-\__lttalk_tuc_header_text_x:
+            -\c__lttalk_tuc_header_margin_dim
+           \relax}
+          {\c__lttalk_tuc_header_line_dim}
+        \stylelttalkslot{tuc-header-##1}
+          {align=left,color=white,font=\footnotesize\sffamily}
+      }
+
+    \DeclareLTXTalkTitleLayout{tuc-2019/osg}
+      {header=true,header-height=2.4cm,header-rows=3,footer=false}
+      {\__lttalk_tuc_title_osg:}
+    \DeclareLTXTalkTitleLayout{tuc-2019/talk}
+      {header=true,header-height=2.4cm,header-rows=3,footer=false}
+      {\__lttalk_tuc_title_talk:}
+    \DeclareLTXTalkTitleLayout{tuc-2019/image}
+      {header=true,header-height=2.4cm,header-rows=3,footer=false}
+      {\__lttalk_tuc_title_image:}
+    \UseLTXTalkTitleLayout{tuc-2019/osg}
+
+    \stylelttalkslot{tuc-header-1}
+      {align=left,color=white,font=\footnotesize\sffamily}
+
+    \definelttalkslot{tuc-frametitle}{content}{frametitle}
+      {role=heading,heading-level=2}
+    \positionlttalkslot{tuc-frametitle}{left}{top}{\textwidth}{0.9cm}
+    \stylelttalkslot{tuc-frametitle}
+      {align=left,color=lttalk-primary,font=\Large\sffamily}
+
+    \definelttalkslot{tuc-framesubtitle}{content}{framesubtitle}
+      {role=heading,heading-level=3}
+    \positionlttalkslot{tuc-framesubtitle}{left}{top}{\textwidth}{0.55cm}
+    \stylelttalkslot{tuc-framesubtitle}
+      {align=left,color=lttalk-secondary,font=\normalsize\sffamily}
+
+    % \ldeen{Jedes Logo der linken Spalte wird auf die vermessene Breite des
+    %   Kopfzeilenlogos gesetzt und dort mit demselben Randabstand
+    %   platziert wie das Kopfzeilenlogo selbst, damit beide unabhängig vom
+    %   Seitenverhältnis links- und rechtsbündig zueinander stehen.}{
+    %   Every logo in the left column is set to the measured width of the
+    %   header logo and placed there with the same margin as the header
+    %   logo itself, so the two stay left- and right-aligned regardless of
+    %   aspect ratio.}
+    \definelttalkslot{tuc-left-logos}{left}{logo}{role=artifact,alt-text=Logos}
+    \setlttalkslotcontent{tuc-left-logos}
+      {
+        \seq_map_inline:Nn \g__lttalk_tuc_left_logos_seq
+          {\file_if_exist:nT {##1}
+            {\includegraphics[width=\g__lttalk_tuc_header_logo_width_dim]{##1}\\[0.3cm]}}
+      }
+    \positionlttalkslot{tuc-left-logos}
+      {\c__lttalk_tuc_header_margin_dim}{top}
+      {\g__lttalk_tuc_header_logo_width_dim}{\textheight}
+    \stylelttalkslot{tuc-left-logos}{align=left}
+
+    \definelttalkslot{tuc-author}{footer}{custom}{role=note}
+    \setlttalkslotcontent{tuc-author}{\LTXTalkMetadata{short-author}}
+    \positionlttalkslot{tuc-author}{0.4cm}{center}{0.36\paperwidth}{0.32cm}
+    \stylelttalkslot{tuc-author}
+      {align=left,color=lttalk-secondary,font=\tiny\sffamily}
+
+    \definelttalkslot{tuc-page}{footer}{custom}{role=navigation}
+    \setlttalkslotcontent{tuc-page}{\__lttalk_tuc_page_footer:}
+    \positionlttalkslot{tuc-page}{center}{center}{0.22\paperwidth}{0.32cm}
+    \stylelttalkslot{tuc-page}
+      {align=center,color=lttalk-secondary,font=\tiny\sffamily}
+
+    \definelttalkslot{tuc-url}{footer}{custom}{role=note}
+    \setlttalkslotcontent{tuc-url}{\tl_use:N \g__lttalk_tuc_url_tl}
+    \positionlttalkslot{tuc-url}
+      {\dim_eval:n{\paperwidth-0.4cm-0.36\paperwidth}}
+      {center}{0.36\paperwidth}{0.32cm}
+    \stylelttalkslot{tuc-url}
+      {align=right,color=lttalk-secondary,font=\tiny\sffamily}
+
+    \decoratelttalkarea{header}
+      {background=lttalk-primary,frame=none,artifact-type=layout}
+    \decoratelttalkarea{footer}
+      {
+        background=white,
+        frame=top,
+        rule-color=lttalk-secondary,
+        rule-thickness=0.35pt,
+        artifact-type=layout
+      }
+
+    % \ldeen{Blöcke wie in \file{tucbeamer2019}: durchgehendes Kopfband in
+    %   der Funktionsfarbe -- ein Echo des Seitenkopfs -- über einer sehr
+    %   hell getönten, eckigen Körperfläche. Der \code{titlebar}-Kasten ist
+    %   im getaggten PDF genau ein \code{Div} pro Block.}{
+    %   Blocks as in \file{tucbeamer2019}: a solid header band in the
+    %   functional colour -- an echo of the page header -- above a very
+    %   lightly tinted, square body area. The \code{titlebar} box is exactly
+    %   one \code{Div} per block in tagged PDF.}
+    \__lttalk_theme_block:nnn {titlebar}
+      {head-background=structure,body-background=structure!8}{block}
+    \__lttalk_theme_block:nnn {titlebar}
+      {head-background=alert,body-background=alert!8}{alertblock}
+    \__lttalk_theme_block:nnn {titlebar}
+      {head-background=example,body-background=example!8}{exampleblock}
+
+  }
+
+% \ldeen{Der Abstand vor dem Textblock wird aus der Kopfzeilengeometrie
+%   abgeleitet (Textstart minus Randabstand minus Logospaltenbreite), damit
+%   der Titeltextblock exakt dort beginnt, wo auch der Navigationstext der
+%   Kopfzeile beginnt (Vorgabe 4: Textblock linksbündig zur Logospalte,
+%   analog zum schmalen Layout).}{
+%   The gap before the text block is derived from the header geometry
+%   (text start minus margin minus logo column width), so the title text
+%   block starts exactly where the header's navigation text starts
+%   (requirement 4: text block left-aligned with the logo column, matching
+%   the narrow layout). This requires a fresh, synchronous measurement of
+%   the logo width here: \cs{MakeLTXTalkTitle} sets the title's own
+%   header-height and -rows synchronously, but the header itself (and thus
+%   the deferred logo measurement inside \cs{__lttalk_tuc_logo:}) is only
+%   built later, at shipout; without re-measuring here, this text block
+%   would compute its gap from whichever width the previous frame's
+%   header last left behind.}
+% \ldeen{Nur in der \code{teaching}-Kopfzeileninstanz und nur bei gesetzter
+%   Nummer (siehe \cs{__lttalk_tuc_lecture_number:}); sonst leer, sodass
+%   \cs{LTXTalkMetadata}\Marg{title} unverändert allein erscheint.}{Only in
+%   the \code{teaching} header instance and only with a number set (see
+%   \cs{__lttalk_tuc_lecture_number:}); empty otherwise, so
+%   \cs{LTXTalkMetadata}\Marg{title} appears alone, unchanged.}
+\cs_new_protected:Npn \__lttalk_tuc_title_chapter_prefix:
+  {
+    \str_if_eq:VnT \g__lttalk_tuc_header_instance_tl {teaching}
+      {
+        \__lttalk_tuc_if_lecture_number:T
+          {\__lttalk_tuc_lecture_number:.~Kapitel:~}
+      }
+  }
+\cs_new_protected:Npn \__lttalk_tuc_title_osg:
+  {
+    \__lttalk_tuc_measure_header_logo_width:
+    \vspace*{2.75cm}\noindent
+    \skip_horizontal:n
+      {\dim_eval:n{\c__lttalk_tuc_header_margin_dim-\LTXTalkCurrentLeftMargin}}
+    \begin{minipage}[t]{2.485cm}
+      \vspace{0pt}\par\vspace{\dim_eval:n{-\g__lttalk_tuc_title_logo_raise_dim}}
+      \centering\__lttalk_tuc_title_logo:
+    \end{minipage}
+    \skip_horizontal:n
+      {
+        \dim_eval:n
+          {
+            \__lttalk_tuc_header_text_x:
+            -\c__lttalk_tuc_header_margin_dim-2.485cm
+          }
+      }
+    \begin{minipage}[t]{0.62\paperwidth}
+      \vspace{0pt}\sffamily
+      \Large\bfseries \__lttalk_tuc_title_chapter_prefix:
+        \LTXTalkMetadata{title}\par\vspace{0.8cm}
+      \color{lttalk-primary}\large \LTXTalkMetadata{subtitle}\par\vspace{0.75cm}
+      \normalsize\color{lttalk-secondary}\LTXTalkMetadata{author}\par
+      \small \LTXTalkMetadata{institute}
+    \end{minipage}
+  }
+\cs_new_protected:Npn \__lttalk_tuc_title_talk:
+  {
+    \vbox_to_ht:nn {\textheight}
+      {
+        \null
+        \skip_vertical:n {\l__lttalk_header_height_dim}
+        \skip_vertical:n {0pt~plus~1fil}
+        \centering\sffamily
+        {\LARGE\bfseries\color{lttalk-primary}
+          \__lttalk_tuc_title_chapter_prefix: \LTXTalkMetadata{title}\par}\medskip
+        \tl_if_blank:eF{\LTXTalkMetadata{subtitle}}
+          {{\Large\color{lttalk-secondary}\LTXTalkMetadata{subtitle}\par}\bigskip}
+        {\large\LTXTalkMetadata{author}\par}\smallskip
+        {\normalsize\LTXTalkMetadata{institute}\par}\medskip
+        {\normalsize\LTXTalkMetadata{date}\par}\bigskip
+        \__lttalk_tuc_title_logo:
+        \skip_vertical:n {0pt~plus~1fil}
+        \null
+      }
+  }
+\cs_new_protected:Npn \__lttalk_tuc_title_image:
+  {
+    \vspace*{1.55cm}\raggedright\sffamily
+    {\LARGE\bfseries\color{lttalk-primary}
+      \__lttalk_tuc_title_chapter_prefix: \LTXTalkMetadata{title}\par}\smallskip
+    \tl_if_blank:eF{\LTXTalkMetadata{subtitle}}
+      {{\Large\color{lttalk-secondary}\LTXTalkMetadata{subtitle}\par}\medskip}
+    \file_if_exist:VTF \g__lttalk_tuc_title_image_tl
+      {\par\nointerlineskip\noindent
+       \skip_horizontal:n{-\LTXTalkCurrentLeftMargin}
+       \makebox[0pt][l]{\__lttalk_tuc_cover_image:Vn
+          \g__lttalk_tuc_title_image_tl
+          {\dim_eval:n{\paperheight-4.55cm}}}
+       \par}
+      {}
+  }
+\cs_new_protected:Npn \__lttalk_tuc_cover_image:nn #1#2
+  {
+    \hbox_set:Nn \l_tmpa_box {\includegraphics[width=\paperwidth]{#1}}
+    \dim_compare:nNnT
+      {\box_ht:N\l_tmpa_box+\box_dp:N\l_tmpa_box} < {#2}
+      {\hbox_set:Nn \l_tmpa_box {\includegraphics[height=#2]{#1}}}
+    \dim_set:Nn \l__lttalk_tuc_crop_x_dim
+      {\dim_max:nn{0pt}{(\box_wd:N\l_tmpa_box-\paperwidth)/2}}
+    \dim_set:Nn \l_tmpa_dim
+      {\dim_max:nn{0pt}
+        {\box_ht:N\l_tmpa_box+\box_dp:N\l_tmpa_box-(#2)}}
+    \str_case:VnF \g__lttalk_tuc_title_image_crop_tl
+      {
+        {top}
+          {\dim_zero:N \l__lttalk_tuc_crop_bottom_dim
+           \dim_set_eq:NN \l__lttalk_tuc_crop_top_dim \l_tmpa_dim}
+        {bottom}
+          {\dim_set_eq:NN \l__lttalk_tuc_crop_bottom_dim \l_tmpa_dim
+           \dim_zero:N \l__lttalk_tuc_crop_top_dim}
+        {center}
+          {\dim_set:Nn \l__lttalk_tuc_crop_bottom_dim {.5\l_tmpa_dim}
+           \dim_set_eq:NN \l__lttalk_tuc_crop_top_dim
+             \l__lttalk_tuc_crop_bottom_dim}
+      }
+      {\dim_set:Nn \l__lttalk_tuc_crop_bottom_dim {.5\l_tmpa_dim}
+       \dim_set_eq:NN \l__lttalk_tuc_crop_top_dim
+         \l__lttalk_tuc_crop_bottom_dim}
+    \raisebox{-#2}[0pt][0pt]{%
+    \begin{tikzpicture}[baseline=0pt]
+      \clip (0,0) rectangle (\paperwidth,#2);
+      \str_case:VnF \g__lttalk_tuc_title_image_crop_tl
+        {
+          {top}{\node[anchor=south,inner~sep=0pt]
+            at (\dim_eval:n{\paperwidth/2},0pt) {\box_use:N \l_tmpa_box};}
+          {bottom}{\node[anchor=north,inner~sep=0pt]
+            at (\dim_eval:n{\paperwidth/2},#2) {\box_use:N \l_tmpa_box};}
+          {center}{\node[anchor=center,inner~sep=0pt]
+            at (\dim_eval:n{\paperwidth/2},\dim_eval:n{(#2)/2})
+            {\box_use:N \l_tmpa_box};}
+        }
+        {\node[anchor=center,inner~sep=0pt]
+          at (\dim_eval:n{\paperwidth/2},\dim_eval:n{(#2)/2})
+          {\box_use:N \l_tmpa_box};}
+      \pgfresetboundingbox
+      \path[use~as~bounding~box] (0,0) rectangle (\paperwidth,#2);
+    \end{tikzpicture}}
+  }
+\cs_generate_variant:Nn \__lttalk_tuc_cover_image:nn {Vn}
+
+\NewDocumentCommand \maketuctitle {}
+  {\MakeLTXTalkTitle}
+
+\RenewDocumentCommand \maketitle {O{}}
+  {\tl_if_blank:nTF {#1}{\MakeLTXTalkTitle}
+    {\MakeLTXTalkTitle[tuc-2019/#1]}}
+
+\RegisterLTXTalkTheme{tuc-2019}{\__lttalk_tuc_theme_setup:}
+%</pkg>
