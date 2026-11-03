@@ -65,10 +65,10 @@ jobs:
           - langselect
           - tagbridge
           - tagdirtree
-          - lttheme
-          - lttheme-tuc-2019
+          - lttalk-themeengine
+          - lttalk-theme-tuc-2019
           - osgstyler
-          - osglecture-modes
+          - osgmodes
           - osglecture
           - tagpax
           - semcat

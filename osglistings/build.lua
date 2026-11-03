@@ -29,7 +29,7 @@ excludetests = { "tagging", "remote" }
 -- the GitHub macOS runner (and, it turns out, sometimes locally too). A
 -- regular test task extracts the same XML and places it in a minimal
 -- test-log section before l3build normalizes the raw log -- same fix as
--- ansiterm/lttheme/osgstyler's own tagging tests.
+-- ansiterm/lttalk-themeengine/osgstyler's own tagging tests.
 function runtest_tasks(name, run)
   if name == "tagging" then
     return "show-pdf-tags --xml " .. name .. ".pdf > " .. name .. ".tags"

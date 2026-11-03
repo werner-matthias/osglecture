@@ -11,4 +11,4 @@ and font roles also support project-specific themes and accessible tagged
 output.
 
 For a (English and German) description of the bundled themes,
-customization, accessibility options, and complete interface, run `texdoc lttheme`.
+customization, accessibility options, and complete interface, run `texdoc lttalk-themeengine`.

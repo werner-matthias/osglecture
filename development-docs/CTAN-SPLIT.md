@@ -43,7 +43,7 @@ der Arbeitsstand aus der Planungsdiskussion, nicht final bestätigt.
 | `semcat` | `semcat` | 🌕 | `tex/luatex/semcat` | nein (absorbiert `tagbridge`) |
 | `osgdoc` | `osgdoc` | 🌓 | `tex/luatex/osgdoc` | nein |
 | `lttheme` | **`lttalk-themeengine`** (neu) | 🌓² | `tex/luatex/lttalk-themeengine` | nein |
-| `lttheme-tuc-2019` | **`lttalk-theme-tuc2019`** (neu) | 🌓² | `tex/luatex/lttalk-theme-tuc2019` | nein |
+| `lttheme-tuc-2019` | **`lttalk-theme-tuc-2019`** (neu) | 🌓² | `tex/luatex/lttalk-theme-tuc-2019` | nein |
 | `tagbridge` | *entfällt* | – | – | geht in `semcat` auf |
 
 ¹ `luatex`, nicht `lualatex` – es gibt keine TDS-Wurzel dieses Namens; die
@@ -51,7 +51,7 @@ Wurzel richtet sich nach der Engine (wie bei allen 🌕/🌓-Paketen), nicht nac
 dem Namen des Formats. Bitte gegenprüfen, falls etwas anderes gemeint war.
 
 ² Eigener Code ohne Lua-Bezug, aber zwingende Abhängigkeit von `osgstyler`
-(direkt bei `lttalk-themeengine`, transitiv bei `lttalk-theme-tuc2019`
+(direkt bei `lttalk-themeengine`, transitiv bei `lttalk-theme-tuc-2019`
 über `lttalk-themeengine`), das selbst 🌓 ist – eine harte Abhängigkeit
 vererbt ihre Lua-Anforderung an das abhängige Paket (Abschnitt 6).
 
@@ -102,7 +102,7 @@ separate Entscheidung.
   `\RequirePackage{latex-lab-testphase-tikz}`, bedingt auf aktives Tagging –
   kein eigener Patch-Code, von niemandem im Repository mit
   `alt=`/`artifact=` auf `tikzpicture` tatsächlich genutzt.
-- `semcat`s eigenes README nennt `osgstyler`/`osglecture-modes` als
+- `semcat`s eigenes README nennt `osgstyler`/`osgmodes` als
   *optional* – impliziert eigenständige Nutzbarkeit außerhalb von
   `osglecture`, die heute lautlos bräche, sobald `semcat` ohne `osglecture`
   (und damit ohne das transitive Laden von Tagbridge) verwendet würde.
@@ -124,14 +124,15 @@ separate Entscheidung.
   Basis-`.sty` der Engine selbst – von CTAN und TL bestätigt). CTAN/TL
   hatten das Paket zunächst für ein Theme selbst gehalten; der Name trägt
   den Engine-Charakter deshalb bewusst deutlicher als zuvor.
-- `lttheme-tuc-2019` → **`lttalk-theme-tuc2019`** (kein Bindestrich vor
-  `2019`)
+- `lttheme-tuc-2019` → **`lttalk-theme-tuc-2019`** (Bindestrich vor
+  `2019` bleibt – so im tatsächlichen Rename konsistent durchgezogen,
+  abweichend von einer früheren Zwischenüberlegung ohne Bindestrich)
 
 Die mitgelieferten, fertigen Themen folgen einem eigenen, kürzeren Präfix
-als die Engine selbst: `lttalk-theme-` → `lttalk-theme-` (nicht
+als die Engine selbst: `ltxtalk-theme-` → `lttalk-theme-` (nicht
 `lttalk-themeengine-`). Paket, `.dtx` und Basis-`.sty` heißen also
 übereinstimmend `lttalk-themeengine`, aber jedes einzelne fertige Thema
-darin (und ebenso `lttalk-theme-tuc2019`, ein eigenständiges, über die
+darin (und ebenso `lttalk-theme-tuc-2019`, ein eigenständiges, über die
 Engine gebautes Thema) trägt das kürzere `lttalk-theme-`-Präfix:
 
 | Heute | Neu |
@@ -151,7 +152,7 @@ Engine gebautes Thema) trägt das kürzere `lttalk-theme-`-Präfix:
 | `lttalk-theme-font-libertinus.sty` | `lttalk-theme-font-libertinus.sty` |
 | `lttalk-theme-font-newcm.sty` | `lttalk-theme-font-newcm.sty` |
 | `lttalk-theme-font-texgyre.sty` | `lttalk-theme-font-texgyre.sty` |
-| `lttalk-theme-tuc-2019.sty` | `lttalk-theme-tuc2019.sty` |
+| `lttalk-theme-tuc-2019.sty` | `lttalk-theme-tuc-2019.sty` |
 
 Bereits in `lttheme/lttheme.dtx` umgesetzt (das `\generate`-Blatt listet
 die neuen Dateinamen schon); die Dokumentation wird dort gerade
@@ -195,7 +196,7 @@ Lua-Bedarf hebt den eigenen Wert auf den der Abhängigkeit an. `osgstyler`
 in voller Funktion, und damit auch jedes Paket, das `osgstyler` zwingend
 lädt, bleibt ohne Lua eingeschränkt – unabhängig davon, ob der eigene
 Code je `\directlua` sieht. Konkret betrifft das `lttalk-themeengine`
-(zwingend `osgstyler`) und darüber transitiv `lttalk-theme-tuc2019`
+(zwingend `osgstyler`) und darüber transitiv `lttalk-theme-tuc-2019`
 (zwingend `lttalk-themeengine`): beide stehen trotz eigenem lua-freiem
 Code als 🌓 im Register, nicht als 🌑 (s. Abschnitt 2, Fußnote ²; das
 Register trägt diese Begründung als Kommentar bei den beiden Einträgen).
@@ -375,7 +376,7 @@ Drei gefundene Dopplungsstellen in der heutigen `copyctan()`:
    einer der Paketfunktionalitäten. Heute blockweise in **jedes** Paket
    kopiert.
 2. **`images/logos`** – laut `ARCHITECTURE.md`-Kommentar nur von
-   `lttalk-theme-tuc2019` gebraucht, aber ebenfalls blockweise an alle
+   `lttalk-theme-tuc-2019` gebraucht, aber ebenfalls blockweise an alle
    verteilt.
 3. **`examples/`** – `osgstyler-article`/`-beamerlike`, `series-classic`/
    `-modern`, `tagdirtree-lines-skin` haben eindeutige Eigentümer am

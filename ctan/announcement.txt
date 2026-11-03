@@ -17,13 +17,13 @@ The bundle currently contains:
   other materials from a common source
 - ollm (OSG LaTeX Lecture Maker): latexmk-based build manager for
   creating and deploying lecture materials
-- osglecture-modes: portable document modes in the style of
+- osgmodes: portable document modes in the style of
   beamer/ltx-talk for arbitrary classes
 - langselect: several language versions of a document from a common
   source
 - tagpax: semantic import of tagged PDFs
 - osgstyler: template-based formatting
-- lttalk-theme: theme engine for ltx-talk, with a few themes modelled
+- lttalk-themeengine: theme engine for ltx-talk, with a few themes modelled
   after Beamer themes
 - lttalk-theme-tuc-2019: unofficial version of the TU Chemnitz
   presentation theme for ltx-talk

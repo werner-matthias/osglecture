@@ -57,9 +57,9 @@ local modules = {
     -- to semcat, the only package that actually exercises them (see
     -- development-docs/CTAN-SPLIT.md, Abschnitt 4). osglecture loading it
     -- on semcat's behalf is exactly the coupling that split removes.
-    deps = { run = { "osglecture-modes", "tagpax" }, check = { "langselect" } } },
-  { name = "osglecture-modes", ctanpkg = "osglecture-modes",
-    files = { "osglecture-modes/osglecture-modes.dtx" },
+    deps = { run = { "osgmodes", "tagpax" }, check = { "langselect" } } },
+  { name = "osgmodes", ctanpkg = "osgmodes",
+    files = { "osgmodes/osgmodes.dtx" },
     lua = ':full_moon:' },
   { name = "ollm", ctanpkg = "osgdocmk", bundle = "osglecture",
     files = { "ollm/scripts/lib/OLLM/Version.pm" },
@@ -85,18 +85,19 @@ local modules = {
   { name = "osgstyler",        ctanpkg = "osgstyler",
     files = { "osgstyler/osgstyler.dtx" },
     lua = ':first_quarter_moon:',
-    deps = { check = { "osglecture-modes" } } },
-  -- Neither lttheme nor lttheme-tuc-2019 touches Lua in its own code, but
-  -- each unconditionally \RequirePackage{}s a package that only degrades
-  -- without Lua (osgstyler directly; lttheme-tuc-2019 transitively through
-  -- lttheme) -- a hard dependency's Lua requirement is the using
-  -- package's own, so both carry :first_quarter_moon: rather than
-  -- :new_moon: here (development-docs/CTAN-SPLIT.md, Abschnitt 6).
+    deps = { check = { "osgmodes" } } },
+  -- Neither lttalk-themeengine nor lttalk-theme-tuc-2019 touches Lua in
+  -- its own code, but each unconditionally \RequirePackage{}s a package
+  -- that only degrades without Lua (osgstyler directly;
+  -- lttalk-theme-tuc-2019 transitively through lttalk-themeengine) -- a
+  -- hard dependency's Lua requirement is the using package's own, so
+  -- both carry :first_quarter_moon: rather than :new_moon: here
+  -- (development-docs/CTAN-SPLIT.md, Abschnitt 6).
   { name = "lttalk-themeengine",          ctanpkg = "lttalk-themeengine",
     files = { "lttalk-themeengine/lttalk-themeengine.dtx" },
     lua = ':first_quarter_moon:',
     deps = { run = { "osgstyler" }, check = { "osgstyler" } } },
-  { name = "lttalk-theme-tuc-2019", ctanpkg = "lttalk-theme-tuc2019",
+  { name = "lttalk-theme-tuc-2019", ctanpkg = "lttalk-theme-tuc-2019",
     files = { "lttalk-theme-tuc-2019/lttalk-theme-tuc-2019.dtx" },
     lua = ':first_quarter_moon:',
     -- Images used only by this theme's example and tests; it is the sole
@@ -107,9 +108,10 @@ local modules = {
       run = { "lttalk-themeengine" },
       -- checkdeps/typesetdeps are not transitive, so the teaching-lecture-
       -- number test (which loads osglecture directly) and the dependency
-      -- lttheme itself has on osgstyler both have to be repeated here.
+      -- lttalk-themeengine itself has on osgstyler both have to be
+      -- repeated here.
       check = { "lttalk-themeengine", "osgstyler", "osglecture",
-                "osglecture-modes", "tagpax" },
+                "osgmodes", "tagpax" },
     } },
   { name = "ansiterm",         ctanpkg = "ansiterm",
     files = { "ansiterm/ansiterm.dtx" },
@@ -122,10 +124,10 @@ local modules = {
     files = { "semcat/semcat.dtx" },
     lua = ':full_moon:',
     -- Optional per semcat's own README: osgstyler supplies theme-aware
-    -- colours, osglecture-modes restricts annotations to selected
+    -- colours, osgmodes restricts annotations to selected
     -- document variants. Neither is \RequirePackage'd unconditionally.
-    deps = { optional = { "osgstyler", "osglecture-modes" },
-             check = { "osglecture-modes", "osgstyler" } } },
+    deps = { optional = { "osgstyler", "osgmodes" },
+             check = { "osgmodes", "osgstyler" } } },
   { name = "osgdoc",           ctanpkg = "osgdoc",
     files = { "osgdoc/osgdoc.dtx" },
     lua = ':first_quarter_moon:' },

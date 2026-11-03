@@ -10,7 +10,7 @@
 -- evaluated by the "Distribution compatibility" GitHub Actions workflow.
 local COMPAT_HEADERS = { "TL 2024", "TL 2025", "TL current" }
 local WORKFLOW_TO_TABLE = {
-  ["osglecture-modes-core"] = "osglecture-modes",
+  ["osgmodes-core"] = "osgmodes",
 }
 local EXPECTATION_MARK = {
   pass = ":green_circle:",
@@ -20,8 +20,8 @@ local EXPECTATION_MARK = {
 
 -- Capability rows are placed directly after the module they extend.
 local capabilities_after = {
-  ["osglecture-modes"] = {
-    "ltx-talk support (osglecture + osglecture-modes)",
+  ["osgmodes"] = {
+    "ltx-talk support (osglecture + osgmodes)",
     lua = ":full_moon:"
   },
 }

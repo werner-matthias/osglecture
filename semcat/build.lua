@@ -2,7 +2,7 @@ bundle = "osglecture"
 module = "semcat"
 maindir = ".."
 
-checkdeps = { "../osglecture-modes", "../osgstyler" }
+checkdeps = { "../osgmodes", "../osgstyler" }
 
 textfiles = {
   "README-semcat.md"

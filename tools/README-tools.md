@@ -53,7 +53,7 @@ not start at 1 needs
 |===
 
 Mode-qualified overlay specifications such as `<+|handout:0>` are kept:
-`osglecture-modes` evaluates them. Styling commands that carried a mode
+`osgmodes` evaluates them. Styling commands that carried a mode
 (`\textbf<presentation>{..}`) are kept as well; the report prints the
 `\MakeOverlayAwareCommand` declarations the project setup needs for them.
 Everything without a single counterpart (`\xrefsmart`, `\pipar`, `columns`,

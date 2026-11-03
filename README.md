@@ -19,13 +19,13 @@ The bundle serves two main purposes:
 Currently, the following packages are included:
 * **osglecture**: class to generate different materials (slides, script) from a common source (`./osglecture`)
 * **OSG LaTeX Lecture Maker** (ollm): latexmk-based build script to support creation and deploying of lecture materials (`./ollm`)
-* **osglecture-modes**: generalization of portable document modes in the style of beamer/ltx-talk (`./osglecture-modes`)
+* **osgmodes**: generalization of portable document modes in the style of beamer/ltx-talk (`./osgmodes`)
 * **langselect**:  generation of different language versions from a common source (`./langselect`)
 * **tagpax**: semantic import of tagged PDFs (`./tagpax`)
 * **osgstyler**: template-based formatting (`./osgstyler`)
-* **lttalk-theme**: theme engine to allow easy and flexible design of themes for ltx-talk.
-    It also includes a few themes modeled after some Beamer themes (`./lttheme`)
-* **lttalk-theme-tuc-2019**: (an unofficial version of) the presentation theme of TU Chemnitz for ltx-talk (`./lttheme-tuc-2019`)
+* **lttalk-themeengine**: theme engine to allow easy and flexible design of themes for ltx-talk.
+    It also includes a few themes modeled after some Beamer themes (`./lttalk-themeengine`)
+* **lttalk-theme-tuc-2019**: (an unofficial version of) the presentation theme of TU Chemnitz for ltx-talk (`./lttalk-theme-tuc-2019`)
 * **ansiterm**: ANSI-aware executable terminal windows  (`./ansiterm`)
 * **osglistings**: `minted`-based code-listing front end (`./osglistings`)
 * **semcat**: generalized semantic-category markup (`./semcat`)
@@ -81,16 +81,16 @@ The `TL ...` columns are read from the expectations in the workflow above;
 | Module | Version | Date | Files | Lua | TL 2024 | TL 2025 | TL current |
 |---|---|---|---|:---:|:---:|:---:|:---:|
 | osglecture | v0.6.0 | 2026-10-05 | 24 | :full_moon: | :red_circle: | :green_circle: | :green_circle: |
-| osglecture-modes | v0.5.1 | 2026-09-27 | 2 | :full_moon: | :red_circle: | :green_circle: | :green_circle: |
-| ltx-talk support (osglecture + osglecture-modes) | n/a | n/a | n/a | :full_moon: | :red_circle: | :red_circle: | :green_circle: |
+| osgmodes | v0.5.1 | 2026-09-27 | 2 | :full_moon: | :red_circle: | :green_circle: | :green_circle: |
+| ltx-talk support (osglecture + osgmodes) | n/a | n/a | n/a | :full_moon: | :red_circle: | :red_circle: | :green_circle: |
 | ollm | v0.15.0 | n/a | 1 | :white_circle: | :white_circle: | :green_circle: | :green_circle: |
 | tagpax | v0.8.6 | 2026-10-22 | 2 | :full_moon: | :red_circle: | :green_circle: | :green_circle: |
 | tagbridge | v0.1.0 | 2026-09-14 | 1 | :new_moon: | :red_circle: | :green_circle: | :green_circle: |
 | tagdirtree[^1] | v0.1.0 | 2026-09-14 | 1 | :new_moon: | :red_circle: | :green_circle: | :green_circle: |
 | langselect | v1.1.3 | 2026-09-18 | 1 | :full_moon: | :green_circle: | :green_circle: | :green_circle: |
 | osgstyler | v0.2.0 | 2026-08-24 | 2 | :first_quarter_moon: | :red_circle: | :red_circle: | :green_circle: |
-| lttheme | v0.5.3 | 2026-10-05 | 15 | :new_moon: | :red_circle: | :red_circle: | :green_circle: |
-| lttheme-tuc-2019 | v0.5.1 | 2026-08-24 | 1 | :new_moon: | :red_circle: | :red_circle: | :green_circle: |
+| lttalk-themeengine | v0.5.3 | 2026-10-05 | 15 | :first_quarter_moon: | :red_circle: | :red_circle: | :green_circle: |
+| lttalk-theme-tuc-2019 | v0.5.1 | 2026-08-24 | 1 | :first_quarter_moon: | :red_circle: | :red_circle: | :green_circle: |
 | ansiterm[^2] | v0.2.1 | 2026-08-26 | 1 | :full_moon: | :red_circle: | :red_circle: | :green_circle: |
 | osglistings | v0.1.0 | 2026-08-28 | 1 | :full_moon: | :green_circle: | :green_circle: | :green_circle: |
 | semcat | v0.3.0 | 2026-08-31 | 1 | :full_moon: | :green_circle: | :green_circle: | :green_circle: |

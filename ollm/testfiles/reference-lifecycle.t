@@ -51,8 +51,8 @@ make_path($texinputs);
 # osglecture loads langselect for a multi-language project (the class wires
 # the manifest's language set into it) and unconditionally requires
 # tagbridge (its tagging-compatibility hooks), so the lifecycle build needs
-# both on the search path just like osglecture-modes.
-for my $sibling (qw(osglecture-modes langselect tagbridge)) {
+# both on the search path just like osgmodes.
+for my $sibling (qw(osgmodes langselect tagbridge)) {
   my $dtx = abs_path(
     File::Spec->catfile('..', $sibling, "$sibling.dtx")
   );
@@ -66,7 +66,7 @@ for my $sibling (qw(osglecture-modes langselect tagbridge)) {
 # osglecture.cls/-*.sty are generated from osglecture.dtx (docstripped
 # together with its sibling adapters/profiles dtx, which must sit next to
 # it), not shipped as loose files; unpack them into the same scratch
-# texinputs directory as osglecture-modes above.
+# texinputs directory as osgmodes above.
 for my $name (qw(
   osglecture.dtx osglecture-adapters.dtx osglecture-profiles.dtx
 )) {

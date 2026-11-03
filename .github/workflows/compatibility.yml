@@ -80,29 +80,29 @@ jobs:
             expect_2024: fail
             expect_2025: fail
             expect_current: pass
-          - name: lttheme
-            directory: lttheme
+          - name: lttalk-themeengine
+            directory: lttalk-themeengine
             config: build
             expect_2024: fail
             expect_2025: fail
             expect_current: pass
-          - name: lttheme-tuc-2019
-            directory: lttheme-tuc-2019
+          - name: lttalk-theme-tuc-2019
+            directory: lttalk-theme-tuc-2019
             config: build
             expect_2024: fail
             expect_2025: fail
             expect_current: pass
-          - name: osglecture-modes-core
-            directory: osglecture-modes
+          - name: osgmodes-core
+            directory: osgmodes
             config: config-core
             expect_2024: fail
             expect_2025: pass
             expect_current: pass
-          - name: ltx-talk support (osglecture + osglecture-modes)
-            directory: osglecture-modes
-            config: config-ltxtalk
+          - name: ltx-talk support (osglecture + osgmodes)
+            directory: osgmodes
+            config: config-lttalk
             companion_directory: ../osglecture
-            companion_config: config-ltxtalk
+            companion_config: config-lttalk
             expect_2024: fail
             expect_2025: fail
             expect_current: pass

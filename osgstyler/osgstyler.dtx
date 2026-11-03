@@ -77,7 +77,7 @@ load babel
       lassen sich darüber hinaus deklarieren.
 
       Das Paket ist Teil des \pkg*{osglecture}-Bundles -- \cls*{ltx-talk}
-      teilt sein Farb-Slot-Vokabular mit \pkg*{lttheme} --, kann aber auch
+      teilt sein Farb-Slot-Vokabular mit \pkg*{lttalk-themeengine} --, kann aber auch
       unabhängig eingesetzt werden.
     }{
       \osgstyler{} manages colors, fonts, spacing, list appearance,
@@ -89,7 +89,7 @@ load babel
       declared on top of that.
 
       The package is part of the \pkg*{osglecture} bundle -- \cls*{ltx-talk}
-      shares its color-slot vocabulary with \pkg*{lttheme} --, but can also
+      shares its color-slot vocabulary with \pkg*{lttalk-themeengine} --, but can also
       be used independently.
     }
   },
@@ -172,7 +172,7 @@ load babel
   Namen verbirgt; eine Änderung dort wirkt überall.
 
   Das Paket ist Teil des \pkg*{osglecture}-Bundles -- \cls*{ltx-talk} nutzt
-  denselben Slot-Wortschatz für Farben wie \pkg*{lttheme} --, kann aber auch
+  denselben Slot-Wortschatz für Farben wie \pkg*{lttalk-themeengine} --, kann aber auch
   vollständig unabhängig eingesetzt werden.}{Recurring teaching or
   presentation material -- lecture notes, slides, handouts -- usually needs a
   consistent, recognizable look: the same colors, the same fonts, the same
@@ -191,7 +191,7 @@ load babel
   effect everywhere.
 
   The package is part of the \pkg*{osglecture} bundle -- \cls*{ltx-talk} uses
-  the same color-slot vocabulary as \pkg*{lttheme} --, but can also be used
+  the same color-slot vocabulary as \pkg*{lttalk-themeengine} --, but can also be used
   completely independently.}
 
 \subsection{\ldeen{Zwei Ebenen: Nutzen und Erstellen}{Two Levels: Using and Creating}}
@@ -348,18 +348,18 @@ load babel
     Section~\ref{sec:lua}) is built directly on \needpackage{lua-ul}; a
     decoration backend based on \needpackage{soul} or \needpackage{ulem}
     is equally conceivable.}
-  \item[\pkg*{lttheme}] \ldeen{Das Schwesterpaket im \pkg*{osglecture}-Bundle
+  \item[\pkg*{lttalk-themeengine}] \ldeen{Das Schwesterpaket im \pkg*{osglecture}-Bundle
     stellt Farbthemes für \cls*{ltx-talk} bereit und teilt \osgstyler{}s
     Farb-Slot-Vokabular. Die beiden Pakete sind bewusst voneinander
-    entkoppelt (\osgstyler{} hängt nicht von \pkg*{lttheme} ab); wird
-    \pkg*{lttheme} aber geladen, synchronisiert \osgstyler{} sich
-    automatisch, siehe Abschnitt~\ref{sec:lttheme}.}{The sibling package in
+    entkoppelt (\osgstyler{} hängt nicht von \pkg*{lttalk-themeengine} ab); wird
+    \pkg*{lttalk-themeengine} aber geladen, synchronisiert \osgstyler{} sich
+    automatisch, siehe Abschnitt~\ref{sec:lttalk-themeengine}.}{The sibling package in
     the \pkg*{osglecture} bundle provides color themes for \cls*{ltx-talk}
     and shares \osgstyler{}'s color-slot vocabulary. The two packages are
     deliberately decoupled (\osgstyler{} does not depend on
-    \pkg*{lttheme}); but if \pkg*{lttheme} is loaded, \osgstyler{}
+    \pkg*{lttalk-themeengine}); but if \pkg*{lttalk-themeengine} is loaded, \osgstyler{}
     synchronizes with it automatically, see
-    Section~\ref{sec:lttheme}.}
+    Section~\ref{sec:lttalk-themeengine}.}
 \end{description}
 
 \section{\ldeen{Anwendung}{Using osgstyler}}
@@ -651,14 +651,14 @@ load babel
     \emph{wieder wie gewohnt}
 \end{example}
 
-\begin{infobox}{\ldeen{Mit osglecture-modes}{With osglecture-modes}}
+\begin{infobox}{\ldeen{Mit osgmodes}{With osgmodes}}
   \ldeen*{Ist @1 geladen (in beliebiger Reihenfolge zu \osgstyler{}),
     akzeptieren @2 sowie \emph{jeder} über @3 gebundene Befehl zusätzlich
     ein portables Modusargument, siehe dessen Dokumentation.}{If @1 is
     loaded (in either order relative to \osgstyler{}), @2 as well as
     \emph{every} command bound via @3 additionally accepts a portable mode
     expression, see that package's documentation.}
-    {\pkg{osglecture-modes}}{\cs{UseOsgInlineStyle}}
+    {\pkg{osgmodes}}{\cs{UseOsgInlineStyle}}
     {\cs{BindOsgInlineCommand}}
   \begin{example}[code-only]
       \emph<presentation>{nur im Präsentationsmodus hervorgehoben}
@@ -723,7 +723,7 @@ load babel
     Stärke (\pkg*{fbox}-artig), einen Innenabstand und wahlweise einen
     Hintergrund. @2 und @3 wirken nur im Kastenzweig des
     \code{titled}-Layouts (Trait \code{titlebar}) und nur, wenn
-    \pkg{pgfcore} geladen ist (etwa durch \pkg*{lttheme}s
+    \pkg{pgfcore} geladen ist (etwa durch \pkg*{lttalk-themeengine}s
     \code{magpie}-Theme); der \code{plain}-Kastenzweig (\code{card},
     \code{framed}, \code{filled}) bleibt vorerst eckig ohne Schatten. Fehlt
     \pkg{pgfcore}, fällt der Renderer auf eckig zurück.}{The default
@@ -731,7 +731,7 @@ load babel
     (\pkg*{fbox}-style), a padding, and optionally a background. @2 and @3
     take effect only in the boxed branch of the \code{titled} layout (trait
     \code{titlebar}) and only when \pkg{pgfcore} is loaded (e.g.\ by
-    \pkg*{lttheme}'s \code{magpie} theme); the \code{plain} boxed branch
+    \pkg*{lttalk-themeengine}'s \code{magpie} theme); the \code{plain} boxed branch
     (\code{card}, \code{framed}, \code{filled}) stays square without a
     shadow for now. Without \pkg{pgfcore} the renderer falls back to
     square.}
@@ -1319,7 +1319,7 @@ load babel
 
 \subsubsection{\ldeen{Fall A: Bestehende Umgebung umhüllen}{Case A: Wrapping an Existing Environment}}
 \label{sec:blocks:bind}
-\ldeen*{@1 verallgemeinert das Muster, mit dem \pkg*{lttheme} \env{block}
+\ldeen*{@1 verallgemeinert das Muster, mit dem \pkg*{lttalk-themeengine} \env{block}
   umhüllt, für Environments \emph{ohne} Overlay-Syntax: eine einheitliche
   Argumentsignatur (ein optionaler Name vor einem Textkörper), die auch
   auf \pkg*{amsthm}-generierte \env{theorem}-Umgebungen (via
@@ -1327,7 +1327,7 @@ load babel
   das umhüllte Original weitergereicht, nie selbst interpretiert -- die
   eigene Nummerierung und das Kopf-Rendering von @2 bleiben also
   vollständig erhalten, @1 fügt nur Optik \emph{um} deren fertige Ausgabe
-  herum.}{@1 generalizes the pattern \pkg*{lttheme} uses to wrap
+  herum.}{@1 generalizes the pattern \pkg*{lttalk-themeengine} uses to wrap
   \env{block} for environments \emph{without} overlay syntax: a uniform
   argument signature (an optional name before a text body) that also
   applies to \pkg*{amsthm}-generated \env{theorem} environments (via
@@ -1462,7 +1462,7 @@ load babel
   concern the using/creating distinction itself, but describe how
   \osgstyler{} fits into a larger toolchain.}
 
-\subsubsection{osglecture-modes}
+\subsubsection{osgmodes}
 \label{sec:integration:modes}
 \ldeen*{Ist @1 geladen -- in beliebiger Reihenfolge zu \osgstyler{} --,
   akzeptieren @2 sowie \emph{jeder} über @3 gebundene Befehl zusätzlich
@@ -1477,7 +1477,7 @@ load babel
   get a leading \cs*{d<>} specification. An inactive mode suppresses
   output entirely, \emph{including} any numbering step -- hidden content
   should not leave a gap in the numbering.}
-  {\pkg{osglecture-modes}}
+  {\pkg{osgmodes}}
   {\cs{UseOsgInlineStyle}/\allowbreak\cs{UseOsgColorPalette}/\allowbreak%
   \cs{UseOsgFontPalette}/\allowbreak\cs{UseOsgMetricPalette}/\allowbreak%
   \cs{UseOsgListPalette}/\allowbreak\cs{UseOsgPreset}}
@@ -1497,8 +1497,8 @@ load babel
   and siblings) deliberately remain mode-independent -- a palette is
   defined once, regardless of which modes later select it.}
 
-\subsubsection{\pkg*{lttheme}}
-\label{sec:lttheme}
+\subsubsection{\pkg*{lttalk-themeengine}}
+\label{sec:lttalk-themeengine}
 \ldeen*{\osgstyler{} hängt bewusst nicht von @1 ab (Abschnitt~@2). Wird
   jedoch @3 geladen, synchronisiert sich \osgstyler{} reaktiv: eine
   Farbpalette namens \code{lttheme} wird aus den gerade aktiven
@@ -1511,7 +1511,7 @@ load babel
   created from the currently active @1 colors and activated whenever @1's
   own theme/color commands are called. This happens fully automatically
   -- a document using @3 together with \osgstyler{} does not need to do
-  anything for this.}{\pkg*{lttheme}}{\ref{sec:alternatives}}
+  anything for this.}{\pkg*{lttalk-themeengine}}{\ref{sec:alternatives}}
   {\pkg{lttalk-theme}}
 \ldeen*{Für @1-interne Zwecke: ein Paket, das @2 vor dem eigenen @3
   definiert (@1 selbst tut dies), zeigt damit an, dass es seine
@@ -1522,7 +1522,7 @@ load babel
   that it already feeds its theme colors in itself via
   \cs{DeclareOsgColorPalette}/\cs{UseOsgColorPalette} -- the reactive
   integration here then recognizes itself as redundant and does
-  nothing.}{\pkg*{lttheme}}{\cs{LtxtalkUsesOsgstylerNatively}}
+  nothing.}{\pkg*{lttalk-themeengine}}{\cs{LtxtalkUsesOsgstylerNatively}}
   {\cs*{RequirePackage}\Marg{osgstyler}}
 
 \subsubsection{\ldeen{Lua-Referenzbackend}{Lua Reference Backend}}
@@ -2130,9 +2130,9 @@ load babel
       "`Osg"' geerbt.}{The package belongs to the \pkg{osglecture} bundle,
       from which the "`Osg"' is inherited.}
 
-  \item \textbf{\ldeen{Brauche ich \pkg*{lttheme} oder
-      \pkg{osglecture-modes}?}{Do I need \pkg*{lttheme} or
-      \pkg{osglecture-modes}?}}
+  \item \textbf{\ldeen{Brauche ich \pkg*{lttalk-themeengine} oder
+      \pkg{osgmodes}?}{Do I need \pkg*{lttalk-themeengine} or
+      \pkg{osgmodes}?}}
 
     \ldeen{Nein. \osgstyler{} ist vollständig unabhängig nutzbar; beide
       Integrationen (Abschnitt~\ref{sec:integration}) laufen nur an, wenn
@@ -3020,7 +3020,7 @@ load babel
 % widely used, coordinated modern color system. A document activates
 % one deliberately via \cs{UseOsgColorPalette}; unused, nothing
 % changes.}
-% {\code{osl-standard}}{\code{osl-modern}}{\pkg*{lttheme}}
+% {\code{osl-standard}}{\code{osl-modern}}{\pkg*{lttalk-themeengine}}
 \DeclareOsgColorPalette { osl-standard }
   {
     primary    = { model = HTML, value = 141E3C },
@@ -4097,7 +4097,7 @@ load babel
 % in beiden Fällen nur einmal. Farbwerte werden stets über
 % \cs{OsgColorName} aufgelöst statt als bloße Slot-Namen verwendet, da
 % nur die aufgelösten Namen unabhängig von einer ladenden Theme-Datei
-% wie \pkg*{lttheme} garantiert existieren.}
+% wie \pkg*{lttalk-themeengine} garantiert existieren.}
 % {A shared template type for boxed, framed or filled content -- beamer
 % blocks as well as theorem-like boxes or quotations in the long form.
 % Package and theme authors either bind an already-known environment to
@@ -4107,7 +4107,7 @@ load babel
 % either way. Color values are always resolved via \cs{OsgColorName}
 % rather than used as bare slot names, since only the resolved names are
 % guaranteed to exist independently of a loading theme file such as
-% \pkg*{lttheme}.}
+% \pkg*{lttalk-themeengine}.}
 
 \tl_new:N \l__osgstyler_block_background_tl
 \tl_new:N \l__osgstyler_block_rule_color_tl
@@ -4815,12 +4815,12 @@ load babel
   }
 
 % \ldeen*{Merkt sich pro Instanz, ob \code{layout=titled} wirksam ist
-% (direkt oder über einen Trait). Umhüllende Pakete wie \pkg*{lttheme}
+% (direkt oder über einen Trait). Umhüllende Pakete wie \pkg*{lttalk-themeengine}
 % brauchen das, weil sie einen Kopf-Titel dann anders zuführen müssen als
 % einen dem Body vorangestellten. Ein Aufruf ohne Layout-Angabe lässt den
 % Vermerk stehen -- \cs{StyleOsgBlockInstance} ist additiv.}
 % {Records per instance whether \code{layout=titled} is in effect
-% (directly or through a trait). Wrapping packages such as \pkg*{lttheme}
+% (directly or through a trait). Wrapping packages such as \pkg*{lttalk-themeengine}
 % need this because a head title has to be fed in differently from one
 % prepended to the body. A call without a layout key leaves the record
 % untouched -- \cs{StyleOsgBlockInstance} is additive.}
@@ -5005,7 +5005,7 @@ load babel
     \group_end:
   }
 
-% \ldeen*{Ist @1 (aus \pkg*{osglecture-modes}) beim Aufruf bereits
+% \ldeen*{Ist @1 (aus \pkg*{osgmodes}) beim Aufruf bereits
 % geladen, bekommt das erzeugte Environment zusätzlich eine führende
 % \cs{d<>}-Spezifikation: ein inaktiver Modus unterdrückt die Ausgabe
 % vollständig, \emph{einschließlich} des Nummerierungsschritts --
@@ -5015,7 +5015,7 @@ load babel
 % ohnehin als \cs{+b}-Argument vollständig eingelesen wird, bevor
 % irgendetwas davon ausgeführt wird -- ihn bedingt zu verwerfen ersetzt
 % keine bereits laufende Ausgabe.}
-% {If @1 (from \pkg*{osglecture-modes}) is already loaded when this
+% {If @1 (from \pkg*{osgmodes}) is already loaded when this
 % runs, the generated environment additionally gets a leading
 % \cs{d<>} specification: an inactive mode suppresses output entirely,
 % \emph{including} the numbering step -- hidden content should not
@@ -5023,7 +5023,7 @@ load babel
 % overlay environments without a fallback) because the body is fully
 % read as a \cs{+b} argument before any of it executes -- discarding it
 % conditionally does not interrupt output already under way.}
-% {\pkg*{osglecture-modes}}
+% {\pkg*{osgmodes}}
 \cs_new_protected:Npn \__osgstyler_styled_env_mode_dispatch:nnnnnn #1#2#3#4#5#6
   {
     \IfNoValueTF {#4}
@@ -5237,7 +5237,7 @@ load babel
 % STYLING KNOWN ENVIRONMENTS (CASE A, WITHOUT OVERLAYS)
 % ==========================================
 %
-% \ldeen*{@1 verallgemeinert das Muster, mit dem \pkg*{lttheme}
+% \ldeen*{@1 verallgemeinert das Muster, mit dem \pkg*{lttalk-themeengine}
 % \env{block} umhüllt, für Environments \emph{ohne} Overlay-Syntax --
 % deren Argumentsignatur ist einheitlich genug (ein optionaler Name vor
 % einem Textkörper), um sie generisch zu erfassen, anders als bei
@@ -5248,7 +5248,7 @@ load babel
 % (\cs{newtheorem}) funktioniert dadurch unverändert, samt eigener
 % Nummerierung: @1 fügt nur die Box-Optik um @2s vollständige Ausgabe
 % herum, ohne dessen Zähler oder Kopf-Rendering zu berühren.}
-% {@1 generalizes the pattern \pkg*{lttheme} uses to wrap \env{block}
+% {@1 generalizes the pattern \pkg*{lttalk-themeengine} uses to wrap \env{block}
 % for environments \emph{without} overlay syntax -- their argument
 % signature is uniform enough (an optional name before a text body) to
 % capture generically, unlike \env{block}/\env{alertblock}, which need
@@ -5326,13 +5326,13 @@ load babel
 % \ldeen*{@1/@2/@3 reproduzieren Beamers eigene, freie Titelsignatur
 % (\Verb+\begin{block}{Titel}+) über @4 -- dieselbe Quelle kompiliert
 % damit unter Beamer/ltx-talk (dort natives Environment, siehe
-% \pkg*{lttheme}) wie unter der Langform (hier neu erzeugt) gleich.
+% \pkg*{lttalk-themeengine}) wie unter der Langform (hier neu erzeugt) gleich.
 % Nur wenn der Name noch nicht existiert wird das Environment
 % angelegt: existiert es schon nativ, ändert @5 daran nichts.}
 % {@1/@2/@3 reproduce beamer's own free-title signature
 % (\Verb+\begin{block}{Title}+) via @4 -- the same source therefore
 % compiles the same way under beamer/ltx-talk (native environment
-% there, see \pkg*{lttheme}) and under the long form (newly created
+% there, see \pkg*{lttalk-themeengine}) and under the long form (newly created
 % here). The environment is only created if the name does not exist
 % yet: if it is already native, @5 leaves it untouched.}
 % {\env{block}}{\env{alertblock}}{\env{exampleblock}}
@@ -5630,7 +5630,7 @@ load babel
 % zum Zeitpunkt des Aufrufs bekannt ist. Die Deklarationsbefehle
 % (\token_to_str:N\DeclareOsgColorPalette und Geschwister) bleiben bewußt
 % moduunabhängig: Eine Palette wird einmalig definiert, unabhängig davon, in
-% welchen Moden sie später ausgewählt wird.}{Optional osglecture-modes
+% welchen Moden sie später ausgewählt wird.}{Optional osgmodes
 % integration. The selection commands (\token_to_str:N\UseOsgInlineStyle and
 % the bound inline commands, as well as \token_to_str:N\UseOsgColorPalette,
 % \token_to_str:N\UseOsgFontPalette, \token_to_str:N\UseOsgMetricPalette)
@@ -5638,7 +5638,7 @@ load babel
 % active mode is known at the call site. The declaration commands
 % (\token_to_str:N\DeclareOsgColorPalette and siblings) deliberately remain
 % mode-independent: a palette is defined once, regardless of which modes
-% later select it.}{\pkg{osglecture-modes}}
+% later select it.}{\pkg{osgmodes}}
 \bool_new:N \g__osgstyler_modes_integrated_bool
 
 \cs_new_protected:Npn \__osgstyler_modes_integrate:
@@ -5659,9 +5659,9 @@ load babel
       }
   }
 
-\AddToHook { package/osglecture-modes/after } [ osgstyler/modes ]
+\AddToHook { package/osgmodes/after } [ osgstyler/modes ]
   { \__osgstyler_modes_integrate: }
-\IfPackageLoadedTF { osglecture-modes }
+\IfPackageLoadedTF { osgmodes }
   { \__osgstyler_modes_integrate: } { }
 
 % \ldeen*{Reaktive Rückfallintegration für Themepakete, die ihre
@@ -5745,9 +5745,9 @@ load babel
 % {\cs{DeclareOsgColorPalette}}{\cs{UseOsgColorPalette}}
 \cs_if_exist:NF \LtxtalkUsesOsgstylerNatively
   {
-    \AddToHook { package/lttalk-theme/after } [ osgstyler/lttheme ]
+    \AddToHook { package/lttalk-themeengine/after } [ osgstyler/lttheme ]
       { \__osgstyler_lttheme_integrate: }
-    \IfPackageLoadedTF { lttalk-theme }
+    \IfPackageLoadedTF { lttalk-themeengine }
       { \__osgstyler_lttheme_integrate: } { }
   }
 

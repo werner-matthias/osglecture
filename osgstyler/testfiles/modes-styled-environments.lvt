@@ -1,6 +1,6 @@
 \input regression-test.tex
 \documentclass{article}
-\usepackage[mode=script]{osglecture-modes}
+\usepackage[mode=script]{osgmodes}
 \usepackage{osgstyler}
 
 \DeclareOsgColorPalette{modes-styled-env-test}{

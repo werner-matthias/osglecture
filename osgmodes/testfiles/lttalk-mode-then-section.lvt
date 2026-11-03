@@ -2,7 +2,7 @@
 \DocumentMetadata{}
 \documentclass{ltx-talk}
 \NewDocumentCommand\lecture{O{}mm}{\TYPE{LECTURE KEPT}}
-\usepackage[ignorenonframetext]{osglecture-modes-lttalk}
+\usepackage[ignorenonframetext]{osgmodes-lttalk}
 \ExplSyntaxOn
 \cs_new_protected:Npn \test_keep_end:
   { \END \osglecture_modes_scan: }

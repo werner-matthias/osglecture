@@ -1,18 +1,18 @@
 bundle = "osglecture"
-module = "lttheme-tuc-2019"
+module = "lttalk-theme-tuc-2019"
 maindir = ".."
 
 -- The external TUC theme is implemented on top of the core theme engine.
--- lttheme itself now requires osgstyler, so it must be listed here too
--- (checkdeps/typesetdeps are not transitive).  The teaching-lecture-number
--- test loads the osglecture class directly, which pulls in osglecture's own
--- checkdeps (osglecture-modes, tagpax, langselect, tagbridge); those must be
--- listed here too for the same non-transitive reason.
+-- lttalk-themeengine itself requires osgstyler, so it must be listed here
+-- too (checkdeps/typesetdeps are not transitive).  The teaching-lecture-
+-- number test loads the osglecture class directly, which pulls in
+-- osglecture's own checkdeps (osgmodes, tagpax, langselect, tagbridge);
+-- those must be listed here too for the same non-transitive reason.
 checkdeps = {
-    "../lttheme", "../osgstyler",
-    "../osglecture", "../osglecture-modes", "../tagpax", "../langselect", "../tagbridge",
+    "../lttalk-themeengine", "../osgstyler",
+    "../osglecture", "../osgmodes", "../tagpax", "../langselect", "../tagbridge",
 }
-typesetdeps = { "../lttheme", "../osgstyler" }
+typesetdeps = { "../lttalk-themeengine", "../osgstyler" }
 
 -- Make the logos selected automatically by the theme available in l3build's
 -- isolated test directory.  A developer installation may provide these via a
@@ -28,16 +28,16 @@ checksuppfiles = {
 
 sourcefiles = {
     "example-tuc-2019.tex",
-    "lttheme-tuc-2019.dtx"
+    "lttalk-theme-tuc-2019.dtx"
 }
 
 unpackfiles = {
-    "lttheme-tuc-2019.dtx"
+    "lttalk-theme-tuc-2019.dtx"
 }
 
 typesetfiles = {
     "example-tuc-2019.tex",
-    "lttheme-tuc-2019.dtx"
+    "lttalk-theme-tuc-2019.dtx"
 }
 
 

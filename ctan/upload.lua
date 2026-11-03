@@ -73,11 +73,11 @@ The bundle currently contains:</p>
 <ul>
 <li>osglecture: document class that produces slides, script, handouts, and other materials from a common source</li>
 <li>ollm (OSG LaTeX Lecture Maker): latexmk-based build manager for creating and deploying lecture materials</li>
-<li>osglecture-modes: portable document modes in the style of beamer/ltx-talk for arbitrary classes</li>
+<li>osgmodes: portable document modes in the style of beamer/ltx-talk for arbitrary classes</li>
 <li>langselect: several language versions of a document from a common source</li>
 <li>tagpax: semantic import of tagged PDFs</li>
 <li>osgstyler: template-based formatting</li>
-<li>lttalk-theme: theme engine for ltx-talk, with a few themes modelled after Beamer themes</li>
+<li>lttalk-themeengine: theme engine for ltx-talk, with a few themes modelled after Beamer themes</li>
 <li>lttalk-theme-tuc-2019: unofficial version of the TU Chemnitz presentation theme for ltx-talk</li>
 <li>ansiterm: ANSI-aware, optionally executable terminal windows</li>
 <li>osglistings: minted-based code-listing front end</li>

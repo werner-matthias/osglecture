@@ -1,10 +1,10 @@
-% Test double, not the real lttalk-theme: it lacks
+% Test double, not the real lttalk-themeengine: it lacks
 % \LtxtalkUsesOsgstylerNatively, so osgstyler takes its reactive
-% integration path.  build.lua installs it as lttalk-theme.sty in the
-% test directory; kept as .sty.in so that it is not taken for the file
-% generated from lttheme.dtx.
+% integration path.  build.lua installs it as lttalk-themeengine.sty in
+% the test directory; kept as .sty.in so that it is not taken for the
+% file generated from lttalk-themeengine.dtx.
 \NeedsTeXFormat{LaTeX2e}[2024-06-01]
-\ProvidesExplPackage{lttalk-theme}{2026-08-23}{v0.0.0}{Test stub}
+\ProvidesExplPackage{lttalk-themeengine}{2026-08-23}{v0.0.0}{Test stub}
 \RequirePackage{xcolor}
 \ExplSyntaxOn
 \color_set:nnn { lttalk-primary }   { RGB } { 10,20,30 }

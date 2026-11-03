@@ -21,7 +21,7 @@ if not is_module then
      "lttalk-themeengine",
      "lttalk-theme-tuc-2019",
      "osgstyler",
-     "osglecture-modes",
+     "osgmodes",
      "osglecture",
      "tagpax",
      "semcat",
@@ -91,7 +91,7 @@ end
   images/logos (the other images serve osglecture projects, not the
   bundle), which no module copies.
   The top-level build.lua and LICENSE, the shared test support files, the
-  logos used by the lttheme-tuc-2019 tests and example, and the examples
+  logos used by the lttalk-theme-tuc-2019 tests and example, and the examples
   come along with every module (the copies are identical).
   Hidden files are left out: CTAN does not accept them.  So are the
   PDF-based visual tests (*.pvt, *.tpf): their normalised reference PDFs

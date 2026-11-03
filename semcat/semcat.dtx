@@ -74,7 +74,7 @@ load babel
       Das Paket ist Teil des @1-Bundles, ist aber eigenständig nutzbar.
     }{
       % TODO: englisch
-    }{\bnd{osglecture}}{\pkg{osglecture-modes}}{\cs{DocumentMetadata}\Marg{tagging=on}}
+    }{\bnd{osglecture}}{\pkg{osgmodes}}{\cs{DocumentMetadata}\Marg{tagging=on}}
   },
   url      =https://github.com/werner-matthias/osglecture,
   build-title
@@ -195,7 +195,7 @@ load babel
   A @1 key overrides style or decoration depending on the active
   osglecture mode -- on top of the unqualified default, which serves
   as the fallback when no active mode (or no @2 at all) has an entry:
-}{\code{variants}}{\pkg{osglecture-modes}}
+}{\code{variants}}{\pkg{osgmodes}}
 
 \begin{verbatim}
 \SemCatDefine{I}[
@@ -358,7 +358,7 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
   Every marking command accepts a leading angle-bracket specification
   that -- while @1 is loaded -- is forwarded to \cs{IfLectureModeTF};
   without @1 it is ignored and the markup always appears:
-}{\pkg{osglecture-modes}}
+}{\pkg{osgmodes}}
 
 \begin{verbatim}
 \SemCat<article>{B}{printed-only remark}
@@ -828,10 +828,10 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
   }
 
 % \ldeen{Berücksichtigt eine Modusspezifikation nur, solange
-% osglecture-modes (oder ein kompatibles Backend) tatsächlich
+% osgmodes (oder ein kompatibles Backend) tatsächlich
 % \cs{IfLectureModeTF} bereitstellt; sonst ist die Einschränkung
 % wirkungslos, sodass\pkg{semcat}nie hart davon abhängt.}{Honors a
-% mode-spec only while osglecture-modes (or a compatible backend)
+% mode-spec only while osgmodes (or a compatible backend)
 % actually provides \cs{IfLectureModeTF}; otherwise the restriction is
 % a no-op, so\pkg{semcat}never hard-depends on it.}
 \cs_new_protected:Npn \__semcat_if_mode:nn #1#2
@@ -864,7 +864,7 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
   }
 \cs_if_exist:NT \MakeOverlayAwareCommand
   {
-    \AddToHook { package/osglecture-modes/after } [ semcat/modes ]
+    \AddToHook { package/osgmodes/after } [ semcat/modes ]
       { \MakeOverlayAwareCommand [ arguments = { m +m } ] { \SemCat } }
   }
 
@@ -932,13 +932,13 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
   { unknown .code:n = { \__semcat_variant_declare:nn { \l_keys_key_str } {#1} } }
 
 % \ldeen*{Versucht für die Kategorie #1 der Reihe nach jeden aktiven
-% Modus (bei geladenem osglecture-modes) und zuletzt "`default"', bis
-% Stil, Dekoration und Symbol gefunden sind; ohne osglecture-modes
+% Modus (bei geladenem osgmodes) und zuletzt "`default"', bis
+% Stil, Dekoration und Symbol gefunden sind; ohne osgmodes
 % bleibt nur "`default"' übrig, also genau der beim
 % \cs{SemCatDefine}-Aufruf hinterlegte Wert.}{Tries, for category #1,
-% each active mode in turn (while osglecture-modes is loaded) and
+% each active mode in turn (while osgmodes is loaded) and
 % finally "default", until style, decoration and symbol are found;
-% without osglecture-modes only "default" remains, i.e. exactly the
+% without osgmodes only "default" remains, i.e. exactly the
 % value recorded at \cs{SemCatDefine} time.}
 \cs_new_protected:Npn \__semcat_resolve_presentation:nNNN #1#2#3#4
   {

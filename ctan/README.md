@@ -13,11 +13,11 @@ The bundle serves two main purposes:
 Currently, the following packages are included:
 * **osglecture**: class to generate different materials (slides, script) from a common source
 * **OSG LaTeX Lecture Maker** (ollm): latexmk-based build script to support creation and deploying of lecture materials
-* **osglecture-modes**: generalization of portable document modes in the style of beamer/ltx-talk
+* **osgmodes**: generalization of portable document modes in the style of beamer/ltx-talk
 * **langselect**:  generation of different language versions from a common source
 * **tagpax**: semantic import of tagged PDFs
 * **osgstyler**: template-based formatting
-* **lttalk-theme**: theme engine to allow easy and flexible design of themes for ltx-talk.
+* **lttalk-themeengine**: theme engine to allow easy and flexible design of themes for ltx-talk.
     It also includes a few themes modeled after some Beamer themes
 * **lttalk-theme-tuc-2019**: (an unofficial version of) the presentation theme of TU Chemnitz for ltx-talk
 * **ansiterm**: ANSI-aware executable terminal windows
@@ -47,15 +47,15 @@ The following table lists the versions of the modules and their use of Lua.
 | Module | Version | Date | Files | Lua |
 | --- | --- | --- | --- | :---: |
 | osglecture | v0.6.0 | 2026-10-05 | 24 | 🌕 |
-| osglecture-modes | v0.5.1 | 2026-09-27 | 2 | 🌕 |
+| osgmodes | v0.5.1 | 2026-09-27 | 2 | 🌕 |
 | ollm | v0.15.0 | n/a | 1 | ⚪ |
 | tagpax | v0.8.6 | 2026-10-22 | 2 | 🌕 |
 | tagbridge | v0.1.0 | 2026-09-14 | 1 | 🌑 |
 | tagdirtree | v0.1.0 | 2026-09-14 | 1 | 🌑 |
 | langselect | v1.1.3 | 2026-09-18 | 1 | 🌕 |
 | osgstyler | v0.2.0 | 2026-08-24 | 2 | 🌓 |
-| lttheme | v0.5.3 | 2026-10-05 | 15 | 🌑 |
-| lttheme-tuc-2019 | v0.5.1 | 2026-08-24 | 1 | 🌑 |
+| lttalk-themeengine | v0.5.3 | 2026-10-05 | 15 | 🌓 |
+| lttalk-theme-tuc-2019 | v0.5.1 | 2026-08-24 | 1 | 🌓 |
 | ansiterm | v0.2.1 | 2026-08-26 | 1 | 🌕 |
 | osglistings | v0.1.0 | 2026-08-28 | 1 | 🌕 |
 | semcat | v0.3.0 | 2026-08-31 | 1 | 🌕 |

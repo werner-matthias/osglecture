@@ -147,7 +147,7 @@ Implementierungsdetail des Dokumentprofils.
 Ein **Mode** ist ein semantischer Selektor im gemeinsamen LaTeX-Quelltext.
 Der Doctype ist der aktive Blattmodus; eine azyklische Modusmatrix kann daraus
 transitiv Obermodi wie `presentation` oder `print` aktivieren.
-`osglecture-modes` stellt dafür die portable Syntax bereit.
+`osgmodes` stellt dafür die portable Syntax bereit.
 
 ### Unit-Scope
 

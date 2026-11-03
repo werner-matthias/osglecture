@@ -300,7 +300,7 @@ chdir $temporary or die "cannot enter $temporary: $!";
 # osglecture-config.sty is generated from osglecture.dtx (docstripped
 # together with its sibling adapters/profiles dtx, which must sit next to
 # it), not shipped as a loose file; unpack it here so \usepackage below
-# finds it via the normal cwd search, mirroring how osglecture-modes.dtx
+# finds it via the normal cwd search, mirroring how osgmodes.dtx
 # is unpacked for the lifecycle test.
 for my $name (qw(
   osglecture.dtx osglecture-adapters.dtx osglecture-profiles.dtx

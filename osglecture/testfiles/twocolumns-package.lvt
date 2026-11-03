@@ -1,6 +1,6 @@
 \input regression-test
 \documentclass{article}
-\usepackage[mode=script]{osglecture-modes}
+\usepackage[mode=script]{osgmodes}
 \DeclareModeBehaviorClass{longform}
 \AssignLectureModeBehavior{script}{longform}
 \usepackage{osglecture-twocolumns}

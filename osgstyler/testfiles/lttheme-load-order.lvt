@@ -1,6 +1,6 @@
 \input regression-test.tex
 \documentclass{article}
-\usepackage{lttalk-theme}
+\usepackage{lttalk-themeengine}
 \uselttalktheme{test}
 \usepackage{osgstyler}
 

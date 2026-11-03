@@ -1,6 +1,6 @@
 \input regression-test.tex
 \documentclass{article}
-\usepackage[mode=script]{osglecture-modes}
+\usepackage[mode=script]{osgmodes}
 
 \DeclareModeBehaviorClass{dynamic}
 \DeclareModeBehaviorClass{longform}

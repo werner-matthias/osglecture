@@ -7,7 +7,7 @@
 \preamble
 
 ========================================================================
- lttalk-theme - themes for lttalk
+ lttalk-theme-tuc-2019 - TU Chemnitz theme for lttalk-themeengine
 
  (C) 2026 Matthias Werner
  E-mail: matthias.werner@informatik.tu-chemnitz.de
@@ -24,7 +24,7 @@
 \endpostamble
 
 \generate{
-  \file{lttalk-theme-tuc-2019.sty}{\from{lttheme-tuc-2019.dtx}{pkg}}
+  \file{lttalk-theme-tuc-2019.sty}{\from{lttalk-theme-tuc-2019.dtx}{pkg}}
 }
   \expandafter\endbatchfile
 \fi
@@ -1184,9 +1184,9 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
 %   tracked down further -- while the constant space token list renders
 %   correctly.}
 % \ldeen{Unnummerierte Abschnitte (\cs{section*}) erscheinen nur mit ihrem
-%   Titel; \pkg{lttheme} führt dazu \cs{g__lttalk_section_numbered_bool}
+%   Titel; \pkg{lttalk-themeengine} führt dazu \cs{g__lttalk_section_numbered_bool}
 %   nach.}{Unnumbered sections (\cs{section*}) appear with their title
-%   only; \pkg{lttheme} maintains \cs{g__lttalk_section_numbered_bool} for
+%   only; \pkg{lttalk-themeengine} maintains \cs{g__lttalk_section_numbered_bool} for
 %   that purpose.}
 \cs_new_protected:Npn \__lttalk_tuc_teaching_section_line:
   {
@@ -1296,9 +1296,9 @@ außerhalb einer \code{frame}-Umgebung.}{Select the instance persistently with
     \SetLTXTalkAreaGridRows{header}{2}
     \__lttalk_tuc_measure_header_logo_width:
 
-    % lttheme's \setlttalkcolors is a full redeclaration since it
+    % lttalk-themeengine's \setlttalkcolors is a full redeclaration since it
     % delegates to osgstyler (see __lttalk_colors_apply:n in
-    % lttheme.dtx); its mandatory 'primary' slot needs some resolvable
+    % lttalk-themeengine.dtx); its mandatory 'primary' slot needs some resolvable
     % value here even though this call's own primary is immediately
     % superseded below by the faculty-dependent \color_set:nn -- the
     % placeholder is never actually rendered.

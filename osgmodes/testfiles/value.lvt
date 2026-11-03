@@ -1,6 +1,6 @@
 \input regression-test.tex
 \documentclass{article}
-\usepackage[mode=script]{osglecture-modes}
+\usepackage[mode=script]{osgmodes}
 \begin{document}
 \START
 \edef\ma{\ModeValue{default=5pt|script=10pt}}\TYPE{ACTIVE-WINS=\ma}

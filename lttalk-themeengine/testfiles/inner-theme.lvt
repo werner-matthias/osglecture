@@ -14,7 +14,7 @@
   level-1={I},level-2={II},level-3={III},level-4={IV}
 }
 % \setlttalkcolors is a full redeclaration (see __lttalk_colors_apply:n
-% in lttheme.dtx): slots not given fall back through osgstyler's own
+% in lttalk-themeengine.dtx): slots not given fall back through osgstyler's own
 % chain (secondary etc. to primary) rather than keeping their previous
 % value. An incomplete resource for the mandatory primary slot is
 % therefore fatal to the whole redeclaration, not just to primary --

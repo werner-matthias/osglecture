@@ -327,7 +327,7 @@ end
 
 -- Mode-qualified overlay specifications.  Beamer let a bare overlay atom
 -- apply to every presentation mode and used "article:0" to keep material
--- out of the script; osglecture-modes wants each atom qualified:
+-- out of the script; osgmodes wants each atom qualified:
 --   <2|article:0|handout:0>  ->  <slides:2|handout:0>
 --   <14-|article:0>          ->  <presentation:14->
 --   <presentation|+->        ->  <presentation:+->
@@ -350,7 +350,7 @@ local function normalise_overlay_spec(specification)
     else return nil end
   end
   -- action atoms (alert@2-3) next to mode-qualified segments are not
-  -- recognised as overlay atoms by osglecture-modes and reach the backend
+  -- recognised as overlay atoms by osgmodes and reach the backend
   -- with the mode prefix still attached
   local has_action = false
   for _, a in ipairs(atoms) do if a:find("@", 1, true) then has_action = true end end
@@ -513,7 +513,7 @@ function H.only(s, i, base)
   local mode = pure_mode(spec)
   if not mode then
     if spec:find("%a") then
-      count("kept: \\only with mode-qualified overlays (osglecture-modes evaluates them)")
+      count("kept: \\only with mode-qualified overlays (osgmodes evaluates them)")
     end
     return nil
   end
@@ -565,7 +565,7 @@ function H.mode(s, i, base)
     return wrap_mode(mode, rewrite(body, base + j)), e
   end
   note(base + i, "\\mode<...> used as a switch",
-    "kept (osglecture-modes handles it); with ignorenonframetext most of these are redundant")
+    "kept (osgmodes handles it); with ignorenonframetext most of these are redundant")
   if mode ~= spec:gsub("%s", "") then
     count("\\mode<article> switch -> \\mode<longform>")
     return "\\mode<" .. mode .. ">", p

@@ -1,11 +1,11 @@
 \input regression-test.tex
 \DocumentMetadata{}
 \documentclass{ltx-talk}
-\usepackage{osglecture-modes}
+\usepackage{osgmodes}
 \usepackage{graphicx}
 
 % Jeder ltx-talk-Befehl mit <...>-Angabe wertet sie ueber denselben Decoder
-% aus, den osglecture-modes umhuellt. Der Test sichert zweierlei ab:
+% aus, den osgmodes umhuellt. Der Test sichert zweierlei ab:
 % 1. Der Decoder entscheidet einen portablen Modus genauso wie den
 %    entsprechenden nativen (slides wie projector, longform wie handout),
 %    auch in Verbindung mit Overlay-Angaben.

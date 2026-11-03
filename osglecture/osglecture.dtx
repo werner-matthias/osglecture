@@ -1065,12 +1065,12 @@ default gutter looks too tight with very unequal column shares.}
 % The mode graph is configuration, not runtime state, and is built and
 % finalized here -- before \LoadClass -- so that class options keyed by mode
 % (class/<mode> in \OsgLectureSetup) can be resolved against the full graph.
-% The overlay-backend patching in osglecture-modes does need the loaded base
+% The overlay-backend patching in osgmodes does need the loaded base
 % class, so that half is deferred to \LectureModesActivateOverlays below.
 \bool_if:NF \l__osglecture_patch_overlays_bool
-  { \PassOptionsToPackage{patch-overlays=false}{osglecture-modes} }
-\PassOptionsToPackage{deferred=true}{osglecture-modes}
-\RequirePackage{osglecture-modes}
+  { \PassOptionsToPackage{patch-overlays=false}{osgmodes} }
+\PassOptionsToPackage{deferred=true}{osgmodes}
+\RequirePackage{osgmodes}
 \DeclareModeBehaviorClass{presentation-dynamic}
 \DeclareModeBehaviorClass{presentation-static}
 \DeclareModeBehaviorClass{longform}
@@ -1221,11 +1221,11 @@ default gutter looks too tight with very unequal column shares.}
   }
 \exp_args:NV \__osglecture_load_base_class:n \l__osglecture_base_class_tl
 
-% \ldeen*{Die Basisklasse ist jetzt da: osglecture-modes soll nun die portablen
+% \ldeen*{Die Basisklasse ist jetzt da: osgmodes soll nun die portablen
 % Modusausdrücke in sein Overlay-Backend einbinden. Der Graph wurde bereits
-% vor @2 finalisiert.}{The base class is now present: let osglecture-modes wire
+% vor @2 finalisiert.}{The base class is now present: let osgmodes wire
 % portable mode expressions into its overlay backend. The graph itself was finalized
-% before @2 above)}{\pkg*{osglecture-modes}}{\cs{LoadClass}} .
+% before @2 above)}{\pkg*{osgmodes}}{\cs{LoadClass}} .
 \LectureModesActivateOverlays
 
 \NewExpandableDocumentCommand \OsgLectureDocumentType { }
@@ -2180,7 +2180,7 @@ default gutter looks too tight with very unequal column shares.}
 %<*metadata>
 
 \RequirePackage{osglecture-project}
-\RequirePackage{osglecture-modes}
+\RequirePackage{osgmodes}
 
 \ExplSyntaxOn
 
@@ -4268,7 +4268,7 @@ default gutter looks too tight with very unequal column shares.}
 %</profiles>
 %<*presitemize>
 
-\RequirePackage{osglecture-modes}
+\RequirePackage{osgmodes}
 
 \ExplSyntaxOn
 
@@ -4961,7 +4961,7 @@ default gutter looks too tight with very unequal column shares.}
 %</presitemize>
 %<*twocolumns>
 
-\RequirePackage{osglecture-modes}
+\RequirePackage{osgmodes}
 
 \ExplSyntaxOn
 

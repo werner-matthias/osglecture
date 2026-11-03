@@ -1,6 +1,6 @@
 \input regression-test.tex
 \documentclass{beamer}
-\usepackage[patch-overlays=false]{osglecture-modes}
+\usepackage[patch-overlays=false]{osgmodes}
 \begin{document}
 \START
 \lecturemode<slides>{\TYPE{PORTABLE COMMAND YES}}

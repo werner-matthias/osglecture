@@ -137,12 +137,12 @@ In computer science or chemistry, this concept is also known as \emph{polymorphi
     language, similar to \needpackage{comment} or \needpackage{multilang}. The language actually used can also 
     be specified externally.}
   \item \ldeen{
-    \pkg{osglecture-modes} generalisiert die Idee von Darstellungsmodi, wie man sie aus \needpackage{beamer} 
+    \pkg{osgmodes} generalisiert die Idee von Darstellungsmodi, wie man sie aus \needpackage{beamer} 
     oder \needpackage{ltx-talk} kennt, macht also etwas ähnliches wie \pkg{langselect}, aber nicht auf
     Sprach- sondern auf Strukturebene. Damit können Modi in der aus \pkg{beamer} oder \pkg{ltx-talk}
     gewohnten \texttt{<>}-Syntax auch außerhalb von Präsentationen genutzt werden.
   }{
-    \pkg{osglecture-modes} generalizes the concept of presentation modes familiar from \needpackage{beamer} 
+    \pkg{osgmodes} generalizes the concept of presentation modes familiar from \needpackage{beamer} 
     or \needpackage{ltx-talk}. It therefore does something similar to \pkg{langselect}, but at the structural 
     rather than the language level. This makes it possible to use modes outside presentations, too, with the 
     familiar \texttt{<>} syntax of \pkg{beamer} or \pkg{ltx-talk}.}
@@ -183,17 +183,17 @@ In computer science or chemistry, this concept is also known as \emph{polymorphi
   \item \ldeen{\pkg{osgstyler} versucht die \LaTeX-Kernidee der Trennung von Inhalt und Gestaltung
     über eine zentrale semantische Konfiguration zu stärken. Dinge wie Farben, Schriften, Abstände, Hervorhebungen
     und Blöcke können damit einerseits einfacher konsistent und andererseits leichter austauschbar gestaltet werden.
-    Es kann gut mit \pkg{osglecture-modes} zusammenwirken.
+    Es kann gut mit \pkg{osgmodes} zusammenwirken.
   }{\pkg{osgstyler} seeks to reinforce the core \LaTeX{} principle of separating content from presentation 
     through a central semantic configuration. This makes elements such as colors, fonts, spacing, highlighting, 
-    and blocks easier to design consistently as well as easier to replace. It works well in conjunction with \pkg{osglecture-modes}.}
+    and blocks easier to design consistently as well as easier to replace. It works well in conjunction with \pkg{osgmodes}.}
   \item \ldeen{\pkg{lttalk-theme} stellt ein gemeinsames Gerüst für Themen der Klasse
     \cls{ltx-talk} bereit. Für Gestaltungsaspekte innerhalb der Folien nutzt es \pkg{osgstyler}.
   }{\pkg{lttalk-theme} provides a common framework for themes of the \cls{ltx-talk}
     class. It uses \pkg{osgstyler} for design within slides.}
-  \item \ldeen{\pkg{lttheme-tuc-2019} ist die (inoffizielle) Umsetzung des offiziellen Präsentationslayout meiner
+  \item \ldeen{\pkg{lttalk-theme-tuc-2019} ist die (inoffizielle) Umsetzung des offiziellen Präsentationslayout meiner
     Universität für \pkg{ltx-talk}. Es nutzt \pkg{lttalk-theme}.
-  }{\pkg{lttheme-tuc-2019} is the unofficial implementation of my university's official presentation layout 
+  }{\pkg{lttalk-theme-tuc-2019} is the unofficial implementation of my university's official presentation layout 
     for \pkg{ltx-talk}. It uses \pkg{lttalk-theme}.}
   \item \ldeen{\pkg{semcat} markiert Inhalte mit frei festlegbaren semantischen Kategorien,
     etwa "`Hintergrund"', "`technische Details"' oder "`Wiederholung"'. Kategorien können

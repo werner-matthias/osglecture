@@ -40,7 +40,7 @@ docfiles = {
 installfiles = { }
 
 typesetdeps = {
-  "../osglecture-modes",
+  "../osgmodes",
   "../osglecture",
   "../osgstyler",
   "../tagdirtree",

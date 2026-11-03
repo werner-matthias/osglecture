@@ -1,7 +1,7 @@
 \input regression-test.tex
 \documentclass{article}
 \usepackage{osgstyler}
-\usepackage[mode=script]{osglecture-modes}
+\usepackage[mode=script]{osgmodes}
 
 \NewDocumentCommand\ProjectTerm{m}{#1}
 \DeclareOsgInlineStyle{project-term}{

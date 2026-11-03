@@ -17,7 +17,7 @@ Featurewünsche.
   `\osglecture_modes_sync_raw_skip_envs_lua:` selbst steht -- TeX faltet
   das beim Definieren einmal zu einem echten `#1` zusammen, bevor
   `\directlua` es je sieht, siehe Abschnitt 8.2 in
-  `osglecture-modes-lua-scan.md` zum selben Mechanismus). Der Lint kann das
+  `osgmodes-lua-scan.md` zum selben Mechanismus). Der Lint kann das
   nicht von einem echten, ungedoppelten Catcode-6-Zeichen unterscheiden --
   zurecht laut eigener Doku ("heuristic lint... review each hit"), ein
   Aufweichen der Regex auf Zeichenebene wäre aber selbst unsicher (ein
@@ -42,7 +42,7 @@ Featurewünsche.
   sechs Folien, `\only<4>`-Inhalt auf allen dreien sichtbar, `\only<5>`
   (Bild) und `\only<6>` nie. Trat sowohl unter `profile=ltx-talk` als auch
   `profile=beamer` auf; der ursprüngliche Verdacht auf einen
-  Mode-Scanner-Bug (siehe `osglecture-modes-lua-scan.md`) bestätigte sich
+  Mode-Scanner-Bug (siehe `osgmodes-lua-scan.md`) bestätigte sich
   \emph{nicht} -- eigenständige Ursache, anderer Mechanismus.
   **Ursache** (`osglecture-modes.dtx`): `\g_osglecture_modes_native_alt_bool`
   (merkt sich, ob ein natives `\alt` fürs Overlay-Backend existiert; steuert
@@ -133,7 +133,7 @@ Featurewünsche.
   TeX-Eingabestapel-Verbrauch mehr pro gescanntem/verworfenem Token).
   Details, Vorgehen und ein dabei zusätzlich gefundener, unabhängiger
   Scanner-Bug (TeX-Pfad, weiterhin offen für pdfTeX/XeTeX) in
-  `development-docs/osglecture-modes-lua-scan.md`. Alle 15 bestehenden
+  `development-docs/osgmodes-lua-scan.md`. Alle 15 bestehenden
   `osglecture-modes`-Tests grün; die exakte Minimalreproduktion des
   Original-Crashs (braucht offenbar die volle Kombination aus
   Tagging + dynamischem Header-Slot + Realdokumentumfang, siehe unten)
@@ -216,7 +216,7 @@ Featurewünsche.
   Titel-Klammer erreichte; die Klammer landete stattdessen auf dem
   nächsten, danach im \emph{eigenen} Makrokörper von
   `\osglecture_modes_keep_mode:` folgenden Token (dasselbe
-  Bugmuster wie das in `development-docs/osglecture-modes-lua-scan.md`,
+  Bugmuster wie das in `development-docs/osgmodes-lua-scan.md`,
   Abschnitt~9.2, dokumentierte in `\osglecture_modes_skip_environment:n`).
   Fix: `\osglecture_modes_keep_mode:` spiegelt jetzt exakt die eigene
   Weiche des echten `\mode`-Befehls (Signatur `{ s d<> }`, per

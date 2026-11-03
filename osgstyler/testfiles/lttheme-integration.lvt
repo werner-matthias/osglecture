@@ -1,7 +1,7 @@
 \input regression-test.tex
 \documentclass{article}
 \usepackage{osgstyler}
-\usepackage{lttalk-theme}
+\usepackage{lttalk-themeengine}
 
 \begin{document}
 \START

@@ -2,7 +2,7 @@
 \DocumentMetadata{}
 \documentclass{ltx-talk}
 \NewDocumentCommand\lecture{O{}mm}{\TYPE{LECTURE KEPT}}
-\usepackage[ignorenonframetext]{osglecture-modes-lttalk}
+\usepackage[ignorenonframetext]{osgmodes-lttalk}
 
 \NewDocumentCommand\ollabel{m}{\TYPE{OLLABEL~#1}}
 \DeclareLectureKeepLabelCommand\ollabel

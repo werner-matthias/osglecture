@@ -1,23 +1,18 @@
 \input regression-test.tex
-\documentclass{beamer}
-\usepackage{osglecture-modes}
-\NewDocumentCommand\OverlayOptional{o}
-  {\IfNoValueTF{#1}{\TYPE{OVERLAY NONE}}{\TYPE{OVERLAY #1}}}
-\MakeOverlayAwareCommand[arguments={o}]{\OverlayOptional}
+\DocumentMetadata{}
+\documentclass{ltx-talk}
+\usepackage{osgmodes}
 \begin{document}
 \START
 \IfLectureModeTF{slides}{\TYPE{SLIDES YES}}{\TYPE{SLIDES NO}}
-\IfLectureModeTF{beamer}{\TYPE{BEAMER YES}}{\TYPE{BEAMER NO}}
+\IfLectureModeTF{projector}{\TYPE{PROJECTOR YES}}{\TYPE{PROJECTOR NO}}
 \IfLectureModeTF{presentation}{\TYPE{PRESENTATION YES}}{\TYPE{PRESENTATION NO}}
 \IfLectureModeTF{article}{\TYPE{ARTICLE YES}}{\TYPE{ARTICLE NO}}
 \mode<slides>{\TYPE{PORTABLE MODE YES}}
-\mode<unknown-native>{\TYPE{NATIVE MODE BODY}}
 \only<slides>{\TYPE{ONLY SLIDES YES}}
 \only<article>{\TYPE{ONLY ARTICLE NO}}
 \only<slides||article>{\TYPE{ONLY OR YES}}
 \only<article||handout>{\TYPE{ONLY OR NO}}
-\only<slides:1->{\TYPE{ONLY QUALIFIED YES}}
-\only<article:1->{\TYPE{ONLY QUALIFIED NO}}
 \uncover<slides>{\TYPE{UNCOVER SLIDES YES}}
 \visible<slides>{\TYPE{VISIBLE SLIDES YES}}
 \invisible<slides>{\TYPE{INVISIBLE SLIDES YES}}
@@ -28,7 +23,5 @@
 \begin{uncoverenv}<slides>\TYPE{UNCOVERENV SLIDES YES}\end{uncoverenv}
 \begin{visibleenv}<slides>\TYPE{VISIBLEENV SLIDES YES}\end{visibleenv}
 \begin{invisibleenv}<slides>\TYPE{INVISIBLEENV SLIDES YES}\end{invisibleenv}
-\OverlayOptional<1>[ONE]
-\OverlayOptional<2>[HIDDEN]
 \END
 \end{document}

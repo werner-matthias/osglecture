@@ -9,7 +9,7 @@ readers to related material with QR-code annotations.
 Category styling can use colour, symbols, boxes, or continuous margin bars,
 which keeps distinctions usable in colour-limited output. Optional integration
 with `osgstyler` supplies theme-aware colours and decorations, while
-`osglecture-modes` can restrict annotations to selected document variants.
+`osgmodes` can restrict annotations to selected document variants.
 
 The package supports tagged-PDF output and preserves the distinction between
 annotations within the reading flow and supplementary floating material. It

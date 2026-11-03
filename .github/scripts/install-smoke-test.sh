@@ -45,11 +45,11 @@ tex_files=(
   osgdoc.cls
   osgdoc.sty
   langselect.sty
-  ltxtalk-theme.sty
-  ltxtalk-theme-tuc-2019.sty
-  osglecture-modes.sty
-  osglecture-modes-ltxtalk.sty
-  osglecture-modes-ltxtalk.lua
+  lttalk-themeengine.sty
+  lttalk-theme-tuc-2019.sty
+  osgmodes.sty
+  osgmodes-lttalk.sty
+  osgmodes-lttalk.lua
   osglecture-series-index.lua
   osglecture-series.sty
   osglecture.cls

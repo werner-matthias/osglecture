@@ -21,7 +21,7 @@ erreichbar) ist entfernt.
 
 `osglecture.cls` enthält nur noch Engineprüfung,
 Auftragsdatei- und Optionsauswertung, Basisklassenwahl sowie die Initialisierung
-von `osglecture-modes`, Dokumentprofil und generischer Metadatenhaltung. Er
+von `osgmodes`, Dokumentprofil und generischer Metadatenhaltung. Er
 lädt insbesondere keine historische Typografie, Farben, Themes, Literatur-
 oder Referenzpakete.
 
@@ -252,14 +252,14 @@ article -> longform, print
 ```
 
 Bei einem Handout sind damit `handout`, `presentation` und `print` aktiv.
-Abstrakte Obermodi müssen keine baubaren Dokumenttypen sein. `osglecture-modes`
+Abstrakte Obermodi müssen keine baubaren Dokumenttypen sein. `osgmodes`
 übernimmt die portable Auswertung der Matrix. Der ausgewählte
 Profildeskriptor beziehungsweise dessen `mode-setup-file` registriert sie auf
 der TeX-Seite; `osglecture` setzt anschließend den Dokumenttyp als Blattmodus,
 bevor modusabhängige Projektmetadaten verarbeitet werden. OLLM transportiert
 keine Modusmatrix.
 
-`osglecture-modes` bildet diesen Vertrag als Menge aktiver Blattmodi mit transitiver
+`osgmodes` bildet diesen Vertrag als Menge aktiver Blattmodi mit transitiver
 Elternhülle ab. Ein Modus kann mehrere Eltern besitzen. Aliase werden transitiv
 aufgelöst; unbekannte Modi und Eltern sowie Alias- und Elternzyklen sind
 Fehler. Nach `\FinalizeLectureModes` ist der Graph unveränderlich. Die zentrale
@@ -276,9 +276,9 @@ Schnittstelle lautet:
 
 `\lecturemode<script||handout>{...}` und `\IfLectureModeTF` sind die garantiert
 portable Oberfläche (`||` ist der portable Oder-Operator; ein einfaches `|`
-gehört der Backend-Overlaysyntax). Bei einer generischen Basisklasse stellt `osglecture-modes`
+gehört der Backend-Overlaysyntax). Bei einer generischen Basisklasse stellt `osgmodes`
 zusätzlich die entsprechende Inlineform von `\mode` bereit. Definiert ein
-Backend bereits `\mode`, übernimmt `osglecture-modes` Inlineausdrücke, die
+Backend bereits `\mode`, übernimmt `osgmodes` Inlineausdrücke, die
 ausschließlich registrierte portable Modi enthalten, sowie modusqualifizierte
 Spezifikationen der Form `<modus:overlayrest>` bzw. `<modus:rest|modus2:rest2>`,
 bei denen der Modusteil portabel entschieden und nur der aktive native Rest ans
@@ -311,7 +311,7 @@ widersprechendes `profile` bleibt dagegen ein Fehler.
 ### 2.2 Verhaltensklassen und vollständige Befehlssemantik
 
 „Vom Backend nicht nativ unterstützt“ darf nicht „ohne definierte Semantik“
-bedeuten. `osglecture-modes` stellt deshalb eine vom konkreten Dokumentmodell
+bedeuten. `osgmodes` stellt deshalb eine vom konkreten Dokumentmodell
 unabhängige Registry bereit:
 
 ```tex
@@ -620,7 +620,7 @@ Für die Überarbeitung sollte gelten:
 
 Ein implementiertes Beispiel ist das obligatorische, von der Kernklasse
 automatisch geladene Klassenpaket `osglecture-presitemize.sty`. Es hängt auf
-Paketebene nur von `osglecture-modes` ab; die Kernklasse bleibt Eigentümerin
+Paketebene nur von `osgmodes` ab; die Kernklasse bleibt Eigentümerin
 des Dienstes, obwohl dessen Implementation eine eigene Styledatei besitzt.
 Die Umgebung `presitemize` beschreibt eine
 flache Folge präsentationsgeeigneter Aussagen semantisch. Im
@@ -662,7 +662,7 @@ Box- und Ausrichtungslogik zum Paket. Ohne expliziten Ausdruck ist
 `presentation` der Selektor; ein Winkelausdruck ersetzt diesen Default.
 Dadurch bleiben Langformen grundsätzlich linear, können aber mit
 `<longform>`, `<presentation|longform>` oder `<all>` ausdrücklich
-zweispaltig gesetzt werden. Das Paket hängt direkt von `osglecture-modes` ab;
+zweispaltig gesetzt werden. Das Paket hängt direkt von `osgmodes` ab;
 es besitzt kein zweites, von der Ladereihenfolge abhängiges Verhalten ohne
 Modussystem.
 
@@ -947,7 +947,7 @@ osglecture.cls
 ├── Dokumenttyp- und Moduskern
 │   ├── kanonischer Dokumenttyp als Blattmodus
 │   ├── validierte Modusmatrix
-│   └── portable Modusabfragen über osglecture-modes
+│   └── portable Modusabfragen über osgmodes
 │
 ├── Backendadapter
 │   ├── slides  → beamer oder ltx-talk
@@ -1005,7 +1005,7 @@ Dokumentprofile und eigenständige Fachpakete:
    frühe Optionen sowie noch nicht ausgewertete Metadaten.
 3. Profil-, Projekt- und explizite Unit-Klassenoptionen werden zusammengeführt;
    danach wird die Basisklasse genau einmal geladen.
-4. `osglecture-modes` deklariert die portable Grundmatrix.
+4. `osgmodes` deklariert die portable Grundmatrix.
 5. `osglecture` deklariert die stabilen Verhaltensklassen
    `presentation-dynamic`, `presentation-static` und `longform`.
 6. `mode-setup-file` darf vor Aktivierung des Blattmodus zusätzliche Modi,
@@ -1025,7 +1025,7 @@ Dokumentprofile und eigenständige Fachpakete:
 
 Für ein eigenständiges Fachpaket folgt daraus:
 
-- Es darf direkt von `osglecture-modes`, aber nicht von
+- Es darf direkt von `osgmodes`, aber nicht von
   `osglecture.cls` abhängen, sofern es keine Klassenintegration benötigt.
 - Es selektiert Autorenverhalten nach Doctype, Obermodus oder stabiler
   Verhaltensklasse, nicht nach Profil- oder Backendnamen.
@@ -1042,7 +1042,7 @@ Für ein eigenständiges Fachpaket folgt daraus:
 Die Abhängigkeitsrichtung ist damit:
 
 ```text
-osglecture-modes
+osgmodes
       ↑
 Fachpaket ──→ optionaler Backendadapter
       ↑

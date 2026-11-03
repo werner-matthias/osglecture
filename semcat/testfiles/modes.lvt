@@ -1,6 +1,6 @@
 \input regression-test.tex
 \documentclass{article}
-\usepackage{osglecture-modes}
+\usepackage{osgmodes}
 \usepackage{semcat}
 \FinalizeLectureModes
 

@@ -170,14 +170,14 @@ sie zu duplizieren.
 
 ### 4.3 OLLM und Nachbarpakete
 
-- [`osglecture-modes`](../osglecture-modes/osglecture-modes.dtx) stellt
+- [`osgmodes`](../osgmodes/osgmodes.dtx) stellt
   portable hierarchische
   Dokumentmodi bereit. Der kanonische Dokumenttyp ist zugleich der aktive
   Blattmodus. OLLM transportiert diesen Blattmodus, aber keine Modusmatrix.
   Dokumentprofile registrieren den Graphen auf der TeX-Seite; seine
   Validierung, transitive Auswertung und die bedingte Verarbeitung bleiben
-  Aufgabe von `osglecture` und `osglecture-modes`.
-- [`lttheme`](../lttheme/README.md) entwickelt Themes für `ltx-talk`.
+  Aufgabe von `osglecture` und `osgmodes`.
+- [`lttalk-themeengine`](../lttalk-themeengine/README.md) entwickelt Themes für `ltx-talk`.
   OLLM behandelt Beamer und `ltx-talk` normalerweise gleich, solange beide mit
   demselben LuaLaTeX-/latexmk-Verfahren gebaut werden.
 - [`tagpax`](../tagpax/doc/ARCHITECTURE.md) ermöglicht die semantische
@@ -2194,7 +2194,7 @@ Reale alte Vorlesungskapitel dienen als Akzeptanztests. Zusätzlich werden
 Beamer- und später `ltx-talk`-Builds, Skript, Handout, Sprachen und
 Standalone geprüft.
 
-`lttheme` besitzt bereits visuelle Regressionstests; `tagpax` verwendet
+`lttalk-themeengine` besitzt bereits visuelle Regressionstests; `tagpax` verwendet
 mehrphasige Roundtrip- und Semantiktests. Diese Nachbarpakete zeigen die
 gewünschte Trennung zwischen schnellen Schnittstellentests und aufwendigeren
 End-to-End-Tests.

@@ -7,7 +7,7 @@
 \preamble
 
 ========================================================================
- osglecture-modes - generalized portable document modes
+ osgmodes - generalized portable document modes
 
  (C) 2026 Matthias Werner
  E-mail: matthias.werner@informatik.tu-chemnitz.de
@@ -24,20 +24,20 @@ Matthias Werner.
 \endpostamble
 
 \generate{
-  \file{osglecture-modes.sty}
-    {\from{osglecture-modes.dtx}{package}}
-  \file{osglecture-modes-overlays.code.tex}
-    {\from{osglecture-modes.dtx}{overlays}}
-  \file{osglecture-modes-lttalk.sty}
-    {\from{osglecture-modes.dtx}{lttalk}}
+  \file{osgmodes.sty}
+    {\from{osgmodes.dtx}{package}}
+  \file{osgmodes-overlays.code.tex}
+    {\from{osgmodes.dtx}{overlays}}
+  \file{osgmodes-lttalk.sty}
+    {\from{osgmodes.dtx}{lttalk}}
 }
 % Lua cannot parse the TeX-style %% lines emitted by docstrip's default
 % preamble and postamble.  Generate the helper separately without either.
 \nopreamble
 \nopostamble
 \generate{
-  \file{osglecture-modes-lttalk.lua}
-    {\from{osglecture-modes.dtx}{lua}}
+  \file{osgmodes-lttalk.lua}
+    {\from{osgmodes.dtx}{lua}}
 }
 \expandafter\endbatchfile
 \fi
@@ -45,7 +45,7 @@ Matthias Werner.
 \iffalse
 %</driver>
 %<*package>
-\ProvidesExplPackage{osglecture-modes}
+\ProvidesExplPackage{osgmodes}
   {2026-09-27}
   {v0.5.1}
   {Portable document-modes}
@@ -65,17 +65,17 @@ Matthias Werner.
   targetlang={job=3},
   load babel
 ]{langselect}
-\usepackage{osglecture-modes}
+\usepackage{osgmodes}
 
-\def\pkgname{osglecture-modes}
+\def\pkgname{osgmodes}
 \def\thepkg{\pkg*{\pkgname}}
 
 \makeindex
 \setcnltx{
-  name     = osglecture-modes,
-  package  = osglecture-modes,
-  version  = \UseVersionOf{osglecture-modes.sty},
-  date     = \UseDateOf{osglecture-modes.sty},
+  name     = osgmodes,
+  package  = osgmodes,
+  version  = \UseVersionOf{osgmodes.sty},
+  date     = \UseDateOf{osgmodes.sty},
   title    = {\ldeen{Portable Dokumentmodi}{Portable Document Modes}},
   info     = {\ldeen{Erweiterbare Modusgraphen für \LaTeX-Dokumente}
                     {Extensible mode graphs for \LaTeX\ documents}},
@@ -125,7 +125,7 @@ parent modes. One source can thus contain slides, a handout, and a script.
 
 \begin{example}[code-only,gobble=0]
 \documentclass{article}
-\usepackage[mode=script]{osglecture-modes}
+\usepackage[mode=script]{osgmodes}
 \begin{document}
 Common text.
 \lecturemode<print>{Text for printed documents.}
@@ -208,7 +208,7 @@ Textfilterung (Abschnitt~\ref{sec:lttalk-filter}).
 
 \begin{example}[code-only,gobble=0]
 \documentclass{article}
-\usepackage{osglecture-modes}
+\usepackage{osgmodes}
 \DeclareLectureMode[parents={article,print}]{reading}
 \DeclareLectureModeAlias{reader}{reading}
 \SetLectureModes{reader}
@@ -611,7 +611,7 @@ Text\\<slides>[3ex]
 }
 
 \begin{example}[code-only,gobble=0]
-\usepackage[ignorenonframetext]{osglecture-modes}
+\usepackage[ignorenonframetext]{osgmodes}
 \end{example}
 
 \ldeen{
@@ -654,7 +654,7 @@ Text\\<slides>[3ex]
   außerdem ein unmittelbar folgendes
   \cs{label}; ein \cs{label} an anderer Stelle verschwindet dagegen
   mit dem verworfenen Text. Der optionale, weiterhin
-  \pkg*{ltx-talk}-spezifische Adapter \pkg*{osglecture-modes-lttalk}
+  \pkg*{ltx-talk}-spezifische Adapter \pkg*{osgmodes-lttalk}
   ergänzt \cs{lecture} als weitere allgemeine Ausnahme und setzt die
   Filterung nach jedem \cs{lecture} fort.
 }{
@@ -666,7 +666,7 @@ Text\\<slides>[3ex]
   \cs{maketitle} pass through the scanner unchanged; the structural
   commands also preserve an immediately following \cs{label}, while a \cs{label} elsewhere in
   dropped text vanishes along with it. The optional, still
-  \pkg*{ltx-talk}-specific adapter \pkg*{osglecture-modes-lttalk} adds
+  \pkg*{ltx-talk}-specific adapter \pkg*{osgmodes-lttalk} adds
   \cs{lecture} as a further exception and resumes filtering after every
   \cs{lecture}.
 }
@@ -726,7 +726,7 @@ before activating filtering.
 
 \begin{example}[code-only,gobble=0]
 \documentclass{article}
-\usepackage{osglecture-modes} % compile with LuaLaTeX
+\usepackage{osgmodes} % compile with LuaLaTeX
 \NewDocumentEnvironment{task}{}{}{}
 \DeclareLectureKeepEnvironment{task}
 \DeclareLectureMode{solutions}
@@ -766,7 +766,7 @@ exceptions. The package currently provides no portable deactivation command.
 \subsection{\ldeen{Zusatzpaket für ltx-talk}{Additional package for ltx-talk}}
 \begin{example}[code-only,gobble=0]
 \documentclass{ltx-talk}
-\usepackage[ignorenonframetext]{osglecture-modes-lttalk}
+\usepackage[ignorenonframetext]{osgmodes-lttalk}
 \end{example}
 \ldeen{
 Das Zusatzpaket lädt das Kernpaket und ergänzt \cs{lecture} als Ausnahme.
@@ -802,7 +802,7 @@ The standalone package does not predeclare behavior classes.
 }
 \begin{example}[code-only,gobble=0]
 \documentclass{article}
-\usepackage[mode=script]{osglecture-modes}
+\usepackage[mode=script]{osgmodes}
 \DeclareModeBehaviorClass{dynamic}
 \DeclareModeBehaviorClass{longform}
 \AssignLectureModeBehavior{slides}{dynamic}
@@ -1037,12 +1037,12 @@ the full profile and target configuration.
 \MaybeStop{}
 
 \section{\ldeen{Implementierung}{Implementation}}
-\subsection{\pkg*{osglecture-modes.sty}}
-\AutoDocInput{osglecture-modes.dtx}{package}
-\subsection{\pkg*{osglecture-modes-lttalk.sty}}
-\AutoDocInput{osglecture-modes.dtx}{lttalk}
-\subsection{\code{osglecture-modes-lttalk.lua}}
-\AutoDocInput{osglecture-modes.dtx}{lua}
+\subsection{\pkg*{osgmodes.sty}}
+\AutoDocInput{osgmodes.dtx}{package}
+\subsection{\pkg*{osgmodes-lttalk.sty}}
+\AutoDocInput{osgmodes.dtx}{lttalk}
+\subsection{\code{osgmodes-lttalk.lua}}
+\AutoDocInput{osgmodes.dtx}{lua}
 
 \end{document}
 
@@ -1076,14 +1076,14 @@ the full profile and target configuration.
 \clist_new:N \g_osglecture_modes_raw_skip_envs_clist
 
 % \ldeen{Spiegelt \cs{g_osglecture_modes_raw_skip_envs_clist} vollständig
-% nach Lua (Datei \file{osglecture-modes-lttalk.lua}), damit der
+% nach Lua (Datei \file{osgmodes-lttalk.lua}), damit der
 % Lua-native Scanner (siehe \cs{osglecture_modes_scan:}) dieselben
 % Umgebungen roh überspringt wie der TeX-Scanner über
 % \cs{osglecture_modes_lua_raw_skip:n}. \code{raw-skip-envs} ist ein
 % vollständiges \code{clist_gset:N}, kein inkrementelles Hinzufügen, daher
 % wird hier bei jeder Änderung die komplette Lua-Tabelle neu
 % aufgebaut.}{Fully mirrors \cs{g_osglecture_modes_raw_skip_envs_clist}
-% into Lua (file \file{osglecture-modes-lttalk.lua}), so the Lua-native
+% into Lua (file \file{osgmodes-lttalk.lua}), so the Lua-native
 % scanner (see \cs{osglecture_modes_scan:}) raw-skips the same
 % environments as the TeX scanner does via
 % \cs{osglecture_modes_lua_raw_skip:n}. \code{raw-skip-envs} is a full
@@ -1097,7 +1097,7 @@ the full profile and target configuration.
 % ebenso sicher (die äußere Definition faltet es beim Definieren einmal auf
 % ein echtes \code{#1} zusammen, bevor \cs{directlua} es je zu Gesicht
 % bekommt), lässt sich aber von einem rein textuellen Lint auf
-% \file{osglecture-modes.dtx}s Ebene (siehe
+% \file{osgmodes.dtx}s Ebene (siehe
 % \file{.github/scripts/lint-directlua.pl}) nicht von einem echten,
 % ungedoppelten Catcode-6-Zeichen unterscheiden, das \cs{directlua}
 % tatsächlich erreichen würde.}{Written as a standalone \code{:n} helper
@@ -1107,7 +1107,7 @@ the full profile and target configuration.
 % \emph{enclosing} macro definition is just as safe on the TeX side (that
 % outer definition folds it down to a real \code{#1} once, at definition
 % time, before \cs{directlua} ever sees it), but a purely textual lint at
-% \file{osglecture-modes.dtx}'s own level (see
+% \file{osgmodes.dtx}'s own level (see
 % \file{.github/scripts/lint-directlua.pl}) cannot tell it apart from a
 % genuine, undoubled catcode-6 character that would actually reach
 % \cs{directlua}.}
@@ -1122,7 +1122,7 @@ the full profile and target configuration.
   {
     \sys_if_engine_luatex:T
       {
-        \directlua{ require("osglecture-modes-lttalk.lua") }
+        \directlua{ require("osgmodes-lttalk.lua") }
         \directlua{ osglecture_modes_lttalk.clear_raw_skip_envs() }
         \clist_map_function:NN \g_osglecture_modes_raw_skip_envs_clist
           \osglecture_modes_lua_register_raw_skip_env:n
@@ -1325,7 +1325,7 @@ the full profile and target configuration.
                 %   Schalterform \cs{mode<name>}), die \emph{nicht} über
                 %   \cs{osglecture_modes_finalize:} läuft. Vorarbeit für
                 %   den Lua-Scanner (siehe
-                %   development-docs/osglecture-modes-lua-scan.md); ändert
+                %   development-docs/osgmodes-lua-scan.md); ändert
                 %   das aktuelle Verhalten nicht.}{Mirrors each
                 %   newly-activated mode individually into Lua -- this is
                 %   the only place \cs{g_osglecture_modes_active_prop}
@@ -1335,7 +1335,7 @@ the full profile and target configuration.
                 %   switch form \cs{mode<name>}), which does \emph{not}
                 %   go through \cs{osglecture_modes_finalize:}. Groundwork
                 %   for the Lua scanner (see
-                %   development-docs/osglecture-modes-lua-scan.md); does
+                %   development-docs/osgmodes-lua-scan.md); does
                 %   not change current behaviour.}
                 \sys_if_engine_luatex:T
                   {
@@ -1896,7 +1896,7 @@ the full profile and target configuration.
 % \ldeen{Die eigentliche Erfassung steht im \file{overlays}-Baustein
 % (\cs{osglecture_modes_native_alt_bool} unten), \emph{nicht} hier: eine
 % Klasse mit verzögertem Laden (etwa \pkg{osglecture}) bindet
-% \pkg{osglecture-modes} \emph{vor} \cs{LoadClass} der Backend-Klasse ein,
+% \pkg{osgmodes} \emph{vor} \cs{LoadClass} der Backend-Klasse ein,
 % sodass \cs{alt} an dieser Stelle im Dateikörper noch gar nicht existieren
 % kann -- eine sofortige Prüfung hier würde also für jede solche Klasse
 % dauerhaft \enquote{kein natives \cs{alt}} feststellen, selbst nachdem die
@@ -1905,7 +1905,7 @@ the full profile and target configuration.
 % können.}{The actual detection lives in the \file{overlays} building
 % block (\cs{osglecture_modes_native_alt_bool} below), \emph{not} here: a
 % class with deferred loading (such as \pkg{osglecture}) requires
-% \pkg{osglecture-modes} \emph{before} \cs{LoadClass}ing the backend class,
+% \pkg{osgmodes} \emph{before} \cs{LoadClass}ing the backend class,
 % so \cs{alt} cannot possibly exist yet at this point in the file body -- an
 % immediate check here would therefore permanently record "no native
 % \cs{alt}" for any such class, even long after the backend class has
@@ -2294,7 +2294,7 @@ the full profile and target configuration.
   }
 
 \sys_if_engine_luatex:T
-  { \directlua{require("osglecture-modes-lttalk.lua")} }
+  { \directlua{require("osgmodes-lttalk.lua")} }
 
 \cs_new_protected:Npn \osglecture_modes_lua_raw_skip:n #1
   {
@@ -2326,19 +2326,19 @@ the full profile and target configuration.
 
 % \ldeen{Auf LuaTeX übernimmt der token-basierte Lua-Scanner
 % (\cs{osglecture_modes_lttalk.scan}, Datei
-% \file{osglecture-modes-lttalk.lua}) den kompletten Scan-Lauf in einer
+% \file{osgmodes-lttalk.lua}) den kompletten Scan-Lauf in einer
 % einzigen \cs{directlua}-Schleife, statt wie der TeX-Zweig unten sich
 % selbst rekursiv über den TeX-Eingabestapel aufzurufen; siehe
-% \file{development-docs/osglecture-modes-lua-scan.md} für die
+% \file{development-docs/osgmodes-lua-scan.md} für die
 % Hintergründe. Da jeder Wiederaufsetzpunkt -- der erste Scan-Start
 % ebenso wie die Fortsetzung nach einem beibehaltenen Befehl -- über genau
 % diesen einen Befehl läuft, genügt die Weiche hier an einer einzigen
 % Stelle.}{On LuaTeX, the token-based Lua scanner
 % (\cs{osglecture_modes_lttalk.scan}, file
-% \file{osglecture-modes-lttalk.lua}) drives the entire scan run inside
+% \file{osgmodes-lttalk.lua}) drives the entire scan run inside
 % one \cs{directlua} loop, instead of recursing through the TeX input
 % stack the way the TeX branch below does; see
-% \file{development-docs/osglecture-modes-lua-scan.md} for the
+% \file{development-docs/osgmodes-lua-scan.md} for the
 % background. Since every resume point -- the initial scan start as well
 % as continuing after a kept command -- goes through this one command,
 % branching here once is enough.}
@@ -2493,14 +2493,14 @@ the full profile and target configuration.
 % knows about.}
 % \ldeen{Spiegelt Name (und, falls gesetzt, Modusbindung) jedes behaltenen
 %   Befehls zusätzlich nach Lua (siehe
-%   \file{osglecture-modes-lttalk.lua}) -- rein additiv, Vorarbeit für
+%   \file{osgmodes-lttalk.lua}) -- rein additiv, Vorarbeit für
 %   einen künftigen Token-Level-Scanner in Lua (siehe
-%   development-docs/osglecture-modes-lua-scan.md); ändert das aktuelle
+%   development-docs/osgmodes-lua-scan.md); ändert das aktuelle
 %   TeX-Scan-Verhalten nicht.}{Also mirrors each kept command's name (and,
 %   if set, its mode binding) into Lua (see
-%   \file{osglecture-modes-lttalk.lua}) -- purely additive, groundwork
+%   \file{osgmodes-lttalk.lua}) -- purely additive, groundwork
 %   for a future Lua-side token-level scanner (see
-%   development-docs/osglecture-modes-lua-scan.md); does not change
+%   development-docs/osgmodes-lua-scan.md); does not change
 %   current TeX scanning behaviour.}
 \cs_new_protected:Npn \osglecture_modes_declare_allowed_command:nn #1#2
   {
@@ -2945,7 +2945,7 @@ the full profile and target configuration.
 % The body is kept in a separate file so its command-parameter tokens are
 % not reparsed one nesting level too deep inside a wrapper definition.}
 \cs_new_protected:Npn \__osglecture_modes_patch_overlays:
-  { \file_input:n { osglecture-modes-overlays.code.tex } }
+  { \file_input:n { osgmodes-overlays.code.tex } }
 \NewDocumentCommand \LectureModesActivateOverlays { }
   { \__osglecture_modes_patch_overlays: }
 
@@ -3263,12 +3263,12 @@ the full profile and target configuration.
 %</overlays>
 
 %<*lttalk>
-\ProvidesExplPackage{osglecture-modes-lttalk}
+\ProvidesExplPackage{osgmodes-lttalk}
 {2026-09-27}
 {v0.5.1}
 {ltx-talk adapter: lecture-specific baseline exceptions}
 
-\RequirePackage{osglecture-modes}
+\RequirePackage{osgmodes}
 
 \ExplSyntaxOn
 
@@ -3358,7 +3358,7 @@ osglecture_modes_lttalk.raw_skip_env = nil
 -- Mirror of the TeX-side keep registries (see
 -- \osglecture_modes_declare_allowed_command:nn,
 -- \osglecture_modes_register_command:nnn,
--- \osglecture_modes_declare_keep_environment:nn in osglecture-modes.dtx),
+-- \osglecture_modes_declare_keep_environment:nn in osgmodes.dtx),
 -- kept in sync so osglecture_modes_lttalk.scan() (below) can decide
 -- keep/discard without crossing back into TeX for every token. mode == nil
 -- means "baseline" (always kept, no mode check needed).
@@ -3366,7 +3366,7 @@ osglecture_modes_lttalk.keep_cmds = {}
 osglecture_modes_lttalk.keep_envs = {}
 
 -- Mirror of \g_osglecture_modes_raw_skip_envs_clist
--- (\osglecture_modes_sync_raw_skip_envs_lua: in osglecture-modes.dtx).
+-- (\osglecture_modes_sync_raw_skip_envs_lua: in osgmodes.dtx).
 -- These environments (verbatim, minted, ...) are never token-scanned --
 -- their content and closing \end are blanked at the input-line level by
 -- the raw_skip_line callback further below, exactly as the pre-Lua
@@ -3424,8 +3424,8 @@ function osglecture_modes_lttalk.register_keep_env(name, mode)
 end
 
 -- Token-level filter-mode scanner (see development-docs/
--- osglecture-modes-lua-scan.md). Mirrors the semantics of the TeX-level
--- \osglecture_modes_scan: chain (osglecture-modes.dtx), but runs entirely
+-- osgmodes-lua-scan.md). Mirrors the semantics of the TeX-level
+-- \osglecture_modes_scan: chain (osgmodes.dtx), but runs entirely
 -- in a Lua loop -- discarding tokens costs no TeX input-stack depth here,
 -- unlike the recursive TeX-level scanner it replaces on LuaTeX.
 --
@@ -3578,6 +3578,6 @@ end
 luatexbase.add_to_callback(
   "process_input_buffer",
   process_input_buffer,
-  "osglecture-modes-lttalk raw skip"
+  "osgmodes-lttalk raw skip"
 )
 %</lua>

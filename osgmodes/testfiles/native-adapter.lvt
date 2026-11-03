@@ -9,7 +9,7 @@
     {\TYPE{NATIVE SWITCH #1}}}
 \def\test@inline#1#2{\TYPE{NATIVE INLINE #1}}
 \makeatother
-\usepackage[mode=script]{osglecture-modes}
+\usepackage[mode=script]{osgmodes}
 \begin{document}
 \START
 \mode<script>{\TYPE{PORTABLE INLINE}}
