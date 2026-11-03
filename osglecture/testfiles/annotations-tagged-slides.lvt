@@ -2,12 +2,33 @@
 \input regression-test
 \documentclass[standalone,profile=ltx-talk,lang=de]{osglecture}
 \ExplSyntaxOn
+\str_new:N \l__osglecture_test_from_str
+\str_new:N \l__osglecture_test_to_str
+% latex-lab-namespace.dtx renamed its generic paragraph-level structure
+% synonyms (text-unit -> semantic-para, text -> text-block; changes.txt,
+% 2026-07-29); normalize the stack entries this test reads back to the
+% names recorded in the .tlg, so the same reference matches either
+% tagpdf generation. The stack items come back as braced groups
+% ("{text-block}{P}"), so this works on the detokenized string (via
+% tl_to_str:n) rather than tl_replace_all:Nnn, which does not look
+% inside nested brace groups.
+\cs_new_protected:Npn \__osglecture_test_normalize_tag:N #1
+  {
+    \str_replace_all:Nnn #1 { semantic-para } { text-unit }
+    \str_replace_all:Nnn #1 { text-block } { text }
+  }
 \NewDocumentCommand \ShowTag { m }
   {
+    \str_set:Ne \l__osglecture_test_from_str
+      { \exp_args:Ne \tl_to_str:n { \seq_item:Nn \g__tag_struct_tag_stack_seq { 1 } } }
+    \str_set:Ne \l__osglecture_test_to_str
+      { \exp_args:Ne \tl_to_str:n { \seq_item:Nn \g__tag_struct_tag_stack_seq { 2 } } }
+    \__osglecture_test_normalize_tag:N \l__osglecture_test_from_str
+    \__osglecture_test_normalize_tag:N \l__osglecture_test_to_str
     \iow_term:e
       {
-        TAG~#1 = \seq_item:Nn \g__tag_struct_tag_stack_seq { 1 }
-        ~in~ \seq_item:Nn \g__tag_struct_tag_stack_seq { 2 }
+        TAG~#1 = \str_use:N \l__osglecture_test_from_str
+        ~in~ \str_use:N \l__osglecture_test_to_str
       }
   }
 \ExplSyntaxOff
