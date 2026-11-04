@@ -80,6 +80,36 @@ function M.count_nodes(ir)
   return n
 end
 
+-- \ldeen*{Jeder Konsument, der eigene Rollennamen der Quellstruktur gegen
+-- einen Standardtyp prüfen muss (Überschriftenebene, Rollenvergleich beim
+-- Roundtrip, ...), löst auf dieselbe Art auf; das lebt deshalb hier statt in
+-- jedem Konsumenten einzeln. @1-Einträge dürfen auf weitere eigene Namen
+-- zeigen, nicht nur direkt auf einen Standardtyp; die Auflösung folgt daher
+-- so lange, bis ein nicht abgebildeter Name erreicht ist, und bricht bei
+-- einem Zyklus (eine beschädigte Datei, nicht ein gültiger @1) ab, statt zu
+-- hängen.}{Every consumer that needs to check the source structure's own
+-- role names against a standard type (heading level, role comparison during
+-- roundtrip, ...) resolves them the same way; that is why this lives here
+-- rather than being reimplemented by each consumer. @1 entries may point at
+-- further custom names, not only directly at a standard type; resolution
+-- therefore keeps following the chain until it reaches a name with no
+-- mapping, and stops on a cycle (a corrupt file, not a valid @1) rather
+-- than looping forever.}{\code{RoleMap}}
+function M.role_resolver(role_map)
+  local lookup = {}
+  for _, entry in ipairs(role_map or {}) do
+    lookup[entry.tag] = entry.role
+  end
+  return function(tag)
+    local seen = {}
+    while lookup[tag] and not seen[tag] do
+      seen[tag] = true
+      tag = lookup[tag]
+    end
+    return tag
+  end
+end
+
 -- \ldeen{Gemeinsame Traversierungs- und Ausgabehelfer.}{Shared traversal and
 -- output helpers.}
 --

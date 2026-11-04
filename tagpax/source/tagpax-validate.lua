@@ -1,4 +1,5 @@
 -- \ldeen{Semantische IR-Validierung.}{Semantic IR validation.}
+local ir_reader = require("tagpax-ir")
 local M = {}
 --<*pkg>
 
@@ -35,11 +36,21 @@ function M.validate(ir)
     if kid.kind == "mcr" and tonumber(kid.mcid) == nil then fail("MCR has invalid MCID") end
     if kid.kind == "mcr" and next(ir.streams) and not ir.streams[kid.stream] then fail("MCR references missing stream " .. tostring(kid.stream)) end
   end
+  -- \ldeen*{Der Knoten trägt seinen rohen Quell-Rollennamen (Roundtrip-Treue
+  -- für \pkg*{tagpaxinclude}); die Überschrift trägt dessen aufgelöste
+  -- Standardebene (die einzige Form, die das \TeX-seitige Inhaltsverzeichnis
+  -- auswertet). Beide müssen daher über die RoleMap übereinstimmen, nicht
+  -- wörtlich.}{The node carries its raw source role name (round-trip
+  -- fidelity for \pkg*{tagpaxinclude}); the heading carries its resolved
+  -- standard level (the only form the \TeX-side table of contents
+  -- evaluates). The two must therefore agree through the RoleMap, not
+  -- literally.}
+  local resolve_role = ir_reader.role_resolver(ir.rolemaps)
   for _, heading in ipairs(ir.headings) do
     local node = ir.nodes[heading.node]
     if not node then
       fail("heading references missing node " .. tostring(heading.node))
-    elseif node.role ~= heading.role then
+    elseif resolve_role(node.role) ~= heading.role then
       fail("heading role mismatch at " .. heading.node)
     end
   end

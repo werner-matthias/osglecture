@@ -10,17 +10,43 @@
 
 local ir_reader = require("tagpax-ir")
 local M = {}
+-- \ldeen*{Nur ein Auffangnetz für ältere Quellen ohne eigene RoleMap;
+-- latex-lab-eigene Rollennamen kommen aus @2 (s.\,u.) und müssen hier nicht
+-- einzeln nachgetragen werden.}{Only a safety net for older sources without
+-- their own RoleMap; latex-lab's own role names come from @2 (below) and
+-- need not be tracked here one by one.}{\code{role\_map\_for}}
 local default_role_map = {
   section = "H1", subsection = "H2", subsubsection = "H3",
   ["text-unit"] = "Part", text = "P", item = "LI",
 }
 
+-- \ldeen*{Bevorzugt die tatsächliche RoleMap des verglichenen Dokuments
+-- gegenüber der statischen Tabelle, damit neue eigene Rollennamen (die
+-- latex-lab inzwischen für weitere Strukturtypen verwendet, z.\,B.
+-- \code{section-heading} oder \code{text-fragment}) korrekt aufgelöst
+-- werden, ohne dass diese Tabelle jede Erweiterung einzeln nachführen
+-- muss; ein ausdrücklich übergebenes \code{options.role\_map} gewinnt
+-- gegenüber beiden.}{Prefers the actual RoleMap of the document under
+-- comparison over the static table, so new custom role names (which
+-- latex-lab now uses for further structure types, e.g.
+-- \code{section-heading} or \code{text-fragment}) resolve correctly
+-- without this table having to track every such addition individually;
+-- an explicitly passed \code{options.role\_map} wins over both.}
+local function role_map_for(ir, options)
+  local map = {}
+  for tag, role in pairs(default_role_map) do map[tag] = role end
+  for _, entry in ipairs(ir.rolemaps or {}) do map[entry.tag] = entry.role end
+  if options and options.role_map then
+    for tag, role in pairs(options.role_map) do map[tag] = role end
+  end
+  return map
+end
+
 -- \ldeen{Der Roundtrip-Vergleich normalisiert konventionelle Rollennamen und
 -- vergleicht Semantik statt PDF-Objekte.}{The roundtrip comparison normalizes
 -- conventional role names and compares semantics rather than PDF objects.}
-local function role_of(role, options)
-  local map = options and options.role_map or default_role_map
-  return map[role] or role
+local function role_of(role, role_map)
+  return role_map[role] or role
 end
 
 -- \ldeen*{Sortierung und Elterngruppierung stammen aus @1 und werden dort
@@ -37,11 +63,12 @@ local function signatures(ir, unwrap_document, options)
   -- Annotationstypen; instabile PDF-Objektnummern bleiben außen vor.}{The
   -- depth-first stream preserves nesting, child order, MCIDs, and annotation
   -- kinds while excluding unstable PDF object numbers.}
+  local role_map = role_map_for(ir, options)
   local by_parent = ir_reader.sorted_kids_by_parent(ir)
   local out = {}
   local function walk(id)
     local node = assert(ir.nodes[id], "missing node " .. tostring(id))
-    out[#out + 1] = "N:" .. tostring(role_of(node.role, options))
+    out[#out + 1] = "N:" .. tostring(role_of(node.role, role_map))
     for _, kid in ipairs(by_parent[id] or {}) do
       if kid.kind == "node" then
         walk(kid.ref)
@@ -52,7 +79,7 @@ local function signatures(ir, unwrap_document, options)
         out[#out + 1] = "O:" .. tostring(annotation and annotation.action or "?")
       end
     end
-    out[#out + 1] = "E:" .. tostring(role_of(node.role, options))
+    out[#out + 1] = "E:" .. tostring(role_of(node.role, role_map))
   end
   for _, id in ipairs(root_node_ids(ir)) do
     local node = ir.nodes[id]
@@ -72,11 +99,12 @@ local function all_subtree_signatures(ir, role, options)
   -- passende Beitragshüllen statt ganzer Dokumente verglichen.}{Because master
   -- documents may contain other material, candidate contribution wrappers are
   -- compared instead of whole documents.}
+  local role_map = role_map_for(ir, options)
   local by_parent = ir_reader.sorted_kids_by_parent(ir)
   local result = {}
   local function sig(id, out)
     local node = ir.nodes[id]
-    out[#out + 1] = "N:" .. tostring(role_of(node.role, options))
+    out[#out + 1] = "N:" .. tostring(role_of(node.role, role_map))
     for _, kid in ipairs(by_parent[id] or {}) do
       if kid.kind == "node" then
         sig(kid.ref, out)
@@ -87,7 +115,7 @@ local function all_subtree_signatures(ir, role, options)
         out[#out + 1] = "O:" .. tostring(annotation and annotation.action or "?")
       end
     end
-    out[#out + 1] = "E:" .. tostring(role_of(node.role, options))
+    out[#out + 1] = "E:" .. tostring(role_of(node.role, role_map))
   end
   for id, node in pairs(ir.nodes or {}) do
     if node.role == role then

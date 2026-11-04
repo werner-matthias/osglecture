@@ -329,6 +329,7 @@ function M.extract(filename, outname)
   assert(root, "PDF has no StructTreeRoot")
   local struct_page = build_struct_page_map(root)
   local role_map = extract_role_map(root)
+  local resolve_role = ir_reader.role_resolver(role_map)
 
   local f = assert(io.open(outname, "wb"))
   write_record(f, "tagpax", { __order = { "version", "generator" }, version = 1, generator = M.version })
@@ -636,10 +637,21 @@ function M.extract(filename, outname)
     })
 
     local heading_record
-    if role:match("^H[1-6]$") then
+    -- \ldeen*{Der Rolleneintrag des Knotens oben bleibt der rohe Tag
+    -- (\pkg*{tagpaxinclude} übernimmt ihn unverändert); die
+    -- Überschriften-Erkennung braucht dagegen die tatsächliche
+    -- Standardebene und löst deshalb zuerst über die RoleMap auf -- ein
+    -- eigener Name wie \code{section-heading} (\code{rolemaps-to="H1"})
+    -- erfüllt das Muster sonst nie direkt.}{The node's own role record
+    -- above stays the raw tag (\pkg*{tagpaxinclude} round-trips it
+    -- verbatim); heading detection, which needs the actual standard
+    -- level, resolves it through the RoleMap first -- a custom name such
+    -- as \code{section-heading} (\code{rolemaps-to="H1"}) otherwise
+    -- never matches the pattern directly.}
+    if resolve_role(role):match("^H[1-6]$") then
       local text = actual or title or alt
       heading_record = {
-        node = id, role = role, page = 0,
+        node = id, role = resolve_role(role), page = 0,
         text = text, source = actual and "ActualText" or title and "T" or alt and "Alt" or "missing",
       }
       headings[#headings + 1] = heading_record
@@ -658,7 +670,39 @@ function M.extract(filename, outname)
     end
 
     node_meta[id] = { first_page = first_page, role = role }
-    if heading_record then heading_record.page = first_page or 0 end
+    if heading_record then
+      -- \ldeen*{\code{0} ist das modul-eigene Sentinel für „keine Seite"
+      -- (siehe \code{min\_page} oben), keine echte Seite; Lua behandelt
+      -- \code{0} nicht als falsch, die Prüfung muss daher explizit
+      -- sein.}{\code{0} is this module's own ``no page'' sentinel (see
+      -- \code{min\_page} above), not a real page; Lua does not treat
+      -- \code{0} as false, so the check must be explicit.}
+      if first_page and first_page ~= 0 then
+        heading_record.page = first_page
+      else
+        -- \ldeen*{Ein Knoten mit Überschriften-Rolle ohne jede Seite
+        -- darunter hat kein platzierbares Vorkommen für Inhalts- oder
+        -- Lesezeichenverzeichnisse -- latex-lab verschachtelt inzwischen
+        -- neben der sichtbaren Überschrift einen zusätzlichen, nur den
+        -- Titel tragenden \code{*-heading}-Marker ohne eigenen Inhalt.
+        -- Der wird verworfen statt mit unbrauchbarer Seite~0 verzeichnet
+        -- (die Liste kann während des Kind-Durchlaufs oben gewachsen
+        -- sein, dieser Eintrag ist also nicht notwendig der letzte).}
+        -- {A heading-role node with no page anywhere beneath it has no
+        -- placeable occurrence for a table of contents or bookmark list
+        -- -- latex-lab now nests a title-only \code{*-heading} marker
+        -- next to the visible heading it accompanies, carrying no
+        -- content of its own. It is dropped rather than recorded with
+        -- an unusable page~0 (the list may have grown during the kid
+        -- walk above, so this entry is not necessarily the last one).}
+        for index, recorded in ipairs(headings) do
+          if recorded == heading_record then
+            table.remove(headings, index)
+            break
+          end
+        end
+      end
+    end
     return id, first_page
   end
 

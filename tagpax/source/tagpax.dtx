@@ -830,6 +830,61 @@ The bridge must not mutate the global \tagpdfpkg{} structure stack.
   {External~stream~'#1'~has~not~been~allocated.}
 \msg_new:nnn {tagpax}{bridge-stream-committed}
   {External~stream~'#1'~has~already~been~committed.}
+% \ldeen*{Diese Bridge umgeht tagpdfs öffentliche, stack-basierte
+% Struktur-API (\cs{tag\_struct\_begin:n}/\cs{tag\_struct\_end:}), weil sie
+% eine fertige, extern erzeugte Teilstruktur an einer beliebigen Stelle
+% einhängen muss, statt sie linear beim Typesetten aufzubauen. Dafür
+% bietet tagpdf keine öffentliche Schnittstelle:
+% \cs{tag\_struct\_insert\_annot:nn} deckt nur einzelne Annotationen ab,
+% nicht ganze Struktur-Teilbäume. Die Bridge bleibt deshalb auf folgende
+% private tagpdf-Bezeichner angewiesen -- @1 unten bricht laut ab, statt
+% leise falsch zu taggen, falls sich diese ändern; das ist die richtige
+% Absicherung, solange keine öffentliche Alternative existiert:
+% \begin{itemize}
+%   \item \cs{__tag_parenttree_add_objr:nn},
+%     \cs{__tag_prop_new:c}, \cs{__tag_property_record:en},
+%     \cs{__tag_role_get:nnNN}, \cs{__tag_seq_gput_right:ce},
+%     \cs{__tag_seq_gput_right:cn}, \cs{__tag_seq_new:c},
+%     \cs{__tag_struct_kid_struct_gput_right:ee},
+%     \cs{__tag_struct_prop_gput:nne}, \cs{__tag_struct_prop_gput:nnn},
+%     \cs{__tag_struct_set_tag_info:eoo}
+%   \item counters \cs{c@g__tag_parenttree_obj_int},
+%     \cs{c@g__tag_struct_abs_int}
+%   \item \cs{g__tag_parenttree_objr_tl}, \cs{g__tag_role_NS_user_prop},
+%     \cs{g__tag_role_rolemap_prop}, \cs{g__tag_role_tags_NS_prop},
+%     \cs{g__tag_struct_stack_current_tl}
+% \end{itemize}
+% Ein fehlendes Mitglied dieser Liste löst den Guard aus; eines, das
+% weiterhin existiert, aber seine Bedeutung geändert hat, tut das nicht
+% -- bei Verdacht auf stillschweigend geänderte Semantik hilft nur ein
+% Blick in tagpdfs eigenen Quelltext.}{This bridge bypasses tagpdf's
+% public, stack-based structure API (\cs{tag\_struct\_begin:n}/
+% \cs{tag\_struct\_end:}), because it has to attach a complete,
+% externally built subtree at an arbitrary point rather than build one
+% linearly while typesetting. tagpdf offers no public interface for
+% that: \cs{tag\_struct\_insert\_annot:nn} only covers single
+% annotations, not whole structure subtrees. The bridge therefore stays
+% dependent on the following private tagpdf identifiers -- @1 below
+% fails loudly rather than tagging silently wrong if these ever change;
+% that is the right safeguard as long as no public alternative exists:
+% \begin{itemize}
+%   \item \cs{__tag_parenttree_add_objr:nn},
+%     \cs{__tag_prop_new:c}, \cs{__tag_property_record:en},
+%     \cs{__tag_role_get:nnNN}, \cs{__tag_seq_gput_right:ce},
+%     \cs{__tag_seq_gput_right:cn}, \cs{__tag_seq_new:c},
+%     \cs{__tag_struct_kid_struct_gput_right:ee},
+%     \cs{__tag_struct_prop_gput:nne}, \cs{__tag_struct_prop_gput:nnn},
+%     \cs{__tag_struct_set_tag_info:eoo}
+%   \item counters \cs{c@g__tag_parenttree_obj_int},
+%     \cs{c@g__tag_struct_abs_int}
+%   \item \cs{g__tag_parenttree_objr_tl}, \cs{g__tag_role_NS_user_prop},
+%     \cs{g__tag_role_rolemap_prop}, \cs{g__tag_role_tags_NS_prop},
+%     \cs{g__tag_struct_stack_current_tl}
+% \end{itemize}
+% A missing member of this list trips the guard; one that still exists
+% but has changed meaning does not -- if silently changed semantics are
+% suspected, only reading tagpdf's own source helps.}
+% {\cs{cs\_if\_exist:NF}}
 \cs_if_exist:NF \__tag_struct_prop_gput:nnn
   { \msg_fatal:nn {tagpax}{bridge-incompatible} }
 \prop_new:N \g__tagpax_bridge_stream_key_prop
