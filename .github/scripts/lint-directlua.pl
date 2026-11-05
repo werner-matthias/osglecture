@@ -13,7 +13,12 @@
 #   inside \directlua swallows more than intended: \directlua flattens
 #   multiple physical lines into one Lua chunk via TeX's end-of-line
 #   handling, so a "--" comment never finds the real newline it needs to
-#   stop at, and "%" is consumed by TeX before Lua ever sees it.
+#   stop at, and "%" is consumed by TeX before Lua ever sees it. A Lua long
+#   comment ("--[[" ... "]]", or with "="-padded brackets) is unaffected,
+#   since it is delimited explicitly and does not rely on a newline to end;
+#   well-formed long comments are therefore excluded from this check before
+#   it runs, so only a line comment (or a malformed/unterminated long-bracket
+#   attempt) is flagged.
 # - \ExplSyntaxOn sets space (catcode 32) to catcode 9 (ignored), not 10.
 #   Multi-statement Lua ("local x = 1; local y = 2") relies on spaces to
 #   separate tokens; under \ExplSyntaxOn those spaces vanish at
@@ -80,13 +85,15 @@ for my $file (@files) {
     my $body = substr($text, $body_start, $p - $body_start - 1);
     my $line = 1 + (substr($text, 0, $body_start) =~ tr/\n//);
 
+    (my $body_no_long_comments = $body) =~ s/--\[(=*)\[.*?\]\1\]//gs;
+
     my @problems;
     push @problems, "bare '#' (Lua length operator collides with TeX's "
       . "macro-parameter character)"
       if $body =~ /(?<!\\)#(?!\d)/;
     push @problems, "'--' (Lua comment swallows the rest of the flattened "
       . "\\directlua body, not just its own line)"
-      if $body =~ /--/;
+      if $body_no_long_comments =~ /--/;
     push @problems, "bare '%' (TeX comment character; Lua never sees the "
       . "rest of the line)"
       if $body =~ /(?<!\\)%/;
