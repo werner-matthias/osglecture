@@ -37,6 +37,7 @@ jobs:
             collection-latexextra
             collection-luatex
             collection-fontsrecommended
+            libertine
             collection-pictures
             collection-langenglish
             collection-langgerman
