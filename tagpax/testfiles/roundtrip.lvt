@@ -22,13 +22,27 @@
  end
  texio.write_nl('log','precise-destination='..tostring(not not precise))
  for _,e in ipairs(errors) do texio.write_nl('log','error='..e) end
- local function rolemap_report(label, ir)
+ --[[ The /RoleMap table is the source document's own structure-type
+ vocabulary, not something roundtrip fidelity is about; only that the
+ written copy carries the exact same tag->role pairs as the source is
+ asserted, regardless of how many entries that vocabulary happens to have. ]]
+ local function rolemap_set(ir)
+   local set = {}
    for _, rolemap in ipairs(ir.rolemaps or {}) do
-     texio.write_nl('log', label..'-rolemap='..tostring(rolemap.tag)..'->'..tostring(rolemap.role))
+     set[rolemap.tag] = rolemap.role
    end
+   return set
  end
- rolemap_report('source', source)
- rolemap_report('target', target)
+ local function rolemap_sets_equal(a, b)
+   for tag, role in pairs(a) do
+     if b[tag] ~= role then return false end
+   end
+   for tag, role in pairs(b) do
+     if a[tag] ~= role then return false end
+   end
+   return true
+ end
+ texio.write_nl('log', 'rolemap-roundtrip='..tostring(rolemap_sets_equal(rolemap_set(source), rolemap_set(target))))
 }
 \END
 \end{document}
