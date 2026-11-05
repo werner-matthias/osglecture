@@ -4,7 +4,7 @@
 single LaTeX source. Shared passages remain shared, while language-dependent
 text is selected for the requested output language.
 
-The package integrates with the `osglecture` class and OLLM but can also be
+The package integrates with the `osglecture` class and osgdocmk but can also be
 used independently.
 
 This package is part of the osglecture bundle.

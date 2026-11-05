@@ -56,8 +56,8 @@ jobs:
             expect_2024: pass
             expect_2025: pass
             expect_current: pass
-          - name: ollm
-            directory: ollm
+          - name: osgdocmk
+            directory: osgdocmk
             config: build
             expect_2024: n/a
             expect_2025: pass

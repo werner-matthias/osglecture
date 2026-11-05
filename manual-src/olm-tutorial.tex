@@ -133,15 +133,15 @@ whole course and what belongs only to the "`Virtual Memory"' unit.}
 
 \paragraph{\ldeen{Nora bestellt Ergebnisse}{Nora Orders Some Outputs}}
 \ldeen{Nora hat nun Verzeichnisse, aber noch kein Weg, das aus ihrer einen
-Quelle die gewünschten Dokumente erzeugt. Diese Aufgabe übernimmt \OLLM, der
-\emph{OSG LaTeX Lecture Maker}. \OLLM\ ist das Buildwerkzeug des Bundles: Es wählt
+Quelle die gewünschten Dokumente erzeugt. Diese Aufgabe übernimmt \osgdocmk, der
+\emph{OSG Lecture Document Maker}. \osgdocmk\ ist das Buildwerkzeug des Bundles: Es wählt
 Dokumenttyp und Sprache, startet den passenden \LaTeX-Lauf und verwaltet die
-entstandenen Dateien. Nora wird \OLLM\ deshalb nicht den Inhalt ihrer Vorlesung
+entstandenen Dateien. Nora wird \osgdocmk\ deshalb nicht den Inhalt ihrer Vorlesung
 erklären, wohl aber, welche Ergebnisse sie erwartet.}{Nora now has directories,
 but no way to turn her single source into the documents she wants. This is
-the job of \OLLM, the \emph{OSG LaTeX Lecture Maker}. \OLLM\ is the bundle's build
+the job of \osgdocmk, the \emph{OSG Lecture Document Maker}. \osgdocmk\ is the bundle's build
 tool: it selects the document type and language, starts the appropriate \LaTeX\
-run, and manages the resulting files. Nora will therefore not tell \OLLM\ the
+run, and manages the resulting files. Nora will therefore not tell \osgdocmk\ the
 subject matter of her lecture, but she will tell it which outputs she expects.}
 
 \ldeen{Eine konkrete Wahl aus Lehreinheit, Target und Sprache heißt im Folgenden
@@ -151,24 +151,24 @@ Aber anders als dort ist das Ergebnis einer Instanziierung kein Objekt sondern e
 \emph{Dokumentinstanz}.
 Die Kombination "`Unterrichtseinheit \code{memory}, Target \code{slides}, Sprache
 \code{en}"' erzeugt beispielsweise die englische Folieninstanz dieser Einheit.
-Damit ist präzise benannt, was \OLLM\ später bauen soll.}{A specific selection of a teaching unit, target, and language is referred to below as
+Damit ist präzise benannt, was \osgdocmk\ später bauen soll.}{A specific selection of a teaching unit, target, and language is referred to below as
 \emph{instantiation}.
 Nora is already familiar with this term from object-oriented programming.
 But unlike in that context, the result of an instantiation is not an object but a
 \emph{document instance}.
 For example, the combination "`Lesson \code{memory}, Target \code{slides}, Language
 \code{en}"' generates the English slide instance of this lesson.
-This precisely specifies what \OLLM\ is to generate later.}
+This precisely specifies what \osgdocmk\ is to generate later.}
 
-\ldeen{Nora möchte \OLLM\ am liebsten sofort mit \code{ollm slides} starten.
+\ldeen{Nora möchte \osgdocmk\ am liebsten sofort mit \code{osgdocmk slides} starten.
 Das Werkzeug kann jedoch noch nicht wissen, welche Sprachen der Kurs anbietet
 oder ob Nora z.\,B.\ überhaupt ein Skript haben möchte. Diese Angaben kommen in ein
-Manifest namens \File{ollmconfig.toml} in der Projektwurzel. Man kann es als
+Manifest namens \File{osgdocmkconfig.toml} in der Projektwurzel. Man kann es als
 Bestellzettel lesen: Nora bestellt zwei Sprachfassungen der Folien und zwei des
-Skripts.}{Nora would prefer to start \OLLM\ immediately by typing
-\code{ollm slides}. However, the tool cannot yet know which languages the course offers
+Skripts.}{Nora would prefer to start \osgdocmk\ immediately by typing
+\code{osgdocmk slides}. However, the tool cannot yet know which languages the course offers
 or whether Nora wants lecture notes at all. This information goes into a
-manifest named \File{ollmconfig.toml} in the project root. It can be read as
+manifest named \File{osgdocmkconfig.toml} in the project root. It can be read as
 an order form: Nora orders two language versions of the slides and two of the
 lecture notes.}
 
@@ -203,22 +203,22 @@ concerns and follow in the next step.}
 \ldeen{Bevor sie weiterschreibt, prüft Nora den Bestellzettel}{Before continuing,
 Nora checks the order form}:
 \begin{verbatim}
-ollm check
+osgdocmk check
 \end{verbatim}
 
 \ldeen{Bei ihrem ersten Versuch hatte sie \option{language} statt
-\option{languages} geschrieben. \OLLM\ weist den unbekannten Schlüssel zurück.
+\option{languages} geschrieben. \osgdocmk\ weist den unbekannten Schlüssel zurück.
 Das ist Nora lieber als stillschweigend Kursmaterial in der falschen Sprache zu erhalten.
 Nachdem sie den Tippfehler korrigiert hat, ist das Manifest gültig.
 Auch falls ihre Buildumgebung selbst Probleme bereitet, schließlich erwartet
-\osglecture\ eine relativ moderne \LaTeX-Installation, kann \OLLM\ helfen:
-\code{ollm doctor} liefert die passendere Diagnose.}{
+\osglecture\ eine relativ moderne \LaTeX-Installation, kann \osgdocmk\ helfen:
+\code{osgdocmk doctor} liefert die passendere Diagnose.}{
 On her first attempt, she had written \option{language} instead of
-\option{languages}. \OLLM\ rejects the unknown key.
+\option{languages}. \osgdocmk\ rejects the unknown key.
 Nora prefers that to a course that’s silently in German. After she
 corrects the typo, the manifest is valid.
 Even if her build environment itself is causing problems,
-\code{ollm doctor} provides a more accurate diagnosis.
+\code{osgdocmk doctor} provides a more accurate diagnosis.
 }
 
 \paragraph{\ldeen{Was für alle Lehreinheiten gilt}{What Applies to Every Unit}.}
@@ -280,21 +280,21 @@ configuration}:
 }
 \end{verbatim}
 
-\ldeen{\OLLM\ bindet diese Datei bei allen drei Targets vor
+\ldeen{\osgdocmk\ bindet diese Datei bei allen drei Targets vor
 \cs{documentclass} ein. Die sichtbaren Dokumentangaben bleiben dagegen in
-\File{projectconfig.tex}.}{\OLLM\ includes this file before
+\File{projectconfig.tex}.}{\osgdocmk\ includes this file before
 \cs{documentclass} for all three targets. Visible document metadata remains in
 \File{projectconfig.tex}.}
 
 \ldeen{Die verbleibende Sprachkonfiguration enthält zwei verschiedene Arten von
-Namen. \OLLM\ arbeitet mit den kurzen, portablen Kennungen \code{de} und
+Namen. \osgdocmk\ arbeitet mit den kurzen, portablen Kennungen \code{de} und
 \code{en}, wie sie in der Norm ISO 639-1 definiert sind. Das verbreitete
 Sprachpaket \pkg{babel} benötigt dagegen die konkreteren Namen \code{ngerman}
 und \code{british}. Der Schlüssel \option{languages} reicht dieses Mapping an
 \pkg{langselect} weiter und lädt \pkg{babel}. Welche Sprachen das Projekt
 überhaupt anbietet, steht bereits im Manifest -- \osglecture\ reicht die Liste
 von dort an \pkg{langselect}.}{The remaining language configuration contains
-two different kinds of names. \OLLM\ uses the short, portable identifiers
+two different kinds of names. \osgdocmk\ uses the short, portable identifiers
 \code{de} and \code{en}. The popular language package \pkg{babel}, by
 contrast, needs the more specific names \code{ngerman} and \code{british}. The
 \option{languages} key passes this mapping on to \pkg{langselect} and loads
@@ -371,25 +371,25 @@ collects it on its presenter page.}
 \paragraph{\ldeen{Der erste Build}{The First Build}.}
 \ldeen{Nora wechselt in die Lehreinheit und versucht aus alter Gewohnheit zuerst
 \File{lualatex main.tex}. Das ist zwar ein verständlicher Versuch, umgeht aber
-den Bestellzettel: Target und Sprache fehlen. Für einen Serienkurs ist \OLLM\ der
+den Bestellzettel: Target und Sprache fehlen. Für einen Serienkurs ist \osgdocmk\ der
 richtige Eingang. Nora baut also zunächst genau das Ergebnis, das sie gerade
 sehen möchte}{Nora changes into the course unit and, out of habit, first tries
 \File{lualatex main.tex}. This is an understandable attempt, but it bypasses
-the order form: the target and language are missing. For a course series, \OLLM\
+the order form: the target and language are missing. For a course series, \osgdocmk\
 is the right entry point. Nora therefore first builds exactly the output she
 wants to see}:
 
 \begin{verbatim}
 cd 010-Memory
-ollm build slides --language=de
+osgdocmk build slides --language=de
 \end{verbatim}
 
 \ldeen{Das Ergebnis ist eine deutsche Folie. Sie liegt nicht neben
-\File{main.tex}; \OLLM\ hält erzeugte Dateien unter
+\File{main.tex}; \osgdocmk\ hält erzeugte Dateien unter
 \path{.osglecture/build} von den Quellen getrennt. Nora sucht kurz im falschen
 Verzeichnis, findet die Trennung dann aber überzeugend: Ein beschädigter
 Buildordner kann entfernt werden, ohne dass dabei Lehrmaterial verschwindet.}{
-The result is a German slide. It is not placed next to \File{main.tex}; \OLLM\
+The result is a German slide. It is not placed next to \File{main.tex}; \osgdocmk\
 keeps generated files below \path{.osglecture/build}, separate from the sources.
 Nora briefly looks in the wrong directory, but then finds the separation
 convincing: a damaged build directory can be removed without losing teaching
@@ -398,7 +398,7 @@ material.}
 \ldeen{Die englische Folie ist jetzt fast enttäuschend einfach}{The English slide
 is now almost disappointingly easy}:
 \begin{verbatim}
-ollm build slides --language=en
+osgdocmk build slides --language=en
 \end{verbatim}
 
 \ldeen{Nur die gewählte Formulierung ändert sich. Struktur und Formel bleiben dieselben.
@@ -411,7 +411,7 @@ That is precisely what Nora wanted to achieve.}
 \code{screen}}{For the lecture Nora also builds the \code{screen} target}:
 
 \begin{verbatim}
-ollm build screen --language=de
+osgdocmk build screen --language=de
 \end{verbatim}
 
 \ldeen{Diese Dokumentinstanz verwendet dieselben Folien, macht jede Seite aber
@@ -545,7 +545,7 @@ is ignored in presentations.}
 \ldeen{Nun baut Nora das deutsche Skript}{Nora now builds the German lecture
 notes}:
 \begin{verbatim}
-ollm build script --language=de
+osgdocmk build script --language=de
 \end{verbatim}
 
 \ldeen{Beim Vergleich sieht sie erstmals die beiden Dimensionen unabhängig
@@ -570,7 +570,7 @@ slides. Before publishing, Nora therefore builds all combinations ordered for
 this unit}:
 
 \begin{verbatim}
-ollm build --all
+osgdocmk build --all
 \end{verbatim}
 
 \paragraph{\ldeen{Vom Build zur Veröffentlichung}{From Build to Publication}.}
@@ -589,17 +589,17 @@ or web server. She could copy and rename the files by hand. By the third session
 she would probably have placed the English version under the German name at
 least once.}
 
-\ldeen{\OLLM\ trennt deshalb \emph{Bauen} und \emph{Deployment}. Ein Build erzeugt
+\ldeen{\osgdocmk\ trennt deshalb \emph{Bauen} und \emph{Deployment}. Ein Build erzeugt
 und prüft eine Dokumentinstanz im internen Buildbereich. Ein Deployment kopiert
 eine bereits erfolgreich gebaute Instanz unter einem vereinbarten Namen an
-einen Veröffentlichungsort. Es startet selbst keinen neuen \LaTeX-Lauf.}{\OLLM\
+einen Veröffentlichungsort. Es startet selbst keinen neuen \LaTeX-Lauf.}{\osgdocmk\
 therefore separates \emph{building} from \emph{deployment}. A build creates and
 checks a document instance in the internal build area. A deployment copies an
 already successfully built instance to a publication location under an agreed
 name. It does not start another \LaTeX\ run.}
 
-\ldeen{Nora ergänzt am Ende von \File{ollmconfig.toml} zwei Deploymentregeln}{
-Nora adds two deployment rules at the end of \File{ollmconfig.toml}}:
+\ldeen{Nora ergänzt am Ende von \File{osgdocmkconfig.toml} zwei Deploymentregeln}{
+Nora adds two deployment rules at the end of \File{osgdocmkconfig.toml}}:
 
 \begin{verbatim}
 [deployment]
@@ -624,27 +624,27 @@ the current unit this produces, for example, \File{010-memory-de.pdf} and
 name; the seemingly prettier \File{010-memory.pdf} would be ambiguous for two
 language versions.}
 
-\ldeen{\OLLM\ legt Deploymentverzeichnisse nicht selbst an. Das ist zunächst
+\ldeen{\osgdocmk\ legt Deploymentverzeichnisse nicht selbst an. Das ist zunächst
 überraschend, verhindert aber, dass ein Tippfehler im Manifest unbemerkt einen
 zweiten Veröffentlichungsort erzeugt. Nora legt die vereinbarten Verzeichnisse
 daher einmalig an und deployt anschließend alle gebauten Instanzen der aktuellen
-Einheit}{\OLLM\ does not create deployment directories itself. This is surprising
+Einheit}{\osgdocmk\ does not create deployment directories itself. This is surprising
 at first, but prevents a typo in the manifest from silently creating a second
 publication location. Nora therefore creates the agreed directories once and
 then deploys all built instances of the current unit}:
 
 \begin{verbatim}
 mkdir -p ../release/slides ../release/notes
-ollm deploy --all
+osgdocmk deploy --all
 \end{verbatim}
 
 \ldeen{Nora befindet sich noch in \code{010-Memory}; deshalb bezieht sich das
-Deployment standardmäßig auf diese Einheit. \OLLM\ kopiert nur vorhandene,
+Deployment standardmäßig auf diese Einheit. \osgdocmk\ kopiert nur vorhandene,
 erfolgreich abgeschlossene Builds. Hat Nora nach einer Textänderung noch nicht
 neu gebaut, ist \code{deploy} also kein versteckter Ersatz für
 \code{build}. Diese Trennung gefällt ihr: Vor dem Kopieren kann sie die
 Dokumentinstanzen in Ruhe prüfen.}{Nora is still in \code{010-Memory}; the
-deployment therefore applies to this unit by default. \OLLM\ copies only existing,
+deployment therefore applies to this unit by default. \osgdocmk\ copies only existing,
 successfully completed builds. If Nora has changed the text but has not rebuilt
 it, \code{deploy} is not a hidden substitute for \code{build}. She likes
 this separation: she can inspect the document instances before copying them.}
@@ -686,17 +686,17 @@ number in the directory name, but the new logical unit ID \code{processes}}:
 
 \ldeen{Die beiden Verzeichnisse sind nun nicht bloß zufällige Nachbarn. Das
 Manifest und ihre Unit-IDs machen sie zu Einheiten derselben \emph{Serie}.
-Damit kann \OLLM\ ihre Dokumentinstanzen gemeinsam auswählen, ihren Zustand
+Damit kann \osgdocmk\ ihre Dokumentinstanzen gemeinsam auswählen, ihren Zustand
 verwalten und Abhängigkeiten zwischen ihnen auflösen. Nora baut beispielsweise
 die deutschen Skriptinstanzen der ganzen Serie aus der Projektwurzel}{The two
 directories are now more than accidental neighbours. The manifest and their
-unit IDs make them units of the same \emph{series}. This allows \OLLM\ to select
+unit IDs make them units of the same \emph{series}. This allows \osgdocmk\ to select
 their document instances together, manage their state, and resolve dependencies
 between them. For example, from the project root Nora builds the German script
 instances of the whole series}:
 
 \begin{verbatim}
-ollm build script --language=de --scope=series
+osgdocmk build script --language=de --scope=series
 \end{verbatim}
 
 \ldeen{Der Scope \code{series} bedeutet dabei nicht, dass bereits ein einziges
@@ -737,15 +737,15 @@ as \code{[processes,type=script,lang=de]}. She avoids page references across
 document boundaries: the page number of the other PDF can change independently.}
 
 \ldeen{Das Ziel muss mindestens einmal erfolgreich gebaut worden sein, damit
-\OLLM\ seine Unit-ID und Referenzziele kennt. Nach späteren Änderungen lässt
+\osgdocmk\ seine Unit-ID und Referenzziele kennt. Nach späteren Änderungen lässt
 Nora mit \option{--resolve} die davon abhängigen Instanzen bis zu einem
 konsistenten Stand neu bauen}{The target must have been built successfully at
-least once so that \OLLM\ knows its unit ID and reference targets. After later
+least once so that \osgdocmk\ knows its unit ID and reference targets. After later
 changes, Nora uses \option{--resolve} to rebuild dependent instances until
 they reach a consistent state}:
 
 \begin{verbatim}
-ollm build script --language=de --scope=series --resolve
+osgdocmk build script --language=de --scope=series --resolve
 \end{verbatim}
 
 \paragraph{\ldeen{Die Kapitel zu einem Gesamtskript verbinden}{Combining the Chapters into Complete Notes}.}
@@ -784,9 +784,9 @@ wrapper combines them into complete lecture notes. Nora first builds the
 chapters and then the uniquely matching integration unit}:
 
 \begin{verbatim}
-ollm build script --language=de --scope=series --resolve
-ollm build script --language=de --scope=collection --resolve
-ollm check --scope=series
+osgdocmk build script --language=de --scope=series --resolve
+osgdocmk build script --language=de --scope=collection --resolve
+osgdocmk check --scope=series
 \end{verbatim}
 
 \ldeen{Der abschließende Check baut nichts neu, sondern meldet unter anderem
@@ -794,13 +794,13 @@ fehlende oder veraltete Referenz- und Integrationszustände. Für ein echtes
 Projekt würde Nora dieselben Schritte natürlich auch für die englische
 Skriptinstanz ausführen. Alle Varianten der Referenzbefehle beschreibt
 Abschnitt~\ref{sec:content-command-reference}; die Regeln für Integration  stehen in Abschnitt~\ref{sec:series}, und die
-vollständigen Buildoptionen in Abschnitt~\ref{sec:ollm-reference}.}{The final
+vollständigen Buildoptionen in Abschnitt~\ref{sec:osgdocmk-reference}.}{The final
 check does not build anything; among other things, it reports missing or stale
 reference and integration state. In a real project, Nora would of course run
 the same steps for the English script instance. Section~\ref{sec:content-command-reference}
 describes all variants of the reference commands; the rules for integration
 are in Section~\ref{sec:series}, and the
-complete build options are in Section~\ref{sec:ollm-reference}.}
+complete build options are in Section~\ref{sec:osgdocmk-reference}.}
 
 \ldeen{Damit ist der kleine Kurs natürlich noch nicht fertig. Nora fehlen etwa
 weitere Lehreinheiten und vermutlich mehr als zwei Stunden Inhalt. Aber

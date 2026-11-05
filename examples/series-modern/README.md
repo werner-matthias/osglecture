@@ -1,6 +1,6 @@
 # Vertical series example -- modern variant
 
-This example is a small end-to-end case study for the current OLLM and
+This example is a small end-to-end case study for the current osgdocmk and
 `osglecture` contracts, built entirely on document types that require
 `\DocumentMetadata`. It contains two content units, one exercise unit, and one
 integration unit. Each content unit builds as an `ltx-talk` presentation
@@ -13,7 +13,7 @@ German `script` PDFs with `tagpax`.
 
 Between the profile-driven class selection, the project-local target, the
 multilingual source, and the tagged integration, this variant is meant to sketch how far a single
-source tree can go with OLLM and `osglecture` -- not as a complete tour of
+source tree can go with osgdocmk and `osglecture` -- not as a complete tour of
 every bundle capability, but as a base other examples or real projects can
 extend in the same direction.
 
@@ -24,8 +24,8 @@ no tagged integration), see the sibling example `../series-classic`.
 
 ```text
 series-modern/
-├── ollmconfig.local.toml.example
-├── ollmconfig.toml
+├── osgdocmkconfig.local.toml.example
+├── osgdocmkconfig.toml
 ├── Definitions/
 │   ├── profiles/series-solutions.toml
 │   └── targets/solutions.toml
@@ -41,14 +41,14 @@ series-modern/
 └── 900-i-collection/main.tex
 ```
 
-OLLM discovers `ollmconfig.toml` from either unit directory. Shared TeX files
+osgdocmk discovers `osgdocmkconfig.toml` from either unit directory. Shared TeX files
 live in `Include`; there is deliberately no TeX material in the project root.
 The manifest uses the default directory and configuration filenames
 explicitly, so the relevant build contract remains visible in this example.
 
 ## Selecting the classes through profiles
 
-The content units use only OLLM's built-in `slides` and `script` targets. The
+The content units use only osgdocmk's built-in `slides` and `script` targets. The
 choice between `ltx-talk` and
 Beamer is made entirely by the profile, here with
 `presentation_profile = "ltx-talk"` in `[targets.defaults]` (the bundle preset
@@ -76,14 +76,14 @@ marks its solutions once:
 `Include/seriesexample-exercises.tex` defines `solution` so that its body is
 typeset only under `\mode<solutions>`, and the unit additionally uses
 `\IfLectureModeTF{solutions}` for a sentence that differs between the two
-versions. `ollm build script` then yields the sheet for students,
-`ollm build --target=solutions` the key. Five small pieces make the target
+versions. `osgdocmk build script` then yields the sheet for students,
+`osgdocmk build --target=solutions` the key. Five small pieces make the target
 work:
 
-- `.ollmconfig.local.toml` registers `Definitions` as a search path for
-  project-local OLLM definitions. A local configuration is deliberately
+- `.osgdocmkconfig.local.toml` registers `Definitions` as a search path for
+  project-local osgdocmk definitions. A local configuration is deliberately
   not part of a distribution, so the example ships it as
-  `ollmconfig.local.toml.example`; copy it to `.ollmconfig.local.toml`
+  `osgdocmkconfig.local.toml.example`; copy it to `.osgdocmkconfig.local.toml`
   before building (see below).
 - `Definitions/targets/solutions.toml` declares the target:
   `doctype = "solutions"`, `profile_class = "longform"`, and
@@ -93,7 +93,7 @@ work:
   `doctypes = {solutions}`: a profile lists the doctypes it serves, and
   `book` only serves `script` and `article`.
 - `Definitions/profiles/series-solutions.toml` is the capability projection
-  of that profile which OLLM reads before LaTeX starts. The manifest selects
+  of that profile which osgdocmk reads before LaTeX starts. The manifest selects
   the profile with `profile = "series-solutions"` in `[targets.solutions]`.
 - `Include/seriesexample-modes.tex` declares the mode `solutions` as a child
   of `script`, so the solutions version contains everything the script does.
@@ -106,11 +106,11 @@ work:
 
 The exercise unit lives in `030a-exercises`. The scope code `a` restricts it
 to targets whose `unit_scopes` contain `a` -- `script` and `solutions`, but
-not `slides` -- so `ollm build slides` is refused there. The content units
+not `slides` -- so `osgdocmk build slides` is refused there. The content units
 carry no scope code and accept every target, including `solutions`.
 
 Cross-unit references and counter continuation are keyed by target, like
-everything OLLM promotes. The exercise unit's `\olref` to the first unit
+everything osgdocmk promotes. The exercise unit's `\olref` to the first unit
 therefore needs a `solutions` projection of that unit; building `solutions`
 for all units, as in the build sequence below, yields a complete solutions
 edition of the series whose references stay within that edition.
@@ -141,7 +141,7 @@ that list to `langselect` from the build file and configures it automatically;
 before the latter's accessor command is defined; the build-spec value it is
 built from is already available. Setting `\olsTargetLanguage` before loading
 `langselect` takes priority over all of `langselect`'s own target-language
-detection (job name, `\DocumentMetadata`, ...), so OLLM's per-language build
+detection (job name, `\DocumentMetadata`, ...), so osgdocmk's per-language build
 directly determines which half of each `\lende{English}{German}` call ends up
 in the PDF, with no per-target duplication needed.
 
@@ -149,7 +149,7 @@ A project that also needs the Babel/Polyglossia name mapping still uses
 `osglecture`'s own project-setup vocabulary, but only for the sub-keys that
 are genuinely LaTeX concerns:
 `\LectureProjectSetup{languages={map={de=ngerman,en=british}, load babel}}`.
-The `selectable` sub-key is manifest-owned for an OLLM build and is ignored
+The `selectable` sub-key is manifest-owned for an osgdocmk build and is ignored
 (with a warning) if written here. `osglecture.cls` issues the resulting
 `\usepackage{langselect}` from within its intercept-and-replay queue, so it
 lands right after the target's base class -- avoiding a collision between
@@ -176,12 +176,12 @@ All targets in this example end up with `\DocumentMetadata` active. For
 `document_metadata = "required"`. For `script` it is a choice: the `book`
 profile only `supports` metadata, and `[targets.defaults].document_metadata =
 "enabled"` in the manifest turns it on; the same holds for `solutions`, whose
-profile mirrors `book`. OLLM inputs the user-owned
+profile mirrors `book`. osgdocmk inputs the user-owned
 `Include/documentmetadata.tex` early whenever the derived policy is `enabled`,
 which enables tagging. osglecture validates the resulting kernel state against
 the profile's capability -- setting `document_metadata = "disabled"` against a
 `required` profile, or `"enabled"` against a `forbidden` one, is rejected by
-OLLM before the run. Active tagging is also what makes the `tagpax`-based
+osgdocmk before the run. Active tagging is also what makes the `tagpax`-based
 `\includeunit` integration below possible: `tagpax`'s tagging bridge needs a
 document with tagging turned on and fails outright otherwise, which is why
 the integration unit builds only under `script`, and only in this
@@ -201,7 +201,7 @@ The sources additionally exercise:
 - `presitemize` as list versus connected prose;
 - presentation-default `twocolumns` behaviour;
 - multilingual content from a single source via `langselect` (see below);
-- a cross-unit `\olref` resolved through OLLM's promoted reference state,
+- a cross-unit `\olref` resolved through osgdocmk's promoted reference state,
   rendered as a working link (external `GoToR` when the two units are built
   standalone, rewritten to an internal `GoTo` once both are merged by
   `\includeunit` below);
@@ -213,41 +213,41 @@ The sources additionally exercise:
 First activate the local configuration in the project root:
 
 ```sh
-cp ollmconfig.local.toml.example .ollmconfig.local.toml
+cp osgdocmkconfig.local.toml.example .osgdocmkconfig.local.toml
 ```
 
 Then run the following commands from the named unit directories. The producing
-unit must be built before the consuming unit so that OLLM can register its
+unit must be built before the consuming unit so that osgdocmk can register its
 promoted reference export.
 
 ```sh
 cd 010-introduction
-ollm build slides
-ollm build script
-ollm build --target=solutions
+osgdocmk build slides
+osgdocmk build script
+osgdocmk build --target=solutions
 
 cd ../020-application
-ollm build slides
-ollm build script
-ollm build --target=solutions
+osgdocmk build slides
+osgdocmk build script
+osgdocmk build --target=solutions
 
 cd ../030a-exercises
-ollm build script
-ollm build --target=solutions
+osgdocmk build script
+osgdocmk build --target=solutions
 
 cd ../900-i-collection
-ollm build script
+osgdocmk build script
 ```
 
 `solutions` needs the `--target=` form: it is a project-registered target,
-and only OLLM's built-in targets can be named positionally.
+and only osgdocmk's built-in targets can be named positionally.
 
 This builds the default language (German, per
-`[targets.defaults].default_language` in `ollmconfig.toml`). Add
+`[targets.defaults].default_language` in `osgdocmkconfig.toml`). Add
 `--language=en` to any of the unit
 builds above to get the English versions, e.g.
-`ollm build slides --language=en`; both
-languages can coexist since OLLM keys promoted projections by language along
+`osgdocmk build slides --language=en`; both
+languages can coexist since osgdocmk keys promoted projections by language along
 with target and unit. The integration unit above stays German-only (see
 "Multilingual content" and "Document metadata"); building it in English too
 would just mean adding `--language=en` there as well, once both source units
@@ -257,10 +257,10 @@ The second and third units then link to the matching `introduction`
 projection: `slides`, `script`, and `solutions` each refer to the same target
 and language in the first unit.
 Rebuilding the second unit may be necessary after changing a label in the
-first unit. Automated dependency-fixpoint builds are available through `ollm
+first unit. Automated dependency-fixpoint builds are available through `osgdocmk
 build --resolve`; the explicit order above remains useful for showing the
 initial bootstrap in which the producing unit's logical ID is not yet known
-to OLLM.
+to osgdocmk.
 
 The integration unit deliberately contains no `\lecture` declaration. Its
 role comes from the directory name `900-i-collection`. It selects promoted
@@ -278,14 +278,14 @@ solutions edition stays a separate document.
 Command order is output order. `osglecture-integration` resolves each ID
 against the job-bound registry, lets `tagpax` extract and import the tagged
 PDF, and records the exact source generation as an integration dependency for
-`ollm check` and `ollm build --resolve`. It also records, per logical unit,
+`osgdocmk check` and `osgdocmk build --resolve`. It also records, per logical unit,
 which internal `tagpax` prefix that unit was merged under -- this is what
 lets `\olref` links between merged units resolve to an internal jump instead
 of staying an external file link; a reference to a unit merged later in
 document order needs one extra build pass to pick this up, the same way
 `\ref` needs a rerun for a forward reference.
 
-To inspect the BuildSpecs without invoking LaTeX, run `ollm build --all
+To inspect the BuildSpecs without invoking LaTeX, run `osgdocmk build --all
 --dry-run` in the project.
 
 ## Expected defaults

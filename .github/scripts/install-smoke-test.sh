@@ -67,19 +67,19 @@ for file in "${tex_files[@]}"; do
   require_installed_tex_file "$file"
 done
 
-ollm_launcher="$texmf_root/scripts/osglecture/ollm"
-ollm_version="$texmf_root/scripts/osglecture/lib/OLLM/Version.pm"
-ollm_parser="$texmf_root/scripts/osglecture/vendor/TOML-Tiny-0.22/lib/TOML/Tiny/Parser.pm"
-ollm_preset="$texmf_root/scripts/osglecture/definitions/bundle-presets/osg-lecture.toml"
+osgdocmk_launcher="$texmf_root/scripts/osgdocmk/osgdocmk"
+osgdocmk_version="$texmf_root/scripts/osgdocmk/lib/OLLM/Version.pm"
+osgdocmk_parser="$texmf_root/scripts/osgdocmk/vendor/TOML-Tiny-0.22/lib/TOML/Tiny/Parser.pm"
+osgdocmk_preset="$texmf_root/scripts/osgdocmk/definitions/bundle-presets/osg-lecture.toml"
 
-for file in "$ollm_launcher" "$ollm_version" "$ollm_parser" "$ollm_preset"; do
+for file in "$osgdocmk_launcher" "$osgdocmk_version" "$osgdocmk_parser" "$osgdocmk_preset"; do
   if [[ ! -f "$file" ]]; then
-    echo "Installed OLLM file is missing: $file" >&2
+    echo "Installed osgdocmk file is missing: $file" >&2
     exit 1
   fi
 done
 
-perl "$ollm_launcher" --version
+perl "$osgdocmk_launcher" --version
 
 mkdir -p "$smoke_root/texmf-cache"
 export TEXMFCACHE="$smoke_root/texmf-cache"
@@ -106,9 +106,9 @@ if find "$texmf_root/tex/luatex/osglecture" -type f -print -quit 2>/dev/null | g
   exit 1
 fi
 
-if find "$texmf_root/scripts/osglecture" -type f -print -quit 2>/dev/null | grep -q .; then
-  echo "l3build uninstall left OLLM files behind:" >&2
-  find "$texmf_root/scripts/osglecture" -type f -print >&2
+if find "$texmf_root/scripts/osgdocmk" -type f -print -quit 2>/dev/null | grep -q .; then
+  echo "l3build uninstall left osgdocmk files behind:" >&2
+  find "$texmf_root/scripts/osgdocmk" -type f -print >&2
   exit 1
 fi
 

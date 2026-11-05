@@ -417,7 +417,7 @@ local REPORT_ONLY = {
     "kept; the theme provides it (lttalk-theme)" },
   dictum = { "\\dictum", "KOMA-Script only; guard with \\lecturemode<longform>" },
   includeChapterNo = { "\\includeChapterNo",
-    "combined script; replaced by OLLM series/integration units (\\includeunit)" },
+    "combined script; replaced by osgdocmk series/integration units (\\includeunit)" },
   buildfrom = { "\\buildfrom", "legacy osgcode build helper; no counterpart" },
   againframe = { "\\againframe", "kept; check that the frame label still exists" },
   xrefchap = { "\\xrefchap",
@@ -438,7 +438,7 @@ local REPORT_ONLY = {
   tucurl = { "\\tucurl", "legacy metadata; set in the project configuration" },
   lehrveranstaltung = { "\\lehrveranstaltung", "use \\course<mode>[short]{long}" },
   SetGlobalClassOptions = { "\\SetGlobalClassOptions",
-    "legacy class options; move to ollmconfig.toml / projectconfig.tex" },
+    "legacy class options; move to osgdocmkconfig.toml / projectconfig.tex" },
 }
 
 local REPORT_ENV = {
@@ -782,7 +782,7 @@ function H.documentclass(s, i, base)
   if args[1] and trim(args[1]) ~= "" then
     note(base + i, "class options of osgbeamer dropped",
       "(" .. trim(args[1]:gsub("%s+", " ")) .. ") -- configure target and profile in "
-        .. "ollmconfig.toml, a bibliography with \\LectureProjectSetup{bibliography={...}} "
+        .. "osgdocmkconfig.toml, a bibliography with \\LectureProjectSetup{bibliography={...}} "
         .. "in projectconfig.tex")
   end
   count("\\documentclass{osgbeamer} -> \\documentclass{osglecture}")

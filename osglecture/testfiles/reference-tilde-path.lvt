@@ -3,7 +3,7 @@
 \usepackage{osglecture-references}
 \providecommand\OsgLectureDocumentType{script}
 \providecommand\OsgLectureLanguage{de}
-% OLLM's registry is read with the document catcodes in force, where the
+% osgdocmk's registry is read with the document catcodes in force, where the
 % tilde is active -- and short-form path components such as RUNNER~1 in
 % Windows temporary directories contain one. regression-test makes the tilde
 % an ordinary character, so the document catcode has to be restored around

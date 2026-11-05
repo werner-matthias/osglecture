@@ -54,7 +54,7 @@ jobs:
             dejavu
             newcomputermodern
 
-      # qpdf is not part of TeX Live; ollm deploy needs it to restrict PDF
+      # qpdf is not part of TeX Live; osgdocmk deploy needs it to restrict PDF
       # permissions, and its tests skip the real encryption without it. The
       # Chocolatey package unpacks qpdf below its lib directory; its bin
       # directory (with the DLLs next to qpdf.exe) goes on PATH for later

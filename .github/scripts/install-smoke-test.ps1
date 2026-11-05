@@ -63,21 +63,21 @@ try {
     Require-InstalledTeXFile $file
   }
 
-  $ollmLauncher = Join-Path $texmfRoot 'scripts/osglecture/ollm.cmd'
-  $ollmFiles = @(
-    $ollmLauncher,
-    (Join-Path $texmfRoot 'scripts/osglecture/lib/OLLM/Version.pm'),
-    (Join-Path $texmfRoot 'scripts/osglecture/vendor/TOML-Tiny-0.22/lib/TOML/Tiny/Parser.pm'),
-    (Join-Path $texmfRoot 'scripts/osglecture/definitions/bundle-presets/osg-lecture.toml')
+  $osgdocmkLauncher = Join-Path $texmfRoot 'scripts/osgdocmk/osgdocmk.cmd'
+  $osgdocmkFiles = @(
+    $osgdocmkLauncher,
+    (Join-Path $texmfRoot 'scripts/osgdocmk/lib/OLLM/Version.pm'),
+    (Join-Path $texmfRoot 'scripts/osgdocmk/vendor/TOML-Tiny-0.22/lib/TOML/Tiny/Parser.pm'),
+    (Join-Path $texmfRoot 'scripts/osgdocmk/definitions/bundle-presets/osg-lecture.toml')
   )
-  foreach ($file in $ollmFiles) {
+  foreach ($file in $osgdocmkFiles) {
     if (-not (Test-Path -LiteralPath $file -PathType Leaf)) {
-      throw "Installed OLLM file is missing: $file"
+      throw "Installed osgdocmk file is missing: $file"
     }
   }
 
-  & $ollmLauncher --version
-  Assert-NativeSuccess 'installed ollm.cmd'
+  & $osgdocmkLauncher --version
+  Assert-NativeSuccess 'installed osgdocmk.cmd'
 
   $cacheRoot = Join-Path $smokeRoot 'texmf-cache'
   New-Item -ItemType Directory -Force -Path $cacheRoot | Out-Null
@@ -112,10 +112,10 @@ Installed osglecture bundle.
       (Get-ChildItem $packageRoot -File -Recurse | Select-Object -First 1)) {
     throw "l3build uninstall left package files behind in $packageRoot"
   }
-  $scriptRoot = Join-Path $texmfRoot 'scripts/osglecture'
+  $scriptRoot = Join-Path $texmfRoot 'scripts/osgdocmk'
   if ((Test-Path $scriptRoot) -and
       (Get-ChildItem $scriptRoot -File -Recurse | Select-Object -First 1)) {
-    throw "l3build uninstall left OLLM files behind in $scriptRoot"
+    throw "l3build uninstall left osgdocmk files behind in $scriptRoot"
   }
 
   Write-Output 'Installation smoke test passed.'

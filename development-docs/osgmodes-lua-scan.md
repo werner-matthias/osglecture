@@ -51,7 +51,7 @@ Abschnitt 7 -- dort zuerst nachsehen.
 - Repro-Dateien (nicht committet, liegen unter
   `/private/tmp/.../scratchpad/repro-bisect/` und `.../repro-intro/` der
   Debug-Sitzung -- bei Bedarf aus dem echten Dokument neu ableiten, siehe
-  Abschnitt 6.2) demonstrieren den Crash ohne `ollm`, mit reinem
+  Abschnitt 6.2) demonstrieren den Crash ohne `osgdocmk`, mit reinem
   `lualatex`.
 
 ## 2. Architektur des bestehenden TeX-Level-Scanners

@@ -38,7 +38,7 @@
 --            package; `merged_into` then names the package whose source
 --            carries its code instead
 --
--- Perl has no \Provides... declaration; ollm/osgdocmk keeps its version as
+-- Perl has no \Provides... declaration; osgdocmk keeps its version as
 -- the single $VERSION in OSGDocMk::Version instead (see the `extractor`
 -- entry below).
 local modules = {
@@ -61,8 +61,8 @@ local modules = {
   { name = "osgmodes", ctanpkg = "osgmodes",
     files = { "osgmodes/osgmodes.dtx" },
     lua = ':full_moon:' },
-  { name = "ollm", ctanpkg = "osgdocmk", bundle = "osglecture",
-    files = { "ollm/scripts/lib/OLLM/Version.pm" },
+  { name = "osgdocmk", ctanpkg = "osgdocmk", bundle = "osglecture",
+    files = { "osgdocmk/scripts/lib/OLLM/Version.pm" },
     lua = ':white_circle:',
     extractor = "perl_version" },
   { name = "tagpax", ctanpkg = "tagpax", files = { "tagpax/source/tagpax.dtx" },

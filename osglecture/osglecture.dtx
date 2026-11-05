@@ -107,12 +107,12 @@
   Diese Dokumentation beschreibt die Klassenoptionen, die von der Klasse zur
   Verfügung gestellten Befehle und Umgebungen sowie deren Implementation.
   Für ihre Nutzung ist außerdem das Verständnis der grundlegenden Konzepte
-  und des Zusammenspiels mit anderen Komponenten (insbesondere \code{ollm})
+  und des Zusammenspiels mit anderen Komponenten (insbesondere \code{osgdocmk})
   notwendig. Diese Themen behandelt \code{osglecture-manual-de.pdf}.}{
   This documentation describes the class options, the commands and environments
   provided by the class, and their implementation.
   Using the class also requires an understanding of its basic concepts and its
-  interaction with other components (especially \code{ollm}). These topics are
+  interaction with other components (especially \code{osgdocmk}). These topics are
   covered in \code{osglecture-manual-en.pdf}.
 }
 \section{\ldeen{Klassenoptionen}{Class options}}
@@ -122,14 +122,14 @@
   \ldeen{Verwendet die Klasse außerhalb einer Veranstaltungsserie.}{Uses the class outside a course series.}
   \keyval{doctype}{\ldeen{Typ}{type}}
   \ldeen{Setzt den Zieltyp des Dokuments, wodurch u.\,a.\ die tatsächliche Basisklasse bestimmt wird.}{Sets the document's target type, which, among other things, determines its actual base class.}
-  (\ldeen{Dies ist in der Regel nur bei \option{standalone} nötig, sonst sollte es über \code{ollm} gesteuert werden.}{This is usually only necessary with \option{standalone}; otherwise, it should be controlled using \code{ollm}.})
+  (\ldeen{Dies ist in der Regel nur bei \option{standalone} nötig, sonst sollte es über \code{osgdocmk} gesteuert werden.}{This is usually only necessary with \option{standalone}; otherwise, it should be controlled using \code{osgdocmk}.})
   \keyval{profile}{\ldeen{Profil}{profile}}
   \ldeen{Überschreibt das zum Doctype gehörende Dokumentprofil (legt u.\,a.\ Basisklasse und Backend fest); wird sonst über Konfiguration geregelt.}{Overrides the document profile tied to the doctype (sets, among other things, the base class and backend); otherwise controlled via configuration.}
   \keyval{class-options}{\ldeen{Ausdrücke}{expressions}}
   \ldeen{Reicht Optionen an die Basisklasse weiter.}{Passes options to the base class.}
   \keyval{lang}{\ldeen{Sprachcode}{language code}}
   \ldeen{Wählt die Sprache des Zieldokuments aus.}{Selects the language of the target document.}
-  (\ldeen{Dies ist in der Regel nur bei \option{standalone} nötig, sonst sollte es über \code{ollm} gesteuert werden.}{This is usually only necessary with \option{standalone}; otherwise, it should be controlled using \code{ollm}.})
+  (\ldeen{Dies ist in der Regel nur bei \option{standalone} nötig, sonst sollte es über \code{osgdocmk} gesteuert werden.}{This is usually only necessary with \option{standalone}; otherwise, it should be controlled using \code{osgdocmk}.})
   \keybool{patch-overlays}\Default{true}
   \ldeen{Erweitert die Overlay-Syntax von \pkg*{ltx-talk} oder \pkg*{beamer} um portable Modusausdrücke.}{Extends the overlay syntax of \pkg*{ltx-talk} or \pkg*{beamer} to include portable mode expressions.}
 \end{options}
@@ -160,8 +160,8 @@
       loads no bibliography package.}
       \keyval{bibliography/resources}{Dateiliste}
       \ldeen{Literaturdatenbanken, etwa \code{lecture.bib}; in
-      \code{ollm}-Builds werden sie auch in \code{Include} gesucht.}{bibliography
-      databases, such as \code{lecture.bib}; in \code{ollm} builds they are also
+      \code{osgdocmk}-Builds werden sie auch in \code{Include} gesucht.}{bibliography
+      databases, such as \code{lecture.bib}; in \code{osgdocmk} builds they are also
       looked up in \code{Include}.}
       \keyval{bibliography/style}{Stil}\Default{alphabetic}
       \ldeen{\pkg*{biblatex}-Stil.}{\pkg*{biblatex} style.}
@@ -562,13 +562,13 @@ default gutter looks too tight with very unequal column shares.}
   \ldeen{gibt alle Einträge aus, die irgendeine Unit der Serie mit gleichem
   Dokumenttyp und gleicher Sprache zitiert, zusammen mit den eigenen
   Zitaten. Die \meta{Optionen} gehen an \cs{printbibliography}, dessen
-  Filter also gelten. \code{ollm check} meldet das Verzeichnis als
-  veraltet, sobald eine Unit Neues zitiert; \code{ollm build --resolve}
+  Filter also gelten. \code{osgdocmk check} meldet das Verzeichnis als
+  veraltet, sobald eine Unit Neues zitiert; \code{osgdocmk build --resolve}
   baut es neu.}{prints all entries that any unit of the series with the same
   document type and language cites, together with the own citations. The
   \meta{Optionen} go to \cs{printbibliography}, so its filters apply.
-  \code{ollm check} reports the bibliography as stale as soon as a unit
-  cites something new; \code{ollm build --resolve} rebuilds it.}
+  \code{osgdocmk check} reports the bibliography as stale as soon as a unit
+  cites something new; \code{osgdocmk build --resolve} rebuilds it.}
 \end{commands}
 
 
@@ -799,11 +799,11 @@ default gutter looks too tight with very unequal column shares.}
   { Set~document_metadata~for~target~'#4'~in~the~project~manifest~to~match~
     profile~'#2',~or~select~a~profile~whose~contract~is~'#1'. }
 \msg_new:nnn { osglecture } { selectable-from-manifest }
-  { The~selectable~languages~come~from~the~project~manifest~for~an~OLLM~
+  { The~selectable~languages~come~from~the~project~manifest~for~an~osgdocmk~
     build;~the~'selectable'~value~in~projectconfig.tex~is~ignored. }
 \msg_new:nnnn { osglecture } { standalone-job-conflict }
-  { Standalone~mode~cannot~be~combined~with~an~OLLM~job. }
-  { Remove~the~standalone~class~option~or~build~without~OLLM. }
+  { Standalone~mode~cannot~be~combined~with~an~osgdocmk~job. }
+  { Remove~the~standalone~class~option~or~build~without~osgdocmk. }
 \msg_new:nnnn { osglecture } { build-override }
   { Explicit~class~#1~'#2'~overrides~build~value~'#3'. }
   { This~is~intended~for~debugging;~the~job-bound~BuildSpec~remains~unchanged. }
@@ -979,7 +979,7 @@ default gutter looks too tight with very unequal column shares.}
   { }
 \osglecture_project_suspend_metadata_commands:
 
-% For an OLLM build the document profile is chosen in the project manifest
+% For an osgdocmk build the document profile is chosen in the project manifest
 % and travels in the build file; it has to be known before \LoadClass, which
 % projectconfig.tex (read here, but only consumed afterwards) cannot promise.
 % A standalone document has no build file and picks the profile through the
@@ -1031,7 +1031,7 @@ default gutter looks too tight with very unequal column shares.}
 \bool_set_false:N \l_tmpa_bool
 \cs_if_exist:NT \IfDocumentMetadataTF
   { \IfDocumentMetadataTF {\bool_set_true:N \l_tmpa_bool} { } }
-% An OLLM build fixes the metadata policy before the class runs; a policy
+% An osgdocmk build fixes the metadata policy before the class runs; a policy
 % that contradicts the selected profile is the root cause and must be
 % reported before the generic required/forbidden checks below, which would
 % otherwise only tell the author to place \DocumentMetadata somewhere.
@@ -1399,19 +1399,19 @@ default gutter looks too tight with very unequal column shares.}
   { This~version~supports~build-file~schema~'1'. }
 \msg_new:nnnn { osglecture-config } { missing-key }
   { The~osglecture~build~file~does~not~define~'#1'. }
-  { Regenerate~the~build~file~with~OLLM. }
+  { Regenerate~the~build~file~with~osgdocmk. }
 \msg_new:nnnn { osglecture-config } { job-mismatch }
   { Build~file~job-id~'#1'~does~not~match~TeX~jobname~'#2'. }
   { Use~the~build~file~generated~for~this~jobname. }
 \msg_new:nnnn { osglecture-config } { file-not-found }
   { OSG~lecture~build~file~'#1'~was~not~found. }
-  { Generate~it~with~OLLM~or~use~standalone~class~options. }
+  { Generate~it~with~osgdocmk~or~use~standalone~class~options. }
 \msg_new:nnnn { osglecture-config } { job-symbol-missing }
-  { No~OLLM~job~was~specified~for~this~series~build. }
-  { Start~the~build~with~OLLM~or~select~the~class~option~'standalone'. }
+  { No~osgdocmk~job~was~specified~for~this~series~build. }
+  { Start~the~build~with~osgdocmk~or~select~the~class~option~'standalone'. }
 \msg_new:nnnn { osglecture-config } { manifest-symbol-missing }
   { No~project~manifest~was~specified~for~this~series~build. }
-  { Start~the~build~with~OLLM~or~select~the~class~option~'standalone'. }
+  { Start~the~build~with~osgdocmk~or~select~the~class~option~'standalone'. }
 \msg_new:nnnn { osglecture-config } { manifest-not-found }
   { The~project~manifest~'#1'~was~not~found. }
   { Restore~the~series~manifest~or~select~the~class~option~'standalone'. }
@@ -1453,12 +1453,12 @@ default gutter looks too tight with very unequal column shares.}
   }
 
 % \ldeen{Die Pflichtschlüssel entsprechen genau der Klassifikation
-% "OLLM"/"Grenzfall" in \file{ARCHITECTURE.md} Abschnitt 12. Als
+% "osgdocmk"/"Grenzfall" in \file{ARCHITECTURE.md} Abschnitt 12. Als
 % "gemeinsames Modul" klassifizierte Schlüssel haben hier bewusst
 % keinen \code{.code:n}-Eintrag: Eine Build-Datei, die einen solchen
 % Schlüssel trotzdem sendet, erhält dadurch einen klaren
 % "unknown key"-Fehler, statt stillschweigend ignoriert zu
-% werden.}{The required keys match exactly the "OLLM"/"Grenzfall"
+% werden.}{The required keys match exactly the "osgdocmk"/"Grenzfall"
 % classification in \file{ARCHITECTURE.md} section 12. Keys classified
 % as "gemeinsames Modul" deliberately have no \code{.code:n} entry here:
 % a build file that sends such a key regardless gets a clear
@@ -1732,7 +1732,7 @@ default gutter looks too tight with very unequal column shares.}
 % {\option{languages}}{\option{selectable}}{\option{languages}}
 \keys_define:nn { osglecture/project/languages }
   {
-% For an OLLM build the selectable-language set (and its order, which decides
+% For an osgdocmk build the selectable-language set (and its order, which decides
 % langselect's bilingual macro name) is the manifest's; a 'selectable' value
 % written in projectconfig.tex would be a second, competing source and is
 % dropped with a warning. A standalone document has no manifest and keeps it.
@@ -1842,7 +1842,7 @@ default gutter looks too tight with very unequal column shares.}
       },
   }
 
-% An OLLM build with two or more selectable languages needs langselect
+% An osgdocmk build with two or more selectable languages needs langselect
 % configured even when projectconfig.tex never calls \LectureProjectSetup
 % with a languages key: the manifest is the single source, and a
 % single-language build needs no langselect at all.
@@ -2681,7 +2681,7 @@ default gutter looks too tight with very unequal column shares.}
         \__olref_identity:nnn
           {\l__olref_unit_tl}{\l__olref_type_tl}{\l__olref_lang_tl}
       }
-% \ldeen*{@1 und @2 sind Pfade, die aus der von OLLM geschriebenen Registry
+% \ldeen*{@1 und @2 sind Pfade, die aus der von osgdocmk geschriebenen Registry
 % stammen und dort mit den Dokumentkatcodes gelesen werden -- eine Tilde
 % darin ist also ein aktives Zeichen. Pfadkomponenten in Kurzform (etwa
 % \code{RUNNER~1} in Windows-Tempverzeichnissen) enthalten aber genau diese
@@ -2690,7 +2690,7 @@ default gutter looks too tight with very unequal column shares.}
 % behandeln. Beide Werte werden deshalb als Zeichenketten abgelegt; die
 % Identität und die Generationskennung bestehen dagegen aus
 % Bezeichnerzeichen und bleiben unverändert.}{@1 and @2 are paths taken
-% from the registry OLLM writes, which is read with the document catcodes
+% from the registry osgdocmk writes, which is read with the document catcodes
 % in force -- so a tilde in them is an active character. Short-form path
 % components (such as \code{RUNNER~1} in Windows temporary directories)
 % contain exactly that tilde, and both @3 and \cs{csname}-based name
@@ -2798,9 +2798,9 @@ default gutter looks too tight with very unequal column shares.}
 \cs_new_protected:Npn \__olref_map_unit:n #1 { }
 % \ldeen{Stellt das von \meta{unit} exportierte Label \meta{label} als
 %   lokalen Labelnamen in \meta{tl} bereit (leer, wenn es nicht existiert),
-%   und vermerkt die Nutzung für \OLLM\ mit \meta{property}.}{Provides the
+%   und vermerkt die Nutzung für \osgdocmk\ mit \meta{property}.}{Provides the
 %   label \meta{label} exported by \meta{unit} as a local label name in
-%   \meta{tl} (empty if it does not exist), and records the use for \OLLM\
+%   \meta{tl} (empty if it does not exist), and records the use for \osgdocmk\
 %   with \meta{property}.}
 \cs_new_protected:Npn \osglecture_references_use:nnnN #1#2#3#4
   {
@@ -2988,7 +2988,7 @@ default gutter looks too tight with very unequal column shares.}
 % verfügbar ist, ganz ohne fragile Dateipfad-Vergleiche. Zwei
 % Implementierungen sind nötig, je nachdem, ob \cs{DocumentMetadata}
 % für das aktuelle Target aktiv ist (in OSGLecture targetabhängig, siehe
-% \code{document\_metadata} in \file{ollmconfig.toml}): @3 dupliziert
+% \code{document\_metadata} in \file{osgdocmkconfig.toml}): @3 dupliziert
 % hyperrefs klassische \cs{hyper@linkfile}-Struktur direkt
 % (\cs{pdfstartlink}/\cs{close@pdflink}, LuaTeX-spezifisch --
 % OSGLecture ist ohnehin LuaTeX-only), da diese Primitiv-Wrapper unter
@@ -3019,7 +3019,7 @@ default gutter looks too tight with very unequal column shares.}
 % implementations are needed, depending on whether
 % \cs{DocumentMetadata} is active for the current target (in
 % OSGLecture this is target-dependent, see \code{document\_metadata} in
-% \file{ollmconfig.toml}): @3 duplicates hyperref's classic
+% \file{osgdocmkconfig.toml}): @3 duplicates hyperref's classic
 % \cs{hyper@linkfile} structure directly
 % (\cs{pdfstartlink}/\cs{close@pdflink}, LuaTeX-specific --
 % OSGLecture is LuaTeX-only anyway), since these primitive wrappers are
@@ -3790,7 +3790,7 @@ default gutter looks too tight with very unequal column shares.}
 % \ldeen{@1 ist derselbe String, den @2 als \option{layout} entgegennimmt
 %   (z.\,B. \code{4~on~1} oder \code{2~on~1|ruled}); die Klasse übersetzt
 %   oder validiert ihn nicht, sondern reicht ihn unverändert über
-%   @3 an OLLM weiter, das ihn -- nur bei aktivem Handout-Build -- an
+%   @3 an osgdocmk weiter, das ihn -- nur bei aktivem Handout-Build -- an
 %   die von ihm erzeugte @2-Masterdatei durchreicht. Eine zweite,
 %   abweichende Validierung an dieser Stelle würde @2s eigene Prüfung
 %   nur duplizieren, mit dem Risiko, dass beide auseinanderlaufen. Der
@@ -3798,7 +3798,7 @@ default gutter looks too tight with very unequal column shares.}
 %   Ein-Seite-pro-Blatt-Pfad ab.}{@1 is the very same string @2 accepts
 %   as \option{layout} (e.g.\ \code{4~on~1} or \code{2~on~1|ruled}); the
 %   class neither translates nor validates it, only passes it through
-%   unchanged via @3 to OLLM, which -- only for an active handout build
+%   unchanged via @3 to osgdocmk, which -- only for an active handout build
 %   -- forwards it to the companion master file it generates. A second,
 %   diverging validation here would only duplicate @2's own check, with
 %   the risk of the two drifting apart. The default \code{1~on~1} maps
@@ -3868,7 +3868,7 @@ default gutter looks too tight with very unequal column shares.}
   { Add~\token_to_str:N\lecture[short]\{title\}\{unit-id\}. }
 \msg_new:nnnn { osglecture-structure } { unit-mismatch }
   { Declared~unit~'#1'~does~not~match~the~known~build~unit~'#2'. }
-  { Keep~the~explicit~unit-id~stable~or~remove~the~stale~OLLM~state. }
+  { Keep~the~explicit~unit-id~stable~or~remove~the~stale~osgdocmk~state. }
 
 \bool_gset_true:N \g__osglecture_unit_valid_bool
 \NewHook{osglecture/lecture/before}
@@ -5817,18 +5817,18 @@ default gutter looks too tight with very unequal column shares.}
 \ExplSyntaxOn
 
 % \ldeen{Literaturverwaltung über \pkg*{biblatex} und \code{biber}. Ein
-%   externer Lauf stört in \code{ollm}-Builds nicht: \code{latexmk} startet
+%   externer Lauf stört in \code{osgdocmk}-Builds nicht: \code{latexmk} startet
 %   \code{biber} selbst, und zwar nur, wenn sich zitierte Schlüssel oder
 %   Literaturdatenbanken geändert haben. Die Datenbanken liegen
-%   üblicherweise in \file{Include}; \code{ollm} nimmt dieses Verzeichnis in
+%   üblicherweise in \file{Include}; \code{osgdocmk} nimmt dieses Verzeichnis in
 %   \code{BIBINPUTS} auf. Stil und weitere Optionen kommen aus
 %   \cs{LectureProjectSetup}\code{\{bibliography=\ldots\}}; \pkg*{biblatex}
 %   muss deshalb hier und nicht in \file{projectconfig.tex} geladen
 %   werden.}{Bibliography management through \pkg*{biblatex} and
-%   \code{biber}. The external run does no harm in \code{ollm} builds:
+%   \code{biber}. The external run does no harm in \code{osgdocmk} builds:
 %   \code{latexmk} starts \code{biber} itself, and only when cited keys or
 %   bibliography databases have changed. The databases usually live in
-%   \file{Include}; \code{ollm} adds that directory to \code{BIBINPUTS}. Style and
+%   \file{Include}; \code{osgdocmk} adds that directory to \code{BIBINPUTS}. Style and
 %   further options come from
 %   \cs{LectureProjectSetup}\code{\{bibliography=\ldots\}}; \pkg*{biblatex}
 %   therefore has to be loaded here rather than in \file{projectconfig.tex}.}
@@ -5933,12 +5933,12 @@ default gutter looks too tight with very unequal column shares.}
 %   \pkg*{biblatex} ist. Eine andere Unit kann damit auf den Eintrag in
 %   diesem Dokument verlinken (siehe \option{series-target}). Seite und Text
 %   bleiben leer: Die Exportzeile ändert sich so nur, wenn sich das Ziel
-%   ändert, und \code{ollm} baut zitierende Units nicht bei jeder
+%   ändert, und \code{osgdocmk} baut zitierende Units nicht bei jeder
 %   Seitenverschiebung neu.}{Every printed entry is also exported as label
 %   \code{osglecture@bib@}\meta{key}, whose anchor is the \pkg*{biblatex}
 %   target. Another unit can thus link to the entry in this document (see
 %   \option{series-target}). Page and text stay empty: the export line then
-%   changes only when the target changes, and \code{ollm} does not rebuild
+%   changes only when the target changes, and \code{osgdocmk} does not rebuild
 %   citing units on every page shift.}
 \cs_new_protected:Npn \__osglecture_bibliography_export_entry:n #1
   {
@@ -6040,9 +6040,9 @@ default gutter looks too tight with very unequal column shares.}
 %   Dokuments und die eigenen Zitate, zitiert sie in einer eigenen
 %   \code{refsection} per \cs{nocite} und gibt sie aus; das optionale
 %   Argument geht an \cs{printbibliography}, dessen Filter also gelten. Die
-%   Nutzung der fremden Listen wird für \code{ollm} vermerkt: Zitiert eine
-%   Unit Neues, meldet \code{ollm check} das Verzeichnis als veraltet, und
-%   \code{ollm build --resolve} baut es neu. Die eigenen Schlüssel kommen
+%   Nutzung der fremden Listen wird für \code{osgdocmk} vermerkt: Zitiert eine
+%   Unit Neues, meldet \code{osgdocmk check} das Verzeichnis als veraltet, und
+%   \code{osgdocmk build --resolve} baut es neu. Die eigenen Schlüssel kommen
 %   aus dem laufenden und dem vorigen Lauf, damit das Verzeichnis auch vor
 %   den eigenen Zitaten stehen darf.}{Series-wide bibliography: every unit
 %   exports the sorted list of its cited keys as label
@@ -6051,9 +6051,9 @@ default gutter looks too tight with very unequal column shares.}
 %   document and the own citations, cites them in a refsection of its own
 %   via \cs{nocite}, and prints them; the optional argument goes to
 %   \cs{printbibliography}, so its filters apply. The use of the other
-%   lists is recorded for \code{ollm}: if a unit cites something new,
-%   \code{ollm check} reports the bibliography as stale, and
-%   \code{ollm build --resolve} rebuilds it. The own keys come from the
+%   lists is recorded for \code{osgdocmk}: if a unit cites something new,
+%   \code{osgdocmk check} reports the bibliography as stale, and
+%   \code{osgdocmk build --resolve} rebuilds it. The own keys come from the
 %   current and the previous run, so that the bibliography may also precede
 %   the own citations.}
 \seq_new:N \g__osglecture_bibliography_cited_seq

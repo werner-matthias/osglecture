@@ -1,0 +1,109 @@
+use v5.30;
+use strict;
+use warnings;
+
+use Cwd ();
+use File::Temp ();
+use Test::More;
+
+use lib 'scripts/vendor/TOML-Tiny-0.22/lib';
+use lib 'scripts/lib';
+
+require OLLM::Version;
+
+my $version = qx{$^X scripts/osgdocmk --version};
+is $?, 0, 'version exits successfully';
+like $version, qr/^osgdocmk \Q$OLLM::Version::VERSION\E/m, 'version is reported';
+
+my $outside = File::Temp::tempdir(CLEANUP => 1);
+my $launcher = Cwd::abs_path('scripts/osgdocmk');
+my $previous_directory = Cwd::getcwd();
+chdir $outside or die "cannot enter temporary directory $outside: $!";
+my $outside_output = qx{$^X "$launcher" 2>&1};
+my $outside_status = $? >> 8;
+chdir $previous_directory
+  or die "cannot restore working directory $previous_directory: $!";
+is $outside_status, 2, 'a build outside a project is rejected as a usage error';
+like $outside_output, qr/no osgdocmkconfig[.]toml project found/,
+  'the diagnostic explains how to select a project or standalone mode';
+
+open my $perl_manifest, '>', "$outside/ollmconfig.pl"
+  or die "cannot create Perl manifest: $!";
+close $perl_manifest;
+chdir $outside or die "cannot enter temporary directory $outside: $!";
+my $unconverted_output = qx{$^X "$launcher" slides 2>&1};
+my $unconverted_status = $? >> 8;
+my $removed_output = qx{$^X "$launcher" --legacy slides 2>&1};
+my $removed_status = $? >> 8;
+chdir $previous_directory
+  or die "cannot restore working directory $previous_directory: $!";
+unlink "$outside/ollmconfig.pl" or die "cannot remove Perl manifest: $!";
+is $unconverted_status, 2, 'a project with only ollmconfig.pl is not built';
+like $unconverted_output, qr/only a Perl configuration.*convertproject/,
+  'the diagnostic points to convertproject';
+isnt $removed_status, 0, '--legacy is no longer accepted';
+like $removed_output, qr/removed ollmconfig\.pl build/,
+  'the removed option is named as such';
+
+open my $standalone_source, '>', "$outside/main.tex"
+  or die "cannot create standalone test source: $!";
+print {$standalone_source} "\\documentclass{article}\n\\begin{document}\n\\end{document}\n";
+close $standalone_source;
+chdir $outside or die "cannot enter temporary directory $outside: $!";
+my $standalone_output = qx{$^X "$launcher" standalone --dry-run main.tex 2>&1};
+my $standalone_status = $? >> 8;
+chdir $previous_directory
+  or die "cannot restore working directory $previous_directory: $!";
+is $standalone_status, 0,
+  'explicit standalone mode remains available outside a project';
+like $standalone_output, qr/^Context:\s+standalone$/m,
+  'the explicit standalone invocation has standalone context';
+
+require OLLM::State;
+is $OLLM::State::VERSION, $OLLM::Version::VERSION,
+  'internal modules use the central osgdocmk program version';
+
+my $standalone_fixture =
+  Cwd::abs_path('testfiles/fixtures/project/020-processes/main.tex');
+my $plan = qx{$^X scripts/osgdocmk standalone build --source="$standalone_fixture" --dry-run --format=json};
+is $?, 0, 'JSON dry-run exits successfully';
+like $plan, qr/"schema"\s*:\s*"org\.osglecture\.osgdocmk\.build-request"/,
+  'JSON plan has a versioned schema';
+like $plan, qr/"target"\s*:\s*"slides"/, 'JSON plan contains default target';
+
+my $dormant_project = Cwd::abs_path('testfiles/fixtures/project');
+my $report = qx{$^X scripts/osgdocmk report --project-root="$dormant_project" --format=json};
+is $?, 0, 'report describes a project with dormant units successfully';
+like $report, qr/"schema"\s*:\s*"org\.osglecture\.osgdocmk\.report"/,
+  'report JSON has a versioned schema';
+like $report, qr/"status"\s*:\s*"dormant"/,
+  'report exposes an unused unbuilt unit without failing';
+
+my $check = qx{$^X scripts/osgdocmk check --project-root="$dormant_project" --format=json};
+is $?, 0, 'series check does not require a dormant unit to be built';
+like $check, qr/"schema"\s*:\s*"org\.osglecture\.osgdocmk\.check"/,
+  'check JSON has a versioned schema';
+
+my $doctor = qx{$^X scripts/osgdocmk doctor --format=json};
+like $doctor, qr/"schema"\s*:\s*"org\.osglecture\.osgdocmk\.doctor"/,
+  'doctor always emits its versioned JSON result even when a tool is missing';
+like $doctor, qr/"tex_files"\s*:/,
+  'doctor reports TeX package discovery';
+like $doctor, qr/"runtime"\s*:/,
+  'doctor verifies LuaLaTeX by compiling a probe';
+like $doctor, qr/"capabilities"\s*:/,
+  'doctor reports optional integrations separately';
+like $doctor, qr/"name"\s*:\s*"ltx-talk-adapter"/,
+  'doctor isolates the optional ltx-talk adapter';
+like $doctor, qr/"package"\s*:\s*"newcomputermodern"/,
+  'doctor provides TeX Live package names for repair';
+like $doctor, qr/"project"\s*:/,
+  'doctor distinguishes global and project-aware checks';
+
+open my $cmd, '<', 'scripts/osgdocmk.cmd' or die "cannot read scripts/osgdocmk.cmd: $!";
+my $wrapper = do { local $/; <$cmd> };
+close $cmd;
+like $wrapper, qr/perl "\%~dp0osgdocmk" \%\*/,
+  'Windows wrapper delegates to the shared Perl launcher';
+
+done_testing;

@@ -51,7 +51,7 @@ uploadconfig = {
 
   -- Bundle code is LPPL 1.3c.  Vendored third-party code: toml2lua (MIT,
   -- osglecture/THIRD_PARTY-osglecture-cls.md) and the TOML::Tiny parser (same terms as
-  -- Perl 5: Artistic 1.0 or GPL 1 or later, ollm/THIRD_PARTY-ollm.md).
+  -- Perl 5: Artistic 1.0 or GPL 1 or later, osgdocmk/THIRD_PARTY-osgdocmk.md).
   -- Keys as listed by https://ctan.org/json/2.0/licenses.
   license  = { "lppl1.3c", "mit", "artistic", "gpl1+" },
 
@@ -64,7 +64,7 @@ handouts, a presenter version, or script, each in several
 languages. The class osglecture selects the actual document class
 (ltx-talk or beamer for presentations, book or scrbook for long forms)
 through document profiles, so the source contains nothing class-specific.
-The build manager ollm builds whole lecture series, carries cross-references
+The build manager osgdocmk builds whole lecture series, carries cross-references
 and counters between units, and collects units into one document.
 In addition, the bundle aims at accessible, tagged PDFs.</p>
 
@@ -72,7 +72,7 @@ In addition, the bundle aims at accessible, tagged PDFs.</p>
 The bundle currently contains:</p>
 <ul>
 <li>osglecture: document class that produces slides, script, handouts, and other materials from a common source</li>
-<li>ollm (OSG LaTeX Lecture Maker): latexmk-based build manager for creating and deploying lecture materials</li>
+<li>osgdocmk (OSG Lecture Document Maker): latexmk-based build manager for creating and deploying lecture materials</li>
 <li>osgmodes: portable document modes in the style of beamer/ltx-talk for arbitrary classes</li>
 <li>langselect: several language versions of a document from a common source</li>
 <li>tagpax: semantic import of tagged PDFs</li>

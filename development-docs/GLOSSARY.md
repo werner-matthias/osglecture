@@ -12,24 +12,24 @@ Implementierung davon abweicht, steht das gesammelt in
 ### Gemeinsames Modul
 
 Das **gemeinsame Modul** ist die einzige Interpretation von Projektinhalt aus
-`ollmconfig.toml` -- Serienstruktur, Verzeichnisgrammatik, verfügbare
+`osgdocmkconfig.toml` -- Serienstruktur, Verzeichnisgrammatik, verfügbare
 Sprachen, Bundle-Preset-Inhalt --, im Unterschied zum schmalen, zur
-Auftragsentscheidung gehörenden Manifestausschnitt, den OLLM selbst liest
+Auftragsentscheidung gehörenden Manifestausschnitt, den osgdocmk selbst liest
 (siehe Auftragsdatei). Es ist in Lua implementiert, nach dem Vorbild von
 `osglecture-series-index.lua`.
 
 - Aufrufbar über `\directlua` innerhalb eines echten Kompilierlaufs: der
   primäre Verbraucher ist `osglecture` selbst.
 - Aufrufbar eigenständig über `texlua`, ohne vollständigen LaTeX-Lauf: so
-  nutzt OLLM dieselbe Implementierung für Serien-Discovery (`build --all`)
-  und für `ollm check`/`ollm doctor`.
-- Zuständig: gemeinsam von `osglecture` und OLLM genutzt, mit genau einer
+  nutzt osgdocmk dieselbe Implementierung für Serien-Discovery (`build --all`)
+  und für `osgdocmk check`/`osgdocmk doctor`.
+- Zuständig: gemeinsam von `osglecture` und osgdocmk genutzt, mit genau einer
   Implementierung.
 
 ### Bundle-Preset
 
 Ein **Bundle-Preset** ist ein benannter und versionierter Ausgangssatz von
-OLLM-Konfiguration, LaTeX-Defaults und Projektpolicy. Es beschreibt eine
+osgdocmk-Konfiguration, LaTeX-Defaults und Projektpolicy. Es beschreibt eine
 Kompatibilitätsgeneration, nicht die installierte Paketversion und nicht die
 konkrete Dokumentdarstellung.
 
@@ -50,20 +50,20 @@ nach den eingebauten Defaults und dem Bundle-Preset, aber vor dem
 Projektmanifest angewendet. Sie dürfen insbesondere das Standard-Bundle-Preset
 festlegen; die Dokumentprofile bestimmt das Bundle-Preset bzw. das Manifest.
 
-- Datei: plattformabhängige OLLM-Nutzerkonfiguration
-- Zuständig: OLLM
-- Nicht zu verwechseln mit `.ollmconfig.local.toml`; diese Datei erweitert
+- Datei: plattformabhängige osgdocmk-Nutzerkonfiguration
+- Zuständig: osgdocmk
+- Nicht zu verwechseln mit `.osgdocmkconfig.local.toml`; diese Datei erweitert
   gegenwärtig projektbezogen die Definitionssuchpfade.
 
 ### Projektmanifest
 
-Das **Projektmanifest** ist `ollmconfig.toml` (Schema 2) an der Projektwurzel.
+Das **Projektmanifest** ist `osgdocmkconfig.toml` (Schema 2) an der Projektwurzel.
 Es beschreibt Projektidentität, Targets samt geerbten `[targets.defaults]`
 (Sprachen in fester Reihenfolge, Default-Sprache, Profilwahl, Metadatenwahl),
 `[security]` und `[deployment]`. Es markiert zugleich die Projektwurzel.
 
-OLLM und das gemeinsame Modul lesen unterschiedliche Ausschnitte desselben
-Manifests: OLLM den zur Auftragsentscheidung gehörenden (Targets, Profile,
+osgdocmk und das gemeinsame Modul lesen unterschiedliche Ausschnitte desselben
+Manifests: osgdocmk den zur Auftragsentscheidung gehörenden (Targets, Profile,
 `[security]`), das gemeinsame Modul den übrigen Projektinhalt (Sprachliste aus
 `[targets.defaults]`, Bundle-Preset, Serienstruktur).
 
@@ -77,14 +77,14 @@ gesondert von normalen effektiven Defaults transportiert.
 
 ### Target
 
-Ein **Target** ist der von OLLM auswählbare, registrierte Name eines
+Ein **Target** ist der von osgdocmk auswählbare, registrierte Name eines
 Ausgabeziels, beispielsweise `slides`, `handout` oder `script`. Targetnamen
 können erweitert werden.
 
 - BuildRequest: angeforderte Auswahl
 - Targetdefinition: Zuordnung zu Doctype, Obermodi und Unit-Scopes
 - BuildSpec: normalisierter Targetname
-- Zuständig: OLLM
+- Zuständig: osgdocmk
 
 ### Doctype
 
@@ -94,7 +94,7 @@ der Normalisierung synchron gehalten, bleiben aber als prüfbare Schnittstellen
 beide explizit.
 
 - BuildSpec und Auftragsdatei: `doctype`
-- Zuständig: OLLM normalisiert; osglecture interpretiert
+- Zuständig: osgdocmk normalisiert; osglecture interpretiert
 
 ### Dokumentprofil
 
@@ -103,7 +103,7 @@ mehrerer Doctypes: Backend, Basisklasse, dokumenttypspezifische
 Basisklassenoptionen, Metadatenvoraussetzungen und optionales Setup.
 
 Das Profil beschreibt seine `\DocumentMetadata`-Fähigkeit mit
-`document-metadata=required|supported|forbidden`. OLLM leitet daraus (plus dem
+`document-metadata=required|supported|forbidden`. osgdocmk leitet daraus (plus dem
 optionalen Manifestschlüssel `document_metadata=enabled|disabled` an einem
 `supported`-Profil) die effektive `document-metadata-policy=enabled|disabled`
 ab und weist einen Widerspruch vor dem Build ab.
@@ -114,9 +114,9 @@ ab und weist einen Widerspruch vor dem Build ab.
 - BuildSpec und Auftragsdatei transportieren `profile_class`/`profile-class`,
   den aufgelösten `profile` sowie die `document-metadata-policy`
 - Standalone-Klassenoption: `profile`
-- Profildatei: `osglecture-profile-<name>.def`; Fähigkeitsprojektion für OLLM:
+- Profildatei: `osglecture-profile-<name>.def`; Fähigkeitsprojektion für osgdocmk:
   gleichnamige `.toml` bzw. unter `definitions/profiles/`
-- Zuständig: OLLM löst das Profil auf und prüft Profilklasse und Doctype;
+- Zuständig: osgdocmk löst das Profil auf und prüft Profilklasse und Doctype;
   osglecture lädt die `.def` und validiert den Kernel-Zustand
 
 Ein Dokumentprofil ist weder ein Bundle-Preset noch ein Unit-Scope.
@@ -201,12 +201,12 @@ Konfigurationssignatur.
 ### Job-ID
 
 Die **Job-ID** ist die portable Identität eines konkreten Builds und zugleich
-der von OLLM gesetzte TeX-Jobname. Sie bindet die Auftragsdatei an genau diesen
+der von osgdocmk gesetzte TeX-Jobname. Sie bindet die Auftragsdatei an genau diesen
 Build.
 
 ### Auftragsdatei
 
-Die **Auftragsdatei** ist die von OLLM atomar erzeugte Datei
+Die **Auftragsdatei** ist die von osgdocmk atomar erzeugte Datei
 `<job-id>.osgbuild.tex`. Sie transportiert den zur Auftragsentscheidung
 gehörenden Teil des BuildSpec in validierter, TeX-lesbarer Form -- nicht den
 vollständigen BuildSpec; Projektinhalt wie `physical-unit` oder `unit-scope`
@@ -219,7 +219,7 @@ heuristisch gesucht.
 
 Das **gemeinsame TeX-Verzeichnis** enthält projektweites TeX-Material wie
 Konfigurationsdaten und projektlokale Pakete. Es heißt standardmäßig
-`Include`, ist über `project.tex.directory` konfigurierbar und wird von OLLM
+`Include`, ist über `project.tex.directory` konfigurierbar und wird von osgdocmk
 kontrolliert in `TEXINPUTS` aufgenommen.
 
 ### Projektkonfiguration
@@ -243,7 +243,7 @@ dürfen dort keinen schreibbaren Zustand teilen.
 ### Projekt
 
 Ein **Projekt** ist der durch ein Projektmanifest begrenzte Verzeichnisbaum.
-OLLM darf projektbezogene Buildzustände nur innerhalb dieser kanonischen
+osgdocmk darf projektbezogene Buildzustände nur innerhalb dieser kanonischen
 Projektwurzel erzeugen.
 
 ### Serie
@@ -263,7 +263,7 @@ und stabilen Slug.
 Langformperspektive derselben fachlichen Struktureinheit.
 
 - `unit-id` ist ihre stabile, vom sichtbaren Titel unabhängige Identität;
-  Zuständig: OLLM (Registerwert aus einem validierten Zustand).
+  Zuständig: osgdocmk (Registerwert aus einem validierten Zustand).
 - `physical-unit` bezeichnet das physische Quellverzeichnis; Zuständig:
   gemeinsames Modul.
 - `physical-number` beschreibt die Sortierung; Zuständig: gemeinsames Modul.

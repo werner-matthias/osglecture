@@ -151,13 +151,13 @@ reading order.}
 
 \subsection{\ldeen{Mehrsprachige Dokumente}{Multilingual Documents}}
 \ldeen{In einem \osglecture-Projekt können mehrere Sprachfassungen eines
-Inhalts erstellt werden. Dabei teilen sich OLLM und das Paket \pkg{langselect}
+Inhalts erstellt werden. Dabei teilen sich osgdocmk und das Paket \pkg{langselect}
 die Arbeit: Das Manifest sagt, \emph{welche} Sprachfassungen gebaut werden
-dürfen; OLLM wählt eine davon; \pkg{langselect} setzt in der Quelle die
+dürfen; osgdocmk wählt eine davon; \pkg{langselect} setzt in der Quelle die
 passende Formulierung. Diese Aufgabenteilung verhindert, dass die Buildlogik in
-den Fachtext wandert.}{In an \osglecture\ project, OLLM and the package \pkg{langselect}
+den Fachtext wandert.}{In an \osglecture\ project, osgdocmk and the package \pkg{langselect}
 share the work: the manifest states \emph{which} language versions may be built;
-OLLM selects one of them; \pkg{langselect} typesets the matching wording in
+osgdocmk selects one of them; \pkg{langselect} typesets the matching wording in
 the source. This division of responsibility keeps build logic out of the subject
 matter.}
 
@@ -230,10 +230,10 @@ language requires a different word order, simply put the same placeholder in the
 appropriate position.}
 
 \begin{warnbox}{\ldeen{Achtung}{Attention}}
-\ldeen{Starten Sie Builds über OLLM und wählen Sie die Sprache mit
+\ldeen{Starten Sie Builds über osgdocmk und wählen Sie die Sprache mit
 \option{--language}. Setzen Sie die Zielsprache \textbf{nicht} zusätzlich von Hand im
 Quelldokument; sonst können Manifest, Name der Ausgabedatei und tatsächlich gesetzte
-Sprache auseinanderlaufen.}{Start builds through OLLM and select the language
+Sprache auseinanderlaufen.}{Start builds through osgdocmk and select the language
 with \option{--language}. \textbf{Do not} additionally hard-code the target language in
 the source; otherwise the manifest, output file name, and actually typeset language
 can disagree.}
@@ -246,7 +246,7 @@ The most reliable way to check whether a translation is complete is to typeset
 every intended document instance of the unit. A successful German version does not tell you whether
 an argument or command is missing in the English branch.}
 \begin{verbatim}
-ollm build --all
+osgdocmk build --all
 \end{verbatim}
 
 \subsection{\ldeen{Inhalte mit \osglecture-Modi auswählen}{Selecting Content with \osglecture\ Modes}}
@@ -512,28 +512,28 @@ from slides to the detailed derivation in the script}:
 \end{verbatim}
 
 \ldeen{Ein schlüsselloser Eintrag der Adresse ist stets die Unit-ID. Verwenden
-Sie stabile logische IDs statt Verzeichnisnamen; OLLM löst die gewünschte
+Sie stabile logische IDs statt Verzeichnisnamen; osgdocmk löst die gewünschte
 Kombination aus Unit, Dokumenttyp und Sprache über seinen Referenz-Snapshot
 auf. Das Zieldokument muss mindestens einmal erfolgreich gebaut worden sein;
 erst dann stehen seine Referenzen anderen Units zur Verfügung. Nach Änderungen an abhängigen Units ist
-\code{ollm build --resolve} der bequemste Weg, Produzenten und Konsumenten
+\code{osgdocmk build --resolve} der bequemste Weg, Produzenten und Konsumenten
 bis zu einem konsistenten Zustand neu zu bauen.}{A keyless address entry is
-always the unit ID. Use stable logical IDs rather than directory names; OLLM
+always the unit ID. Use stable logical IDs rather than directory names; osgdocmk
 resolves the requested combination of unit, document type, and language through
 its reference snapshot. The target document must have been built successfully
 at least once; only then are its references available to other units. After changing dependent
-units, \code{ollm build --resolve} is the easiest way to rebuild producers
+units, \code{osgdocmk build --resolve} is the easiest way to rebuild producers
 and consumers to a consistent state.}
 
 \subsection{\ldeen{Literatur}{Literature}}
 \ldeen{Für Literaturangaben nutzt \osglecture\ \pkg{biblatex} mit
 \code{biber}. Die Literaturverwaltung wird in
 \File{Include/projectconfig.tex} eingeschaltet; die Datenbank liegt
-üblicherweise ebenfalls in \File{Include}, wo \OLLM\ sie für \code{biber}
+üblicherweise ebenfalls in \File{Include}, wo \osgdocmk\ sie für \code{biber}
 auffindbar macht:}{For literature references, \osglecture\ uses
 \pkg{biblatex} with \code{biber}. Bibliography management is enabled in
 \File{Include/projectconfig.tex}; the database usually lives in
-\File{Include} as well, where \OLLM\ makes it available to \code{biber}:}
+\File{Include} as well, where \osgdocmk\ makes it available to \code{biber}:}
 
 \begin{verbatim}
 \LectureProjectSetup{
@@ -575,7 +575,7 @@ nowhere. Bibliographies by topic or chapter are available through the
 mit gleichem Dokumenttyp und gleicher Sprache zitiert, gefiltert wie bei
 \cs{printbibliography}. Es kann in jeder Unit stehen, etwa in einer eigenen
 Literatur-Unit oder am Ende eines Kapitels. Zitiert eine Unit Neues, meldet
-\code{ollm check} das Verzeichnis als veraltet; \code{ollm build --resolve}
+\code{osgdocmk check} das Verzeichnis als veraltet; \code{osgdocmk build --resolve}
 baut es neu. Nennt die Projektkonfiguration diese Unit als
 \option{series-target}, verlinken Zitate anderer Units auf ihre Einträge,
 wenn das zitierende Dokument kein eigenes Verzeichnis mit dem Eintrag hat;
@@ -584,8 +584,8 @@ is printed by \cs{printseriesbibliography}: all entries cited by any unit of
 the series with the same document type and language, filtered as with
 \cs{printbibliography}. It can stand in any unit, for example in a
 literature unit of its own or at the end of a chapter. If a unit cites
-something new, \code{ollm check} reports the bibliography as stale;
-\code{ollm build --resolve} rebuilds it. If the project configuration names
+something new, \code{osgdocmk check} reports the bibliography as stale;
+\code{osgdocmk build --resolve} rebuilds it. If the project configuration names
 this unit as \option{series-target}, citations in other units link to its
 entries whenever the citing document has no bibliography of its own with the
 entry; on integration these links become internal:}

@@ -11,14 +11,14 @@
 %Abschnitt~\ref{sec:content-command-reference}, Serien in
 %Abschnitt~\ref{sec:series}, Standalone-Betrieb in
 %Abschnitt~\ref{sec:standalone}, Konfiguration und Profile in
-%Abschnitt~\ref{sec:configuration-reference} sowie OLLM in
-%Abschnitt~\ref{sec:ollm-reference}.}{From this section onward, the manual also
+%Abschnitt~\ref{sec:configuration-reference} sowie osgdocmk in
+%Abschnitt~\ref{sec:osgdocmk-reference}.}{From this section onward, the manual also
 %serves as a reference. The basic concepts are introduced here; complete
 %interface summaries are located with their respective topics: content and
 %modes in Section~\ref{sec:content-command-reference}, series in
 %Section~\ref{sec:series}, standalone operation in Section~\ref{sec:standalone},
 %configuration and profiles in Section~\ref{sec:configuration-reference}, and
-%OLLM in Section~\ref{sec:ollm-reference}.}
+%osgdocmk in Section~\ref{sec:osgdocmk-reference}.}
 %\end{infobox}
 
 \subsection{\ldeen{Projekt}{Project}}
@@ -105,7 +105,7 @@ a lot. At the OSG, there are a number of typical teaching scenarios
 
 \begin{manualdirtree}
   \dtdir{Operating\_Systems}{\ldeen{Root-Verzeichnis}{root}}{
-    \dtfile{ollmconfig.toml}{\ldeen{Manifest}{manifest}}
+    \dtfile{osgdocmkconfig.toml}{\ldeen{Manifest}{manifest}}
     \dtdir{000-Intro}{\ldeen{1. Lehreinheit}{1st unit}}{
       \dtfile{main.tex}{}
       \dtfile{picture.png}{}
@@ -178,7 +178,7 @@ a lot. At the OSG, there are a number of typical teaching scenarios
     Dokumentarten}{Without a target specification, the directory contains material for \emph{all} configured
     document types}.
 
-  \ldeen{Dieser Zielbereich ist erweiterbar, siehe die Dokumentation zu \code{ollm}.}{This target range can be extended; see the documentation for \code{ollm}.}
+  \ldeen{Dieser Zielbereich ist erweiterbar, siehe die Dokumentation zu \code{osgdocmk}.}{This target range can be extended; see the documentation for \code{osgdocmk}.}
   \item [\meta{role}] \ldeen{Rolle, die die Einheit einnimmt. Dies wird stets durch einen einzelnen Buchstaben
       beschrieben:}{The role that the unit plays. This is always described by a single letter}
   \begin{itemize}
@@ -190,7 +190,7 @@ a lot. At the OSG, there are a number of typical teaching scenarios
 \end{description}
 
 \begin{warnbox}{\ldeen{Achtung}{Attention}}
-  \ldeen*{Bitte beachten Sie, dass der Aufbau der Verzeichnisnamen nicht nur Konvention ist: Sowohl die Hauptklasse @1 als auch das Tool @2 werten die Namen aus.}{Please note that the structure of the directory names is not merely a convention: both the main class @1 and the tool @2 interpret these names.}{\cls{osglecture}}{\OLLM}
+  \ldeen*{Bitte beachten Sie, dass der Aufbau der Verzeichnisnamen nicht nur Konvention ist: Sowohl die Hauptklasse @1 als auch das Tool @2 werten die Namen aus.}{Please note that the structure of the directory names is not merely a convention: both the main class @1 and the tool @2 interpret these names.}{\cls{osglecture}}{\osgdocmk}
 \end{warnbox}
 \ldeen*{In jedem Lehreinheitenverzeichnis befindet sich eine \LaTeX-Datei. Sie verwendet die Dokumentklasse @1 und trägt in der Standardkonfiguration den Namen @2. Neben dieser Datei kann sich beliebiges weiteres Material in dem Verzeichnis befinden, etwa Bilder, einzubindende Dateien oder private \File{.sty}-Dateien, die nur in dieser Einheit benötigt werden.}{Each course-unit directory contains a \LaTeX\ file. It uses the document class @1 and, in the default configuration, is named @2. The directory may also contain any other material, such as images, files to be included, or private \File{.sty} files needed only by that unit.}{\cls{osglecture}}{\File{main.tex}}
 
@@ -328,7 +328,7 @@ einem Langformprofil einführen. Ein bloßer Wechsel von \cls{book} zu
 \code{script}. Diese Unterscheidung verhindert, dass technische
 Satzentscheidungen unnötig viele Dokumentinstanzen erzeugen. Das vollständige
 Profilbeispiel steht in Abschnitt~\ref{sec:project-configuration}; neue
-OLLM-Targets werden über die dort beschriebenen Targetdefinitionen
+osgdocmk-Targets werden über die dort beschriebenen Targetdefinitionen
 registriert.}{Extensibility is useful when a project needs a semantically new
 output, not merely a different layout. For example, supervised self-study
 might introduce a \code{studyguide} type with its own active modes and a
@@ -336,7 +336,7 @@ long-form profile. Merely switching from \cls{book} to \cls{scrbook}, by
 contrast, only requires another profile for the existing \code{script} type.
 This distinction prevents technical typesetting decisions from needlessly
 creating additional document instances. The complete profile example is in
-Section~\ref{sec:project-configuration}; new OLLM targets are registered using
+Section~\ref{sec:project-configuration}; new osgdocmk targets are registered using
 the target definitions described there.}
 
 \subsection{\ldeen{Dokumententypen und Profile}{Document Types and Profiles}}
@@ -354,7 +354,7 @@ produced, and for whom?"' rather than of a particular \LaTeX\ class.}
 \centering
 \begin{tcolorbox}[width=.92\linewidth,colback=blue!2,colframe=blue!55!black]
 \centering
-\code{ollm build slides --language=en}
+\code{osgdocmk build slides --language=en}
 \par\medskip$\Downarrow$\par\smallskip
 \begin{tabular}{c@{\quad$\longrightarrow$\quad}c@{\quad$\longrightarrow$\quad}c}
 \ldeen{Target}{Target} & \ldeen{Profil und Klasse}{Profile and class} & \ldeen{aktive Modi}{active modes}\\
@@ -365,10 +365,10 @@ produced, and for whom?"' rather than of a particular \LaTeX\ class.}
 \end{figure}
 
 \ldeen{Im normalen Arbeitsablauf begegnet Ihnen der Dokumenttyp als Targetname
-im \OLLM-Befehl. \OLLM\ prüft im Manifest, ob dieses Target und die gewünschte
+im \osgdocmk-Befehl. \osgdocmk\ prüft im Manifest, ob dieses Target und die gewünschte
 Sprache für das Projekt vorgesehen sind. Anschließend übergibt es die
 normalisierte Auswahl an \cls{osglecture}.}{In the normal workflow, the
-document type appears as the target name in the \OLLM\ command. \OLLM\ checks the
+document type appears as the target name in the \osgdocmk\ command. \osgdocmk\ checks the
 manifest to determine whether this target and the requested language are
 configured for the project. It then passes the normalized selection to
 \cls{osglecture}.}
@@ -489,10 +489,10 @@ infrastructure, whereas \File{projectconfig.tex} describes the project's
 subject-matter and design context.}
 
 \ldeen{Diese Liste ist erweiterbar. Für den Einstieg sollten Sie jedoch die
-mitgelieferten Typen verwenden: Sie sind in \OLLM\ registriert und besitzen bereits
+mitgelieferten Typen verwenden: Sie sind in \osgdocmk\ registriert und besitzen bereits
 passende Profile, Modi und Anwendungsbereiche.}{This list is extensible. When
 starting out, however, use the supplied types: they are already registered with
-\OLLM\ and have suitable profiles, modes, and scopes.}
+\osgdocmk\ and have suitable profiles, modes, and scopes.}
 
 \begin{table}[htbp]
   \centering

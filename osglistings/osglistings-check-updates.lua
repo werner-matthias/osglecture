@@ -8,7 +8,7 @@
 ]]
 --<*lua>
 -- Standalone staleness check for an osglistings remote-source cache.
--- Runs entirely outside LaTeX/OLLM: one lightweight request per
+-- Runs entirely outside LaTeX/osgdocmk: one lightweight request per
 -- distinct GitHub repo/gist referenced from the cache, not one per
 -- cached file (see osglistings.lua's M.check_updates).
 --

@@ -1,0 +1,102 @@
+# osgdocmk runtime dependencies
+
+## Required programs
+
+osgdocmk currently expects these programs:
+
+- Perl 5.30 or newer;
+- `latexmk`;
+- LuaLaTeX.
+
+Run `osgdocmk doctor` to see the executables and TOML parser selected by the
+current installation. Use `osgdocmk doctor --format=json` in automated checks.
+The Doctor also compiles a minimal LuaLaTeX document. Its JSON output keeps
+optional capabilities separate from required runtime checks. In particular,
+the `ltx-talk-adapter` capability checks `ltx-talk.cls` and the New Computer
+Modern text and math fonts without making plain `osgmodes` unusable
+when that optional stack is absent or too old. Failed checks name the relevant
+TeX Live package and an appropriate `tlmgr install` command.
+
+## Optional programs
+
+- `qpdf` is needed only by `osgdocmk deploy` when the manifest or
+  `--permissions` restricts the PDF permissions of deployed copies. It is not
+  part of TeX Live; install it from the system's package manager or from
+  <https://qpdf.sourceforge.io/>. `osgdocmk doctor` reports it as the optional
+  `pdf-permissions` capability and, inside a project that restricts
+  permissions, as a failing project check when it is missing.
+
+## TOML parsers
+
+There are two TOML readers, for two different slices of the same manifest
+(see `ARCHITECTURE.md` section 12), not two competing implementations of the
+same content.
+
+### osgdocmk (Perl)
+
+End users do not normally install a TOML module. osgdocmk includes the read-only
+portion of `TOML::Tiny` 0.22 and loads it relative to the osgdocmk launcher:
+
+```text
+vendor/TOML-Tiny-0.22/lib/TOML/Tiny/Grammar.pm
+vendor/TOML-Tiny-0.22/lib/TOML/Tiny/Parser.pm
+vendor/TOML-Tiny-0.22/lib/TOML/Tiny/Tokenizer.pm
+```
+
+This parser supports TOML 1.0. The selected parser path only uses modules that
+are part of Perl itself. osgdocmk does not use the TOML writer. It reads only the
+slice of the manifest needed to decide what to build (target, doctype,
+language, and related registry lookups).
+
+### Shared module (Lua)
+
+Project content that isn't needed for the build decision itself -- series
+structure, available languages, bundle-preset content -- is read by a shared
+Lua module, callable both from a real compile (`\directlua`) and standalone
+via `texlua`. It vendors its own pure-Lua TOML reader under the same
+portability constraint as the Perl parser: no dependency on anything outside
+what ships with a normal TeX Live install.
+
+Both files live in the `osglecture` package, not in `osgdocmk`, since
+`osglecture` is their primary consumer:
+
+- `osglecture/osglecture-manifest.lua`: manifest reading and the project-root
+  discovery it needs (reusing `osglecture-series-index.lua`'s path
+  utilities).
+- `osglecture/osglecture-toml.lua`: the vendored TOML 1.0 reader; see
+  `osglecture/THIRD_PARTY-osglecture-cls.md` for provenance and license.
+
+osgdocmk does not call this module yet (see `HISTORY.md`); once it does,
+`osgdocmk doctor` will report name, version, and origin of both parsers, the
+same way it already does for `TOML::Tiny`.
+
+If the bundled files are missing, reinstalling osgdocmk is the preferred repair.
+As a fallback, a full Perl installation can provide the upstream distribution:
+
+```sh
+cpanm TOML::Tiny
+```
+
+or:
+
+```sh
+cpan TOML::Tiny
+```
+
+The second command may ask how CPAN should install modules. Follow the Perl
+installation's recommendation for a user-local installation when the
+system-wide Perl directories are not writable.
+
+On Windows, TeX Live contains a deliberately minimal private Perl. If it
+cannot install or find the module, install a complete Perl distribution and
+configure TeX Live to try the external Perl by adding this setting to the
+appropriate `texmf.cnf`:
+
+```text
+TEXLIVE_WINDOWS_TRY_EXTERNAL_PERL = 1
+```
+
+This fallback is only relevant for an incomplete or deliberately unbundled
+osgdocmk installation. A normal osgdocmk installation does not require CPAN access.
+
+See [`osgdocmk/THIRD_PARTY-osgdocmk.md`](../osgdocmk/THIRD_PARTY-osgdocmk.md) for provenance and licensing.

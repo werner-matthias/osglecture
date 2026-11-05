@@ -37,7 +37,7 @@ alte Option `osgbeamer` meldet LaTeX nun als ungenutzte globale Option.
 
 ### Dokumentprofile
 
-`bundle_preset` in der OLLM-Konfiguration bezeichnet das versionierte
+`bundle_preset` in der osgdocmk-Konfiguration bezeichnet das versionierte
 Bundle-Preset, beispielsweise `OSG lecture/1`. Davon getrennt bezeichnet ein
 Dokumentprofil die konkrete TeX-Integration. Das Profil wird im Manifest
 gewählt (`[targets.<name>].profile` oder
@@ -92,17 +92,17 @@ Mitgeliefert werden zunächst:
 
 Die gegenwärtige Version von `ltx-talk` verlangt `\DocumentMetadata{}` vor
 `\documentclass`, Beamer verbietet es. Ein Wrapper kann diese Initialisierung
-technisch nicht nachholen. Deshalb löst OLLM pro Target
+technisch nicht nachholen. Deshalb löst osgdocmk pro Target
 `document_metadata=required|disabled` auf und liest die nutzereditierbare Datei
 nur bei `required`. Zuvor definiert es Symbole für Target, Doctype,
 Profilklasse, Policy und Sprache. Der Profildeskriptor deklariert unabhängig
 `document-metadata=required|supported|forbidden`; die Klasse validiert beide
-Seiten nach ihrer eigenen Auswahl des konkreten Profils. OLLM
+Seiten nach ihrer eigenen Auswahl des konkreten Profils. osgdocmk
 untersucht `main.tex` nicht; ein zusätzlicher `\DocumentMetadata`-Aufruf bleibt
 ein sichtbarer LaTeX-Konflikt.
 
 Im Standalone-Betrieb kann `profile=...` als Klassenoption verwendet werden.
-Auch bei einer OLLM-Auftragsdatei kann sie einen normalen Projektwert für
+Auch bei einer osgdocmk-Auftragsdatei kann sie einen normalen Projektwert für
 Diagnosezwecke überschreiben. Ein Widerspruch zu einem mit
 `\LectureProjectEnforce` erzwungenen Profil ist ein Fehler.
 
@@ -116,7 +116,7 @@ Fehlt einer der beiden Zeiger, fehlt eine bezeichnete Datei oder sind
 `standalone` und ein Runner-Zeiger gleichzeitig aktiv, bricht die Klasse ab.
 
 Die Zeiger sind Pfad-Locators, keine portablen Projektmetadaten. Relative und
-absolute TeX-auflösbare Pfade sind zulässig. OLLM erzeugt normalisierte absolute
+absolute TeX-auflösbare Pfade sind zulässig. osgdocmk erzeugt normalisierte absolute
 Pfade, weil latexmks `-cd`, verschiedene Buildverzeichnisse und parallele
 Prozesse dann keinen Einfluss auf ihre Auflösung haben. Die Pfade werden nur
 in flüchtigen Buildkommandos verwendet und nicht in transportierbare
@@ -145,7 +145,7 @@ Noch nicht als stabiler Autorenvertrag festgelegt sind insbesondere:
 - spezialisierte optionale Fachpakete und deren jeweilige Autorenbefehle.
 
 Der Autoren- und Dateivertrag für Referenzen über Unitgrenzen ist inzwischen
-in Abschnitt 3.9 festgelegt. Seine OLLM-seitige atomare Promotion und der
+in Abschnitt 3.9 festgelegt. Seine osgdocmk-seitige atomare Promotion und der
 jobgebundene Registry-Snapshot sind implementiert; Check/Report und
 Fixpunktauflösung bleiben noch zu implementieren.
 
@@ -176,7 +176,7 @@ Die Klasse verarbeitet vier Arten von Eingaben und erzeugt daraus eine konkrete 
               ┌────────────────┼────────────────┐
               │                │                │
         Klassenoptionen   Serienkonfiguration  Buildauftrag
-              │               (OLLM)            │
+              │               (osgdocmk)            │
               └────────────────┼────────────────┘
                                ▼
                     osglecture – Orchestrator
@@ -196,7 +196,7 @@ Die Klasse verarbeitet vier Arten von Eingaben und erzeugt daraus eine konkrete 
 Die Klasse übernimmt derzeit fünf Rollen:
 
 1. **Konfiguration ermitteln:** Klassenoptionen und den normalisierten,
-   jobgebundenen OLLM-Buildauftrag auswerten.
+   jobgebundenen osgdocmk-Buildauftrag auswerten.
 2. **Ausgabemodus wählen:** Präsentations- oder Langformprofil mit seiner Basisklasse laden.
 3. **Serienkontext integrieren:** kapitelübergreifende Metadaten, Referenzen, Bibliografie und Nummerierung einbinden.
 4. **Darstellung konfigurieren:** Theme, Schriften, Farben und Handout-Layout festlegen.
@@ -229,7 +229,7 @@ der Graph liefert transitive Obermodi
 ```
 
 Target und Dokumenttyp sind zwei Perspektiven derselben fachlichen Auswahl:
-OLLM spricht von einem Target, die Klasse von einem Dokumenttyp. Nach
+osgdocmk spricht von einem Target, die Klasse von einem Dokumenttyp. Nach
 Normalisierung von CLI-Aliasen gilt für den gewöhnlichen Build:
 
 ```text
@@ -256,7 +256,7 @@ Abstrakte Obermodi müssen keine baubaren Dokumenttypen sein. `osgmodes`
 übernimmt die portable Auswertung der Matrix. Der ausgewählte
 Profildeskriptor beziehungsweise dessen `mode-setup-file` registriert sie auf
 der TeX-Seite; `osglecture` setzt anschließend den Dokumenttyp als Blattmodus,
-bevor modusabhängige Projektmetadaten verarbeitet werden. OLLM transportiert
+bevor modusabhängige Projektmetadaten verarbeitet werden. osgdocmk transportiert
 keine Modusmatrix.
 
 `osgmodes` bildet diesen Vertrag als Menge aktiver Blattmodi mit transitiver
@@ -300,7 +300,7 @@ Bis zu einer fachlichen Aufspaltung aktiviert `osglecture` für `script` und
 verbaut daher keine spätere getrennte Semantik. Vor dem Finalisieren kann das
 Dokumentprofil den Graphen über `mode-setup-file` erweitern; `modes` ergänzt
 weitere aktive Modi. Ein Bundle-Preset beeinflusst die Matrix nur mittelbar
-durch die Auswahl eines Dokumentprofils, nicht durch einen zweiten von OLLM
+durch die Auswahl eines Dokumentprofils, nicht durch einen zweiten von osgdocmk
 zusammengeführten Graphen.
 
 Explizite Klassenoptionen für `doctype` und `lang` dürfen einen BuildSpec zu
@@ -409,7 +409,7 @@ nicht.
 
 ### 3.3 Serie und Standalone sind zwei gleichwertige Kontexte
 
-Im Serienbetrieb liefert OLLM Informationen über Verzeichnisstruktur, Kapitel,
+Im Serienbetrieb liefert osgdocmk Informationen über Verzeichnisstruktur, Kapitel,
 Sprache, Dokumenttyp und gemeinsame Daten. Ein Serienbetrieb verlangt immer
 ein vorhandenes TOML-Projektmanifest und einen durch den Runner eindeutig
 bezeichneten Auftrag. Ohne diesen Kontext bricht die Klasse ab. Der lokale
@@ -566,7 +566,7 @@ und Zeitstempel gehören nicht in diese Signatur.
 Für eine noch nie erfolgreich gebaute Unit existiert zunächst keine Zuordnung
 zwischen logischer ID und physischem Build. Diese Bootstrap-Lücke wird bewusst
 LaTeX-typisch behandelt: osglecture leitet die ID nicht aus Slug, Nummer,
-Jobname oder Nachbarverzeichnis ab, und OLLM durchsucht die Quelle nicht nach
+Jobname oder Nachbarverzeichnis ab, und osgdocmk durchsucht die Quelle nicht nach
 `\lecture`. Eine darauf gerichtete Referenz bleibt `??` und erzeugt eine
 Warnung. Erst ein erfolgreicher direkter Build der Ziel-Unit veröffentlicht
 ihre Zuordnung.
@@ -684,7 +684,7 @@ Uhr. Die Bestandteile wählt der Setup-Bereich `presenter`
 (`\OsgLectureSetup{mode/screen={presenter={...}}}`). Die Vorschau der nächsten
 Folie ist ein Vorwärtsverweis in derselben PDF-Datei: Jede Folie wird beim
 Ausgeben zusätzlich als Form-XObject gesichert, die Seite davor zeichnet ein
-vorab reserviertes Objekt (`osglecture-presenter.lua`). OLLM kennt für `screen`
+vorab reserviertes Objekt (`osglecture-presenter.lua`). osgdocmk kennt für `screen`
 deshalb keine Sonderbehandlung und keine Abhängigkeit vom `slides`-Build. Die
 Presenter-Seite ist nicht getaggt; die Uhr ist ein Formularfeld mit
 Dokument-JavaScript und läuft nur in Betrachtern, die das unterstützen.
@@ -779,14 +779,14 @@ dieselbe Bedeutung hätte.
 
 Alle gewöhnlichen Labels werden in eine kontrollierte `.osgref.aux` gespiegelt.
 Nur tatsächlich adressierte Fremddokumente werden importiert. Ein
-OLLM-generierter Snapshot bildet die logische Adresse aus Serie, Unit,
+osgdocmk-generierter Snapshot bildet die logische Adresse aus Serie, Unit,
 Dokumenttyp und Sprache auf den letzten validen Export und dessen Artefakt ab.
-Fehlende Ziele ergeben `??` und eine Warnung; `ollm check` bleibt für
+Fehlende Ziele ergeben `??` und eine Warnung; `osgdocmk check` bleibt für
 Integritätsprüfungen streng.
 
 `build --resolve` arbeitet nur mit bereits bekannten Zuordnungen. Es darf eine
 unbekannte logische Unit weder heuristisch einem Verzeichnis zuordnen noch
-TeX-Quellen durchsuchen. `ollm check` listet unbekannte Unit-IDs, fehlende
+TeX-Quellen durchsuchen. `osgdocmk check` listet unbekannte Unit-IDs, fehlende
 Doctype-/Sprachprojektionen und fehlende Labels vollständig als
 Serieninkonsistenzen auf.
 
@@ -815,8 +815,8 @@ beobachteten Tag-Status getroffen, gilt einheitlich für den ganzen Doctype
 und erzwingt bei einem im vorigen Lauf beobachteten Mix aus getaggten und
 ungetaggten Units mit einer nachdrücklichen Warnung den ungetaggten Pfad
 (Details in `osglecture/README-cls.md`, Abschnitt „Dokumentintegration").
-Aus OLLM-Sicht ist das Integrationsverzeichnis eine gewöhnlich übersetzte Unit
-mit Rolle `i` (`integration`). OLLM soll den Snapshot der promotierten
+Aus osgdocmk-Sicht ist das Integrationsverzeichnis eine gewöhnlich übersetzte Unit
+mit Rolle `i` (`integration`). osgdocmk soll den Snapshot der promotierten
 Artefakte, Rollen und Serienreihenfolge liefern, interpretiert aber weder
 `\includeunit(s)` noch komponiert es PDFs. Auswahl, Bereichsauswertung und
 tagpax-Import gehören in einen osglecture-Integrationsdienst. Dieser bildet den
@@ -825,7 +825,7 @@ logischen, pfadunabhängigen Ersatz für das frühere `osgcombinescript`.
 Bei der künftigen Implementierung schreibt `\includeunit` beziehungsweise
 `\includeunits` für jede nach Bereichsexpansion tatsächlich ausgewählte
 Unitprojektion einen kontrollierten Abhängigkeitsrecord mit Unit-ID, Doctype,
-Sprache und verwendeter Zielgeneration. OLLM leitet die Auswahl nicht durch
+Sprache und verwendeter Zielgeneration. osgdocmk leitet die Auswahl nicht durch
 Quelltextsuche her. Nur diese gemeldeten Integrationen machen ein
 Unit-Artefakt für `check` und `build --resolve` erforderlich; eine bloß
 entdeckte, unreferenzierte und nicht integrierte Unit darf ungebaut bleiben.
@@ -882,16 +882,16 @@ Ein wesentlicher Schritt der Überarbeitung ist die Entscheidung, welche dieser 
 
 ## 5. Heutige Kopplungen und Risiken
 
-### 5.1 Normalisierte OLLM-Grenze
+### 5.1 Normalisierte osgdocmk-Grenze
 
 Der neue Kern liest ausschließlich die jobgebundene
-`<jobname>.osgbuild.tex`. OLLM besitzt Manifest-Parsing, Discovery und
+`<jobname>.osgbuild.tex`. osgdocmk besitzt Manifest-Parsing, Discovery und
 Prioritätsauflösung; die Klasse validiert Schema und Jobbindung und übernimmt
 die normalisierten Werte. Damit setzt sie weder ein bestimmtes
 Arbeitsverzeichnis noch eine externe Konfigurationssyntax voraus.
 
 Zu diesen normalisierten Werten gehören `shared-tex-directory` und
-`project-config-file`. OLLM löst das im Projektmanifest standardmäßig als
+`project-config-file`. osgdocmk löst das im Projektmanifest standardmäßig als
 `Include/projectconfig.tex` beschriebene Paar auf, setzt den absoluten
 Verzeichnispfad in `TEXINPUTS` und transportiert ihn jobgebunden. Die Klasse
 liest weder TOML noch sucht sie selbst nach dem Projektroot. Sie liest die
@@ -941,7 +941,7 @@ osglecture.cls
 │
 ├── Konfigurationskern
 │   ├── Schlüssel, Defaults und Prioritäten
-│   ├── normalisierte OLLM-Eingabe
+│   ├── normalisierte osgdocmk-Eingabe
 │   └── Diagnose und Validierung
 │
 ├── Dokumenttyp- und Moduskern
@@ -1061,7 +1061,7 @@ Profil- und Pakettests erfolgen.
 3. **Eine fachliche Typachse.** Target und Dokumenttyp sind Build- und Dokumentperspektive derselben kanonischen Auswahl; der Blattmodus ist keine zusätzliche unabhängige Dimension.
 4. **Eine Konfigurationssprache.** Neue öffentliche Schlüssel werden konsistent mit expl3/L3Keys implementiert.
 5. **Deterministische Prioritäten.** Jeder effektive Wert hat eine nachvollziehbare Herkunft.
-6. **Lose Kopplung an OLLM.** OLLM liefert Daten; die Klasse kennt nicht dessen interne Dateien oder Parser.
+6. **Lose Kopplung an osgdocmk.** osgdocmk liefert Daten; die Klasse kennt nicht dessen interne Dateien oder Parser.
 7. **Austauschbare Darstellung.** TUC-/OSG-Branding ist ein Standardtheme, aber keine Voraussetzung der Kernklasse.
 8. **Optionale Dienste bleiben optional.** Bibliografie, Notizen und Komfortpakete dürfen den Minimalfall nicht belasten.
 9. **Keine stillen Rückfälle.** Ungültige Werte, fehlende Pflichtdaten und inkonsistente Kombinationen führen zu klaren Meldungen.
@@ -1128,7 +1128,7 @@ Vor einer Implementierung sollten folgende Fragen entschieden werden:
 
 1. **Vertrag festlegen.** Stabile Dokumenttypen, unterstützte Engine, Minimalbeispiele und Kompatibilitätsziel definieren.
 2. **Konfigurationsmodell extrahieren.** Werte, Typen, Defaults, Prioritäten und Diagnoseausgabe spezifizieren.
-3. **OLLM-Grenze normalisieren.** Parsing aus der Klasse entfernen und eine kleine Eingabeschnittstelle schaffen.
+3. **osgdocmk-Grenze normalisieren.** Parsing aus der Klasse entfernen und eine kleine Eingabeschnittstelle schaffen.
 4. **Backendadapter isolieren.** Präsentation, Handout und Skript mit je einem minimalen Test aufbauen.
 5. **Metadaten- und Strukturmodell etablieren.** Titel, Kapitelidentität, Nummerierung und Referenzziele vereinheitlichen.
 6. **Dienste modularisieren.** Sprache, Referenzen und Bibliografie als getrennte Pakete mit expliziten Abhängigkeiten führen.
@@ -1152,24 +1152,24 @@ Die Architektur ist ausreichend klar, wenn sich folgende Fragen jeweils mit eine
 - Wie wird eine alte Quelle migriert?
 - Welche Tests beweisen semantische und visuelle Gleichwertigkeit?
 
-## 12. Die OLLM-Grenze
+## 12. Die osgdocmk-Grenze
 
-OLLM hat genau zwei Aufgaben: sicherzustellen, dass die korrekte Projektion
+osgdocmk hat genau zwei Aufgaben: sicherzustellen, dass die korrekte Projektion
 gebaut wird, und das Deployment der Ergebnisse. Warum ältere Codeteile darüber
 hinausgehen, steht gesammelt in [`HISTORY.md`](./HISTORY.md); dieser Abschnitt
 beschreibt nur das verbindliche Zieldesign.
 
-**Leitlinie:** Jede OLLM-Verantwortlichkeit wird gegen genau zwei Fragen
+**Leitlinie:** Jede osgdocmk-Verantwortlichkeit wird gegen genau zwei Fragen
 geprüft: Ist sie nötig, um zu entscheiden, *was* gebaut werden soll, und den
 Bau *korrekt* durchzuführen (Auftrag)? Oder ist sie nötig, um ein bereits
 validiertes Ergebnis an seinen Zielort zu bringen (Deployment)? Trifft keine
-der beiden Fragen zu, gehört die Verantwortlichkeit nicht zu OLLM.
+der beiden Fragen zu, gehört die Verantwortlichkeit nicht zu osgdocmk.
 
 ### Ein gemeinsames Modul für Projektinhalt und Discovery
 
 Projektinhalt -- Serienstruktur, Verzeichnisgrammatik, verfügbare Sprachen,
 Bundle-Preset-Inhalt -- wird von einem gemeinsamen Lua-Modul gelesen, nicht
-von OLLM. Dieses Modul ist:
+von osgdocmk. Dieses Modul ist:
 
 - über `\directlua` aus einem echten Kompilierlauf aufrufbar: `osglecture`
   liest sein eigenes Projektumfeld selbst, das ist der primäre Verbraucher;
@@ -1186,24 +1186,24 @@ und die aufrufende TeX-Seite schaltet für den Transfer auf
 Zeichenketten-Katcodes (`\c_str_cctab`) um. Ein verstümmelter Wert fällt sonst
 nicht an seiner Entstehungsstelle auf, sondern erst dort, wo er benutzt wird.
 
-OLLM ist Nutzer dieses Moduls, nicht Parallelimplementierer. Wo OLLM
+osgdocmk ist Nutzer dieses Moduls, nicht Parallelimplementierer. Wo osgdocmk
 Projektinhalt für eigene Aufgaben braucht -- Serien-Discovery für
-`build --all`, eine schnelle Konsistenzprüfung in `ollm check`/`ollm doctor`
+`build --all`, eine schnelle Konsistenzprüfung in `osgdocmk check`/`osgdocmk doctor`
 ohne vollständigen Kompilierlauf --, ruft es dasselbe Modul über `texlua` auf,
 statt eine zweite, unabhängige Interpretation in Perl zu pflegen. Damit gibt
 es weiterhin genau einen Parser und eine Merge-/Prioritätslogik; nur die
 Sprache dieser einen Implementierung ist Lua, nicht Perl.
 
 Für Manifestinhalt, der Teil der Auftragsentscheidung ist (siehe unten),
-bleibt der schmale, als `TOML::Tiny` vendorierte Perl-Parser in OLLM
+bleibt der schmale, als `TOML::Tiny` vendorierte Perl-Parser in osgdocmk
 maßgeblich -- mit derselben Portabilitätsbegründung, mit der auch das
 gemeinsame Lua-Modul einen vendorierten, reinen Lua-TOML-Leser ohne externe
 Abhängigkeit benötigt: LuaLaTeX und das minimale Windows-Perl garantieren
 beide keine zusätzlich installierten Bibliotheken.
 
-### Was strukturell bei OLLM bleibt
+### Was strukturell bei osgdocmk bleibt
 
-Drei Gründe binden Verantwortlichkeit zwingend an OLLM als externen Prozess,
+Drei Gründe binden Verantwortlichkeit zwingend an osgdocmk als externen Prozess,
 unabhängig vom gemeinsamen Modul:
 
 - **Entscheidung vor dem Start.** Der Aufruf des Backends (Jobname, Engine-
@@ -1228,36 +1228,36 @@ Deployment.
 
 | Schlüssel | Ziel | Begründung |
 |---|---|---|
-| `schema` | OLLM | Vertrag zwischen OLLM und Klasse, kein Projektinhalt |
-| `job-id` | OLLM | Identität des Auftrags |
-| `context` | OLLM | Art des Auftrags |
-| `series-id` | OLLM | Registrierschlüssel für Artefaktregister/Generationen |
+| `schema` | osgdocmk | Vertrag zwischen osgdocmk und Klasse, kein Projektinhalt |
+| `job-id` | osgdocmk | Identität des Auftrags |
+| `context` | osgdocmk | Art des Auftrags |
+| `series-id` | osgdocmk | Registrierschlüssel für Artefaktregister/Generationen |
 | `physical-unit` | gemeinsames Modul | aus dem Verzeichnisnamen ableitbar (`lfs.currentdir()`) |
 | `physical-number` | gemeinsames Modul | aus `physical-unit` regelbasiert ableitbar |
 | `logical-ordinal` | gemeinsames Modul | Ergebnis von Serien-Discovery |
 | `unit-scope` | gemeinsames Modul | aus `physical-unit` regelbasiert ableitbar |
 | `unit-role` | gemeinsames Modul | aus `physical-unit` regelbasiert ableitbar |
-| `unit-id` | OLLM | stammt aus einem früheren validierten Lauf, ist ein Registerwert |
-| `generation-id` | OLLM | reine Build-Zustandsführung |
-| `target` | OLLM | Kern der Auftragsentscheidung |
+| `unit-id` | osgdocmk | stammt aus einem früheren validierten Lauf, ist ein Registerwert |
+| `generation-id` | osgdocmk | reine Build-Zustandsführung |
+| `target` | osgdocmk | Kern der Auftragsentscheidung |
 | `profile-class` | Grenzfall | folgt aus der Zielregistrierung von `target`; siehe unten |
-| `profile` | Grenzfall | von OLLM aus Manifest und Profil-Fähigkeitstabelle aufgelöst; muss vor dem Klassenlauf feststehen |
-| `document-metadata-policy` | Grenzfall | von OLLM aus der Profilfähigkeit plus optionalem Manifestschlüssel abgeleitet |
-| `doctype` | OLLM | Kern der Auftragsentscheidung |
+| `profile` | Grenzfall | von osgdocmk aus Manifest und Profil-Fähigkeitstabelle aufgelöst; muss vor dem Klassenlauf feststehen |
+| `document-metadata-policy` | Grenzfall | von osgdocmk aus der Profilfähigkeit plus optionalem Manifestschlüssel abgeleitet |
+| `doctype` | osgdocmk | Kern der Auftragsentscheidung |
 | `applicable-unit-scopes` | Grenzfall | Wert aus der Zielregistrierung, konsumiert von der Serienlogik im gemeinsamen Modul |
-| `language` | OLLM | Kern der Auftragsentscheidung |
-| `selectable-languages` | Grenzfall | von OLLM aufgelöste Sprachliste des Targets (Manifestreihenfolge), an `langselect` gereicht |
+| `language` | osgdocmk | Kern der Auftragsentscheidung |
+| `selectable-languages` | Grenzfall | von osgdocmk aufgelöste Sprachliste des Targets (Manifestreihenfolge), an `langselect` gereicht |
 | `available-languages` | gemeinsames Modul | Projektinhalt, keine Auftragsentscheidung |
 | `bundle-preset` | gemeinsames Modul | Projektinhalt (Feature-/Theme-Vorgabe) |
 | `shared-tex-directory` | gemeinsames Modul | konventionsbasiert relativ zum Manifest auflösbar |
 | `source-directory` | gemeinsames Modul | redundant zu `lfs.currentdir()` |
 | `project-config-file` | gemeinsames Modul | konventionsbasiert relativ zum Manifest auflösbar |
-| `shell-escape` | OLLM | bestimmt die Engine-Aufrufparameter |
-| `structure-signature` | OLLM | Invalidierung von Generationen, reine Build-Zustandsführung |
-| `config-signature` | OLLM | dieselbe Begründung |
+| `shell-escape` | osgdocmk | bestimmt die Engine-Aufrufparameter |
+| `structure-signature` | osgdocmk | Invalidierung von Generationen, reine Build-Zustandsführung |
+| `config-signature` | osgdocmk | dieselbe Begründung |
 
 „Gemeinsames Modul" heißt: Die Klasse liest den Wert direkt selbst; die
-Auftragsdatei transportiert ihn nicht mehr. Braucht OLLM denselben Wert für
+Auftragsdatei transportiert ihn nicht mehr. Braucht osgdocmk denselben Wert für
 eigene Zwecke (siehe oben), bezieht es ihn bei Bedarf über `texlua` aus
 demselben Modul, statt ihn selbst zu parsen.
 
@@ -1278,7 +1278,7 @@ zu ändern:
 - **`physical-unit`, `unit-role` und `logical-ordinal` sind nicht nur
   Eingabe, sondern auch Ausgabe.** `osglecture-structure.sty`
   (`__osglecture_result_write:`) schreibt alle drei zusammen mit `unit-id` in
-  `<jobname>.osgresult.aux` zurück an OLLM. Das ist bereits der etablierte
+  `<jobname>.osgresult.aux` zurück an osgdocmk. Das ist bereits der etablierte
   Mechanismus für `unit-id` (ein Wert, den die Klasse liefert, nicht
   empfängt); er trägt ohne Änderung auch die drei jetzt migrierenden Werte.
   Zusätzlich entscheidet `unit-role` in `osglecture.cls:364`, ob
@@ -1309,13 +1309,13 @@ für Schritt 2.
 (`parse_unit_name`) implementieren heute unabhängig voneinander denselben
 Verzeichnisnamens-Vertrag, in zwei Sprachen. Der naheliegendste erste Schritt
 entfernt `physical-number`/`unit-scope`/`unit-role` aus der Auftragsdatei und
-lässt sowohl die Klasse als auch OLLM (über `texlua`) dieselbe
+lässt sowohl die Klasse als auch osgdocmk (über `texlua`) dieselbe
 `osglecture-series-index.lua`-Logik nutzen -- er verringert bestehende
 Duplikation, statt neue Komplexität einzuführen.
 
 ### Schrittfolge
 
-1. [x] Den minimalen Schlüsselsatz festlegen, den OLLM zur Auftragsentscheidung
+1. [x] Den minimalen Schlüsselsatz festlegen, den osgdocmk zur Auftragsentscheidung
    tatsächlich braucht (im Kern: `target`/`doctype`/`language`-Auflösung samt
    der drei Grenzfälle) -- verifiziert gegen alle tatsächlichen Verbraucher,
    siehe „Schritt 1: verifizierter Schlüsselsatz" oben.
@@ -1328,12 +1328,12 @@ Duplikation, statt neue Komplexität einzuführen.
    `series-index.lvt`; verifiziert sowohl über `\directlua` innerhalb eines
    echten Laufs als auch eigenständig über `texlua`. Zum Zeitpunkt dieses
    Schritts noch nicht angebunden; `osglecture.cls` ist es weiterhin nicht
-   (Schritt 5), OLLM inzwischen teilweise (siehe Schritt 3).
-3. [x] `ollm check`/`ollm doctor` rufen das Modul über `texlua` auf --
+   (Schritt 5), osgdocmk inzwischen teilweise (siehe Schritt 3).
+3. [x] `osgdocmk check`/`osgdocmk doctor` rufen das Modul über `texlua` auf --
    `OLLM::LuaManifest` (Perl-Bridge) und `osglecture-manifest-cli.lua`
-   (Lua-seitiger, zeilenorientierter Einstiegspunkt). `ollm doctor` meldet
+   (Lua-seitiger, zeilenorientierter Einstiegspunkt). `osgdocmk doctor` meldet
    zusätzlich zum Perl-Parser den Lua-seitigen (`osglecture-toml.lua`),
-   informativ, ohne Voraussetzung zu sein. `ollm check` vergleicht bei jedem
+   informativ, ohne Voraussetzung zu sein. `osgdocmk check` vergleicht bei jedem
    Lauf `OLLM::Config::structure_snapshot`s eigene Discovery gegen die des
    Moduls und meldet eine Abweichung als Warnung (`lua-discovery-drift`).
    Getestet in `testfiles/lua-manifest.t` (16 Assertions, inklusive
@@ -1348,18 +1348,18 @@ Duplikation, statt neue Komplexität einzuführen.
    doctor umstellen" hergibt. Ebenso migriert diese Umstellung nicht die
    Manifestvalidierung selbst (Zieldefaults, Sprachabgleich, erzwungene
    Konfiguration): Das gemeinsame Modul liest bewusst nur Rohwerte, ohne
-   OLLMs eigene Regeln nachzubilden. `check`s neuer Vergleich ist deshalb
+   osgdocmk's eigene Regeln nachzubilden. `check`s neuer Vergleich ist deshalb
    eine echte, wertvolle Zusatzprüfung (sie hätte die in Abschnitt „Bereits
    vorhandene Duplikation" beschriebene Divergenz sofort gemeldet), aber
    noch kein Ersatz der Perl-Implementierung -- der bleibt Schritt 6
    vorbehalten.
 4. [x] Die Auftragsdatei auf den in Schritt 1 festgelegten minimalen
    Schlüsselsatz verkleinert -- `BuildFile.pm::render` emittiert nur noch die
-   als „OLLM"/„Grenzfall" klassifizierten Schlüssel;
+   als „osgdocmk"/„Grenzfall" klassifizierten Schlüssel;
    `osglecture-config.sty`s `.code:n`-Einträge und Pflichtschlüsselliste für
-   die zehn „gemeinsames Modul"-Schlüssel entfernt, sodass eine ältere OLLM,
+   die zehn „gemeinsames Modul"-Schlüssel entfernt, sodass eine ältere osgdocmk,
    die sie noch sendet, einen klaren „unknown key"-Fehler erzeugt statt
-   stillschweigend ignoriert zu werden. `$spec` (OLLMs interne
+   stillschweigend ignoriert zu werden. `$spec` (osgdocmk's interne
    Repräsentation) behält alle Werte weiterhin.
 5. [x] Bootstrapping der Klasse erweitert -- **vor** Schritt 4 umgesetzt, da
    Schritt 1 bereits zeigte, dass die Klasse `physical-unit`, `unit-role`,
@@ -1384,10 +1384,10 @@ Duplikation, statt neue Komplexität einzuführen.
      Regeln wie `OLLM::BuildFile::_logical_ordinal` berechnet. Ursprünglich
      wurde hier `\OsgLectureSeriesPosition` gemeldet, in der Annahme, beide
      seien dieselbe Größe; die Listenposition zählt aber Integrationsunits,
-     Exkurse und Anhänge mit, sodass ollm jeden Exkurs und jeden Anhang mit
+     Exkurse und Anhänge mit, sodass osgdocmk jeden Exkurs und jeden Anhang mit
      „LaTeX result ordinal … does not match BuildSpec“ ablehnte. Beide
      Implementierungen werden mit derselben Falltabelle getestet
-     (`ollm/testfiles/build-file.t`, `osglecture/testfiles/series-index.lvt`).
+     (`osgdocmk/testfiles/build-file.t`, `osglecture/testfiles/series-index.lvt`).
    - **Dabei gefunden und behoben:** `\ExplSyntaxOn` setzt Leerzeichen auf
      Katcode~9 (ignoriert), nicht Katcode~10 wie normales LaTeX. Lua-Code mit
      mehreren Anweisungen (`local x = ...`, `if ... then`) direkt im
@@ -1399,16 +1399,16 @@ Duplikation, statt neue Komplexität einzuführen.
      der neuen Serieninitialisierung; sichtbar wurde es nicht durch einen der
      `l3build`-Tests (die laufen nie mit einem tatsächlich
      serieneinheit-förmigen Arbeitsverzeichnis), sondern durch
-     `ollm/testfiles/reference-lifecycle.t`, den einzigen Test mit einem
-     echten OLLM-erzeugten Build und echtem LuaLaTeX-Lauf. Die Funktion
+     `osgdocmk/testfiles/reference-lifecycle.t`, den einzigen Test mit einem
+     echten osgdocmk-erzeugten Build und echtem LuaLaTeX-Lauf. Die Funktion
      `series_index.initialize_tex_csv_if_available` kapselt Vorabtest und
      bedingten Aufruf jetzt vollständig in der `.lua`-Datei, sodass der
      `\directlua`-Aufruf wieder ein sicherer Einzeiler ist.
    - Getestet über `testfiles/series-index.lvt` (neue Assertions für
      `current_unit`/`current_unit_tex`, einschließlich des
      `role=i`-Falls), `testfiles/project-config.lvt` (Projektkonfiguration
-     jetzt über ein echtes `ollmconfig.toml`-Fixture gefunden, nicht über
-     die Auftragsdatei) und `ollm/testfiles/reference-lifecycle.t` (echter
+     jetzt über ein echtes `osgdocmkconfig.toml`-Fixture gefunden, nicht über
+     die Auftragsdatei) und `osgdocmk/testfiles/reference-lifecycle.t` (echter
      Kompilierlauf, s.o.). Weiterhin nicht abgedeckt: ein `l3build`-Test mit
      tatsächlich serieneinheit-förmigem Arbeitsverzeichnis für
      `osglecture-series.sty`s Erfolgspfad -- `l3build`s Testverzeichnis
@@ -1420,7 +1420,7 @@ Duplikation, statt neue Komplexität einzuführen.
    damit entfernt. Die Signaturberechnung (SHA-256 über kanonischem JSON)
    bleibt unverändert und damit stabil gegenüber Schritt 3s bereits
    vorhandenem `structure_snapshot`-gegen-`discover_units`-Vergleich in
-   `ollm check`. Da `structure_snapshot` weiterhin von `resolve_request`
+   `osgdocmk check`. Da `structure_snapshot` weiterhin von `resolve_request`
    aufgerufen wird (dem heißen Pfad jedes Builds), löst jeder Aufruf jetzt
    einen `texlua`-Unterprozess aus statt eines lokalen Verzeichnis-Scans --
    für einzelne Builds unauffällig, bei `--all` mit vielen
@@ -1443,7 +1443,7 @@ Duplikation, statt neue Komplexität einzuführen.
      spekulativen, nicht gemessenen Latenzeinsparung. Eine spätere,
      korrekte Cache-Invalidierung (z.B. über einen Verzeichnis-mtime- oder
      Inhaltshash) bliebe möglich, ist aber kein Teil dieses Schritts.
-   - Getestet: bestehende Suiten unverändert (`ollm/testfiles/config.t`,
+   - Getestet: bestehende Suiten unverändert (`osgdocmk/testfiles/config.t`,
      `build-file.t`, `reference-lifecycle.t`, `lua-manifest.t`) laufen jetzt
      gegen die neue Implementierung und bestehen weiterhin (326/326 Tests);
      kein neuer Test nötig, da `structure_snapshot`s öffentlicher Vertrag
@@ -1454,7 +1454,7 @@ Duplikation, statt neue Komplexität einzuführen.
 
 ### Offene Fragen
 
-- Heute kann OLLM eine ungültige Konfiguration ablehnen, bevor die Engine
+- Heute kann osgdocmk eine ungültige Konfiguration ablehnen, bevor die Engine
   überhaupt startet. Wandert Validierung in den TeX-Lauf, verschiebt sich
   dieser Fehlerzeitpunkt nach hinten. Das ist vermutlich vertretbar, sollte
   aber als bewusste Entscheidung getroffen werden, nicht als Nebenwirkung.

@@ -14,7 +14,7 @@
 --   - GitHub alerts ("> [!WARNING]") become a bold label,
 --   - GitHub emoji shortcodes become UTF-8 emoji; an unknown shortcode
 --     is an error, so a new icon cannot slip through unnoticed,
---   - repository paths after a module name (" (`./ollm`)") are removed,
+--   - repository paths after a module name (" (`./osgdocmk`)") are removed,
 --   - the module table loses its "TL ..." columns, their footnotes, and
 --     the rows that only state a compatibility (version "n/a"): they
 --     describe installations from the repository on older TeX Live

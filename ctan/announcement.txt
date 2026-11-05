@@ -2,7 +2,7 @@ The osglecture bundle generates lecture materials: several documents
 from one LaTeX source, in different formats and in several languages.
 Document classes (ltx-talk or beamer, book or scrbook) are
 selected through profiles, so the source stays class-independent; the
-build manager ollm builds single lecture units as well as whole lecture
+build manager osgdocmk builds single lecture units as well as whole lecture
 series while maintaining cross-unit references.
 
 The bundle also aims at accessible, tagged PDF. Several of its packages
@@ -15,7 +15,7 @@ interfaces may still change.
 The bundle currently contains:
 - osglecture: document class that produces slides, script, handouts, and
   other materials from a common source
-- ollm (OSG LaTeX Lecture Maker): latexmk-based build manager for
+- osgdocmk (OSG Lecture Document Maker): latexmk-based build manager for
   creating and deploying lecture materials
 - osgmodes: portable document modes in the style of
   beamer/ltx-talk for arbitrary classes

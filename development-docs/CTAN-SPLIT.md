@@ -77,11 +77,21 @@ Document Maker"*. Für die erste Umsetzungsrunde **nur die Außenfläche**:
 - `.dtx`-Treiber, README, CTAN-Paketname, TDS-Pfad `scripts/osgdocmk/`
 - Alle Nennungen von „OSG LaTeX Lecture Maker" → „OSG Lecture Document
   Maker"
+- Nutzer-Schnittstellen: Umgebungsvariable `OLLM_USER_CONFIG` →
+  `OSGDOCMK_USER_CONFIG`, Nutzerkonfiguration `…/ollm/config.toml` →
+  `…/osgdocmk/config.toml` (XDG, `~/.config`, `%APPDATA%`), Debug-Wert
+  `--debug=ollm` → `--debug=osgdocmk`, JSON-Schema-IDs
+  `org.osglecture.ollm.*` → `org.osglecture.osgdocmk.*`
 
-Das interne Perl-Namespace (`OLLM::Version` usw.), `.ollmconfig.local.toml`,
-`ollm-latexmk.rc` bleiben vorerst unverändert – geringeres Risiko, kleinerer
-Diff. Eine Vollumbenennung des Perl-internen Namespace ist eine spätere,
-separate Entscheidung.
+Auch die Projekt- und Hilfsdateien werden umbenannt: `ollmconfig.toml` →
+`osgdocmkconfig.toml`, `.ollmconfig.local.toml` →
+`.osgdocmkconfig.local.toml` (samt `.example`), `ollm-latexmk.rc` →
+`osgdocmk-latexmk.rc`, `.ollm.lock` → `.osgdocmk.lock` sowie die
+Temp-Präfixe `.ollm-build-`/`.ollm-deploy-`. Unverändert bleibt nur der
+Dateiname des historischen `ollmconfig.pl`, den `convertproject` erkennt.
+Das interne Perl-Namespace (`OLLM::Version` usw.) bleibt vorerst
+unverändert – geringeres Risiko, kleinerer Diff. Eine Vollumbenennung ist
+eine spätere, separate Entscheidung.
 
 ## 4. Tagbridge geht in `semcat` auf
 
@@ -411,8 +421,7 @@ Mechanisch als Helper in `ctan/export.lua` (neu, analog zum bestehenden
    schriftlichen TL-Bestätigung (s. Abschnitt 1).
 2. **`\lttalkversion`**-Makroname bei Umsetzung von Abschnitt 5
    gegenprüfen.
-3. Vollständige Perl-Namespace-Umbenennung (`OLLM::` → `OSGDocMk::`,
-   Konfigurationsdateinamen) ist bewusst auf später verschoben
+3. Vollständige Perl-Namespace-Umbenennung (`OLLM::` → `OSGDocMk::`) ist bewusst auf später verschoben
    (Abschnitt 3).
 
 Geklärt und oben eingearbeitet: 🌓-Einordnung (Abschnitt 6), `manual-src`

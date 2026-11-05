@@ -4,12 +4,12 @@
 \ldeen{Eine Serie ist mehr als eine Menge von Verzeichnissen. Ihre Einheiten
 können voneinander abhängen: Kapitelnummern sollen fortlaufen, ein Querverweis
 benötigt ein Ziel aus einer anderen Unit, und ein Gesamtdokument benötigt die
-gebauten Einzelkapitel. \OLLM\ speichert dafür den Zustand erfolgreicher Builds und kann
+gebauten Einzelkapitel. \osgdocmk\ speichert dafür den Zustand erfolgreicher Builds und kann
 veraltete Produzenten mit \option{--resolve} neu bauen. Ohne diesen
 Serienzustand könnte ein lokaler \LaTeX-Lauf nur die aktuelle Quelldatei sehen.}{A
 series is more than a set of directories. Its units may depend on one another:
 chapter numbers should continue, a cross-reference needs a target from another
-unit, and a combined document needs the built individual chapters. \OLLM\ keeps
+unit, and a combined document needs the built individual chapters. \osgdocmk\ keeps
 the state of successful builds for these purposes and can rebuild stale producers with
 \option{--resolve}. Without this series state, a local \LaTeX\ run could only
 see the current source file.}
@@ -66,7 +66,7 @@ section in an early unit, the following command updates the dependent German
 script instances}:
 
 \begin{verbatim}
-ollm build script --language=de --scope=series --resolve
+osgdocmk build script --language=de --scope=series --resolve
 \end{verbatim}
 
 \subsection{Integration}
@@ -101,7 +101,7 @@ adjacent.}
 
 \begin{verbatim}
 course/
-  ollmconfig.toml
+  osgdocmkconfig.toml
   Include/
     projectconfig.tex
     documentmetadata.tex
@@ -113,25 +113,25 @@ course/
 \ldeen{Der normale Workflow der Integration ist inkrementell:
 Zunächst bauen Sie beim Schreiben die zu integrierenden Dokumente und erst zuletzt
 das Rahmendokument.
-Es empfiehlt sich, vor dem Bau des Rahmendokuments mit \code{ollm check} zu überprüfen,
+Es empfiehlt sich, vor dem Bau des Rahmendokuments mit \code{osgdocmk check} zu überprüfen,
 ob alle zu integrierenden Dokumente erstellt und alle Referenzen aufgelöst sind.
 Falls nicht, müssen Sie ggf.\ weitere Übersetzungsläufe anstoßen.
-Auch hier kann Sie \code{ollm} unterstützen:
+Auch hier kann Sie \code{osgdocmk} unterstützen:
 Mit Hilfe der Option \option{--resolve} werden Abhängigkeiten bis zu einer
 vorgegebenen Tiefe erkannt und ausgelöst.}{The normal integration workflow is
 incremental: while writing, first build the documents to be integrated and
 build the wrapper document last. Before building the wrapper, use
-\code{ollm check} to verify that all documents to be integrated have been
+\code{osgdocmk check} to verify that all documents to be integrated have been
 created and all references have been resolved. Further compilation runs may be
-necessary. OLLM can help here as well: the \option{--resolve} option discovers
+necessary. osgdocmk can help here as well: the \option{--resolve} option discovers
 and triggers dependencies up to a specified depth.}
 
 \begin{verbatim}
 cd 020-processes
-ollm script --language=de
-ollm script --language=de --scope=series --resolve
-ollm script --language=de --scope=collection --resolve
-ollm check --scope=series
+osgdocmk script --language=de
+osgdocmk script --language=de --scope=series --resolve
+osgdocmk script --language=de --scope=collection --resolve
+osgdocmk check --scope=series
 \end{verbatim}
 
 \subsection{\ldeen{Rahmendokumentunit}{Wrapper Document}}
@@ -156,12 +156,12 @@ order}:
 
 \ldeen{\cs{includeunit} wählt automatisch dieselbe Sprache und
 denselben Dokumenttyp wie das Rahmendokument. Es importiert also bei einem
-deutschen Skript genau die deutschen Skriptinstanzen. OLLM baut die
+deutschen Skript genau die deutschen Skriptinstanzen. osgdocmk baut die
 Collection mit \keyis*{--scope}{collection}; existieren keine oder mehrere
 passende Integrationsunits für den Dokumenttyp, ist die Auswahl nicht
 eindeutig und der Build schlägt fehl.}{\cs{includeunit}
 automatically selects the same language and document type as the wrapper. Thus
-a German script imports exactly the German script instances. OLLM builds the
+a German script imports exactly the German script instances. osgdocmk builds the
 collection with \keyis*{--scope}{collection}; if there is no matching
 integration unit for the document type, or more than one, the selection is
 ambiguous and the build fails.}
@@ -228,10 +228,10 @@ therefore both higher quality and more predictable.}
 \ldeen{Integration ist nur in einer Serie mit genau einer passenden Unit der
 Rolle \code{i} pro Dokumenttyp verfügbar. Sie setzt erfolgreich gebaute
 Quelldokumente voraus. Serienübergreifende Referenzen, Counter-Fortsetzung und
-Integration werden über OLLMs Zustands- und Abhängigkeitsmodell aufgelöst;
+Integration werden über osgdocmk's Zustands- und Abhängigkeitsmodell aufgelöst;
 lokale LaTeX-Läufe ohne diesen Zustand können sie nicht rekonstruieren.}{
 Integration is available only in a series with exactly one matching unit of
 role \code{i} per document type. It requires successfully built source documents.
 Cross-unit references, counter continuation, and integration are resolved
-through OLLM's state and dependency model; local LaTeX runs without that state
+through osgdocmk's state and dependency model; local LaTeX runs without that state
 cannot reconstruct them.}

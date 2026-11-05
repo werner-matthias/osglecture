@@ -25,7 +25,7 @@ the vendored copy a faithful, diffable mirror of upstream.
 install:** relying on `expltools`'s copy at its TeX Live path would tie
 `osglecture` to a specific companion package's internal file layout, which
 is not a stable public interface and is not guaranteed present in a minimal
-installation. Vendoring, as `ollm` already does for `TOML::Tiny` (see
-`ollm/THIRD_PARTY-ollm.md`), keeps the dependency self-contained and portable
+installation. Vendoring, as `osgdocmk` already does for `TOML::Tiny` (see
+`osgdocmk/THIRD_PARTY-osgdocmk.md`), keeps the dependency self-contained and portable
 under the same constraint: no dependency on anything beyond a normal TeX
 Live install, and no dependency on another package's unversioned internals.

@@ -13,7 +13,7 @@ if not is_module then
   modules = {
      "ansiterm",
      "osglistings",
-     "ollm",
+     "osgdocmk",
      "osgdoc",
      "langselect",
      "tagbridge",
@@ -78,7 +78,7 @@ if not is_module then
   packtdszip = false
   excludefiles = { "*~" }
   -- l3build drops the executable bit unless a file is listed here.
-  exefiles = { "ollm" }
+  exefiles = { "osgdocmk" }
 end
 
 --[[
@@ -267,34 +267,34 @@ local function texmfhome_dir()
   return texmfhome
 end
 
--- l3build installs ollm below TEXMFHOME/scripts, which is never on PATH.
+-- l3build installs osgdocmk below TEXMFHOME/scripts, which is never on PATH.
 -- A distribution creates the launcher itself; an installation from the
 -- repository has to be told how.
-local function ollm_path_hint()
+local function osgdocmk_path_hint()
   if options["dry-run"] then
     return
   end
   local windows = os_type == "windows"
-  local probe = windows and "where ollm >NUL 2>NUL" or "command -v ollm >/dev/null 2>&1"
+  local probe = windows and "where osgdocmk >NUL 2>NUL" or "command -v osgdocmk >/dev/null 2>&1"
   if os.execute(probe) == 0 then
     return
   end
-  local script_dir = (texmfhome_dir() or "<TEXMFHOME>") .. "/scripts/" .. bundle
+  local script_dir = (texmfhome_dir() or "<TEXMFHOME>") .. "/scripts/osgdocmk"
   print("")
-  print("Note: 'ollm' is installed in " .. script_dir)
-  print("      but is not on your PATH.  To call it as 'ollm', either")
+  print("Note: 'osgdocmk' is installed in " .. script_dir)
+  print("      but is not on your PATH.  To call it as 'osgdocmk', either")
   if windows then
-    print("        - add that directory to PATH (it contains ollm.cmd), or")
-    print("        - call it as: perl \"" .. script_dir .. "/ollm\"")
+    print("        - add that directory to PATH (it contains osgdocmk.cmd), or")
+    print("        - call it as: perl \"" .. script_dir .. "/osgdocmk\"")
   else
     print("        - link it into a directory on PATH, e.g.")
-    print("            ln -s \"" .. script_dir .. "/ollm\" ~/.local/bin/ollm")
+    print("            ln -s \"" .. script_dir .. "/osgdocmk\" ~/.local/bin/osgdocmk")
     print("        - or add that directory to PATH.")
   end
 end
 
 -- README.md, LICENSE, and the examples (without hidden files such as an
--- activated .ollmconfig.local.toml).
+-- activated .osgdocmkconfig.local.toml).
 local function install_bundle_docs()
   local texmfhome = texmfhome_dir()
   if not texmfhome then
@@ -335,7 +335,7 @@ if not is_module and target_list and target_list.install then
       errorlevel = install_bundle_docs()
     end
     if errorlevel == 0 then
-      ollm_path_hint()
+      osgdocmk_path_hint()
     end
     return errorlevel
   end
@@ -374,7 +374,7 @@ The documentation is in two languages, English and German.
 I.e., each .dtx file has to be compiled twice.
 We use langselect and get the target language from jobname.
 Thus, we need a special typeset function.  Other bilingual sources (the
-manuals of ollm and of the bundle) are listed in 'bilingualfiles' and get
+manuals of osgdocmk and of the bundle) are listed in 'bilingualfiles' and get
 <name>-en and <name>-de as jobnames in the same way.
 --]]
 bilingualfiles = bilingualfiles or { }

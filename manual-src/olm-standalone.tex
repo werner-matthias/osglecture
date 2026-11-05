@@ -24,15 +24,15 @@ come from.}
 
 \ldeen{Ein Standalone-Dokument hat weder Buildauftrag noch Serienmanifest und
 muss dies mit der Klassenoption \option{standalone} ausdrücklich erklären.
-Alternativ versteht \OLLM\ den Komfortaufruf \code{ollm standalone main.tex}.
+Alternativ versteht \osgdocmk\ den Komfortaufruf \code{osgdocmk standalone main.tex}.
 Der direkte Klassenmodus ist meist einfacher: Ohne eine Menge automatisch zu erzeugender Dokumentinstanzen,
-Serienabhängigkeiten oder Deployment gibt es für \OLLM\ wenig zu koordinieren,
+Serienabhängigkeiten oder Deployment gibt es für \osgdocmk\ wenig zu koordinieren,
 und \code{latexmk main.tex} genügt.}{A standalone document has neither a build
 request nor a series manifest and must declare this explicitly with the
-\option{standalone} class option. Alternatively, \OLLM\ supports the convenience
-command \code{ollm standalone main.tex}. Using the class mode directly is
+\option{standalone} class option. Alternatively, \osgdocmk\ supports the convenience
+command \code{osgdocmk standalone main.tex}. Using the class mode directly is
 usually simpler: without a set of automatically generated document instances, series dependencies, or deployment,
-there is little for \OLLM\ to coordinate, and \code{latexmk main.tex} is
+there is little for \osgdocmk\ to coordinate, and \code{latexmk main.tex} is
 sufficient.}
 
 \begin{infobox}{\ldeen{Hinweis}{Hint}}
@@ -45,10 +45,10 @@ alongside twelve course units belongs in a series. A one-off hundred-page
 conference volume without neighbouring documents may still be standalone.}
 \end{infobox}
 
-\ldeen{Dokumenttyp und Sprache, die in einer Serie von \OLLM\
+\ldeen{Dokumenttyp und Sprache, die in einer Serie von \osgdocmk\
 kommen, werden nun mit \option{doctype} und \option{lang} gewählt. Mit
 \option{profile} kann das Dokumentprofil überschrieben werden}{The document type
-and language that \OLLM\ supplies in a series are now selected with
+and language that \osgdocmk\ supplies in a series are now selected with
 \option{doctype} and \option{lang}. The document profile can be overridden
 with \option{profile}}:
 
@@ -76,13 +76,13 @@ makes them visible in the document.}
 Dokumenttypen existieren Defaultprofile. Explizite Werte machen ein
 Standalone-Dokument dennoch verständlicher und reproduzierbarer.
 \option{class-options} reicht Optionen direkt an die vom Profil gewählte
-Basisklasse weiter. Eine gleichzeitig vorhandene OLLM-Auftragsdatei und die
+Basisklasse weiter. Eine gleichzeitig vorhandene osgdocmk-Auftragsdatei und die
 Option \option{standalone} sind ein Fehler, weil sonst zwei Quellen denselben
 Buildkontext bestimmen würden.}{\option{doctype} defaults to \code{slides},
 and built-in document types have default profiles. Explicit values nevertheless
 make a standalone document clearer and more reproducible.
 \option{class-options} passes options directly to the base class selected by
-the profile. Having both an OLLM build request and the \option{standalone}
+the profile. Having both an osgdocmk build request and the \option{standalone}
 option is an error because two sources would otherwise determine the same build
 context.}
 
@@ -111,11 +111,11 @@ multilingual script might begin as follows}:
 \ldeen{Profile wie \cls{ltx-talk} verlangen
 \cs{DocumentMetadata} bereits vor
 \cs{documentclass}. In einem Standalone-Dokument gibt es keine
-von OLLM vorgeschaltete \File{documentmetadata.tex}; der Aufruf muss daher
+von osgdocmk vorgeschaltete \File{documentmetadata.tex}; der Aufruf muss daher
 wirklich am Dateianfang stehen}{Profiles such as \cls{ltx-talk} require
 \cs{DocumentMetadata} before
 \cs{documentclass}. A standalone document has no
-\File{documentmetadata.tex} inserted by OLLM, so the call must genuinely be
+\File{documentmetadata.tex} inserted by osgdocmk, so the call must genuinely be
 placed at the start of the file}:
 
 \begin{verbatim}
@@ -127,14 +127,14 @@ placed at the start of the file}:
 
 \ldeen{Sie können ein solches Dokument direkt mit Lua\LaTeX\ beziehungsweise
 \code{latexmk} bauen. Der kompatible Komfortaufruf
-\code{ollm standalone main.tex} verwendet ebenfalls die Klassenoptionen;
-Target-, Sprach- und Matrixoptionen von OLLM sind dabei nicht zulässig. Ohne
+\code{osgdocmk standalone main.tex} verwendet ebenfalls die Klassenoptionen;
+Target-, Sprach- und Matrixoptionen von osgdocmk sind dabei nicht zulässig. Ohne
 Serienzustand gibt es keine externen Unit-Referenzen, Counter-Continuation oder
 \cs{includeunit}-Auflösung. Lokale Referenzen und alle
 modusabhängigen Darstellungsbefehle funktionieren unverändert.}{Such a
 document can be built directly with Lua\LaTeX\ or \code{latexmk}. The
-compatible convenience command \code{ollm standalone main.tex} also uses the
-class options; OLLM target, language, and matrix options are not permitted in
+compatible convenience command \code{osgdocmk standalone main.tex} also uses the
+class options; osgdocmk target, language, and matrix options are not permitted in
 this mode. Without series state there are no external unit references, counter
 continuation, or \cs{includeunit} resolution. Local references and
 all mode-aware rendering commands continue to work unchanged.}

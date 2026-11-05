@@ -2,7 +2,7 @@
 \documentclass{article}
 \begin{document}
 \START
-% The ordinal_entries table below is the same as in ollm's build-file.t:
+% The ordinal_entries table below is the same as in osgdocmk's build-file.t:
 % the logical ordinal is not the list position as soon as excursuses,
 % appendices or integration units exist.
 \directlua{

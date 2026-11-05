@@ -18,7 +18,7 @@ The bundle serves two main purposes:
 
 Currently, the following packages are included:
 * **osglecture**: class to generate different materials (slides, script) from a common source (`./osglecture`)
-* **OSG LaTeX Lecture Maker** (ollm): latexmk-based build script to support creation and deploying of lecture materials (`./ollm`)
+* **OSG Lecture Document Maker** (osgdocmk): latexmk-based build script to support creation and deploying of lecture materials (`./osgdocmk`)
 * **osgmodes**: generalization of portable document modes in the style of beamer/ltx-talk (`./osgmodes`)
 * **langselect**:  generation of different language versions from a common source (`./langselect`)
 * **tagpax**: semantic import of tagged PDFs (`./tagpax`)
@@ -53,7 +53,7 @@ In addition, OSG Lecture is a LuaLaTeX bundle ( :full_moon: ). That said, there 
 degrated mode ( :first_quarter_moon: ) or don't require Lua at all ( :new_moon: ).
 <!--  
  - files generated from the same docstrip source (one `.dtx`) are expected to share one version and date. 
- - `ollm` is Perl rather than a docstripped LaTeX package, so it keeps its version as the single `$VERSION` in `OLLM::Version` instead.
+ - `osgdocmk` is Perl rather than a docstripped LaTeX package, so it keeps its version as the single `$VERSION` in `OLLM::Version` instead.
  -->
 <!-- BEGIN GITHUB ONLY -->
  The following table lists versions and compatibility, the `TL ...` columns show compatibility with
@@ -83,7 +83,7 @@ The `TL ...` columns are read from the expectations in the workflow above;
 | osglecture | v0.6.0 | 2026-10-05 | 24 | :full_moon: | :red_circle: | :green_circle: | :green_circle: |
 | osgmodes | v0.5.1 | 2026-09-27 | 2 | :full_moon: | :red_circle: | :green_circle: | :green_circle: |
 | ltx-talk support (osglecture + osgmodes) | n/a | n/a | n/a | :full_moon: | :red_circle: | :red_circle: | :green_circle: |
-| ollm | v0.15.0 | n/a | 1 | :white_circle: | :white_circle: | :green_circle: | :green_circle: |
+| osgdocmk | v0.15.0 | n/a | 1 | :white_circle: | :white_circle: | :green_circle: | :green_circle: |
 | tagpax | v0.8.6 | 2026-10-22 | 2 | :full_moon: | :red_circle: | :green_circle: | :green_circle: |
 | tagbridge | v0.1.0 | 2026-09-14 | 1 | :new_moon: | :red_circle: | :green_circle: | :green_circle: |
 | tagdirtree[^1] | v0.1.0 | 2026-09-14 | 1 | :new_moon: | :red_circle: | :green_circle: | :green_circle: |
@@ -105,23 +105,23 @@ The `TL ...` columns are read from the expectations in the workflow above;
 l3build check
 l3build install --full 
 ```
-This installs into your personal TeX tree (`TEXMFHOME`). The build tool `ollm`
-ends up in `TEXMFHOME/scripts/osglecture/`, which is not on `PATH`; `l3build install`
-prints a note if `ollm` cannot be found. On Linux and macOS, link it once:
+This installs into your personal TeX tree (`TEXMFHOME`). The build tool `osgdocmk`
+ends up in `TEXMFHOME/scripts/osgdocmk/`, which is not on `PATH`; `l3build install`
+prints a note if `osgdocmk` cannot be found. On Linux and macOS, link it once:
 ```
-ln -s "$(kpsewhich -var-value TEXMFHOME)/scripts/osglecture/ollm" ~/.local/bin/ollm
+ln -s "$(kpsewhich -var-value TEXMFHOME)/scripts/osgdocmk/osgdocmk" ~/.local/bin/osgdocmk
 ```
 (any directory on your `PATH` will do). On Windows, add that directory to `PATH`;
-it contains the launcher `ollm.cmd`. Afterwards check the installation with
+it contains the launcher `osgdocmk.cmd`. Afterwards check the installation with
 ```
-ollm doctor
+osgdocmk doctor
 ```
 <!-- END GITHUB ONLY -->
 <!-- CTAN ONLY
 Install the bundle with the package manager of your TeX distribution.
-The build tool `ollm` is installed as a user command; check the installation with
+The build tool `osgdocmk` is installed as a user command; check the installation with
 ```
-ollm doctor
+osgdocmk doctor
 ```
 -->
 
@@ -144,5 +144,5 @@ Please report any bug you find [here](https://github.com/werner-matthias/osglect
 ## License
 The bundle is released under the LaTeX Project Public License, version 1.3c
 or later (see [LICENSE](LICENSE)). Excepted are the vendored third-party
-components described in [ollm/THIRD_PARTY-ollm.md](ollm/THIRD_PARTY-ollm.md)
+components described in [osgdocmk/THIRD_PARTY-osgdocmk.md](osgdocmk/THIRD_PARTY-osgdocmk.md)
 and [osglecture/THIRD_PARTY-osglecture-cls.md](osglecture/THIRD_PARTY-osglecture-cls.md).

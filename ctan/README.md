@@ -12,7 +12,7 @@ The bundle serves two main purposes:
 
 Currently, the following packages are included:
 * **osglecture**: class to generate different materials (slides, script) from a common source
-* **OSG LaTeX Lecture Maker** (ollm): latexmk-based build script to support creation and deploying of lecture materials
+* **OSG Lecture Document Maker** (osgdocmk): latexmk-based build script to support creation and deploying of lecture materials
 * **osgmodes**: generalization of portable document modes in the style of beamer/ltx-talk
 * **langselect**:  generation of different language versions from a common source
 * **tagpax**: semantic import of tagged PDFs
@@ -48,7 +48,7 @@ The following table lists the versions of the modules and their use of Lua.
 | --- | --- | --- | --- | :---: |
 | osglecture | v0.6.0 | 2026-10-05 | 24 | 🌕 |
 | osgmodes | v0.5.1 | 2026-09-27 | 2 | 🌕 |
-| ollm | v0.15.0 | n/a | 1 | ⚪ |
+| osgdocmk | v0.15.0 | n/a | 1 | ⚪ |
 | tagpax | v0.8.6 | 2026-10-22 | 2 | 🌕 |
 | tagbridge | v0.1.0 | 2026-09-14 | 1 | 🌑 |
 | tagdirtree | v0.1.0 | 2026-09-14 | 1 | 🌑 |
@@ -63,9 +63,9 @@ The following table lists the versions of the modules and their use of Lua.
 
 ## Installation
 Install the bundle with the package manager of your TeX distribution.
-The build tool `ollm` is installed as a user command; check the installation with
+The build tool `osgdocmk` is installed as a user command; check the installation with
 ```
-ollm doctor
+osgdocmk doctor
 ```
 
 ## Documentation
@@ -83,5 +83,5 @@ Please report any bug you find [here](https://github.com/werner-matthias/osglect
 ## License
 The bundle is released under the LaTeX Project Public License, version 1.3c
 or later (see [LICENSE](LICENSE)). Excepted are the vendored third-party
-components described in [ollm/THIRD_PARTY-ollm.md](ollm/THIRD_PARTY-ollm.md)
+components described in [osgdocmk/THIRD_PARTY-osgdocmk.md](osgdocmk/THIRD_PARTY-osgdocmk.md)
 and [osglecture/THIRD_PARTY-osglecture-cls.md](osglecture/THIRD_PARTY-osglecture-cls.md).

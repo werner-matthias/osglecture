@@ -243,7 +243,7 @@ end
 -- accepts either separator natively. Converting back to backslashes was
 -- therefore neither necessary nor risk-free: the detection originally used
 -- for that, based on \code{package.config}, was never exercised against
--- real \LuaTeX\ on Windows by any test.}{\code{lfs.dir}}{OLLM}
+-- real \LuaTeX\ on Windows by any test.}{\code{lfs.dir}}{osgdocmk}
 -- \ldeen*{Der Existenz-/Verzeichnis-Vortest ist nötig, weil sich
 -- \code{lfs.dir} bei einem fehlenden Verzeichnis plattformabhängig
 -- verhält: Auf einigen Plattformen löst der Aufruf selbst innerhalb des
@@ -275,11 +275,11 @@ end
 
 -- \ldeen{Listet und parst alle Serieneinheiten unter @1, ohne nach Doctype
 -- oder Unit-Scopes zu filtern -- die Rollenzuordnung, die @2 (Perl) heute
--- unabhängig implementiert. Wird von OLLM über \code{texlua} aufgerufen, um
+-- unabhängig implementiert. Wird von osgdocmk über \code{texlua} aufgerufen, um
 -- diese Duplikation durch einen einzigen Aufrufer zu ersetzen.}{Lists and
 -- parses every series unit under @1, without filtering by doctype or unit
 -- scopes -- the same job @2 (Perl) implements independently today. Called
--- by OLLM via \code{texlua} to replace that duplication with a single
+-- by osgdocmk via \code{texlua} to replace that duplication with a single
 -- caller.}{project\_root}{\code{OLLM::Config::structure\_snapshot}}
 function series_index.discover_units(project_root, lfs)
   lfs = lfs or require("lfs")

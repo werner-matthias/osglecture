@@ -14,7 +14,7 @@ mode.
 For larger courses, `osglecture` supports multilingual variants, references
 and continuous numbering across independently maintained units, and assembly
 of complete documents. The class and its companion packages are designed for
-accessible, tagged-PDF output. OLLM, the bundle's build front end, coordinates
+accessible, tagged-PDF output. osgdocmk, the bundle's build front end, coordinates
 the variants of a complete project; the class can also be used directly.
 
 The bundle contains two end-to-end examples:

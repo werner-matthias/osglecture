@@ -10,7 +10,7 @@
 
   local fake_lfs = {
     attributes = function(path)
-      if path == "/course/ollmconfig.toml" then return "file" end
+      if path == "/course/osgdocmkconfig.toml" then return "file" end
       return nil
     end,
     currentdir = function() return "/course/010-introduction/sections" end,

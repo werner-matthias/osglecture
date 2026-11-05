@@ -60,7 +60,7 @@ jobs:
         module:
           - ansiterm
           - osglistings
-          - ollm
+          - osgdocmk
           - osgdoc
           - langselect
           - tagbridge
@@ -98,10 +98,10 @@ jobs:
           echo "::error::TeX Live could not be updated; tests would run against a stale image."
           exit 1
 
-      # qpdf is not part of TeX Live; ollm deploy needs it to restrict PDF
+      # qpdf is not part of TeX Live; osgdocmk deploy needs it to restrict PDF
       # permissions, and its tests skip the real encryption without it.
       - name: Install qpdf
-        if: matrix.module == 'ollm'
+        if: matrix.module == 'osgdocmk'
         run: |
           apt-get update
           apt-get install -y --no-install-recommends qpdf

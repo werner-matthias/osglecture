@@ -48,7 +48,7 @@ jobs:
             dejavu
             newcomputermodern
 
-      # qpdf is not part of TeX Live; ollm deploy needs it to restrict PDF
+      # qpdf is not part of TeX Live; osgdocmk deploy needs it to restrict PDF
       # permissions, and its tests skip the real encryption without it.
       - name: Install qpdf
         run: |

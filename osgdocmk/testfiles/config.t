@@ -1,0 +1,755 @@
+use v5.30;
+use strict;
+use warnings;
+
+use Cwd qw(abs_path);
+use File::Copy qw(copy);
+use File::Find qw(find);
+use File::Path qw(make_path);
+use File::Spec;
+use File::Temp qw(tempdir);
+use Test::More;
+
+use lib 'scripts/vendor/TOML-Tiny-0.22/lib';
+use lib 'scripts/lib';
+
+use OLLM::Config;
+
+my $fixture = abs_path('testfiles/fixtures/project');
+my $chapter = File::Spec->catdir($fixture, '020-processes');
+my $manifest_path = File::Spec->catfile($fixture, 'osgdocmkconfig.toml');
+my $definitions = abs_path('scripts/definitions');
+
+my $located = OLLM::Config->find_manifest(start_dir => $chapter);
+is $located->{kind}, 'toml', 'manifest found by upward search';
+is $located->{path}, $manifest_path, 'manifest path is canonical';
+
+my $manifest = OLLM::Config->load_manifest($manifest_path);
+is $manifest->{schema}, 2, 'schema parsed';
+is $manifest->{project}{id}, 'bs', 'project id parsed';
+is $manifest->{project}{tex_directory}, 'Include',
+  'shared TeX directory parsed';
+is $manifest->{project}{tex_config}, 'projectconfig.tex',
+  'project configuration filename parsed';
+is_deeply $manifest->{languages}{available}, ['de', 'en'],
+  'language list synthesised from targets.defaults';
+
+my $obsolete_title = File::Spec->catfile(tempdir(CLEANUP => 1), 'osgdocmkconfig.toml');
+open my $obsolete_title_handle, '>:raw', $obsolete_title or die $!;
+print {$obsolete_title_handle} <<'TOML';
+schema = 2
+[project]
+id = "test"
+title = "TeX metadata"
+[targets.defaults]
+languages = ["de"]
+default_language = "de"
+[targets.slides]
+TOML
+close $obsolete_title_handle;
+eval { OLLM::Config->load_manifest($obsolete_title) };
+like $@, qr/unknown key 'project\.title'/,
+  'project title is rejected as a TeX-side property';
+
+my $obsolete_map = File::Spec->catfile(tempdir(CLEANUP => 1), 'osgdocmkconfig.toml');
+open my $obsolete_map_handle, '>:raw', $obsolete_map or die $!;
+print {$obsolete_map_handle} <<'TOML';
+schema = 2
+[project]
+id = "test"
+[targets.defaults]
+languages = ["de"]
+default_language = "de"
+[targets.defaults.map]
+de = "ngerman"
+[targets.slides]
+TOML
+close $obsolete_map_handle;
+eval { OLLM::Config->load_manifest($obsolete_map) };
+like $@, qr/unknown key 'targets\.defaults\.map'/,
+  'language mapping is rejected as a langselect-side property';
+
+my $resolved = OLLM::Config->resolve_request(
+  start_dir => $chapter,
+  definitions_dir => $definitions,
+  plan => {
+    action => 'build',
+    all => 0,
+    dry_run => 1,
+    latexmk_args => [],
+    non_interactive => 0,
+    rebuild => 0,
+    resolve => 0,
+    source => 'main.tex',
+    target => 'script',
+  },
+);
+is $resolved->{request}{context}, 'series', 'manifest selects series context';
+is $resolved->{request}{language}, 'de', 'project default language selected';
+is $resolved->{request}{series_id}, 'bs', 'series id enters BuildRequest';
+is $resolved->{configuration}{parser}{version}, '0.22',
+  'parser version is reported';
+is $resolved->{configuration}{definitions}{bundle_preset}{version}, '1',
+  'selected bundle-preset definition is resolved';
+is $resolved->{configuration}{definitions}{targets}{script}{version}, '1.0',
+  'configured target definition is resolved';
+like $resolved->{configuration}{structure}{signature},
+  qr/\A[0-9a-f]{64}\z/,
+  'series discovery produces a canonical structure signature';
+is_deeply(
+  $resolved->{configuration}{structure}{units},
+  [{
+    physical_unit   => '020-processes',
+    physical_number => '020',
+    unit_scope      => '',
+    unit_role       => 'content',
+    slug            => 'processes',
+  }],
+  'structure snapshot records the physical ordering metadata only',
+);
+
+my $structure_root_a = tempdir(CLEANUP => 1);
+my $structure_root_b = tempdir(CLEANUP => 1);
+for my $root ($structure_root_a, $structure_root_b) {
+  make_path(
+    File::Spec->catdir($root, '020-introduction'),
+    File::Spec->catdir($root, '090a-a-posix'),
+    File::Spec->catdir($root, 'notes'),
+  );
+}
+my $structure_a = OLLM::Config->structure_snapshot(
+  project_root => $structure_root_a,
+);
+my $structure_b = OLLM::Config->structure_snapshot(
+  project_root => $structure_root_b,
+);
+is $structure_a->{signature}, $structure_b->{signature},
+  'structure signature is independent of the absolute project path';
+rename(
+  File::Spec->catdir($structure_root_b, '020-introduction'),
+  File::Spec->catdir($structure_root_b, '040-introduction'),
+) or die "cannot rename structure fixture: $!";
+my $renamed_structure = OLLM::Config->structure_snapshot(
+  project_root => $structure_root_b,
+);
+isnt $renamed_structure->{signature}, $structure_a->{signature},
+  'renaming or reordering a unit changes the structure signature';
+make_path(File::Spec->catdir($structure_root_b, 'unrelated-directory'));
+is(
+  OLLM::Config->structure_snapshot(
+    project_root => $structure_root_b,
+  )->{signature},
+  $renamed_structure->{signature},
+  'unmarked unrelated directories do not invalidate the series structure',
+);
+
+$resolved = OLLM::Config->resolve_request(
+  start_dir => $chapter,
+  definitions_dir => $definitions,
+  plan => {
+    action => 'build',
+    all => 1,
+    dry_run => 1,
+    latexmk_args => [],
+    non_interactive => 0,
+    rebuild => 0,
+    resolve => 0,
+    source => 'main.tex',
+    target => 'slides',
+  },
+);
+is scalar @{ $resolved->{request}{builds} }, 4,
+  '--all expands only configured target/language pairs';
+is scalar @{ $resolved->{build_specs} }, 4,
+  '--all resolves every configured pair to a concrete BuildSpec';
+is_deeply(
+  [map { $_->{job_id} } @{ $resolved->{build_specs} }],
+  [
+    'bs-020-handout-de-processes',
+    'bs-020-script-de-processes',
+    'bs-020-script-en-processes',
+    'bs-020-slides-de-processes',
+  ],
+  '--all produces deterministic job identities',
+);
+
+my $scoped_root = tempdir(CLEANUP => 1);
+my $scoped_unit = File::Spec->catdir($scoped_root, '020as-processes');
+my $scoped_shared = File::Spec->catdir($scoped_root, 'Include');
+make_path($scoped_unit, $scoped_shared);
+for my $file (qw(projectconfig.tex documentmetadata.tex)) {
+  copy(
+    File::Spec->catfile($fixture, 'Include', $file),
+    File::Spec->catfile($scoped_shared, $file),
+  ) or die $!;
+}
+open my $scoped_manifest, '>',
+  File::Spec->catfile($scoped_root, 'osgdocmkconfig.toml') or die $!;
+open my $fixture_manifest, '<', $manifest_path or die $!;
+print {$scoped_manifest} $_ while <$fixture_manifest>;
+close $fixture_manifest;
+close $scoped_manifest;
+open my $scoped_source, '>',
+  File::Spec->catfile($scoped_unit, 'main.tex') or die $!;
+print {$scoped_source} "\\documentclass{article}\n";
+close $scoped_source;
+my $scoped = OLLM::Config->resolve_request(
+  start_dir       => $scoped_unit,
+  definitions_dir => $definitions,
+  plan => {
+    action => 'build',
+    all => 1,
+    dry_run => 1,
+    latexmk_args => [],
+    non_interactive => 0,
+    rebuild => 0,
+    resolve => 0,
+    source => 'main.tex',
+    target => 'slides',
+  },
+);
+is_deeply(
+  [map { $_->{target} } @{ $scoped->{build_specs} }],
+  ['script', 'script'],
+  '--all filters target/language pairs through target unit scopes',
+);
+
+my $scope_root = tempdir(CLEANUP => 1);
+my $scope_shared = File::Spec->catdir($scope_root, 'Include');
+my @scope_units = qw(
+  010-first
+  020bs-second
+  030as-third
+  090as-i-collection
+);
+make_path($scope_shared, map { File::Spec->catdir($scope_root, $_) } @scope_units);
+copy($manifest_path, File::Spec->catfile($scope_root, 'osgdocmkconfig.toml'))
+  or die $!;
+for my $file (qw(projectconfig.tex documentmetadata.tex)) {
+  copy(
+    File::Spec->catfile($fixture, 'Include', $file),
+    File::Spec->catfile($scope_shared, $file),
+  ) or die $!;
+}
+for my $unit (@scope_units) {
+  open my $source, '>', File::Spec->catfile($scope_root, $unit, 'main.tex')
+    or die $!;
+  print {$source} "\\documentclass{article}\n";
+  close $source;
+}
+
+sub _scope_plan {
+  my (%override) = @_;
+  return {
+    action => 'build', all => 0, dry_run => 1, latexmk_args => [],
+    non_interactive => 0, rebuild => 0, resolve => 0,
+    source => 'main.tex', target => 'slides',
+    %override,
+  };
+}
+
+my $unit_matrix = OLLM::Config->resolve_request(
+  start_dir => File::Spec->catdir($scope_root, '010-first'),
+  definitions_dir => $definitions,
+  plan => _scope_plan(scope => 'unit'),
+);
+is_deeply(
+  [map { "$_->{target}/$_->{language}" } @{ $unit_matrix->{build_specs} }],
+  ['handout/de', 'script/de', 'script/en', 'slides/de'],
+  'unit scope builds every unrestricted target/language projection',
+);
+
+my $unit_target = OLLM::Config->resolve_request(
+  start_dir => File::Spec->catdir($scope_root, '010-first'),
+  definitions_dir => $definitions,
+  plan => _scope_plan(
+    scope => 'unit', target => 'script', target_explicit => 1,
+  ),
+);
+is_deeply(
+  [map { "$_->{target}/$_->{language}" } @{ $unit_target->{build_specs} }],
+  ['script/de', 'script/en'],
+  'an explicit target restricts the unit matrix but not its languages',
+);
+
+my $unit_language = OLLM::Config->resolve_request(
+  start_dir => File::Spec->catdir($scope_root, '010-first'),
+  definitions_dir => $definitions,
+  plan => _scope_plan(
+    scope => 'unit', language => 'en', language_explicit => 1,
+  ),
+);
+is $unit_language->{build_spec}{target}, 'script',
+  'an explicit language omits targets which do not provide it';
+
+my $series_scope = OLLM::Config->resolve_request(
+  start_dir => $scope_root,
+  definitions_dir => $definitions,
+  plan => _scope_plan(
+    scope => 'series', target => 'script', target_explicit => 1,
+  ),
+);
+is_deeply(
+  [map { $_->{physical_unit} } @{ $series_scope->{build_specs} }],
+  ['010-first', '030as-third'],
+  'series scope builds every applicable non-integration unit',
+);
+
+my $collection_scope = OLLM::Config->resolve_request(
+  start_dir => $scope_root,
+  definitions_dir => $definitions,
+  plan => _scope_plan(
+    scope => 'collection', target => 'script', target_explicit => 1,
+  ),
+);
+is $collection_scope->{build_spec}{physical_unit}, '090as-i-collection',
+  'collection scope switches to the unique applicable integration unit';
+
+eval {
+  OLLM::Config->resolve_request(
+    start_dir => $scope_root,
+    definitions_dir => $definitions,
+    plan => _scope_plan(
+      scope => 'collection', target => 'slides', target_explicit => 1,
+    ),
+  );
+};
+like $@, qr/no integration unit applies to document type 'slides'/,
+  'collection scope diagnoses a missing integration unit';
+
+my $second_collection = File::Spec->catdir($scope_root, '091as-i-other');
+make_path($second_collection);
+open my $second_source, '>', File::Spec->catfile($second_collection, 'main.tex')
+  or die $!;
+print {$second_source} "\\documentclass{article}\n";
+close $second_source;
+eval {
+  OLLM::Config->resolve_request(
+    start_dir => $scope_root,
+    definitions_dir => $definitions,
+    plan => _scope_plan(
+      scope => 'collection', target => 'script', target_explicit => 1,
+    ),
+  );
+};
+like $@, qr/more than one integration unit applies.*090as-i-collection.*091as-i-other/,
+  'collection scope diagnoses ambiguous integration units';
+
+my $standalone = OLLM::Config->resolve_request(
+  plan => {
+    action          => 'build',
+    all             => 0,
+    dry_run         => 1,
+    latexmk_args    => [],
+    standalone      => 1,
+    non_interactive => 0,
+    rebuild         => 0,
+    resolve         => 0,
+  },
+  start_dir => $chapter,
+);
+is $standalone->{request}{context}, 'standalone',
+  'standalone context is selected explicitly';
+is $standalone->{configuration}{kind}, 'none',
+  'standalone does not discover a surrounding series manifest implicitly';
+is $standalone->{standalone_spec}{context}, 'standalone',
+  'standalone resolution produces a new-executor specification';
+is $standalone->{standalone_spec}{job_id}, 'main',
+  'standalone job name follows the source without imposing a series name';
+ok(File::Spec->file_name_is_absolute($standalone->{request}{source}),
+  'standalone source is normalized independently of a project manifest');
+
+eval {
+  OLLM::Config->resolve_request(
+    start_dir       => File::Spec->catdir($fixture, '020-processes'),
+    definitions_dir => abs_path('definitions'),
+    plan => {
+      action => 'build', all => 0, dry_run => 0, latexmk_args => [],
+      standalone  => 1, non_interactive => 0, rebuild => 0,
+      resolve => 0, source => 'main.tex', target => 'script',
+      target_explicit => 1,
+    },
+  );
+};
+like $@, qr/document type and language from osglecture class options/,
+  'standalone rejects misleading osgdocmk document selection';
+
+my $invalid = tempdir(CLEANUP => 1);
+my $invalid_manifest = File::Spec->catfile($invalid, 'osgdocmkconfig.toml');
+open my $invalid_handle, '>', $invalid_manifest or die $!;
+print {$invalid_handle} <<'TOML';
+schema = 2
+bundle_presett = "OSG lecture/1"
+bundle_preset = "OSG lecture/1"
+
+[project]
+id = "bad"
+
+[targets.defaults]
+languages = ["de"]
+default_language = "de"
+
+[targets.slides]
+TOML
+close $invalid_handle;
+eval { OLLM::Config->load_manifest($invalid_manifest) };
+like $@, qr/\Q$invalid_manifest\E:2: unknown key 'bundle_presett'/,
+  'semantic manifest errors report their source line';
+
+open my $schema_handle, '>', $invalid_manifest or die $!;
+print {$schema_handle} "schema = 9\n";
+close $schema_handle;
+eval { OLLM::Config->load_manifest($invalid_manifest) };
+like $@, qr/:1: unsupported project-manifest schema 9; .* schema 2/,
+  'schema mismatch states actual and supported schema';
+
+open my $tex_path_handle, '>', $invalid_manifest or die $!;
+print {$tex_path_handle} <<'TOML';
+schema = 2
+bundle_preset = "OSG lecture/1"
+
+[project]
+id = "bad-tex-path"
+tex_directory = "Include"
+tex_config = "../projectconfig.tex"
+
+[targets.defaults]
+languages = ["de"]
+default_language = "de"
+
+[targets.slides]
+TOML
+close $tex_path_handle;
+eval { OLLM::Config->load_manifest($invalid_manifest) };
+like $@, qr/project[.]tex_config must be a filename/,
+  'project configuration filename cannot escape the shared TeX directory';
+
+open my $case_handle, '>', $invalid_manifest or die $!;
+print {$case_handle} <<'TOML';
+schema = 2
+bundle_preset = "OSG lecture/1"
+
+[project]
+id = "case"
+
+[targets.defaults]
+languages = ["de", "DE"]
+default_language = "de"
+
+[targets.slides]
+TOML
+close $case_handle;
+eval { OLLM::Config->load_manifest($invalid_manifest) };
+like $@, qr/targets\.defaults\.languages contains values that collide on case-insensitive/,
+  'language identities are portable to case-insensitive filesystems';
+
+open my $missing_handle, '>', $invalid_manifest or die $!;
+print {$missing_handle} <<'TOML';
+schema = 2
+bundle_preset = "OSG lecture/1"
+
+[project]
+id = "missing"
+
+[targets.defaults]
+languages = ["de"]
+default_language = "de"
+
+[targets.ghost]
+TOML
+close $missing_handle;
+my $missing_data = OLLM::Config->load_manifest($invalid_manifest);
+eval {
+  OLLM::Config->resolve_definitions(
+    manifest      => $missing_data,
+    manifest_path => $invalid_manifest,
+    project_root  => $invalid,
+    bundle_path   => $definitions,
+  );
+};
+like $@, qr/\Q$invalid_manifest\E:11: target 'ghost' was not found/,
+  'unresolved target reports its declaration line';
+
+my $local_root = tempdir(CLEANUP => 1);
+my $local_definitions = File::Spec->catdir($local_root, 'project-definitions');
+make_path(File::Spec->catdir($local_definitions, 'bundle-presets'));
+open my $preset_handle, '>',
+  File::Spec->catfile($local_definitions, 'bundle-presets', 'custom.toml')
+  or die $!;
+print {$preset_handle} <<'TOML';
+schema = 1
+kind = "bundle-preset"
+name = "Descriptive bundle preset"
+version = "1"
+presentation_profile = "beamer"
+longform_profile = "scrbook"
+TOML
+close $preset_handle;
+open my $local_handle, '>',
+  File::Spec->catfile($local_root, '.osgdocmkconfig.local.toml')
+  or die $!;
+print {$local_handle} <<'TOML';
+schema = 1
+
+[definitions]
+paths = ["project-definitions"]
+TOML
+close $local_handle;
+my $local_resolution = OLLM::Config->resolve_definitions(
+  manifest => {
+    bundle_preset => 'Descriptive bundle preset/1',
+    targets => { slides => { languages => ['de'] } },
+  },
+  manifest_path => File::Spec->catfile($local_root, 'osgdocmkconfig.toml'),
+  project_root  => $local_root,
+  bundle_path   => $definitions,
+);
+is $local_resolution->{bundle_preset}{reference},
+  'Descriptive bundle preset/1',
+  'project-relative local definition path resolves a descriptive bundle preset';
+
+my $extended_root = tempdir(CLEANUP => 1);
+my $extended_definitions = File::Spec->catdir($extended_root, 'definitions');
+my $extended_targets = File::Spec->catdir($extended_definitions, 'targets');
+my $extended_profiles = File::Spec->catdir($extended_definitions, 'profiles');
+my $extended_unit = File::Spec->catdir($extended_root, '010-opening');
+make_path($extended_targets, $extended_profiles, $extended_unit);
+open my $extended_target, '>',
+  File::Spec->catfile($extended_targets, 'keynote.toml') or die $!;
+print {$extended_target} <<'TOML';
+schema = 1
+kind = "target"
+name = "keynote"
+version = "1.0"
+doctype = "keynote"
+profile_class = "presentation"
+TOML
+close $extended_target;
+open my $extended_profile, '>',
+  File::Spec->catfile($extended_profiles, 'keynote-beamer.toml') or die $!;
+print {$extended_profile} <<'TOML';
+schema = 1
+kind = "profile"
+name = "keynote-beamer"
+version = "1.0"
+profile_class = "presentation"
+document_metadata = "forbidden"
+doctypes = ["keynote"]
+TOML
+close $extended_profile;
+open my $extended_local, '>',
+  File::Spec->catfile($extended_root, '.osgdocmkconfig.local.toml') or die $!;
+print {$extended_local} <<'TOML';
+schema = 1
+
+[definitions]
+paths = ["definitions"]
+TOML
+close $extended_local;
+open my $extended_manifest, '>',
+  File::Spec->catfile($extended_root, 'osgdocmkconfig.toml') or die $!;
+print {$extended_manifest} <<'TOML';
+schema = 2
+bundle_preset = "OSG lecture/1"
+
+[project]
+id = "ext"
+
+[targets.defaults]
+languages = ["en"]
+default_language = "en"
+
+[targets.keynote]
+profile = "keynote-beamer"
+TOML
+close $extended_manifest;
+open my $extended_source, '>',
+  File::Spec->catfile($extended_unit, 'main.tex') or die $!;
+print {$extended_source} "\\documentclass{osglecture}\n";
+close $extended_source;
+my $extended = OLLM::Config->resolve_request(
+  start_dir       => $extended_unit,
+  definitions_dir => $definitions,
+  plan => {
+    action => 'build', all => 0, dry_run => 1, latexmk_args => [],
+    non_interactive => 0, rebuild => 0, resolve => 0,
+    source => 'main.tex', target => 'keynote', target_explicit => 1,
+  },
+);
+is $extended->{build_spec}{target}, 'keynote',
+  'a project-provided target reaches the BuildSpec';
+is $extended->{build_spec}{doctype}, 'keynote',
+  'an extended target supplies its matching document type';
+is $extended->{build_spec}{profile_class}, 'presentation',
+  'extended target profile class remains available in the BuildSpec';
+
+open my $mismatched_target, '>',
+  File::Spec->catfile($extended_targets, 'mismatch.toml') or die $!;
+print {$mismatched_target} <<'TOML';
+schema = 1
+kind = "target"
+name = "mismatch"
+version = "1.0"
+doctype = "different"
+profile_class = "longform"
+TOML
+close $mismatched_target;
+eval {
+  OLLM::Config->_load_definition(
+    File::Spec->catfile($extended_targets, 'mismatch.toml'),
+  );
+};
+like $@, qr/name 'mismatch' and doctype 'different' differ/,
+  'schema 1 rejects a silent target/doctype mismatch';
+
+# The example ships its local configuration as a template (CTAN accepts no
+# hidden files); activate it in a copy, as its README tells users to.
+my $bundle_example = abs_path(tempdir(CLEANUP => 1));
+{
+  my $source = abs_path('../examples/series-modern');
+  find({ no_chdir => 1, wanted => sub {
+    my $relative = File::Spec->abs2rel($File::Find::name, $source);
+    my $target = File::Spec->catfile($bundle_example, $relative);
+    if (-d $_) {
+      make_path($target);
+    } else {
+      copy($_, $target) or die "copy $_: $!";
+    }
+  } }, $source);
+  copy(File::Spec->catfile($bundle_example, 'osgdocmkconfig.local.toml.example'),
+    File::Spec->catfile($bundle_example, '.osgdocmkconfig.local.toml'))
+    or die "activate local configuration: $!";
+}
+my $bundle_chapter = File::Spec->catdir($bundle_example, '010-introduction');
+my $bundle_manifest = OLLM::Config->find_manifest(start_dir => $bundle_chapter);
+is $bundle_manifest->{path},
+  File::Spec->catfile($bundle_example, 'osgdocmkconfig.toml'),
+  'bundle-level example discovers its project manifest';
+my $bundle_data = OLLM::Config->load_manifest($bundle_manifest->{path});
+my $bundle_definitions = OLLM::Config->resolve_definitions(
+  manifest      => $bundle_data,
+  manifest_path => $bundle_manifest->{path},
+  project_root  => $bundle_example,
+  bundle_path   => $definitions,
+);
+is $bundle_definitions->{bundle_preset}{reference}, 'OSG lecture/1',
+  'bundle-level example resolves its bundled preset';
+{
+  # doctor, report, and check resolve definitions without the build path, so
+  # the bundle_preset default has to apply there as well.
+  local $ENV{OSGDOCMK_USER_CONFIG};
+  local $ENV{XDG_CONFIG_HOME} = tempdir(CLEANUP => 1);
+  local $ENV{HOME} = $ENV{XDG_CONFIG_HOME};
+  local $ENV{APPDATA} = $ENV{XDG_CONFIG_HOME};
+  my %without_preset = %$bundle_data;
+  delete $without_preset{bundle_preset};
+  my $defaulted = OLLM::Config->resolve_definitions(
+    manifest      => \%without_preset,
+    manifest_path => $bundle_manifest->{path},
+    project_root  => $bundle_example,
+    bundle_path   => $definitions,
+  );
+  is $defaulted->{bundle_preset}{reference}, 'OSG lecture/1',
+    'a manifest without bundle_preset resolves the built-in default';
+}
+
+# KOMA-Script stops with a fatal error on \DocumentMetadata, so osgdocmk rejects
+# the combination before LaTeX runs.
+{
+  my %scrbook_metadata = %$bundle_data;
+  $scrbook_metadata{targets} = { %{ $bundle_data->{targets} },
+    script => { %{ $bundle_data->{targets}{script} },
+      profile => 'scrbook', document_metadata => 'enabled' } };
+  eval {
+    OLLM::Config->resolve_definitions(
+      manifest      => \%scrbook_metadata,
+      manifest_path => $bundle_manifest->{path},
+      project_root  => $bundle_example,
+      bundle_path   => $definitions,
+    );
+  };
+  like $@, qr/profile 'scrbook' forbids document metadata/,
+    'scrbook rejects document metadata before LaTeX runs';
+}
+is $bundle_definitions->{targets}{slides}{profile}, 'ltx-talk',
+  'example selects ltx-talk for slides through presentation_profile';
+is $bundle_definitions->{targets}{slides}{document_metadata}, 'enabled',
+  'an ltx-talk target resolves to an enabled metadata policy';
+is $bundle_definitions->{targets}{script}{document_metadata}, 'enabled',
+  'the example enables document metadata for its script target';
+is $bundle_definitions->{targets}{solutions}{profile}, 'series-solutions',
+  'example resolves its project-local solutions profile';
+is_deeply $bundle_definitions->{targets}{solutions}{unit_scopes}, ['a', 'as'],
+  'the project-local solutions target is scoped like script';
+
+my $resolve_manifest = File::Spec->catfile(tempdir(CLEANUP => 1), 'osgdocmkconfig.toml');
+my $write_resolve = sub {
+  open my $fh, '>', $resolve_manifest or die $!;
+  print {$fh} <<"TOML";
+schema = 2
+bundle_preset = "OSG lecture/1"
+[project]
+id = "resolve"
+[targets.defaults]
+languages = ["de"]
+default_language = "de"
+[targets.slides]
+[build.resolve]
+max_rounds = $_[0]
+TOML
+  close $fh;
+};
+$write_resolve->(3);
+ok(OLLM::Config->load_manifest($resolve_manifest),
+  'a positive reference-resolution round limit is accepted');
+$write_resolve->(0);
+eval { OLLM::Config->load_manifest($resolve_manifest) };
+like $@, qr/max_rounds must be a positive integer/,
+  'a non-positive reference-resolution round limit is rejected';
+
+my $temporary = tempdir(CLEANUP => 1);
+open my $toml, '>', File::Spec->catfile($temporary, 'osgdocmkconfig.toml')
+  or die $!;
+print {$toml} "schema = 1\n";
+close $toml;
+open my $legacy, '>', File::Spec->catfile($temporary, 'ollmconfig.pl')
+  or die $!;
+close $legacy;
+
+my $mixed = OLLM::Config->find_manifest(start_dir => $temporary);
+is $mixed->{kind}, 'toml', 'TOML wins when both manifest formats exist';
+unlink File::Spec->catfile($temporary, 'osgdocmkconfig.toml') or die $!;
+$mixed = OLLM::Config->find_manifest(start_dir => $temporary);
+is $mixed->{kind}, 'unconverted',
+  'a lone Perl manifest is reported, never used';
+
+my $user_root = tempdir(CLEANUP => 1);
+my $user_config = File::Spec->catfile($user_root, 'config.toml');
+open my $user_handle, '>', $user_config or die $!;
+print {$user_handle} <<'TOML';
+schema = 1
+bundle_preset = "OSG lecture/1"
+TOML
+close $user_handle;
+{
+  local $ENV{OSGDOCMK_USER_CONFIG} = $user_config;
+  my $user_resolved = OLLM::Config->resolve_request(
+    start_dir       => $chapter,
+    definitions_dir => $definitions,
+    plan => {
+      action => 'build',
+      all => 0,
+      dry_run => 1,
+      latexmk_args => [],
+      non_interactive => 0,
+      rebuild => 0,
+      resolve => 0,
+      source => 'main.tex',
+      target => 'slides',
+    },
+  );
+  is $user_resolved->{build_spec}{profile_class}, 'presentation',
+    'user configuration does not own the TeX document profile';
+}
+
+done_testing;

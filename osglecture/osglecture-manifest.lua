@@ -6,7 +6,7 @@
   Version:
   v0.6.0
   Description:
-  shared project-manifest reader, used by osglecture and by OLLM via texlua
+  shared project-manifest reader, used by osglecture and by osgdocmk via texlua
 ]]
 
 local toml = require("osglecture-toml")
@@ -14,16 +14,16 @@ local series_index = require("osglecture-series-index")
 
 local manifest = {}
 
-local MANIFEST_FILENAME = "ollmconfig.toml"
+local MANIFEST_FILENAME = "osgdocmkconfig.toml"
 local DEFAULT_TEX_DIRECTORY = "Include"
 local DEFAULT_TEX_CONFIG = "projectconfig.tex"
 
 -- \ldeen*{@1 sucht ausschließlich nach dem Vorhandensein von
--- \code{ollmconfig.toml} und ist unabhängig von der Verzeichnisgrammatik
+-- \code{osgdocmkconfig.toml} und ist unabhängig von der Verzeichnisgrammatik
 -- einer Serieneinheit: Anders als @2 darf der Startpfad beliebig tief unter
 -- einer Einheit liegen (etwa ein Unterordner), solange irgendein Vorfahre
 -- das Manifest enthält.}{@1 looks only for the presence of
--- \code{ollmconfig.toml} and is independent of the series-unit directory
+-- \code{osgdocmkconfig.toml} and is independent of the series-unit directory
 -- grammar: unlike @2, the start path may sit arbitrarily deep below a unit
 -- (for example a subdirectory), as long as some ancestor holds the
 -- manifest.}{\code{manifest.find}}{\code{series\_index.locate\_unit\_ancestor}}
@@ -121,11 +121,11 @@ function manifest.bundle_preset(project_manifest)
   return project_manifest.bundle_preset
 end
 
--- \ldeen*{Löst @1 mit denselben Defaults auf, die OLLM heute verwendet
+-- \ldeen*{Löst @1 mit denselben Defaults auf, die osgdocmk heute verwendet
 -- (\code{Include}/\code{projectconfig.tex}), relativ zur Projektwurzel.
 -- @2 ist absolut, damit das Ergebnis unabhängig vom aktuellen
 -- Arbeitsverzeichnis des TeX-Laufs ist.}{Resolves @1 with the same
--- defaults OLLM uses today (\code{Include}/\code{projectconfig.tex}),
+-- defaults osgdocmk uses today (\code{Include}/\code{projectconfig.tex}),
 -- relative to the project root. @2 is absolute so the result is
 -- independent of the TeX run's current working directory.}{\code{[project.tex]}}{\code{project\_root}}
 function manifest.shared_tex(project_manifest, project_root)

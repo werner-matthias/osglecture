@@ -71,7 +71,7 @@ Featurewünsche.
   (der bisher einzige getestete Fall) ist unverändert korrekt, da `\alt`
   dort auch beim alten, sofortigen Zeitpunkt schon existierte. Alle 16
   bestehenden Tests weiterhin grün; am realen Kursskript bestätigt (per
-  `ollm build slides` neu gebaut: Folie "`Warum überhaupt?"' jetzt korrekt
+  `osgdocmk build slides` neu gebaut: Folie "`Warum überhaupt?"' jetzt korrekt
   6 Folien, `KI-Fehler.png` erscheint genau einmal auf der richtigen).
   **Offen:** kein dedizierter Regressionstest in
   `osglecture-modes/testfiles/` nachgereicht -- der Bug braucht exakt das
@@ -149,7 +149,7 @@ Featurewünsche.
   realen Foliendeck bis Zeile 441 identischen Kurztest) und in einem
   synthetischen Drei-Abschnitte-Test vollständig -- im *realen*
   Kursskript (AuP/Script2/001-Intro, Foliendeck mit ~50 Seiten,
-  `ollm build --target=slides`) bleibt derselbe Absturz an derselben
+  `osgdocmk build --target=slides`) bleibt derselbe Absturz an derselben
   Stelle (Zeile 441) bestehen. Per Bisektion (Hook-Body schrittweise
   reduziert: leer -> nur `\bool_gset_true:N` -> zusätzlich
   `\tl_gset_eq:NN ... \l__talk_section_tl`) eindeutig auf das Kopieren
@@ -406,7 +406,7 @@ Featurewünsche.
   `osglecture-modes/testfiles/lttalk-mode-then-section.lvt` (neu, prüft
   den `\mode`-dann-`\section`-Bug direkt). Per `pdftotext` am
   gerenderten PDF verifiziert -- sowohl an Kurztests als auch am
-  **vollständigen, ungekürzten Realdokument** (51 Seiten, `ollm build
+  **vollständigen, ungekürzten Realdokument** (51 Seiten, `osgdocmk build
   --target=slides`, frisch installierte Pakete): Kopfzeile zeigt korrekt
   konstant "Algorithmen & Programmierung -- 0. Einführung" in Zeile~1 und
   in Zeile~2 korrekt wechselnd "1 Willkommen" / "2 Wie funktioniert der
@@ -420,7 +420,7 @@ Featurewünsche.
 * [ ] TStandardtemplates für Titel (Prefix, Nummer), Seitenzahl, etc.
 
 # Handout-Imposition (tagpax/OLLM), Stand 2026-09-16
-* [ ] `ollm handout -pvc`: Der Viewer zeigt nach dem ersten (unimponierten)
+* [ ] `osgdocmk handout -pvc`: Der Viewer zeigt nach dem ersten (unimponierten)
   Kompilierlauf das flache 1x1-Ergebnis; die Imposition läuft erst nach
   `^C`, weil sie im Perl-Wrapper hinter dem blockierenden `system()`-Aufruf
   sitzt, der bei `-pvc` nie zurückkehrt. Möglicher Ansatz: `latexmk`s

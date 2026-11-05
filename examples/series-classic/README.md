@@ -1,6 +1,6 @@
 # Vertical series example -- classic variant
 
-This example is a small end-to-end case study for the current OLLM and
+This example is a small end-to-end case study for the current osgdocmk and
 `osglecture` contracts, built entirely on document types that do not use
 `\DocumentMetadata`. It contains two logical units and no integration unit. Each
 logical unit builds as a Beamer presentation (`slides`) and a KOMA-Script
@@ -16,14 +16,14 @@ a project-local `solutions` target for exercises), see the sibling example
 
 ```text
 series-classic/
-├── ollmconfig.toml
+├── osgdocmkconfig.toml
 ├── Include/
 │   └── projectconfig.tex
 ├── 010-introduction/main.tex
 └── 020-application/main.tex
 ```
 
-OLLM discovers `ollmconfig.toml` from either unit directory. Shared TeX files
+osgdocmk discovers `osgdocmkconfig.toml` from either unit directory. Shared TeX files
 live in `Include`; there is deliberately no TeX material in the project root.
 The manifest uses the default directory and configuration filenames
 explicitly, so the relevant build contract remains visible in this example.
@@ -52,7 +52,7 @@ The sources additionally exercise:
 - logical unit declarations with stable IDs;
 - `presitemize` as list versus connected prose;
 - presentation-default `twocolumns` behaviour;
-- a cross-unit `\olref` resolved through OLLM's promoted reference state,
+- a cross-unit `\olref` resolved through osgdocmk's promoted reference state,
   rendered as a working external link (`GoToR`) -- without
   `\DocumentMetadata`, `\olref` builds this link itself from the same
   low-level primitives hyperref's own classic backend uses, rather than
@@ -68,28 +68,28 @@ use.
 ## Build sequence
 
 Run the following commands from the named unit directories. The producing
-unit must be built before the consuming unit so that OLLM can register its
+unit must be built before the consuming unit so that osgdocmk can register its
 promoted reference export.
 
 ```sh
 cd 010-introduction
-ollm build slides
-ollm build script
+osgdocmk build slides
+osgdocmk build script
 
 cd ../020-application
-ollm build slides
-ollm build script
+osgdocmk build slides
+osgdocmk build script
 ```
 
 The second unit then links to the matching `introduction` projection: `slides`
 and `script` each refer to the same target and language in the first unit.
 Rebuilding the second unit may be necessary after changing a label in the
-first unit. Automated dependency-fixpoint builds are available through `ollm
+first unit. Automated dependency-fixpoint builds are available through `osgdocmk
 build --resolve`; the explicit order above remains useful for showing the
 initial bootstrap in which the producing unit's logical ID is not yet known
-to OLLM.
+to osgdocmk.
 
-To inspect the BuildSpecs without invoking LaTeX, run `ollm build --all
+To inspect the BuildSpecs without invoking LaTeX, run `osgdocmk build --all
 --dry-run` in the project.
 
 ## Expected defaults

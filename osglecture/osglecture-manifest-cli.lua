@@ -6,8 +6,8 @@
   Version:
   v0.6.0
   Description:
-  texlua entry point for OLLM: exposes osglecture-manifest.lua and
-  osglecture-series-index.lua as a line-oriented command, so OLLM calls the
+  texlua entry point for osgdocmk: exposes osglecture-manifest.lua and
+  osglecture-series-index.lua as a line-oriented command, so osgdocmk calls the
   same implementation instead of maintaining a second one in Perl.
 ]]
 

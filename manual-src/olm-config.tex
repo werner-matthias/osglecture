@@ -2,12 +2,12 @@
 \label{sec:project-configuration}
 
 \ldeen{Die Konfiguration von \osglecture\ liegt absichtlich nicht in einer
-einzigen Datei. Verschiedene Ebenen beantworten verschiedene Fragen: \OLLM\ 
+einzigen Datei. Verschiedene Ebenen beantworten verschiedene Fragen: \osgdocmk\ 
 entscheidet, \emph{was} gebaut werden darf und wo Ergebnisse liegen;
 \LaTeX\ entscheidet, \emph{wie} eine ausgewählte Dokumentinstanz gesetzt wird.
 Eine Einstellung gehört auf die niedrigste Ebene, auf der sie für alle
 betroffenen Dokumente gilt.}{The configuration of \osglecture\ is deliberately
-not kept in one file. Different layers answer different questions: \OLLM\ 
+not kept in one file. Different layers answer different questions: \osgdocmk\ 
 decides \emph{what} may be built and where results live; \LaTeX\ decides
 \emph{how} a selected document instance is typeset. Put a setting at the
 lowest layer at which it applies to all affected documents.}
@@ -17,7 +17,7 @@ lowest layer at which it applies to all affected documents.}
     \ldeen{wählt persönliche Defaults, derzeit insbesondere das bevorzugte
     Bundle-Preset}{selects personal defaults, currently in particular the
     preferred bundle preset}.
-  \item[\File{ollmconfig.toml}]
+  \item[\File{osgdocmkconfig.toml}]
     \ldeen{definiert Identität, Dokumentinstanzen, Sicherheit, Auflösung und
     Deployment des Projekts}{defines the project's identity, document instances,
     security, resolution, and deployment}.
@@ -45,11 +45,11 @@ lowest layer at which it applies to all affected documents.}
 
 \subsection{\ldeen{Das Projektmanifest}{The Project Manifest}}
 
-\ldeen{Die Datei \File{ollmconfig.toml} markiert die Projektwurzel. \OLLM\ 
+\ldeen{Die Datei \File{osgdocmkconfig.toml} markiert die Projektwurzel. \osgdocmk\ 
 sucht sie vom Arbeitsverzeichnis aus nach oben. Das Manifest beschreibt eine
 zu erzeugenden Dokumentinstanzen und enthält keinen Lehrtext. Ein kompaktes Projekt mit zwei
 Sprachen und drei Targets beginnt beispielsweise so}{The file
-\File{ollmconfig.toml} marks the project root. \OLLM\  searches upwards for it
+\File{osgdocmkconfig.toml} marks the project root. \osgdocmk\  searches upwards for it
 from the working directory. The manifest describes the document instances to be generated and contains
 no teaching content. A compact project with two languages and three targets
 might begin as follows}:
@@ -106,7 +106,7 @@ greifen. Fehlt beides, gelten die Profil-Defaults des Bundle-Presets.
 \option{document\_metadata} mit \code{enabled} oder \code{disabled} ist eine
 bewusste Ausgabeentscheidung und wirkt nur dort, wo das aufgelöste Profil den
 Metadatenvertrag offen lässt (\code{supported}); widerspricht sie einem Profil
-mit erzwungenem Vertrag, weist \OLLM\ den Build vor dem Lauf ab.}{A target may
+mit erzwungenem Vertrag, weist \osgdocmk\ den Build vor dem Lauf ab.}{A target may
 override \option{languages}, \option{default\_language}, \option{profile}, and
 \option{document\_metadata}. \option{profile} selects the document profile for
 that one target; \code{[targets.defaults]} may instead set
@@ -116,7 +116,7 @@ preset's profile defaults apply. \option{document\_metadata} with
 \code{enabled} or \code{disabled} is a deliberate output choice and takes
 effect only where the resolved profile leaves the metadata contract open
 (\code{supported}); if it contradicts a profile with a forced contract,
-\OLLM\ rejects the build before the run.}
+\osgdocmk\ rejects the build before the run.}
 
 \ldeen{\code{[project]} kann zusätzlich \option{tex\_directory} und
 \option{tex\_config} setzen (Standard \code{Include} bzw.
@@ -142,15 +142,15 @@ number of \code{build --resolve} rounds, and deployment.}
 \subsection{Bundle\ldeen{-}{ }Preset}
 
 \ldeen{Das Bundle-Preset ist ein versionierter Vertrag zwischen dem Projekt
-und den mit \OLLM\  installierten Definitionen.
+und den mit \osgdocmk\  installierten Definitionen.
 \code{OSG lecture/1} wählt
 das Vokabular und die Regeln dieser Bundle-Generation. Es ist nicht mit einem
-Dokumentprofil zu verwechseln: Das Preset erklärt \OLLM\  die Buildwelt, während
+Dokumentprofil zu verwechseln: Das Preset erklärt \osgdocmk\  die Buildwelt, während
 ein Profil später die konkrete \LaTeX-Klasse und Darstellung festlegt.}{The
 bundle preset is a versioned contract between the project and the definitions
-installed with \OLLM. \code{OSG lecture/1} selects the vocabulary and
+installed with \osgdocmk. \code{OSG lecture/1} selects the vocabulary and
 rules of this bundle generation. Do not confuse it with a document profile:
-the preset explains the build world to OLLM, whereas a profile later selects
+the preset explains the build world to osgdocmk, whereas a profile later selects
 the concrete \LaTeX\ class and rendering.}
 
 \ldeen{Die mitgelieferten Targetdefinitionen registrieren
@@ -160,7 +160,7 @@ Preset bringt außerdem die Profil-Defaults \option{presentation\_profile} und
 \option{longform\_profile} mit. Profilbeschreibungen (\option{document-metadata},
 \option{doctypes} und mehr) liegen im mitgelieferten Verzeichnis
 \code{definitions/profiles/}; projektlokale Definitionen können über
-\File{.ollmconfig.local.toml} ergänzt werden und ersetzen gleichnamige
+\File{.osgdocmkconfig.local.toml} ergänzt werden und ersetzen gleichnamige
 eingebaute nicht stillschweigend.}{The supplied target definitions register
 \code{slides}, \code{handout}, \code{screen}, and \code{script}. A definition specifies
 \option{doctype}, \option{profile\_class}, and \option{unit\_scopes}. The
@@ -168,16 +168,16 @@ preset also carries the profile defaults \option{presentation\_profile} and
 \option{longform\_profile}. Profile descriptions (\option{document-metadata},
 \option{doctypes}, and more) are supplied under
 \code{definitions/profiles/}; project-local definitions can be added through
-\File{.ollmconfig.local.toml} and do not silently replace built-in ones with
+\File{.osgdocmkconfig.local.toml} and do not silently replace built-in ones with
 the same name.}
 
 \ldeen{Ein eigenes Target ist beispielsweise sinnvoll, wenn Studierende neben
 dem normalen Skript einen didaktisch anders aufgebauten Studienleitfaden
 erhalten sollen. Dazu registriert Nora zunächst den Suchpfad in
-\File{.ollmconfig.local.toml}}{A custom target is useful, for example, when
+\File{.osgdocmkconfig.local.toml}}{A custom target is useful, for example, when
 students should receive a study guide with a didactically different structure
 in addition to the normal lecture notes. Nora first registers the search path
-in \File{.ollmconfig.local.toml}}:
+in \File{.osgdocmkconfig.local.toml}}:
 
 \begin{verbatim}
 schema = 1
@@ -216,14 +216,14 @@ typesetting must understand the same contract.}
 
 \ldeen{Wer mehrere Projekte mit demselben Bundle bearbeitet, kann sein
 bevorzugtes Preset persönlich vorbelegen. Unter Unix liegt die Datei gewöhnlich
-in \File{\$XDG\_CONFIG\_HOME/ollm/config.toml} oder
-\File{\$HOME/.config/ollm/config.toml}, unter Windows in
-\File{\%APPDATA\%/ollm/config.toml}. \code{OLLM\_USER\_CONFIG} kann einen
+in \File{\$XDG\_CONFIG\_HOME/osgdocmk/config.toml} oder
+\File{\$HOME/.config/osgdocmk/config.toml}, unter Windows in
+\File{\%APPDATA\%/osgdocmk/config.toml}. \code{OSGDOCMK\_USER\_CONFIG} kann einen
 anderen Pfad wählen}{Users working on several projects with the same bundle can
 set a personal preferred preset. On Unix the file is normally found in
-\File{\$XDG\_CONFIG\_HOME/ollm/config.toml} or
-\File{\$HOME/.config/ollm/config.toml}, and on Windows in
-\File{\%APPDATA\%/ollm/config.toml}. \code{OLLM\_USER\_CONFIG} can select a
+\File{\$XDG\_CONFIG\_HOME/osgdocmk/config.toml} or
+\File{\$HOME/.config/osgdocmk/config.toml}, and on Windows in
+\File{\%APPDATA\%/osgdocmk/config.toml}. \code{OSGDOCMK\_USER\_CONFIG} can select a
 different path}:
 
 \begin{verbatim}
@@ -266,10 +266,10 @@ language list live in the manifest instead. A typical core is}:
 \author{Nora Example}
 \end{verbatim}
 
-\ldeen{Die auswählbaren Sprachen kommen für einen \OLLM-Build aus dem Manifest;
+\ldeen{Die auswählbaren Sprachen kommen für einen \osgdocmk-Build aus dem Manifest;
 \code{languages} nennt hier nur noch das \pkg{langselect}-Mapping. \osglecture\
 reicht die Sprachliste (in Manifestreihenfolge) aus der Buildauftragsdatei an
-\pkg{langselect} weiter.}{For an \OLLM\ build the selectable languages come
+\pkg{langselect} weiter.}{For an \osgdocmk\ build the selectable languages come
 from the manifest; \code{languages} here only carries the \pkg{langselect}
 mapping. \osglecture\ hands the language list (in manifest order) from the
 build file to \pkg{langselect}.}
@@ -322,14 +322,14 @@ binding so that a unit cannot override it.}
 
 \ldeen{\File{documentmetadata.tex} hat eine andere Aufgabe: Sein
 \cs{DocumentMetadata}-Aufruf muss vor der Dokumentklasse erfolgen
-und steuert PDF-Eigenschaften, nicht die sichtbaren fachlichen Metadaten. \OLLM\
+und steuert PDF-Eigenschaften, nicht die sichtbaren fachlichen Metadaten. \osgdocmk\
 bindet die Datei ein, wenn die aus dem Profil abgeleitete Metadatenpolicy
 \code{enabled} ergibt -- also bei einem \code{required}-Profil immer, bei einem
 \code{supported}-Profil, wenn \keyis{document\_metadata}{enabled} im Manifest
 steht. Dabei stehen Symbole wie \cs{OsgLectureRequestedLanguage} zur
 Verfügung.}{\File{documentmetadata.tex} has a different role: its
 \cs{DocumentMetadata} call must precede the document class and controls PDF
-properties rather than visible subject metadata. \OLLM\  includes the file when
+properties rather than visible subject metadata. \osgdocmk\  includes the file when
 the metadata policy derived from the profile resolves to \code{enabled} --
 always for a \code{required} profile, and for a \code{supported} profile when
 the manifest sets \keyis{document\_metadata}{enabled}. Symbols such as
@@ -407,10 +407,10 @@ requires a suitable integration. The three required entries are \option{backend}
 \DeclareOsgLectureProfileClassOptions{mybook}{script}{open=right}
 \end{verbatim}
 
-\ldeen{Damit \OLLM\ den \cs{DocumentMetadata}-Vertrag schon vor dem Lauf kennt,
+\ldeen{Damit \osgdocmk\ den \cs{DocumentMetadata}-Vertrag schon vor dem Lauf kennt,
 liegt neben der \code{.def} eine maschinenlesbare Profilbeschreibung
 \File{osglecture-profile-mybook.toml} (bzw. unter
-\code{Definitions/profiles/})}{So that \OLLM\ knows the \cs{DocumentMetadata}
+\code{Definitions/profiles/})}{So that \osgdocmk\ knows the \cs{DocumentMetadata}
 contract before the run, a machine-readable profile description
 \File{osglecture-profile-mybook.toml} sits next to the \code{.def} (or under
 \code{Definitions/profiles/})}:
@@ -429,7 +429,7 @@ doctypes = ["script", "article"]
 TeX-Suchpfad genügt \keyis{longform\_profile}{mybook} in
 \code{[targets.defaults]}. \osglecture\ lädt die \code{.def} bei der ersten
 Auswahl automatisch und prüft, ob der angeforderte Dokumenttyp unterstützt
-wird. \File{ollm/testfiles} bzw. \code{definitions/profiles.t} bewacht, dass
+wird. \File{osgdocmk/testfiles} bzw. \code{definitions/profiles.t} bewacht, dass
 \code{.def} und \code{.toml} nicht auseinanderlaufen.}{After installation or
 adding the shared directory to the TeX search path,
 \keyis{longform\_profile}{mybook} in \code{[targets.defaults]} is sufficient.
@@ -555,8 +555,8 @@ should not pre-empt them.}
     standardmäßig \code{slides}}{select the document type; defaults to
     \code{slides} in standalone mode}.
   \item[\keyis{profile}{name}] \ldeen{Dokumentprofil ausdrücklich wählen
-    (Standalone; für \OLLM-Builds kommt es aus dem Manifest)}{select a document
-    profile explicitly (standalone; for \OLLM\ builds it comes from the
+    (Standalone; für \osgdocmk-Builds kommt es aus dem Manifest)}{select a document
+    profile explicitly (standalone; for \osgdocmk\ builds it comes from the
     manifest)}.
   \item[\keyis{lang}{tag}] \ldeen{Dokumentsprache wählen}{select the document
     language}.
@@ -576,8 +576,8 @@ should not pre-empt them.}
     declarations read in every target, before the profile's mode file}.
   \item[\option{presentation-profile}, \option{longform-profile},
     \option{identity-profile}] \ldeen{Profile für Standalone-Dokumente ohne
-    Manifest; für \OLLM-Builds ist die Profilwahl abgekündigt und kommt aus dem
-    Manifest}{profiles for standalone documents without a manifest; for \OLLM\
+    Manifest; für \osgdocmk-Builds ist die Profilwahl abgekündigt und kommt aus dem
+    Manifest}{profiles for standalone documents without a manifest; for \osgdocmk\
     builds profile selection here is deprecated and comes from the manifest}.
   \item[\option{theme}, \option{numbering}, \option{references}]
     \ldeen{projektweite semantische Policies}{project-wide semantic policies}.
@@ -592,12 +592,12 @@ should not pre-empt them.}
 \ldeen{Unter \option{languages} sind die Schlüssel \option{targetlang},
 \option{prefix}, \option{auto}, \option{trim}, \option{map},
 \option{load babel}, \option{load polyglossia} und \option{unified shorthands}
-zulässig. \option{selectable} kommt für einen \OLLM-Build aus dem Manifest
+zulässig. \option{selectable} kommt für einen \osgdocmk-Build aus dem Manifest
 (ein Wert hier wird mit Warnung verworfen) und ist nur für Standalone
 gedacht.}{Under \option{languages}, the permitted keys are \option{targetlang},
 \option{prefix}, \option{auto}, \option{trim}, \option{map},
 \option{load babel}, \option{load polyglossia}, and \option{unified
-shorthands}. \option{selectable} comes from the manifest for an \OLLM\ build (a
+shorthands}. \option{selectable} comes from the manifest for an \osgdocmk\ build (a
 value here is dropped with a warning) and is meant for standalone only.}
 \ldeen{Wird \option{targetlang} ausgelassen, setzt \osglecture\ dafür
 automatisch \cs{OsgLectureLanguage} ein. Ein expliziter Wert überschreibt
@@ -616,8 +616,8 @@ this convention.}
     osglecture mode-dependent settings with \code{mode/NAME}}.
   \command{LectureTargetSetup}[\marg{target}\marg{settings}]
     \ldeen{akzeptiert \option{filecolor}; \option{profile} wird für
-    \OLLM-Builds ignoriert (Profilwahl im Manifest)}{accepts \option{filecolor};
-    \option{profile} is ignored for \OLLM\ builds (profile selection in the
+    \osgdocmk-Builds ignoriert (Profilwahl im Manifest)}{accepts \option{filecolor};
+    \option{profile} is ignored for \osgdocmk\ builds (profile selection in the
     manifest)}.
   \command{IncludeOsgLecturePreamble}[\sarg\aarg{modes}\oarg{class=list}\marg{name}]
     \ldeen{registriert ein bedingtes Präambelfragment; die

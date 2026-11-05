@@ -150,14 +150,14 @@ option does not change the document class.
 
 \ldeen{
 Das Kernpaket benötigt einen aktuellen \LaTeX-Kernel. Es kann unabhängig
-von \cls*{osglecture}, OLLM und Projektverzeichnissen verwendet werden.
+von \cls*{osglecture}, osgdocmk und Projektverzeichnissen verwendet werden.
 Laden Sie es gewöhnlich nach der Dokumentklasse. Ohne explizite Moduswahl
 erkennt es Beamer und \pkg*{ltx-talk}; bei anderen Klassen wählt es
 \code{article}. Nur die portablen Textfilter aus
 Abschnitt~\ref{sec:lttalk-filter} benötigen Lua\LaTeX.
 }{
 The core package needs a current \LaTeX\ kernel. It works independently of
-\cls*{osglecture}, OLLM, and project directories. Normally, load it after the
+\cls*{osglecture}, osgdocmk, and project directories. Normally, load it after the
 document class. Without an explicit mode selection it detects Beamer and
 \pkg*{ltx-talk}; for other classes it selects \code{article}. Only the
 portable text filters in Section~\ref{sec:lttalk-filter} require Lua\LaTeX.
@@ -922,23 +922,23 @@ modes later does not reselect command definitions.
 {Bundle integration: a custom document type}}
 \label{sec:bundle}
 \ldeen{
-Dieser Abschnitt richtet sich an Nutzer von \cls*{osglecture} und OLLM.
+Dieser Abschnitt richtet sich an Nutzer von \cls*{osglecture} und osgdocmk.
 Für die eigenständige Verwendung von \thepkg\ sind diese Schritte nicht
 nötig. Als Beispiel ergänzen wir \code{studyguide}, eine druckbare Langform
-auf Basis von \cls*{scrbook}. Das OLLM-Target bestimmt den Dokumenttyp;
+auf Basis von \cls*{scrbook}. Das osgdocmk-Target bestimmt den Dokumenttyp;
 dieser wird als Modus ausgewählt. Das Dokumentprofil bestimmt dagegen
 Basisklasse und Einrichtung des Dokuments.
 }{
-This section is for users of \cls*{osglecture} and OLLM. These steps are
+This section is for users of \cls*{osglecture} and osgdocmk. These steps are
 not required for standalone use of \thepkg. We add \code{studyguide}, a
-printable long-form document based on \cls*{scrbook}. The OLLM target
+printable long-form document based on \cls*{scrbook}. The osgdocmk target
 specifies the document type, which is selected as a mode. The document
 profile specifies the base class and document setup instead.
 }
 \subsection{\ldeen{Target registrieren}{Registering the target}}
-\ldeen{Legen Sie in einem eingebundenen OLLM-Definitionspfad die Datei
+\ldeen{Legen Sie in einem eingebundenen osgdocmk-Definitionspfad die Datei
 \code{targets/studyguide.toml} an:}
-{Create \code{targets/studyguide.toml} in a configured OLLM definition path:}
+{Create \code{targets/studyguide.toml} in a configured osgdocmk definition path:}
 \begin{example}[code-only,gobble=0]
 schema = 1
 kind = "target"
@@ -948,11 +948,11 @@ doctype = "studyguide"
 family = "publication"
 unit_scopes = ["a", "as"]
 \end{example}
-\ldeen{Geben Sie das Target anschließend in \code{ollmconfig.toml} frei.
-Der Definitionspfad muss über die lokale OLLM-Konfiguration oder ein
+\ldeen{Geben Sie das Target anschließend in \code{osgdocmkconfig.toml} frei.
+Der Definitionspfad muss über die lokale osgdocmk-Konfiguration oder ein
 installiertes Bundle-Preset eingebunden sein.}
-{Then enable the target in \code{ollmconfig.toml}. The definition path must
-be configured through local OLLM settings or an installed bundle preset.}
+{Then enable the target in \code{osgdocmkconfig.toml}. The definition path must
+be configured through local osgdocmk settings or an installed bundle preset.}
 \begin{example}[code-only,gobble=0]
 [targets.studyguide]
 languages = ["de", "en"]
@@ -1020,16 +1020,16 @@ am Klassenkern ist dafür nicht nötig. Prüfen Sie abschließend den Build
 für jede freigegebene Sprache: Target, Dokumenttyp und Profil müssen
 zusammenpassen, die Modusabfragen das erwartete Ergebnis liefern und die
 verwendeten modusabhängigen Befehle definiert sein. Prüfen Sie auch ein
-Dokument mit explizitem \code{doctype} und \code{profile} ohne OLLM-Projekt.
+Dokument mit explizitem \code{doctype} und \code{profile} ohne osgdocmk-Projekt.
 Die vollständige Profil- und Targetkonfiguration beschreiben die
-Dokumentationen von \cls*{osglecture} und OLLM.
+Dokumentationen von \cls*{osglecture} und osgdocmk.
 }{
 The class loads the mode setup file before selecting the new mode; no
 change to the class core is needed. Finally, build each enabled language:
 target, document type, and profile must agree, mode queries must return the
 expected results, and the mode-dependent commands used must be defined.
 Also check a document with explicit \code{doctype} and \code{profile}
-outside an OLLM project. The \cls*{osglecture} and OLLM manuals describe
+outside an osgdocmk project. The \cls*{osglecture} and osgdocmk manuals describe
 the full profile and target configuration.
 }
 
