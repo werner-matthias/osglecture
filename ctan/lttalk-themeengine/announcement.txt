@@ -1,0 +1,1 @@
+lttalk-themeengine is a theme engine for the ltx-talk presentation class. It separates layouts, colours, and fonts so that complete designs can be selected, combined, and adapted without tying document content to a particular visual theme.

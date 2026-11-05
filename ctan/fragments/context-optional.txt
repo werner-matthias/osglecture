@@ -1,0 +1,4 @@
+Context
+   Authors of lecture material written with the osglecture document class
+   (https://github.com/werner-matthias/osglecture) can use this package;
+   the class does not require it. It works on its own as well.

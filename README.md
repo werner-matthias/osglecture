@@ -30,7 +30,6 @@ Currently, the following packages are included:
 * **osglistings**: `minted`-based code-listing front end (`./osglistings`)
 * **semcat**: generalized semantic-category markup (`./semcat`)
 * **tagdirtree**: taggable directory tree (`./tagdirtree`)
-* **tagbridge**: transition package to patch few third party package w/o own native PDF/UA support (`./tagbridge`)
 * **osgdoc**: small wrapper for cnltx with some further support for documentation (`./osgdoc`) 
 
 > [!WARNING]
@@ -85,7 +84,6 @@ The `TL ...` columns are read from the expectations in the workflow above;
 | ltx-talk support (osglecture + osgmodes) | n/a | n/a | n/a | :full_moon: | :red_circle: | :red_circle: | :green_circle: |
 | osgdocmk | v0.15.0 | n/a | 1 | :white_circle: | :white_circle: | :green_circle: | :green_circle: |
 | tagpax | v0.8.6 | 2026-10-22 | 2 | :full_moon: | :red_circle: | :green_circle: | :green_circle: |
-| tagbridge | v0.1.0 | 2026-09-14 | 1 | :new_moon: | :red_circle: | :green_circle: | :green_circle: |
 | tagdirtree[^1] | v0.1.0 | 2026-09-14 | 1 | :new_moon: | :red_circle: | :green_circle: | :green_circle: |
 | langselect | v1.1.3 | 2026-09-18 | 1 | :full_moon: | :green_circle: | :green_circle: | :green_circle: |
 | osgstyler | v0.2.0 | 2026-08-24 | 2 | :first_quarter_moon: | :red_circle: | :red_circle: | :green_circle: |
@@ -93,7 +91,7 @@ The `TL ...` columns are read from the expectations in the workflow above;
 | lttalk-theme-tuc-2019 | v0.5.1 | 2026-08-24 | 1 | :first_quarter_moon: | :red_circle: | :red_circle: | :green_circle: |
 | ansiterm[^2] | v0.2.1 | 2026-08-26 | 1 | :full_moon: | :red_circle: | :red_circle: | :green_circle: |
 | osglistings | v0.1.0 | 2026-08-28 | 1 | :full_moon: | :green_circle: | :green_circle: | :green_circle: |
-| semcat | v0.3.0 | 2026-08-31 | 1 | :full_moon: | :green_circle: | :green_circle: | :green_circle: |
+| semcat | v0.3.0 | 2026-08-31 | 2 | :full_moon: | :red_circle: | :green_circle: | :green_circle: |
 | osgdoc | v0.5.0 | 2026-09-08 | 2 | :first_quarter_moon: | :green_circle: | :green_circle: | :green_circle: |
 [^1]: The incompatibility for TL 2024 refers to tagging only; the untagged tree is okay.
 [^2]: The incompatibility for TL 2025 refers to tagging only; the basis features are okay.

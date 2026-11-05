@@ -1,0 +1,4 @@
+Context
+   This package is required by the osglecture document class and developed
+   alongside it, see https://github.com/werner-matthias/osglecture. It
+   works on its own as well.

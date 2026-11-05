@@ -1,0 +1,4 @@
+Tests
+   The PDF-tag comparison tests in testfiles/ additionally need
+   insert-pdf-tags.lua from the project's GitHub repository. This is a
+   test-time convenience script, not required to use the package.

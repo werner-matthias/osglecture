@@ -1,0 +1,29 @@
+<p>The osglecture bundle supports the generation of lecture materials.
+It can produce several documents from one LaTeX source: slides,
+handouts, a presenter version, or script, each in several
+languages. The class osglecture selects the actual document class
+(ltx-talk or beamer for presentations, book or scrbook for long forms)
+through document profiles, so the source contains nothing class-specific.
+The build manager osgdocmk builds whole lecture series, carries cross-references
+and counters between units, and collects units into one document.
+In addition, the bundle aims at accessible, tagged PDFs.</p>
+
+<p>Several of the bundle's packages can also be used on their own.
+The bundle currently contains:</p>
+<ul>
+<li>osglecture: document class that produces slides, script, handouts, and other materials from a common source</li>
+<li>osgdocmk (OSG Lecture Document Maker): latexmk-based build manager for creating and deploying lecture materials</li>
+<li>osgmodes: portable document modes in the style of beamer/ltx-talk for arbitrary classes</li>
+<li>langselect: several language versions of a document from a common source</li>
+<li>tagpax: semantic import of tagged PDFs</li>
+<li>osgstyler: template-based formatting</li>
+<li>lttalk-themeengine: theme engine for ltx-talk, with a few themes modelled after Beamer themes</li>
+<li>lttalk-theme-tuc-2019: unofficial version of the TU Chemnitz presentation theme for ltx-talk</li>
+<li>ansiterm: ANSI-aware, optionally executable terminal windows</li>
+<li>osglistings: minted-based code-listing front end</li>
+<li>semcat: semantic-category markup</li>
+<li>tagdirtree: taggable directory trees</li>
+<li>osgdoc: small wrapper for cnltx with further support for documentation</li>
+</ul>
+
+<p>The bundle requires LuaLaTeX and is under active development.</p>

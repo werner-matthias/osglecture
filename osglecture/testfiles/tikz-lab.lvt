@@ -1,0 +1,16 @@
+\DocumentMetadata{lang=en,tagging=on}
+\input regression-test
+\documentclass[standalone,profile=ltx-talk,lang=en]{osglecture}
+% A second load of the package, as semcat does, must be silent.
+\RequirePackage{latex-lab-testphase-tikz}
+\usepackage{tikz}
+\begin{document}
+\START
+\makeatletter
+\TYPE{loaded=\@ifpackageloaded{latex-lab-testphase-tikz}{yes}{no}}
+\makeatother
+\begin{tikzpicture}[alt={A unit square}]
+  \draw (0,0) rectangle (1,1);
+\end{tikzpicture}
+\OMIT
+\end{document}

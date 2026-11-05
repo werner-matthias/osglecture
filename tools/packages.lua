@@ -5,7 +5,8 @@
 -- dependencies on other modules of this repository; generators and
 -- build.lua derive everything else (the README module table, the
 -- checkdeps/typesetdeps lists, the per-package dependency sections, the
--- CTAN upload metadata) from it instead of repeating it.
+-- CTAN upload metadata) from it instead of repeating it. The dependencies
+-- form a matrix of their own, `dependencies` below.
 --
 -- Fields:
 --   name     the module's directory and l3build `module` name (unchanged
@@ -28,12 +29,15 @@
 --            submission (osglecture itself is useless without its build
 --            manager, and vice versa); absent for every standalone
 --            package, which is released and uploaded on its own
---   deps     this module's dependencies on other modules of this
---            repository (never on third-party CTAN packages), by
---            `ctanpkg` name: `run` (unconditional \RequirePackage),
---            `optional` (integration the module's own code checks for
---            before using), `check` (needed only to build/run its test
---            suite), `doc` (needed only to typeset its documentation)
+--   (dependencies between modules are not entry fields: they live in the
+--            matrix `dependencies` below)
+--   license  CTAN license keys (https://ctan.org/json/2.0/licenses) of a
+--            release unit; default { "lppl1.3c" }. For a bundle, set it on
+--            the entry that carries the bundle's name.
+--   topic    CTAN topic keys of a release unit (same rule as `license`)
+--   examples directories below examples/ that only this package ships
+--   owns_support  directories (relative to the repository root) that only
+--            this package ships, e.g. images/logos
 --   ctan     false for a module that is not released as its own CTAN
 --            package; `merged_into` then names the package whose source
 --            carries its code instead
@@ -53,11 +57,12 @@ local modules = {
   -- of following the shared osglecture version.
   exclude = { ["osglecture-osgbeamer.code.tex"] = true },
     lua = ':full_moon:',
-    -- tagbridge is not a run dependency: its accessibility patches belong
-    -- to semcat, the only package that actually exercises them (see
-    -- development-docs/CTAN-SPLIT.md, Abschnitt 4). osglecture loading it
-    -- on semcat's behalf is exactly the coupling that split removes.
-    deps = { run = { "osgmodes", "tagpax" }, check = { "langselect" } } },
+    -- Vendored third-party code: toml2lua (MIT) and TOML::Tiny (same terms
+    -- as Perl 5: Artistic 1.0 or GPL 1 or later).
+    license = { "lppl1.3c", "mit", "artistic", "gpl1+" },
+    topic = { "presentation", "course-material", "subdocs", "accessible",
+              "tagged-pdf", "multilingual" },
+    examples = { "series-classic", "series-modern" } },
   { name = "osgmodes", ctanpkg = "osgmodes",
     files = { "osgmodes/osgmodes.dtx" },
     lua = ':full_moon:' },
@@ -67,16 +72,9 @@ local modules = {
     extractor = "perl_version" },
   { name = "tagpax", ctanpkg = "tagpax", files = { "tagpax/source/tagpax.dtx" },
     lua = ':full_moon:' },
-  -- Not its own CTAN package: a transitional patch for third-party
-  -- packages without native PDF/UA support, only actually exercised by
-  -- semcat (semcat.dtx calls the `tag` key this file defines on qrcode;
-  -- see development-docs/CTAN-SPLIT.md, Abschnitt 4). It keeps its own
-  -- version-tracking entry here only until its code is moved into
-  -- semcat's own sources.
-  { name = "tagbridge",        files = { "tagbridge/tagbridge.dtx" },
-    lua = ':new_moon:', ctan = false, merged_into = "semcat" },
   { name = "tagdirtree",       ctanpkg = "tagdirtree",
     files = { "tagdirtree/tagdirtree.dtx" },
+    examples = { "tagdirtree-lines-skin" },
     note = "The incompatibility for TL 2024 refers to tagging only; the untagged tree is okay.",
     lua = ':new_moon:' },
   { name = "langselect",       ctanpkg = "langselect",
@@ -85,7 +83,7 @@ local modules = {
   { name = "osgstyler",        ctanpkg = "osgstyler",
     files = { "osgstyler/osgstyler.dtx" },
     lua = ':first_quarter_moon:',
-    deps = { check = { "osgmodes" } } },
+    examples = { "osgstyler-article", "osgstyler-beamerlike" } },
   -- Neither lttalk-themeengine nor lttalk-theme-tuc-2019 touches Lua in
   -- its own code, but each unconditionally \RequirePackage{}s a package
   -- that only degrades without Lua (osgstyler directly;
@@ -95,24 +93,14 @@ local modules = {
   -- (development-docs/CTAN-SPLIT.md, Abschnitt 6).
   { name = "lttalk-themeengine",          ctanpkg = "lttalk-themeengine",
     files = { "lttalk-themeengine/lttalk-themeengine.dtx" },
-    lua = ':first_quarter_moon:',
-    deps = { run = { "osgstyler" }, check = { "osgstyler" } } },
+    lua = ':first_quarter_moon:' },
   { name = "lttalk-theme-tuc-2019", ctanpkg = "lttalk-theme-tuc-2019",
     files = { "lttalk-theme-tuc-2019/lttalk-theme-tuc-2019.dtx" },
     lua = ':first_quarter_moon:',
     -- Images used only by this theme's example and tests; it is the sole
     -- owner of images/logos for the purposes of a CTAN export (see
     -- development-docs/CTAN-SPLIT.md, Abschnitt 12).
-    owns_support = { "images/logos" },
-    deps = {
-      run = { "lttalk-themeengine" },
-      -- checkdeps/typesetdeps are not transitive, so the teaching-lecture-
-      -- number test (which loads osglecture directly) and the dependency
-      -- lttalk-themeengine itself has on osgstyler both have to be
-      -- repeated here.
-      check = { "lttalk-themeengine", "osgstyler", "osglecture",
-                "osgmodes", "tagpax" },
-    } },
+    owns_support = { "images/logos" } },
   { name = "ansiterm",         ctanpkg = "ansiterm",
     files = { "ansiterm/ansiterm.dtx" },
     lua = ':full_moon:',
@@ -122,15 +110,77 @@ local modules = {
     lua = ':full_moon:' },
   { name = "semcat",           ctanpkg = "semcat",
     files = { "semcat/semcat.dtx" },
-    lua = ':full_moon:',
-    -- Optional per semcat's own README: osgstyler supplies theme-aware
-    -- colours, osgmodes restricts annotations to selected
-    -- document variants. Neither is \RequirePackage'd unconditionally.
-    deps = { optional = { "osgstyler", "osgmodes" },
-             check = { "osgmodes", "osgstyler" } } },
+    lua = ':full_moon:' },
   { name = "osgdoc",           ctanpkg = "osgdoc",
     files = { "osgdoc/osgdoc.dtx" },
     lua = ':first_quarter_moon:' },
+}
+
+-- The dependency matrix: one row per direct dependency of a module on
+-- another module of this repository, { from, to, kind }:
+--   run       \RequirePackage'd or otherwise needed whenever `from` is used
+--   optional  integration `from` checks for before using it
+--   check     needed only to run `from`'s test suite (a `run` dependency is
+--             one as well and need not be repeated)
+--   doc       needed only to typeset `from`'s documentation (a `run`
+--             dependency is one as well); the modules of `doc_default`
+--             count for every module, see below
+-- Dependencies on third-party CTAN packages go to `external_dependencies`
+-- (same shape; `to` is a CTAN name, optionally followed by ">= <version>").
+-- Everything else -- the dependency paragraph of the CTAN description, the
+-- context note, `make-ctan-metadata.lua --matrix` -- is derived from these
+-- two tables (tools/ctan-metadata.lua).
+local dependencies = {
+  -- osglecture needs osgmodes, tagpax, and langselect whenever it is used.
+  -- The qrcode tagging hooks (formerly tagbridge) belong to semcat, the only
+  -- package that exercises them (development-docs/CTAN-SPLIT.md, Abschnitt
+  -- 4); osglecture does not load them.
+  { "osglecture", "osgmodes",   "run" },
+  { "osglecture", "tagpax",     "run" },
+  { "osglecture", "langselect", "run" },
+  -- Content authors may use these in lecture sources; the class itself
+  -- never needs them.
+  { "osglecture", "ansiterm",   "optional" },
+  { "osglecture", "osglistings", "optional" },
+
+  { "osgstyler", "osgmodes", "check" },
+
+  { "lttalk-themeengine", "osgstyler", "run" },
+
+  { "lttalk-theme-tuc-2019", "lttalk-themeengine", "run" },
+  -- checkdeps/typesetdeps are not transitive: the teaching-lecture-number
+  -- test loads osglecture directly, and lttalk-themeengine's own
+  -- dependency on osgstyler has to be repeated here.
+  { "lttalk-theme-tuc-2019", "osgstyler",  "check" },
+  { "lttalk-theme-tuc-2019", "osglecture", "check" },
+  { "lttalk-theme-tuc-2019", "osgmodes",   "check" },
+  { "lttalk-theme-tuc-2019", "tagpax",     "check" },
+  -- typesetdeps are not transitive either (see above).
+  { "lttalk-theme-tuc-2019", "osgstyler",  "doc" },
+
+  -- The manual of the bundle (manual-src) includes examples that use these.
+  { "osglecture", "osgstyler",  "doc" },
+  { "osglecture", "tagdirtree", "doc" },
+
+  -- Optional per semcat's own README: osgstyler supplies theme-aware
+  -- colours, osgmodes restricts annotations to selected document variants.
+  -- Neither is \RequirePackage'd unconditionally.
+  { "semcat", "osgstyler", "optional" },
+  { "semcat", "osgmodes",  "optional" },
+  { "semcat", "osgmodes",  "check" },
+  { "semcat", "osgstyler", "check" },
+}
+
+-- Documentation builds (l3build doc, install --full) of every module use
+-- osgdoc and langselect; the module's own entry is skipped. The root
+-- build.lua adds them to each module's typesetdeps by the same rule.
+local doc_default = { "osgdoc", "langselect" }
+
+local external_dependencies = {
+  { "osglecture",         "ltx-talk >= 0.5.3", "optional" },
+  { "lttalk-themeengine", "ltx-talk >= 0.5.3", "run" },
+  -- osgdoc is a wrapper around the cnltx-doc class.
+  { "osgdoc",             "cnltx",              "run" },
 }
 
 -- Where a package's lua-dependency marker places it in the installed TeX
@@ -281,6 +331,9 @@ end
 
 return {
   modules = modules,
+  dependencies = dependencies,
+  doc_default = doc_default,
+  external_dependencies = external_dependencies,
   read_file = read_file,
   scan = scan,
   tdsroot_for = tdsroot_for,

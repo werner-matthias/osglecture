@@ -49,10 +49,9 @@ my $root = tempdir(CLEANUP => 1);
 my $texinputs = File::Spec->catdir($root, 'texinputs');
 make_path($texinputs);
 # osglecture loads langselect for a multi-language project (the class wires
-# the manifest's language set into it) and unconditionally requires
-# tagbridge (its tagging-compatibility hooks), so the lifecycle build needs
-# both on the search path just like osgmodes.
-for my $sibling (qw(osgmodes langselect tagbridge)) {
+# the manifest's language set into it), so the lifecycle build needs it on
+# the search path just like osgmodes.
+for my $sibling (qw(osgmodes langselect)) {
   my $dtx = abs_path(
     File::Spec->catfile('..', $sibling, "$sibling.dtx")
   );

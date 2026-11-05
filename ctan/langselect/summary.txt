@@ -1,0 +1,1 @@
+Several language versions of a document from a single LaTeX source

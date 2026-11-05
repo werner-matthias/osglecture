@@ -1,5 +1,8 @@
-bundle   = "osglecture"
-ctanpkg  = bundle
+-- Only osglecture, osgdocmk, and the manual form a bundle in CTAN's sense
+-- (one submission); every other module is a package of its own and sets
+-- `bundle = ""` in its build.lua, which makes l3build treat it as
+-- standalone (its own TDS directory, its own ctan/upload).
+bundle   = bundle or "osglecture"
 maindir  = maindir or "."
 
 local is_module = type(module) == "string" and module ~= ""
@@ -16,7 +19,6 @@ if not is_module then
      "osgdocmk",
      "osgdoc",
      "langselect",
-     "tagbridge",
      "tagdirtree",
      "lttalk-themeengine",
      "lttalk-theme-tuc-2019",
@@ -29,35 +31,65 @@ if not is_module then
    }
 end
 
--- CTAN submission data for "l3build upload", kept in its own file.  The
--- CTAN copy of the bundle has no ctan/ directory; it is only built there.
-if not is_module and fileexists("ctan/upload.lua") then
-  dofile("ctan/upload.lua")
+-- The package register is only available in the repository, not in the CTAN
+-- copy (which has no tools/ directory); l3build ctan runs in the repository.
+local function register_entry(name)
+  local file = maindir .. "/tools/packages.lua"
+  if not fileexists(file) then
+    return nil
+  end
+  for _, entry in ipairs(dofile(file).modules) do
+    if entry.name == name then
+      return entry
+    end
+  end
+  return nil
 end
 
--- A module is only ever packaged as part of the bundle; say so instead of
--- failing on the missing module list.
-if is_module and target_list and target_list.ctan then
-  target_list.ctan.func = function()
-    print("'" .. module .. "' is packaged as part of the " .. bundle
-      .. " bundle: run 'l3build ctan' in the bundle root.")
-    return 1
+-- CTAN submission data for "l3build upload", kept in its own file.  The
+-- CTAN copy of a package has no ctan/ directory; it is only built there.
+-- The bundle root submits the bundle; a standalone module submits itself.
+-- ctan/upload.lua reads files relative to the repository root.
+local function load_upload_config()
+  local upload_lua = maindir .. "/ctan/upload.lua"
+  if fileexists(upload_lua) then
+    local current = lfs.currentdir()
+    lfs.chdir(maindir)
+    dofile("ctan/upload.lua")
+    lfs.chdir(current)
   end
 end
 
--- The same holds for the upload.  l3build's upload target has no bundle
--- function, so in the bundle root it would run in every module and look
--- for the zip file there; run it in the root itself instead.
-if target_list and target_list.upload then
-  if is_module then
-    target_list.upload.func = function()
-      print("'" .. module .. "' is uploaded as part of the " .. bundle
-        .. " bundle: run 'l3build upload' in the bundle root.")
-      return 1
+-- Members of a bundle are packaged by the bundle root; a module that is
+-- merged into another one is not packaged at all.
+if is_module and target_list and target_list.ctan then
+  local reason
+  if bundle ~= "" then
+    reason = "is packaged as part of the " .. bundle
+      .. " bundle: run 'l3build %s' in the bundle root."
+  elseif merged_into then
+    reason = "is not a package of its own (merged into " .. merged_into .. ")."
+  end
+  if reason then
+    for _, name in ipairs({ "ctan", "upload" }) do
+      if target_list[name] then
+        target_list[name].func = function()
+          print("'" .. module .. "' " .. reason:format(name))
+          return 1
+        end
+      end
     end
   else
-    target_list.upload.bundle_func = function(names) return upload(names) end
+    load_upload_config()
   end
+end
+
+-- l3build's upload target has no bundle function, so in the bundle root it
+-- would run in every module and look for the zip file there; run it in the
+-- root itself instead.
+if not is_module and target_list and target_list.upload then
+  target_list.upload.bundle_func = function(names) return upload(names) end
+  load_upload_config()
 end
 
 -- The GitHub README.md is not distributed: CTAN gets the snapshot
@@ -73,10 +105,12 @@ end
 -- work there as well: build.lua and config-*.lua must therefore not be
 -- excluded.  CTAN prefers uploads without a TDS archive; l3build still
 -- builds the TDS tree (see copyctan below), and setting packtdszip adds
--- osglecture.tds.zip to the upload again should it ever be wanted.
+-- <package>.tds.zip to the upload again should it ever be wanted.  This
+-- holds for the bundle root as well as for the standalone packages, which
+-- zip their own package directory.
+packtdszip = false
+excludefiles = { "*~" }
 if not is_module then
-  packtdszip = false
-  excludefiles = { "*~" }
   -- l3build drops the executable bit unless a file is listed here.
   exefiles = { "osgdocmk" }
 end
@@ -90,9 +124,13 @@ end
   so do development-docs/, doc/, tools/, ctan/, and images/ apart from
   images/logos (the other images serve osglecture projects, not the
   bundle), which no module copies.
-  The top-level build.lua and LICENSE, the shared test support files, the
-  logos used by the lttalk-theme-tuc-2019 tests and example, and the examples
-  come along with every module (the copies are identical).
+  The top-level build.lua and LICENSE come along with every package (the
+  copies are identical).  What else is shared is decided by the package
+  register: a package ships only the example directories and the support
+  directories it owns (the logos used by the lttalk-theme-tuc-2019 tests
+  and example, the examples of osglecture, osgstyler, and tagdirtree).
+  support/insert-pdf-tags.lua, a test-time helper, belongs to no package;
+  the notes of the packages whose tests need it say so.
   Hidden files are left out: CTAN does not accept them.  So are the
   PDF-based visual tests (*.pvt, *.tpf): their normalised reference PDFs
   are rejected by CTAN's checks, and CTAN asked to leave them out.  They
@@ -146,6 +184,35 @@ local function copy_tracked(sourcedir, ...)
   return 0
 end
 
+-- The files of the given example directories (relative to examples/), as
+-- { name, sourcedir, targetdir } entries, without hidden files such as an
+-- activated .osgdocmkconfig.local.toml.
+local function example_files(directories)
+  local files = { }
+  for _, directory in ipairs(directories) do
+    for _, p in ipairs(tree(maindir .. "/examples/" .. directory, "**")) do
+      local path = p.src:gsub("^%./", "")
+      if lfs.attributes(p.cwd, "mode") == "file"
+        and not path:match("^%.") and not path:match("/%.") then
+        local dir, name = splitpath(path)
+        local relative = "examples/" .. directory .. "/" .. dir
+        table.insert(files, { name, relative, relative })
+      end
+    end
+  end
+  return files
+end
+
+-- What a package ships besides its own directory is decided by the register:
+-- the example directories it owns (`examples`) and the support directories
+-- it owns (`owns_support`, e.g. images/logos).  The test helper
+-- support/insert-pdf-tags.lua belongs to no package.  Without a register
+-- (a CTAN copy) a package ships nothing of that kind.
+local function owned_assets()
+  local entry = register_entry(module)
+  return (entry and entry.examples) or { }, (entry and entry.owns_support) or { }
+end
+
 if is_module then
   function copyctan()
     local pkgdir = ctandir .. "/" .. ctanpkg
@@ -156,17 +223,20 @@ if is_module then
     mkdir(targetdir)
     -- The mirror replaces l3build's own, flattened source directory.
     rmdir(tdsdir .. "/source/" .. moduledir)
+    local examples, support = owned_assets()
     local errorlevel = copy_tracked(".", targetdir, tdssourcedir .. "/" .. dirname)
-      + copy_tracked(maindir .. "/support",
-          pkgdir .. "/support", tdssourcedir .. "/support")
-      + copy_tracked(maindir .. "/images/logos",
-          pkgdir .. "/images/logos", tdssourcedir .. "/images/logos")
-      + copy_tracked(maindir .. "/examples",
-          pkgdir .. "/examples", tdsdocdir .. "/examples")
       + cp("build.lua", maindir, pkgdir)
       + cp("build.lua", maindir, tdssourcedir)
       + cp("LICENSE", maindir, pkgdir)
       + cp("LICENSE", maindir, tdsdocdir)
+    for _, name in ipairs(support) do
+      errorlevel = errorlevel + copy_tracked(maindir .. "/" .. name,
+        pkgdir .. "/" .. name, tdssourcedir .. "/" .. name)
+    end
+    for _, name in ipairs(examples) do
+      errorlevel = errorlevel + copy_tracked(maindir .. "/examples/" .. name,
+        pkgdir .. "/examples/" .. name, tdsdocdir .. "/examples/" .. name)
+    end
     for _, files in ipairs({ docfiles, pdffiles, typesetlist }) do
       for _, pattern in ipairs(files or { }) do
         if pattern:match("%.pdf$") then
@@ -191,6 +261,16 @@ if is_module then
     for _, pattern in ipairs(textfiles) do
       for _, name in ipairs(filelist(textfiledir, pattern)) do
         errorlevel = errorlevel + cp(name, textfiledir, docdir)
+      end
+    end
+    -- A standalone package carries its own examples; those of a bundle
+    -- member are installed by the bundle root.
+    if bundle == "" then
+      local examples = owned_assets()
+      for _, file in ipairs(example_files(examples)) do
+        mkdir(docdir .. "/" .. file[3])
+        errorlevel = errorlevel + cp(file[1], maindir .. "/" .. file[2],
+          docdir .. "/" .. file[3])
       end
     end
     return errorlevel
@@ -303,13 +383,9 @@ local function install_bundle_docs()
   end
   local docdir = texmfhome .. "/doc/" .. tdsroot .. "/" .. bundle
   local files = { { "README.md", textfiledir }, { "LICENSE", "." } }
-  for _, p in ipairs(tree("examples", "**")) do
-    local path = p.src:gsub("^%./", "")
-    if lfs.attributes(p.cwd, "mode") == "file"
-      and not path:match("^%.") and not path:match("/%.") then
-      local dir, name = splitpath(path)
-      table.insert(files, { name, "examples/" .. dir, "examples/" .. dir })
-    end
+  local entry = register_entry(bundle)
+  for _, name in ipairs(example_files(entry and entry.examples or { })) do
+    table.insert(files, name)
   end
   local errorlevel = 0
   for _, file in ipairs(files) do
@@ -367,7 +443,7 @@ if is_module then
 end
 
 -- It is (mainly) a luatex package
-tdsroot = "luatex"
+tdsroot = tdsroot or "luatex"
 
 --[[ 
 The documentation is in two languages, English and German.
@@ -597,17 +673,60 @@ function tag_hook(tagname, tagdate)
   return run(maindir, "texlua tools/make-ctan-readme.lua")
 end
 
--- Never package a CTAN README that no longer matches README.md.
-if not is_module and target_list and target_list.ctan
-  and fileexists("tools/make-ctan-readme.lua") then
-  local stdctan = target_list.ctan.bundle_func
-  target_list.ctan.bundle_func = function(names)
-    local errorlevel = run(maindir, "texlua tools/make-ctan-readme.lua --check")
-    if errorlevel ~= 0 then
-      return errorlevel
-    end
-    return stdctan(names)
+-- The bundle root submits only the bundle (osglecture, osgdocmk, and the
+-- manual); the standalone packages are submitted from their own directories
+-- (or all at once with 'l3build ctanall').  l3build's ctan function relays
+-- to the global `modules`, so that list is narrowed for the duration of the
+-- call.  Never package a CTAN README that no longer matches README.md.
+local bundle_modules = { "osglecture", "osgdocmk", "manual-src" }
+
+local function ctan_of_bundle(names)
+  local all_modules = modules
+  modules = bundle_modules
+  local errorlevel = 0
+  if fileexists("tools/make-ctan-readme.lua") then
+    errorlevel = run(maindir, "texlua tools/make-ctan-readme.lua --check")
   end
+  if errorlevel == 0 then
+    errorlevel = target_list.ctan.stdfunc(names)
+  end
+  modules = all_modules
+  return errorlevel
+end
+
+if not is_module and target_list and target_list.ctan then
+  target_list.ctan.stdfunc = target_list.ctan.bundle_func
+  target_list.ctan.bundle_func = ctan_of_bundle
+
+  -- The standalone packages: every module of the register that has a CTAN
+  -- package of its own and is not part of the bundle.
+  local function standalone_modules()
+    local list = { }
+    local file = "tools/packages.lua"
+    if fileexists(file) then
+      for _, entry in ipairs(dofile(file).modules) do
+        if entry.ctan ~= false and not entry.bundle then
+          table.insert(list, entry.name)
+        end
+      end
+    end
+    return list
+  end
+
+  target_list.ctanall = {
+    desc = "Builds the CTAN zip files of the bundle and of every standalone package",
+    bundle_func = function(names)
+      local errorlevel = ctan_of_bundle(names)
+      if errorlevel ~= 0 then
+        return errorlevel
+      end
+      return call(standalone_modules(), "ctan")
+    end,
+    func = function()
+      print("Run 'l3build ctanall' from the bundle root")
+      return 1
+    end,
+  }
 end
 
 --[[

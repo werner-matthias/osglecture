@@ -1,0 +1,3 @@
+Notes for the CTAN team and the TeX distribution maintainers
+
+The theme is not an official product of the university. The logos in the tests and examples are fictional placeholders.

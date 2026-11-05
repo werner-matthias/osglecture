@@ -1,0 +1,1 @@
+semcat assigns passages to named, visually distinguishable semantic categories such as "required", "supplementary", or "background". Categories can mark short inline passages, longer material spanning paragraphs and pages, or floating explanations outside the main reading flow. They can also point readers to related material with QR-code annotations.

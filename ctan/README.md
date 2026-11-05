@@ -24,7 +24,6 @@ Currently, the following packages are included:
 * **osglistings**: `minted`-based code-listing front end
 * **semcat**: generalized semantic-category markup
 * **tagdirtree**: taggable directory tree
-* **tagbridge**: transition package to patch few third party package w/o own native PDF/UA support
 * **osgdoc**: small wrapper for cnltx with some further support for documentation
 
 > **Warning**
@@ -50,7 +49,6 @@ The following table lists the versions of the modules and their use of Lua.
 | osgmodes | v0.5.1 | 2026-09-27 | 2 | 🌕 |
 | osgdocmk | v0.15.0 | n/a | 1 | ⚪ |
 | tagpax | v0.8.6 | 2026-10-22 | 2 | 🌕 |
-| tagbridge | v0.1.0 | 2026-09-14 | 1 | 🌑 |
 | tagdirtree | v0.1.0 | 2026-09-14 | 1 | 🌑 |
 | langselect | v1.1.3 | 2026-09-18 | 1 | 🌕 |
 | osgstyler | v0.2.0 | 2026-08-24 | 2 | 🌓 |
@@ -58,7 +56,7 @@ The following table lists the versions of the modules and their use of Lua.
 | lttalk-theme-tuc-2019 | v0.5.1 | 2026-08-24 | 1 | 🌓 |
 | ansiterm | v0.2.1 | 2026-08-26 | 1 | 🌕 |
 | osglistings | v0.1.0 | 2026-08-28 | 1 | 🌕 |
-| semcat | v0.3.0 | 2026-08-31 | 1 | 🌕 |
+| semcat | v0.3.0 | 2026-08-31 | 2 | 🌕 |
 | osgdoc | v0.5.0 | 2026-09-08 | 2 | 🌓 |
 
 ## Installation

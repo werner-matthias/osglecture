@@ -1,4 +1,4 @@
-bundle = "osglecture"
+bundle = ""
 module = "ansiterm"
 
 maindir = "../"

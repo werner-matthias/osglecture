@@ -1,4 +1,4 @@
-bundle = "osglecture"
+bundle = ""
 module = "lttalk-theme-tuc-2019"
 maindir = ".."
 
@@ -6,11 +6,11 @@ maindir = ".."
 -- lttalk-themeengine itself requires osgstyler, so it must be listed here
 -- too (checkdeps/typesetdeps are not transitive).  The teaching-lecture-
 -- number test loads the osglecture class directly, which pulls in
--- osglecture's own checkdeps (osgmodes, tagpax, langselect, tagbridge);
+-- osglecture's own checkdeps (osgmodes, tagpax, langselect);
 -- those must be listed here too for the same non-transitive reason.
 checkdeps = {
     "../lttalk-themeengine", "../osgstyler",
-    "../osglecture", "../osgmodes", "../tagpax", "../langselect", "../tagbridge",
+    "../osglecture", "../osgmodes", "../tagpax", "../langselect",
 }
 typesetdeps = { "../lttalk-themeengine", "../osgstyler" }
 

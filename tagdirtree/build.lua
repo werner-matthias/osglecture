@@ -1,4 +1,5 @@
-bundle = "osglecture"
+bundle = ""
+tdsroot = "latex"
 module = "tagdirtree"
 
 maindir="../"

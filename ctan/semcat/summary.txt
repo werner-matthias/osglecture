@@ -1,0 +1,1 @@
+Semantic-category markup for passages: inline, block, and floating, with QR annotations

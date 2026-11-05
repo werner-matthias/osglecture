@@ -100,9 +100,9 @@ test -s install-smoke.pdf
 cd "$repository_root"
 l3build uninstall --texmfhome "$texmf_root"
 
-if find "$texmf_root/tex/luatex/osglecture" -type f -print -quit 2>/dev/null | grep -q .; then
+if find "$texmf_root/tex" -type f -print -quit 2>/dev/null | grep -q .; then
   echo "l3build uninstall left package files behind:" >&2
-  find "$texmf_root/tex/luatex/osglecture" -type f -print >&2
+  find "$texmf_root/tex" -type f -print >&2
   exit 1
 fi
 

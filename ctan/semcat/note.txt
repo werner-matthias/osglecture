@@ -1,0 +1,3 @@
+Notes for the CTAN team and the TeX distribution maintainers
+
+Continuous margin bars require LuaLaTeX; the other features work with any engine.

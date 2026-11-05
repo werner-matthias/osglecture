@@ -52,8 +52,8 @@ jobs:
             expect_current: pass
           - name: semcat
             directory: semcat
-            config: build
-            expect_2024: pass
+            config: config-core
+            expect_2024: fail
             expect_2025: pass
             expect_current: pass
           - name: osgdocmk
@@ -115,12 +115,6 @@ jobs:
           - name: tagpax
             directory: tagpax
             config: build
-            expect_2024: fail
-            expect_2025: pass
-            expect_current: pass
-          - name: tagbridge
-            directory: tagbridge
-            config: config-core
             expect_2024: fail
             expect_2025: pass
             expect_current: pass

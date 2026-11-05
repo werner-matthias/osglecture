@@ -63,7 +63,6 @@ jobs:
           - osgdocmk
           - osgdoc
           - langselect
-          - tagbridge
           - tagdirtree
           - lttalk-themeengine
           - lttalk-theme-tuc-2019

@@ -1,0 +1,3 @@
+Notes for the CTAN team and the TeX distribution maintainers
+
+The documentation is available in English and German.

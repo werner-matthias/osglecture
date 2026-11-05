@@ -31,6 +31,4 @@ The bundle currently contains:
 - osglistings: minted-based code-listing front end
 - semcat: semantic-category markup 
 - tagdirtree: taggable directory trees
-- tagbridge: transitional patches for a few third-party packages that
-  lack native tagging (PDF/UA) support
 - osgdoc: small wrapper for cnltx with further support for documentation

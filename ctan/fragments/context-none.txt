@@ -1,0 +1,4 @@
+Context
+   This package is developed in the same repository as the osglecture
+   document class, see https://github.com/werner-matthias/osglecture, but
+   works on its own.

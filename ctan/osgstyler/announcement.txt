@@ -1,0 +1,1 @@
+osgstyler provides reusable, template-based styles for LaTeX documents. It keeps semantic choices in document code independent of the fonts, colours, measurements, decorations, and inline rendering chosen by a visual theme.

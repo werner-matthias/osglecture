@@ -1,0 +1,3 @@
+Notes for the CTAN team and the TeX distribution maintainers
+
+The package depends on osgstyler, which works fully only with LuaLaTeX.

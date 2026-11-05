@@ -3,7 +3,7 @@ module = "osglecture"
 
 maindir=".."
 
-checkdeps = { "../osgmodes", "../tagpax", "../langselect", "../tagbridge" }
+checkdeps = { "../osgmodes", "../tagpax", "../langselect" }
 
 textfiles = {
   "README-cls.md",

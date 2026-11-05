@@ -107,7 +107,7 @@ Installed osglecture bundle.
   & l3build uninstall --texmfhome $texmfRoot
   Assert-NativeSuccess 'l3build uninstall'
 
-  $packageRoot = Join-Path $texmfRoot 'tex/luatex/osglecture'
+  $packageRoot = Join-Path $texmfRoot 'tex'
   if ((Test-Path $packageRoot) -and
       (Get-ChildItem $packageRoot -File -Recurse | Select-Object -First 1)) {
     throw "l3build uninstall left package files behind in $packageRoot"

@@ -117,9 +117,11 @@ eine spätere, separate Entscheidung.
   `osglecture`, die heute lautlos bräche, sobald `semcat` ohne `osglecture`
   (und damit ohne das transitive Laden von Tagbridge) verwendet würde.
 
-**Konsequenz:**
+**Konsequenz (umgesetzt):**
 - Der Inhalt von `tagbridge.dtx` wandert in `semcat` (als mitgeliefertes
-  `semcat-tagbridge.sty`, automatisch von `semcat.sty` nachgeladen).
+  `semcat-tagbridge.sty`, aus `semcat.dtx` extrahiert und automatisch von
+  `semcat.sty` nachgeladen; interne Namen und Fehlermeldungen tragen den
+  Präfix `semcat-tagbridge`).
 - `osglecture.dtx:1287` verliert `\RequirePackage{tagbridge}` ersatzlos.
 - `semcat`s Testsuite übernimmt Tagbridges Tagging-Test (und damit auch
   dessen Bedarf an `insert-pdf-tags.lua`, s. Abschnitt 12).
@@ -228,49 +230,40 @@ Geprüft an l3builds Quellcode (Release 2026-10-19): `main()` in
 `check`/`doc`/`install --full` bleibt also unabhängig davon funktionsfähig,
 ob `bundle` gesetzt ist.
 
-**Zwei getrennte Modullisten nötig:**
+**Umsetzung in `build.lua`:**
 
-- `modules` (l3builds eigene globale Variable) = `{"osglecture",
-  "osgdocmk"}` – ausschließlich die echten Bundle-Mitglieder. Diese Liste
-  verwenden l3builds eingebaute `ctan()`/`upload()`-Funktionen intern für
-  den Mehrmodul-Relay (`call(modules, "bundlecheck")` etc.).
-- Eine neue, eigene Liste (z. B. `release_units`) mit allen zwölf
-  Einheiten, für unsere eigenen `bundle_func`-Overrides von
-  `install`/`tag`/`gittag` und eine neue Komfort-Schleife für „alles
-  bauen" – unabhängig von l3builds `modules`-Konsum.
+- `modules` (l3builds globale Variable im Root) bleibt die Liste *aller*
+  Modulverzeichnisse; so laufen `check`, `doc`, `install`, `tag` usw. im Root
+  weiterhin über alles. Nur `ctan` wird eingeengt: `bundle_modules =
+  {osglecture, osgdocmk, manual-src}` ersetzt `modules` für die Dauer des
+  Aufrufs (l3builds `ctan()` liest die globale Variable beim Aufruf), samt
+  der bestehenden Prüfung des CTAN-README. `upload` im Root reicht den
+  Bundle-ZIP hoch.
+- Die Bundle-Mitglieder (`osglecture`, `osgdocmk`, `osglecture-manual`)
+  setzen `bundle = "osglecture"`, alle anderen Module `bundle = ""`. Damit
+  gilt für sie l3builds nativer Standalone-Pfad (`l3build-ctan.lua:118`:
+  eigenes TDS-Verzeichnis, eigener ZIP `<paket>-ctan.zip`); `ctan` und
+  `upload` laufen im Modulverzeichnis ohne Relay. `tools/ctan-metadata.lua
+  --check` vergleicht `bundle` und `tdsroot` jeder `build.lua` mit dem
+  Register.
+- Bundle-Mitglieder sperren `ctan`/`upload` mit dem Hinweis auf das
+  Bundle-Root; ein Modul mit gesetztem `merged_into` (derzeit `tagbridge`)
+  wird gar nicht paketiert.
+- `tdsroot` ist pro Modul setzbar (`tagdirtree`, `tagbridge`: `latex`); die
+  Voreinstellung am Ende der Root-`build.lua` ist `luatex`.
+- `l3build ctanall` im Root baut den Bundle-ZIP und anschließend den ZIP
+  jedes Einzelpakets des Registers.
+- `excludefiles = { "*~" }` gilt für alle Pakete: `build.lua` und
+  `config-*.lua` gehören in jeden ZIP, weil das Paketverzeichnis das
+  Repository spiegelt.
 
-**`bundle` wird pro Modul gesetzt:** `"osglecture"` nur für `module ==
-"osglecture"` oder `"osgdocmk"`, sonst `""`.
-
-**Folge für `l3build ctan`/`upload` im Paketverzeichnis:** Mit `bundle ==
-""` greift l3builds eingebauter Standalone-Pfad
-(`l3build-ctan.lua:112`: `if bundle == "" then standalone = true end`) –
-`install_files(tdsdir,true); copyctan()` direkt, ohne Relay über andere
-Module. Das ist l3builds nativer Mechanismus für eigenständige Pakete im
-Bundle-Repo; er wird heute nur durch das pauschal gesetzte
-`bundle = "osglecture"` blockiert.
-
-**Die heutigen Guards müssen selektiv werden**, nicht ersatzlos entfallen:
-
-```lua
-local BUNDLE_MEMBERS = { osglecture = true, osgdocmk = true }
-
-if is_module and BUNDLE_MEMBERS[module] and target_list and target_list.ctan then
-  target_list.ctan.func = function()
-    print("'" .. module .. "' is packaged as part of the osglecture bundle: "
-      .. "run 'l3build ctan' in the bundle root.")
-    return 1
-  end
-end
--- analog für "upload"
-```
-
-Für die zehn eigenständigen Pakete entfällt der Guard – `l3build ctan`/
-`upload` läuft dort nativ. Root-seitig müssen `ctan`/`upload` einen
-expliziten `bundle_func` bekommen, der auf die neue `release_units`-Liste
-fan-out't statt auf `modules` – ohne das würde l3build für den Root-Aufruf
-selbst in den (jetzt global geltenden) Standalone-Modus fallen, da
-`bundle == ""` dann auch dort zuträfe.
+**Bundle im CTAN-Sinn:** `osglecture` bleibt ein Bundle (eine Einreichung
+mit `osglecture`, `osgdocmk` und dem Handbuch aus `manual-src`, dessen
+PDFs in der Dokumentation des Pakets liegen). `lttalk-themeengine` ist
+*keines*: Die mitgelieferten Themen sind zwar eigene `.sty`-Dateien mit
+eigenem `\ProvidesExplPackage`, stammen aber aus derselben `.dtx`, tragen
+dieselbe Version und werden gemeinsam dokumentiert und getestet – ein
+Paket mit mehreren Dateien, nicht mehrere Pakete.
 
 ## 8. `ctan/`-Verzeichnisstruktur
 
@@ -283,17 +276,31 @@ bevor zwölf Uploads angestoßen werden.
 
 ```
 ctan/
-  upload.lua              -- baut uploadconfig aus Register + Dateien
+  upload.lua              -- uploadconfig der aktuellen Einheit, aus Register + Texten
+  released.lua            -- bereits akzeptierte Pakete (Version des letzten Uploads)
   fragments/
-    context-note.txt      -- Nachsatz "entwickelt im Rahmen von …"
-    l3build-note.txt       -- die von TL akzeptierten Einschränkungen
-  osglecture/
+    context-run.txt      -- Nachsatz für Pakete, die osglecture zwingend braucht
+    context-optional.txt -- Nachsatz für Pakete, die Autoren optional nutzen können
+    context-none.txt     -- Nachsatz für alle übrigen ("im selben Repository entwickelt")
+                            (gewählt aus der Abhängigkeitsmatrix, s. Abschnitt 9)
+    test-support-note.txt -- Hinweis auf insert-pdf-tags.lua (nur Pakete, deren Tests es nutzen)
+  osglecture/             -- Bundle-Einheit osglecture + osgdocmk
     summary.txt  description.html  announcement.txt  note.txt
-  osgdocmk/        ... (geteilte Bundle-Submission mit osglecture)
   semcat/          ...
   lttalk-themeengine/  ...
   ... (je eine je Release-Einheit)
 ```
+
+`tools/ctan-metadata.lua` setzt daraus die `uploadconfig` zusammen;
+`tools/make-ctan-metadata.lua --check` prüft Vollständigkeit und
+Feldlimits. Aus dem Register stammen `license`, `topic`, `ctanPath`,
+`version` und die Abhängigkeiten (die Matrix `dependencies`, Abschnitt 9): Der Beschreibung wird automatisch ein
+Absatz „Requires … / Optionally uses …“ angehängt (aus `deps.run` und
+`deps.optional` sowie `external`, den Abhängigkeiten von Fremdpaketen mit
+optionaler Mindestversion); Mitglieder eines Bundles und per
+`merged_into` aufgenommene Module werden zusammengefasst. Das
+Test-Hilfsskript-Fragment wird angehängt, sobald ein Modul der Einheit
+`insert-pdf-tags` in seiner `build.lua` verwendet.
 
 `version`/`update` pro Paket werden nicht mehr von Hand gepflegt, sondern
 aus dem Register abgeleitet: `version` = die Modul-Tag-Version
@@ -324,6 +331,23 @@ Daraus speisen sich: `modules`/`release_units` in `build.lua`,
 Abhängigkeitsabschnitte der Paket-READMEs (Abschnitt 10), die
 `uploadconfig`-Felder pro Paket (Abschnitt 8) und die Eigentümerschaft
 geteilter Hilfsdateien (Abschnitt 12).
+
+**Abhängigkeitsmatrix:** Abhängigkeiten sind keine Felder der Einträge,
+sondern Zeilen `{ von, nach, art }` in `dependencies` (Module dieses
+Repositories) und `external_dependencies` (Fremdpakete, optional mit
+`>= Version`); `art` ist `run`, `optional`, `check` oder `doc`
+(`run` gilt zugleich für `check`). Aus der Matrix werden abgeleitet:
+der Abhängigkeitsabsatz der CTAN-Beschreibung, der Kontextabsatz der
+Notiz (osglecture erreicht das Paket über `run`-Kanten allein → „required“,
+über `run`/`optional` → „optional“, sonst neutral; auch transitiv) und die
+Textmatrix `texlua tools/make-ctan-metadata.lua --matrix`. Die Art `doc`
+bildet `typesetdeps` ab (`run` zählt dafür mit); `doc_default`
+(`osgdoc`, `langselect`) gilt als implizite Kante für jedes Modul, und die
+Notiz jedes Pakets nennt, was `l3build doc` braucht. `--check` vergleicht
+die `typesetdeps` der `build.lua`-Dateien und die Standardregel der
+Root-`build.lua` mit der Matrix. `--check`
+prüft unbekannte Module, Arten und `run`-Zyklen. Eine neue Abhängigkeit
+ist damit eine Zeile; kein weiterer Code ändert sich.
 
 Eine Umbenennung wird damit zu: Registerzeile ändern, ein
 `tools/rename-package.lua` laufen lassen (`git mv` Verzeichnis + Dateien,
