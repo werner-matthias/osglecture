@@ -1,8 +1,8 @@
 \input regression-test.tex
 \DocumentMetadata{tagging=on,lang=en-US}
 \documentclass{article}
-% tagbridge first: the qrcode patch has to wait for the package hook.
-\usepackage{tagbridge}
+% semcat-tagbridge first: the qrcode patch has to wait for the package hook.
+\usepackage{semcat-tagbridge}
 \usepackage{qrcode}
 \usepackage{tikz}
 \begin{document}

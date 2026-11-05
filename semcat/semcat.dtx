@@ -22,7 +22,10 @@
  This work is "maintained" (as per LPPL maintenance status) by
  Matthias Werner.
 \endpostamble
-\generate{\file{semcat.sty}{\from{semcat.dtx}{package}}}
+\generate{
+  \file{semcat.sty}{\from{semcat.dtx}{package}}
+  \file{semcat-tagbridge.sty}{\from{semcat.dtx}{tagbridge}}
+}
 \expandafter\endbatchfile
 \fi
 
@@ -416,6 +419,26 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
 \AutoDocInput{semcat.dtx}{package}
 \subsection{semcat.lua}
 \AutoDocInput[lua]{semcat.lua}{lua}
+\subsection{semcat-tagbridge.sty}
+\ldeen{Das Paket wird von \pkg{semcat} geladen und hat keine
+Paketoptionen und keine eigenen Befehle: Seine Hooks greifen automatisch,
+sobald \pkg{qrcode} (oder \pkg{tikz}) geladen wird, und nur, solange
+\pkg{tagpdf}-Tagging aktiv ist. Die \pkg{qrcode}-Optionen \code{tag}
+(Default \code{Figure}) und \code{alt} (Default: sprachabhängiger Text mit
+dem codierten Inhalt) lassen sich wie gewohnt pro Aufruf oder via
+\cs{qrset} setzen; \code{tag=artifact} markiert den Code als rein
+dekoratives Artifact. Sobald das \pkg*{LaTeX-Project} native Unterstützung
+für ein hier behandeltes Paket liefert, wird der entsprechende Hook
+überflüssig.}{The package is loaded by \pkg{semcat} and has no package
+options and no commands of its own: its hooks fire automatically once
+\pkg{qrcode} (or \pkg{tikz}) loads, and only while \pkg{tagpdf} tagging
+is active. The \pkg{qrcode} options \code{tag} (default \code{Figure}) and
+\code{alt} (default: language-dependent text carrying the encoded content)
+can be set per call or via \cs{qrset} as usual; \code{tag=artifact} marks
+the code as a purely decorative artifact. Once the \pkg*{LaTeX-Project}
+ships native support for a package handled here, the corresponding hook
+becomes redundant.}
+\AutoDocInput{semcat.dtx}{tagbridge}
 \end{document}
 
 %</driver>
@@ -423,6 +446,7 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
 %<*package>
 \RequirePackage{xcolor}
 \RequirePackage{luacolor}
+\RequirePackage{semcat-tagbridge}
 \RequirePackage{qrcode}
 \RequirePackage{marginnote}
 \RequirePackage{footnotehyper}
@@ -1340,13 +1364,13 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
         \exp_args:No \__semcat_resolve_color:nN \l_tmpa_tl \l__semcat_tmp_color_tl
         % \ldeen{Der QR-Code selbst wird als reines Artifact getaggt
         % (\code{tag=artifact} in \cs{__semcat_qr_box:nnn}, über den
-        % zentralen \pkg{qrcode}-Tagging-Hook aus \File{osglecture.dtx}),
+        % \pkg{qrcode}-Tagging-Hook aus \File{semcat-tagbridge.sty}),
         % bekommt also keine eigene Struktur im Tag-Baum. Die
         % Beschriftung trägt den eigentlichen semantischen Gehalt und
         % wird als Teil des umgebenden Fließtexts ganz normal
         % getaggt.}{The QR code itself is tagged as a plain artifact
         % (\code{tag=artifact} in \cs{__semcat_qr_box:nnn}, via the
-        % central \pkg{qrcode} tagging hook in \File{osglecture.dtx}), so
+        % \pkg{qrcode} tagging hook of \File{semcat-tagbridge.sty}), so
         % it gets no structure of its own in the tag tree. The caption
         % carries the actual semantic content and is tagged normally as
         % part of the surrounding flow.}
@@ -1496,3 +1520,230 @@ Ordinary text with a \SemCat{B}{marked phrase} in the middle.
 \SemCatDefine{C}[title={Background}]
 \SemCatDefine{D}[title={Comparison}]
 %</package>
+
+%<*tagbridge>
+\NeedsTeXFormat{LaTeX2e}[2022-06-01]
+\ProvidesExplPackage{semcat-tagbridge}{2026-08-31}{v0.3.0}
+  {Tagging helpers for the third-party packages semcat builds on}
+\ExplSyntaxOn
+
+% \ldeen*{@1 zeichnet jedes Modul des Codes einzeln über \cs{rule}s statt
+% über ein Bild-XObject. Bei aktivem \pkg{tagpdf} greift dafür in der
+% Lua-Variante der automatische \code{activate/tagunmarked}-Mechanismus
+% und wrappt jedes sonst ungetaggte Modul separat als Artifact -- mit
+% einer eigenen Warnung pro Modul, bei einem mittelgroßen Code schnell
+% mehrere hundert. Der Hook patcht \cs{qr@printmatrix} und
+% \cs{qr@printsavedbinarymatrix} (die einzigen beiden Stellen, an denen
+% @1 tatsächlich zeichnet), sodass der komplette Code in \emph{einer}
+% eigenen Tag-Struktur steckt, bevor der automatische Mechanismus je
+% einzelne Module sieht. Der Hook hängt an \code{package/qrcode/after}
+% und greift daher unabhängig davon, von wem @1 geladen wird. Die neuen
+% @1-Optionen \code{tag} (Default \code{Figure}) und \code{alt} (Default:
+% der codierte Text) erlauben, das pro Aufruf oder via \cs{qrset} zu
+% steuern; \code{tag=artifact} markiert den Code als rein dekoratives
+% Artifact ohne eigene Struktur -- sinnvoll, wenn eine Beschriftung
+% daneben den Inhalt bereits als Fließtext trägt.}{@1 draws every module
+% of the code individually via \cs{rule}s instead of an image XObject.
+% With \pkg{tagpdf} active, the Lua variant's automatic
+% \code{activate/tagunmarked} mechanism steps in and wraps each
+% otherwise-untagged module separately as an artifact -- with its own
+% warning per module, quickly reaching several hundred for a
+% medium-sized code. The hook patches \cs{qr@printmatrix} and
+% \cs{qr@printsavedbinarymatrix} (the only two places where @1 actually
+% draws) so that the whole code sits inside \emph{one} tag structure
+% before the automatic mechanism ever sees an individual module. The
+% hook attaches to \code{package/qrcode/after} and therefore fires
+% regardless of who loads @1. The new @1 options \code{tag} (default
+% \code{Figure}) and \code{alt} (default: the encoded text) let this be
+% controlled per call or via \cs{qrset}; \code{tag=artifact} marks the
+% code as a purely decorative artifact with no structure of its own --
+% useful when a caption next to it already carries the content as flow
+% text.}{\pkg{qrcode}}
+% \ldeen*{\code{alt}-Default und Kritikprüfung: Ohne explizites
+% \code{alt} übernimmt \cs{__semcat_tagbridge_qrcode_alt_text:} den codierten
+% Text sprachabhängig -- über \cs{olsTargetLanguage}, falls das existiert
+% (z.\,B.\ von \pkg*{langselect} gesetzt), sonst über
+% \cs{OsgLectureLanguage}, falls \pkg*{osglecture} geladen ist, sonst
+% \code{en}. Beide Integrationen sind rein optional: ohne sie fällt der
+% Default einfach auf Englisch zurück, das Paket funktioniert auch ohne
+% \pkg*{osglecture} oder \pkg*{langselect}. Für Inhalte, die mit einem
+% der wenigen tatsächlich \emph{geheimnistragenden} Protokollpräfixe
+% beginnen (\code{WIFI:}, \code{otpauth://} -- WLAN-Passwort bzw.\
+% TOTP-Seed), würde dieser Default das Geheimnis im Klartext in den
+% Tag-Baum des PDFs schreiben. Andere strukturierte Inhalte wie
+% \code{MECARD:}/\code{BEGIN:VCARD} tragen zwar persönliche, aber keine
+% Zugangsdaten und bleiben bewusst außen vor. Für die kritische
+% Teilmenge bricht \cs{__semcat_tagbridge_qrcode_check_critical_content:} mit
+% einem Fehler ab, statt den Default stillschweigend zu verwenden --
+% explizites \code{alt=\{...\}} (das den Inhalt beschreibt, ohne ihn zu
+% wiederholen) oder \code{tag=artifact} ist dann erforderlich.}{Default
+% for \code{alt} and criticality check: without an explicit \code{alt},
+% \cs{__semcat_tagbridge_qrcode_alt_text:} falls back to the encoded text,
+% language-dependent -- via \cs{olsTargetLanguage} if that exists (e.g.\
+% set by \pkg*{langselect}), otherwise via \cs{OsgLectureLanguage} if
+% \pkg*{osglecture} is loaded, otherwise \code{en}. Both integrations are
+% purely optional: without them the default simply falls back to
+% English, the package works fine without \pkg*{osglecture} or
+% \pkg*{langselect}. For content starting with one of the few protocol
+% prefixes that actually carry a secret (\code{WIFI:}, \code{otpauth://}
+% -- Wi-Fi password resp.\ TOTP seed), this default would write that
+% secret in the clear into the PDF's tag tree. Other structured content
+% such as \code{MECARD:}/\code{BEGIN:VCARD} carries personal but not
+% credential data and is deliberately left out. For the critical subset,
+% \cs{__semcat_tagbridge_qrcode_check_critical_content:} aborts with an error
+% instead of silently using the default -- an explicit \code{alt=\{...\}}
+% (describing the content without repeating it) or \code{tag=artifact}
+% is then required.}
+\cs_if_exist:NT \tagstructbegin
+  {
+    \tl_new:N \l__semcat_tagbridge_qrcode_tag_tl
+    \tl_new:N \l__semcat_tagbridge_qrcode_alt_tl
+    \tl_new:N \l__semcat_tagbridge_qrcode_tmpa_tl
+    \msg_new:nnn { semcat-tagbridge } { qrcode-critical-content }
+      {
+        This~QR~code's~content~starts~with~WIFI:~or~otpauth://~--~a~
+        format~that~typically~carries~a~credential~or~secret~(Wi-Fi~
+        password,~one-time-password~seed,~...).~Falling~back~to~the~
+        encoded~text~as~the~PDF~alt~text~would~leak~it~into~the~
+        document's~accessibility~tree,~where~it~is~trivially~
+        extractable.~Set~the~qrcode~option~alt=\{...\}~explicitly~
+        (describing~the~code~without~repeating~the~secret),~or~
+        tag=artifact~if~nothing~about~it~should~be~exposed~at~all.
+      }
+    \cs_new_protected:Npn \__semcat_tagbridge_qrcode_check_critical_content:
+      {
+        \tl_if_empty:NT \l__semcat_tagbridge_qrcode_alt_tl
+          {
+            \tl_if_eq:NnF \l__semcat_tagbridge_qrcode_tag_tl { artifact }
+              {
+                \tl_set:Ne \l__semcat_tagbridge_qrcode_tmpa_tl { \qr@texttoencode }
+                \regex_match:nVT { \A(WIFI:|otpauth://) }
+                  \l__semcat_tagbridge_qrcode_tmpa_tl
+                  { \msg_error:nn { semcat-tagbridge } { qrcode-critical-content } }
+              }
+          }
+      }
+    \cs_new:Npn \__semcat_tagbridge_qrcode_alt_text:
+      {
+        \tl_if_empty:NTF \l__semcat_tagbridge_qrcode_alt_tl
+          {
+            \str_if_eq:eeTF
+              {
+                \cs_if_exist:NTF \olsTargetLanguage
+                  { \olsTargetLanguage }
+                  {
+                    \cs_if_exist:NTF \OsgLectureLanguage
+                      { \OsgLectureLanguage }
+                      { en }
+                  }
+              }
+              { de }
+              { QR-Code:~\qr@texttoencode }
+              { QR~code:~\qr@texttoencode }
+          }
+          { \l__semcat_tagbridge_qrcode_alt_tl }
+      }
+    \cs_new_protected:Npn \__semcat_tagbridge_qrcode_tag_begin:
+      {
+        % qrcode's minipage would start the paragraph anyway, but only
+        % after paragraph tagging is switched off: the paragraph's end,
+        % outside qrcode's group, then closes a structure never opened.
+        \mode_leave_vertical:
+        % Close the surrounding marked content and reopen it afterwards;
+        % otherwise text following the code in the same paragraph is left
+        % unmarked.
+        \tag_mc_end_push:
+        \tagpdfparaOff
+        \__semcat_tagbridge_qrcode_check_critical_content:
+        \tl_if_eq:NnTF \l__semcat_tagbridge_qrcode_tag_tl { artifact }
+          { \tagmcbegin{artifact} }
+          {
+            \exp_args:Ne \tagstructbegin
+              {
+                tag=\l__semcat_tagbridge_qrcode_tag_tl,
+                alt={\__semcat_tagbridge_qrcode_alt_text:}
+              }
+            \exp_args:Ne \tagmcbegin { tag=\l__semcat_tagbridge_qrcode_tag_tl }
+          }
+        % The code is one marked-content item: qrcode's minipage and its
+        % one paragraph per row must not add structures of their own
+        % (as artifact they would even end up as a Div below a P).
+        \tag_suspend:n { semcat-tagbridge/qrcode }
+      }
+    \cs_new_protected:Npn \__semcat_tagbridge_qrcode_tag_end:
+      {
+        \tag_resume:n { semcat-tagbridge/qrcode }
+        \tl_if_eq:NnTF \l__semcat_tagbridge_qrcode_tag_tl { artifact }
+          { \tagmcend }
+          { \tagmcend \tagstructend }
+        \tag_mc_begin_pop:n { }
+      }
+    \AddToHook { package/qrcode/after } [ semcat-tagbridge/qrcode-tagging ]
+      {
+        \define@key{qr}{tag}{\tl_set:Nn \l__semcat_tagbridge_qrcode_tag_tl {#1}}
+        \define@key{qr}{alt}{\tl_set:Nn \l__semcat_tagbridge_qrcode_alt_tl {#1}}
+        \qrset{tag=Figure}
+        \let\osg@qrcode@printmatrix@orig\qr@printmatrix
+        \let\osg@qrcode@printsavedmatrix@orig\qr@printsavedbinarymatrix
+        \def\qr@printmatrix#1{%
+          \__semcat_tagbridge_qrcode_tag_begin:
+          \osg@qrcode@printmatrix@orig{#1}%
+          \__semcat_tagbridge_qrcode_tag_end:
+        }%
+        \def\qr@printsavedbinarymatrix#1{%
+          \__semcat_tagbridge_qrcode_tag_begin:
+          \osg@qrcode@printsavedmatrix@orig{#1}%
+          \__semcat_tagbridge_qrcode_tag_end:
+        }%
+      }
+  }
+% \ldeen{Ohne aktives Tagging bleiben die Schlüssel \code{tag} und
+%   \code{alt} trotzdem bekannt, nur wirkungslos: Pakete und Dokumente,
+%   die sie setzen (etwa \pkg*{semcat} mit \code{tag=artifact}), müssen
+%   auch ungetaggt übersetzbar bleiben.}{Without active tagging the keys
+%   \code{tag} and \code{alt} are still known, merely inert: packages and
+%   documents that set them (\pkg*{semcat} with \code{tag=artifact}, say)
+%   must remain compilable untagged as well.}
+\cs_if_exist:NF \tagstructbegin
+  {
+    \AddToHook { package/qrcode/after } [ semcat-tagbridge/qrcode-keys ]
+      {
+        \define@key{qr}{tag}{}
+        \define@key{qr}{alt}{}
+      }
+  }
+
+% \ldeen*{pgf/tikz reserviert die Schlüssel \code{alt}, \code{artifact}
+% und \code{actualtext} für \env{tikzpicture} ausdrücklich für
+% zukünftige Tagging-Unterstützung, wertet sie selbst aber nirgends
+% aus -- ein damit angegebener Alt-Text verschwindet kommentarlos, und
+% das ganze Bild landet als anonymes Artifact im Tag-Baum, ohne dass
+% \pkg{tagpdf} das meldet. Das \pkg{latex-lab}-Bundle bringt mit
+% \pkg{latex-lab-testphase-tikz} eine vom LaTeX-Projekt selbst
+% gepflegte Implementierung dieser Schlüssel über das
+% Tagging-Socket-System mit, die auch mehrzeiligen Node-Text korrekt
+% als echten Text taggt statt als Teil der Grafik; das Laden dieses
+% einen Pakets ist robuster als eine eigene Nachbildung. Die Schlüssel
+% gelten für die \env{tikzpicture}-Umgebung selbst
+% (\code{\textbackslash begin\{tikzpicture\}[alt=\{...\}]}), nicht für
+% einzelne \cs{node}s darin -- ein \code{alt} an einem einzelnen Knoten
+% bleibt wirkungslos.}{pgf/tikz reserves the keys \code{alt},
+% \code{artifact} and \code{actualtext} for \env{tikzpicture}
+% explicitly for future tagging support but never evaluates them
+% itself -- an \code{alt} text given this way vanishes without a
+% trace, and the whole picture ends up as an anonymous artifact in the
+% tag tree, with no diagnostic from \pkg{tagpdf}. The \pkg{latex-lab}
+% bundle ships \pkg{latex-lab-testphase-tikz}, a
+% LaTeX-Project-maintained implementation of these keys via the
+% tagging socket system that also tags multi-line node text correctly
+% as real text rather than as part of the graphic; loading that one
+% package is more robust than reimplementing it. The keys apply to the
+% \env{tikzpicture} environment itself
+% (\code{\textbackslash begin\{tikzpicture\}[alt=\{...\}]}), not to
+% individual \cs{node}s inside it -- an \code{alt} on a single node
+% remains ineffective.}{tikzpicture}
+\cs_if_exist:NT \tagstructbegin
+  { \RequirePackage{latex-lab-testphase-tikz} }
+
+\ExplSyntaxOff
+%</tagbridge>

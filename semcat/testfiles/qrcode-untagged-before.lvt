@@ -1,8 +1,8 @@
 \input regression-test.tex
 \documentclass{article}
 % No tagging: the keys tag and alt must be known but inert
-% (tagbridge loaded before qrcode).
-\usepackage{tagbridge}
+% (semcat-tagbridge loaded before qrcode).
+\usepackage{semcat-tagbridge}
 \usepackage{qrcode}
 \begin{document}
 \START

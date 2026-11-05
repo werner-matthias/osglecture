@@ -19,7 +19,7 @@ WIFI without alt: error expected
 <Saving QR code to memory... done.>
 <Writing QR code to aux file... done.>
 <Printing matrix...
-! Package tagbridge Error: This QR code's content starts with WIFI: or otpauth:// -- a format that typically carries a credential or secret (Wi-Fi password, one-time-password seed, ...). Falling back to the encoded text as the PDF alt text would leak it into the document's accessibility tree, where it is trivially extractable. Set the qrcode option alt={...} explicitly (describing the code without repeating the secret), or tag=artifact if nothing about it should be exposed at all.
+! Package semcat-tagbridge Error: This QR code's content starts with WIFI: or otpauth:// -- a format that typically carries a credential or secret (Wi-Fi password, one-time-password seed, ...). Falling back to the encoded text as the PDF alt text would leak it into the document's accessibility tree, where it is trivially extractable. Set the qrcode option alt={...} explicitly (describing the code without repeating the secret), or tag=artifact if nothing about it should be exposed at all.
 Type <return> to continue.
  ...                                              
 l. ...\qrcode{WIFI:T:WPA;S:lecture;P:secret;;}
@@ -46,7 +46,7 @@ otpauth without alt: error expected
 <Saving QR code to memory... done.>
 <Writing QR code to aux file... done.>
 <Printing matrix...
-! Package tagbridge Error: This QR code's content starts with WIFI: or otpauth:// -- a format that typically carries a credential or secret (Wi-Fi password, one-time-password seed, ...). Falling back to the encoded text as the PDF alt text would leak it into the document's accessibility tree, where it is trivially extractable. Set the qrcode option alt={...} explicitly (describing the code without repeating the secret), or tag=artifact if nothing about it should be exposed at all.
+! Package semcat-tagbridge Error: This QR code's content starts with WIFI: or otpauth:// -- a format that typically carries a credential or secret (Wi-Fi password, one-time-password seed, ...). Falling back to the encoded text as the PDF alt text would leak it into the document's accessibility tree, where it is trivially extractable. Set the qrcode option alt={...} explicitly (describing the code without repeating the secret), or tag=artifact if nothing about it should be exposed at all.
 Type <return> to continue.
  ...                                              
 l. ......pauth://totp/demo?secret=JBSWY3DPEHPK3PXP}

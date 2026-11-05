@@ -1,9 +1,9 @@
 \input regression-test.tex
 \DocumentMetadata{tagging=on,lang=en-US}
 \documentclass{article}
-% qrcode first: the patch is applied as soon as tagbridge is loaded.
+% qrcode first: the patch is applied as soon as semcat-tagbridge is loaded.
 \usepackage{qrcode}
-\usepackage{tagbridge}
+\usepackage{semcat-tagbridge}
 \begin{document}
 \START
 
