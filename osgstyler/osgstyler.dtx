@@ -4571,18 +4571,35 @@ load babel
 %   Titelzeile -- so schliesst der Balken bündig mit der Kastenoberkante ab.
 %   Die Artefakt-Markierung übernimmt der Aufrufer
 %   (\cs{__osgstyler_block_head_artifact:n}). \code{#1} ist seine
-%   Breite.}{The boxed branch's
+%   Breite. Bei aktivem Tag-Struktur-Support geht der Balken auch ohne
+%   Eckenradius über \cs{__osgstyler_block_headbar_round:n}: die
+%   \cs{rule}-Variante hängt für ihr leeres Platzhalter-MC (siehe
+%   \cs{__osgstyler_block_head_artifact:n}) von einer Knotenreihenfolge ab,
+%   die ein \env{minipage}/\cs{parbox} von aussen wieder herstellendes
+%   Absatz-Tagging nicht mehr garantiert; die \pkg{pgf}-Variante bleibt
+%   davon unberührt, auch mit Radius~0.}{The boxed branch's
 %   head bar: an \cs{rlap}\cs{smash} \cs{rule} exactly as tall as the title
 %   line (padded by an invisible strut), so it meets the box's top edge
 %   flush. The caller marks it as artifact
-%   (\cs{__osgstyler_block_head_artifact:n}). \code{#1} is its width.}
+%   (\cs{__osgstyler_block_head_artifact:n}). \code{#1} is its width. With
+%   tag-structure support active, the bar goes through
+%   \cs{__osgstyler_block_headbar_round:n} even without a corner radius: the
+%   \cs{rule} variant's empty placeholder MC (see
+%   \cs{__osgstyler_block_head_artifact:n}) depends on a node ordering that
+%   paragraph tagging restored from outside a \env{minipage}/\cs{parbox} no
+%   longer guarantees; the \pkg{pgf} variant is unaffected by that, even at
+%   radius~0.}
 \cs_new_protected:Npn \__osgstyler_block_headbar:n #1
   {
     \str_if_eq:VnF \l__osgstyler_block_head_bg_tl { none }
       {
         \bool_lazy_and:nnTF
-          { \dim_compare_p:nNn \l__osgstyler_block_corner_radius_dim > \c_zero_dim }
           { \cs_if_exist_p:N \pgfpicture }
+          {
+            \bool_lazy_or_p:nn
+              { \dim_compare_p:nNn \l__osgstyler_block_corner_radius_dim > \c_zero_dim }
+              { \cs_if_exist_p:N \tag_mc_end_push: }
+          }
           { \__osgstyler_block_headbar_round:n {#1} }
           {
             \rlap { \smash {

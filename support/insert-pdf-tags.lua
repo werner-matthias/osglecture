@@ -20,75 +20,113 @@ end
 -- keep the recorded .tlg stable across show-pdf-tags versions.
 tags = tags:gsub("^<PDF[^>]*>", "<PDF>")
 
--- latex-lab-namespace.dtx renamed its generic paragraph-level structure
--- synonyms (text-unit -> semantic-para, text -> text-block; changes.txt,
--- 2026-07-29) without changing the tag tree these tests actually check.
--- Map the newer spelling back to the one recorded in the .tlg files so a
--- single reference matches either tagpdf generation; order matters, since
--- "text-block" contains "text" and must be handled before any bare "text"
--- substitution (there is none here, so this is otherwise order-independent).
-tags = tags:gsub("semantic%-para", "text-unit")
-tags = tags:gsub("text%-block", "text")
--- The same restructuring also renamed the existing heading-specific
--- wrapper to section-heading and reused its old name "section" for a
--- new, differently-scoped wrapper (see NEW_LEAF_WRAPPERS below) --
--- this rename must run first, so the reused name is free for that
--- unwrap step to claim without colliding with it.
-tags = tags:gsub("section%-heading", "section")
-
--- The same latex-lab update also started wrapping leaf content that
--- previously stood directly as its plain PDF-namespace role element in
--- a new symbolic element of its own (so far spotted: text-fragment for
--- Span -- "Added text-fragment (default Span)" -- and text-parbox for
--- Div). Unwrap any of these back to the plain element it replaces, so
--- the same reference matches either tagpdf generation. Each is a
--- leaf/inline wrapper -- never containing another instance of itself --
--- so its opening and closing tags pair up by document order alone.
--- New names join NEW_LEAF_WRAPPERS below as they turn up; the list is
--- deliberately an allowlist of elements that are leaves (never contain
--- another instance of themselves), not every element with a
--- rolemaps-to attribute -- most structure types (text-unit, text, ...)
--- carry one permanently, and unwrapping those would erase exactly the
--- symbolic-to-role mapping these tests check.
+-- latex-lab-namespace.dtx (changes.txt, 2026-07-29 and later) renamed
+-- some generic structure-type synonyms and, for others, introduced a
+-- new element that wraps what used to stand directly as the plain
+-- PDF-namespace role element -- including reusing the name "section"
+-- itself for such a wrapper, while renaming the former, heading-specific
+-- "section" to "section-heading" at the same time. A left-to-right text
+-- substitution cannot resolve that reuse or pair up nested closing tags
+-- correctly (section/subsection nest inside each other), so the tag
+-- tree is walked once with an explicit element stack: each opening tag
+-- decides, by its own name and (if present) its "rolemaps-to" target,
+-- what its matching closing tag must become, and that decision travels
+-- with it on the stack regardless of nesting depth.
 --
--- NOT handled here: the same restructuring reused the name "section"
--- for a second, nesting wrapper around what used to be a bare Sect
--- (while the original, heading-specific "section" became
--- "section-heading", renamed above) -- two elements of the same name
--- can be nested inside each other, so matching closing tags needs
--- real nesting-depth tracking, not the flat, sequential pairing that
--- works for an actual leaf. Left as a known remaining gap; see
--- development-docs/CTAN-SPLIT.md or the session notes for which tests
--- that still affects.
-local NEW_LEAF_WRAPPERS = { "text%-fragment", "text%-parbox", "text%-minipage" }
-for _, element in ipairs(NEW_LEAF_WRAPPERS) do
-  -- show-pdf-tags indents the closing ">" of a multi-line tag one
-  -- column left of its attributes, regardless of the element or how
-  -- many attributes it has; recompute that from the attribute block's
-  -- own indentation rather than reusing the wrapper's (one extra
-  -- attribute line, hence one indent level deeper than the plain
-  -- element's closing ">" used to be).
-  local roles = { }
-  tags = tags:gsub(
-    '<' .. element .. ' xmlns="https://www%.latex%-project%.org/ns/dflt"'
-      .. '(.-)rolemaps%-to="([^"]+)"%s*\n%s*>',
-    function(attrs, role)
-      table.insert(roles, role)
-      local attr_indent = attrs:match("\n(%s*)%S") or ""
-      local close_indent = attr_indent:sub(1, -2)
-      local trimmed_attrs = attrs:gsub("%s*$", "")
-      return "<" .. role .. ' xmlns="http://iso.org/pdf2/ssn"' .. trimmed_attrs
-        .. "\n" .. close_indent .. ">"
+-- RENAMED holds plain, context-free renames (both the open and the
+-- close keyword always change the same way). WRAPPED holds elements
+-- latex-lab now wraps around what used to be the bare role element
+-- directly -- resolved via each instance's own "rolemaps-to" attribute,
+-- never a fixed target, since the same element name recurs at every
+-- heading level (section/subsection/...) or is reused for unrelated
+-- roles (plain "section" vs. the former "section-heading"). It is
+-- deliberately a narrow allowlist, not every element with a
+-- "rolemaps-to" attribute: most structure types (text-unit, text, ...)
+-- carry one permanently, and unwrapping those would erase exactly the
+-- symbolic-to-role mapping these tests check. Extend either table as
+-- further renames or wrappers turn up.
+local RENAMED = {
+  ["semantic-para"]       = "text-unit",
+  ["text-block"]           = "text",
+  ["section-heading"]      = "section",
+  ["subsection-heading"]   = "subsection",
+  ["subsubsection-heading"] = "subsubsection",
+}
+local WRAPPED = {
+  ["text-fragment"] = true, ["text-parbox"] = true, ["text-minipage"] = true,
+  ["section"] = true, ["subsection"] = true, ["subsubsection"] = true,
+}
+
+local function rewrite(xml)
+  local out, stack = { }, { }
+  local pos, len = 1, #xml
+  while pos <= len do
+    local lt = xml:find("<", pos)
+    if not lt then
+      out[#out + 1] = xml:sub(pos)
+      break
     end
-  )
-  local index = 0
-  tags = tags:gsub("</" .. element .. ">", function()
-    index = index + 1
-    return "</" .. assert(roles[index],
-      "insert-pdf-tags: more </" .. element .. "> closing tags than opening ones")
-      .. ">"
-  end)
+    out[#out + 1] = xml:sub(pos, lt - 1)
+    if xml:sub(lt + 1, lt + 1) == "?" then
+      -- A processing instruction, e.g. <?MarkedContent page="1" ?>: not
+      -- an element, passed through unchanged and never pushed.
+      local close = xml:find("?>", lt + 2, true) or (len - 1)
+      out[#out + 1] = xml:sub(lt, close + 1)
+      pos = close + 2
+    elseif xml:sub(lt + 1, lt + 1) == "/" then
+      local gt = assert(xml:find(">", lt, true), "unterminated closing tag")
+      -- A stray extra close (malformed input, not a valid tag tree)
+      -- falls back to the tag's own name rather than erroring on an
+      -- empty stack.
+      local name = xml:sub(lt + 2, gt - 1)
+      local target = table.remove(stack) or name
+      out[#out + 1] = "</" .. target .. ">"
+      pos = gt + 1
+    else
+      local gt = assert(xml:find(">", lt, true), "unterminated opening tag")
+      local tag = xml:sub(lt, gt)
+      local name = assert(tag:match("^<([%w%-]+)"), "tag without a name")
+      local rolemapsto = tag:match('rolemaps%-to="([^"]+)"')
+      -- "-" is a Lua pattern metacharacter (lazy "*"), not literal, so
+      -- renaming the element name is done by position (it always
+      -- starts right after "<"), never by re-matching "name" or
+      -- "target" as part of a pattern. WRAPPED is checked against the
+      -- tag's own, original name, never against a RENAMED target: the
+      -- renamed section-heading (now named "section", like the
+      -- unrelated wrapper) also carries a "rolemaps-to" of its own and
+      -- must not be mistaken for that wrapper and unwrapped again.
+      local target
+      if WRAPPED[name] and rolemapsto then
+        target = rolemapsto
+        -- Drop the rolemaps-to attribute, switch the element name and
+        -- namespace to the plain role it names. show-pdf-tags indents
+        -- the closing ">" of a multi-line tag one column left of its
+        -- attributes, regardless of the element or how many attributes
+        -- it has; recompute that from the (kept) attribute indentation
+        -- instead of reusing this opening tag's own, which sits one
+        -- level deeper because of the attribute line just removed.
+        local attr_indent = tag:match("\n(%s*)%S") or ""
+        local close_indent = attr_indent:sub(1, -2)
+        tag = tag:gsub('%s*rolemaps%-to="[^"]*"', "")
+        tag = tag:gsub('xmlns="https://www%.latex%-project%.org/ns/dflt"',
+          'xmlns="http://iso.org/pdf2/ssn"')
+        tag = "<" .. target .. tag:sub(#name + 2)
+        tag = tag:gsub("%s*>$", "\n" .. close_indent .. ">")
+      else
+        target = RENAMED[name] or name
+        if target ~= name then
+          tag = "<" .. target .. tag:sub(#name + 2)
+        end
+      end
+      out[#out + 1] = tag
+      stack[#stack + 1] = target
+      pos = gt + 1
+    end
+  end
+  return table.concat(out)
 end
+
+tags = rewrite(tags)
 
 local marker = "%-%-INSERT%-PDF%-TAGS%s+[^\r\n]+%s*\r?\n"
 local replacements
