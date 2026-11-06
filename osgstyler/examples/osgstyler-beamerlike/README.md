@@ -10,7 +10,7 @@ backend. This keeps the example independent of both Beamer and the
 `osglecture` class while illustrating the intended separation between a
 semantic author interface and its renderer.
 
-Compile with LuaLaTeX after installing the bundle:
+Compile with LuaLaTeX after installing the package:
 
 ```sh
 lualatex osgstyler-beamerlike.tex

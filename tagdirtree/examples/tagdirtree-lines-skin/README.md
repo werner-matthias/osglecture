@@ -7,7 +7,7 @@ instead render classic connector lines, colored from an `osgstyler` theme
 — by redefining exactly one hook (`\tagdirtreeconnector`), nothing in
 `tagdirtree` itself.
 
-Compile with LuaLaTeX after installing the bundle:
+Compile with LuaLaTeX after installing the package:
 
 ```sh
 lualatex tagdirtree-lines-skin.tex

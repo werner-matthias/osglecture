@@ -3,7 +3,7 @@
 This example demonstrates the current `osgstyler` resource, template, socket,
 and Lua-backend layers without depending on an `osglecture` class.
 
-Compile with LuaLaTeX after installing the bundle:
+Compile with LuaLaTeX after installing the package:
 
 ```sh
 lualatex osgstyler-article.tex
