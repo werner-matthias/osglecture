@@ -284,8 +284,7 @@ ctan/
   released.lua            -- bereits akzeptierte Pakete (Version des letzten Uploads)
   fragments/
     context-run.txt      -- Nachsatz für Pakete, die osglecture zwingend braucht
-    context-optional.txt -- Nachsatz für Pakete, die Autoren optional nutzen können
-    context-none.txt     -- Nachsatz für alle übrigen ("im selben Repository entwickelt")
+    context-none.txt     -- Nachsatz für alle übrigen ("im selben Repository entwickelt, von osglecture nicht verlangt")
                             (gewählt aus der Abhängigkeitsmatrix, s. Abschnitt 9)
     test-support-note.txt -- Hinweis auf insert-pdf-tags.lua (nur Pakete, deren Tests es nutzen)
   osglecture/             -- Bundle-Einheit osglecture + osgdocmk
@@ -342,8 +341,8 @@ Repositories) und `external_dependencies` (Fremdpakete, optional mit
 `>= Version`); `art` ist `run`, `optional`, `check` oder `doc`
 (`run` gilt zugleich für `check`). Aus der Matrix werden abgeleitet:
 der Abhängigkeitsabsatz der CTAN-Beschreibung, der Kontextabsatz der
-Notiz (osglecture erreicht das Paket über `run`-Kanten allein → „required“,
-über `run`/`optional` → „optional“, sonst neutral; auch transitiv) und die
+Notiz (osglecture erreicht das Paket über `run`-Kanten allein, auch
+transitiv → „required“, sonst neutral) und die
 Textmatrix `texlua tools/make-ctan-metadata.lua --matrix`. Die Art `doc`
 bildet `typesetdeps` ab (`run` zählt dafür mit); `doc_default`
 (`osgdoc`, `langselect`) gilt als implizite Kante für jedes Modul, und die

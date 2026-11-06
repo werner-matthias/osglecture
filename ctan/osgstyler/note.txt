@@ -1,3 +1,4 @@
 Notes for the CTAN team and the TeX distribution maintainers
 
-Parts of the package use Lua code and are available with LuaLaTeX only; without it the package works with reduced functionality.
+Parts of the package use Lua code and are available with LuaLaTeX only.
+Without Lua the package works with reduced functionality.

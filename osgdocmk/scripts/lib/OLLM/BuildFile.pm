@@ -488,13 +488,4 @@ sub _tex_atom {
   return $value;
 }
 
-sub _tex_path {
-  my ($value) = @_;
-  $value //= '';
-  $value =~ s{\\}{/}g;
-  die "path '$value' cannot be represented safely in a TeX build file"
-    if $value =~ /[{}%#\r\n]/;
-  return $value;
-}
-
 1;

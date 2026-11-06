@@ -1,1 +1,7 @@
-ansiterm typesets terminal windows and reproducible shell transcripts in LuaLaTeX documents. It understands common ANSI styling and terminal control sequences, so captured command output retains the appearance and behaviour needed for teaching material, manuals, and demonstrations.
+ansiterm typesets terminal windows and reproducible shell transcripts in LuaLaTeX documents.
+It understands common ANSI styling and terminal control sequences, so captured command output
+keeps its original look in teaching material, manuals, and demonstrations.
+
+ansiterm was originally included in the osglecture bundle. Since it can run
+independently, it is now released as a separate package, so that it can be installed
+without the rest of the bundle.

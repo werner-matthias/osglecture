@@ -95,8 +95,7 @@ for _, r in ipairs(report) do
     print(string.format("%-20s MIXED: %s", r.name, table.concat(r.version_list, ", ")))
     for _, e in ipairs(r.entries) do
       print(string.format(
-        "    %-30s %-10s %-12s (%s)%s", e.package, e.version, e.date, e.file,
-        e.excluded and "  [excluded from consistency check]" or ""))
+        "    %-30s %-10s %-12s (%s)", e.package, e.version, e.date, e.file))
     end
   end
 end

@@ -1,3 +1,3 @@
 Notes for the CTAN team and the TeX distribution maintainers
 
-The untagged tree also works with older TeX Live releases; tagging needs a current one.
+The untagged tree also works with older TeX Live releases; tagging needs TeX Live 2025 or later.

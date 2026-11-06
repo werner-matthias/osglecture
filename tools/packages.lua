@@ -17,8 +17,6 @@
 --            development-docs/CTAN-SPLIT.md)
 --   files    paths (relative to the bundle root) scanned for
 --            \Provides*/\ProvidesFile declarations
---   exclude  package names within those files to leave out of the
---            version-consistency check (frozen legacy code, say)
 --   lua      Lua-dependency marker, also the input to `tdsroot_for`/
 --            `ctanpath_for` below
 --   note     footnote text shown next to this module's row in the
@@ -35,7 +33,9 @@
 --            release unit; default { "lppl1.3c" }. For a bundle, set it on
 --            the entry that carries the bundle's name.
 --   topic    CTAN topic keys of a release unit (same rule as `license`)
---   examples directories below examples/ that only this package ships
+--   examples directories below the repository's examples/ that only this
+--            package ships (examples of one standalone package live in
+--            its own examples/ directory)
 --   owns_support  directories (relative to the repository root) that only
 --            this package ships, e.g. images/logos
 --   ctan     false for a module that is not released as its own CTAN
@@ -52,10 +52,6 @@ local modules = {
       "osglecture/osglecture-adapters.dtx",
       "osglecture/osglecture-profiles.dtx",
   },
-  -- osglecture-osgbeamer.code.tex is a frozen, unpublished legacy path
-  -- (slated for removal); it deliberately keeps its own version instead
-  -- of following the shared osglecture version.
-  exclude = { ["osglecture-osgbeamer.code.tex"] = true },
     lua = ':full_moon:',
     -- Vendored third-party code: toml2lua (MIT) and TOML::Tiny (same terms
     -- as Perl 5: Artistic 1.0 or GPL 1 or later).
@@ -74,7 +70,6 @@ local modules = {
     lua = ':full_moon:' },
   { name = "tagdirtree",       ctanpkg = "tagdirtree",
     files = { "tagdirtree/tagdirtree.dtx" },
-    examples = { "tagdirtree-lines-skin" },
     note = "The incompatibility for TL 2024 refers to tagging only; the untagged tree is okay.",
     lua = ':new_moon:' },
   { name = "langselect",       ctanpkg = "langselect",
@@ -82,8 +77,7 @@ local modules = {
     lua = ':full_moon:' },
   { name = "osgstyler",        ctanpkg = "osgstyler",
     files = { "osgstyler/osgstyler.dtx" },
-    lua = ':first_quarter_moon:',
-    examples = { "osgstyler-article", "osgstyler-beamerlike" } },
+    lua = ':first_quarter_moon:' },
   -- Neither lttalk-themeengine nor lttalk-theme-tuc-2019 touches Lua in
   -- its own code, but each unconditionally \RequirePackage{}s a package
   -- that only degrades without Lua (osgstyler directly;
@@ -291,7 +285,6 @@ end
 local function scan()
   local report = {}
   for _, mod in ipairs(modules) do
-    local exclude = mod.exclude or {}
     local extract = mod.extractor and EXTRACTORS[mod.extractor] or extract_provides
     local entries = {}
     for _, file in ipairs(mod.files) do
@@ -299,17 +292,14 @@ local function scan()
       if content then
         for _, e in ipairs(extract(content)) do
           e.file = file
-          e.excluded = exclude[e.package] or false
           table.insert(entries, e)
         end
       end
     end
     local versions, dates = {}, {}
     for _, e in ipairs(entries) do
-      if not e.excluded then
-        versions[e.version] = true
-        dates[e.date] = true
-      end
+      versions[e.version] = true
+      dates[e.date] = true
     end
     local version_list, date_list = {}, {}
     for v in pairs(versions) do table.insert(version_list, v) end

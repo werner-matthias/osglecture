@@ -1,20 +1,6 @@
 Notes for the CTAN team and the TeX distribution maintainers
 
-1. Package layout and installation
-   The package directory mirrors the development repository: one
-   directory per module with sources, PDFs, tests, and build.lua, plus the
-   top-level build.lua. In the unpacked package, "l3build install" puts
-   the run-time files, osgdocmk, and its man page where they belong
-   (tex/luatex/osglecture, scripts/osgdocmk, doc/man/man1);
-   "l3build doc" and "l3build check" work as well.
-   Without l3build, run "luatex <file>.dtx" on every .dtx file except
-   osglecture/osglecture-adapters.dtx and
-   osglecture/osglecture-profiles.dtx: all other .dtx files are
-   self-extracting, and osglecture.dtx also extracts those two. The .lua
-   files next to the sources are installed unchanged. The example
-   projects in examples/ belong to the documentation.
-
-2. Executable script osgdocmk
+1. Executable script osgdocmk
    The bundle contains the build manager osgdocmk, a Perl script (Perl 5.30 or
    later), in osgdocmk/scripts. Please install it as a user command:
    - script: osgdocmk/scripts/osgdocmk (no file extension), installed as
@@ -27,14 +13,13 @@ Notes for the CTAN team and the TeX distribution maintainers
      tell us if you prefer it renamed.
    osgdocmk calls latexmk and lualatex.
 
-3. Manual page
+2. Manual page
    osgdocmk/man/osgdocmk.1 is the manual page of osgdocmk.
 
-4. Vendored third-party code (unchanged copies)
+3. Vendored third-party code (unchanged copies)
    - TOML-Tiny 0.22 (CPAN; same terms as Perl 5) and toml2lua (MIT, from
      expltools). Details: osgdocmk/THIRD_PARTY-osgdocmk.md and
      osglecture/THIRD_PARTY-osglecture-cls.md.
 
-5. Engine
-   The bundle generally requires LuaLaTeX; for details see
-   https://github.com/werner-matthias/osglecture#modules-version-and-compatibility
+4. Engine
+   The bundle generally requires LuaLaTeX.

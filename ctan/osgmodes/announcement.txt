@@ -1,1 +1,5 @@
 osgmodes lets authors share content between presentations, handouts, scripts, and other document variants without committing the source to one document class. It brings Beamer/ltx-talk-style mode selection to ordinary LaTeX classes and supports project-defined modes with shared parent modes.
+
+osgmodes was originally included in the osglecture bundle as osglecture-modes. Since it can run
+independently, it is now released as a separate package, so that it can be installed
+without the rest of the bundle.

@@ -1,1 +1,5 @@
 tagpax imports complete, tagged PDF documents into a new tagged PDF while reconstructing their logical structure. It is intended for assembling independently produced contributions without reducing their pages to inaccessible graphics.
+
+tagpax was originally included in the osglecture bundle. Since it can run
+independently, it is now released as a separate package, so that it can be installed
+without the rest of the bundle.

@@ -1,34 +1,15 @@
-The osglecture bundle generates lecture materials: several documents
-from one LaTeX source, in different formats and in several languages.
-Document classes (ltx-talk or beamer, book or scrbook) are
-selected through profiles, so the source stays class-independent; the
-build manager osgdocmk builds single lecture units as well as whole lecture
-series while maintaining cross-unit references.
+This update restructures the bundle and separates the following standalone packages:
 
-The bundle also aims at accessible, tagged PDF. Several of its packages
-may be useful on their own.
+- ansiterm
+- langselect
+- lttalk-themeengine
+- lttalk-theme-tuc-2019
+- osgdoc
+- osglistings
+- osgmodes
+- osgstyler
+- semcat
+- tagdirtree
+- tagpax
 
-The bundle requires LuaLaTeX, a current TeX Live, and, if ltx-talk is
-used, ltx-talk 0.5.3 or later. It is under active development and its
-interfaces may still change.
-
-The bundle currently contains:
-- osglecture: document class that produces slides, script, handouts, and
-  other materials from a common source
-- osgdocmk (OSG Lecture Document Maker): latexmk-based build manager for
-  creating and deploying lecture materials
-- osgmodes: portable document modes in the style of
-  beamer/ltx-talk for arbitrary classes
-- langselect: several language versions of a document from a common
-  source
-- tagpax: semantic import of tagged PDFs
-- osgstyler: template-based formatting
-- lttalk-themeengine: theme engine for ltx-talk, with a few themes modelled
-  after Beamer themes
-- lttalk-theme-tuc-2019: unofficial version of the TU Chemnitz
-  presentation theme for ltx-talk
-- ansiterm: ANSI-aware, optionally executable terminal windows
-- osglistings: minted-based code-listing front end
-- semcat: semantic-category markup 
-- tagdirtree: taggable directory trees
-- osgdoc: small wrapper for cnltx with further support for documentation
+The bundle now depends on langselect, osgmodes, and tagpax, which are distributed as separate packages.

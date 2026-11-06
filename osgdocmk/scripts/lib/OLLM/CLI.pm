@@ -212,7 +212,6 @@ sub parse {
     }
 
     if ($arg eq '+enforce+' || $arg eq '--enforce+' || $arg eq '+force+') {
-      $plan{deprecated_force} = 1 if $arg eq '+force+';
       next;
     }
 

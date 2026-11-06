@@ -20,5 +20,5 @@ packages; the usual LaTeX packages the code loads itself are not listed.
 
 - Required to build the documentation (`l3build doc`): `langselect`, `osgdoc`
 
-Authors of lecture material written with the osglecture document class (https://github.com/werner-matthias/osglecture) can use this package; the class does not require it. It works on its own as well.
+This package is developed in the course of the osglecture document class and shares the same repository, see https://github.com/werner-matthias/osglecture. The class does not require it, and it works on its own.
 <!-- END DEPENDENCIES -->

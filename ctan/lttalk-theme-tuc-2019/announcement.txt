@@ -1,1 +1,6 @@
-lttalk-theme-tuc-2019 provides an unofficial TU Chemnitz presentation theme for the ltx-talk class. It is built on lttalk-themeengine and offers the university layout, faculty-aware colours, and an optional coordinated font selection.
+lttalk-theme-tuc-2019 provides an unofficial TU Chemnitz presentation theme for the ltx-talk class.
+It uses lttalk-themeengine.
+
+lttalk-theme-tuc-2019 was originally included in the osglecture bundle. Since it can run
+independently, it is now released as a separate package, so that it can be installed
+without the rest of the bundle.

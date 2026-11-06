@@ -1,1 +1,5 @@
 osglistings is a minted-based code-listing front end for LuaLaTeX. It provides a common interface for inline source and external files, with visual styles suited to plain listings, printed code sheets, and editor-like windows.
+
+osglistings was originally included in the osglecture bundle. Since it can run
+independently, it is now released as a separate package, so that it can be installed
+without the rest of the bundle.

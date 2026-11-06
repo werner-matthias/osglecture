@@ -7,6 +7,8 @@
   run by `l3build tag`, checked by `l3build ctan` (`--check`)
 * `make-ctan-metadata.lua`: shows and validates the CTAN submission data of each release unit
   (`--list`, `--show <unit>`, `--deps [<unit>]`, `--matrix`, `--check [<unit>]`: missing texts, field limits, matrix consistency)
+* `make-package-readmes.lua`: writes the generated "Dependencies" section of each package
+  README.md from the dependency matrix; run by `l3build tag`, checked before `l3build ctan` (`--check`)
 * `ctan-metadata.lua`: library composing a unit's `uploadconfig` from the register
   (`packages.lua`) and the texts in `ctan/<unit>/`; used by `ctan/upload.lua`
 * `bundle-versions.lua`: library reading the module versions from the sources; used by

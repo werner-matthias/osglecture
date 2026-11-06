@@ -18,5 +18,5 @@ packages; the usual LaTeX packages the code loads itself are not listed.
 - Required to build the documentation (`l3build doc`): `langselect`, `lttalk-themeengine`, `osgdoc`, `osgstyler`
 - Required to run the test suite (`l3build check`): `lttalk-themeengine`, `osglecture`, `osgmodes`, `osgstyler`, `tagpax`
 
-This package is developed in the same repository as the osglecture document class, see https://github.com/werner-matthias/osglecture, but works on its own.
+This package is developed in the course of the osglecture document class and shares the same repository, see https://github.com/werner-matthias/osglecture. The class does not require it, and it works on its own.
 <!-- END DEPENDENCIES -->

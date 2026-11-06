@@ -1,3 +1,3 @@
 Notes for the CTAN team and the TeX distribution maintainers
 
-The package requires LuaLaTeX and builds on minted. The optional import of source from GitHub or a Gist performs network access with the permissions of the TeX process and is intended only for trusted documents.
+The package requires LuaLaTeX and builds on minted, which needs --shell-escape. The optional import of source from GitHub or a Gist performs network access with the permissions of the TeX process and is intended only for trusted documents.

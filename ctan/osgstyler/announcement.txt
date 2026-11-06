@@ -1,1 +1,5 @@
 osgstyler provides reusable, template-based styles for LaTeX documents. It keeps semantic choices in document code independent of the fonts, colours, measurements, decorations, and inline rendering chosen by a visual theme.
+
+osgstyler was originally included in the osglecture bundle. Since it can run
+independently, it is now released as a separate package, so that it can be installed
+without the rest of the bundle.
