@@ -20,7 +20,7 @@ installfiles = {
 typesetfiles = { "tagpax.dtx" }
 
 textfiles = {
-  "README-tagpax.md",
+  "README.md",
 }
 
 docfiles = {

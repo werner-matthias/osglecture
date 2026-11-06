@@ -81,6 +81,19 @@ if is_module and target_list and target_list.ctan then
     end
   else
     load_upload_config()
+    -- Never package a README whose dependency section no longer matches the
+    -- dependency matrix.
+    if fileexists(maindir .. "/tools/make-package-readmes.lua") then
+      local std_ctan = target_list.ctan.func
+      target_list.ctan.func = function(...)
+        local errorlevel = run(maindir,
+          "texlua tools/make-package-readmes.lua --check " .. module)
+        if errorlevel ~= 0 then
+          return errorlevel
+        end
+        return std_ctan(...)
+      end
+    end
   end
 end
 
@@ -94,7 +107,7 @@ end
 
 -- The GitHub README.md is not distributed: CTAN gets the snapshot
 -- ctan/README.md derived from it (tools/make-ctan-readme.lua).  Modules
--- distribute their README-<module>.md, never the README.md link to it.
+-- distribute their own README.md.
 -- In the CTAN copy the snapshot already is the top-level README.md.
 if not is_module then
   textfiledir = fileexists("ctan/README.md") and "ctan" or "."
@@ -118,17 +131,17 @@ end
 --[[
   The CTAN package directory mirrors the repository rather than l3build's
   flat collection: each module gets its own directory with its tracked
-  files (sources, l3build files, tests, README-<module>.md) and its
+  files (sources, l3build files, tests, README.md) and its
   documentation PDFs, so "l3build check/doc/install" also work there.
-  The repository-only README.md links are git symlinks and stay behind;
-  so do development-docs/, doc/, tools/, ctan/, and images/ apart from
-  images/logos (the other images serve osglecture projects, not the
-  bundle), which no module copies.
+  Git symlinks stay behind; so do development-docs/, doc/, tools/, ctan/,
+  and images/ apart from images/logos (the other images serve osglecture
+  projects, not the bundle), which no module copies.
   The top-level build.lua and LICENSE come along with every package (the
   copies are identical).  What else is shared is decided by the package
   register: a package ships only the example directories and the support
   directories it owns (the logos used by the lttalk-theme-tuc-2019 tests
-  and example, the examples of osglecture, osgstyler, and tagdirtree).
+  and example, the series examples of osglecture).  The examples of one
+  standalone package live in its own examples/ directory and travel with it.
   support/insert-pdf-tags.lua, a test-time helper, belongs to no package;
   the notes of the packages whose tests need it say so.
   Hidden files are left out: CTAN does not accept them.  So are the
@@ -165,12 +178,7 @@ local function git_tracked_files(dir)
   return files
 end
 
-local function copy_tracked(sourcedir, ...)
-  local files = git_tracked_files(sourcedir)
-  if #files == 0 then
-    print("copyctan: no tracked files in " .. sourcedir)
-    return 1
-  end
+local function copy_listed(sourcedir, files, ...)
   for _, targetdir in ipairs({ ... }) do
     for _, path in ipairs(files) do
       local dir, name = splitpath(path)
@@ -182,6 +190,15 @@ local function copy_tracked(sourcedir, ...)
     end
   end
   return 0
+end
+
+local function copy_tracked(sourcedir, ...)
+  local files = git_tracked_files(sourcedir)
+  if #files == 0 then
+    print("copyctan: no tracked files in " .. sourcedir)
+    return 1
+  end
+  return copy_listed(sourcedir, files, ...)
 end
 
 -- The files of the given example directories (relative to examples/), as
@@ -198,6 +215,25 @@ local function example_files(directories)
         local relative = "examples/" .. directory .. "/" .. dir
         table.insert(files, { name, relative, relative })
       end
+    end
+  end
+  return files
+end
+
+-- The files below examples/ in the module directory as
+-- { name, sourcedir, targetdir } entries, without hidden files.
+local function module_example_files()
+  local files = { }
+  local base = lfs.currentdir() .. "/examples"
+  if lfs.attributes(base, "mode") ~= "directory" then
+    return files
+  end
+  for _, p in ipairs(tree(base, "**")) do
+    local path = p.src:gsub("^%./", "")
+    if lfs.attributes(p.cwd, "mode") == "file"
+      and not path:match("^%.") and not path:match("/%.") then
+      local dir, name = splitpath(path)
+      table.insert(files, { name, base .. "/" .. dir, "examples/" .. dir })
     end
   end
   return files
@@ -224,7 +260,15 @@ if is_module then
     -- The mirror replaces l3build's own, flattened source directory.
     rmdir(tdsdir .. "/source/" .. moduledir)
     local examples, support = owned_assets()
-    local errorlevel = copy_tracked(".", targetdir, tdssourcedir .. "/" .. dirname)
+    -- The examples of the module itself belong to the documentation tree.
+    local own, examplefiles = git_tracked_files("."), { }
+    local rest = { }
+    for _, path in ipairs(own) do
+      table.insert(path:match("^examples/") and examplefiles or rest, path)
+    end
+    local errorlevel = copy_listed(".", own, targetdir)
+      + copy_listed(".", rest, tdssourcedir .. "/" .. dirname)
+      + copy_listed(".", examplefiles, tdsdocdir)
       + cp("build.lua", maindir, pkgdir)
       + cp("build.lua", maindir, tdssourcedir)
       + cp("LICENSE", maindir, pkgdir)
@@ -247,7 +291,7 @@ if is_module then
     return errorlevel
   end
 
-  -- l3build looks for the text files (README-<module>.md, THIRD_PARTY-*.md)
+  -- l3build looks for the text files (README.md, THIRD_PARTY-*.md)
   -- in docfiledir when installing, where they never are; install them from
   -- the module directory instead.
   local std_install_files = install_files
@@ -266,20 +310,16 @@ if is_module then
     -- A standalone package carries its own examples; those of a bundle
     -- member are installed by the bundle root.
     if bundle == "" then
-      local examples = owned_assets()
-      for _, file in ipairs(example_files(examples)) do
+      for _, file in ipairs(module_example_files()) do
         mkdir(docdir .. "/" .. file[3])
-        errorlevel = errorlevel + cp(file[1], maindir .. "/" .. file[2],
-          docdir .. "/" .. file[3])
+        errorlevel = errorlevel + cp(file[1], file[2], docdir .. "/" .. file[3])
       end
     end
     return errorlevel
   end
 end
 
-textfiles = textfiles or {
-  "README-*.md"
- }
+textfiles = textfiles or { "README.md" }
 
 unpackfiles = unpackfiles  or { "*.dtx" }
 
@@ -663,14 +703,19 @@ function update_tag(file, content, tagname, tagdate)
 end
 
 -- The module table in README.md mirrors the versions in the sources, so
--- every tagging run refreshes it, and then the CTAN snapshot of README.md.
+-- every tagging run refreshes it, then the CTAN snapshot of README.md and
+-- the dependency sections of the package READMEs.
 -- The tools expect the bundle root.
 function tag_hook(tagname, tagdate)
   local errorlevel = run(maindir, "texlua tools/update-bundle-manifest.lua")
   if errorlevel ~= 0 then
     return errorlevel
   end
-  return run(maindir, "texlua tools/make-ctan-readme.lua")
+  errorlevel = run(maindir, "texlua tools/make-ctan-readme.lua")
+  if errorlevel ~= 0 then
+    return errorlevel
+  end
+  return run(maindir, "texlua tools/make-package-readmes.lua")
 end
 
 -- The bundle root submits only the bundle (osglecture, osgdocmk, and the
@@ -686,6 +731,9 @@ local function ctan_of_bundle(names)
   local errorlevel = 0
   if fileexists("tools/make-ctan-readme.lua") then
     errorlevel = run(maindir, "texlua tools/make-ctan-readme.lua --check")
+  end
+  if errorlevel == 0 and fileexists("tools/make-package-readmes.lua") then
+    errorlevel = run(maindir, "texlua tools/make-package-readmes.lua --check osglecture")
   end
   if errorlevel == 0 then
     errorlevel = target_list.ctan.stdfunc(names)

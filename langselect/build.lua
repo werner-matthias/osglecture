@@ -4,7 +4,7 @@ module = "langselect"
 maindir="../"
 
 textfiles = {
-    "README-langselect.md"
+    "README.md"
 }
 
 installfiles = { "langselect.sty" }

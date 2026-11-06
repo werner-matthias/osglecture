@@ -5,7 +5,7 @@ maindir = ".."
 checkdeps = { "../osgmodes", "../osgstyler" }
 
 textfiles = {
-  "README-semcat.md"
+  "README.md"
 }
 
 installfiles = {

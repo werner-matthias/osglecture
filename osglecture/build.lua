@@ -6,7 +6,7 @@ maindir=".."
 checkdeps = { "../osgmodes", "../tagpax", "../langselect" }
 
 textfiles = {
-  "README-cls.md",
+  "README.md",
   "THIRD_PARTY-osglecture-cls.md",
 }
 

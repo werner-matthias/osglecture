@@ -5,7 +5,7 @@ module = "tagdirtree"
 maindir="../"
 
 textfiles = {
-    "README-tagdirtree.md"
+    "README.md"
 }
 
 installfiles = { "tagdirtree.sty" }

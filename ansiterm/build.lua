@@ -3,7 +3,7 @@ module = "ansiterm"
 
 maindir = "../"
 
-textfiles = { "README-ansiterm.md" }
+textfiles = { "README.md" }
 installfiles = { "ansiterm.sty", "ansiterm.lua" }
 -- ansiterm.lua isn't docstrip-extracted, so it needs to be named here too:
 -- otherwise it never reaches the check sandbox and \directlua's own

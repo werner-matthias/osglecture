@@ -27,7 +27,7 @@ typesetfiles = { "osgdocmk.tex" }
 bilingualfiles = { "osgdocmk.tex" }
 
 textfiles = {
-  "README-osgdocmk.md",
+  "README.md",
   "THIRD_PARTY-osgdocmk.md",
 }
 

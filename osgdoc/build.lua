@@ -4,7 +4,7 @@ module = "osgdoc"
 maindir=".."
 
 textfiles = {
-    "README-osgdoc.md"
+    "README.md"
 }
 
 installfiles = {

@@ -3,7 +3,7 @@ module = "lttalk-themeengine"
 maindir = ".."
 
 textfiles = {
-    "README-lttalk-themeengine.md"
+    "README.md"
 }
 
 -- ltx-talk removes a temporary final page on the second LaTeX run.

@@ -3,7 +3,7 @@ module = "osglistings"
 
 maindir = "../"
 
-textfiles = { "README-osglistings.md" }
+textfiles = { "README.md" }
 installfiles = { "osglistings.sty", "osglistings.lua", "osglistings-check-updates.lua" }
 sourcefiles = { "osglistings.dtx", "osglistings.lua", "osglistings-check-updates.lua" }
 unpackfiles = { "osglistings.dtx" }
