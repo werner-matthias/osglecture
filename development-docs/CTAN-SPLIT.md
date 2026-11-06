@@ -122,7 +122,11 @@ eine spätere, separate Entscheidung.
   `semcat-tagbridge.sty`, aus `semcat.dtx` extrahiert und automatisch von
   `semcat.sty` nachgeladen; interne Namen und Fehlermeldungen tragen den
   Präfix `semcat-tagbridge`).
-- `osglecture.dtx:1287` verliert `\RequirePackage{tagbridge}` ersatzlos.
+- `osglecture.dtx:1287` verliert `\RequirePackage{tagbridge}`; die Klasse lädt
+  bei aktivem Tagging selbst `latex-lab-testphase-tikz`, damit die
+  TikZ-Schlüssel `alt`/`artifact` nicht davon abhängen, ob `semcat` geladen
+  wird (`semcat-tagbridge` lädt das Paket ebenfalls; das zweite Laden ist
+  wirkungslos).
 - `semcat`s Testsuite übernimmt Tagbridges Tagging-Test (und damit auch
   dessen Bedarf an `insert-pdf-tags.lua`, s. Abschnitt 12).
 - TDS-technisch unproblematisch: Tagbridge ist zwar als 🌑 eingestuft,
@@ -369,10 +373,13 @@ Required to run the test suite (`l3build check`): `osgstyler`
 <!-- END DEPENDENCIES -->
 ```
 
-Zugleich entfallen die `README-<paket>.md`-Symlinks (`README.md →
-README-<paket>.md`): Der Suffix existierte nur, weil der
+Zugleich entfallen die `README-<paket>.md`-Dateien samt Symlinks
+(`README.md → README-<paket>.md`): Der Suffix existierte nur, weil der
 Bundle-Install alle READMEs in ein gemeinsames Doc-Verzeichnis legte. Mit
-eigenem `doc/<tdsroot>/<pkg>/` pro Paket kollidiert nichts mehr.
+eigenem `doc/<tdsroot>/<pkg>/` pro Paket kollidiert nichts mehr; jedes
+Modul trägt jetzt eine echte `README.md`. Umgesetzt: der Abschnitt wird von
+`tools/make-package-readmes.lua` geschrieben (`l3build tag`) und vor
+`l3build ctan` geprüft. Der Ablauf eines Releases steht in `RELEASE.md`.
 
 ## 11. Dokumentations-Inversion: Bundle nur noch virtuell
 
@@ -427,8 +434,11 @@ Abschnitt 9) statt Blockkopie:
   use the package." – konsistent mit der bereits von TL akzeptierten
   Ausnahme, dass manche `l3build`-Ziele nicht ohne weitere Pakete
   funktionieren.
-- `images/logos`, `examples/*`: nur an den im Register benannten
+- `images/logos`, `examples/series-*`: nur an den im Register benannten
   Eigentümer kopieren.
+- Die Beispiele einzelner Pakete (`osgstyler-article`, `osgstyler-beamerlike`,
+  `tagdirtree-lines-skin`) liegen im Verzeichnis `examples/` des jeweiligen
+  Moduls und reisen mit diesem; sie stehen nicht im Register.
 
 Root-`build.lua` und `LICENSE` bleiben blockweise in jedem Paket – das ist
 normale, erwartete CTAN-Praxis (jedes Paket braucht sein eigenes

@@ -814,7 +814,7 @@ vorliegen; diese Entscheidung wird anhand des im vorigen Lauf tatsächlich
 beobachteten Tag-Status getroffen, gilt einheitlich für den ganzen Doctype
 und erzwingt bei einem im vorigen Lauf beobachteten Mix aus getaggten und
 ungetaggten Units mit einer nachdrücklichen Warnung den ungetaggten Pfad
-(Details in `osglecture/README-cls.md`, Abschnitt „Dokumentintegration").
+(Details in `osglecture/README.md`, Abschnitt „Dokumentintegration").
 Aus osgdocmk-Sicht ist das Integrationsverzeichnis eine gewöhnlich übersetzte Unit
 mit Rolle `i` (`integration`). osgdocmk soll den Snapshot der promotierten
 Artefakte, Rollen und Serienreihenfolge liefern, interpretiert aber weder

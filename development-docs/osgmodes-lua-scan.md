@@ -290,7 +290,7 @@ lange weiterliest, bis sie auf etwas Behaltenes stößt.
   Crash nachstellt (tagging=on, `\mode<presentation>`, dynamischer
   Header-Slot, mehrere Folien) und jetzt sauber durchläuft.
 - **Phase 6 -- Doku**: `osglecture-modes.dtx`-Kommentare und
-  `README-modes.md` auf die neue Dual-Pfad-Architektur aktualisieren.
+  `README.md` auf die neue Dual-Pfad-Architektur aktualisieren.
 - **Phase 7 -- Abschluss**: `ToDo.md`-Eintrag aktualisieren, dieses
   Dokument als "Status: erledigt" markieren oder verbleibende
   Restarbeiten (z.\,B. TeX-Pfad-Abkündigung) neu eintragen.
