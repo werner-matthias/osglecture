@@ -154,14 +154,14 @@ load babel
 Das Paket \lttheme\ benötigt eine hinreichend aktuelle Lua\LaTeX-Installation und nutzt 
 \pkg*{osgstyler}, das ebenfalls im Rahmen von \pkg{osglecture} entwickelt wurde. 
 Es arbeitet mit den \lttalk-Versionen zwischen v0.5.3 vom 5.~August~2026 und
-\cls{ltx-talk}~v0.6.10 vom 13.~Oktober~2026 zusammen.
+\cls{ltx-talk}~v0.6.11 vom 5.~November~2026 zusammen.
 Ältere Versionen führen zu einem Fehler,
 neuere zu einer Kompatibilitätswarnung. 
 }{
 The \lttheme\ package requires a sufficiently recent Lua\LaTeX\ installation
 and uses \pkg*{osgstyler}, which was also developed as part of
 \pkg{osglecture}. It supports \lttalk\ versions from v0.5.3, dated
-5~August~2026, through \cls{ltx-talk}~v0.6.10, dated 13~October~2026.
+5~August~2026, through \cls{ltx-talk}~v0.6.11, dated 5~November~2026.
 Older versions cause an error, while newer versions produce a compatibility
 warning.
 }
@@ -2172,8 +2172,8 @@ theme.
 % the two cannot silently drift apart from each other.
 \tl_const:Nn \c__lttalk_min_class_date_tl { 2026/08/05 }
 \tl_const:Nn \c__lttalk_min_class_version_tl { 0.5.3 }
-\tl_const:Nn \c__lttalk_tested_class_date_tl { 2026/10/13 }
-\tl_const:Nn \c__lttalk_tested_class_version_tl { 0.6.10 }
+\tl_const:Nn \c__lttalk_tested_class_date_tl { 2026/11/05 }
+\tl_const:Nn \c__lttalk_tested_class_version_tl { 0.6.11 }
 
 \RequirePackage{xcoffins}
 \RequirePackage{xcolor}
@@ -3442,35 +3442,43 @@ theme.
 %   \emph{independent}, explicitly author-invoked mechanism that should
 %   not be tied to the automatic demotion. Only the \emph{automatic}
 %   consumption by \cs{frametitle} stays behind the switch.}
-% \ldeen{\cls{ltx-talk} erhöht den Zähler auch bei der Sternform
-%   (\cs{section*}) und beim Schlüssel \code{unnumbered}; beides schaltet
-%   dort nur \cs{l__talk_sec_numbered_bool} aus -- und zwar bleibend, denn
-%   die Klasse setzt den Schalter nie zurück (und initialisiert ihn auch
-%   nicht mit \code{true}). \cs{__lttalk_heading_begin:n} läuft deshalb als
+% \ldeen{Ob \cls{ltx-talk} den Zähler bei der Sternform (\cs{section*})
+%   und beim Schlüssel \code{unnumbered} schon gestuft hat, wenn der Haken
+%   läuft, hängt vom Klassenstand ab; beides schaltet dort
+%   \cs{l__talk_sec_numbered_bool} aus -- und zwar bleibend, denn die
+%   Klasse setzt den Schalter nie zurück (und initialisiert ihn auch nicht
+%   mit \code{true}). \cs{__lttalk_heading_begin:n} läuft deshalb als
 %   \emph{erster} Hakencode jeder Ebene: es übernimmt den Schalter in ein
 %   eigenes, globales Bool je Ebene, setzt ihn für die nächste Überschrift
-%   wieder auf \code{true} und nimmt bei unnummerierten Überschriften den
-%   Zählerschritt zurück -- einschließlich der dabei zurückgesetzten
-%   untergeordneten Zähler, deren letzter Stand dafür mitgeführt wird. So
-%   verhält sich \cs{section*} wie in den Standardklassen: keine Nummer,
-%   und die folgende nummerierte Überschrift zählt lückenlos weiter.}{
-%   \cls{ltx-talk} steps the counter for the starred form (\cs{section*})
-%   and the \code{unnumbered} key, too; both merely switch off
+%   wieder auf \code{true} und stellt bei unnummerierten Überschriften die
+%   zuletzt gemerkten Zählerstände aller Ebenen wieder her. Das Zurücksetzen
+%   auf einen gemerkten Stand statt eines Zählerschritts rückwärts ist für
+%   beide Klassenverhalten richtig: ein nicht erfolgter Schritt bleibt
+%   ohne Wirkung, ein erfolgter -- einschließlich der dabei zurückgesetzten
+%   untergeordneten Zähler -- wird aufgehoben. So verhält sich
+%   \cs{section*} wie in den Standardklassen: keine Nummer, und die
+%   folgende nummerierte Überschrift zählt lückenlos weiter.}{
+%   Whether \cls{ltx-talk} has already stepped the counter for the starred
+%   form (\cs{section*}) and the \code{unnumbered} key when the hook runs
+%   depends on the class revision; both merely switch off
 %   \cs{l__talk_sec_numbered_bool} there -- permanently, as the class never
 %   resets the switch (nor initialises it to \code{true}).
 %   \cs{__lttalk_heading_begin:n} therefore runs as the \emph{first} hook
 %   code of each level: it copies the switch into a global Boolean of its
 %   own per level, resets it to \code{true} for the next heading, and for
-%   unnumbered headings undoes the counter step -- including the
-%   subordinate counters reset by it, whose last values are tracked for
-%   that purpose. \cs{section*} thus behaves as in the standard classes: no
-%   number, and the next numbered heading continues without a gap.}
+%   unnumbered headings restores the last tracked values of all counter
+%   levels. Restoring a tracked value rather than stepping backwards is
+%   correct for either class behaviour: a step that did not happen has no
+%   effect, one that did -- including the subordinate counters reset by
+%   it -- is undone. \cs{section*} thus behaves as in the standard classes:
+%   no number, and the next numbered heading continues without a gap.}
 \bool_new:N \g__lttalk_section_numbered_bool
 \bool_new:N \g__lttalk_subsection_numbered_bool
 \bool_new:N \g__lttalk_subsubsection_numbered_bool
 \bool_gset_true:N \g__lttalk_section_numbered_bool
 \bool_gset_true:N \g__lttalk_subsection_numbered_bool
 \bool_gset_true:N \g__lttalk_subsubsection_numbered_bool
+\int_new:N \g__lttalk_last_section_int
 \int_new:N \g__lttalk_last_subsection_int
 \int_new:N \g__lttalk_last_subsubsection_int
 \bool_if_exist:NT \l__talk_sec_numbered_bool
@@ -3512,17 +3520,25 @@ theme.
       {
         \bool_gset_false:c { g__lttalk_ #1 _numbered_bool }
         \int_gincr:N \g__lttalk_unnumbered_heading_int
-        \int_gdecr:c { c@ #1 }
         \str_case:nn {#1}
           {
             { section }
               {
+                \int_gset_eq:NN \c@section
+                  \g__lttalk_last_section_int
                 \int_gset_eq:NN \c@subsection
                   \g__lttalk_last_subsection_int
                 \int_gset_eq:NN \c@subsubsection
                   \g__lttalk_last_subsubsection_int
               }
             { subsection }
+              {
+                \int_gset_eq:NN \c@subsection
+                  \g__lttalk_last_subsection_int
+                \int_gset_eq:NN \c@subsubsection
+                  \g__lttalk_last_subsubsection_int
+              }
+            { subsubsection }
               {
                 \int_gset_eq:NN \c@subsubsection
                   \g__lttalk_last_subsubsection_int
@@ -3531,6 +3547,7 @@ theme.
         \bool_set_true:N \l__talk_sec_numbered_bool
       }
       { \bool_gset_true:c { g__lttalk_ #1 _numbered_bool } }
+    \int_gset_eq:NN \g__lttalk_last_section_int \c@section
     \int_gset_eq:NN \g__lttalk_last_subsection_int \c@subsection
     \int_gset_eq:NN \g__lttalk_last_subsubsection_int \c@subsubsection
   }
