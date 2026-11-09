@@ -83,7 +83,7 @@ The `TL ...` columns are read from the expectations in the workflow above;
 | osgmodes | v0.5.1 | 2026-09-27 | 2 | :full_moon: | :red_circle: | :green_circle: | :green_circle: |
 | ltx-talk support (osglecture + osgmodes) | n/a | n/a | n/a | :full_moon: | :red_circle: | :red_circle: | :green_circle: |
 | osgdocmk | v0.15.0 | n/a | 1 | :white_circle: | :white_circle: | :green_circle: | :green_circle: |
-| tagpax | v0.8.6 | 2026-10-22 | 2 | :full_moon: | :red_circle: | :green_circle: | :green_circle: |
+| tagpax | v0.8.6 | 2026-10-22 | 2 | :full_moon: | :red_circle: | :red_circle: | :green_circle: |
 | tagdirtree[^1] | v0.1.0 | 2026-09-14 | 1 | :new_moon: | :red_circle: | :green_circle: | :green_circle: |
 | langselect | v1.1.3 | 2026-09-18 | 1 | :full_moon: | :green_circle: | :green_circle: | :green_circle: |
 | osgstyler | v0.2.0 | 2026-08-24 | 2 | :first_quarter_moon: | :red_circle: | :red_circle: | :green_circle: |
