@@ -1212,6 +1212,14 @@ The bridge must not mutate the global \tagpdfpkg{} structure stack.
       {/A~<</Type~/Action~/S~/GoToR~/F~<#7>~/D~[#8~/#9]>>}
   }
 
+\cs_new_protected:Npn \__tagpax_artifact_box:n #1
+  {
+    \tag_start:
+    \tag_mc_begin:n { artifact }
+    #1
+    \tag_mc_end:
+  }
+
 \cs_new_protected:Npn \TagPaxImportOnePage #1#2#3#4#5
   {
     \tagpax_tag_stream_new:nN {#3} \l__tagpax_import_stream_key_tl
@@ -1220,11 +1228,25 @@ The bridge must not mutate the global \tagpdfpkg{} structure stack.
     \tl_use:N \l__tagpax_pagecommand_tl
     \directlua{require('tagpax-native').emit_page_navigation(
       [[\luaescapestring{#4}]],#2,[[\luaescapestring{#5}]])}
+    \group_begin:
+    % \ldeen{Das Seiten-Form trägt eigene Strukturinhalte; sein \code{Do} darf
+    %   nach PDF~2.0, 14.7.5.2, nicht in einer Marked-Content-Sequenz eines
+    %   Strukturelements liegen. Der Absatz bleibt daher ungetaggt und das
+    %   \code{Do} steht in einem Artefakt; Overlay-Annotationen behalten ihre
+    %   Struktur.}{The page Form carries its own structure content; per
+    %   PDF~2.0, 14.7.5.2, its \code{Do} must not sit inside a marked-content
+    %   sequence of a structure element. The paragraph therefore stays untagged
+    %   and the \code{Do} sits in an artifact; overlay annotations keep their
+    %   structure.}
+    \tag_stop:
     \noindent\hbox to \linewidth
-      {\hss\directlua{require('tagpax-luatex').write_page(
-        [[\luaescapestring{#1}]],#2,\l__tagpax_import_stream_key_tl,[[\luaescapestring{#3}]],
-        [[\luaescapestring{#4}]],[[\luaescapestring{#5}]],
-        \number\textwidth,\number\textheight)}\hss}
+      {\hss\__tagpax_artifact_box:n
+        {\directlua{require('tagpax-luatex').write_page(
+          [[\luaescapestring{#1}]],#2,\l__tagpax_import_stream_key_tl,[[\luaescapestring{#3}]],
+          [[\luaescapestring{#4}]],[[\luaescapestring{#5}]],
+          \number\textwidth,\number\textheight)}}\hss}
+    \par
+    \group_end:
     \clearpage
   }
 
@@ -1376,10 +1398,11 @@ The bridge must not mutate the global \tagpdfpkg{} structure stack.
       {
         \vfil
         \hbox_to_wd:nn {#6}
-          {\hss\directlua{require('tagpax-luatex').write_page(
-            [[\luaescapestring{#1}]],#2,\l__tagpax_import_stream_key_tl,[[\luaescapestring{#3}]],
-            [[\luaescapestring{#4}]],[[\luaescapestring{#5}]],
-            \number#6,\number\l__tagpax_grid_cellheight_dim)}\hss}
+          {\hss\__tagpax_artifact_box:n
+            {\directlua{require('tagpax-luatex').write_page(
+              [[\luaescapestring{#1}]],#2,\l__tagpax_import_stream_key_tl,[[\luaescapestring{#3}]],
+              [[\luaescapestring{#4}]],[[\luaescapestring{#5}]],
+              \number#6,\number\l__tagpax_grid_cellheight_dim)}}\hss}
         \vfil
       }
   }
