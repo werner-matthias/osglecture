@@ -1,5 +1,5 @@
 \input regression-test.tex
-\DocumentMetadata{tagging=on,lang=de-DE}
+\DocumentMetadata{tagging=on,lang=de-DE,pdfstandard=ua-2}
 \documentclass{ltx-talk}
 
 % \framesubtitle in beiden Darstellungswegen: als Inhalts-Slot im Textstrom

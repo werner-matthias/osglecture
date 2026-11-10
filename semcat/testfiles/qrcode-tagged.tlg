@@ -90,8 +90,6 @@ Don't change this file in any respect.
 <Saving QR code to memory... done.>
 <Writing QR code to aux file... done.>
 <Printing matrix... done.>
-[1
-]
 ============================================================
 TEST 1: Show PDF Tags
 ============================================================
@@ -302,49 +300,6 @@ TEST 1: Show PDF Tags
        >
       <?MarkedContent page="1" ?>
      </Figure>
-    </text>
-   </text-unit>
-   <text-unit xmlns="https://www.latex-project.org/ns/dflt"
-      id="ID.00039"
-      rolemaps-to="Part"
-     >
-    <text xmlns="https://www.latex-project.org/ns/dflt"
-       id="ID.00040"
-       xmlns:Layout="http://iso.org/pdf/ssn/Layout"
-       Layout:TextAlign="Center"
-       rolemaps-to="P"
-      >
-    </text>
-    <text xmlns="https://www.latex-project.org/ns/dflt"
-       id="ID.00041"
-       xmlns:Layout="http://iso.org/pdf/ssn/Layout"
-       Layout:TextAlign="Justify"
-       rolemaps-to="P"
-      >
-     <Span xmlns="http://iso.org/pdf2/ssn"
-        id="ID.00042"
-        actualtext="LaTeX"
-        phoneme="[ˈlaːtɛx]"
-       >
-     </Span>
-    </text>
-   </text-unit>
-   <text-unit xmlns="https://www.latex-project.org/ns/dflt"
-      id="ID.00043"
-      rolemaps-to="Part"
-     >
-    <text xmlns="https://www.latex-project.org/ns/dflt"
-       id="ID.00044"
-       xmlns:Layout="http://iso.org/pdf/ssn/Layout"
-       Layout:TextAlign="Justify"
-       rolemaps-to="P"
-      >
-     <Span xmlns="http://iso.org/pdf2/ssn"
-        id="ID.00045"
-        actualtext="LaTeX"
-        phoneme="[ˈlaːtɛx]"
-       >
-     </Span>
     </text>
    </text-unit>
   </Document>

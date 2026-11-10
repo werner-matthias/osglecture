@@ -1,6 +1,7 @@
 \input regression-test.tex
-\DocumentMetadata{tagging=on,lang=en-US}
+\DocumentMetadata{tagging=on,lang=en-US,pdfstandard=ua-2}
 \documentclass{article}
+\title{Qrcode tagged}
 % semcat-tagbridge first: the qrcode patch has to wait for the package hook.
 \usepackage{semcat-tagbridge}
 \usepackage{qrcode}
@@ -34,6 +35,5 @@ A tikzpicture with alt text.
   \draw (0,0) rectangle (1,1);
 \end{tikzpicture}
 
-\clearpage
 \SHOWPDFTAGS
 \end{document}

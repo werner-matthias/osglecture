@@ -1,6 +1,7 @@
 \input regression-test.tex
-\DocumentMetadata{tagging=on,lang=en-US}
+\DocumentMetadata{tagging=on,lang=en-US,pdfstandard=ua-2}
 \documentclass{article}
+\title{Tagging semantics}
 \usepackage{osgstyler-lua}
 
 \ExplSyntaxOn
@@ -35,7 +36,6 @@ Plain text,
 \UseOsgInlineStyle{strong}{forwarded strong text}, and
 \UseOsgInlineStyle{highlight}{semantically neutral highlighting}.
 
-\clearpage
 \SHOWPDFTAGS
 
 \end{document}

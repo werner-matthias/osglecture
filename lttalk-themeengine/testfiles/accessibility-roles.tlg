@@ -22,13 +22,8 @@ TEST 1: Show PDF Tags
       >
      <?MarkedContent page="1" ?>A Heading
     </H2>
-    <Note xmlns="http://iso.org/pdf/ssn"
-       id="ID.08"
-      >
-     <?MarkedContent page="1" ?>A Note
-    </Note>
     <Figure xmlns="http://iso.org/pdf2/ssn"
-       id="ID.09"
+       id="ID.08"
        alt="A decorative mark"
       >
      <?MarkedContent page="1" ?>***

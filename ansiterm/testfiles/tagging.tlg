@@ -75,49 +75,6 @@
      <?MarkedContent page="1" ?>Plain paragraph after.
     </text>
    </text-unit>
-   <text-unit xmlns="https://www.latex-project.org/ns/dflt"
-      id="ID.00018"
-      rolemaps-to="Part"
-     >
-    <text xmlns="https://www.latex-project.org/ns/dflt"
-       id="ID.00019"
-       xmlns:Layout="http://iso.org/pdf/ssn/Layout"
-       Layout:TextAlign="Center"
-       rolemaps-to="P"
-      >
-    </text>
-    <text xmlns="https://www.latex-project.org/ns/dflt"
-       id="ID.00020"
-       xmlns:Layout="http://iso.org/pdf/ssn/Layout"
-       Layout:TextAlign="Justify"
-       rolemaps-to="P"
-      >
-     <Span xmlns="http://iso.org/pdf2/ssn"
-        id="ID.00021"
-        actualtext="LaTeX"
-        phoneme="[ˈlaːtɛx]"
-       >
-     </Span>
-    </text>
-   </text-unit>
-   <text-unit xmlns="https://www.latex-project.org/ns/dflt"
-      id="ID.00022"
-      rolemaps-to="Part"
-     >
-    <text xmlns="https://www.latex-project.org/ns/dflt"
-       id="ID.00023"
-       xmlns:Layout="http://iso.org/pdf/ssn/Layout"
-       Layout:TextAlign="Justify"
-       rolemaps-to="P"
-      >
-     <Span xmlns="http://iso.org/pdf2/ssn"
-        id="ID.00024"
-        actualtext="LaTeX"
-        phoneme="[ˈlaːtɛx]"
-       >
-     </Span>
-    </text>
-   </text-unit>
   </Document>
  </StructTreeRoot>
 </PDF>

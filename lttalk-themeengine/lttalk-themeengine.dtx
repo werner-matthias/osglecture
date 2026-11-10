@@ -2092,7 +2092,7 @@ with the load option \code{outer-only=true}.}
 \ldeen{Das vierte Argument von \cs*{definelttalkslot} legt die semantische Rolle und gegebenenfalls einen Alternativtext fest. Diese Angaben wirken bei aktiviertem Tagging. Leere Slots erzeugen kein Strukturelement. Beim Typ \code{frametitle} übernimmt die Klasse das Tagging; die folgenden Optionen ändern dessen Struktur nicht.}{The fourth argument of \cs*{definelttalkslot} specifies the semantic role and, optionally, alternative text. These settings take effect when tagging is enabled. Empty slots create no structure element. The class handles tagging for the \code{frametitle} type; the following options do not change its structure.}
 \begin{options}
 \keyval{role}{\ldeen{Rolle}{role}}\Default{artifact}
-\ldeen{\code{heading} kennzeichnet eine Überschrift auf der mit \code{heading-level} gewählten Ebene; \code{heading-1}, \code{heading-2} und \code{heading-3} wählen direkt die jeweilige Ebene. \code{note} kennzeichnet eine Anmerkung. \code{artifact} und \code{navigation} nehmen dekorative beziehungsweise wiederkehrende Navigationselemente aus der Lesereihenfolge aus. \code{content} verwendet das automatische Absatz-Tagging für normalen Inhalt.}{\code{heading} marks a heading at the level selected by \code{heading-level}; \code{heading-1}, \code{heading-2}, and \code{heading-3} select that level directly. \code{note} marks a note. \code{artifact} and \code{navigation} exclude decorative or recurring navigation elements from the reading order. \code{content} uses automatic paragraph tagging for ordinary content.}
+\ldeen{\code{heading} kennzeichnet eine Überschrift auf der mit \code{heading-level} gewählten Ebene; \code{heading-1}, \code{heading-2} und \code{heading-3} wählen direkt die jeweilige Ebene. \code{artifact} nimmt dekorative Elemente aus der Lesereihenfolge aus. \code{navigation} und \code{note} tun das für wiederkehrende Seitenelemente wie Seitenzahlen beziehungsweise wiederholte Metadaten und kennzeichnen sie als \code{Pagination}-Artefakt. \code{content} verwendet das automatische Absatz-Tagging für normalen Inhalt.}{\code{heading} marks a heading at the level selected by \code{heading-level}; \code{heading-1}, \code{heading-2}, and \code{heading-3} select that level directly. \code{artifact} excludes decorative elements from the reading order. \code{navigation} and \code{note} do the same for recurring page elements such as page numbers and repeated metadata and mark them as a \code{Pagination} artifact. \code{content} uses automatic paragraph tagging for ordinary content.}
 \keyval{heading-level}{\ldeen{Ganzzahl}{integer}}\Default{1}
 \ldeen{Überschriftenebene für \code{role=heading}, begrenzt auf 1 bis 6.}{Heading level for \code{role=heading}, limited to 1 through 6.}
 \keyval{alt-text}{\ldeen{Text}{text}}\Default{\ldeen{leer}{empty}}
@@ -3123,13 +3123,12 @@ theme.
 %   nachweislich unabhängig davon, ob der Slot im Inhaltsbereich (sofortiges
 %   Rendern im Textfluss) oder in einem Kopf-/Rand-/Fußbereich (verzögertes
 %   Rendern über die Seitenstil-Ausgaberoutine, also physisch \emph{nach} dem
-%   umgebenden Folieninhalt) liegt. \code{role=heading}/\code{H1..H3} und
-%   \code{role=note} öffnen daher ein echtes Strukturelement (\code{Hn}
-%   beziehungsweise \code{Note}, Standard-PDF2.0-Typen ohne RoleMap-Umweg);
-%   \code{role=artifact} und \code{role=navigation} (letzteres mangels
-%   eigenen PDF-Strukturtyps für wiederkehrende Navigationselemente wie
-%   Seitenzahlen) erzeugen nur einen reinen Artefakt-MC-Span außerhalb des
-%   Strukturbaums; \code{role=content} lässt den automatischen
+%   umgebenden Folieninhalt) liegt. \code{role=heading}/\code{H1..H3} öffnen
+%   daher ein echtes Strukturelement (\code{Hn}, Standard-PDF2.0-Typ ohne
+%   RoleMap-Umweg); \code{role=artifact}, \code{role=navigation} und
+%   \code{role=note} erzeugen nur einen reinen Artefakt-MC-Span außerhalb des
+%   Strukturbaums, die beiden letzteren (wiederkehrende Seitenzahlen und
+%   wiederholte Metadaten) als \code{Pagination}-Artefakt; \code{role=content} lässt den automatischen
 %   Absatz-Tagging-Hook unangetastet. Ist \code{alt-text} gesetzt, gewinnt es:
 %   der Slot bekommt in jedem Fall ein echtes Strukturelement mit
 %   \code{Alt}-Attribut (\code{Figure}, sofern die Rolle selbst kein
@@ -3146,12 +3145,12 @@ theme.
 %   content area (rendered immediately, in text flow) or in a header/margin/
 %   footer area (rendered later, through the page style's output routine --
 %   physically \emph{after} the surrounding frame content). \code{role=heading}
-%   /\code{H1..H3} and \code{role=note} therefore open a genuine structure
-%   element (\code{Hn} or \code{Note}, standard PDF2.0 types, no RoleMap
-%   indirection needed); \code{role=artifact} and \code{role=navigation}
-%   (the latter for lack of a dedicated PDF structure type for recurring
-%   navigation chrome such as page numbers) produce a plain artifact MC span
-%   outside the structure tree; \code{role=content} leaves the automatic
+%   /\code{H1..H3} therefore open a genuine structure element (\code{Hn},
+%   standard PDF2.0 type, no RoleMap indirection needed);
+%   \code{role=artifact}, \code{role=navigation} and \code{role=note}
+%   produce a plain artifact MC span outside the structure tree, the latter
+%   two (recurring page numbers and repeated metadata) as a \code{Pagination}
+%   artifact; \code{role=content} leaves the automatic
 %   per-paragraph tagging hook untouched. A given \code{alt-text} wins: the
 %   slot then always gets a genuine structure element with an \code{Alt}
 %   attribute (\code{Figure} if the role itself would not be a structure
@@ -3163,6 +3162,22 @@ theme.
   {
     \bool_if:NTF \g__talk_frame_tag_bool
       { \tag_mc_begin:n { artifact } #1 \tag_mc_end: }
+      { #1 }
+  }
+% \ldeen{Wiederkehrende Seitenelemente (Seitenzahlen, wiederholte Metadaten)
+%   sind Artefakte vom Typ \code{Pagination}. Kopf- und Fußbereiche
+%   umschließt der \LaTeX-Kern beim Ausliefern selbst mit einem solchen
+%   Artefakt und suspendiert das Tagging darin; der Aufruf ist dort ohne
+%   Wirkung und bestimmt den Typ nur für Slots in den übrigen Bereichen.}{Recurring
+%   page elements (page numbers, repeated metadata) are artifacts of type
+%   \code{Pagination}. The \LaTeX{} kernel itself wraps header and footer
+%   areas in such an artifact at shipout and suspends tagging inside it; the
+%   call has no effect there and only determines the type for slots in the
+%   other areas.}
+\cs_new_protected:Npn \__lttalk_accessibility_pagination:n #1
+  {
+    \bool_if:NTF \g__talk_frame_tag_bool
+      { \tag_mc_begin:n { artifact = pagination } #1 \tag_mc_end: }
       { #1 }
   }
 % \ldeen{Strukturelemente im Textstrom des Frames (Inhalts-Slots) dürfen
@@ -3253,9 +3268,9 @@ theme.
         \str_case:VnF \l__lttalk_slot_role_tl
           {
             { artifact }   { \__lttalk_accessibility_artifact:n {#1} }
-            { navigation } { \__lttalk_accessibility_artifact:n {#1} }
+            { navigation } { \__lttalk_accessibility_pagination:n {#1} }
+            { note }       { \__lttalk_accessibility_pagination:n {#1} }
             { content }    { #1 }
-            { note }       { \__lttalk_accessibility_struct:nn { tag = Note } {#1} }
             { heading }    { \__lttalk_accessibility_struct:nn
                                { tag = \__lttalk_accessibility_heading_tag: } {#1} }
             { H1 }         { \__lttalk_accessibility_struct:nn { tag = H1 } {#1} }
@@ -3267,8 +3282,6 @@ theme.
       {
         \str_case:VnF \l__lttalk_slot_role_tl
           {
-            { note }    { \__lttalk_accessibility_struct:nn
-                            { tag = Note, alt = \l__lttalk_alt_text_tl } {#1} }
             { heading } { \__lttalk_accessibility_struct:nn
                             { tag = \__lttalk_accessibility_heading_tag: ,
                               alt = \l__lttalk_alt_text_tl } {#1} }
@@ -5016,7 +5029,7 @@ theme.
     %   der automatische Hook gewollt) muss tagpdfs automatischer
     %   Absatz-Tagging-Hook deshalb schon \emph{vor} dem
     %   \cs{hcoffin_set:Nn}-Aufruf abgeschaltet werden -- das gilt auch für
-    %   Rollen mit echtem Strukturelement (\code{heading}, \code{note}
+    %   Rollen mit echtem Strukturelement (\code{heading}
     %   etc.): \cs{__lttalk_accessibility_struct:nn} schaltet den Hook
     %   zwar bereits \emph{innerhalb} ihres eigenen Struct-Tags ab, aber
     %   erst, nachdem \cs{__lttalk_slot_content:n} von hier aus (über
@@ -5026,7 +5039,7 @@ theme.
     %   ist also für das implizite \cs{par} der umschließenden
     %   \cs{parbox} schon wieder aufgehoben (ausprobiert und bestätigt:
     %   ein Rollen-Filter, der nur \code{navigation}/\code{artifact} hier
-    %   abschaltete und \code{note}/\code{heading} dem inneren, zu spät
+    %   abschaltete und \code{heading} dem inneren, zu spät
     %   greifenden Abschalten überließ, reichte \emph{nicht} -- erst das
     %   Abschalten für \emph{alle} Rollen außer \code{content} schon hier
     %   behob den Fehler). Kopf-/Rand-/Fußbereiche baut \cls{ltx-talk}
@@ -5049,7 +5062,7 @@ theme.
     %   the automatic hook is wanted), tagpdf's automatic per-paragraph
     %   tagging hook must therefore be switched off already \emph{before}
     %   the \cs{hcoffin_set:Nn} call -- this includes roles with a
-    %   genuine structure element (\code{heading}, \code{note}, etc.):
+    %   genuine structure element (\code{heading}, etc.):
     %   \cs{__lttalk_accessibility_struct:nn} does switch the hook off,
     %   but only \emph{inside} its own struct tag -- which only runs once
     %   \cs{__lttalk_slot_content:n} is called from here (via
@@ -5058,8 +5071,8 @@ theme.
     %   \cs{tagpdfparaOff} set locally in there is therefore already
     %   reverted again for the enclosing \cs{parbox}'s implicit \cs{par}
     %   (tried and confirmed: a role filter that switched off only
-    %   \code{navigation}/\code{artifact} here, leaving \code{note}/
-    %   \code{heading} to their inner, too-late switch-off, was \emph{not}
+    %   \code{navigation}/\code{artifact} here, leaving
+    %   \code{heading} to its inner, too-late switch-off, was \emph{not}
     %   enough -- only switching off for \emph{every} role except
     %   \code{content} already here fixed it). \cls{ltx-talk} only builds
     %   header/margin/footer areas at shipout; a struct the automatic hook
@@ -5181,7 +5194,6 @@ theme.
                           { H1 }      { tag = H1 }
                           { H2 }      { tag = H2 }
                           { H3 }      { tag = H3 }
-                          { note }    { tag = Note }
                         }
                     }
                 \exp_args:NNNV \group_end:

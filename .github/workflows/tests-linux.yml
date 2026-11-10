@@ -106,6 +106,27 @@ jobs:
           apt-get install -y --no-install-recommends qpdf
           qpdf --version
 
+      # veraPDF is not part of TeX Live.  Modules that ship a
+      # verapdf-baseline.lua validate their test PDFs against PDF/UA-2; the
+      # installer is pinned by checksum.
+      - name: Install veraPDF
+        if: hashFiles(format('{0}/verapdf-baseline.lua', matrix.module)) != ''
+        env:
+          VERAPDF_VERSION: 1.30.4
+          VERAPDF_SHA256: 04415ef3f149526a3048b9889723e81320ddf013bd891bcc7f0f297f3eadcc23
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends default-jre-headless unzip
+          installer_dir="$(mktemp -d)"
+          curl -fsSL -o "$installer_dir/verapdf.zip" \
+            "https://software.verapdf.org/rel/1.30/verapdf-greenfield-${VERAPDF_VERSION}-installer.zip"
+          echo "${VERAPDF_SHA256}  $installer_dir/verapdf.zip" | sha256sum -c -
+          unzip -q "$installer_dir/verapdf.zip" -d "$installer_dir"
+          java -jar "$installer_dir"/verapdf-greenfield-*/verapdf-izpack-installer-*.jar \
+            .github/verapdf-auto-install.xml
+          echo /opt/verapdf >> "$GITHUB_PATH"
+          /opt/verapdf/verapdf --version
+
       - name: Show environment
         run: |
           lualatex --version
@@ -115,6 +136,10 @@ jobs:
       - name: Test ${{ matrix.module }}
         working-directory: ${{ matrix.module }}
         run: l3build check
+
+      - name: Validate test PDFs with veraPDF
+        if: hashFiles(format('{0}/verapdf-baseline.lua', matrix.module)) != ''
+        run: texlua .github/scripts/check-verapdf.lua --require ${{ matrix.module }}
 
       - name: Show test differences
         if: failure()

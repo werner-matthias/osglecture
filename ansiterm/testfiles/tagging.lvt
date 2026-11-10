@@ -1,6 +1,7 @@
 \input regression-test.tex
-\DocumentMetadata{tagging=on,lang=en-US}
+\DocumentMetadata{tagging=on,lang=en-US,pdfstandard=ua-2}
 \documentclass{article}
+\title{Tagging}
 \usepackage{ansiterm}
 \begin{document}
 
@@ -12,6 +13,5 @@ red
 \end{ansiterm}
 
 Plain paragraph after.
-\clearpage
 \SHOWPDFTAGS
 \end{document}

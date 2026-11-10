@@ -1,6 +1,7 @@
-\DocumentMetadata{lang=en,tagging=on}
+\DocumentMetadata{lang=en,tagging=on,pdfstandard=ua-2}
 \input regression-test
 \documentclass[standalone,profile=ltx-talk,lang=en]{osglecture}
+\title{Tikz lab}
 % A second load of the package, as semcat does, must be silent.
 \RequirePackage{latex-lab-testphase-tikz}
 \usepackage{tikz}
